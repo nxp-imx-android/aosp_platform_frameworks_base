@@ -32,7 +32,6 @@ import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.StatusBarStateControllerImpl
-import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.settings.GlobalSettings
@@ -56,57 +55,41 @@ import org.mockito.MockitoAnnotations
 class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
 
     private lateinit var controller: UnlockedScreenOffAnimationController
-    @Mock
-    private lateinit var keyguardViewMediator: KeyguardViewMediator
-    @Mock
-    private lateinit var dozeParameters: DozeParameters
-    @Mock
-    private lateinit var keyguardStateController: KeyguardStateController
-    @Mock
-    private lateinit var globalSettings: GlobalSettings
-    @Mock
-    private lateinit var centralSurfaces: CentralSurfaces
-    @Mock
-    private lateinit var shadeViewController: ShadeViewController
-    @Mock
-    private lateinit var shadeLockscreenInteractor: ShadeLockscreenInteractor
-    @Mock
-    private lateinit var panelExpansionInteractor: PanelExpansionInteractor
-    @Mock
-    private lateinit var notifShadeWindowController: NotificationShadeWindowController
-    @Mock
-    private lateinit var lightRevealScrim: LightRevealScrim
-    @Mock
-    private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
-    @Mock
-    private lateinit var statusBarStateController: StatusBarStateControllerImpl
-    @Mock
-    private lateinit var interactionJankMonitor: InteractionJankMonitor
-    @Mock
-    private lateinit var powerManager: PowerManager
-    @Mock
-    private lateinit var handler: Handler
+    @Mock private lateinit var keyguardViewMediator: KeyguardViewMediator
+    @Mock private lateinit var dozeParameters: DozeParameters
+    @Mock private lateinit var globalSettings: GlobalSettings
+    @Mock private lateinit var centralSurfaces: CentralSurfaces
+    @Mock private lateinit var shadeViewController: ShadeViewController
+    @Mock private lateinit var shadeLockscreenInteractor: ShadeLockscreenInteractor
+    @Mock private lateinit var panelExpansionInteractor: PanelExpansionInteractor
+    @Mock private lateinit var notifShadeWindowController: NotificationShadeWindowController
+    @Mock private lateinit var lightRevealScrim: LightRevealScrim
+    @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
+    @Mock private lateinit var statusBarStateController: StatusBarStateControllerImpl
+    @Mock private lateinit var interactionJankMonitor: InteractionJankMonitor
+    @Mock private lateinit var powerManager: PowerManager
+    @Mock private lateinit var handler: Handler
 
     val kosmos = testKosmos()
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        controller = UnlockedScreenOffAnimationController(
-            context,
-            wakefulnessLifecycle,
-            statusBarStateController,
-            { keyguardViewMediator },
-            keyguardStateController,
-            { dozeParameters },
-            globalSettings,
-            { notifShadeWindowController },
-            interactionJankMonitor,
-            powerManager,
-            { shadeLockscreenInteractor },
-            { panelExpansionInteractor },
-            handler,
-        )
+        controller =
+            UnlockedScreenOffAnimationController(
+                context,
+                wakefulnessLifecycle,
+                statusBarStateController,
+                { keyguardViewMediator },
+                { dozeParameters },
+                globalSettings,
+                { notifShadeWindowController },
+                interactionJankMonitor,
+                powerManager,
+                { shadeLockscreenInteractor },
+                { panelExpansionInteractor },
+                handler,
+            )
         controller.initialize(centralSurfaces, shadeViewController, lightRevealScrim)
     }
 

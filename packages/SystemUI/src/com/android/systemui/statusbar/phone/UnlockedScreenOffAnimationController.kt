@@ -9,7 +9,6 @@ import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.Display
-import android.view.Surface
 import android.view.View
 import android.view.WindowManager.fixScale
 import com.android.app.animation.Interpolators
@@ -35,7 +34,6 @@ import com.android.systemui.statusbar.notification.AnimatableProperty
 import com.android.systemui.statusbar.notification.PropertyAnimator
 import com.android.systemui.statusbar.notification.stack.AnimationProperties
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator
-import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.settings.GlobalSettings
 import dagger.Lazy
 import javax.inject.Inject
@@ -64,7 +62,6 @@ constructor(
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val statusBarStateControllerImpl: StatusBarStateControllerImpl,
     private val keyguardViewMediatorLazy: Lazy<KeyguardViewMediator>,
-    private val keyguardStateController: KeyguardStateController,
     private val dozeParameters: Lazy<DozeParameters>,
     private val globalSettings: GlobalSettings,
     private val notifShadeWindowControllerLazy: Lazy<NotificationShadeWindowController>,
@@ -293,13 +290,10 @@ constructor(
             handler.postDelayed(
                 {
                     // Only run this callback if the device is sleeping (not interactive). This
-                    // callback
-                    // is removed in onStartedWakingUp, but since that event is asynchronously
-                    // dispatched, a race condition could make it possible for this callback to be
-                    // run
-                    // as the device is waking up. That results in the AOD UI being shown while we
-                    // wake
-                    // up, with unpredictable consequences.
+                    // callback is removed in onStartedWakingUp, but since that event is
+                    // asynchronously dispatched, a race condition could make it possible for this
+                    // callback to be run as the device is waking up. That results in the AOD UI
+                    // being shown while we wake up, with unpredictable consequences.
                     if (
                         !powerManager.isInteractive(Display.DEFAULT_DISPLAY) &&
                             shouldAnimateInKeyguard
@@ -357,26 +351,7 @@ constructor(
             return false
         }
 
-        // We currently draw both the light reveal scrim, and the AOD UI, in the shade. If it's
-        // already expanded and showing notifications/QS, the animation looks really messy. For now,
-        // disable it if the notification panel is expanded.
-        if (
-            (!this::centralSurfaces.isInitialized ||
-                panelExpansionInteractorLazy.get().isPanelExpanded) &&
-                // Status bar might be expanded because we have started
-                // playing the animation already
-                !isAnimationPlaying()
-        ) {
-            return false
-        }
-
-        // If we're not allowed to rotate the keyguard, it can only be displayed in zero-degree
-        // portrait. If we're in another orientation, disable the screen off animation so we don't
-        // animate in the keyguard AOD UI sideways or upside down.
-        if (
-            !keyguardStateController.isKeyguardScreenRotationAllowed &&
-                context.display?.rotation != Surface.ROTATION_0
-        ) {
+        if (!this::centralSurfaces.isInitialized) {
             return false
         }
 
