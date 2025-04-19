@@ -1822,7 +1822,8 @@ public final class LoadedApk {
 
                     if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                                "broadcastReceiveReg: " + intent.getAction());
+                                "broadcastReceiveReg: " + intent.getAction()
+                                + ";clz=" + receiver.getClass().getSimpleName());
                     }
                     long debugStoreId = -1;
                     if (DEBUG_STORE_ENABLED) {
