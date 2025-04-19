@@ -154,6 +154,7 @@ import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionCont
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.dagger.SmartRepliesInflationModule;
 import com.android.systemui.statusbar.policy.dagger.StatusBarPolicyModule;
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsModule;
 import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;
 import com.android.systemui.telephony.data.repository.TelephonyRepositoryModule;
@@ -279,6 +280,7 @@ import javax.inject.Named;
         StatusBarViewBinderModule.class,
         StatusBarWindowModule.class,
         SystemPropertiesFlagsModule.class,
+        SystemStatusIconsModule.class,
         SysUIConcurrencyModule.class,
         SysUICoroutinesModule.class,
         CommonSystemUIUnfoldModule.class,
