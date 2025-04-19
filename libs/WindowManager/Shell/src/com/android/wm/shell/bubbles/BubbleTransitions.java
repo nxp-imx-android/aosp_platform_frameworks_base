@@ -464,6 +464,8 @@ public class BubbleTransitions {
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
                 boolean inflateSync, IBinder transition,
                 Consumer<TransitionHandler> onInflatedCallback) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble(): expanded=%s",
+                    layerView.isExpanded());
             mBubble = bubble;
             mTransition = transition;
             mTransitionProgress = new TransitionProgress(bubble);
@@ -487,6 +489,7 @@ public class BubbleTransitions {
 
         @VisibleForTesting
         void onInflated(Bubble b) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.onInflated()");
             if (b != mBubble) {
                 throw new IllegalArgumentException("inflate callback doesn't match bubble");
             }
@@ -717,6 +720,8 @@ public class BubbleTransitions {
                 BubblePositioner positioner, BubbleStackView stackView,
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
                 boolean inflateSync, @Nullable BubbleBarLocation bubbleBarLocation) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert(): expanded=%s",
+                    layerView.isExpanded());
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
             mLayerView = layerView;
@@ -737,6 +742,7 @@ public class BubbleTransitions {
 
         @VisibleForTesting
         void onInflated(Bubble b) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert.onInflated()");
             if (b != mBubble) {
                 throw new IllegalArgumentException("inflate callback doesn't match bubble");
             }

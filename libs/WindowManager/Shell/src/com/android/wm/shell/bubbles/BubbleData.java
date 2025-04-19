@@ -808,7 +808,8 @@ public class BubbleData {
             if (hasOverflowBubbleWithKey(key)
                     && shouldRemoveHiddenBubble) {
                 Bubble b = getOverflowBubbleWithKey(key);
-                ProtoLog.d(WM_SHELL_BUBBLES, "doRemove - cancel overflow bubble=%s", key);
+                ProtoLog.d(WM_SHELL_BUBBLES, "doRemove - cancel overflow bubble=%s reason=%d",
+                        key, reason);
                 if (b != null) {
                     b.stopInflation();
                 }
@@ -822,7 +823,8 @@ public class BubbleData {
             }
             if (hasSuppressedBubbleWithKey(key) && shouldRemoveHiddenBubble) {
                 Bubble b = getSuppressedBubbleWithKey(key);
-                ProtoLog.d(WM_SHELL_BUBBLES, "doRemove - cancel suppressed bubble=%s", key);
+                ProtoLog.d(WM_SHELL_BUBBLES, "doRemove - cancel suppressed bubble=%s reason=%d",
+                        key, reason);
                 if (b != null) {
                     mSuppressedBubbles.remove(b.getLocusId());
                     b.stopInflation();
@@ -832,7 +834,7 @@ public class BubbleData {
             return;
         }
         Bubble bubbleToRemove = mBubbles.get(indexToRemove);
-        ProtoLog.d(WM_SHELL_BUBBLES, "doRemove=%s", bubbleToRemove.getKey());
+        ProtoLog.d(WM_SHELL_BUBBLES, "doRemove=%s reason=%d", bubbleToRemove.getKey(), reason);
         bubbleToRemove.stopInflation();
         overflowBubble(reason, bubbleToRemove);
 
@@ -882,7 +884,8 @@ public class BubbleData {
 
     private void setNewSelectedIndex(int indexOfSelected) {
         if (mBubbles.isEmpty()) {
-            Log.w(TAG, "Bubbles list empty when attempting to select index: " + indexOfSelected);
+            Log.w(TAG, "Bubbles list empty when attempting to select index: "
+                    + indexOfSelected);
             return;
         }
         // Move selection to the new bubble at the same position.
@@ -937,7 +940,7 @@ public class BubbleData {
                 || reason == Bubbles.DISMISS_RELOAD_FROM_DISK)) {
             return;
         }
-        ProtoLog.d(WM_SHELL_BUBBLES, "overflowBubble=%s", bubble.getKey());
+        ProtoLog.d(WM_SHELL_BUBBLES, "overflowBubble=%s reason=%d", bubble.getKey(), reason);
         mLogger.logOverflowAdd(bubble, mPositioner.isShowingInBubbleBar(), reason);
         if (mOverflowBubbles.isEmpty()) {
             mStateChange.showOverflowChanged = true;

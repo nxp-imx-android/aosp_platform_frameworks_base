@@ -20,6 +20,7 @@ import static android.os.AsyncTask.Status.FINISHED;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PRIVATE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.annotation.DimenRes;
 import android.annotation.Hide;
@@ -711,6 +712,7 @@ public class Bubble implements BubbleViewProvider {
      * Sets the current bubble-transition that is coordinating a change in this bubble.
      */
     void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setPreparingTransition: transit=%s", transit);
         mPreparingTransition = transit;
     }
 
