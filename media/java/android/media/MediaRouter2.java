@@ -20,7 +20,6 @@ import static com.android.internal.util.function.pooled.PooledLambda.obtainMessa
 import static com.android.media.flags.Flags.FLAG_ENABLE_BUILT_IN_SPEAKER_ROUTE_SUITABILITY_STATUSES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_GET_TRANSFERABLE_ROUTES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_PRIVILEGED_ROUTING_FOR_MEDIA_ROUTING_CONTROL;
-import static com.android.media.flags.Flags.FLAG_ENABLE_RLP_CALLBACKS_IN_MEDIA_ROUTER2;
 import static com.android.media.flags.Flags.FLAG_ENABLE_SCREEN_OFF_SCANNING;
 import static com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API;
 
@@ -752,7 +751,6 @@ public final class MediaRouter2 {
      *
      * @see #setRouteListingPreference(RouteListingPreference)
      */
-    @FlaggedApi(FLAG_ENABLE_RLP_CALLBACKS_IN_MEDIA_ROUTER2)
     public void registerRouteListingPreferenceUpdatedCallback(
             @NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<RouteListingPreference> routeListingPreferenceCallback) {
@@ -791,7 +789,6 @@ public final class MediaRouter2 {
      *
      * @see #registerRouteListingPreferenceUpdatedCallback(Executor, Consumer)
      */
-    @FlaggedApi(FLAG_ENABLE_RLP_CALLBACKS_IN_MEDIA_ROUTER2)
     public void unregisterRouteListingPreferenceUpdatedCallback(
             @NonNull Consumer<RouteListingPreference> callback) {
         Objects.requireNonNull(callback, "callback must not be null");
@@ -921,7 +918,6 @@ public final class MediaRouter2 {
      *
      * @see #setRouteListingPreference(RouteListingPreference)
      */
-    @FlaggedApi(FLAG_ENABLE_RLP_CALLBACKS_IN_MEDIA_ROUTER2)
     @Nullable
     public RouteListingPreference getRouteListingPreference() {
         synchronized (mLock) {
