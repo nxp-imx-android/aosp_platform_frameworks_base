@@ -31,7 +31,6 @@
 #include <array>
 #include <cstdio>
 #include <cstring>
-#include <tuple>
 
 namespace android {
 
@@ -143,7 +142,3 @@ bool isKnownWritablePath(const char* path) {
 #endif  // __linux__
 
 }  // namespace android
-
-bool operator==(const timespec& l, const timespec& r) {
-  return std::tie(l.tv_sec, l.tv_nsec) == std::tie(r.tv_sec, l.tv_nsec);
-}
