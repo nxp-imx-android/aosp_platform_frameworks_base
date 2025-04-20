@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.KEYGUARD_VISIBILITY_TRANSIT_FLAGS;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
@@ -44,6 +45,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.IApplicationThread;
 import android.app.PendingIntent;
@@ -237,8 +239,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // requires the handler, but the mixed handler also needs a reference to the transition.
         RecentsMixedHandler mixer = null;
         Consumer<IBinder> setTransitionForMixer = null;
+        ActivityOptions activityOptions = ActivityOptions.fromBundle(options);
+        int displayId = activityOptions.getLaunchDisplayId();
+        if (displayId == INVALID_DISPLAY) {
+            displayId = DEFAULT_DISPLAY;
+        }
         for (int i = 0; i < mMixers.size(); ++i) {
-            setTransitionForMixer = mMixers.get(i).handleRecentsRequest();
+            setTransitionForMixer = mMixers.get(i).handleRecentsRequest(displayId);
             if (setTransitionForMixer != null) {
                 mixer = mMixers.get(i);
                 break;
@@ -1807,7 +1814,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
          * {@link #mergeAnimation}, and {@link #onTransitionConsumed} methods.
          */
         @Nullable
-        Consumer<IBinder> handleRecentsRequest();
+        Consumer<IBinder> handleRecentsRequest(int displayId);
 
         /**
          * Called when a recents transition has finished, with a WCT and SurfaceControl Transaction
