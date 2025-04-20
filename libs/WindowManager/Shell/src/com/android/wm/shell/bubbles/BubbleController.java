@@ -84,6 +84,7 @@ import android.view.ViewRootImpl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.IMultitaskingController;
+import android.window.IMultitaskingControllerCallback;
 import android.window.ScreenCapture;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
 import android.window.TransitionInfo;
@@ -557,8 +558,10 @@ public class BubbleController implements ConfigurationChangeListener,
                         this, mBubbleData, mCurrentUserId);
                 final IMultitaskingController mtController = ActivityTaskManager.getService()
                         .getWindowOrganizerController().getMultitaskingController();
-                mtController.registerMultitaskingDelegate(delegate);
+                final IMultitaskingControllerCallback callback =
+                        mtController.setMultitaskingDelegate(delegate);
                 mBubbleMultitaskingDelegate = delegate;
+                mBubbleMultitaskingDelegate.setControllerCallback(callback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
             }
@@ -2431,6 +2434,9 @@ public class BubbleController implements ConfigurationChangeListener,
                 @Bubbles.DismissReason final int reason = removed.second;
 
                 mBubbleViewCallback.removeBubble(bubble);
+                if (bubble.getClientToken() != null && mBubbleMultitaskingDelegate != null) {
+                    mBubbleMultitaskingDelegate.onBubbleRemoved(bubble.getClientToken(), reason);
+                }
 
                 // Leave the notification in place if we're dismissing due to user switching, or
                 // because DND is suppressing the bubble. In both of those cases, we need to be able
