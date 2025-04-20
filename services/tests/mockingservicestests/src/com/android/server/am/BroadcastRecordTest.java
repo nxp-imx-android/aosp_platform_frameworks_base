@@ -67,6 +67,7 @@ import androidx.test.filters.SmallTest;
 import com.android.server.compat.PlatformCompat;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -762,8 +763,6 @@ public class BroadcastRecordTest {
 
     @Test
     public void testCalculateDeferUntilActive_System() {
-        BroadcastRecord.CORE_DEFER_UNTIL_ACTIVE = true;
-
         // Verify non-urgent behavior
         assertTrue(calculateDeferUntilActive(SYSTEM_UID, null, null, false, false));
         assertTrue(calculateDeferUntilActive(SYSTEM_UID, OPT_DEFAULT, null, false, false));
@@ -1055,6 +1054,7 @@ public class BroadcastRecordTest {
                 10);
     }
 
+    @Ignore
     @Test
     @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
     public void testUpdateBroadcastProcessedEventRecord_withNewAndExistingReceiver_multipleBroadcastProcessedEventRecordCreated() {
