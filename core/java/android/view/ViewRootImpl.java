@@ -156,6 +156,7 @@ import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.ResourcesManager;
 import android.app.UiModeManager;
+import android.app.UiModeManager.ForceInvertStateChangeListener;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.WindowStateTransactionItem;
@@ -171,7 +172,6 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.database.ContentObserver;
 import android.graphics.BLASTBufferQueue;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -200,7 +200,6 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.InputSettings;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -219,7 +218,6 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.sysprop.DisplayProperties;
 import android.sysprop.ViewProperties;
 import android.text.TextUtils;
@@ -476,7 +474,7 @@ public final class ViewRootImpl implements ViewParent,
     private CompatOnBackInvokedCallback mCompatOnBackInvokedCallback;
 
     @Nullable
-    private ContentObserver mForceInvertObserver;
+    private ForceInvertStateChangeListener mForceInvertStateChangeListener;
 
     /**
      * Callback for notifying about global configuration changes.
@@ -1845,30 +1843,17 @@ public final class ViewRootImpl implements ViewParent,
                         eventsToBeRegistered,
                         mBasePackageName);
 
-        // LINT.IfChange(fi_cb)
         if (forceInvertColor()) {
-            if (mForceInvertObserver == null) {
-                mForceInvertObserver = new ContentObserver(mHandler) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        updateForceDarkMode();
-                    }
-                };
-                final Uri[] urisToObserve = {
-                    Settings.Secure.getUriFor(
-                        Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED),
-                    Settings.Secure.getUriFor(Settings.Secure.UI_NIGHT_MODE)
-                };
-                for (Uri uri : urisToObserve) {
-                    mContext.getContentResolver().registerContentObserver(
-                            uri,
-                            false,
-                            mForceInvertObserver,
-                            UserHandle.myUserId());
+            if (mForceInvertStateChangeListener == null) {
+                mForceInvertStateChangeListener =
+                        forceInvertState -> updateForceDarkMode();
+                final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+                if (uiModeManager != null) {
+                    uiModeManager.addForceInvertStateChangeListener(mExecutor,
+                            mForceInvertStateChangeListener);
                 }
             }
         }
-        // LINT.ThenChange(/services/core/java/com/android/server/UiModeManagerService.java:fi_cb)
     }
 
     /**
@@ -1884,9 +1869,13 @@ public final class ViewRootImpl implements ViewParent,
                 .unregisterDisplayListener(mDisplayListener);
 
         if (forceInvertColor()) {
-            if (mForceInvertObserver != null) {
-                mContext.getContentResolver().unregisterContentObserver(mForceInvertObserver);
-                mForceInvertObserver = null;
+            if (mForceInvertStateChangeListener != null) {
+                final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+                if (uiModeManager != null) {
+                    uiModeManager.removeForceInvertStateChangeListener(
+                            mForceInvertStateChangeListener);
+                }
+                mForceInvertStateChangeListener = null;
             }
         }
 
