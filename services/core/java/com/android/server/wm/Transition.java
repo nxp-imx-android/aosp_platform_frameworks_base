@@ -709,6 +709,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         return mState == STATE_STARTED;
     }
 
+    boolean hasStarted() {
+        return mState >= STATE_STARTED;
+    }
+
     boolean isPlaying() {
         return mState == STATE_PLAYING;
     }
