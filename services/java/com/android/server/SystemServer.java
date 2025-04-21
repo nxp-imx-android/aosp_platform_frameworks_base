@@ -264,6 +264,7 @@ import com.android.server.selectiontoolbar.SelectionToolbarManagerService;
 import com.android.server.selinux.SelinuxAuditLogsService;
 import com.android.server.sensorprivacy.SensorPrivacyService;
 import com.android.server.sensors.SensorService;
+import com.android.server.serial.SerialManagerService;
 import com.android.server.signedconfig.SignedConfigService;
 import com.android.server.slice.SliceManagerService;
 import com.android.server.smartspace.SmartspaceManagerService;
@@ -2478,10 +2479,16 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (!isWatch) {
-                t.traceBegin("StartSerialService");
-                mSystemServiceManager.startService(SerialService.Lifecycle.class);
+            if (android.hardware.serial.flags.Flags.enableSerialApi()) {
+                t.traceBegin("StartSerialManagerService");
+                mSystemServiceManager.startService(SerialManagerService.Lifecycle.class);
                 t.traceEnd();
+            } else {
+                if (!isWatch) {
+                    t.traceBegin("StartSerialService");
+                    mSystemServiceManager.startService(SerialService.Lifecycle.class);
+                    t.traceEnd();
+                }
             }
 
             t.traceBegin("StartHardwarePropertiesManagerService");
