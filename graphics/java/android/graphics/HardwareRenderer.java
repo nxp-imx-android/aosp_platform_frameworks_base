@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.Trace;
 import android.util.Log;
 import android.util.TimeUtils;
 import android.view.Display;
@@ -45,6 +46,8 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.animation.AnimationUtils;
+
+import com.android.internal.util.RateLimitingCache;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -188,6 +191,62 @@ public class HardwareRenderer {
     private int mForceDark = ForceDarkType.NONE;
     private @ActivityInfo.ColorMode int mColorMode = ActivityInfo.COLOR_MODE_DEFAULT;
     private float mDesiredSdrHdrRatio = 1f;
+
+    private final NotifyRendererRateLimiter mNotifyRendererWorkLoadRateLimiter =
+            createNotifyRendererRateLimiter();
+
+    /**
+     * A class for rate limiting of notifying renderer IPC invocation (e.g. notifyExpensiveFrame)
+     * that allows once per period to appropriate control for bursts of calls.
+     */
+    private static class NotifyRendererRateLimiter extends RateLimitingCache<Void> {
+        private static final long DEFAULT_NOTIFY_PERIOD_MILLIS = 100;
+        private final @NonNull RateLimitingCache.ValueFetcher<Void> mNotifyRendererRunnable;
+
+        /** Counts when the rate limiter permits to notify the renderer */
+        private int mNotifyCount;
+        private @Nullable String mNotifyReason;
+
+        NotifyRendererRateLimiter(@NonNull RateLimitingCache.ValueFetcher<Void> runnable,
+                long periodMillis) {
+            super(periodMillis);
+            mNotifyRendererRunnable = runnable;
+        }
+
+        private int notifyIfAllow(String reason) {
+            mNotifyReason = reason;
+            get(mNotifyRendererRunnable);
+            return mNotifyCount;
+        }
+
+        private void incrementNotifyCount() {
+            mNotifyCount++;
+        }
+
+        private @Nullable String getNotifyReason() {
+            return mNotifyReason;
+        }
+    }
+
+    private NotifyRendererRateLimiter getNotifyRendererRateLimiter() {
+        return mNotifyRendererWorkLoadRateLimiter;
+    }
+
+    private NotifyRendererRateLimiter createNotifyRendererRateLimiter() {
+        return new NotifyRendererRateLimiter(() -> {
+            final String notifyReason = getNotifyRendererRateLimiter().getNotifyReason();
+            final boolean logForReason = notifyReason != null && !notifyReason.isEmpty();
+            try {
+                final String traceReason = logForReason ? notifyReason : "notifyExpensiveFrame";
+                Trace.traceBegin(Trace.TRACE_TAG_VIEW, traceReason);
+                notifyExpensiveFrame();
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+            }
+            getNotifyRendererRateLimiter().incrementNotifyCount();
+            return null;
+        }, NotifyRendererRateLimiter.DEFAULT_NOTIFY_PERIOD_MILLIS);
+    }
 
     /**
      * Creates a new instance of a HardwareRenderer. The HardwareRenderer will default
@@ -1050,6 +1109,16 @@ public class HardwareRenderer {
      */
     public void notifyExpensiveFrame() {
         nNotifyExpensiveFrame(mNativeProxy);
+    }
+
+    /**
+     * Notifies the hardware renderer from the UI thread about upcoming expensive frames with
+     * rate limiting control.
+     *
+     * @hide
+     */
+    public int notifyExpensiveFrameWithRateLimit(String reason) {
+        return mNotifyRendererWorkLoadRateLimiter.notifyIfAllow(reason);
     }
 
     /**
