@@ -29,7 +29,9 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SystemWindows;
+import com.android.wm.shell.common.TabletopModeController;
 import com.android.wm.shell.common.TaskStackListenerImpl;
+import com.android.wm.shell.common.pip.PhonePipKeepClearAlgorithm;
 import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
@@ -138,6 +140,8 @@ public abstract class Pip2Module {
             PhonePipMenuController pipMenuController,
             PipUiEventLogger pipUiEventLogger,
             PipMediaController pipMediaController,
+            TabletopModeController tabletopModeController,
+            PhonePipKeepClearAlgorithm pipKeepClearAlgorithm,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @ShellMainThread ShellExecutor mainExecutor) {
         if (!PipUtils.isPip2ExperimentEnabled()) {
@@ -148,8 +152,8 @@ public abstract class Pip2Module {
                     displayInsetsController, pipBoundsState, pipBoundsAlgorithm,
                     pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                     pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
-                    pipUiEventLogger, pipMediaController, pipSurfaceTransactionHelper,
-                    mainExecutor));
+                    pipUiEventLogger, pipMediaController, tabletopModeController,
+                    pipKeepClearAlgorithm, pipSurfaceTransactionHelper, mainExecutor));
         }
     }
 
