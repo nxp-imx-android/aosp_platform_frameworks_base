@@ -744,22 +744,22 @@ public class TrustManagerService extends SystemService {
     }
 
     public long addEscrowToken(byte[] token, int userId) {
-        return mLockPatternUtils.addEscrowToken(token, userId,
+        return mLockSettings.addEscrowToken(token, userId,
                 (long handle, int userid) -> {
                     dispatchEscrowTokenActivatedLocked(handle, userid);
                 });
     }
 
     public boolean removeEscrowToken(long handle, int userId) {
-        return mLockPatternUtils.removeEscrowToken(handle, userId);
+        return mLockSettings.removeEscrowToken(handle, userId);
     }
 
     public boolean isEscrowTokenActive(long handle, int userId) {
-        return mLockPatternUtils.isEscrowTokenActive(handle, userId);
+        return mLockSettings.isEscrowTokenActive(handle, userId);
     }
 
     public void unlockUserWithToken(long handle, byte[] token, int userId) {
-        mLockPatternUtils.unlockUserWithToken(handle, token, userId);
+        mLockSettings.unlockUserWithToken(handle, token, userId);
     }
 
     /**

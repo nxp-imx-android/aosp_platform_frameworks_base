@@ -3715,10 +3715,9 @@ public class LockSettingsService extends ILockSettings.Stub {
         @Override
         public boolean setLockCredentialWithToken(LockscreenCredential credential, long tokenHandle,
                 byte[] token, int userId) {
-        if (!mHasSecureLockScreen
-                && credential != null && credential.getType() != CREDENTIAL_TYPE_NONE) {
+            if (!mHasSecureLockScreen && credential.getType() != CREDENTIAL_TYPE_NONE) {
                 throw new UnsupportedOperationException(
-                        "This operation requires secure lock screen feature.");
+                        "This operation requires the lock screen feature.");
             }
             if (!LockSettingsService.this.setLockCredentialWithToken(
                     credential, tokenHandle, token, userId)) {

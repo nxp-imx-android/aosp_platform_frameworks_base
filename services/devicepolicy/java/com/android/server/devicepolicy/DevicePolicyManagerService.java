@@ -6083,7 +6083,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     return false;
                 }
             } else {
-                if (!mLockPatternUtils.setLockCredentialWithToken(newCredential, tokenHandle,
+                if (!mLockSettingsInternal.setLockCredentialWithToken(newCredential, tokenHandle,
                         token, userHandle)) {
                     return false;
                 }
@@ -10282,7 +10282,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final DevicePolicyData policyData = getUserData(userId);
         policyData.mCurrentInputMethodSet = false;
         if (policyData.mPasswordTokenHandle != 0) {
-            mLockPatternUtils.removeEscrowToken(policyData.mPasswordTokenHandle, userId);
+            mLockSettingsInternal.removeEscrowToken(policyData.mPasswordTokenHandle, userId);
             policyData.mPasswordTokenHandle = 0;
         }
         saveSettingsLocked(userId);
@@ -19319,14 +19319,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private long addEscrowToken(byte[] token, long currentPasswordTokenHandle, int userId) {
         resetEscrowToken(currentPasswordTokenHandle, userId);
-        return mInjector.binderWithCleanCallingIdentity(() -> mLockPatternUtils.addEscrowToken(
+        return mInjector.binderWithCleanCallingIdentity(() -> mLockSettingsInternal.addEscrowToken(
                 token, userId, /* EscrowTokenStateChangeCallback= */ null));
     }
 
     private boolean resetEscrowToken(long tokenHandle, int userId) {
         return mInjector.binderWithCleanCallingIdentity(() -> {
             if (tokenHandle != 0) {
-                return mLockPatternUtils.removeEscrowToken(tokenHandle, userId);
+                return mLockSettingsInternal.removeEscrowToken(tokenHandle, userId);
             }
             return false;
         });
@@ -19431,7 +19431,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private boolean isResetPasswordTokenActiveForUserLocked(
             long passwordTokenHandle, int userHandle) {
         return passwordTokenHandle != 0 && mInjector.binderWithCleanCallingIdentity(() ->
-                    mLockPatternUtils.isEscrowTokenActive(passwordTokenHandle, userHandle));
+                    mLockSettingsInternal.isEscrowTokenActive(passwordTokenHandle, userHandle));
     }
 
     @Override

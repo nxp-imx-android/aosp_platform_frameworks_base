@@ -108,13 +108,25 @@ public abstract class LockSettingsInternal {
     public abstract boolean isEscrowTokenActive(long handle, int userId);
 
     /**
-     * Set the lock credential.
+     * Changes a user's lockscreen credential using a pre-activated escrow token.
      *
-     * @return true if password is set.
+     * @param credential The new credential to be set
+     * @param tokenHandle Handle of the escrow token
+     * @param token Escrow token
+     * @param userId The ID of the user whose lockscreen credential to change
+     * @return {@code true} if the operation is successful
      */
     public abstract boolean setLockCredentialWithToken(LockscreenCredential credential,
             long tokenHandle, byte[] token, int userId);
 
+    /**
+     * Unlocks the specified user using a pre-activated escrow token. This has the same effect on
+     * device encryption as the user entering their lockscreen credential for the first time after
+     * boot. This includes unlocking the user's credential-encrypted storage and keystore.
+     *
+     * @return {@code true} if the supplied token is valid and unlock succeeds,
+     *         {@code false} otherwise.
+     */
     public abstract boolean unlockUserWithToken(long tokenHandle, byte[] token, int userId);
 
     /**
