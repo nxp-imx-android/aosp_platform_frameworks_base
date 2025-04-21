@@ -21,7 +21,6 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-import com.android.packageinstaller.v2.model.PackageUtil.INSTALL_TYPE_NEW
 
 sealed class InstallStage(val stageCode: Int) {
 
@@ -44,7 +43,7 @@ class InstallReady : InstallStage(STAGE_READY)
 data class InstallUserActionRequired(
     val actionReason: Int,
     val appSnippet: PackageUtil.AppSnippet? = null,
-    @PackageUtil.InstallType val installType: Int = INSTALL_TYPE_NEW,
+    val isAppUpdating: Boolean = false,
     val existingUpdateOwnerLabel: CharSequence? = null,
     val requestedUpdateOwnerLabel: CharSequence? = null,
     val unknownSourcePackageName: String? = null,
@@ -65,8 +64,7 @@ data class InstallUserActionRequired(
 
 data class InstallInstalling(
     val appSnippet: PackageUtil.AppSnippet,
-    @PackageUtil.InstallType val installType: Int
-) :
+    val isAppUpdating: Boolean = false) :
     InstallStage(STAGE_INSTALLING) {
 
     val appIcon: Drawable?
@@ -79,6 +77,7 @@ data class InstallInstalling(
 data class InstallSuccess(
     val appSnippet: PackageUtil.AppSnippet,
     val shouldReturnResult: Boolean = false,
+    val isAppUpdating: Boolean = false,
     /**
      *
      * * If the caller is requesting a result back, this will hold an Intent with
@@ -88,7 +87,6 @@ data class InstallSuccess(
      * the newly installed / updated app if a launchable activity exists.
      */
     val resultIntent: Intent? = null,
-    @PackageUtil.InstallType val installType: Int,
 ) : InstallStage(STAGE_SUCCESS) {
 
     val appIcon: Drawable?
