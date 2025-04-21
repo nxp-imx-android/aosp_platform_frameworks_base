@@ -14019,40 +14019,43 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
-    public void publishService(IBinder token, Intent intent, IBinder service) {
-        // Refuse possible leaked file descriptors
-        if (intent != null && intent.hasFileDescriptors() == true) {
-            throw new IllegalArgumentException("File descriptors passed in Intent");
+    public void publishService(IBinder token, IBinder bindToken, IBinder service) {
+        if (!(token instanceof ServiceRecord)) {
+            throw new IllegalArgumentException("Invalid service token");
+        }
+
+        if (!(bindToken instanceof IntentBindRecord)) {
+            throw new IllegalArgumentException("Invalid intent bind record");
         }
 
         synchronized(this) {
-            if (!(token instanceof ServiceRecord)) {
-                throw new IllegalArgumentException("Invalid service token");
-            }
-            mServices.publishServiceLocked((ServiceRecord)token, intent, service);
+            mServices.publishServiceLocked((ServiceRecord) token, (IntentBindRecord) bindToken,
+                    service);
         }
     }
 
-    public void unbindFinished(IBinder token, Intent intent) {
-        // Refuse possible leaked file descriptors
-        if (intent != null && intent.hasFileDescriptors() == true) {
-            throw new IllegalArgumentException("File descriptors passed in Intent");
+    public void unbindFinished(IBinder token, IBinder bindToken) {
+        if (!(token instanceof ServiceRecord)) {
+            throw new IllegalArgumentException("Invalid service token");
+        }
+
+        if (!(bindToken instanceof IntentBindRecord)) {
+            throw new IllegalArgumentException("Invalid intent bind record");
         }
 
         synchronized(this) {
-            mServices.unbindFinishedLocked((ServiceRecord)token, intent);
+            mServices.unbindFinishedLocked((ServiceRecord) token, (IntentBindRecord) bindToken);
         }
     }
 
     @Override
-    public void serviceDoneExecuting(IBinder token, int type, int startId, int res, Intent intent) {
+    public void serviceDoneExecuting(IBinder token, int type, int startId, int res) {
         synchronized(this) {
             if (!(token instanceof ServiceRecord)) {
                 Slog.e(TAG, "serviceDoneExecuting: Invalid service token=" + token);
                 throw new IllegalArgumentException("Invalid service token");
             }
-            mServices.serviceDoneExecutingLocked((ServiceRecord) token, type, startId, res, false,
-                    intent);
+            mServices.serviceDoneExecutingLocked((ServiceRecord) token, type, startId, res, false);
         }
     }
 
