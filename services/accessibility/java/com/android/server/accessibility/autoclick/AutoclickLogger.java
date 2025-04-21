@@ -45,4 +45,21 @@ public class AutoclickLogger {
         FrameworkStatsLog.write(FrameworkStatsLog.AUTOCLICK_EVENT_REPORTED,
                 autoclickType);
     }
+
+    /**
+     * Logs when autoclick feature is enabled.
+     */
+    public static void logAutoclickEnabled() {
+        FrameworkStatsLog.write(FrameworkStatsLog.AUTOCLICK_ENABLED_REPORTED, true);
+    }
+
+    /**
+     * Logs autoclick session duration when the feature is disabled.
+     *
+     * @param sessionDurationSeconds How long the feature was enabled.
+     */
+    public static void logAutoclickSessionDuration(int sessionDurationSeconds) {
+        FrameworkStatsLog.write(FrameworkStatsLog.AUTOCLICK_SESSION_DURATION_REPORTED,
+                sessionDurationSeconds);
+    }
 }
