@@ -594,6 +594,9 @@ public final class NotificationRecord {
                 + " found valid? " + (mShortcutInfo != null));
         pw.println(prefix + "mUserVisOverride=" + getPackageVisibilityOverride());
         pw.println(prefix + "hasSummarization=" + (mSummarization != null));
+        if (android.service.notification.Flags.notificationClassification()) {
+            pw.println(prefix + "bundleType=" + getBundleType());
+        }
     }
 
     private void dumpNotification(PrintWriter pw, String prefix, Notification notification,
