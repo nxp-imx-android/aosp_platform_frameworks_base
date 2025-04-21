@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.power;
+package com.android.server.power.thermal;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -59,8 +59,8 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.SystemService;
-import com.android.server.power.ThermalManagerService.TemperatureWatcher;
-import com.android.server.power.ThermalManagerService.ThermalHalWrapper;
+import com.android.server.power.thermal.ThermalManagerService.TemperatureWatcher;
+import com.android.server.power.thermal.ThermalManagerService.ThermalHalWrapper;
 
 import org.junit.Before;
 import org.junit.ClassRule;

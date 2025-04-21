@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.power;
+package com.android.server.power.thermal;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;

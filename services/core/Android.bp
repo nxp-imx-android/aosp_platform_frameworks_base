@@ -244,6 +244,7 @@ java_library_static {
         "battery_saver_flag_lib",
         "notification_flags_lib",
         "power_hint_flags_lib",
+        "thermal_flags_lib",
         "biometrics_flags_lib",
         "aconfig_settings_flags_lib",
         "am_flags_lib",
