@@ -151,7 +151,8 @@ constructor(
         val clockStr = clock.toString()
         loggers.forEach { it.d({ "New Clock: $str1" }) { str1 = clockStr } }
 
-        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, clockListener)
+        clock.eventListeners.attach(clockListener)
+        clock.initialize(isDarkTheme(), dozeAmount.value, 0f)
 
         if (!regionSamplingEnabled) {
             updateColors()
@@ -317,6 +318,8 @@ constructor(
 
     private val clockListener =
         object : ClockEventListener {
+            override fun onChangeComplete() {}
+
             override fun onBoundsChanged(bounds: VRectF) {
                 onClockBoundsChanged.value = bounds
             }

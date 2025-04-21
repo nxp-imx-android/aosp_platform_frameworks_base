@@ -43,3 +43,19 @@ interface ClockEvents {
     /** Call with zen/dnd information */
     fun onZenDataChanged(data: ZenData)
 }
+
+class ClockEventListeners {
+    private val listeners = mutableListOf<ClockEventListener>()
+
+    fun attach(listener: ClockEventListener) = listeners.add(listener)
+
+    fun detach(listener: ClockEventListener) = listeners.remove(listener)
+
+    fun fire(func: ClockEventListener.() -> Unit) = listeners.forEach { it.func() }
+}
+
+interface ClockEventListener {
+    fun onBoundsChanged(bounds: VRectF)
+
+    fun onChangeComplete()
+}
