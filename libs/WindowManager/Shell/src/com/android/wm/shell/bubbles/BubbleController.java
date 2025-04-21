@@ -136,7 +136,6 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewController;
-import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
@@ -215,7 +214,6 @@ public class BubbleController implements ConfigurationChangeListener,
     private final DisplayController mDisplayController;
     private final TaskViewController mTaskViewController;
     private final Transitions mTransitions;
-    private final SyncTransactionQueue mSyncQueue;
     private final ShellController mShellController;
     private final ShellCommandHandler mShellCommandHandler;
     private final IWindowManager mWmService;
@@ -337,7 +335,6 @@ public class BubbleController implements ConfigurationChangeListener,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellBackgroundThread ShellExecutor bgExecutor,
-            TaskViewRepository taskViewRepository,
             @NonNull TaskViewTransitions taskViewTransitions,
             Transitions transitions,
             SyncTransactionQueue syncQueue,
@@ -377,18 +374,10 @@ public class BubbleController implements ConfigurationChangeListener,
                 context.getResources().getDimensionPixelSize(
                         com.android.internal.R.dimen.importance_ring_stroke_width));
         mDisplayController = displayController;
-        final TaskViewTransitions tvTransitions;
-        if (TaskViewTransitions.useRepo()) {
-            tvTransitions = new TaskViewTransitions(transitions, taskViewRepository, organizer,
-                    syncQueue);
-        } else {
-            tvTransitions = taskViewTransitions;
-        }
-        mTaskViewController = new BubbleTaskViewController(tvTransitions);
+        mTaskViewController = new BubbleTaskViewController(taskViewTransitions);
         mTransitions = transitions;
         mOneHandedOptional = oneHandedOptional;
         mDragAndDropController = dragAndDropController;
-        mSyncQueue = syncQueue;
         mWmService = wmService;
         mBubbleTransitions = bubbleTransitions;
         mBubbleTransitions.setBubbleController(this);
