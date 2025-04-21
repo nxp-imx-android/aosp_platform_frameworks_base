@@ -29,7 +29,6 @@ import static android.app.AppOpsManager.MODE_IGNORED;
 import static android.app.AppOpsManager.OP_BLUETOOTH_CONNECT;
 import static android.content.pm.ApplicationInfo.AUTO_REVOKE_DISALLOWED;
 import static android.content.pm.ApplicationInfo.AUTO_REVOKE_DISCOURAGED;
-import static android.permission.flags.Flags.serverSideAttributionRegistration;
 
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
@@ -452,16 +451,10 @@ public class PermissionManagerService extends IPermissionManager.Stub {
      */
     @Override
     public IBinder registerAttributionSource(@NonNull AttributionSourceState source) {
-        if (serverSideAttributionRegistration()) {
-            Binder token = new Binder();
-            mAttributionSourceRegistry
-                    .registerAttributionSource(new AttributionSource(source).withToken(token));
-            return token;
-        } else {
-            mAttributionSourceRegistry
-                    .registerAttributionSource(new AttributionSource(source));
-            return source.token;
-        }
+        Binder token = new Binder();
+        mAttributionSourceRegistry
+                .registerAttributionSource(new AttributionSource(source).withToken(token));
+        return token;
     }
 
     @Override
