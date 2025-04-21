@@ -289,7 +289,7 @@ private class HideTextIfDoesNotFitNode(
             val height = placeable.height
             val width = placeable.width
             layout(width + horizontalPadding.roundToPx(), height) {
-                placeable.place(startPadding.roundToPx(), 0)
+                placeable.placeRelative(x = startPadding.roundToPx(), y = 0)
             }
         } else {
             layout(0, 0) {}
