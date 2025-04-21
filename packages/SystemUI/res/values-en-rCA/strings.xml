@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Change language"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Keep current language"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Share Wi‑Fi"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"Add network"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Allow wireless debugging on this network?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Network Name (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi Address (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Always allow on this network"</string>
@@ -246,6 +247,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth device icon"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Click to configure device detail"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configure device detail"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"See all devices"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Pair new device"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Battery percentage unknown."</string>
@@ -744,6 +749,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrate"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s volume controls"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Calls and notifications will ring (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Guest device volume"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Enter output settings"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Volume sliders expanded"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Volume sliders collapsed"</string>
@@ -1583,7 +1589,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accessibility"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilities"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privacy"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Provided by apps"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"From system apps"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"From apps you installed"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Display"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Unknown"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reset all tiles?"</string>

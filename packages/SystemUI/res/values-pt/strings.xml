@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Alterar idioma"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Manter idioma atual"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Compartilhar Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Permitir a depuração por Wi-Fi nesta rede?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nome da rede (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nEndereço do Wi-Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Sempre permitir nesta rede"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ícone de dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Clique para configurar os detalhes do dispositivo"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configurar detalhes do dispositivo"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Ver todos os dispositivos"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Parear novo dispositivo"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Porcentagem da bateria desconhecida."</string>
@@ -618,7 +624,7 @@
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Configurações de notificação"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Histórico de notificações"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Novas"</string>
-    <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silenciosas"</string>
+    <string name="notification_section_header_gentle" msgid="6804099527336337197">"Notificações silenciosas"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notificações"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversas"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Apagar todas as notificações silenciosas"</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrar"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Controles de volume %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Chamadas e notificações farão o smartphone tocar (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Inserir configurações de saída"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Controles deslizantes de volume abertos"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Controles deslizantes de volume fechados"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Para conectar o teclado ao tablet, é preciso primeiro ativar o Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ativar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Ativada (reconhecimento facial)"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Usar o Organizador de Notificações"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Para <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Concluído"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desativar"</string>
@@ -1103,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Ativada quando há possibilidade de a bateria acabar"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Não"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Em uso"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> em uso."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" e "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Em uso por <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,13 +1524,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Adicionar atalho"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Excluir atalho"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navegue usando o teclado"</string>
-    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
-    <skip />
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Aprenda a usar atalhos do teclado"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navegue usando o touchpad"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Aprenda gestos do touchpad"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Navegue usando o teclado e o touchpad"</string>
-    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
-    <skip />
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"Aprenda a usar gestos no touchpad, atalhos do teclado e muito mais"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Voltar"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Ir para a página inicial"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Ver os apps recentes"</string>
@@ -1588,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Acessibilidade"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilitários"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privacidade"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Fornecidos por apps"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Exibição"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconhecidos"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Redefinir todos os blocos?"</string>

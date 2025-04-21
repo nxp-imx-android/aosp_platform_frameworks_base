@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Cambia lingua"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Mantieni lingua attuale"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Condividi Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Consentire il debug wireless su questa rete?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nome della rete (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nIndirizzo Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Consenti sempre su questa rete"</string>
@@ -113,9 +115,9 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Registra un\'app"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Registra questa schermata"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Registra %s"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Quando registri l\'intero schermo, tutto ciò che viene mostrato sullo schermo viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Quando registri l\'intera schermata, tutto ciò che viene mostrato sullo schermo viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Quando registri un\'app, tutto ciò che viene mostrato o riprodotto al suo interno viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
-    <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Registra lo schermo"</string>
+    <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Registra schermo"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Scegli l\'app da registrare"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"Registra audio"</string>
     <string name="screenrecord_device_audio_label" msgid="9016927171280567791">"Audio del dispositivo"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Icona del dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Fai clic per configurare i dettagli del dispositivo"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configura i dettagli del dispositivo"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Visualizza tutti i dispositivi"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Accoppia nuovo dispositivo"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Percentuale della batteria sconosciuta."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrazione"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Controlli del volume %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"La suoneria sarà attiva per chiamate e notifiche (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Inserisci impostazioni di uscita"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Cursori volume espansi"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Cursori volume compressi"</string>
@@ -1583,11 +1591,14 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accessibilità"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilità"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privacy"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Forniti dalle app"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Display"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Sconosciuti"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reimpostare tutti i riquadri?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tutti i riquadri Impostazioni rapide verranno reimpostati sulle impostazioni originali del dispositivo"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tutti i riquadri Impostazioni rapide torneranno ai valori originali del dispositivo"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> non mostrerà più gli aggiornamenti in tempo reale. Puoi modificare questa opzione in qualsiasi momento in Impostazioni."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Chiudi"</string>

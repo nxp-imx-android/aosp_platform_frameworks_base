@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ભાષા બદલો"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"વર્તમાન ભાષા રાખો"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"વાઇ-ફાઇ શેર કરો"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"આ નેટવર્ક પર વાયરલેસ ડિબગીંગની મંજૂરી આપીએ?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"નેટવર્કનું નામ (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nવાઇ-ફાઇ ઍડ્રેસ (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"આ નેટવર્ક પર હંમેશા મંજૂરી આપો"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"બ્લૂટૂથ ડિવાઇસનું આઇકન"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ડિવાઇસની વિગત ગોઠવવા માટે ક્લિક કરો"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ડિવાઇસની વિગત ગોઠવો"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"બધા ડિવાઇસ જુઓ"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"નવા ડિવાઇસ સાથે જોડાણ કરો"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"બૅટરીની ટકાવારી અજાણ છે."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"વાઇબ્રેટ"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s વૉલ્યૂમ નિયંત્રણો"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"કૉલ અને નોટિફિકેશનની રિંગ (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>) પર વાગશે"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"આઉટપુટના સેટિંગ દાખલ કરો"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"વૉલ્યૂમના સ્લાઇડર મોટા કરવામાં આવ્યા"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"વૉલ્યૂમના સ્લાઇડર નાના કરવામાં આવ્યા"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"તમારા ટેબ્લેટ સાથે કીબોર્ડ કનેક્ટ કરવા માટે, તમારે પહેલાં બ્લૂટૂથ ચાલુ કરવાની જરૂર પડશે."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ચાલુ કરો"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ચાલુ છે - ચહેરા આધારિત રોટેશન"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"નોટિફિકેશન ઑર્ગેનાઇઝરનો ઉપયોગ કરો"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> માટે"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
@@ -1013,12 +1019,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"ઓછી પ્રાધાન્યતાનું નોટિફિકેશન આઇકન બતાવો"</string>
     <string name="other" msgid="429768510980739978">"અન્ય"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ટાઇલના કદને ટૉગલ કરો"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ટાઇલ કાઢી નાખો"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"પ્લેસમેન્ટ મોડ ટૉગલ કરો"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"પસંદગી ટૉગલ કરો"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"છેલ્લા સ્થાનમાં ટાઇલ ઉમેરો"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ટાઇલ ખસેડો"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ઇચ્છિત સ્થાનમાં ટાઇલ ઉમેરો"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> પર ખસેડો"</string>
@@ -1105,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"જ્યારે બૅટરી સંભવિત રૂપે પૂરી થવામાં હોય ત્યારે બૅટરી સેવર ચાલુ કરો"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"ના, આભાર"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"ઉપયોગમાં છે"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> ઉપયોગમાં છે."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" અને "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> દ્વારા ઉપયોગ થઈ રહ્યો છે"</string>
@@ -1521,13 +1524,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"શૉર્ટકટ ઉમેરો"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"શૉર્ટકટ ડિલીટ કરો"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"તમારા કીબોર્ડ વડે નૅવિગેટ કરો"</string>
-    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
-    <skip />
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"કીબોર્ડ શૉર્ટકટનો ઉપયોગ કરવાનું શીખો"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"તમારા ટચપૅડ વડે નૅવિગેટ કરો"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"ટચપૅડના સંકેતો વિશે જાણો"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"તમારા કીબોર્ડ અને ટચપૅડ વડે નૅવિગેટ કરો"</string>
-    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
-    <skip />
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"ટચપૅડ સંકેતો, કીબોર્ડ શૉર્ટકટ વગેરેનો ઉપયોગ કરવાનું શીખો"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"પાછા જાઓ"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"હોમ પર જાઓ"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"તાજેતરની ઍપ જુઓ"</string>
@@ -1590,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"ઍક્સેસિબિલિટી"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"યુટિલિટી"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"પ્રાઇવસી"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"ઍપ દ્વારા પ્રદાન કરવામાં આવેલી"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ડિસ્પ્લે"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"અજાણ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"તમામ ટાઇલ રીસેટ કરીએ?"</string>

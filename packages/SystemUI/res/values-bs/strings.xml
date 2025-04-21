@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Promijeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Zadrži trenutni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Dijeli WiFi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Dozvoliti bežično otklanjanje grešaka na ovoj mreži?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAdresa WiFi mreže (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Uvijek dozvoli na ovoj mreži"</string>
@@ -125,7 +127,7 @@
     <string name="screenrecord_continue" msgid="4055347133700593164">"Pokreni"</string>
     <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"Snimanje ekrana"</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"Snimanje ekrana i zvuka"</string>
-    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Prikaži dodire na ekranu"</string>
+    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Prikaz dodira na ekranu"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Zaustavi"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"Dijeli"</string>
     <string name="screenrecord_save_title" msgid="1886652605520893850">"Snimak ekrana je sačuvan"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona Bluetooth uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite da konfigurirate detalje uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfiguracija detalja o uređaju"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Prikaz svih uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Uparivanje novog uređaja"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Postotak napunjenosti baterije nije poznat"</string>
@@ -398,7 +404,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Snimanje ekrana"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Započnite"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Zaustavite"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"Snimite problem"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"Zabilježi problem"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Pokreni"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Zaustavite"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Izvještaj o grešci"</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibriranje"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Kontrole glasnoće za %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Pozivi i obavještenja će zvoniti jačinom (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Unos postavki izlaza"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Klizači jačine zvuka su prošireni"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Klizači jačine zvuka su suženi"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Da povežete tastaturu sa tabletom, prvo morate uključiti Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na osnovu lica"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Koristi organizator obavještenja"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za aplikaciju <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
@@ -1013,10 +1019,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Prikaži ikone obavještenja niskog prioriteta"</string>
     <string name="other" msgid="429768510980739978">"Ostalo"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"uključivanje/isključivanje veličine kartice"</string>
-    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Ukloni pločicu"</string>
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Uklanjanje kartice"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktiviranje/deaktiviranje načina rada za postavljanje"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktiviranje/deaktiviranje odabira"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Dodaj pločicu na posljednji položaj"</string>
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Dodavanje kartice na posljednji položaj"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Pomjeranje kartice"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Dodavanje kartice na željeni položaj"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Pomjeranje u položaj <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1103,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Uključite ako je vjerovatno da će se baterija istrošiti"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Ne, hvala"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"U upotrebi"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> se koriste."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" i "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Koristi aplikacija <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1519,13 +1524,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Dodavanje prečice"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Brisanje prečice"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Krećite se pomoću tastature"</string>
-    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
-    <skip />
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Saznajte više o prečicama na tastaturi"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Krećite se pomoću dodirne podloge"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Saznajte više o pokretima na dodirnoj podlozi"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Krećite se pomoću tastature i dodirne podloge"</string>
-    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
-    <skip />
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"Saznajte više o pokretima na dodirnoj podlozi, prečicama na tastaturi i drugom"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Nazad"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Odlazak na početni ekran"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Prikaži nedavne aplikacije"</string>
@@ -1588,11 +1591,14 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Pristupačnost"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Uslužni programi"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privatnost"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Pružaju aplikacije"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Prikaz"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vratiti sve kartice na zadano?"</string>
-    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve kartice Brze postavke će se vratiti na originalne postavke uređaja"</string>
+    <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve kartice Brzih postavki će se vratiti na originalne postavke uređaja"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> više neće prikazivati novosti uživo. Ovo možete promijeniti bilo kada u Postavkama."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zatvaranje"</string>

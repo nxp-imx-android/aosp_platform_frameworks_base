@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ভাষা পরিবর্তন করুন"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"বর্তমান ভাষা রাখুন"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"ওয়াই-ফাই শেয়ার করুন"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"এই নেটওয়ার্কে ওয়্যারলেস ডিবাগিংয়ের অনুমতি দেবেন?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"নেটওয়ার্কের নাম (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nওয়াই-ফাই অ্যাড্রেস (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"এই নেটওয়ার্কে সবসময় অনুমতি দিন"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ব্লুটুথ ডিভাইসের আইকন"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ডিভাইসের বিবরণ কনফিগার করতে ক্লিক করুন"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>। ডিভাইসের বিবরণ কনফিগার করুন"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"সব ডিভাইস দেখুন"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"নতুন ডিভাইস পেয়ার করুন"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ব্যাটারি কত শতাংশ আছে তা জানা যায়নি।"</string>
@@ -355,7 +361,7 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"কোনো ডিভাইস উপলব্ধ নয়"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"কোনও ওয়াই-ফাই বা ইথারনেট কানেকশন উপলভ্য নেই"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"উজ্জ্বলতা"</string>
-    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"রঙ ইনভার্সন"</string>
+    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"কালার ইনভার্সন"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"রঙ সংশোধন"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ফন্ট সাইজ"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"ব্যবহারকারীদের ম্যানেজ করুন"</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"ভাইব্রেট করান"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s ভলিউম নিয়ন্ত্রণ"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"কল এবং বিজ্ঞপ্তির রিং হবে (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"আউটপুট সেটিংস লিখুন"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"ভলিউম স্লাইডার বড় করা হয়েছে"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"ভলিউম স্লাইডার আড়াল করা হয়েছে"</string>
@@ -1583,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"অ্যাক্সেসিবিলিটি"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"ইউটিলিটি"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"গোপনীয়তা"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"অ্যাপের তরফ থেকে দেওয়া"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ডিসপ্লে"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজানা"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"সব টাইল রিসেট করবেন?"</string>
