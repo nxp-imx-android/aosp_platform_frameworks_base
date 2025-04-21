@@ -60,6 +60,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
+import static android.view.WindowManagerGlobal.ADD_MULTIPLE_SINGLETON;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerPolicyConstants.ACTION_HDMI_PLUGGED;
 import static android.view.WindowManagerPolicyConstants.EXTRA_HDMI_PLUGGED_STATE;
@@ -1093,28 +1094,13 @@ public class DisplayPolicy {
                         ? android.Manifest.permission.CREATE_VIRTUAL_DEVICE
                         : android.Manifest.permission.STATUS_BAR_SERVICE;
 
-        switch (attrs.type) {
-            case TYPE_STATUS_BAR:
-                mContext.enforcePermission(systemUiPermission, callingPid, callingUid,
-                        "DisplayPolicy");
-                if (mStatusBar != null && mStatusBar.isAlive()) {
-                    return WindowManagerGlobal.ADD_MULTIPLE_SINGLETON;
-                }
-                break;
-            case TYPE_NOTIFICATION_SHADE:
-                mContext.enforcePermission(systemUiPermission, callingPid, callingUid,
-                        "DisplayPolicy");
-                if (mNotificationShade != null && mNotificationShade.isAlive()) {
-                    return WindowManagerGlobal.ADD_MULTIPLE_SINGLETON;
-                }
-                break;
-            case TYPE_NAVIGATION_BAR:
-                mContext.enforcePermission(systemUiPermission, callingPid, callingUid,
-                        "DisplayPolicy");
-                if (mNavigationBar != null && mNavigationBar.isAlive()) {
-                    return WindowManagerGlobal.ADD_MULTIPLE_SINGLETON;
-                }
-                break;
+        final int windowType = attrs.type;
+
+        if (assertDisplaySingletonPolicy(windowType, systemUiPermission, callingPid, callingUid)) {
+            return ADD_MULTIPLE_SINGLETON;
+        }
+
+        switch (windowType) {
             case TYPE_NAVIGATION_BAR_PANEL:
             case TYPE_STATUS_BAR_ADDITIONAL:
             case TYPE_STATUS_BAR_SUB_PANEL:
@@ -1134,6 +1120,54 @@ public class DisplayPolicy {
             }
         }
         return ADD_OKAY;
+    }
+
+    /**
+     * Returns {@code true} if the given {@code windowType} violates the display singleton policy,
+     * which means there has been an existing window with {@code windowType} attached to
+     * this display.
+     *
+     * @param windowType the window type to check
+     * @param callingPid the caller PID
+     * @param callingUid the caller UID
+     * @return {@code true} if there has been an existing window with {@code windowType} attached
+     * to this display
+     */
+    boolean assertDisplaySingletonPolicy(
+            @LayoutParams.WindowType int windowType,
+            @NonNull String systemUiPermission,
+            int callingPid,
+            int callingUid) {
+        if (!isSingletonPerDisplay(windowType)) {
+            return false;
+        }
+        mContext.enforcePermission(systemUiPermission, callingPid, callingUid,
+                "DisplayPolicy");
+
+        switch (windowType) {
+            case TYPE_STATUS_BAR:
+                if (mStatusBar != null && mStatusBar.isAlive()) {
+                    return true;
+                }
+                break;
+            case TYPE_NOTIFICATION_SHADE:
+                if (mNotificationShade != null && mNotificationShade.isAlive()) {
+                    return true;
+                }
+                break;
+            case TYPE_NAVIGATION_BAR:
+                if (mNavigationBar != null && mNavigationBar.isAlive()) {
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
+
+    private boolean isSingletonPerDisplay(@LayoutParams.WindowType int windowType) {
+        return windowType == TYPE_STATUS_BAR
+                || windowType == TYPE_NOTIFICATION_SHADE
+                || windowType == TYPE_NAVIGATION_BAR;
     }
 
     /**

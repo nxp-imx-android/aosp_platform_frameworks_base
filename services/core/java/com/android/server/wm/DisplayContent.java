@@ -5541,7 +5541,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 systemUiContext.getIApplicationThread());
         mWmService.mWindowContextListenerController.registerWindowContainerListener(
                 wpc, systemUiContext.getWindowContextToken(), this,
-                INVALID_WINDOW_TYPE, null /* options */);
+                INVALID_WINDOW_TYPE, true /* callerCanManageAppTokens */, null /* options */);
         if (Flags.trackSystemUiContextBeforeWms()) {
             systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
         }
@@ -6466,6 +6466,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mContentRecorder.stopRecording();
             }
         }, true /* isRemovingDisplay */);
+        mWmService.mWindowContextListenerController.dispatchDisplayRemoval(mDisplayId);
 
         releaseSelfIfNeeded();
         mDisplayPolicy.release();

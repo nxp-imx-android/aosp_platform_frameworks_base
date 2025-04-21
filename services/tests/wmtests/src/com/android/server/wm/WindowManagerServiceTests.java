@@ -519,7 +519,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.attachWindowContextToWindowToken(mAppThread, new Binder(), windowToken.token);
 
         verify(mWm.mWindowContextListenerController, never()).registerWindowContainerListener(
-                any(), any(), any(), anyInt(), any(), anyBoolean());
+                any(), any(), any(), anyInt(), anyBoolean(), any(), anyBoolean());
     }
 
     @Test
@@ -536,7 +536,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.attachWindowContextToWindowToken(mAppThread, clientToken, windowToken.token);
         final WindowProcessController wpc = mAtm.getProcessController(mAppThread);
         verify(mWm.mWindowContextListenerController).registerWindowContainerListener(wpc,
-                clientToken, windowToken, TYPE_INPUT_METHOD, windowToken.mOptions,
+                clientToken, windowToken, TYPE_INPUT_METHOD,
+                true /* callerCanManageAppTokens */, windowToken.mOptions,
                 false /* shouldDispatchConfigWhenRegistering */);
     }
 
@@ -567,7 +568,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 new InsetsSourceControl.Array(), new Rect(), new float[1]);
 
         verify(mWm.mWindowContextListenerController, never()).registerWindowContainerListener(any(),
-                any(), any(), anyInt(), any(), anyBoolean());
+                any(), any(), anyInt(), anyBoolean(), any(), anyBoolean());
 
         // Even if the given display id is INVALID_DISPLAY, the specified params.token should be
         // able to map the corresponding display.

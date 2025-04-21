@@ -98,8 +98,15 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         mOptions = options;
         mWindowManager = createWindowContextWindowManager(this);
         WindowTokenClient token = (WindowTokenClient) requireNonNull(getWindowContextToken());
-        mController = new WindowContextController(token);
         registerCleaner(this);
+        mController = new WindowContextController(requireNonNull(token));
+
+        if (!Flags.reparentToDefaultWithDisplayRemoval()
+                && shouldFallbackToDefaultDisplay(mOptions)) {
+            throw new UnsupportedOperationException(
+                    Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL + " is not enabled");
+        }
+
         Reference.reachabilityFence(this);
     }
 
@@ -245,6 +252,15 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
                 hardwareAccelerated,
                 false /* createLocalWindowManager */
         );
+    }
+
+    /**
+     * Checks if the WindowContext should be reparented to the default display when the currently
+     * attached display is removed.
+     */
+    public static boolean shouldFallbackToDefaultDisplay(@Nullable Bundle options) {
+        return options != null
+                && options.getBoolean(KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL, false);
     }
 
 /* === WindowProvider APIs === */

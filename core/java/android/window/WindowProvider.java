@@ -32,7 +32,22 @@ import android.view.WindowManager.LayoutParams.WindowType;
  */
 public interface WindowProvider {
     /** @hide */
-    String KEY_IS_WINDOW_PROVIDER_SERVICE = "android.windowContext.isWindowProviderService";
+    String KEY_IS_WINDOW_PROVIDER_SERVICE = "android.window.WindowProvider.isWindowProviderService";
+
+    /**
+     * The key to indicate whether the WindowContext should be reparented to the default display
+     * when the currently attached display is removed.
+     * <p>
+     * By default, the value is {@code false}, which means the WindowContext is removed with
+     * the display removal. If the value is {@code true}, the WindowContext will be reparented to
+     * the default display instead.
+     * <p>
+     * Type: Boolean
+     *
+     * @hide
+     */
+    String KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL =
+            "android.window.WindowProvider.reparentToDefaultDisplayWithDisplayRemoval";
 
     /** Gets the window type of this provider */
     @WindowType
