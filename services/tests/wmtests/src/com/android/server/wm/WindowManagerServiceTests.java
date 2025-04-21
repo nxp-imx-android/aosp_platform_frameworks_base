@@ -1148,7 +1148,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 argThat(h -> (h.inputConfig & InputConfig.SPY) == 0));
 
         assertThrows(IllegalArgumentException.class, () ->
-                mWm.updateInputChannel(inputChannel.getToken(), DEFAULT_DISPLAY, surfaceControl,
+                mWm.updateInputChannel(inputChannel.getToken(), null /* hostInputToken */,
+                        DEFAULT_DISPLAY, surfaceControl,
                         FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_SPY,
                         null /* region */));
     }
@@ -1171,7 +1172,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SPY) == 0));
 
-        mWm.updateInputChannel(inputChannel.getToken(), DEFAULT_DISPLAY, surfaceControl,
+        mWm.updateInputChannel(inputChannel.getToken(), null /* hostInputToken */,
+                DEFAULT_DISPLAY, surfaceControl,
                 FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_SPY,
                 null /* region */);
         verify(mTransaction).setInputWindowInfo(
@@ -1198,7 +1200,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SENSITIVE_FOR_PRIVACY) == 0));
 
-        mWm.updateInputChannel(inputChannel.getToken(), DEFAULT_DISPLAY, surfaceControl,
+        mWm.updateInputChannel(inputChannel.getToken(), null /* hostInputToken */,
+                DEFAULT_DISPLAY, surfaceControl,
                 FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
                 INPUT_FEATURE_SENSITIVE_FOR_PRIVACY,
                 null /* region */);
