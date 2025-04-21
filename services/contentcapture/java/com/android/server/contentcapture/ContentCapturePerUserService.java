@@ -605,21 +605,11 @@ final class ContentCapturePerUserService
     private void createSystemUIUnderlay(int sessionId, ActivityId activityId) {
         if (mMaster.debug) Slog.d(mTag, "createSystemUIUnderlay: " + sessionId);
         // TODO: b/403422950 migrate to aidl when available
-        Intent intent = new Intent(ACTION_CREATE_UNDERLAY);
-        intent.putExtra("dataSessionId", sessionId);
-        intent.putExtra("timestamp", System.currentTimeMillis());
-        intent.putExtra("activityId", activityId);
-        getContext().sendBroadcast(intent);
     }
 
     private void destroySystemUIUnderlay(int sessionId, ActivityId activityId) {
         if (mMaster.debug) Slog.d(mTag, "destroySystemUIUnderlay: " + sessionId);
         // TODO: b/403422950 migrate to aidl when available
-        Intent intent = new Intent(ACTION_DESTROY_UNDERLAY);
-        intent.putExtra("dataSessionId", sessionId);
-        intent.putExtra("timestamp", System.currentTimeMillis());
-        intent.putExtra("activityId", activityId);
-        getContext().sendBroadcast(intent);
     }
 
     @Override
