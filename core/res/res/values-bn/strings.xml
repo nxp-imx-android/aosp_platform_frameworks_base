@@ -1799,7 +1799,7 @@
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"হয়ে গেছে"</string>
     <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"শর্টকাট বন্ধ করুন"</string>
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"শর্টকাট ব্যবহার করুন"</string>
-    <string name="color_inversion_feature_name" msgid="2672824491933264951">"রঙ ইনভার্সন"</string>
+    <string name="color_inversion_feature_name" msgid="2672824491933264951">"কালার ইনভার্সন"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"রঙ সংশোধন করা"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"এক হাতে ব্যবহার করার মোড"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"অতিরিক্ত কম উজ্জ্বলতা"</string>

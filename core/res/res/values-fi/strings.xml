@@ -1175,7 +1175,7 @@
     <string name="years" msgid="5797714729103773425">"vuotta"</string>
     <string name="now_string_shortest" msgid="3684914126941650330">"nyt"</string>
     <string name="duration_minutes_shortest" msgid="5744379079540806690">"<xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> h"</string>
+    <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> t"</string>
     <string name="duration_days_shortest" msgid="4083124701676227233">"<xliff:g id="COUNT">%d</xliff:g> pv"</string>
     <string name="duration_years_shortest" msgid="483982719231145618">"<xliff:g id="COUNT">%d</xliff:g> v"</string>
     <string name="duration_minutes_shortest_future" msgid="5260857299282734759">"<xliff:g id="COUNT">%d</xliff:g> min:n päästä"</string>
@@ -1187,7 +1187,7 @@
     <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> pv sitten"</string>
     <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> v sitten"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> h"</string>
+    <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> t"</string>
     <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> pv"</string>
     <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> v"</string>
     <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> min päästä"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Sovellukset"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Sormenjälkiäsi ei voi enää tunnistaa. Ota sormenjälkiavaus uudelleen käyttöön."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-laite kytkettynä, kun lukitus on päällä"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB-laite on kytkettynä, kun Android on lukittu. Jos haluat käyttää laitetta, avaa ensin Androidin lukitus."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB-laite on kytkettynä, kun Android on lukittu. Jos haluat käyttää laitetta, avaa ensin Androidin lukitus ja kytke USB-laite uudelleen."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Latautumiskyky voi heikentyä tai lataaminen ei onnistu, kun laite on lukittu."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Epäilyttävää USB-toimintaa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasignaali on poistettu käytöstä."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Onko sormenjälkiavauksessa ongelmia?"</string>

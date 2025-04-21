@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Jou vingerafdrukke kan nie meer herken word nie. Stel Vingerafdrukslot weer op."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-toestel is ingeprop wanneer dit gesluit is"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB-toestel is ingeprop wanneer Android gesluit is. Ontsluit eers Android om toestel te gebruik."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB-toestel is ingeprop wanneer Android gesluit is. Om toestel te gebruik, moet jy eers Android ontsluit en dan weer die USB-toestel insit om dit te gebruik."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Laaivermoë kan verminder of onbeskikbaar wees wanneer dit gesluit is."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdagte USB-aktiwiteit"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasein is gedeaktiveer."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Sukkel jy met Vingerafdrukslot?"</string>

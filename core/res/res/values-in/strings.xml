@@ -307,7 +307,7 @@
     <string name="notification_channel_device_admin" msgid="6384932669406095506">"Notifikasi dari admin IT"</string>
     <string name="notification_channel_alerts" msgid="5070241039583668427">"Notifikasi"</string>
     <string name="notification_channel_retail_mode" msgid="3732239154256431213">"Demo promo"</string>
-    <string name="notification_channel_usb" msgid="1528280969406244896">"Sambungan USB"</string>
+    <string name="notification_channel_usb" msgid="1528280969406244896">"Koneksi USB"</string>
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"Aplikasi berjalan"</string>
     <string name="notification_channel_foreground_service" msgid="7102189948158885178">"Aplikasi yang menggunakan baterai"</string>
     <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"Pembesaran"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikasi"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Sidik jari Anda tidak dapat dikenali lagi. Siapkan Buka dengan Sidik Jari lagi."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Perangkat USB dicolokkan saat terkunci"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Perangkat USB dicolokkan saat Android terkunci. Untuk menggunakan perangkat, buka kunci Android terlebih dahulu."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Perangkat USB dicolokkan saat Android terkunci. Untuk menggunakan perangkat, buka kunci Android terlebih dahulu, lalu pasang kembali perangkat USB untuk menggunakannya."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Kemampuan pengisian daya mungkin berkurang atau tidak tersedia saat perangkat terkunci."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitas USB yang mencurigakan"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinyal data USB telah dinonaktifkan."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Mengalami masalah terkait fitur Buka dengan Sidik Jari?"</string>

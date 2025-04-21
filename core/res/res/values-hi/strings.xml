@@ -1175,7 +1175,7 @@
     <string name="years" msgid="5797714729103773425">"वर्ष"</string>
     <string name="now_string_shortest" msgid="3684914126941650330">"अभी"</string>
     <string name="duration_minutes_shortest" msgid="5744379079540806690">"<xliff:g id="COUNT">%d</xliff:g> मिनट"</string>
-    <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> घंटे"</string>
+    <string name="duration_hours_shortest" msgid="1477752094141971675">"<xliff:g id="COUNT">%d</xliff:g> घंटा"</string>
     <string name="duration_days_shortest" msgid="4083124701676227233">"<xliff:g id="COUNT">%d</xliff:g> दिन"</string>
     <string name="duration_years_shortest" msgid="483982719231145618">"<xliff:g id="COUNT">%d</xliff:g> साल"</string>
     <string name="duration_minutes_shortest_future" msgid="5260857299282734759">"<xliff:g id="COUNT">%d</xliff:g> मिनट में"</string>
@@ -1187,7 +1187,7 @@
     <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> दिन पहले"</string>
     <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> साल पहले"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> मिनट"</string>
-    <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> घंटे"</string>
+    <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> घंटा"</string>
     <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> दिन"</string>
     <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> साल"</string>
     <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> मिनट में"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ऐप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"अब आपके फ़िंगरप्रिंट की पहचान नहीं की जा सकती. फ़िंगरप्रिंट अनलॉक की सुविधा को दोबारा सेट अप करें."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"यूएसबी डिवाइस को, Android डिवाइस के लॉक होने के दौरान प्लग इन किया गया"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android लॉक होने पर, यूएसबी डिवाइस को प्लग-इन किया गया है. डिवाइस का इस्तेमाल करने के लिए, कृपया पहले Android डिवाइस को अनलॉक करें."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"यूएसबी डिवाइस को, Android डिवाइस के लॉक होने के दौरान प्लग इन किया गया है. यूएसबी डिवाइस का इस्तेमाल करने के लिए, कृपया पहले Android डिवाइस को अनलॉक करें. इसके बाद, यूएसबी को फिर से इंसर्ट करें."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"डिवाइस लॉक होने पर, चार्जिंग की क्षमता कम हो सकती है या यह सुविधा उपलब्ध नहीं हो सकती."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"यूएसबी से डेटा सिग्नल भेजने की प्रोसेस बंद कर दी गई है."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>

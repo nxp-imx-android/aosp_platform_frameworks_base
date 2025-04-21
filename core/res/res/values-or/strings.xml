@@ -307,7 +307,7 @@
     <string name="notification_channel_device_admin" msgid="6384932669406095506">"ଆପଣଙ୍କର ଆଇଟି ଆଡ୍‌ମିନ୍‌ଙ୍କ ଠାରୁ ଆଲର୍ଟ"</string>
     <string name="notification_channel_alerts" msgid="5070241039583668427">"ଆଲର୍ଟ"</string>
     <string name="notification_channel_retail_mode" msgid="3732239154256431213">"ରିଟେଲ୍‌ ଡେମୋ"</string>
-    <string name="notification_channel_usb" msgid="1528280969406244896">"USB ସଂଯୋଗ"</string>
+    <string name="notification_channel_usb" msgid="1528280969406244896">"USB କନେକ୍ସନ"</string>
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"ଆପ୍‍ ଚାଲୁଛି"</string>
     <string name="notification_channel_foreground_service" msgid="7102189948158885178">"ଆପ୍‍ଗୁଡ଼ିକ ବ୍ୟାଟେରୀ ଖର୍ଚ୍ଚ କରିଥା\'ନ୍ତି"</string>
     <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"ମେଗ୍ନିଫିକେସନ"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ଆପ୍ଲିକେସନ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ଆପଣଙ୍କ ଟିପଚିହ୍ନକୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ଲକ ଥିବା ସମୟରେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଛି"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android ଲକ ଥିବାବେଳେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଥାଏ। ଡିଭାଇସ ବ୍ୟବହାର କରିବାକୁ, ଦୟାକରି ପ୍ରଥମେ Androidକୁ ଅନଲକ କରନ୍ତୁ।"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android ଲକ ଥିବାବେଳେ USB ଡିଭାଇସ ପ୍ଲଗ ଇନ ହୋଇଥାଏ। ଡିଭାଇସ ବ୍ୟବହାର କରିବାକୁ, ଦୟାକରି ପ୍ରଥମେ Android ଅନଲକ କରନ୍ତୁ ଏବଂ ତାପରେ ଏହାକୁ ବ୍ୟବହାର କରିବାକୁ USB ଡିଭାଇସକୁ ପୁଣି ଇନସାର୍ଟ କରନ୍ତୁ।"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"ଲକ ଥିବାବେଳେ ଚାର୍ଜିଂ କ୍ଷମତା ହ୍ରାସ ପାଇପାରେ କିମ୍ବା ଉପଲବ୍ଧ ହୋଇନପାରେ।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ସନ୍ଦେହଜନକ USB କାର୍ଯ୍ୟକଳାପ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ଡାଟା ସିଗନାଲକୁ ଅକ୍ଷମ କରାଯାଇଛି।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଛନ୍ତି?"</string>

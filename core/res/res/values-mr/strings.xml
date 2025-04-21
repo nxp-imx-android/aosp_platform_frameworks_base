@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"अ‍ॅप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"तुमची फिंगरप्रिंट यापुढे ओळखता येणार नाहीत. फिंगरप्रिंट अनलॉक पुन्हा सेट करा."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे. डिव्हाइस वापरण्यासाठी, कृपया सर्वप्रथम Android अनलॉक करा."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android लॉक केलेले असताना USB डिव्हाइस प्लग इन केले आहे. डिव्हाइस वापरण्यासाठी, कृपया सर्वप्रथम Android अनलॉक करा आणि त्यानंतर USB डिव्हाइस वापरण्यासाठी ते पुन्हा घाला."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"लॉक केलेले असताना चार्जिंगची क्षमता कमी होऊ शकते किंवा उपलब्ध नसेल."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"संशयास्पद USB ॲक्टिव्हिटी"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB डेटा सिग्नल बंद करण्यात आला आहे."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिंट अनलॉक यासंबंधित समस्या येत आहे का?"</string>
