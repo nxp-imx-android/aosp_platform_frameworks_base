@@ -1114,6 +1114,8 @@ public final class BatteryService extends SystemService {
                 BatteryManager.EXTRA_CYCLE_COUNT, -1));
         builder.append(",chs="); builder.append(intent.getIntExtra(
                 BatteryManager.EXTRA_CHARGING_STATUS, -1));
+        builder.append(",cl="); builder.append(intent.getIntExtra(
+                BatteryManager.EXTRA_CAPACITY_LEVEL, -1));
 
         Trace.instant(Trace.TRACE_TAG_SYSTEM_SERVER, builder.toString());
     }
