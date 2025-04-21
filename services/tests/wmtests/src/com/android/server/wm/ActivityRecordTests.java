@@ -1869,11 +1869,8 @@ public class ActivityRecordTests extends WindowTestsBase {
             setup.accept(activity);
             clearInvocations(mClientLifecycleManager);
             activity.getTask().removeImmediately("test");
-            try {
-                verify(mClientLifecycleManager).scheduleTransactionItem(any(),
-                        isA(DestroyActivityItem.class));
-            } catch (RemoteException ignored) {
-            }
+            verify(mClientLifecycleManager).scheduleTransactionItem(any(),
+                    isA(DestroyActivityItem.class));
             assertNull(activity.app);
             assertEquals(DESTROYED, activity.getState());
             assertFalse(wpc.hasActivities());

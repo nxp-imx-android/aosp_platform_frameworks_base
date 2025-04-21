@@ -25,7 +25,6 @@ import android.app.servertransaction.RefreshCallbackItem;
 import android.app.servertransaction.ResumeActivityItem;
 import android.content.res.Configuration;
 import android.os.Handler;
-import android.os.RemoteException;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ArrayUtils;
@@ -88,13 +87,9 @@ class ActivityRefresher {
                 new RefreshCallbackItem(activity.token, cycleThroughStop ? ON_STOP : ON_PAUSE);
         final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
                 activity.token, /* isForward */ false, /* shouldSendCompatFakeFocus */ false);
-        boolean isSuccessful;
-        try {
-            isSuccessful = activity.mAtmService.getLifecycleManager().scheduleTransactionItems(
-                    activity.app.getThread(), refreshCallbackItem, resumeActivityItem);
-        } catch (RemoteException e) {
-            isSuccessful = false;
-        }
+        final boolean isSuccessful = activity.mAtmService.getLifecycleManager()
+                .scheduleTransactionItems(activity.app.getThread(), refreshCallbackItem,
+                        resumeActivityItem);
         if (isSuccessful) {
             mHandler.postDelayed(() -> {
                 synchronized (mWmService.mGlobalLock) {
