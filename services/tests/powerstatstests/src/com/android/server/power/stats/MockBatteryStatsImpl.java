@@ -269,6 +269,12 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         return this;
     }
 
+    public MockBatteryStatsImpl setConsumedEnergyRetriever(
+            PowerStatsCollector.ConsumedEnergyRetriever retriever) {
+        mConsumedEnergyRetriever = retriever;
+        return this;
+    }
+
     public int getAndClearExternalStatsSyncFlags() {
         final int flags = mExternalStatsSync.flags;
         mExternalStatsSync.flags = 0;
