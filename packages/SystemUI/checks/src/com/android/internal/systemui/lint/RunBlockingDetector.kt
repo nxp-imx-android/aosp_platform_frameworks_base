@@ -79,6 +79,10 @@ class RunBlockingDetector : Detector(), SourceCodeScanner {
                     Implementation(RunBlockingDetector::class.java, Scope.JAVA_FILE_SCOPE),
             )
 
-        val FORBIDDEN_IMPORTS = listOf("kotlinx.coroutines.runBlocking")
+        val FORBIDDEN_IMPORTS =
+            listOf(
+                "kotlinx.coroutines.runBlocking",
+                "com.android.app.tracing.coroutines.runBlockingTraced",
+            )
     }
 }
