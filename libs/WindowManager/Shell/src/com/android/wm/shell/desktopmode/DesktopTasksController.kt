@@ -3731,12 +3731,15 @@ class DesktopTasksController(
      *
      * @param taskInfo the task being dragged.
      * @param taskSurface SurfaceControl of dragged task.
+     * @param displayId displayId of the input event.
      * @param inputX x coordinate of input. Used for checks against left/right edge of screen.
+     * @param inputY y coordinate of input. Used for checks about cross display drag.
      * @param taskBounds bounds of dragged task. Used for checks against status bar height.
      */
     fun onDragPositioningMove(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl,
+        displayId: Int,
         inputX: Float,
         inputY: Float,
         taskBounds: Rect,
@@ -3747,6 +3750,7 @@ class DesktopTasksController(
             updateVisualIndicator(
                 taskInfo,
                 taskSurface,
+                displayId,
                 inputX,
                 taskBounds.top.toFloat(),
                 DragStartState.FROM_FREEFORM,
@@ -3757,7 +3761,7 @@ class DesktopTasksController(
         val indicator =
             getOrCreateVisualIndicator(taskInfo, taskSurface, DragStartState.FROM_FREEFORM)
         val indicatorType =
-            indicator.calculateIndicatorType(PointF(inputX, taskBounds.top.toFloat()))
+            indicator.calculateIndicatorType(displayId, PointF(inputX, taskBounds.top.toFloat()))
         visualIndicatorUpdateScheduler.schedule(
             taskInfo.displayId,
             indicatorType,
@@ -3771,12 +3775,13 @@ class DesktopTasksController(
     fun updateVisualIndicator(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl?,
+        displayId: Int,
         inputX: Float,
         taskTop: Float,
         dragStartState: DragStartState,
     ): IndicatorType {
         return getOrCreateVisualIndicator(taskInfo, taskSurface, dragStartState)
-            .updateIndicatorType(PointF(inputX, taskTop))
+            .updateIndicatorType(displayId, PointF(inputX, taskTop))
     }
 
     @VisibleForTesting
@@ -3821,6 +3826,7 @@ class DesktopTasksController(
      *
      * @param taskInfo the task being dragged.
      * @param taskSurface the leash of the task being dragged.
+     * @param displayId the displayId of the input event.
      * @param inputCoordinate the coordinates of the motion event
      * @param currentDragBounds the current bounds of where the visible task is (might be actual
      *   task bounds or just task leash)
@@ -3830,6 +3836,7 @@ class DesktopTasksController(
     fun onDragPositioningEnd(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl,
+        displayId: Int,
         inputCoordinate: PointF,
         currentDragBounds: Rect,
         validDragArea: Rect,
@@ -3843,7 +3850,8 @@ class DesktopTasksController(
         val indicator = getVisualIndicator() ?: return
         val indicatorType =
             indicator.updateIndicatorType(
-                PointF(inputCoordinate.x, currentDragBounds.top.toFloat())
+                displayId,
+                PointF(inputCoordinate.x, currentDragBounds.top.toFloat()),
             )
         when (indicatorType) {
             IndicatorType.TO_FULLSCREEN_INDICATOR -> {
@@ -3973,11 +3981,13 @@ class DesktopTasksController(
     /**
      * Perform checks required when drag ends under status bar area.
      *
+     * @param displayId the displayId of the input event.
      * @param taskInfo the task being dragged.
      * @param y height of drag, to be checked against status bar height.
      * @return the [IndicatorType] used for the resulting transition
      */
     fun onDragPositioningEndThroughStatusBar(
+        displayId: Int,
         inputCoordinates: PointF,
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl,
@@ -3985,7 +3995,7 @@ class DesktopTasksController(
         // End the drag_hold CUJ interaction.
         interactionJankMonitor.end(CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD)
         val indicator = getVisualIndicator() ?: return IndicatorType.NO_INDICATOR
-        val indicatorType = indicator.updateIndicatorType(inputCoordinates)
+        val indicatorType = indicator.updateIndicatorType(displayId, inputCoordinates)
         when (indicatorType) {
             IndicatorType.TO_DESKTOP_INDICATOR -> {
                 latencyTracker.onActionStart(
@@ -4097,6 +4107,7 @@ class DesktopTasksController(
             updateVisualIndicator(
                 taskInfo,
                 dragEvent.dragSurface,
+                dragEvent.displayId,
                 dragEvent.x,
                 dragEvent.y,
                 DragStartState.DRAGGED_INTENT,

@@ -1362,6 +1362,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
                             decoration.mTaskSurface,
+                            e.getDisplayId(),
                             e.getRawX(dragPointerIdx),
                             e.getRawY(dragPointerIdx),
                             newTaskBounds);
@@ -1391,6 +1392,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     // or transforming to fullscreen) before setting new task bounds.
                     mDesktopTasksController.onDragPositioningEnd(
                             taskInfo, decoration.mTaskSurface,
+                            e.getDisplayId(),
                             new PointF(e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
                             newTaskBounds, decoration.calculateValidDragArea(),
                             new Rect(mOnDragStartInitialBounds), e);
@@ -1628,8 +1630,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                     .getDragStartState(relevantDecor.mTaskInfo);
                     if (dragStartState == null) return;
                     mDesktopTasksController.updateVisualIndicator(relevantDecor.mTaskInfo,
-                            relevantDecor.mTaskSurface, ev.getRawX(), ev.getRawY(),
-                            dragStartState);
+                            relevantDecor.mTaskSurface, ev.getDisplayId(), ev.getRawX(),
+                            ev.getRawY(), dragStartState);
                     mTransitionDragActive = false;
                     if (mMoveToDesktopAnimator != null) {
                         // Though this isn't a hover event, we need to update handle's hover state
@@ -1674,8 +1676,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     if (dragStartState == null) return;
                     final DesktopModeVisualIndicator.IndicatorType indicatorType =
                             mDesktopTasksController.updateVisualIndicator(
-                                    relevantDecor.mTaskInfo,
-                                    relevantDecor.mTaskSurface, ev.getRawX(), ev.getRawY(),
+                                    relevantDecor.mTaskInfo, relevantDecor.mTaskSurface,
+                                    ev.getDisplayId(), ev.getRawX(), ev.getRawY(),
                                     dragStartState);
                     if (indicatorType != TO_FULLSCREEN_INDICATOR
                             || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
@@ -1708,6 +1710,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private void endDragToDesktop(MotionEvent ev, DesktopModeWindowDecoration relevantDecor) {
         DesktopModeVisualIndicator.IndicatorType resultType =
                 mDesktopTasksController.onDragPositioningEndThroughStatusBar(
+                        ev.getDisplayId(),
                         new PointF(ev.getRawX(), ev.getRawY()),
                         relevantDecor.mTaskInfo,
                         relevantDecor.mTaskSurface);
