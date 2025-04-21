@@ -20,6 +20,7 @@ import android.app.supervision.SupervisionRecoveryInfo;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.os.PersistableBundle;
 import android.util.Log;
 
 import java.io.File;
@@ -38,13 +39,13 @@ import java.io.File;
 public class SupervisionRecoveryInfoStorage {
     private static final String LOG_TAG = "RecoveryInfoStorage";
     private static final String PREF_NAME = "supervision_recovery_info";
-    private static final String KEY_EMAIL = "email";
-    private static final String KEY_ID = "id";
+    private static final String KEY_ACCOUNT_TYPE = "account_type";
+    private static final String KEY_ACCOUNT_NAME = "account_name";
+    private static final String KEY_ACCOUNT_DATA = "account_data";
+    private static final String KEY_STATE = "state";
 
     private final SharedPreferences mSharedPreferences;
-
     private static SupervisionRecoveryInfoStorage sInstance;
-
     private static final Object sLock = new Object();
 
     private SupervisionRecoveryInfoStorage(Context context) {
@@ -75,14 +76,22 @@ public class SupervisionRecoveryInfoStorage {
      */
     public SupervisionRecoveryInfo loadRecoveryInfo() {
         synchronized (sLock) {
-            String email = mSharedPreferences.getString(KEY_EMAIL, null);
-            String id = mSharedPreferences.getString(KEY_ID, null);
+            String accountType = mSharedPreferences.getString(KEY_ACCOUNT_TYPE, null);
+            String accountName = mSharedPreferences.getString(KEY_ACCOUNT_NAME, null);
+            String accountDataString = mSharedPreferences.getString(KEY_ACCOUNT_DATA, null);
+            int state = mSharedPreferences.getInt(KEY_STATE, SupervisionRecoveryInfo.STATE_PENDING);
 
-            if (email != null || id != null) {
-                SupervisionRecoveryInfo info = new SupervisionRecoveryInfo();
-                info.email = email;
-                info.id = id;
-                return info;
+            if (accountType != null && accountName != null) {
+                PersistableBundle accountData = null;
+                if (accountDataString != null) {
+                    try {
+                        accountData = PersistableBundleUtils.fromString(accountDataString);
+                    } catch (Exception e) {
+                        Log.e(LOG_TAG, "Failed to load account data from SharedPreferences", e);
+                        // If failed to load accountData, just return other info.
+                    }
+                }
+                return new SupervisionRecoveryInfo(accountName, accountType, state, accountData);
             }
         }
         return null;
@@ -99,16 +108,58 @@ public class SupervisionRecoveryInfoStorage {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
 
             if (recoveryInfo == null) {
-                editor.remove(KEY_EMAIL);
-                editor.remove(KEY_ID);
+                editor.remove(KEY_ACCOUNT_TYPE);
+                editor.remove(KEY_ACCOUNT_NAME);
+                editor.remove(KEY_ACCOUNT_DATA);
+                editor.remove(KEY_STATE);
             } else {
-                editor.putString(KEY_EMAIL, recoveryInfo.email);
-                editor.putString(KEY_ID, recoveryInfo.id);
+                editor.putString(KEY_ACCOUNT_TYPE, recoveryInfo.getAccountType());
+                editor.putString(KEY_ACCOUNT_NAME, recoveryInfo.getAccountName());
+                PersistableBundle accountData = recoveryInfo.getAccountData();
+                String accountDataString =
+                        accountData != null ? PersistableBundleUtils.toString(accountData) : null;
+                editor.putString(KEY_ACCOUNT_DATA, accountDataString);
+                editor.putInt(KEY_STATE, recoveryInfo.getState());
             }
             editor.apply();
             if (!editor.commit()) {
                 Log.e(LOG_TAG, "Failed to save recovery info to SharedPreferences");
             }
+        }
+    }
+
+    private static class PersistableBundleUtils {
+        private static final String SEPARATOR = ";";
+        private static final String KEY_VALUE_SEPARATOR = ":";
+
+        public static String toString(PersistableBundle bundle) {
+            if (bundle == null) {
+                return null;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String key : bundle.keySet()) {
+                String value = String.valueOf(bundle.get(key));
+                sb.append(key).append(KEY_VALUE_SEPARATOR).append(value).append(SEPARATOR);
+            }
+            return sb.toString();
+        }
+
+        public static PersistableBundle fromString(String str) {
+            if (str == null || str.isEmpty()) {
+                return null;
+            }
+            PersistableBundle bundle = new PersistableBundle();
+            String[] pairs = str.split(SEPARATOR);
+            for (String pair : pairs) {
+                if (pair.isEmpty()) {
+                    continue;
+                }
+                String[] keyValue = pair.split(KEY_VALUE_SEPARATOR);
+                if (keyValue.length == 2) {
+                    bundle.putString(keyValue[0], keyValue[1]);
+                }
+            }
+            return bundle;
         }
     }
 }

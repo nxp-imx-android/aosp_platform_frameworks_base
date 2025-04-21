@@ -18,14 +18,6 @@ package android.app.supervision;
 
 /**
  * A parcelable of the supervision recovery information. This stores information for recovery
- * purposes.
- *
- * <p>Email: The email for recovery. ID: The account id for recovery.
- *
- * @hide
+ * purposes for device supervision pin.
  */
-@JavaDerive(equals = true, toString = true)
-parcelable SupervisionRecoveryInfo {
-    @nullable String email;
-    @nullable String id;
-}
+parcelable SupervisionRecoveryInfo;
