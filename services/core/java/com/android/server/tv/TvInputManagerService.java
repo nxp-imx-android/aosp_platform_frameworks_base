@@ -3085,7 +3085,7 @@ public final class TvInputManagerService extends SystemService {
         }
 
         private void ensureTunerResourceAccessPermission() {
-            if (mContext.checkCallingPermission(
+            if (mContext.checkCallingOrSelfPermission(
                     android.Manifest.permission.TUNER_RESOURCE_ACCESS)
                     != PackageManager.PERMISSION_GRANTED) {
                 throw new SecurityException("Requires TUNER_RESOURCE_ACCESS permission");
