@@ -34,6 +34,7 @@ import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP;
+import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -102,6 +103,36 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     private static final String DEFAULT_PACKAGE_NAME = "my.application.package";
     private static final int DEFAULT_USER_ID = 100;
 
+    private static class TestDisplayWindowListenerBase extends IDisplayWindowListener.Stub {
+        @Override
+        public void onDisplayAdded(int displayId) {}
+
+        @Override
+        public void onDisplayConfigurationChanged(int displayId, Configuration newConfig) {}
+
+        @Override
+        public void onDisplayRemoved(int displayId) {}
+
+        @Override
+        public void onFixedRotationStarted(int displayId, int newRotation) {}
+
+        @Override
+        public void onFixedRotationFinished(int displayId) {}
+
+        @Override
+        public void onKeepClearAreasChanged(int displayId, List<Rect> restricted,
+                List<Rect> unrestricted) {}
+
+        @Override
+        public void onDesktopModeEligibleChanged(int displayId) {}
+
+        @Override
+        public void onDisplayAddSystemDecorations(int displayId) {}
+
+        @Override
+        public void onDisplayRemoveSystemDecorations(int displayId) {}
+    }
+
     @Before
     public void setUp() throws Exception {
         setBooted(mAtm);
@@ -167,14 +198,12 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         verify(mClientLifecycleManager, never()).scheduleTransactionItem(any(), any());
     }
 
-    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     @Test
     public void testDisplayWindowListener() {
         final ArrayList<Integer> added = new ArrayList<>();
         final ArrayList<Integer> changed = new ArrayList<>();
         final ArrayList<Integer> removed = new ArrayList<>();
-        final ArrayList<Integer> desktopModeEligibleChanged = new ArrayList<>();
-        IDisplayWindowListener listener = new IDisplayWindowListener.Stub() {
+        IDisplayWindowListener listener = new TestDisplayWindowListenerBase() {
             @Override
             public void onDisplayAdded(int displayId) {
                 added.add(displayId);
@@ -188,21 +217,6 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
             @Override
             public void onDisplayRemoved(int displayId) {
                 removed.add(displayId);
-            }
-
-            @Override
-            public void onFixedRotationStarted(int displayId, int newRotation) {}
-
-            @Override
-            public void onFixedRotationFinished(int displayId) {}
-
-            @Override
-            public void onKeepClearAreasChanged(int displayId, List<Rect> restricted,
-                    List<Rect> unrestricted) {}
-
-            @Override
-            public void onDesktopModeEligibleChanged(int displayId) {
-                desktopModeEligibleChanged.add(displayId);
             }
         };
         int[] displayIds = mAtm.mWindowManager.registerDisplayWindowListener(listener);
@@ -229,6 +243,26 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         assertEquals(0, removed.size());
         changed.clear();
 
+        // Check that removal is reported
+        newDisp1.remove();
+        assertEquals(0, added.size());
+        assertEquals(0, changed.size());
+        assertEquals(1, removed.size());
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testDisplayWindowListener_desktopModeEligibleChanged() {
+        final ArrayList<Integer> desktopModeEligibleChanged = new ArrayList<>();
+        IDisplayWindowListener listener = new TestDisplayWindowListenerBase() {
+            @Override
+            public void onDesktopModeEligibleChanged(int displayId) {
+                desktopModeEligibleChanged.add(displayId);
+            }
+        };
+        mAtm.mWindowManager.registerDisplayWindowListener(listener);
+        DisplayContent newDisp1 = new TestDisplayContent.Builder(mAtm, 600, 800).build();
+
         // Check adding decoration
         doReturn(true).when(newDisp1).allowContentModeSwitch();
         doReturn(true).when(newDisp1).isSystemDecorationsSupported();
@@ -242,13 +276,40 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         assertEquals(1, desktopModeEligibleChanged.size());
         assertEquals(newDisp1.mDisplayId, (int) desktopModeEligibleChanged.get(0));
         desktopModeEligibleChanged.clear();
+    }
 
-        // Check that removal is reported
-        changed.clear();
-        newDisp1.remove();
-        assertEquals(0, added.size());
-        assertEquals(0, changed.size());
-        assertEquals(1, removed.size());
+    @EnableFlags(FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    @Test
+    public void testDisplayWindowListener_systemDecorations() {
+        final ArrayList<Integer> displayAddSystemDecorations = new ArrayList<>();
+        final ArrayList<Integer> displayRemoveSystemDecorations = new ArrayList<>();
+        IDisplayWindowListener listener = new TestDisplayWindowListenerBase() {
+            @Override
+            public void onDisplayAddSystemDecorations(int displayId) {
+                displayAddSystemDecorations.add(displayId);
+            }
+
+            @Override
+            public void onDisplayRemoveSystemDecorations(int displayId) {
+                displayRemoveSystemDecorations.add(displayId);
+            }
+        };
+        mAtm.mWindowManager.registerDisplayWindowListener(listener);
+        DisplayContent newDisp1 = new TestDisplayContent.Builder(mAtm, 600, 800).build();
+
+        // Check adding decoration
+        doReturn(true).when(newDisp1).isSystemDecorationsSupported();
+        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, true);
+        assertEquals(1, displayAddSystemDecorations.size());
+        assertEquals(newDisp1.mDisplayId, (int) displayAddSystemDecorations.get(0));
+        displayAddSystemDecorations.clear();
+
+        // Check removing decoration
+        doReturn(false).when(newDisp1).isSystemDecorationsSupported();
+        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, false);
+        assertEquals(1, displayRemoveSystemDecorations.size());
+        assertEquals(newDisp1.mDisplayId, (int) displayRemoveSystemDecorations.get(0));
+        displayRemoveSystemDecorations.clear();
     }
 
     @Test

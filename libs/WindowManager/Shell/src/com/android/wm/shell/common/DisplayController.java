@@ -453,6 +453,12 @@ public class DisplayController {
                 DisplayController.this.onDesktopModeEligibleChanged(displayId);
             });
         }
+
+        @Override
+        public void onDisplayAddSystemDecorations(int displayId) { }
+
+        @Override
+        public void onDisplayRemoveSystemDecorations(int displayId) { }
     }
 
     /**
