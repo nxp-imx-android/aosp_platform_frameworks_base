@@ -48,6 +48,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
 import com.android.wm.shell.apptoweb.AssistContentRequester
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayChangeController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -166,6 +167,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
     private val packageManager = mock<PackageManager>()
+    protected val mockBubbleController = mock<BubbleController>()
     protected val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
@@ -208,9 +210,12 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDesktopUserRepositories.getProfile(anyInt()))
             .thenReturn(mockDesktopRepository)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
-        appHandleAndHeaderVisibilityHelper =
-            AppHandleAndHeaderVisibilityHelper(mockDisplayController,
-                desktopModeCompatPolicy, desktopState)
+        appHandleAndHeaderVisibilityHelper = AppHandleAndHeaderVisibilityHelper(
+            displayController = mockDisplayController,
+            desktopModeCompatPolicy = desktopModeCompatPolicy,
+            desktopState = desktopState,
+            bubbleController = Optional.of(mockBubbleController),
+        )
         desktopModeWindowDecorViewModel = DesktopModeWindowDecorViewModel(
             spyContext,
             testShellExecutor,

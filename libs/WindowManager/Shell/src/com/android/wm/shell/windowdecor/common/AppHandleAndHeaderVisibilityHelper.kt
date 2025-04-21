@@ -21,12 +21,14 @@ import android.app.WindowConfiguration
 import android.view.Display
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
+import java.util.Optional
 
 /**
  * Resolves whether, given a task and its associated display that it is currently on, to show the
@@ -36,6 +38,7 @@ class AppHandleAndHeaderVisibilityHelper (
     private val displayController: DisplayController,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val desktopState: DesktopState,
+    private val bubbleController: Optional<BubbleController>,
 ) {
     var splitScreenController: SplitScreenController? = null
 
@@ -90,11 +93,22 @@ class AppHandleAndHeaderVisibilityHelper (
                 return false
             }
         }
+
+        // Bubble tasks reset alwaysOnTop when reordering a task to the bottom to hide its task view
+        // in TaskViewTransitions#setTaskViewVisible, so we need to explicitly check here.
+        fun ActivityManager.RunningTaskInfo.isBubble(): Boolean =
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                bubbleController.map { it.hasStableBubbleForTask(taskId) }.orElse(false)
+            } else {
+                false
+            }
+
         return desktopState.canEnterDesktopModeOrShowAppHandle
                 && !isWallpaperTask(taskInfo)
                 && taskInfo.windowingMode != WindowConfiguration.WINDOWING_MODE_PINNED
                 && taskInfo.activityType == WindowConfiguration.ACTIVITY_TYPE_STANDARD
                 && !taskInfo.configuration.windowConfiguration.isAlwaysOnTop
+                && !taskInfo.isBubble()
     }
 
     private fun allowedForDisplay(display: Display): Boolean {

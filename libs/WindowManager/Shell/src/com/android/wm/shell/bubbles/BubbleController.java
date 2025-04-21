@@ -1374,6 +1374,12 @@ public class BubbleController implements ConfigurationChangeListener,
         return mBubbleData.hasBubbles() || mBubbleData.isShowingOverflow();
     }
 
+    /** Returns whether the given task is a non-transient bubble. */
+    public boolean hasStableBubbleForTask(int taskId) {
+        final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskId);
+        return bubble != null && bubble.getPreparingTransition() == null;
+    }
+
     public boolean isStackExpanded() {
         return mBubbleData.isExpanded();
     }
