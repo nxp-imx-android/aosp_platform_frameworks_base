@@ -222,6 +222,13 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     repositionTaskBounds.left.toFloat(),
                     repositionTaskBounds.top.toFloat(),
                 )
+                // Make the window translucent in the case when the cursor moves to another display.
+                val alpha = if (startDisplayId == displayId) {
+                    ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR
+                } else {
+                    ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY
+                }
+                t.setAlpha(desktopWindowDecoration.leash, alpha)
             }
             t.setFrameTimeline(Choreographer.getInstance().vsyncId)
             t.apply()
@@ -390,5 +397,8 @@ class MultiDisplayVeiledResizeTaskPositioner(
         // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
         // timing out in the middle of a resize or drag action.
         private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(/* duration= */ 10L)
+
+        private val ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR = 1.0f
+        private val ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY = 0.8f
     }
 }
