@@ -13225,8 +13225,10 @@ public class AudioService extends IAudioService.Stub
                 String action = intent.getAction();
                 String pkgName = intent.getData().getEncodedSchemeSpecificPart();
                 int uid = intent.getIntExtra(Intent.EXTRA_UID, Process.INVALID_UID);
-                if (intent.getBooleanExtra(EXTRA_REPLACING, false) ||
-                        intent.getBooleanExtra(EXTRA_ARCHIVAL, false)) return;
+                Slog.d(TAG, "received " + action + " replacing: " +
+                    intent.getBooleanExtra(EXTRA_REPLACING, false) + " archival: " +
+                    intent.getBooleanExtra(EXTRA_ARCHIVAL, false) + " for package " +
+                    pkgName + " with uid " + uid);
                 if (ACTION_PACKAGE_ADDED.equals(action)) {
                     audioserverExecutor.execute(() ->
                             provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
