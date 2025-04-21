@@ -74,7 +74,7 @@ class AppCompatController {
         mSizeCompatModePolicy = new AppCompatSizeCompatModePolicy(activityRecord,
                 mAppCompatOverrides);
         mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
-        mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy();
+        mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy(activityRecord);
     }
 
     @NonNull

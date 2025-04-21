@@ -1721,7 +1721,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.getLetterboxPolicy().onMovedToDisplay(mDisplayContent.getDisplayId());
-        mAppCompatController.getDisplayCompatModePolicy().onMovedToDisplay();
+        mAppCompatController.getDisplayCompatModePolicy().onMovedToDisplay(prevDc, dc);
     }
 
     void layoutLetterboxIfNeeded(WindowState winHint) {
@@ -8589,6 +8589,10 @@ final class ActivityRecord extends WindowToken {
                 && !hasDeskResources()) {
             configChanged |= CONFIG_UI_MODE;
         }
+
+        // Some apps relaunch unexpectedly with display move and crash.
+        configChanged |= mAppCompatController.getDisplayCompatModePolicy()
+                .getDisplayCompatModeConfigMask();
 
         return (changes & (~configChanged)) != 0;
     }

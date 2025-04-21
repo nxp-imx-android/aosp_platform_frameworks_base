@@ -16,24 +16,108 @@
 
 package com.android.server.wm;
 
+import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
+import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
+import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.view.Display.TYPE_INTERNAL;
+
+import android.annotation.NonNull;
+import android.content.pm.ApplicationInfo;
+
 import com.android.window.flags.Flags;
 
 /**
  * Encapsulate app-compat logic for multi-display environments.
+ *
+ * <p>The primary feature is "display compat mode", which suppresses automatic activity restart
+ * caused by display-specific config changes to prevent unexpected crashes.
+ * The current conditions of an app being in display compat mode are:
+ * <ul>
+ *     <li>The app is a game.
+ *     <li>The app doesn't support all of {@link DISPLAY_COMPAT_MODE_CONFIG_MASK}.
+ *     <li>The app has moved to a different display but not restarted yet.
+ * </ul>
+ *
+ * <p>Display compat mode comes with restart handle menu, with which the app process gets recreated,
+ * and all the config changes get reloaded by the app, at the timing the user wants to do so with
+ * the risk of losing the current state of the app.
  */
 class AppCompatDisplayCompatModePolicy {
 
-    private boolean mIsRestartMenuEnabledForDisplayMove;
+    private static final int DISPLAY_COMPAT_MODE_CONFIG_MASK =
+            CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE;
 
+    @NonNull
+    private final ActivityRecord mActivityRecord;
+
+    private boolean mDisplayChangedWithoutRestart;
+
+    AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
+        mActivityRecord = activityRecord;
+    }
+
+    /**
+     * Returns whether the restart menu is enabled for display move. Currently it only gets shown
+     * when an app is in display compat mode.
+     *
+     * @return {@code true} if the restart menu should be enabled for display move.
+     */
     boolean isRestartMenuEnabledForDisplayMove() {
-        return Flags.enableRestartMenuForConnectedDisplays() && mIsRestartMenuEnabledForDisplayMove;
+        // Restart menu is only available to apps in display compat mode.
+        return Flags.enableRestartMenuForConnectedDisplays() && mDisplayChangedWithoutRestart
+                && getDisplayCompatModeConfigMask() != 0;
     }
 
-    void onMovedToDisplay() {
-        mIsRestartMenuEnabledForDisplayMove = true;
+    /**
+     * Called when the activity is moved to a different display.
+     *
+     * @param previousDisplay The display the app was on before this display transition.
+     * @param newDisplay The new display the app got moved onto.
+     */
+    void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
+            @NonNull DisplayContent newDisplay) {
+        if (previousDisplay.getDisplayInfo().type == TYPE_INTERNAL
+                && newDisplay.getDisplayInfo().type == TYPE_INTERNAL) {
+            // A transition between internal displays (fold<->unfold on foldable) is not considered
+            // display move here for now because they generally have many configurations in common,
+            // thus are less likely to cause compat issues.
+            return;
+        }
+        mDisplayChangedWithoutRestart = true;
     }
 
+    /**
+     * Called when the activity's process is restarted.
+     */
     void onProcessRestarted() {
-        mIsRestartMenuEnabledForDisplayMove = false;
+        mDisplayChangedWithoutRestart = false;
+    }
+
+    /**
+     * Returns the mask of the config changes that should not trigger activity restart with display
+     * move for app-compat reasons.
+     *
+     * @return the mask of the config changes that should not trigger activity restart or 0 if
+     * display compat mode is not enabled for the activity.
+     */
+    int getDisplayCompatModeConfigMask() {
+        if (!Flags.enableDisplayCompatMode()) return 0;
+
+        if (mActivityRecord.info.applicationInfo.category != ApplicationInfo.CATEGORY_GAME) {
+            // A large majority of apps that crash with display move are games. Apply this compat
+            // treatment only to games to minimize risk.
+            return 0;
+        }
+
+        if (!mDisplayChangedWithoutRestart) {
+            // Enable display compat mode when display move is involved.
+            return 0;
+        }
+
+        // If a specific config change is supported by the activity, it's exempted from this compat
+        // treatment. This way, apps can opt out from display compat mode by handling all the config
+        // changes that happen with display move by themselves.
+        final int supportedConfigChanged = mActivityRecord.info.getRealConfigChanged();
+        return DISPLAY_COMPAT_MODE_CONFIG_MASK & (~supportedConfigChanged);
     }
 }
