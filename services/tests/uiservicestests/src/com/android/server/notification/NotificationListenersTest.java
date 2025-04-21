@@ -16,6 +16,7 @@
 package com.android.server.notification;
 
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
+import static android.content.Context.BIND_ALLOW_FREEZE;
 import static android.content.Context.BIND_SIMULATE_ALLOW_FREEZE;
 import static android.content.pm.PackageManager.MATCH_ANY_USER;
 import static android.permission.PermissionManager.PERMISSION_GRANTED;
@@ -26,6 +27,7 @@ import static android.service.notification.NotificationListenerService.FLAG_FILT
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_SILENT;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_ADDED;
 
+import static com.android.server.notification.Flags.FLAG_ALLOW_FREEZING_IDLE_NLS;
 import static com.android.server.notification.NotificationManagerService.NotificationListeners.BINDER_TAG_ON_INTERRUPTION_FILTER_CHANGED;
 import static com.android.server.notification.NotificationManagerService.NotificationListeners.BINDER_TAG_ON_LISTENER_CONNECTED;
 import static com.android.server.notification.NotificationManagerService.NotificationListeners.BINDER_TAG_ON_LISTENER_HINTS_CHANGED;
@@ -444,6 +446,12 @@ public class NotificationListenersTest extends UiServiceTestCase {
     public void testBindFlagsIncludesSimulateAllowFreeze() {
         assertThat(mListeners.getBindFlags() & BIND_SIMULATE_ALLOW_FREEZE).isEqualTo(
                 BIND_SIMULATE_ALLOW_FREEZE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ALLOW_FREEZING_IDLE_NLS)
+    public void testBindFlagsIncludesAllowFreeze() {
+        assertThat(mListeners.getBindFlags() & BIND_ALLOW_FREEZE).isEqualTo(BIND_ALLOW_FREEZE);
     }
 
     private ManagedServices.ManagedServiceInfo getNewManagedServiceInfo(
