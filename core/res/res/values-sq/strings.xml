@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacionet"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Gjurmët e tua të gishtave nuk mund të njihen më. Konfiguro përsëri \"Shkyçjen me gjurmën e gishtit\"."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Pajisja USB është e futur kur është e kyçur"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Pajisja USB është e futur kur Android është i kyçur. Për ta përdorur pajisjen, shkyç fillimisht Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Pajisja USB është e futur kur Android është i kyçur. Për ta përdorur pajisjen, shkyç fillimisht Android dhe më pas fut përsëri pajisjen USB për ta përdorur."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Kapaciteti i karikimit mund të reduktohet ose mund të mos ofrohet kur është e kyçur."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitet i dyshimtë i USB-së"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinjali i të dhënave të USB-së është çaktivizuar."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ke probleme me \"Shkyçjen me gjurmën e gishtit\"?"</string>

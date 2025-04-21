@@ -693,7 +693,7 @@
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"Juda yorqin"</string>
     <string name="fingerprint_acquired_power_press" msgid="3107864151278434961">"Quvvat tugmasi bosildi"</string>
     <string name="fingerprint_acquired_try_adjusting" msgid="3667006071003809364">"Moslashga urining"</string>
-    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"Barmoqni har safar biroz surib joylang"</string>
+    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"Barmoqni har safar biroz suring"</string>
   <string-array name="fingerprint_acquired_vendor">
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"Barmoq izi aniqlanmadi"</string>
@@ -1119,7 +1119,7 @@
     <string name="factorytest_failed" msgid="3190979160945298006">"Ishlab chiqarish sinovi amalga oshmadi"</string>
     <string name="factorytest_not_system" msgid="5658160199925519869">"The FACTORY_TEST amali faqatgina /system/app ichiga o‘rnatilgan paketlar bilan ishlay oladi."</string>
     <string name="factorytest_no_action" msgid="339252838115675515">"FACTORY_TEST amalini bajarish uchun birorta ham paket topilmadi."</string>
-    <string name="factorytest_reboot" msgid="2050147445567257365">"Qayta ishga tushirish"</string>
+    <string name="factorytest_reboot" msgid="2050147445567257365">"Qayta yoqish"</string>
     <string name="js_dialog_title" msgid="7464775045615023241">"\"<xliff:g id="TITLE">%s</xliff:g>\"dagi sahifa buni xabar qilmoqda:"</string>
     <string name="js_dialog_title_default" msgid="3769524569903332476">"JavaScript"</string>
     <string name="js_dialog_before_unload_title" msgid="7012587995876771246">"Tasdiqlash"</string>

@@ -2273,7 +2273,7 @@
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"کشیدن"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"پیمایش"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"فشار طولانی"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"توقف موقت"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"مکث"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"موقعیت"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"پیمایش به بالا"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"پیمایش به پایین"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"برنامه‌ها"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"اثر انگشتانتان دیگر قابل‌شناسایی نیست. «قفل‌گشایی با اثر انگشت» را دوباره راه‌اندازی کنید."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏دستگاه USB هنگام قفل بودن وصل شده است"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید و سپس دستگاه USB را دوباره وارد کنید."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"قابلیت شارژ شدن ممکن است هنگام قفل بودن کاهش یابد یا دردسترس نباشد."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>

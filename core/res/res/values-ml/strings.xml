@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ആപ്പുകൾ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"നിങ്ങളുടെ ഫിംഗർപ്രിന്റുകൾ ഇനി തിരിച്ചറിയാനാകില്ല. ഫിംഗർപ്രിന്റ് അൺലോക്ക് വീണ്ടും സജ്ജീകരിക്കുക."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ലോക്കായിരിക്കുമ്പോഴാണ് USB ഉപകരണം പ്ലഗ്-ഇൻ ചെയ്തത്"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android ലോക്കായിരിക്കുമ്പോഴാണ് USB ഉപകരണം പ്ലഗ്-ഇൻ ചെയ്തത്. ഉപകരണം ഉപയോഗിക്കാൻ ആദ്യം Android അൺലോക്ക് ചെയ്യുക."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android ലോക്കായിരിക്കുമ്പോഴാണ് USB ഉപകരണം പ്ലഗ്-ഇൻ ചെയ്തത്. ഉപകരണം ഉപയോഗിക്കാൻ ആദ്യം Android അൺലോക്ക് ചെയ്യുക, ശേഷം USB ഉപകരണം വീണ്ടും ഇൻസേർട്ട് ചെയ്ത് ഉപയോഗിക്കുക."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"ലോക്ക് ചെയ്തിരിക്കുമ്പോൾ ചാർജിംഗ് ശേഷി കുറയുകയോ ലഭ്യമാകാതിരിക്കുകയോ ചെയ്യാം."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"സംശയാസ്പദമായ USB ആക്റ്റിവിറ്റി"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ഡാറ്റാ സിഗ്‌നൽ പ്രവർത്തനരഹിതമാക്കി."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ഫിംഗർപ്രിന്റ് അൺലോക്കുമായി ബന്ധപ്പെട്ട് പ്രശ്നം നേരിടുന്നുണ്ടോ?"</string>

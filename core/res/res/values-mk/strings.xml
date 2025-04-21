@@ -2503,7 +2503,7 @@
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Да се користи „Сателитска размена на пораки“?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Испраќајте и примајте пораки без мобилна или Wi-Fi мрежа"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Отворете ја Messages"</string>
-    <string name="satellite_notification_how_it_works" msgid="3132069321977520519">"Дознајте како функционира"</string>
+    <string name="satellite_notification_how_it_works" msgid="3132069321977520519">"Како функционира"</string>
     <string name="satellite_manual_selection_state_popup_title" msgid="8545991934926661974">"Вклучете „Избирај мрежа автоматски“"</string>
     <string name="satellite_manual_selection_state_popup_message" msgid="1928101658551382450">"Вклучете „Избирај мрежа автоматски“ во „Поставки“ за да може телефонот да најде мрежа што функционира со сателит"</string>
     <string name="satellite_manual_selection_state_popup_ok" msgid="2459664752624985095">"Вклучи"</string>
@@ -2557,12 +2557,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Апликации"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Вашите отпечатоци веќе не може да се препознаат. Поставете „Отклучување со отпечаток“ повторно."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-уредот е приклучен кога е заклучен"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB-уредот е приклучен кога Android е заклучен. За да го користите уредот, прво отклучете го Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB-уредот е приклучен кога Android е заклучен. За да го користите уредот, прво отклучете го Android, па вметнете го USB-уредот повторно за да го користите."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Способноста за полнење може да биде намалена или недостапна кога е заклучен уредот."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Сомнителна активност на USB-уредот"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигналот со податоци преку USB е оневозможен."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблем со „Отклучување со отпечаток“?"</string>

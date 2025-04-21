@@ -2559,12 +2559,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikácie"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše odtlačky prstov sa už nedajú rozpoznať. Znova nastavte odomknutie odtlačkom prsta."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Zariadenie USB bolo pripojené počas uzamknutia"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Zariadenie USB sa pripojí, keď bude zariadenie s Androidom uzamknuté. Ak chcete dané zariadenie používať, najprv odomknite zariadenie s Androidom."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Zariadenie USB sa pripojí, keď bude zariadenie s Androidom uzamknuté. Ak chcete dané zariadenie používať, najprv odomknite zariadenie s Androidom a potom znova vložte zariadenie USB."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Keď je zariadenie uzamknuté, nabíjanie môže byť obmedzené alebo nedostupné."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podozrivá aktivita cez USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Dátový signál cez USB bol deaktivovaný."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte problémy s odomknutím odtlačkom prsta?"</string>

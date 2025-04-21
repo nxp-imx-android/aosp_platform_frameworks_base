@@ -687,11 +687,11 @@
     <string name="biometric_error_generic" msgid="6784371929985434439">"خطأ في المصادقة"</string>
     <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"استخدام قفل الشاشة"</string>
     <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"أدخِل قفل الشاشة للمتابعة"</string>
-    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"اضغط بقوة على أداة الاستشعار"</string>
+    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"اضغط بثبات على أداة الاستشعار"</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"لم يتم التعرّف على بصمة الإصبع. يُرجى إعادة المحاولة."</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"يُرجى تنظيف مستشعر بصمات الإصبع ثم إعادة المحاولة."</string>
     <string name="fingerprint_acquired_imager_dirty_alt" msgid="9169582140486372897">"تنظيف المستشعر ثم إعادة المحاولة"</string>
-    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"اضغط بقوة على أداة الاستشعار"</string>
+    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"اضغط بثبات على أداة الاستشعار"</string>
     <string name="fingerprint_acquired_too_slow" msgid="6683510291554497580">"تم تحريك الإصبع ببطء شديد. يُرجى إعادة المحاولة."</string>
     <string name="fingerprint_acquired_already_enrolled" msgid="2285166003936206785">"يمكنك تجربة بصمة إصبع أخرى."</string>
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"الصورة ساطعة للغاية."</string>
@@ -2561,12 +2561,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"التطبيقات"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"لم يعد بالإمكان التعرّف على بصمات أصابعك. يجب ضبط ميزة \"فتح الجهاز ببصمة الإصبع\" مجددًا."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏تم توصيل جهاز USB عندما كان الجهاز مقفلاً"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"‏تم توصيل جهاز USB عندما كان جهاز Android مقفلاً. لاستخدام الجهاز، يُرجى فتح قفل جهاز Android أولاً."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"‏تم توصيل جهاز USB عندما كان جهاز Android مقفلاً. لاستخدام الجهاز، يُرجى فتح قفل جهاز Android أولاً ثم إعادة إدخال جهاز USB لاستخدامه."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"قد تنخفض قدرة الشحن أو تصبح غير متوفّرة عند قفل الجهاز."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏نشاط مريب في جهاز USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏تم إيقاف مؤشر بيانات USB."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"هل هناك مشاكل متعلقة بميزة \"فتح الجهاز ببصمة الإصبع\"؟"</string>
