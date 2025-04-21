@@ -1071,12 +1071,16 @@ final class InstallPackageHelper {
     void doPostDexopt(List<ReconciledPackage> reconciledPackages,
             List<InstallRequest> requests, Map<String, Boolean> createdAppId,
             MoveInfo moveInfo, long acquireTime) {
+        boolean isDexoptSuccess = true;
         for (InstallRequest request : requests) {
             request.onWaitDexoptFinished();
+            if (request.getReturnCode() != PackageManager.INSTALL_SUCCEEDED) {
+                isDexoptSuccess = false;
+            }
         }
         boolean success = false;
         try {
-            if (commitInstallPackages(reconciledPackages)) {
+            if (isDexoptSuccess && commitInstallPackages(reconciledPackages)) {
                 success = true;
             }
         } finally {
@@ -1218,6 +1222,7 @@ final class InstallPackageHelper {
                 }
             } catch (PackageManagerException e) {
                 request.setError(e.error, e.getMessage());
+                completableFutures.clear();
                 break;
             }
             request.setKeepArtProfile(true);
