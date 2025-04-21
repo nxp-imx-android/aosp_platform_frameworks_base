@@ -21,7 +21,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.StrictMode.vmIncorrectContextUseEnabled;
 import static android.permission.flags.Flags.shouldRegisterAttributionSource;
 import static android.view.WindowManager.LayoutParams.WindowType;
-import static android.window.WindowContext.registerCleaner;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.IntDef;
@@ -3431,22 +3430,13 @@ class ContextImpl extends Context {
         // if this Context is not a WindowContext. WindowContext finalization is handled in
         // WindowContext class.
         try {
-            if (!isCleanerEnabled() && mToken instanceof WindowTokenClient && mOwnsToken) {
+            if (mToken instanceof WindowTokenClient && mOwnsToken) {
                 WindowTokenClientController.getInstance()
                         .detachIfNeeded((WindowTokenClient) mToken);
             }
         } finally {
             super.finalize();
         }
-    }
-
-    /**
-     * Returns {@code true} if {@link WindowContext#registerCleaner} is enabled.
-     */
-    private static boolean isCleanerEnabled() {
-        return com.android.window.flags.Flags.cleanUpWindowContextWithCleaner()
-                // Cleaner only works on SystemUiContext or WindowContext.
-                && com.android.window.flags.Flags.trackSystemUiContextBeforeWms();
     }
 
     @UnsupportedAppUsage
@@ -3489,9 +3479,6 @@ class ContextImpl extends Context {
         WindowTokenClientController.getInstance().attachToDisplayContent(token, displayId);
         context.mContextType = CONTEXT_TYPE_SYSTEM_OR_SYSTEM_UI;
         context.mOwnsToken = true;
-        if (isCleanerEnabled()) {
-            registerCleaner(systemUiContext);
-        }
         return systemUiContext;
     }
 
