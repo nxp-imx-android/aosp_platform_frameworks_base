@@ -107,7 +107,6 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     private static final int SUMMARY_NO_COLOR_FOR_LOW_BATTERY = 0;
 
     private final Context mContext;
-    private final BluetoothAdapter mLocalAdapter;
     private final LocalBluetoothProfileManager mProfileManager;
     private final Object mProfileLock = new Object();
     BluetoothDevice mDevice;
@@ -115,6 +114,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     private int mGroupId;
     private Timestamp mBondTimestamp;
     private LocalBluetoothManager mBluetoothManager;
+    private BluetoothAdapter mLocalAdapter;
 
     // Need this since there is no method for getting RSSI
     short mRssi;
@@ -156,6 +156,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     private boolean mIsHeadsetProfileConnectedFail = false;
     private boolean mIsHearingAidProfileConnectedFail = false;
     private boolean mIsLeAudioProfileConnectedFail = false;
+    private boolean mIsListeningBatteryChange = false;
     private boolean mUnpairing;
     @Nullable
     private InputDevice mInputDevice;
@@ -192,6 +193,20 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             refresh();
         }
     };
+
+    private final BluetoothAdapter.OnMetadataChangedListener mBatteryMetadataListener =
+            (device, key, value) -> {
+                if (key == BluetoothDevice.METADATA_MAIN_BATTERY
+                        || key == BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY
+                        || key == BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY
+                        || key == BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY) {
+                    Log.d(
+                            TAG,
+                            "Receiving battery metadata change for device "
+                                    + device.getAnonymizedAddress());
+                    dispatchAttributesChanged();
+                }
+            };
 
     CachedBluetoothDevice(Context context, LocalBluetoothProfileManager profileManager,
             BluetoothDevice device) {
@@ -1157,6 +1172,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     @Deprecated
     public void registerCallback(Callback callback) {
         mCallbacks.add(callback);
+        if (Flags.refactorBatteryLevelDisplay()) {
+            registerMainDeviceBatteryMetadataListener();
+        }
     }
 
     /**
@@ -1171,11 +1189,19 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         Objects.requireNonNull(executor, "executor cannot be null");
         Objects.requireNonNull(callback, "callback cannot be null");
         mCallbackExecutorMap.put(callback, executor);
+        if (Flags.refactorBatteryLevelDisplay()) {
+            registerMainDeviceBatteryMetadataListener();
+        }
     }
 
     public void unregisterCallback(Callback callback) {
         mCallbacks.remove(callback);
         mCallbackExecutorMap.remove(callback);
+        if (Flags.refactorBatteryLevelDisplay()
+                && mCallbacks.isEmpty()
+                && mCallbackExecutorMap.isEmpty()) {
+            unregisterMainDeviceBatteryMetadataListener();
+        }
     }
 
     void dispatchAttributesChanged() {
@@ -2317,7 +2343,14 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         final HearingAidInfo tmpHearingAidInfo = mHearingAidInfo;
         // Set main device from sub device
         release();
-        mDevice = mSubDevice.mDevice;
+        if (Flags.refactorBatteryLevelDisplay()) {
+            // Unregister the metadata listener on the old main device and register on the new one
+            unregisterMainDeviceBatteryMetadataListener();
+            mDevice = mSubDevice.mDevice;
+            registerMainDeviceBatteryMetadataListener();
+        } else {
+            mDevice = mSubDevice.mDevice;
+        }
         mRssi = mSubDevice.mRssi;
         mJustDiscovered = mSubDevice.mJustDiscovered;
         mHearingAidInfo = mSubDevice.mHearingAidInfo;
@@ -2374,7 +2407,14 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
         // Set main device from sub device
         release();
-        mDevice = newMainDevice.mDevice;
+        if (Flags.refactorBatteryLevelDisplay()) {
+            // Unregister the metadata listener on the old main device and register on the new one
+            unregisterMainDeviceBatteryMetadataListener();
+            mDevice = newMainDevice.mDevice;
+            registerMainDeviceBatteryMetadataListener();
+        } else {
+            mDevice = newMainDevice.mDevice;
+        }
         mRssi = newMainDevice.mRssi;
         mJustDiscovered = newMainDevice.mJustDiscovered;
         mHearingAidInfo = newMainDevice.mHearingAidInfo;
@@ -2437,6 +2477,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         mInputDevice = inputDevice;
     }
 
+    @VisibleForTesting
+    void setBluetoothAdapter(BluetoothAdapter bluetoothAdapter) {
+        mLocalAdapter = bluetoothAdapter;
+    }
+
     private boolean isAndroidAuto() {
         try {
             ParcelUuid[] uuids = mDevice.getUuids();
@@ -2447,5 +2492,54 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             Log.w(TAG, "Fail to check isAndroidAuto for " + this);
         }
         return false;
+    }
+
+    private void registerMainDeviceBatteryMetadataListener() {
+        if (mIsListeningBatteryChange) {
+            return;
+        }
+        try {
+            // The metadata data changed listener is registered with main thread. If a specific
+            // executor is given when registering callback, then the onDeviceAttributesChanged runs
+            // on that executor, otherwise on the main executor.
+            boolean isSuccess =
+                    mLocalAdapter.addOnMetadataChangedListener(
+                            mDevice, mContext.getMainExecutor(), mBatteryMetadataListener);
+            if (isSuccess) {
+                mIsListeningBatteryChange = true;
+            } else {
+                Log.e(
+                        TAG,
+                        mDevice.getAnonymizedAddress() + ": add battery metadata listener failed");
+            }
+        } catch (IllegalArgumentException e) {
+            Log.e(
+                    TAG,
+                    "Metadata listener already registered for device "
+                            + mDevice.getAnonymizedAddress());
+        }
+    }
+
+    private void unregisterMainDeviceBatteryMetadataListener() {
+        if (!mIsListeningBatteryChange) {
+            return;
+        }
+        try {
+            boolean isSuccess =
+                    mLocalAdapter.removeOnMetadataChangedListener(
+                            mDevice, mBatteryMetadataListener);
+            if (isSuccess) {
+                mIsListeningBatteryChange = false;
+            } else {
+                Log.e(
+                        TAG,
+                        mDevice.getAnonymizedAddress()
+                                + ": remove battery metadata listener failed");
+            }
+        } catch (IllegalArgumentException e) {
+            Log.e(
+                    TAG,
+                    "No metadata listener registered for device " + mDevice.getAnonymizedAddress());
+        }
     }
 }

@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -40,7 +41,6 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
-import android.hardware.input.InputManager;
 import android.media.AudioManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -54,6 +54,7 @@ import android.view.InputDevice;
 import com.android.settingslib.R;
 import com.android.settingslib.media.flags.Flags;
 import com.android.settingslib.testutils.shadow.ShadowBluetoothAdapter;
+import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
 
 import com.google.common.collect.ImmutableList;
@@ -71,6 +72,7 @@ import org.robolectric.shadow.api.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(shadows = {ShadowBluetoothAdapter.class})
@@ -94,6 +96,8 @@ public class CachedBluetoothDeviceTest {
     private static final int LOW_BATTERY_COLOR = android.R.color.holo_red_dark;
     private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
     private static final int TEST_DEVICE_ID = 123;
+    private final Executor mExecutor = ThreadUtils.getBackgroundExecutor();
+    private final CachedBluetoothDevice.Callback mCallback = () -> {};
     private final InputDevice mInputDevice = mock(InputDevice.class);
     @Mock
     private LocalBluetoothProfileManager mProfileManager;
@@ -125,7 +129,7 @@ public class CachedBluetoothDeviceTest {
     @Mock
     private BluetoothLeBroadcastReceiveState mLeBroadcastReceiveState;
     @Mock
-    private InputManager mInputManager;
+    private BluetoothAdapter mBluetoothAdapter;
     private CachedBluetoothDevice mCachedDevice;
     private CachedBluetoothDevice mSubCachedDevice;
     private AudioManager mAudioManager;
@@ -2560,6 +2564,59 @@ public class CachedBluetoothDeviceTest {
         verify(assistant).removeSource(mDevice, /* sourceId= */1);
         verify(assistant).removeSource(mSubDevice, /* sourceId= */1);
         verify(mDevice).removeBond();
+    }
+
+    @Test
+    @EnableFlags(FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY)
+    public void registerCallback_addOnMetadataChangeListener() {
+        mCachedDevice.setBluetoothAdapter(mBluetoothAdapter);
+        when(mBluetoothAdapter.addOnMetadataChangedListener(any(), any(), any())).thenReturn(true);
+
+        mCachedDevice.registerCallback(mExecutor, mCallback);
+
+        verify(mBluetoothAdapter).addOnMetadataChangedListener(eq(mDevice), any(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY)
+    public void unregisterCallback_removeOnMetadataChangeListener() {
+        mCachedDevice.setBluetoothAdapter(mBluetoothAdapter);
+        when(mBluetoothAdapter.addOnMetadataChangedListener(any(), any(), any())).thenReturn(true);
+
+        mCachedDevice.registerCallback(mExecutor, mCallback);
+        mCachedDevice.unregisterCallback(mCallback);
+
+        verify(mBluetoothAdapter).removeOnMetadataChangedListener(eq(mDevice), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY)
+    public void switchMemberDeviceContent_switchOnMetadataChangeListener() {
+        mCachedDevice.addMemberDevice(mSubCachedDevice);
+        mCachedDevice.setBluetoothAdapter(mBluetoothAdapter);
+        when(mBluetoothAdapter.addOnMetadataChangedListener(any(), any(), any())).thenReturn(true);
+        when(mBluetoothAdapter.removeOnMetadataChangedListener(any(), any())).thenReturn(true);
+
+        mCachedDevice.registerCallback(mExecutor, mCallback);
+        mCachedDevice.switchMemberDeviceContent(mSubCachedDevice);
+
+        verify(mBluetoothAdapter).removeOnMetadataChangedListener(eq(mDevice), any());
+        verify(mBluetoothAdapter).addOnMetadataChangedListener(eq(mSubDevice), any(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY)
+    public void switchSubDeviceContent_switchOnMetadataChangeListener() {
+        mCachedDevice.setSubDevice(mSubCachedDevice);
+        mCachedDevice.setBluetoothAdapter(mBluetoothAdapter);
+        when(mBluetoothAdapter.addOnMetadataChangedListener(any(), any(), any())).thenReturn(true);
+        when(mBluetoothAdapter.removeOnMetadataChangedListener(any(), any())).thenReturn(true);
+
+        mCachedDevice.registerCallback(mExecutor, mCallback);
+        mCachedDevice.switchSubDeviceContent();
+
+        verify(mBluetoothAdapter).removeOnMetadataChangedListener(eq(mDevice), any());
+        verify(mBluetoothAdapter).addOnMetadataChangedListener(eq(mSubDevice), any(), any());
     }
 
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
