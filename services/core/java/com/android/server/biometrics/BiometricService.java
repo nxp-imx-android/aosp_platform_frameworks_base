@@ -53,6 +53,7 @@ import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
+import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorPropertiesInternal;
 import android.hardware.camera2.CameraManager;
@@ -280,6 +281,7 @@ public class BiometricService extends SystemService {
         private final ContentResolver mContentResolver;
         private final List<BiometricService.EnabledOnKeyguardCallback> mCallbacks;
         private final UserManager mUserManager;
+        private final ITrustManager mTrustManager;
 
         private final Map<Integer, Boolean> mBiometricEnabledOnKeyguard = new HashMap<>();
         private final Map<Integer, Boolean> mBiometricEnabledForApps = new HashMap<>();
@@ -296,6 +298,8 @@ public class BiometricService extends SystemService {
         private final Map<Integer, Boolean> mFaceEnrolledForUser =
                 new HashMap<>();
 
+        private IdentityCheckStatus mIdentityCheckStatus;
+
         /**
          * Creates a content observer.
          *
@@ -305,10 +309,18 @@ public class BiometricService extends SystemService {
                 List<BiometricService.EnabledOnKeyguardCallback> callbacks,
                 UserManager userManager, FingerprintManager fingerprintManager,
                 FaceManager faceManager) {
+            this(context, handler, callbacks, userManager, fingerprintManager, faceManager, null);
+        }
+
+        public SettingObserver(Context context, Handler handler,
+                List<BiometricService.EnabledOnKeyguardCallback> callbacks,
+                UserManager userManager, FingerprintManager fingerprintManager,
+                FaceManager faceManager, ITrustManager trustManager) {
             super(handler);
             mContentResolver = context.getContentResolver();
             mCallbacks = callbacks;
             mUserManager = userManager;
+            mTrustManager = trustManager;
 
             final boolean hasFingerprint = context.getPackageManager()
                     .hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
@@ -320,7 +332,7 @@ public class BiometricService extends SystemService {
                     Build.VERSION.DEVICE_INITIAL_SDK_INT <= Build.VERSION_CODES.Q
                     && hasFace && !hasFingerprint;
 
-            addBiometricListenersForMandatoryBiometrics(context, fingerprintManager, faceManager);
+            addBiometricListenersForMandatoryBiometrics(fingerprintManager, faceManager);
             updateContentObserver();
         }
 
@@ -559,6 +571,36 @@ public class BiometricService extends SystemService {
             }
         }
 
+        /**
+         * Sets Identity Check status for testing purpose.
+         */
+        public void setIdentityCheckValuesForTest(IdentityCheckStatus identityCheckStatus) {
+            mIdentityCheckStatus = identityCheckStatus;
+        }
+
+        /**
+         * Returns if Identity Check is active or not for the given @param userId.
+         */
+        public boolean isIdentityCheckActive(int userId) {
+            if (mIdentityCheckStatus != null
+                    && mIdentityCheckStatus.isIdentityCheckValueForTestAvailable()) {
+                return mIdentityCheckStatus.isIdentityCheckActive();
+            }
+
+            if (getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(userId)) {
+                if (mTrustManager != null) {
+                    try {
+                        return !mTrustManager.isInSignificantPlace();
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Remote exception while trying to check "
+                                + "if user is in a trusted location.");
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
         void notifyEnabledOnKeyguardCallbacks(int userId, int modality) {
             List<EnabledOnKeyguardCallback> callbacks = mCallbacks;
             final boolean enabled = getEnabledOnKeyguard(userId, modality);
@@ -620,7 +662,7 @@ public class BiometricService extends SystemService {
             }
         }
 
-        private void addBiometricListenersForMandatoryBiometrics(Context context,
+        private void addBiometricListenersForMandatoryBiometrics(
                 FingerprintManager fingerprintManager, FaceManager faceManager) {
             if (fingerprintManager != null) {
                 fingerprintManager.addAuthenticatorsRegisteredCallback(
@@ -819,6 +861,17 @@ public class BiometricService extends SystemService {
 
             Slog.e(TAG, "Unknown sensor for createTestSession: " + sensorId);
             return null;
+        }
+
+        /**
+         * Sets the status of Identity Check. For testing purpose only.
+         */
+        @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
+        @Override
+        public void setIdentityCheckTestStatus(IdentityCheckStatus identityCheckStatus) {
+            super.setIdentityCheckTestStatus_enforcePermission();
+
+            mSettingObserver.setIdentityCheckValuesForTest(identityCheckStatus);
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
@@ -1311,7 +1364,7 @@ public class BiometricService extends SystemService {
                 List<EnabledOnKeyguardCallback> callbacks) {
             return new SettingObserver(context, handler, callbacks, context.getSystemService(
                     UserManager.class), context.getSystemService(FingerprintManager.class),
-                    context.getSystemService(FaceManager.class));
+                    context.getSystemService(FaceManager.class), getTrustManager());
         }
 
         /**

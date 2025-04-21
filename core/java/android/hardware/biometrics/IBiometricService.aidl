@@ -19,6 +19,7 @@ package android.hardware.biometrics;
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricAuthenticator;
+import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
@@ -33,6 +34,10 @@ interface IBiometricService {
     // Creates a test session with the specified sensorId
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     ITestSession createTestSession(int sensorId, ITestSessionCallback callback, String opPackageName);
+
+    //Sets Identity Check status for testing purpose
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    void setIdentityCheckTestStatus(in IdentityCheckStatus identityCheckStatus);
 
     // Retrieve static sensor properties for all biometric sensors
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
