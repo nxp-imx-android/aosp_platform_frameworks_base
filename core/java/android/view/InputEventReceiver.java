@@ -45,7 +45,7 @@ public abstract class InputEventReceiver {
     // We keep references to the input channel and message queue objects here so that
     // they are not GC'd while the native peer of the receiver is using them.
     private InputChannel mInputChannel;
-    private Looper mLooper;
+    private MessageQueue mMessageQueue;
 
     // Map from InputEvent sequence numbers to dispatcher sequence numbers.
     private final SparseIntArray mSeqMap = new SparseIntArray();
@@ -76,9 +76,9 @@ public abstract class InputEventReceiver {
         }
 
         mInputChannel = inputChannel;
-        mLooper = looper;
+        mMessageQueue = looper.getQueue();
         mReceiverPtr = nativeInit(new WeakReference<InputEventReceiver>(this),
-                mInputChannel, mLooper.getQueue());
+                mInputChannel, mMessageQueue);
 
         mCloseGuard.open("InputEventReceiver.dispose");
     }
@@ -108,9 +108,6 @@ public abstract class InputEventReceiver {
      * Must be called on the same Looper thread to which the receiver is attached.
      */
     public void dispose() {
-        if (Thread.currentThread() != mLooper.getThread()) {
-            throw new IllegalStateException("Must call dispose() on the Looper thread");
-        }
         dispose(false);
     }
 
@@ -131,7 +128,7 @@ public abstract class InputEventReceiver {
             mInputChannel.dispose();
             mInputChannel = null;
         }
-        mLooper = null;
+        mMessageQueue = null;
         Reference.reachabilityFence(this);
     }
 
