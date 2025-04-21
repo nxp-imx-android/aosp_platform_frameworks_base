@@ -288,6 +288,7 @@ constructor(
         KeyguardBecameVisible,
         PrimaryBouncerBecameVisible,
         SecureCameraLaunched,
+        InGoneState,
     }
 
     /** Whether camera is launched over keyguard. */
@@ -302,6 +303,10 @@ constructor(
                 primaryBouncerShowing
                     .filter { it }
                     .map { SecureCameraRelatedEventType.PrimaryBouncerBecameVisible },
+                keyguardTransitionInteractor
+                    .transitionValue(GONE)
+                    .filter { it == 1f }
+                    .map { SecureCameraRelatedEventType.InGoneState },
             )
             .map {
                 when (it) {
@@ -310,6 +315,7 @@ constructor(
                     // have to show, so those events tell us that secure camera is no longer active.
                     SecureCameraRelatedEventType.KeyguardBecameVisible -> false
                     SecureCameraRelatedEventType.PrimaryBouncerBecameVisible -> false
+                    SecureCameraRelatedEventType.InGoneState -> false
                 }
             }
             .onStart { emit(false) }
