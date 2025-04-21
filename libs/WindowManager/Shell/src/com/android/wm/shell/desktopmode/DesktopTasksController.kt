@@ -508,6 +508,8 @@ class DesktopTasksController(
                 willExitDesktop = true,
                 // No need to clean up the wallpaper / home when coming from a recents transition.
                 skipWallpaperAndHomeOrdering = true,
+                // This is a recents-finish, so taskbar animation on transit start does not apply.
+                skipUpdatingExitDesktopListener = true,
             )
         runOnTransitStart?.invoke(transition)
     }
@@ -859,9 +861,12 @@ class DesktopTasksController(
             transition = enterDesktopTaskTransitionHandler.moveToDesktop(wct, transitionSource)
             invokeCallbackToOverview(transition, callback)
         }
-        desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            toDesktopAnimationDurationMs
-        )
+        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+        if (!desktopState.enableMultipleDesktops) {
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                toDesktopAnimationDurationMs
+            )
+        }
         runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
         return true
@@ -904,9 +909,12 @@ class DesktopTasksController(
             transition = enterDesktopTaskTransitionHandler.moveToDesktop(wct, transitionSource)
             invokeCallbackToOverview(transition, callback)
         }
-        desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            toDesktopAnimationDurationMs
-        )
+        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+        if (!desktopState.enableMultipleDesktops) {
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                toDesktopAnimationDurationMs
+            )
+        }
         runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -984,9 +992,12 @@ class DesktopTasksController(
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
         val transition = dragToDesktopTransitionHandler.finishDragToDesktopTransition(wct)
-        desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
-        )
+        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+        if (!desktopState.enableMultipleDesktops) {
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
+            )
+        }
         if (transition != null) {
             runOnTransitStart?.invoke(transition)
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
@@ -1324,7 +1335,11 @@ class DesktopTasksController(
             !taskRepository.isOnlyVisibleNonClosingTask(task.taskId)
             // This callback is already invoked by |addMoveToFullscreenChanges| when this flag is
             // enabled.
-            && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+            &&
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+                // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+                &&
+                !desktopState.enableMultipleDesktops
         ) {
             desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION,
@@ -1496,9 +1511,12 @@ class DesktopTasksController(
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
-            )
+            // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+            if (!desktopState.enableMultipleDesktops) {
+                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                    toDesktopAnimationDurationMs
+                )
+            }
         }
         val t =
             if (remoteTransition == null) {
@@ -2338,12 +2356,19 @@ class DesktopTasksController(
         willExitDesktop: Boolean,
         shouldEndUpAtHome: Boolean = true,
         skipWallpaperAndHomeOrdering: Boolean = false,
+        skipUpdatingExitDesktopListener: Boolean = false,
     ): RunOnTransitStart? {
         if (!willExitDesktop) return null
-        desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
-            FULLSCREEN_ANIMATION_DURATION,
-            shouldEndUpAtHome,
-        )
+        if (
+            !skipUpdatingExitDesktopListener &&
+                // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+                !desktopState.enableMultipleDesktops
+        ) {
+            desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
+                FULLSCREEN_ANIMATION_DURATION,
+                shouldEndUpAtHome,
+            )
+        }
         if (
             !skipWallpaperAndHomeOrdering ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
@@ -3605,9 +3630,12 @@ class DesktopTasksController(
         handler?.setTransition(transition)
         runOnTransitStart?.invoke(transition)
 
-        desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-            toDesktopAnimationDurationMs
-        )
+        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+        if (!desktopState.enableMultipleDesktops) {
+            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                toDesktopAnimationDurationMs
+            )
+        }
     }
 
     /**
