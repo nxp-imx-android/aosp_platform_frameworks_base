@@ -38,7 +38,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -92,7 +91,9 @@ constructor(
         ) {
             val listenFlow =
                 if (restrictCommunalAppWidgetHostListening()) {
-                    communalInteractor.isCommunalShowing
+                    // Listen whenever any part of the hub is visible so that widgets show up during
+                    // transitions too.
+                    communalInteractor.isCommunalVisible
                 } else {
                     communalInteractor.isCommunalAvailable
                 }
