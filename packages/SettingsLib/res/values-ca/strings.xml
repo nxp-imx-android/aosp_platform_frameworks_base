@@ -426,7 +426,7 @@
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Activa el registre detallat del proveïdor"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Inclou altres registres de proveïdor específics del dispositiu als informes d’errors; és possible que continguin informació privada, consumeixin més bateria o utilitzin més espai d\'emmagatzematge"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Desactiva passat un dia"</string>
-    <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"El registre del proveïdor detallat ha finalitzat"</string>
+    <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"El registre detallat del proveïdor ha finalitzat"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"S\'ha activat durant un dia"</string>
     <string name="verbose_vendor_logging_notification_action" msgid="1190831050259046071">"Activa durant un dia més"</string>
     <string name="verbose_vendor_logging_preference_summary_will_disable" msgid="6175431593394522553">"Es desactiva passat un dia"</string>
@@ -708,7 +708,7 @@
     <string name="failed_attempts_now_wiping_user" msgid="469060411789668050">"Has superat el nombre d\'intents incorrectes permesos. Aquest usuari se suprimirà."</string>
     <string name="failed_attempts_now_wiping_profile" msgid="7626589520888963129">"Has superat el nombre d\'intents incorrectes permesos. Aquest perfil de treball i les dades que contingui se suprimiran."</string>
     <string name="failed_attempts_now_wiping_dialog_dismiss" msgid="2749889771223578925">"Ignora"</string>
-    <string name="cached_apps_freezer_device_default" msgid="2616594131750144342">"Opció predeter. del dispositiu"</string>
+    <string name="cached_apps_freezer_device_default" msgid="2616594131750144342">"Opció predeterminada del dispositiu"</string>
     <string name="cached_apps_freezer_disabled" msgid="4816382260660472042">"Desactivat"</string>
     <string name="cached_apps_freezer_enabled" msgid="8866703500183051546">"Activat"</string>
     <string name="cached_apps_freezer_reboot_dialog_text" msgid="695330563489230096">"Has de reiniciar el teu dispositiu perquè s\'apliquin els canvis. Reinicia\'l ara o cancel·la."</string>
