@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Vaihda kieltä"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Pidä nykyinen kieli"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Jaa Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Sallitaanko langaton virheenkorjaus tässä verkossa?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Verkon nimi (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi-Fin osoite (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Salli aina tässä verkossa"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth-laitekuvake"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Määritä laitteen asetukset klikkaamalla"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Määritä laitteen tiedot"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Katso kaikki laitteet"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Muodosta uusi laitepari"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akun varaustaso ei tiedossa."</string>
@@ -443,8 +449,8 @@
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Kumotaanko laitteen mikrofonin esto?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Kumotaanko laitteen kameran esto?"</string>
     <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"Kumotaanko laitteen kameran ja mikrofonin esto?"</string>
-    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"Tämä kumoaa kaikkien sellaisten sovellusten ja palveluiden eston, joilla on lupa käyttää mikrofoniasi."</string>
-    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"Tämä kumoaa kaikkien sellaisten sovellusten ja palveluiden eston, joilla on lupa käyttää kameraasi."</string>
+    <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"Kaikkien sellaisten sovellusten ja palveluiden esto kumotaan, joilla on lupa käyttää mikrofoniasi."</string>
+    <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"Kaikkien sellaisten sovellusten ja palveluiden esto kumotaan, joilla on lupa käyttää kameraasi."</string>
     <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"Tämä kumoaa eston kaikkien sellaisten sovellusten ja palveluiden osalta, joilla on lupa käyttää kameraasi tai mikrofoniasi."</string>
     <string name="sensor_privacy_start_use_mic_blocked_dialog_title" msgid="2640140287496469689">"Mikrofoni on estetty"</string>
     <string name="sensor_privacy_start_use_camera_blocked_dialog_title" msgid="7398084286822440384">"Kamera on estetty"</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"värinä"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Äänenvoimakkuuden säädin: %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Puhelut ja ilmoitukset soivat (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Lisää tuloasetukset"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Äänenvoimakkuuden liukusäätimet laajennettu"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Äänenvoimakkuuden liukusäätimet tiivistetty"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Jotta voit yhdistää näppäimistön tablettiisi, sinun on ensin otettava Bluetooth käyttöön."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ota käyttöön"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Päällä – kasvojen perusteella"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Käytä ilmoitusten järjestäjää"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Valmis"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Käytä"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Laita pois päältä"</string>
@@ -1013,12 +1019,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Näytä vähemmän tärkeät ilmoituskuvakkeet"</string>
     <string name="other" msgid="429768510980739978">"Muu"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ruudun koko päälle/pois"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Poista laatta"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"laittaaksesi sijoittelutilan päälle / pois päältä"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"vaihtaaksesi valintaa"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Lisää laatta viimeiseen kohtaan"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Siirrä kiekkoa"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lisää laatta haluttuun kohtaan"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Siirrä paikkaan <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1105,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Ota käyttöön, jos akku todennäköisesti loppuu"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Ei kiitos"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Käytössä"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> käytössä."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" ja "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> käyttää tätä"</string>
@@ -1588,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Saavutettavuus"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Apusovellukset"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Yksityisyys"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Sovellusten tarjoama"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Näyttö"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tuntematon"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Nollataanko kaikki laatat?"</string>

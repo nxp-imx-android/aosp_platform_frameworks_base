@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Tukar bahasa"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Kekalkan bahasa semasa"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Kongsi Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Benarkan penyahpepijatan wayarles pada rangkaian ini?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nama Rangkaian (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAlamat Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Sentiasa benarkan pada rangkaian ini"</string>
@@ -113,7 +115,7 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Rakam satu apl"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Rakam skrin ini"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Rakam %s"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Apabila anda merakam seluruh skrin anda, apa-apa sahaja yang dipaparkan pada skrin anda akan dirakam. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Apabila anda merakam seluruh skrin, apa-apa sahaja yang dipaparkan pada skrin akan dirakam. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Apabila anda merakam apl, apa-apa sahaja yang dipaparkan atau dimainkan dalam apl tersebut akan dirakam. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Rakam skrin"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Pilih apl untuk merakam"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikon peranti Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klik untuk mengkonfigurasi butiran peranti"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurasikan butiran peranti"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Lihat semua peranti"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Gandingkan peranti baharu"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Peratusan kuasa bateri tidak diketahui."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"getar"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s kawalan kelantangan"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Panggilan dan pemberitahuan akan berdering (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Masukkan tetapan output"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Peluncur kelantangan dikembangkan"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Peluncur kelantangan dikuncupkan"</string>
@@ -917,8 +925,8 @@
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Kunci skrin"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Catat nota"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Berbilang tugas"</string>
-    <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gunakan skrin pisah dengan apl pada sebelah kanan"</string>
-    <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gunakan skrin pisah dengan apl pada sebelah kiri"</string>
+    <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gunakan skrin pisah dengan apl di sebelah kanan"</string>
+    <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gunakan skrin pisah dengan apl di sebelah kiri"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gunakan skrin penuh"</string>
     <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Gunakan tetingkap desktop"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Tukar kepada apl di sebelah kanan/bawah semasa menggunakan skrin pisah"</string>
@@ -991,7 +999,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Ikon kanan"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Tahan dan seret untuk menambahkan jubin"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Tahan dan seret untuk mengatur semula jubin"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Pilih jubin untuk menyusun semula dan mengubah saiz"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Pilih jubin untuk disusun semula dan diubah saiz"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Ketik untuk meletakkan kedudukan jubin"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Seret ke sini untuk mengalih keluar"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Anda memerlukan sekurang-kurangnya <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> jubin"</string>
@@ -1583,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Kebolehaksesan"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utiliti"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privasi"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Disediakan oleh apl"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Paparan"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tidak diketahui"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Tetapkan semula semua jubin?"</string>

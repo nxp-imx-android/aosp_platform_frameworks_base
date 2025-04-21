@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Thay đổi ngôn ngữ"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Giữ ngôn ngữ hiện tại"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Chia sẻ Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Cho phép gỡ lỗi qua Wi-Fi trên mạng này?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Tên mạng (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nĐịa chỉ Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Luôn cho phép trên mạng này"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Biểu tượng thiết bị Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Nhấp để định cấu hình thông tin thiết bị"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Thông tin chi tiết về định cấu hình thiết bị"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Xem tất cả thiết bị"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Ghép nối thiết bị mới"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Tỷ lệ phần trăm pin không xác định."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"rung"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Điều khiển âm lượng %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Cuộc gọi và thông báo sẽ đổ chuông (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Mở phần cài đặt thiết bị đầu ra"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Đã mở rộng thanh trượt âm lượng"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Đã thu gọn thanh trượt âm lượng"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Để kết nối bàn phím với máy tính bảng, trước tiên, bạn phải bật Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bật"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Đang bật – Dựa trên khuôn mặt"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Sử dụng Trình sắp xếp thông báo"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Cho <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Tắt"</string>
@@ -998,7 +1004,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Kéo vào đây để xóa"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Bạn cần ít nhất <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ô"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Chỉnh sửa"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"Chỉnh sửa thẻ thông tin"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Chỉnh sửa các ô"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Thời gian"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Hiển thị giờ, phút và giây"</item>
@@ -1013,12 +1019,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Hiển thị biểu tượng thông báo có mức ưu tiên thấp"</string>
     <string name="other" msgid="429768510980739978">"Khác"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"bật hoặc tắt kích thước của ô"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Xoá ô"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"bật hoặc tắt chế độ vị trí"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"bật hoặc tắt chế độ chọn"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Thêm ô vào vị trí cuối cùng"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Di chuyển ô"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Thêm ô vào vị trí mong muốn"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Di chuyển tới <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1105,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Bật khi pin sắp hết"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Không, cảm ơn"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Đang được sử dụng"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> đang được dùng."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" và "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> đang dùng"</string>
@@ -1183,7 +1186,7 @@
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{Đã thêm # chế độ điều khiển.}other{Đã thêm # chế độ điều khiển.}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"Đã xóa"</string>
     <string name="controls_panel_authorization_title" msgid="267429338785864842">"Thêm <xliff:g id="APPNAME">%s</xliff:g>?"</string>
-    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> có thể chọn các nút điều khiển và nội dung hiện ở đây."</string>
+    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> có thể chọn các nút điều khiển và nội dung xuất hiện ở đây."</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"Xoá chế độ điều khiển cho <xliff:g id="APPNAME">%s</xliff:g>?"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"Được yêu thích"</string>
     <string name="accessibility_control_favorite_position" msgid="54220258048929221">"Được yêu thích, vị trí số <xliff:g id="NUMBER">%d</xliff:g>"</string>
@@ -1521,13 +1524,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Thêm phím tắt"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Xoá phím tắt"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Di chuyển bằng bàn phím"</string>
-    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
-    <skip />
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Tìm hiểu về phím tắt"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Di chuyển bằng bàn di chuột"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Tìm hiểu về cử chỉ trên bàn di chuột"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Di chuyển bằng bàn phím và bàn di chuột"</string>
-    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
-    <skip />
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"Tìm hiểu về cử chỉ qua bàn di chuột, phím tắt và nhiều mục khác"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Quay lại"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Chuyển đến màn hình chính"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Xem các ứng dụng gần đây"</string>
@@ -1590,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Hỗ trợ tiếp cận"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Phần mềm tiện ích"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Quyền riêng tư"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Do các ứng dụng cung cấp"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Hiển thị"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Không xác định"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Đặt lại mọi ô?"</string>

@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Ändra språk"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Behåll nuvarande språk"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Dela wifi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Vill du tillåta trådlös felsökning i det här nätverket?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nätverksnamn (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi-adress (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Tillåt alltid i det här nätverket"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Enhetsikon för Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klicka för att konfigurera enhetsinformation"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurera enhetsinformation"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Se alla enheter"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Parkoppla en ny enhet"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Okänd batterinivå."</string>
@@ -398,7 +404,7 @@
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Skärminspelning"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Starta"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Stoppa"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"Anmäl problem"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"Registrera problem"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Starta"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Stoppa"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Felrapport"</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibration"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Volymkontroller för %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Ringsignal används för samtal och aviseringar (volym: <xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Ange inställningar för utdata"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Volymreglagen har utökats"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Volymreglagen har komprimerats"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Om du vill ansluta tangentbordet till surfplattan måste du först aktivera Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktivera"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"På – ansiktsbaserad"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Använd Organisera aviseringar"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"För <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Klart"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tillämpa"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Inaktivera"</string>
@@ -1013,12 +1019,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Visa ikoner för aviseringar med låg prioritet"</string>
     <string name="other" msgid="429768510980739978">"Annat"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"växla rutstorlek"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Ta bort ruta"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktivera eller inaktivera placeringsläge"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktivera eller inaktivera val"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Lägg till en ruta på den sista platsen"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytta ruta"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lägg till en ruta på önskad plats"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Flytta till <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1105,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Aktivera när batteriet håller på att ta slut"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Nej tack"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"Används"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> används."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" och "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"Används just nu av <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1588,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Tillgänglighet"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Verktyg"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Integritet"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Tillhandahålls av appar"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Skärm"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Okänt"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vill du återställa alla rutor?"</string>

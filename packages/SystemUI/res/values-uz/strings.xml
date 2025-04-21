@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Tilni almashtirish"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Joriy tilni qoldirish"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi ulashuv"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Wi-Fi orqali debaging uchun ruxsat berilsinmi?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Tarmoq nomi (SSID):\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi Manzil (BSSID):\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Bu tarmoqda doim ruxsat etilsin"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth qurilma belgisi"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Qurilma haqida tafsilotlarni oʻzgartirish uchun bosing"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Qurilma tafsilotlarini sozlash"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Hamma qurilmalar"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Yangi qurilmani ulash"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Batareya quvvati foizi nomaʼlum."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"tebranish"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s tovush balandligi tugmalari"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Chaqiruvlar va bildirishnomalar jiringlaydi (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Chiqarish sozlamalarini kiritish"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Tovush slayderlari yoyilgan"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Tovush slayderlari yigʻilgan"</string>
@@ -1583,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Qulayliklar"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Vositalar"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Maxfiylik"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Ilovalarga tegishli"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Ekran"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Noaniq"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Barcha katakchalar asliga qaytarilsinmi?"</string>

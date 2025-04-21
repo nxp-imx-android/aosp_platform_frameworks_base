@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"மொழியை மாற்று"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"தற்போதைய மொழியை வைத்திரு"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"வைஃபையைப் பகிர்"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"இந்த நெட்வொர்க்கில் வைஃபை பிழைதிருத்தத்தை அனுமதிக்கவா?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"நெட்வொர்க் பெயர் (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nவைஃபை முகவரி (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"இந்த நெட்வொர்க்கில் எப்போதும் அனுமதி"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"புளூடூத் சாதன ஐகான்"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"சாதன விவரத்தை உள்ளமைக்க கிளிக் செய்யலாம்"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. சாதன விவரத்தை உள்ளமைக்கும்."</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"அனைத்துச் சாதனங்களையும் காட்டும்"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"புதிய சாதனத்தை இணைக்கும்"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"பேட்டரி சதவீதம் தெரியவில்லை."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"அதிர்வுறும்"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s ஒலியளவுக் கட்டுப்பாடுகள்"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"அழைப்புகளும் அறிவிப்புகளும் வரும்போது ஒலிக்கச் செய்யும் (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"வெளியீட்டு அமைப்புகளுக்குச் செல்லும்"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"ஒலியளவு ஸ்லைடர்கள் விரிவாக்கப்பட்டன"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"ஒலியளவு ஸ்லைடர்கள் சுருக்கப்பட்டன"</string>
@@ -804,10 +812,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"உங்கள் டேப்லெட்டுடன் கீபோர்டை இணைக்க, முதலில் புளூடூத்தை இயக்க வேண்டும்."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"இயக்கு"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ஆன் - முகம் அடிப்படையிலானது"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
-    <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"அறிவிப்பு ஒருங்கிணைப்பைப் பயன்படுத்துதல்"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>க்கானவை:"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"முடிந்தது"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"பயன்படுத்து"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ஆஃப் செய்"</string>
@@ -915,13 +921,13 @@
     <string name="group_system_cycle_back" msgid="8194102916946802902">"சமீபத்திய ஆப்ஸுக்குப் பின்னோக்கிச் செல்லுதல்"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ஆப்ஸ் பட்டியலைத் திறத்தல்"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"அமைப்புகளைத் திறத்தல்"</string>
-    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"டிஜிட்டல் அசிஸ்டண்ட்டைத் திறங்கள்"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"டிஜிட்டல் அசிஸ்டண்ட்டைத் திறத்தல்"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"பூட்டுத் திரை"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"குறிப்பெடுத்தல்"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"பல வேலைகளைச் செய்தல்"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ஆப்ஸ் வலதுபுறம் வரும்படி திரைப் பிரிப்பைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ஆப்ஸ் இடதுபுறம் வரும்படி திரைப் பிரிப்பைப் பயன்படுத்துதல்"</string>
-    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"முழுத்திரையைப் பயன்படுத்து"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"முழுத்திரையைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"டெஸ்க்டாப் சாளரமாக்குதலைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"திரைப் பிரிப்பைப் பயன்படுத்தும்போது வலது/கீழ் உள்ள ஆப்ஸுக்கு மாறுதல்"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"திரைப் பிரிப்பைப் பயன்படுத்தும்போது இடது/மேலே உள்ள ஆப்ஸுக்கு மாறுதல்"</string>
@@ -1103,8 +1109,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"பேட்டரி தீர்ந்துபோகும் நிலையில் இருக்கும் போது ஆன் செய்யப்படும்"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"வேண்டாம்"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"உபயோகத்தில் உள்ளது"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> பயன்பாட்டில் உள்ளது."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" மற்றும் "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> பயன்படுத்துகிறது"</string>
@@ -1586,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"மாற்றுத்திறன் வசதி"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"யூட்டிலிட்டி சேவைகள்"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"தனியுரிமை"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"ஆப்ஸ் வழங்குபவை"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"டிஸ்ப்ளே"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"தெரியவில்லை"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"அனைத்துக் கட்டங்களையும் மீட்டமைக்கவா?"</string>

@@ -60,6 +60,8 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Spremeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Obdrži trenutni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Deli Wi‑Fi"</string>
+    <!-- no translation found for add_network_button_text (4046392140897987570) -->
+    <skip />
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Ali dovolite brezžično odpravljanje napak v tem omrežju?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Ime omrežja (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nNaslov omrežja Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Vedno dovoli v tem omrežju"</string>
@@ -246,6 +248,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona naprave Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite za konfiguriranje podrobnosti o napravi"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfiguriranje podrobnosti o napravi"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Ogled vseh naprav"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Seznanitev nove naprave"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Neznan odstotek napolnjenosti baterije."</string>
@@ -744,6 +750,8 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibriranje"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Kontrolniki glasnosti za %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Klici in obvestila bodo pozvonili (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
+    <skip />
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Vnos izhodnih nastavitev"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Razširitev drsnikov za glasnost"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Strnitev drsnikov za glasnost"</string>
@@ -752,7 +760,7 @@
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"zvok je izklopljen"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"vibriranje"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"Predvajanje »<xliff:g id="LABEL">%s</xliff:g>« v"</string>
-    <string name="media_output_title_without_playing" msgid="3825663683169305013">"Zvok bo predvajan v"</string>
+    <string name="media_output_title_without_playing" msgid="3825663683169305013">"Zvok bo predvajan v:"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"Poteka klicanje"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"Uglaševalnik uporabniškega vmesnika sistema"</string>
     <string name="status_bar" msgid="4357390266055077437">"Vrstica stanja"</string>
@@ -1583,7 +1591,10 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Dostopnost"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Orodja"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Zasebnost"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Zagotavljajo aplikacije"</string>
+    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
+    <skip />
+    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
+    <skip />
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Zaslon"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Neznano"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite ponastaviti vse ploščice?"</string>
