@@ -262,6 +262,7 @@ constructor(
                             tag = TAG,
                         )
                 ),
+            managingPackageName = state.projectionState.hostPackage,
             instanceId = instanceId,
         )
     }

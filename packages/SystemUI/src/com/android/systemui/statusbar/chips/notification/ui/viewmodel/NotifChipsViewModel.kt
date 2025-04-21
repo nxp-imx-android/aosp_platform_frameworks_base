@@ -104,6 +104,7 @@ constructor(
             }
         return PrunedNotificationChipModel(
             key = key,
+            packageName = packageName,
             appName = appName,
             statusBarChipIconView = statusBarChipIconView,
             text = content.shortCriticalText,
@@ -213,6 +214,7 @@ constructor(
 
         return OngoingActivityChipModel.Active(
             key = key,
+            managingPackageName = packageName,
             isImportantForPrivacy = false,
             icon = icon,
             content = content,
@@ -246,6 +248,7 @@ constructor(
      */
     private data class PrunedNotificationChipModel(
         val key: String,
+        val packageName: String,
         val appName: String,
         val statusBarChipIconView: StatusBarIconView?,
         /**
