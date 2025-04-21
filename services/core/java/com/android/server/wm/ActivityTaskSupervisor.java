@@ -1059,8 +1059,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // TODO(b/323801078): remove Exception when cleanup
             return e;
         }
-        if (com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
-                && !isSuccessful) {
+        if (!isSuccessful) {
             return new DeadObjectException("Failed to dispatch the ClientTransaction to dead"
                     + " process. See earlier log for more details.");
         }
