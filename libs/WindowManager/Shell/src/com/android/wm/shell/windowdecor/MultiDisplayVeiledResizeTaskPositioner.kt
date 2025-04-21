@@ -332,6 +332,10 @@ class MultiDisplayVeiledResizeTaskPositioner(
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
         for (change in info.changes) {
+            if (change.taskInfo == null) {
+                // Ignore non-task (e.g., display, activity) changes.
+                continue
+            }
             val sc = change.leash
             val endBounds = change.endAbsBounds
             val endPosition = change.endRelOffset
