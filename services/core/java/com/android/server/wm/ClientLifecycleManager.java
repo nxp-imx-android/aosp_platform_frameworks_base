@@ -25,7 +25,6 @@ import android.app.servertransaction.LaunchActivityItem;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.os.Build;
-import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -93,12 +92,7 @@ class ClientLifecycleManager {
             @NonNull ClientTransactionItem transactionItem) throws RemoteException {
         final ClientTransaction clientTransaction = new ClientTransaction(client);
         clientTransaction.addTransactionItem(transactionItem);
-        final boolean res = scheduleTransaction(clientTransaction);
-        if (!com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
-                && !res) {
-            throw new DeadObjectException();
-        }
-        return res;
+        return scheduleTransaction(clientTransaction);
     }
 
     /**
@@ -116,13 +110,8 @@ class ClientLifecycleManager {
         final ClientTransaction clientTransaction = getOrCreatePendingTransaction(client);
         clientTransaction.addTransactionItem(item);
 
-        final boolean res = onClientTransactionItemScheduled(clientTransaction,
+        return onClientTransactionItemScheduled(clientTransaction,
                 false /* shouldDispatchImmediately */);
-        if (!com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
-                && !res) {
-            throw new DeadObjectException();
-        }
-        return res;
     }
 
     /**
@@ -164,13 +153,7 @@ class ClientLifecycleManager {
             clientTransaction.addTransactionItem(items[i]);
         }
 
-        final boolean res = onClientTransactionItemScheduled(clientTransaction,
-                shouldDispatchImmediately);
-        if (!com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
-                && !res) {
-            throw new DeadObjectException();
-        }
-        return res;
+        return onClientTransactionItemScheduled(clientTransaction, shouldDispatchImmediately);
     }
 
     /** Executes all the pending transactions. */

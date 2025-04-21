@@ -37,12 +37,9 @@ import android.app.servertransaction.ClientTransactionItem;
 import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.SmallTest;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -198,7 +195,6 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
         verify(mLifecycleManager).scheduleTransaction(any());
     }
 
-    @EnableFlags(Flags.FLAG_CLEANUP_DISPATCH_PENDING_TRANSACTIONS_REMOTE_EXCEPTION)
     @Test
     public void testOnRemoteException_returnTrueOnSuccess() throws RemoteException {
         final boolean res = mLifecycleManager.scheduleTransactionItemNow(mClient, mTransactionItem);
@@ -206,7 +202,6 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
         assertTrue(res);
     }
 
-    @EnableFlags(Flags.FLAG_CLEANUP_DISPATCH_PENDING_TRANSACTIONS_REMOTE_EXCEPTION)
     @Test
     public void testOnRemoteException_returnFalseOnFailure() throws RemoteException {
         final DeadObjectException e = new DeadObjectException();
@@ -218,7 +213,6 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
         assertFalse(res);
     }
 
-    @EnableFlags(Flags.FLAG_CLEANUP_DISPATCH_PENDING_TRANSACTIONS_REMOTE_EXCEPTION)
     @Test
     public void testOnRemoteException_returnTrueForQueueing() throws RemoteException {
         spyOn(mWms.mWindowPlacerLocked);
