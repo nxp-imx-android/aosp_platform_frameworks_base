@@ -317,7 +317,7 @@
     <string name="bluetooth_select_map_version_dialog_title" msgid="7085934373987428460">"MAP-versie voor bluetooth selecteren"</string>
     <string name="bluetooth_select_a2dp_codec_type" msgid="952001408455456494">"Bluetooth-audiocodec"</string>
     <string name="bluetooth_select_a2dp_codec_type_dialog_title" msgid="7510542404227225545">"Codec voor Bluetooth-audio activeren\nSelectie"</string>
-    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Sample rate van Bluetooth-audio"</string>
+    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Samplingsnelheid van Bluetooth-audio"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate_dialog_title" msgid="5876305103137067798">"Codec voor Bluetooth-audio activeren\nSelectie: Bemonsteringsfrequentie"</string>
     <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"Uitgegrijsd betekent niet ondersteund door telefoon of headset"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Bits per sample voor Bluetooth-audio"</string>
@@ -379,8 +379,8 @@
     <string name="debug_app_set" msgid="6599535090477753651">"App voor foutopsporing: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"App selecteren"</string>
     <string name="no_application" msgid="9038334538870247690">"Niets"</string>
-    <string name="wait_for_debugger" msgid="7461199843335409809">"Wachten op debugger"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"Gedebugde app wacht op koppelen van debugger vóór uitvoering"</string>
+    <string name="wait_for_debugger" msgid="7461199843335409809">"Wachten op foutopsporings­programma"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"Gedebugde app wacht op koppelen van foutopsporings­programma vóór uitvoering"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"Invoer"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"Tekenen"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"Rendering met hardwareversnelling"</string>
@@ -401,7 +401,7 @@
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Flash volledige vensteroppervlakken bij updates"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Weergave-updates tonen"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Flash-weergaven in vensters bij update"</string>
-    <string name="show_hw_layers_updates" msgid="5268370750002509767">"Hardwarelayer-upd. tonen"</string>
+    <string name="show_hw_layers_updates" msgid="5268370750002509767">"Hardwarelagen-upd. tonen"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Hardwarelagen knipperen groen bij updates"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"Foutopsporing GPU-overbelasting"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"HW-overlays uitzetten"</string>
@@ -412,8 +412,8 @@
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Zet autom. routing naar USB-randapparatuur uit"</string>
     <string name="debug_layout" msgid="1659216803043339741">"Indelingsgrenzen tonen"</string>
     <string name="debug_layout_summary" msgid="8825829038287321978">"Toon clipgrenzen, marges en meer"</string>
-    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"V.r.n.l.-indelingsrichting afdwingen"</string>
-    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Stel de schermindelingsrichting geforceerd in op v.r.n.l. voor alle talen"</string>
+    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"RTL-indelingsrichting afdwingen"</string>
+    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Stel de schermindelingsrichting geforceerd in op RTL voor alle talen"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Doorzichtige navigatiebalk"</string>
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Maak de achtergrondkleur van de navigatiebalk standaard doorzichtig"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Vervagen op vensterniveau toestaan"</string>
@@ -441,7 +441,7 @@
     <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Wis activiteit zodra de gebruiker ermee stopt"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"Achtergrondproceslimiet"</string>
     <string name="show_all_anrs" msgid="9160563836616468726">"ANR\'s op de achtergrond"</string>
-    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Toon dialoogvenster \'App reageert niet\' voor achtergrond-apps"</string>
+    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Toon dialoogvenster \'App reageert niet\' voor apps op de achtergrond"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Kanaalwaarschuwingen voor meldingen tonen"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Toont een waarschuwing op het scherm wanneer een app een melding post zonder geldig kanaal"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"Toestaan van apps op externe opslag afdwingen"</string>
@@ -759,7 +759,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"<xliff:g id="SWITCHAPP">%1$s</xliff:g> uitzenden"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"Uitvoer wijzigen"</string>
     <string name="back_navigation_animation" msgid="8105467568421689484">"Voorspellende animaties voor gebaren voor terug"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Systeemanimaties aanzetten voor voorspellende animaties voor gebaren voor terug."</string>
+    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Systeemanimaties aanzetten voor voorspellende acties voor terug"</string>
     <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"Met deze instelling zet je systeemanimaties aan voor voorspellende gebaaranimaties. Je moet enableOnBackInvokedCallback per app instellen op True in het manifestbestand."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="not_specified" msgid="5423502443185110328">"Niet opgegeven"</string>

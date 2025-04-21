@@ -167,7 +167,7 @@
     <string name="bluetooth_hid_profile_summary_use_for" msgid="4289460627406490952">"ইনপুটের জন্য ব্যবহার করুন"</string>
     <string name="bluetooth_hearing_aid_profile_summary_use_for" msgid="3374057355721486932">"হিয়ারিং এডের জন্য ব্যবহার করুন"</string>
     <string name="bluetooth_le_audio_profile_summary_use_for" msgid="2778318636027348572">"LE_AUDIO-এর জন্য ব্যবহার করুন"</string>
-    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"যুক্ত করুন"</string>
+    <string name="bluetooth_pairing_accept" msgid="2054232610815498004">"পেয়ার করুন"</string>
     <string name="bluetooth_pairing_accept_all_caps" msgid="2734383073450506220">"যুক্ত করুন"</string>
     <string name="bluetooth_pairing_decline" msgid="6483118841204885890">"বাতিল করুন"</string>
     <string name="bluetooth_pairing_will_share_phonebook" msgid="3064334458659165176">"চেনানো থাকলে তা কানেক্ট থাকাকালীন অবস্থায় আপনার পরিচিতিগুলি এবং কলের ইতিহাসকে অ্যাক্সেস করতে অনুমোদিত করে৷"</string>

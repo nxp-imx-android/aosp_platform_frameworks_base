@@ -209,9 +209,9 @@
     <string name="tts_settings" msgid="8130616705989351312">"ટેક્સ્ટ ટૂ સ્પીચ સેટિંગ"</string>
     <string name="tts_settings_title" msgid="7602210956640483039">"ટેક્સ્ટ ટૂ સ્પીચ આઉટપુટ"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"સ્પીચ રેટ"</string>
-    <string name="tts_default_rate_summary" msgid="3781937042151716987">"ટેક્સ્ટ બોલાયેલ છે તે ઝડપ"</string>
+    <string name="tts_default_rate_summary" msgid="3781937042151716987">"ટેક્સ્ટ બોલાયેલી છે તે ઝડપ"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"પિચ"</string>
-    <string name="tts_default_pitch_summary" msgid="9132719475281551884">"સિન્થેસાઇઝ કરેલ વાણીના ટોન પર અસર કરે છે"</string>
+    <string name="tts_default_pitch_summary" msgid="9132719475281551884">"સિન્થેસાઇઝ કરેલી સ્પીચના ટોન પર અસર કરે છે"</string>
     <string name="tts_default_lang_title" msgid="4698933575028098940">"ભાષા"</string>
     <string name="tts_lang_use_system" msgid="6312945299804012406">"સિસ્ટમ ભાષાનો ઉપયોગ કરો"</string>
     <string name="tts_lang_not_selected" msgid="7927823081096056147">"ભાષા પસંદ કરેલ નથી"</string>
@@ -615,7 +615,7 @@
     <string name="media_transfer_this_phone" msgid="7194341457812151531">"આ ફોન"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"એનાલોગ"</string>
-    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"AUX"</string>
+    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"ઑગ્ઝિલરી"</string>
     <string name="media_output_status_unknown_error" msgid="5098565887497902222">"આ ડિવાઇસ પર ચલાવી શકતા નથી"</string>
     <string name="media_output_status_require_premium" msgid="8411255800047014822">"સ્વિચ કરવા માટે એકાઉન્ટ અપગ્રેડ કરો"</string>
     <string name="media_output_status_not_support_downloads" msgid="4523828729240373315">"ડાઉનલોડ કરેલું કન્ટેન્ટ અહીં ચલાવી શકતા નથી"</string>

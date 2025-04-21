@@ -579,7 +579,7 @@
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"Mais tempo."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"Menos tempo."</string>
     <string name="cancel" msgid="5665114069455378395">"Cancelar"</string>
-    <string name="next" msgid="2699398661093607009">"Próxima"</string>
+    <string name="next" msgid="2699398661093607009">"Avançar"</string>
     <string name="back" msgid="5554327870352703710">"Voltar"</string>
     <string name="save" msgid="3745809743277153149">"Salvar"</string>
     <string name="okay" msgid="949938843324579502">"Ok"</string>
