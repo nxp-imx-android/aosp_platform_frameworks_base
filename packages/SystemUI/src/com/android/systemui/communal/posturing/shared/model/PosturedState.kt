@@ -20,6 +20,9 @@ sealed interface PosturedState {
     /** Represents postured state */
     data object Postured : PosturedState
 
+    /** Represents state where we may be postured but we aren't sure yet */
+    data object MayBePostured : PosturedState
+
     /** Represents unknown/uninitialized state */
     data object Unknown : PosturedState
 

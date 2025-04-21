@@ -16,10 +16,10 @@
 
 package com.android.systemui.communal.posturing.domain.interactor
 
-import android.annotation.SuppressLint
 import android.hardware.Sensor
-import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.PosturingRepository
+import com.android.systemui.communal.posturing.domain.model.AggregatedConfidenceState
+import com.android.systemui.communal.posturing.shared.model.ConfidenceLevel
 import com.android.systemui.communal.posturing.shared.model.PosturedState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -27,7 +27,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
-import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.observeTriggerSensor
 import com.android.systemui.util.kotlin.slidingWindow
 import com.android.systemui.util.sensors.AsyncSensorManager
@@ -71,79 +70,64 @@ constructor(
      * Detects whether or not the device is stationary, applying a sliding window smoothing
      * algorithm.
      */
-    private val stationarySmoothed: Flow<Boolean> =
+    private val stationarySmoothed: Flow<AggregatedConfidenceState> =
         merge(
                 observeTriggerSensor(Sensor.TYPE_PICK_UP_GESTURE)
                     // If pickup detected, avoid triggering posturing at all within the sliding
                     // window by emitting a negative infinity value.
-                    .map { Float.NEGATIVE_INFINITY }
+                    .map { ConfidenceLevel.Negative(1f) }
                     .onEach { logger.i("pickup gesture detected") },
                 observeTriggerSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
                     // If motion detected, avoid triggering posturing at all within the sliding
                     // window by emitting a negative infinity value.
-                    .map { Float.NEGATIVE_INFINITY }
+                    .map { ConfidenceLevel.Negative(1f) }
                     .onEach { logger.i("significant motion detected") },
                 repository.positionState
                     .map { it.stationary }
-                    .filterNot { it is PositionState.StationaryState.Unknown }
-                    .map { stationaryState ->
-                        if (stationaryState is PositionState.StationaryState.Stationary) {
-                            stationaryState.confidence
-                        } else {
-                            // If not stationary, then we should effectively disable posturing by
-                            // emitting the lowest possible confidence.
-                            Float.NEGATIVE_INFINITY
-                        }
-                    },
+                    .filterNot { it is ConfidenceLevel.Unknown },
             )
             .slidingWindow(SLIDING_WINDOW_DURATION, clock)
             .filterNot { it.isEmpty() }
-            .map { window ->
-                val avgStationaryConfidence = window.average()
-                logger.i({ "stationary confidence: $double1 | window: $str1" }) {
-                    str1 = window.formatWindowForDebugging()
-                    double1 = avgStationaryConfidence
-                }
-                avgStationaryConfidence > CONFIDENCE_THRESHOLD
-            }
+            .map { window -> window.toConfidenceState() }
 
     /**
      * Detects whether or not the device is in an upright orientation, applying a sliding window
      * smoothing algorithm.
      */
-    private val orientationSmoothed: Flow<Boolean> =
+    private val orientationSmoothed: Flow<AggregatedConfidenceState> =
         repository.positionState
             .map { it.orientation }
-            .filterNot { it is PositionState.OrientationState.Unknown }
-            .map { orientationState ->
-                if (orientationState is PositionState.OrientationState.Postured) {
-                    orientationState.confidence
-                } else {
-                    // If not postured, then we should effectively disable posturing by
-                    // emitting the lowest possible confidence.
-                    Float.NEGATIVE_INFINITY
-                }
-            }
+            .filterNot { it is ConfidenceLevel.Unknown }
             .slidingWindow(SLIDING_WINDOW_DURATION, clock)
             .filterNot { it.isEmpty() }
-            .map { window ->
-                val avgOrientationConfidence = window.average()
-                logger.i({ "orientation confidence: $double1 | window: $str1" }) {
-                    str1 = window.formatWindowForDebugging()
-                    double1 = avgOrientationConfidence
-                }
-                avgOrientationConfidence > CONFIDENCE_THRESHOLD
-            }
+            .map { window -> window.toConfidenceState() }
 
     /**
      * Posturing is composed of the device being stationary and in the correct orientation. If both
      * conditions are met, then consider it postured.
      */
     private val posturedSmoothed: Flow<PosturedState> =
-        allOf(stationarySmoothed, orientationSmoothed)
-            .map { postured ->
-                if (postured) {
+        combine(stationarySmoothed, orientationSmoothed) {
+                stationaryConfidence,
+                orientationConfidence ->
+                logger.i({ "stationary: $str1 | orientation: $str2" }) {
+                    str1 = stationaryConfidence.toString()
+                    str2 = orientationConfidence.toString()
+                }
+
+                val isStationary = stationaryConfidence.avgConfidence >= CONFIDENCE_THRESHOLD
+                val isInOrientation = orientationConfidence.avgConfidence >= CONFIDENCE_THRESHOLD
+
+                if (isStationary && isInOrientation) {
                     PosturedState.Postured
+                } else if (
+                    stationaryConfidence.latestConfidence >= CONFIDENCE_THRESHOLD &&
+                        orientationConfidence.latestConfidence >= CONFIDENCE_THRESHOLD
+                ) {
+                    // We may be postured soon since the latest confidence is above the threshold.
+                    // If  no new events come in, we will eventually transition to postured at the
+                    // end of the sliding window.
+                    PosturedState.MayBePostured
                 } else {
                     PosturedState.NotPostured
                 }
@@ -171,6 +155,9 @@ constructor(
             debugValue.asBoolean() ?: postured.asBoolean() ?: false
         }
 
+    /** Whether the device may become postured soon. */
+    val mayBePostured: Flow<Boolean> = posturedSmoothed.map { it == PosturedState.MayBePostured }
+
     /**
      * Helper for observing a trigger sensor, which automatically unregisters itself after it
      * executes once.
@@ -192,11 +179,11 @@ fun PosturedState.asBoolean(): Boolean? {
     return when (this) {
         is PosturedState.Postured -> true
         PosturedState.NotPostured -> false
+        PosturedState.MayBePostured -> false
         PosturedState.Unknown -> null
     }
 }
 
-@SuppressLint("DefaultLocale")
-fun List<Float>.formatWindowForDebugging(): String {
-    return joinToString(prefix = "[", postfix = "]") { String.format("%.2f", it) }
+private fun List<ConfidenceLevel>.toConfidenceState(): AggregatedConfidenceState {
+    return AggregatedConfidenceState(rawWindow = this.toList())
 }
