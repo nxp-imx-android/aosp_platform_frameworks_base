@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.internal.widget;
+package com.android.server.locksettings;
 
 /**
- * Private API to be notified about reboot escrow events.
- *
- * {@hide}
+ * Callback interface to notify when an added escrow token has been activated.
  */
-public interface RebootEscrowListener {
+public interface EscrowTokenStateChangeCallback {
     /**
-     * Called when the preparation status has changed. When {@code prepared} is {@code true} the
-     * user has entered their lock screen knowledge factor (LSKF) and the HAL has confirmed that
-     * it is ready to retrieve the secret after a reboot. When {@code prepared} is {@code false}
-     * then those conditions are not true.
+     * The method to be called when the token is activated.
+     * @param handle 64 bit handle corresponding to the escrow token
+     * @param userId user for whom the escrow token has been added
      */
-    void onPreparedForReboot(boolean prepared);
+    void onEscrowTokenActivated(long handle, int userId);
 }

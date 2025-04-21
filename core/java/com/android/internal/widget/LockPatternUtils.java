@@ -1553,18 +1553,6 @@ public class LockPatternUtils {
     }
 
     /**
-     * Callback interface to notify when an added escrow token has been activated.
-     */
-    public interface EscrowTokenStateChangeCallback {
-        /**
-         * The method to be called when the token is activated.
-         * @param handle 64 bit handle corresponding to the escrow token
-         * @param userId user for whom the escrow token has been added
-         */
-        void onEscrowTokenActivated(long handle, int userId);
-    }
-
-    /**
      * Remove a weak escrow token.
      *
      * @return true if the given handle refers to a valid weak token previously returned from
