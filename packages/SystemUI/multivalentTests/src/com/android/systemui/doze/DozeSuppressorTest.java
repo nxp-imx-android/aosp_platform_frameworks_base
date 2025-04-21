@@ -38,11 +38,13 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.hardware.display.AmbientDisplayConfiguration;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.annotation.UiThreadTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.BiometricUnlockController;
@@ -122,6 +124,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testSuspendTriggersDoze_carMode() {
         // GIVEN car mode
         mDozeSuppressor.onUiModeTypeChanged(UI_MODE_TYPE_CAR);
@@ -136,6 +139,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testSuspendTriggersDoze_enterCarMode() {
         // GIVEN currently dozing
         mDozeSuppressor.transitionTo(UNINITIALIZED, INITIALIZED);
@@ -149,6 +153,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozeResume_exitCarMode() {
         // GIVEN currently suspended, with AOD not enabled
         mDozeSuppressor.onUiModeTypeChanged(UI_MODE_TYPE_CAR);
@@ -164,6 +169,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozeAoDResume_exitCarMode() {
         // GIVEN currently suspended, with AOD not enabled
         mDozeSuppressor.onUiModeTypeChanged(UI_MODE_TYPE_CAR);
@@ -179,6 +185,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testUiModeDoesNotChange_noStateTransition() {
         mDozeSuppressor.transitionTo(UNINITIALIZED, INITIALIZED);
         clearInvocations(mDozeMachine);
@@ -193,6 +200,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testUiModeTypeChange_whenDozeMachineIsNotReady_doesNotDoAnything() {
         when(mDozeMachine.isUninitializedOrFinished()).thenReturn(true);
 
@@ -202,6 +210,7 @@ public class DozeSuppressorTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testUiModeTypeChange_CarModeEnabledAndDozeMachineNotReady_suspendsTriggersAfter() {
         when(mDozeMachine.isUninitializedOrFinished()).thenReturn(true);
         mDozeSuppressor.onUiModeTypeChanged(UI_MODE_TYPE_CAR);
