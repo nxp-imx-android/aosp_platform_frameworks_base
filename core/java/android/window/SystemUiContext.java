@@ -23,8 +23,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
 
-import com.android.window.flags.Flags;
-
 /**
  * System Context to be used for UI. This Context has resources that can be themed.
  *
@@ -39,10 +37,6 @@ public class SystemUiContext extends ContextWrapper implements ConfigurationDisp
 
     public SystemUiContext(Context base) {
         super(base);
-        if (!Flags.trackSystemUiContextBeforeWms()) {
-            throw new UnsupportedOperationException("SystemUiContext can only be used after"
-                    + " flag is enabled.");
-        }
     }
 
     @Override

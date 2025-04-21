@@ -2798,9 +2798,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final int lastOrientation = getConfiguration().orientation;
         final int lastWindowingMode = getWindowingMode();
         super.onConfigurationChanged(newParentConfig);
-        if (!Flags.trackSystemUiContextBeforeWms()) {
-            mSysUiContextConfigCallback.onConfigurationChanged(newParentConfig);
-        }
         mPinnedTaskController.onPostDisplayConfigurationChanged();
         // Update IME parent if needed.
         updateImeParent();
@@ -3437,9 +3434,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     .getKeyguardController().onDisplayRemoved(mDisplayId);
             mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
-            if (Flags.trackSystemUiContextBeforeWms()) {
-                getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
-            }
+            getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
         } finally {
             mDisplayReady = false;
         }
@@ -5542,9 +5537,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mWmService.mWindowContextListenerController.registerWindowContainerListener(
                 wpc, systemUiContext.getWindowContextToken(), this,
                 INVALID_WINDOW_TYPE, true /* callerCanManageAppTokens */, null /* options */);
-        if (Flags.trackSystemUiContextBeforeWms()) {
-            systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
-        }
+        systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
     }
 
     @Override
