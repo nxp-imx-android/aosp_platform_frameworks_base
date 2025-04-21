@@ -17,6 +17,8 @@
 package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_BACKGROUND;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.am.BroadcastRecord.DELIVERY_DEFERRED;
@@ -67,7 +69,6 @@ import androidx.test.filters.SmallTest;
 import com.android.server.compat.PlatformCompat;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1043,18 +1044,19 @@ public class BroadcastRecordTest {
         final BroadcastProcessedEventRecord broadcastProcessedEventRecord =
                 record.getBroadcastProcessedRecordsForTest().get(
                         BroadcastRecord.getReceiverProcessName(receiver));
+        final int[] expectedBroadcastTypes =
+                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE};
 
         assertBroadcastProcessedEvent(
                 broadcastProcessedEventRecord,
-                10001,
+                /* receiverUid = */ 10001,
                 PROCESS1,
-                1,
-                2,
-                10,
-                10);
+                /* numberOfReceivers = */ 1,
+                expectedBroadcastTypes,
+                /* totalBroadcastFinishTimeMillis = */ 10,
+                /* maxReceiverFinishTimeMillis = */ 10);
     }
 
-    @Ignore
     @Test
     @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
     public void testUpdateBroadcastProcessedEventRecord_withNewAndExistingReceiver_multipleBroadcastProcessedEventRecordCreated() {
@@ -1079,23 +1081,25 @@ public class BroadcastRecordTest {
         final BroadcastProcessedEventRecord broadcastProcessedEventRecord2 =
                 record.getBroadcastProcessedRecordsForTest().get(
                         BroadcastRecord.getReceiverProcessName(receiver2));
+        final int[] expectedBroadcastTypes =
+                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE};
 
         assertBroadcastProcessedEvent(
                 broadcastProcessedEventRecord1,
-                10001,
+                /* receiverUid = */ 10001,
                 PROCESS1,
-                2,
-                1,
-                31,
-                20);
+                /* numberOfReceivers = */ 2,
+                expectedBroadcastTypes,
+                /* totalBroadcastFinishTimeMillis = */ 31,
+                /* maxReceiverFinishTimeMillis = */ 20);
         assertBroadcastProcessedEvent(
                 broadcastProcessedEventRecord2,
-                10002,
+                /* receiverUid = */ 10002,
                 PROCESS2,
-                1,
-                1,
-                11,
-                11);
+                /* numberOfReceivers = */ 1,
+                expectedBroadcastTypes,
+                /* totalBroadcastFinishTimeMillis = */ 11,
+                /* maxReceiverFinishTimeMillis = */ 11);
     }
 
     @Test
@@ -1131,7 +1135,7 @@ public class BroadcastRecordTest {
             int receiverUid,
             String processName,
             int numberOfReceivers,
-            int broadcastTypeLength,
+            int[] broadcastTypes,
             long totalBroadcastFinishTimeMillis,
             long maxReceiverFinishTimeMillis) {
         assertNotNull(broadcastProcessedEventRecord);
@@ -1141,8 +1145,8 @@ public class BroadcastRecordTest {
                 .isEqualTo(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         assertThat(broadcastProcessedEventRecord.getReceiverProcessNameForTest())
                 .isEqualTo(processName);
-        assertThat(broadcastProcessedEventRecord.getBroadcastTypesForTest().length)
-                .isEqualTo(broadcastTypeLength);
+        assertThat(broadcastProcessedEventRecord.getBroadcastTypesForTest())
+                .isEqualTo(broadcastTypes);
         assertThat(broadcastProcessedEventRecord.getNumberOfReceiversForTest())
                 .isEqualTo(numberOfReceivers);
         assertThat(broadcastProcessedEventRecord.getTotalBroadcastFinishTimeMillisForTest())
