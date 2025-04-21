@@ -16475,7 +16475,7 @@ package android.graphics {
 
   public final class Gainmap implements android.os.Parcelable {
     ctor public Gainmap(@NonNull android.graphics.Bitmap);
-    ctor @FlaggedApi("com.android.graphics.hwui.flags.gainmap_constructor_with_metadata") public Gainmap(@NonNull android.graphics.Gainmap, @NonNull android.graphics.Bitmap);
+    ctor public Gainmap(@NonNull android.graphics.Gainmap, @NonNull android.graphics.Bitmap);
     method public int describeContents();
     method @FlaggedApi("com.android.graphics.hwui.flags.iso_gainmap_apis") @Nullable public android.graphics.ColorSpace getAlternativeImagePrimaries();
     method @NonNull public float getDisplayRatioForFullHdr();
