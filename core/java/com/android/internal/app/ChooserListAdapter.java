@@ -16,6 +16,7 @@
 
 package com.android.internal.app;
 
+import static android.service.chooser.Flags.doNotDelayChooserAdapterNotifyDataChange;
 import static android.service.chooser.Flags.notifySingleItemChangeOnIconLoad;
 
 import static com.android.internal.app.ChooserActivity.TARGET_TYPE_SHORTCUTS_FROM_PREDICTION_SERVICE;
@@ -245,6 +246,10 @@ public class ChooserListAdapter extends ResolverListAdapter {
 
     @Override
     public void notifyDataSetChanged() {
+        if (doNotDelayChooserAdapterNotifyDataChange()) {
+            super.notifyDataSetChanged();
+            return;
+        }
         if (!mListViewDataChanged) {
             mChooserListCommunicator.sendListViewUpdateMessage(getUserHandle());
             mListViewDataChanged = true;
