@@ -58,7 +58,7 @@ fun SqueezeEffect(
     @DrawableRes topRoundedCornerResourceId: Int,
     @DrawableRes bottomRoundedCornerResourceId: Int,
     physicalPixelDisplaySizeRatio: Float,
-    onEffectFinished: () -> Unit,
+    onEffectFinished: suspend () -> Unit,
     appZoomOutOptional: Optional<AppZoomOut>,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }

@@ -27,6 +27,7 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
@@ -35,21 +36,20 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.util.Optional
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class TopLevelWindowEffects
 @Inject
 constructor(
     @Application private val context: Context,
-    @Application private val applicationScope: CoroutineScope,
-    @Background private val bgContext: CoroutineContext,
+    @Main private val mainDispatcher: CoroutineDispatcher,
+    @Background private val topLevelWindowEffectsScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
@@ -62,33 +62,19 @@ constructor(
     private var root: EffectsWindowRoot? = null
 
     override fun start() {
-        applicationScope.launch {
-            var launchWindowEffect: Job? = null
+        topLevelWindowEffectsScope.launch {
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 if (enabled) {
                     keyEventInteractor.isPowerButtonDown.collectLatest { down ->
-                        // cancel creating effects window if UP event is received within timeout
-                        // threshold of initial delay
-                        launchWindowEffect?.cancel()
                         if (down) {
                             val roundedCornerInfo =
-                                async(context = bgContext) {
-                                    squeezeEffectInteractor.getRoundedCornersResourceId()
-                                }
-                            val initialDelay =
-                                async(context = bgContext) {
-                                    squeezeEffectInteractor.getInvocationEffectInitialDelayMs()
-                                }
-                            launchWindowEffect = launch {
-                                delay(initialDelay.await())
-                                addWindow(
-                                    roundedCornerInfo.await().topResourceId,
-                                    roundedCornerInfo.await().bottomResourceId,
-                                    roundedCornerInfo.await().physicalPixelDisplaySizeRatio,
-                                )
-                            }
-                        } else {
-                            launchWindowEffect = null
+                                squeezeEffectInteractor.getRoundedCornersResourceId()
+                            delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
+                            addWindow(
+                                roundedCornerInfo.topResourceId,
+                                roundedCornerInfo.bottomResourceId,
+                                roundedCornerInfo.physicalPixelDisplaySizeRatio,
+                            )
                         }
                     }
                 }
@@ -96,13 +82,12 @@ constructor(
         }
     }
 
-    private fun addWindow(
+    private suspend fun addWindow(
         @DrawableRes topRoundedCornerId: Int,
         @DrawableRes bottomRoundedCornerId: Int,
         physicalPixelDisplaySizeRatio: Float,
     ) {
         if (root == null) {
-            notificationShadeWindowController.setRequestTopUi(true, TAG)
             root =
                 EffectsWindowRoot(
                     context = context,
@@ -111,18 +96,27 @@ constructor(
                     bottomRoundedCornerResourceId = bottomRoundedCornerId,
                     physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
                     onEffectFinished = {
-                        notificationShadeWindowController.setRequestTopUi(false, TAG)
-                        if (root?.isAttachedToWindow == true) {
-                            windowManager.removeView(root)
-                            root = null
+                        runOnMainThread {
+                            if (root?.isAttachedToWindow == true) {
+                                windowManager.removeView(root)
+                                root = null
+                            }
+                            notificationShadeWindowController.setRequestTopUi(false, TAG)
                         }
                     },
                     appZoomOutOptional = appZoomOutOptional,
                 )
             root?.let { rootView ->
-                windowManager.addView(rootView, getWindowManagerLayoutParams())
+                runOnMainThread {
+                    notificationShadeWindowController.setRequestTopUi(true, TAG)
+                    windowManager.addView(rootView, getWindowManagerLayoutParams())
+                }
             }
         }
+    }
+
+    private suspend fun runOnMainThread(block: () -> Unit) {
+        withContext(mainDispatcher) { block() }
     }
 
     private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {
