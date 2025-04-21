@@ -1411,6 +1411,11 @@ public final class MediaRouter2 {
         RoutingController controller =
                 getMatchingController(sessionInfo, /* logPrefix */ "updateControllerOnHandler");
         if (controller != null) {
+            if (Flags.enableMirroringInMediaRouter2()) {
+                sessionInfo =
+                        ensureClientPackageNameForSystemSession(
+                                sessionInfo, mImpl.getClientPackageName());
+            }
             controller.setRoutingSessionInfo(sessionInfo);
             notifyControllerUpdated(controller);
         }
@@ -3737,13 +3742,12 @@ public final class MediaRouter2 {
             }
         }
 
-        /**
-         * Returns {@code null}. The client package name is only associated to proxy {@link
-         * MediaRouter2} instances.
-         */
         @Override
         public String getClientPackageName() {
-            return null;
+            // TODO: b/362507305 - Merge getPackageName and getClientPackageName so that they both
+            // return the package name of the client app, once enableMirroringInMediaRouter2 reaches
+            // nextfood.
+            return Flags.enableMirroringInMediaRouter2() ? mPackageName : null;
         }
 
         @Override
