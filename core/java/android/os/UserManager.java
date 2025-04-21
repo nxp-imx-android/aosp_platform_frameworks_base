@@ -2302,6 +2302,12 @@ public class UserManager {
     public static final int LOGOUTABILITY_STATUS_CANNOT_SWITCH = 3;
 
     /**
+     * Indicates that user cannot logout because logout is not supported on the device.
+     * @hide
+     */
+    public static final int LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED = 4;
+
+    /**
      * Result returned in {@link #getUserLogoutability()} indicating user logoutability.
      * @hide
      */
@@ -2310,7 +2316,8 @@ public class UserManager {
             LOGOUTABILITY_STATUS_OK,
             LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER,
             LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO,
-            LOGOUTABILITY_STATUS_CANNOT_SWITCH
+            LOGOUTABILITY_STATUS_CANNOT_SWITCH,
+            LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED
     })
     public @interface UserLogoutability {}
 
@@ -2807,6 +2814,7 @@ public class UserManager {
      * {@link #LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER},
      * {@link #LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO},
      * {@link #LOGOUTABILITY_STATUS_CANNOT_SWITCH}.
+     * {@link #LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED}.
      * @hide
      */
     @RequiresPermission(Manifest.permission.MANAGE_USERS)

@@ -3052,15 +3052,12 @@ public class UserManagerService extends IUserManager.Stub {
 
         checkManageUsersPermission("getUserLogoutability");
 
-        if (userId == UserHandle.USER_SYSTEM) {
-            return UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER;
+        if (isHeadlessSystemUserMode() && !canSwitchToHeadlessSystemUser()) {
+            return UserManager.LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED;
         }
 
-        if (userId != getCurrentUserId()) {
-            // TODO(b/393656514): Decide what to do with non-current/background users.
-            // As of now, we are not going to logout a background user. A background user should
-            // simply be stopped instead.
-            return UserManager.LOGOUTABILITY_STATUS_CANNOT_SWITCH;
+        if (userId == UserHandle.USER_SYSTEM) {
+            return UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER;
         }
 
         if (getUserSwitchability(userId) != UserManager.SWITCHABILITY_STATUS_OK) {
