@@ -61,7 +61,10 @@ import com.android.server.accessibility.BaseEventStreamTransformation;
 import com.android.server.accessibility.Flags;
 
 /**
- * Implements "Automatically click on mouse stop" feature.
+ * Implements "Automatically click on mouse stop" feature, targeting users with limited dexterity
+ * struggle to use a mouse due to the fine motor control required for clicking and cursor control.
+ * The feature supports several types of auto click, covering most if not all mouse functionalities,
+ * naming left click by default, right click, double click, scroll, drag and move, long press.
  *
  * If enabled, it will observe motion events from mouse source, and send click event sequence
  * shortly after mouse stops moving. The click will only be performed if mouse movement had been
@@ -83,6 +86,7 @@ import com.android.server.accessibility.Flags;
  */
 public class AutoclickController extends BaseEventStreamTransformation {
 
+    // Default duration between mouse movement stops and the auto click happens.
     public static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
             ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
 
@@ -92,6 +96,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             (long) (ViewConfiguration.getLongPressTimeout() * 1.5f);
 
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
+
+    // When cursor hovers over auto scrolling direction panel, continuous scrolling happens. These
+    // two constants are the auto scrolling distance per scrolling interval and the value of scroll
+    // interval. They control how fast the continuous scrolling performs. The values could be
+    // further fine tuned based on user feedback.
     private static final float SCROLL_AMOUNT = 0.5f;
     protected static final long CONTINUOUS_SCROLL_INTERVAL = 30;
     private Handler mContinuousScrollHandler;
@@ -100,7 +109,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
     private final int mUserId;
-    // The position that scroll actual happens.
+
+    // The position where scroll actually happens.
     @VisibleForTesting
     float mScrollCursorX;
     @VisibleForTesting
@@ -130,16 +140,23 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     // True during the duration of a dragging event.
     private boolean mDragModeIsDragging = false;
+
     // The MotionEvent downTime attribute associated with the originating click for a dragging
     // move.
     private long mDragModeClickDownTime;
 
     // True during the duration of a long press event.
     private boolean mHasOngoingLongPress = false;
+
     // The MotionEvent downTime attribute associated with the originating click for a long press
-    // move.
+    // event.
     private long mLongPressDownTime;
 
+    /**
+     * Controller for the auto click type UI panel, allowing users to 1) select what type of auto
+     * click they want to perform, 2) pause the auto click, and 3) move the UI panel itself to a
+     * different location on screen. See {@code AutoclickTypePanel} class.
+     */
     @VisibleForTesting
     final ClickPanelControllerInterface clickPanelController =
             new ClickPanelControllerInterface() {
@@ -174,6 +191,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
             };
 
+    /**
+     * Controller for auto scrolling UI panel, allowing users to perform auto scrolling on different
+     * directions and exit the scrolling UI panel itself. See {@code AutoclickScrollPanel} class.
+     */
     @VisibleForTesting
     final AutoclickScrollPanel.ScrollPanelControllerInterface mScrollPanelController =
             new AutoclickScrollPanel.ScrollPanelControllerInterface() {
@@ -251,6 +272,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
         super.onMotionEvent(event, rawEvent, policyFlags);
     }
 
+    /**
+     * Autoclick indicator is a ring shape animation on the cursor location indicating when the
+     * click will happen. See {@code AutoclickIndicatorView} class.
+     */
     private void initiateAutoclickIndicator(Handler handler) {
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
         mAutoclickIndicatorView = new AutoclickIndicatorView(mContext);
@@ -353,6 +378,15 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
     }
 
+    /**
+     * Autoclick type panel contains a pause button, upon clicking (either by the autoclick feature
+     * itself or a manual click), the auto clicking will temporary be paused. This is different from
+     * turning off the autoclick feature. Pausing the autoclick keeps the click type panel visible,
+     * while turning off the autoclick feature will also remove the click type panel from screen.
+     * The other key point is that hovering over the click type panel will always trigger auto click
+     * even during the pause state. This is to allow dexterity users to resume from pause state
+     * without really clicking the mouse button.
+     */
     private boolean isPaused() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
                 && !isPanelHovered();
@@ -478,23 +512,43 @@ public class AutoclickController extends BaseEventStreamTransformation {
     }
 
     /**
-     * Observes autoclick setting values, and updates ClickScheduler delay and indicator size
-     * whenever the setting value changes.
+     * Observes and updates various autoclick setting values.
      */
     final private static class AutoclickSettingsObserver extends ContentObserver {
-        /** URI used to identify the autoclick delay setting with content resolver. */
+        /**
+         * URI used to identify the autoclick delay setting with content resolver. This is the
+         * duration between mouse movement stops and the auto click happens.
+         */
         private final Uri mAutoclickDelaySettingUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY);
 
-        /** URI used to identify the autoclick cursor area size setting with content resolver. */
+        /**
+         * URI used to identify the autoclick cursor area size setting with content resolver. This
+         * setting has two functions: 1) it corresponds to the radius of the ring shape animated
+         * click indicator visually; 2) it is the movement slop of whether a mouse movement is
+         * considered as minor cursor movement. When the "ignore minor cursor movement" setting is
+         * on, this minor movement will not interrupt the current click scheduler.
+         */
         private final Uri mAutoclickCursorAreaSizeSettingUri =
                 Settings.Secure.getUriFor(Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE);
 
-        /** URI used to identify ignore minor cursor movement setting with content resolver. */
+        /**
+         * URI used to identify ignore minor cursor movement setting with content resolver. If it is
+         * on, a cursor movement within the slop will be ignored and won't restart the current click
+         * scheduler.
+         */
         private final Uri mAutoclickIgnoreMinorCursorMovementSettingUri =
                 Settings.Secure.getUriFor(
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
 
+        /**
+         * URI used to identify whether to revert to left click after a click action setting with
+         * content resolver. When it is on, after any click type is triggered once such as a double
+         * click, the click type will be changed to the default left click type. This setting could
+         * be useful based on the assumption that the left click is the most common action. Other
+         * click types are for one time usage. For example, when the user wants to click a button
+         * on the context menu, one would perform right click once, and then left click.
+         */
         private final Uri mAutoclickRevertToLeftClickSettingUri =
                 Settings.Secure.getUriFor(
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK);
@@ -510,8 +564,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
 
         /**
-         * Starts the observer. And makes sure up-to-date autoclick delay is propagated to
-         * |clickScheduler|.
+         * Starts the observer. And makes sure various up-to-date settings are propagated.
          *
          * @param contentResolver Content resolver that should be observed for setting's value
          *                        changes.
@@ -564,6 +617,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         mUserId);
                 onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
 
+                // Register observer to listen to revert to left click setting change.
                 mContentResolver.registerContentObserver(
                         mAutoclickRevertToLeftClickSettingUri,
                         /* notifyForDescendants= */ false,
@@ -644,6 +698,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
     }
 
+    /**
+     * Schedules and draws the ring shape animated click indicator that should be initiated when
+     * mouse pointer stops moving.
+     */
     private final class AutoclickIndicatorScheduler implements Runnable {
         private final Handler mHandler;
         private long mScheduledShowIndicatorTime;
@@ -699,6 +757,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mHandler.removeCallbacks(this);
         }
 
+        // Cursor area size corresponds to the ring indicator radius size.
         public void updateCursorAreaSize(int size) {
             mAutoclickIndicatorView.setRadius(size);
         }
@@ -728,15 +787,19 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         /** Whether there is pending click. */
         private boolean mActive;
+
         /** If active, time at which pending click is scheduled. */
         private long mScheduledClickTime;
 
         /** Last observed motion event. null if no events have been observed yet. */
         private MotionEvent mLastMotionEvent;
+
         /** Last observed motion event's policy flags. */
         private int mEventPolicyFlags;
+
         /** Current meta state. This value will be used as meta state for click event sequence. */
         private int mMetaState;
+
         /** Last observed panel hovered state when click was scheduled. */
         private boolean mHoveredState;
 
@@ -768,6 +831,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         @Override
         public void run() {
             long now = SystemClock.uptimeMillis();
+
             // Click was rescheduled after task was posted. Post new run task at updated time.
             if (now < mScheduledClickTime) {
                 mHandler.postDelayed(this, mScheduledClickTime - now);
@@ -830,8 +894,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mHandler.removeCallbacks(this);
         }
 
-        // Reset the drag state after a canceled click to avoid potential side effects from
-        // leaving it in an inconsistent state.
+        /**
+         * Resets the drag state after a canceled click to avoid potential side effects from
+         * leaving it in an inconsistent state.
+         */
         private void clearDraggingState() {
             if (mLastMotionEvent != null) {
                 // A final ACTION_UP event needs to be sent to alert the system that dragging has
@@ -847,8 +913,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mDragModeIsDragging = false;
         }
 
-        // Cancel the pending long press to avoid potential side effects from
-        // leaving it in an inconsistent state.
+        /**
+         * Cancels the pending long press to avoid potential side effects from
+         * leaving it in an inconsistent state.
+         */
         private void clearLongPressState() {
             if (mLastMotionEvent != null) {
                 // A final ACTION_CANCEL event needs to be sent to alert the system that long press
@@ -917,6 +985,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
          */
         private void rescheduleClick(int delay) {
             long clickTime = SystemClock.uptimeMillis() + delay;
+
             // If there already is a scheduled click at time before the updated time, just update
             // scheduled time. The click will actually be rescheduled when pending callback is
             // run.
@@ -988,6 +1057,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             float deltaX = mAnchorCoords.x - event.getX(pointerIndex);
             float deltaY = mAnchorCoords.y - event.getY(pointerIndex);
             double delta = Math.hypot(deltaX, deltaY);
+
             // If the panel is hovered, always use the default slop so it's easier to click the
             // closely spaced buttons.
             double slop =
@@ -1217,7 +1287,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
                             lastMotionEvent.getFlags());
         }
 
-        // To start a drag event, only send the DOWN and BUTTON_PRESS events.
+        /**
+         * To start a drag event, only send the DOWN and BUTTON_PRESS events.
+         */
         private void startDragEvent() {
             mDragModeClickDownTime = SystemClock.uptimeMillis();
             mDragModeIsDragging = true;
@@ -1248,8 +1320,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             pressEvent.recycle();
         }
 
-        // To end a drag event, only send the BUTTON_RELEASE and UP events, making sure to
-        // include the originating drag click's down time.
+        /**
+         * To end a drag event, only send the BUTTON_RELEASE and UP events, making sure to
+         * include the originating drag click's down time.
+         */
         private void endDragEvent() {
             mDragModeIsDragging = false;
 
