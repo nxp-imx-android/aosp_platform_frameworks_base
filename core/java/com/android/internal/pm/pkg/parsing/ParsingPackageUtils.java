@@ -151,6 +151,8 @@ import java.util.StringTokenizer;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodKeepStaticInitializer
 public class ParsingPackageUtils {
 
     private static final String TAG = ParsingUtils.TAG;
@@ -3624,6 +3626,7 @@ public class ParsingPackageUtils {
     /**
      * Getter for the flags object
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static AconfigFlags getAconfigFlags() {
         return sAconfigFlags;
     }
