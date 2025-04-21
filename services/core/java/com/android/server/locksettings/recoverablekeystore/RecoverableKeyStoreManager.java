@@ -48,6 +48,7 @@ import android.util.FeatureFlagUtils;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.HexDump;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockPatternView;
@@ -1082,7 +1083,7 @@ public class RecoverableKeyStoreManager {
             int keyguardCredentialsType = lockPatternUtilsToKeyguardType(savedCredentialType);
             try (LockscreenCredential credential =
                     createLockscreenCredential(keyguardCredentialsType, decryptedCredentials)) {
-                LockPatternUtils.zeroize(decryptedCredentials);
+                ArrayUtils.zeroize(decryptedCredentials);
                 decryptedCredentials = null;
                 VerifyCredentialResponse verifyResponse =
                         lockSettingsService.verifyCredential(credential, userId, 0);
