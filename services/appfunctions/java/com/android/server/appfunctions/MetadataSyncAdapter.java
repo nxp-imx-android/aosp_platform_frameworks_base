@@ -57,6 +57,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * This class implements helper methods for synchronously interacting with AppSearch while
@@ -140,8 +141,10 @@ public class MetadataSyncAdapter {
                 mCurrentSyncTask = null;
             }
 
-            if (!mExecutor.isShutdown()) {
+            try {
                 mCurrentSyncTask = mExecutor.submit(runnable);
+            } catch (RejectedExecutionException ex) {
+                Slog.w(TAG, "Failed to submit sync request due to executor shutdown.", ex);
             }
         }
 
@@ -407,7 +410,6 @@ public class MetadataSyncAdapter {
         return diffMap;
     }
 
-
     /**
      * This method returns a map of package names to a set of function ids from the AppFunction
      * metadata.
@@ -425,28 +427,43 @@ public class MetadataSyncAdapter {
             @NonNull FutureAppSearchSession searchSession,
             @NonNull String schemaType,
             @NonNull String propertyFunctionId,
-            @NonNull String propertyPackageName) throws ExecutionException, InterruptedException {
-        ArrayMap<String, ArraySet<String>> packageToFunctionIdMap = getPackageToFunctionIdMap(
-                searchSession, schemaType, propertyFunctionId,
-                propertyPackageName, DEFAULT_RESULT_COUNT_PER_PAGE);
+            @NonNull String propertyPackageName)
+            throws ExecutionException, InterruptedException {
+        ArrayMap<String, ArraySet<String>> packageToFunctionIdMap =
+                getPackageToFunctionIdMap(
+                        searchSession,
+                        schemaType,
+                        propertyFunctionId,
+                        propertyPackageName,
+                        DEFAULT_RESULT_COUNT_PER_PAGE);
         int functionIdCount = countTotalStringsInValueSets(packageToFunctionIdMap);
         if (functionIdCount == DEFAULT_RESULT_COUNT_PER_PAGE) {
             // We might run into b/400670498 where only the first page is returned while there
             // are more. This could be a false positive if we happen to have
             // DEFAULT_RESULT_COUNT_PER_PAGE AppFunctions. Retry with a higher page count.
-            Slog.d(TAG,
+            Slog.d(
+                    TAG,
                     "b/400587895: getPackageToFunctionIdMapWithRetry is retrying for schemaType = "
                             + schemaType);
-            packageToFunctionIdMap = getPackageToFunctionIdMap(
-                    searchSession, schemaType, propertyFunctionId,
-                    propertyPackageName, RETRY_RESULT_COUNT_PER_PAGE);
+            packageToFunctionIdMap =
+                    getPackageToFunctionIdMap(
+                            searchSession,
+                            schemaType,
+                            propertyFunctionId,
+                            propertyPackageName,
+                            RETRY_RESULT_COUNT_PER_PAGE);
             int retryFunctionIdCount = countTotalStringsInValueSets(packageToFunctionIdMap);
             if (retryFunctionIdCount != DEFAULT_RESULT_COUNT_PER_PAGE) {
                 // This is likely we did hit the bug. But if the diff is small, it could be
                 // just there were indeed changes in # of app functions during the two searches.
-                Slog.d(TAG, "b/400587895: First search yields " + functionIdCount
-                        + " results, but the second one with higher page size yields "
-                        + retryFunctionIdCount + " results. schemaType = " + schemaType);
+                Slog.d(
+                        TAG,
+                        "b/400587895: First search yields "
+                                + functionIdCount
+                                + " results, but the second one with higher page size yields "
+                                + retryFunctionIdCount
+                                + " results. schemaType = "
+                                + schemaType);
             }
         }
         return packageToFunctionIdMap;
@@ -478,13 +495,15 @@ public class MetadataSyncAdapter {
         ArrayMap<String, ArraySet<String>> packageToFunctionIds = new ArrayMap<>();
 
         try (FutureSearchResults futureSearchResults =
-                     searchSession
-                             .search(
-                                     "",
-                                     buildMetadataSearchSpec(
-                                             schemaType, propertyFunctionId, propertyPackageName,
-                                             resultCountPerPage))
-                             .get();) {
+                searchSession
+                        .search(
+                                "",
+                                buildMetadataSearchSpec(
+                                        schemaType,
+                                        propertyFunctionId,
+                                        propertyPackageName,
+                                        resultCountPerPage))
+                        .get(); ) {
             List<SearchResult> searchResultsList = futureSearchResults.getNextPage().get();
             // TODO(b/357551503): This could be expensive if we have more functions
             while (!searchResultsList.isEmpty()) {
