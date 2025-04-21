@@ -22,7 +22,9 @@ import android.hardware.audio.effect.DefaultExtension;
 import android.hardware.tv.mediaquality.ColorRange;
 import android.hardware.tv.mediaquality.ColorSpace;
 import android.hardware.tv.mediaquality.ColorTemperature;
+import android.hardware.tv.mediaquality.DigitalOutput;
 import android.hardware.tv.mediaquality.DolbyAudioProcessing;
+import android.hardware.tv.mediaquality.DownmixMode;
 import android.hardware.tv.mediaquality.DtsVirtualX;
 import android.hardware.tv.mediaquality.Gamma;
 import android.hardware.tv.mediaquality.ParameterDefaultValue;
@@ -32,6 +34,7 @@ import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureQualityEventType;
 import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
+import android.hardware.tv.mediaquality.SoundStyle;
 import android.hardware.tv.mediaquality.VendorParamCapability;
 import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
@@ -1214,7 +1217,7 @@ public final class MediaQualityUtils {
             params.remove(SoundQuality.PARAMETER_DTS_DRC);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS)) {
-            soundParams.add(SoundParameter.surroundSoundEnabled(params.getBoolean(
+            soundParams.add(SoundParameter.digitalOutputDelayMs(params.getInt(
                     SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS)));
             params.remove(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS);
         }
@@ -1224,30 +1227,141 @@ public final class MediaQualityUtils {
             params.remove(SoundQuality.PARAMETER_EARC);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DOWN_MIX_MODE)) {
-            soundParams.add(SoundParameter.downmixMode((byte) params.getInt(
-                    SoundQuality.PARAMETER_DOWN_MIX_MODE)));
+            String downMixModeString = params.getString(SoundQuality.PARAMETER_DOWN_MIX_MODE);
+            if (downMixModeString != null) {
+                byte downMixModeByte;
+                switch (downMixModeString) {
+                    case "STEREO":
+                        downMixModeByte = DownmixMode.STEREO;
+                        break;
+                    case "SURROUND":
+                        downMixModeByte = DownmixMode.SURROUND;
+                        break;
+                    default:
+                        downMixModeByte = DownmixMode.STEREO;
+                        Log.e("SoundParams", "Invalid down mix mode: "
+                                + downMixModeString);
+                }
+                soundParams.add(SoundParameter.downmixMode(downMixModeByte));
+            }
             params.remove(SoundQuality.PARAMETER_DOWN_MIX_MODE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_SOUND_STYLE)) {
-            soundParams.add(SoundParameter.soundStyle((byte) params.getInt(
-                    SoundQuality.PARAMETER_SOUND_STYLE)));
+            String soundStyleString = params.getString(SoundQuality.PARAMETER_SOUND_STYLE);
+            if (soundStyleString != null) {
+                byte soundStyleByte;
+                switch (soundStyleString) {
+                    case "USER":
+                        soundStyleByte = SoundStyle.USER;
+                        break;
+                    case "STANDARD":
+                        soundStyleByte = SoundStyle.STANDARD;
+                        break;
+                    case "VIVID":
+                        soundStyleByte = SoundStyle.VIVID;
+                        break;
+                    case "SPORTS":
+                        soundStyleByte = SoundStyle.SPORTS;
+                        break;
+                    case "MOVIE":
+                        soundStyleByte = SoundStyle.MOVIE;
+                        break;
+                    case "MUSIC":
+                        soundStyleByte = SoundStyle.MUSIC;
+                        break;
+                    case "NEWS":
+                        soundStyleByte = SoundStyle.NEWS;
+                        break;
+                    case "AUTO":
+                        soundStyleByte = SoundStyle.AUTO;
+                        break;
+                    default:
+                        soundStyleByte = SoundStyle.USER;
+                        Log.e("SoundParams", "Invalid sound style: "
+                                + soundStyleString);
+                }
+                soundParams.add(SoundParameter.soundStyle(soundStyleByte));
+            }
             params.remove(SoundQuality.PARAMETER_SOUND_STYLE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE)) {
-            soundParams.add(SoundParameter.digitalOutput((byte) params.getInt(
-                    SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE)));
+            String digitalOutputModeString = params.getString(
+                    SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE);
+            if (digitalOutputModeString != null) {
+                byte digitalOutputModeByte;
+                switch (digitalOutputModeString) {
+                    case "AUTO":
+                        digitalOutputModeByte = DigitalOutput.AUTO;
+                        break;
+                    case "BYPASS":
+                        digitalOutputModeByte = DigitalOutput.BYPASS;
+                        break;
+                    case "PCM":
+                        digitalOutputModeByte = DigitalOutput.PCM;
+                        break;
+                    case "DolbyDigitalPlus":
+                        digitalOutputModeByte = DigitalOutput.DolbyDigitalPlus;
+                        break;
+                    case "DolbyDigital":
+                        digitalOutputModeByte = DigitalOutput.DolbyDigital;
+                        break;
+                    case "DolbyMat":
+                        digitalOutputModeByte = DigitalOutput.DolbyMat;
+                        break;
+                    default:
+                        digitalOutputModeByte = DigitalOutput.AUTO;
+                        Log.e("SoundParams", "Invalid digitalOutputMode: "
+                                + digitalOutputModeString);
+                }
+                soundParams.add(SoundParameter.digitalOutput(digitalOutputModeByte));
+            }
             params.remove(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIALOGUE_ENHANCER)) {
-            soundParams.add(SoundParameter.dolbyDialogueEnhancer((byte) params.getInt(
-                    SoundQuality.PARAMETER_DIALOGUE_ENHANCER)));
+            String dialogueEnhancerString = params.getString(
+                    SoundQuality.PARAMETER_DIALOGUE_ENHANCER);
+            if (dialogueEnhancerString != null) {
+                byte dialogueEnhancerByte = mapQualityLevel(dialogueEnhancerString);
+                soundParams.add(SoundParameter.dolbyDialogueEnhancer(dialogueEnhancerByte));
+            }
             params.remove(SoundQuality.PARAMETER_DIALOGUE_ENHANCER);
         }
 
         DolbyAudioProcessing dab = new DolbyAudioProcessing();
         if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE)) {
-            dab.soundMode =
-                    (byte) params.getInt(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
+            String dolbySoundModeString = params.getString(
+                    SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
+            if (dolbySoundModeString != null) {
+                byte dolbySoundModeByte;
+                switch (dolbySoundModeString) {
+                    case "GAME":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.GAME;
+                        break;
+                    case "MOVIE":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.MOVIE;
+                        break;
+                    case "MUSIC":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.MUSIC;
+                        break;
+                    case "NEWS":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.NEWS;
+                        break;
+                    case "STANDARD":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.STANDARD;
+                        break;
+                    case "STADIUM":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.STADIUM;
+                        break;
+                    case "USER":
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.USER;
+                        break;
+                    default:
+                        dolbySoundModeByte = DolbyAudioProcessing.SoundMode.USER;
+                        Log.e("SoundParams", "Invalid dolby sound mode: "
+                                + dolbySoundModeString);
+                }
+                dab.soundMode = dolbySoundModeByte;
+            }
             params.remove(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER)) {
