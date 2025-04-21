@@ -8531,22 +8531,8 @@ public class UserManagerService extends IUserManager.Stub {
      * @deprecated
      */
     boolean hasProfile(@UserIdInt int userId) {
-        if (!android.content.pm.Flags.removeCrossUserPermissionHack()) {
-            synchronized (mUsersLock) {
-                UserInfo userInfo = getUserInfoLU(userId);
-                final int userSize = mUsers.size();
-                for (int i = 0; i < userSize; i++) {
-                    UserInfo profile = mUsers.valueAt(i).info;
-                    if (userId != profile.id && isSameProfileGroup(userInfo, profile)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        } else {
-            // TODO(b/332664521): Remove this method entirely. It is no longer used.
-            throw new UnsupportedOperationException();
-        }
+        // TODO(b/332664521): Remove this method entirely. It is no longer used.
+        throw new UnsupportedOperationException();
     }
 
     /**
