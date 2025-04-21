@@ -21,8 +21,11 @@ import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
 import android.util.Log
+import android.view.View
 import com.android.app.animation.MathUtils
+import com.android.systemui.customization.clocks.R as customR
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.domain.interactor.KeyguardSmartspaceInteractor
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
@@ -31,28 +34,50 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class WallpaperFocalAreaInteractor
 @Inject
 constructor(
-    private val context: Context,
+    var context: Context,
     private val wallpaperFocalAreaRepository: WallpaperFocalAreaRepository,
     shadeRepository: ShadeRepository,
+    smartspaceInteractor: KeyguardSmartspaceInteractor,
 ) {
     val hasFocalArea = wallpaperFocalAreaRepository.hasFocalArea
+
+    val smartspaceBottom =
+        combine(
+                wallpaperFocalAreaRepository.notificationDefaultTop,
+                smartspaceInteractor.bcSmartspaceVisibility,
+                ::Pair,
+            )
+            .map { (notificationDefaultTop, bcSmartspaceVisibility) ->
+                when (bcSmartspaceVisibility) {
+                    View.VISIBLE -> {
+                        notificationDefaultTop +
+                            context.resources
+                                .getDimensionPixelSize(customR.dimen.enhanced_smartspace_height)
+                                .toFloat()
+                    }
+                    else -> {
+                        notificationDefaultTop
+                    }
+                }
+            }
 
     val wallpaperFocalAreaBounds: Flow<RectF> =
         combine(
                 shadeRepository.isShadeLayoutWide,
                 wallpaperFocalAreaRepository.notificationStackAbsoluteBottom,
                 wallpaperFocalAreaRepository.shortcutAbsoluteTop,
-                wallpaperFocalAreaRepository.notificationDefaultTop,
+                smartspaceBottom,
             ) {
                 isShadeLayoutWide,
                 notificationStackAbsoluteBottom,
                 shortcutAbsoluteTop,
-                notificationDefaultTop ->
+                smartspaceBottom ->
                 // Wallpaper will be zoomed in with config_wallpaperMaxScale in lockscreen
                 // so we need to give a bounds taking this scale in consideration
                 val wallpaperZoomedInScale = getSystemWallpaperMaximumScale(context)
@@ -91,11 +116,11 @@ constructor(
                     // unfold foldable landscape
                     else if (isShadeLayoutWide) {
                         // For all landscape, we should use bottom of smartspace to constrain
-                        scaledBounds.top + notificationDefaultTop / wallpaperZoomedInScale
+                        scaledBounds.top + smartspaceBottom / wallpaperZoomedInScale
                         // handheld / portrait
                     } else {
                         scaledBounds.top +
-                            MathUtils.max(notificationDefaultTop, notificationStackAbsoluteBottom) /
+                            MathUtils.max(smartspaceBottom, notificationStackAbsoluteBottom) /
                                 wallpaperZoomedInScale
                     }
                 val bottom = scaledBounds.bottom - scaledBottomMargin

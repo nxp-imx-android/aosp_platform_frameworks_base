@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.testKosmos
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
-import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractorTest.Companion.overrideMockedResources
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractorTest.OverrideResources
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
@@ -67,6 +66,7 @@ class WallpaperFocalAreaViewModelTest : SysuiTestCase() {
             mockedResources,
             OverrideResources(screenWidth = 1000, screenHeight = 2000, centerAlignFocalArea = false),
         )
+
         whenever(kosmos.mockedContext.resources).thenReturn(mockedResources)
         whenever(
                 mockedResources.getFloat(
@@ -79,12 +79,7 @@ class WallpaperFocalAreaViewModelTest : SysuiTestCase() {
                 )
             )
             .thenReturn(1f)
-        kosmos.wallpaperFocalAreaInteractor =
-            WallpaperFocalAreaInteractor(
-                context = kosmos.mockedContext,
-                wallpaperFocalAreaRepository = kosmos.wallpaperFocalAreaRepository,
-                shadeRepository = kosmos.shadeRepository,
-            )
+        kosmos.wallpaperFocalAreaInteractor.context = kosmos.mockedContext
         underTest =
             WallpaperFocalAreaViewModel(
                 wallpaperFocalAreaInteractor = kosmos.wallpaperFocalAreaInteractor,
