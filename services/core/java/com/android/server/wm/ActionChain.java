@@ -16,9 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.view.WindowManager.transitTypeToString;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Trace;
 import android.util.Slog;
 
 import com.android.window.flags.Flags;
@@ -216,6 +219,18 @@ public class ActionChain {
         }
     }
 
+    /**
+     * @return The chain link where this chain was first associated with a transition.
+     */
+    private ActionChain getTransitionSource() {
+        if (mTransition == null) return null;
+        ActionChain out = this;
+        while (out.mPrevious != null && out.mPrevious.mTransition != null) {
+            out = out.mPrevious;
+        }
+        return out;
+    }
+
     private static class AsyncStart {
         final int mStackPos;
         long mThreadId;
@@ -242,6 +257,8 @@ public class ActionChain {
 
         /** Stack of suspended actions for dealing with async-start "gaps". */
         private final ArrayList<AsyncStart> mAsyncStarts = new ArrayList<>();
+
+        private final Stats mStats = new Stats();
 
         Tracker(ActivityTaskManagerService atm) {
             mAtm = atm;
@@ -364,7 +381,14 @@ public class ActionChain {
          */
         @NonNull
         ActionChain start(String source, Transition transit) {
-            return makeChain(source, TYPE_NORMAL, transit);
+            boolean isTransitionNew = transit.mChainHead == null;
+            final ActionChain out = makeChain(source, TYPE_NORMAL, transit);
+            if (isTransitionNew) {
+                mStats.onTransitionCreated(out);
+            } else {
+                mStats.onTransitionContinued(out);
+            }
+            return out;
         }
 
         /** @see #TYPE_DEFAULT */
@@ -375,11 +399,15 @@ public class ActionChain {
 
         /**
          * Create a chain-link for a decision-point between making a new transition or using the
-         * global collecting one.
+         * global collecting one. A new transition is the desired outcome in this case.
          */
         @NonNull
         ActionChain startTransit(String source) {
-            return makeChain(source, TYPE_DEFAULT);
+            final ActionChain out = makeChain(source, TYPE_DEFAULT);
+            if (out.isCollecting()) {
+                mStats.onTransitionCombined(out);
+            }
+            return out;
         }
 
         /**
@@ -413,5 +441,49 @@ public class ActionChain {
     @NonNull
     static ActionChain testFinish(Transition toFinish) {
         return new ActionChain("test", TYPE_FINISH, toFinish);
+    }
+
+    static class Stats {
+        void onTransitionCreated(ActionChain head) {
+        }
+
+        /**
+         * A chain link was added for a unique transition that was forced to be combined into an
+         * already-collecting transition.
+         */
+        void onTransitionCombined(ActionChain head) {
+            final Transition transit = head.getTransition();
+            if (!Flags.transitTrackerPlumbing() && transit == null) {
+                return;
+            }
+            final String tsum = transitSummary(transit);
+            final ActionChain tsource = head.getTransitionSource();
+            Trace.instantForTrack(Trace.TRACE_TAG_WINDOW_MANAGER, "TransitCombine",
+                    head.mSource + "->" + tsum + ":" + tsource.mSource);
+            Slog.w(TAG, "Combining " + head.mSource + " into " + "#" + transit.getSyncId()
+                    + "(" + tsum + ") from " + tsource.mSource);
+        }
+
+        /**
+         * A chain link was added to continue an already-collecting transition.
+         */
+        void onTransitionContinued(ActionChain head) {
+            if (!Trace.isTagEnabled(Trace.TRACE_TAG_WINDOW_MANAGER)) {
+                return;
+            }
+            final Transition transit = head.getTransition();
+            if (!Flags.transitTrackerPlumbing() && transit == null) {
+                return;
+            }
+            final String tsum = transitSummary(transit);
+            final ActionChain tsource = head.getTransitionSource();
+            Trace.instantForTrack(Trace.TRACE_TAG_WINDOW_MANAGER, "TransitContinue",
+                    head.mSource + "->" + tsum + ":" + tsource.mSource);
+        }
+
+        private static String transitSummary(Transition t) {
+            return transitTypeToString(t.mType) + "|" + (t.mLogger.mFromPlayer ? "" : "R")
+                    + "|0x" + Integer.toHexString(t.getFlags());
+        }
     }
 }
