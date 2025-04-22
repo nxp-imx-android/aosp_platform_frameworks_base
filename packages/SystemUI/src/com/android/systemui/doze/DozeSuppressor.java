@@ -18,9 +18,12 @@ package com.android.systemui.doze;
 
 import static android.content.res.Configuration.UI_MODE_TYPE_CAR;
 
+import static com.android.systemui.Flags.removeAodCarMode;
+
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.os.PowerManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.systemui.doze.dagger.DozeScope;
 import com.android.systemui.settings.UserTracker;
@@ -77,6 +80,10 @@ public class DozeSuppressor implements DozeMachine.Part {
 
     @Override
     public void onUiModeTypeChanged(int newUiModeType) {
+        if (removeAodCarMode()) {
+            Log.d("DozeSuppressor", "skip applying new ui mode");
+            return;
+        }
         boolean isCarModeEnabled = newUiModeType == UI_MODE_TYPE_CAR;
         if (mIsCarModeEnabled == isCarModeEnabled) {
             return;

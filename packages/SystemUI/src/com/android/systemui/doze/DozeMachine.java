@@ -16,6 +16,7 @@
 
 package com.android.systemui.doze;
 
+import static com.android.systemui.Flags.removeAodCarMode;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWAKE;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_WAKING;
 
@@ -380,9 +381,13 @@ public class DozeMachine {
         }
         if (mUiModeType == Configuration.UI_MODE_TYPE_CAR
                 && (requestedState.canPulse() || requestedState.staysAwake())) {
-            Log.i(TAG, "Doze is suppressed with all triggers disabled as car mode is active");
-            mDozeLog.traceCarModeStarted();
-            return State.DOZE_SUSPEND_TRIGGERS;
+            if (removeAodCarMode()) {
+                Log.d(TAG, "skip applying car mode");
+            } else {
+                Log.i(TAG, "Doze is suppressed with all triggers disabled as car mode is active");
+                mDozeLog.traceCarModeStarted();
+                return State.DOZE_SUSPEND_TRIGGERS;
+            }
         }
         if (mDozeHost.isAlwaysOnSuppressed() && requestedState.isAlwaysOn()) {
             Log.i(TAG, "Doze is suppressed by an app. Suppressing state: " + requestedState);
