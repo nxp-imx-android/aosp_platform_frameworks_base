@@ -469,8 +469,8 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     public void systemServicesReady() {
         mStats.setBatteryHistoryCompressionEnabled(
                 Flags.extendedBatteryHistoryCompressionEnabled());
-        mStats.saveBatteryUsageStatsOnReset(mBatteryUsageStatsProvider, mPowerStatsStore,
-                isBatteryUsageStatsAccumulationSupported());
+        mStats.saveBatteryUsageStatsOnNewSession(mBatteryUsageStatsProvider, mPowerStatsStore,
+                true);
         mStats.resetBatteryHistoryOnNewSession(
                 !Flags.extendedBatteryHistoryContinuousCollectionEnabled());
 
@@ -562,10 +562,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
 
         registerStatsCallbacks();
         mSystemReady.open();
-    }
-
-    private static boolean isBatteryUsageStatsAccumulationSupported() {
-        return Flags.accumulateBatteryUsageStats();
     }
 
     /**
@@ -1046,12 +1042,9 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                             .setMaxStatsAgeMs(0)
                             .includeProcessStateData()
                             .includeVirtualUids()
-                            .setMinConsumedPowerThreshold(minConsumedPowerThreshold);
-
-                    if (isBatteryUsageStatsAccumulationSupported()) {
-                        query.accumulated()
-                                .setMaxStatsAgeMs(BATTERY_USAGE_STATS_PER_UID_MAX_STATS_AGE);
-                    }
+                            .setMinConsumedPowerThreshold(minConsumedPowerThreshold)
+                            .accumulated()
+                            .setMaxStatsAgeMs(BATTERY_USAGE_STATS_PER_UID_MAX_STATS_AGE);
 
                     bus = getBatteryUsageStats(List.of(query.build())).get(0);
                     final int pullResult =
@@ -2959,9 +2952,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         pw.println("     --proto: output as a binary protobuffer");
         pw.println("     --model power-profile: use the power profile model"
                 + " even if measured energy is available");
-        if (isBatteryUsageStatsAccumulationSupported()) {
-            pw.println("     --accumulated: continuously accumulated since setup or reset-all");
-        }
+        pw.println("     --accumulated: continuously accumulated since setup or reset-all");
         pw.println("  --sample: collect and dump a sample of stats for debugging purpose");
         pw.println("  --sync: wait for delayed processing to finish (for use in tests)");
         pw.println("  <package.name>: optional name of package to filter output by.");

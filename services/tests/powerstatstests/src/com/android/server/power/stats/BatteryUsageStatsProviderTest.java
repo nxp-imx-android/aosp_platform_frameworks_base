@@ -488,7 +488,7 @@ public class BatteryUsageStatsProviderTest {
 
         BatteryUsageStatsProvider provider = createBatteryUsageStatsProvider(0);
 
-        batteryStats.saveBatteryUsageStatsOnReset(provider, mPowerStatsStore,
+        batteryStats.saveBatteryUsageStatsOnNewSession(provider, mPowerStatsStore,
                 /* accumulateBatteryUsageStats */ false);
         batteryStats.startNewSession(BatteryStatsImpl.RESET_REASON_ADB_COMMAND);
         mStatsRule.waitForBackgroundThread();
@@ -849,7 +849,7 @@ public class BatteryUsageStatsProviderTest {
             return null;
         }).when(powerStatsStore).storeBatteryUsageStatsAsync(anyLong(), any());
 
-        mStatsRule.getBatteryStats().saveBatteryUsageStatsOnReset(provider, powerStatsStore,
+        mStatsRule.getBatteryStats().saveBatteryUsageStatsOnNewSession(provider, powerStatsStore,
                 /* accumulateBatteryUsageStats */ false);
 
         // Make an incompatible change of supported energy components.  This will trigger

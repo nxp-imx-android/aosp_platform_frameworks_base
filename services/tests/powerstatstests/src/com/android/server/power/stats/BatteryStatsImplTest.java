@@ -919,7 +919,7 @@ public class BatteryStatsImplTest {
 
         assertThat(mPowerStatsStore.getTableOfContents()).isEmpty();
 
-        mBatteryStatsImpl.saveBatteryUsageStatsOnReset(mBatteryUsageStatsProvider,
+        mBatteryStatsImpl.saveBatteryUsageStatsOnNewSession(mBatteryUsageStatsProvider,
                 mPowerStatsStore, /* accumulateBatteryUsageStats */ false);
 
         synchronized (mBatteryStatsImpl) {
