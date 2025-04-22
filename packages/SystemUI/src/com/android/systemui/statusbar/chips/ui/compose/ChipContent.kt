@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
+import java.text.NumberFormat
 import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -107,7 +108,7 @@ fun ChipContent(
         }
 
         is OngoingActivityChipModel.Content.Countdown -> {
-            val text = viewModel.secondsUntilStarted.toString()
+            val text = NumberFormat.getIntegerInstance().format(viewModel.secondsUntilStarted)
             Text(
                 text = text,
                 style = textStyle,
@@ -289,7 +290,7 @@ private class HideTextIfDoesNotFitNode(
             val height = placeable.height
             val width = placeable.width
             layout(width + horizontalPadding.roundToPx(), height) {
-                placeable.place(startPadding.roundToPx(), 0)
+                placeable.placeRelative(x = startPadding.roundToPx(), y = 0)
             }
         } else {
             layout(0, 0) {}
