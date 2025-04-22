@@ -23,6 +23,7 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.fragment.app.FragmentManager
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.CoroutineScope
 
@@ -149,6 +150,22 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
      * @see [androidx.lifecycle.lifecycleScope]
      */
     abstract val lifecycleScope: CoroutineScope
+
+    /**
+     * Return the [FragmentManager] for interacting with fragments associated with current
+     * fragment's activity.
+     *
+     * @see [androidx.fragment.app.Fragment.getParentFragmentManager]
+     */
+    abstract val fragmentManager: FragmentManager
+
+    /**
+     * Return a private `FragmentManager` for placing and managing Fragments inside of current
+     * Fragment.
+     *
+     * @see [androidx.fragment.app.Fragment.getChildFragmentManager]
+     */
+    abstract val childFragmentManager: FragmentManager
 
     /** Returns the preference widget object associated with given key. */
     abstract fun <T> findPreference(key: String): T?
