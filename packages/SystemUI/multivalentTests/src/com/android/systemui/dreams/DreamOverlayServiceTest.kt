@@ -49,7 +49,6 @@ import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.ambient.touch.TouchMonitor
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.ambient.touch.scrim.ScrimController
-import com.android.systemui.ambient.touch.scrim.ScrimManager
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -98,7 +97,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.firstValue
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -138,8 +136,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mTouchInsetManager = mock<TouchInsetManager>()
     private val mUiEventLogger = mock<UiEventLogger>()
     private val mScrimController = mock<ScrimController>()
-    private val mScrimManager =
-        mock<ScrimManager> { on { currentController }.thenReturn(mScrimController) }
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
 
@@ -253,7 +249,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 mAmbientTouchComponentFactory,
                 mStateController,
                 mKeyguardUpdateMonitor,
-                mScrimManager,
+                mScrimController,
                 mCommunalInteractor,
                 kosmos.communalSettingsInteractor,
                 kosmos.sceneInteractor,
