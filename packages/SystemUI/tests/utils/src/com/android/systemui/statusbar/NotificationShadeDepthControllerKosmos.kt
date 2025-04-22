@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar
 
 import android.view.Choreographer
+import android.view.View
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -29,28 +30,29 @@ import com.android.systemui.statusbar.phone.biometricUnlockController
 import com.android.systemui.statusbar.phone.dozeParameters
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.util.WallpaperController
-import com.android.systemui.util.mockito.mock
 import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractor
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import java.util.Optional
+import org.mockito.kotlin.mock
 
 var Kosmos.notificationShadeDepthController by Fixture {
     NotificationShadeDepthController(
-        statusBarStateController = statusBarStateController,
-        blurUtils = mock<BlurUtils>(),
-        biometricUnlockController = biometricUnlockController,
-        keyguardStateController = keyguardStateController,
-        keyguardInteractor = keyguardInteractor,
-        choreographer = mock<Choreographer>(),
-        wallpaperController = mock<WallpaperController>(),
-        wallpaperInteractor = wallpaperInteractor,
-        notificationShadeWindowController = notificationShadeWindowController,
-        dozeParameters = dozeParameters,
-        shadeModeInteractor = shadeModeInteractor,
-        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
-        appZoomOutOptional = Optional.empty(),
-        applicationScope = applicationCoroutineScope,
-        dumpManager = dumpManager,
-        shadeDisplaysRepository = { shadeDisplaysRepository },
-    )
+            statusBarStateController = statusBarStateController,
+            blurUtils = mock<BlurUtils>(),
+            biometricUnlockController = biometricUnlockController,
+            keyguardStateController = keyguardStateController,
+            keyguardInteractor = keyguardInteractor,
+            choreographer = mock<Choreographer>(),
+            wallpaperController = mock<WallpaperController>(),
+            wallpaperInteractor = wallpaperInteractor,
+            notificationShadeWindowController = notificationShadeWindowController,
+            dozeParameters = dozeParameters,
+            shadeModeInteractor = shadeModeInteractor,
+            windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+            appZoomOutOptional = Optional.empty(),
+            applicationScope = applicationCoroutineScope,
+            dumpManager = dumpManager,
+            shadeDisplaysRepository = { shadeDisplaysRepository },
+        )
+        .apply { root = mock<View>() }
 }
