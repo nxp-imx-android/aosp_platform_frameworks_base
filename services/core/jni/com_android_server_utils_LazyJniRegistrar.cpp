@@ -24,6 +24,7 @@ namespace android {
 int register_android_server_ConsumerIrService(JNIEnv* env);
 int register_android_server_app_GameManagerService(JNIEnv* env);
 int register_android_server_connectivity_Vpn(JNIEnv* env);
+int register_android_server_tv_TvUinputBridge(JNIEnv* env);
 
 namespace {
 
@@ -38,6 +39,10 @@ void registerGameManagerService(JNIEnv* env, jclass) {
     register_android_server_app_GameManagerService(env);
 }
 
+void registerTvUinputBridge(JNIEnv* env, jclass) {
+    register_android_server_tv_TvUinputBridge(env);
+}
+
 void registerVpn(JNIEnv* env, jclass) {
     register_android_server_connectivity_Vpn(env);
 }
@@ -45,6 +50,7 @@ void registerVpn(JNIEnv* env, jclass) {
 static const JNINativeMethod sJniRegistrarMethods[] = {
         {"registerConsumerIrService", "()V", (void*)registerConsumerIrService},
         {"registerGameManagerService", "()V", (void*)registerGameManagerService},
+        {"registerTvUinputBridge", "()V", (void*)registerTvUinputBridge},
         {"registerVpn", "()V", (void*)registerVpn},
 };
 

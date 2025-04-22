@@ -45,6 +45,9 @@ public final class LazyJniRegistrar {
     /** Registers native methods for GameManagerService. */
     public static native void registerGameManagerService();
 
+    /** Registers native methods for UinputBridge. */
+    public static native void registerTvUinputBridge();
+
     /** Registers native methods for Vpn (the JNI counterpart for VpnManagerService). */
     public static native void registerVpn();
 }
