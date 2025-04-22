@@ -25,13 +25,6 @@ flag {
 }
 
 flag {
-    name: "battery_usage_stats_by_power_and_screen_state"
-    namespace: "backstage_power"
-    description: "Batterystats dumpsys is enhanced by including power break-down by power s"
-    bug: "352835319"
-}
-
-flag {
     name: "disable_composite_battery_usage_stats_atoms"
     namespace: "backstage_power"
     description: "Disable deprecated BatteryUsageStatsAtom pulled atom"

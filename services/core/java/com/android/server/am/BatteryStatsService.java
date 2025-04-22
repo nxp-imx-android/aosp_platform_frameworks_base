@@ -3034,10 +3034,9 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         BatteryUsageStatsQuery.Builder builder = new BatteryUsageStatsQuery.Builder()
                 .setMaxStatsAgeMs(0)
                 .includeProcessStateData()
-                .includePowerModels();
-        if (Flags.batteryUsageStatsByPowerAndScreenState()) {
-            builder.includeScreenStateData().includePowerStateData();
-        }
+                .includePowerModels()
+                .includeScreenStateData()
+                .includePowerStateData();
         if (accumulated) {
             builder.accumulated();
         }
