@@ -223,10 +223,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             STARTING_BOUNDS.top.toFloat() + 100,
         )
         val rectAfterMove = Rect(STARTING_BOUNDS)
-        rectAfterMove.left += 60
-        rectAfterMove.right += 60
-        rectAfterMove.top += 100
-        rectAfterMove.bottom += 100
+        rectAfterMove.offset(60, 100)
         verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
 
@@ -237,10 +234,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 STARTING_BOUNDS.top.toFloat() + 20,
             )
         val rectAfterEnd = Rect(STARTING_BOUNDS)
-        rectAfterEnd.left += 70
-        rectAfterEnd.right += 70
-        rectAfterEnd.top += 20
-        rectAfterEnd.bottom += 20
+        rectAfterEnd.offset(70, 20)
 
         verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
