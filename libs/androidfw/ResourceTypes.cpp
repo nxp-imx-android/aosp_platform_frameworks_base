@@ -39,10 +39,8 @@
 #include <androidfw/ByteBucketArray.h>
 #include <androidfw/ResourceTypes.h>
 #include <androidfw/TypeWrappers.h>
-#include <androidfw/Util.h>
 #include <cutils/atomic.h>
 #include <utils/ByteOrder.h>
-#include <utils/KeyedVector.h>
 #include <utils/Log.h>
 #include <utils/String16.h>
 #include <utils/String8.h>
@@ -6962,7 +6960,7 @@ status_t ResTable::parsePackage(const ResTable_package* const pkg,
         size_t N = mPackageGroups.size();
         for (size_t i = 0; i < N; i++) {
             mPackageGroups[i]->dynamicRefTable.addMapping(
-                    std::string_view(String8(group->name)), static_cast<uint8_t>(group->id));
+                    group->name, static_cast<uint8_t>(group->id));
         }
     } else {
         group = mPackageGroups.itemAt(idx - 1);
@@ -7160,8 +7158,7 @@ status_t ResTable::parsePackage(const ResTable_package* const pkg,
                 // Fill in the reference table with the entries we already know about.
                 size_t N = mPackageGroups.size();
                 for (size_t i = 0; i < N; i++) {
-                    group->dynamicRefTable.addMapping(
-                        std::string_view(String8(mPackageGroups[i]->name)), mPackageGroups[i]->id);
+                    group->dynamicRefTable.addMapping(mPackageGroups[i]->name, mPackageGroups[i]->id);
                 }
             } else {
                 ALOGW("Found multiple library tables, ignoring...");
@@ -7208,20 +7205,19 @@ status_t DynamicRefTable::load(const ResTable_lib_header* const header)
 
     const ResTable_lib_entry* entry = (const ResTable_lib_entry*)(((uint8_t*) header) +
             dtohl(header->header.headerSize));
-    std::string package_name;
     for (uint32_t entryIndex = 0; entryIndex < entryCount; entryIndex++) {
         uint32_t packageId = dtohl(entry->packageId);
-        util::ReadUtf16StringFromDevice(entry->packageName, std::size(entry->packageName),
-                                        &package_name);
+        char16_t tmpName[sizeof(entry->packageName) / sizeof(char16_t)];
+        strcpy16_dtoh(tmpName, entry->packageName, sizeof(entry->packageName) / sizeof(char16_t));
         if (kDebugLibNoisy) {
-            ALOGV("Found lib entry %s with id %d\n", package_name.c_str(),
+            ALOGV("Found lib entry %s with id %d\n", String8(tmpName).c_str(),
                     dtohl(entry->packageId));
         }
         if (packageId >= 256) {
             ALOGE("Bad package id 0x%08x", packageId);
             return UNKNOWN_ERROR;
         }
-        mEntries[std::move(package_name)] = (uint8_t) packageId;
+        mEntries.replaceValueFor(String16(tmpName), (uint8_t) packageId);
         entry = entry + 1;
     }
     return NO_ERROR;
@@ -7232,10 +7228,15 @@ status_t DynamicRefTable::addMappings(const DynamicRefTable& other) {
         return UNKNOWN_ERROR;
     }
 
-    for (auto [name, id] : other.mEntries) {
-        auto [it, inserted] = mEntries.emplace(name, id);
-        if (!inserted && id != it->second) {
-            return UNKNOWN_ERROR;
+    const size_t entryCount = other.mEntries.size();
+    for (size_t i = 0; i < entryCount; i++) {
+        ssize_t index = mEntries.indexOfKey(other.mEntries.keyAt(i));
+        if (index < 0) {
+            mEntries.add(String16(other.mEntries.keyAt(i)), other.mEntries[i]);
+        } else {
+            if (other.mEntries[i] != mEntries[index]) {
+                return UNKNOWN_ERROR;
+            }
         }
     }
 
@@ -7253,12 +7254,13 @@ status_t DynamicRefTable::addMappings(const DynamicRefTable& other) {
     return NO_ERROR;
 }
 
-status_t DynamicRefTable::addMapping(std::string_view packageName, uint8_t packageId) {
-    auto it = mEntries.find(packageName);
-    if (it == mEntries.end()) {
+status_t DynamicRefTable::addMapping(const String16& packageName, uint8_t packageId)
+{
+    ssize_t index = mEntries.indexOfKey(packageName);
+    if (index < 0) {
         return UNKNOWN_ERROR;
     }
-    mLookupTable[it->second] = packageId;
+    mLookupTable[mEntries.valueAt(index)] = packageId;
     return NO_ERROR;
 }
 
@@ -7740,12 +7742,14 @@ void ResTable::print(bool inclValues) const
                 (int)pgIndex, pg->id, (int)pg->packages.size(),
                 String8(pg->name).c_str());
 
-        const auto& refEntries = pg->dynamicRefTable.entries();
+        const KeyedVector<String16, uint8_t>& refEntries = pg->dynamicRefTable.entries();
         const size_t refEntryCount = refEntries.size();
         if (refEntryCount > 0) {
             printf("  DynamicRefTable entryCount=%d:\n", (int) refEntryCount);
-            for (auto [refName, refId] : refEntries) {
-                printf("    0x%02x -> %s\n", refId, refName.c_str());
+            for (size_t refIndex = 0; refIndex < refEntryCount; refIndex++) {
+                printf("    0x%02x -> %s\n",
+                        refEntries.valueAt(refIndex),
+                        String8(refEntries.keyAt(refIndex)).c_str());
             }
             printf("\n");
         }
