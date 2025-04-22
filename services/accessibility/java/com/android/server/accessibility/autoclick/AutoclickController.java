@@ -444,6 +444,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mAutoclickScrollPanel.hide();
         }
         stopContinuousScroll();
+
+        // Reset click type to left click if necessary.
+        if (mClickScheduler != null) {
+            mClickScheduler.resetSelectedClickTypeIfNecessary();
+        }
     }
 
     private void startContinuousScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
@@ -777,10 +782,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
             sendClick();
             resetInternalState();
 
-            // If the user is currently dragging, do not reset their click type.
             boolean stillDragging = mActiveClickType == AUTOCLICK_TYPE_DRAG
                     && mDragModeIsDragging;
-            if (!stillDragging) {
+            boolean inScrollMode =
+                    mActiveClickType == AUTOCLICK_TYPE_SCROLL && mAutoclickScrollPanel != null
+                            && mAutoclickScrollPanel.isVisible();
+            // Only reset if the user is not dragging and is not in scroll mode.
+            if (!stillDragging && !inScrollMode) {
                 resetSelectedClickTypeIfNecessary();
             }
         }

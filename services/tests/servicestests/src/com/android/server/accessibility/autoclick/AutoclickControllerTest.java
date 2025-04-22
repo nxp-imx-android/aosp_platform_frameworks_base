@@ -1210,6 +1210,38 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void exitScrollMode_revertToLeftClickEnabled_resetsClickType() {
+        initializeAutoclick();
+
+        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to true.
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                AccessibilityUtils.State.ON,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
+
+        // Set click type to scroll.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Show the scroll panel.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        when(mockScrollPanel.isVisible()).thenReturn(true);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Exit scroll mode.
+        mController.exitScrollMode();
+
+        // Verify click type is reset when exiting scroll mode.
+        verify(mockAutoclickTypePanel).resetSelectedClickType();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void sendClick_clickType_longPress_triggerPressAndHold() {
         MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
         mController.setNext(motionEventCaptor);
