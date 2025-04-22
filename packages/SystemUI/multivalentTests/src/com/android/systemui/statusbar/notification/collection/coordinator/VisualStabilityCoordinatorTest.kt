@@ -15,7 +15,6 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
@@ -543,7 +542,6 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CHECK_LOCKSCREEN_GONE_TRANSITION)
     @DisableSceneContainer
     fun testNotLockscreenInGoneTransitionLegacy_invalidationCalled() {
         // GIVEN visual stability is being maintained b/c animation is playing
@@ -561,7 +559,6 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CHECK_LOCKSCREEN_GONE_TRANSITION)
     @EnableSceneContainer
     @BrokenWithSceneContainer(bugId = 377868472) // mReorderingAllowed is broken with SceneContainer
     fun testNotLockscreenInGoneTransition_invalidationCalled() =
