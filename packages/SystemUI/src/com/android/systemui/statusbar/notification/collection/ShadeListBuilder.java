@@ -1311,7 +1311,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 // Sort children of groups within bundles
                 for (ListEntry le : bundleEntry.getChildren()) {
                     if (le instanceof GroupEntry ge) {
-                        // TODO(b/399736937) Add tests.
                         allSorted &= sortGroupChildren(ge.getRawChildren());
                     }
                 }
