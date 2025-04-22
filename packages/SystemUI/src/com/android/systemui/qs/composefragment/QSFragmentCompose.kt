@@ -175,6 +175,7 @@ constructor(
     private val collapsedMediaVisibilityChangedListener =
         MutableStateFlow<(Consumer<Boolean>)?>(null)
     private val heightListener = MutableStateFlow<QS.HeightListener?>(null)
+    private val qqsHeightListener = MutableStateFlow<QS.QqsHeightListener?>(null)
     private val qsContainerController = MutableStateFlow<QSContainerController?>(null)
 
     private lateinit var viewModel: QSFragmentComposeViewModel
@@ -406,6 +407,10 @@ constructor(
         heightListener.value = notificationPanelView
     }
 
+    override fun setQqsHeightListener(listener: QS.QqsHeightListener?) {
+        qqsHeightListener.value = listener
+    }
+
     override fun hideImmediately() {
         //        view?.animate()?.cancel()
         //        view?.y = -qsMinExpansionHeight.toFloat()
@@ -616,9 +621,14 @@ constructor(
     private fun setListenerCollections() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                var lastQqsHeight = -1
                 this@QSFragmentCompose.view?.setSnapshotBinding {
                     scrollListener.value?.onQsPanelScrollChanged(scrollState.value)
                     collapsedMediaVisibilityChangedListener.value?.accept(viewModel.qqsMediaVisible)
+                    if (lastQqsHeight != viewModel.qqsHeight) {
+                        lastQqsHeight = viewModel.qqsHeight
+                        qqsHeightListener.value?.onQqsHeightChanged()
+                    }
                 }
                 launch {
                     setListenerJob(
