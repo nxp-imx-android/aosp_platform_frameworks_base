@@ -40,6 +40,7 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import java.util.Optional
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -69,8 +70,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         Kosmos.Fixture {
             TopLevelWindowEffects(
                 context = mContext,
-                applicationScope = testScope.backgroundScope,
-                bgContext = testScope.testScheduler,
+                mainDispatcher = StandardTestDispatcher(testScope.testScheduler),
+                topLevelWindowEffectsScope = testScope.backgroundScope,
                 windowManager = windowManager,
                 keyEventInteractor = keyEventInteractor,
                 viewModelFactory = viewModelFactory,
