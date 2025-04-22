@@ -623,16 +623,24 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    fun testStartAnimation_useEndRelOffset() = runOnUiThread {
+    fun testStartAnimation_updatesLeash() = runOnUiThread {
         val changeMock = mock(TransitionInfo.Change::class.java)
+        val nonTaskChangeMock = mock(TransitionInfo.Change::class.java)
+        val taskLeash = mock(SurfaceControl::class.java)
+        val nonTaskLeash = mock(SurfaceControl::class.java)
         val startTransaction = mock(Transaction::class.java)
         val finishTransaction = mock(Transaction::class.java)
         val point = Point(10, 20)
         val bounds = Rect(1, 2, 3, 4)
-        `when`(changeMock.leash).thenReturn(mock(SurfaceControl::class.java))
+        `when`(changeMock.leash).thenReturn(taskLeash)
         `when`(changeMock.endRelOffset).thenReturn(point)
         `when`(changeMock.endAbsBounds).thenReturn(bounds)
-        `when`(mockTransitionInfo.changes).thenReturn(listOf(changeMock))
+        `when`(changeMock.taskInfo).thenReturn(ActivityManager.RunningTaskInfo())
+        `when`(nonTaskChangeMock.leash).thenReturn(nonTaskLeash)
+        `when`(nonTaskChangeMock.endRelOffset).thenReturn(point)
+        `when`(nonTaskChangeMock.endAbsBounds).thenReturn(bounds)
+        `when`(nonTaskChangeMock.taskInfo).thenReturn(null)
+        `when`(mockTransitionInfo.changes).thenReturn(listOf(changeMock, nonTaskChangeMock))
         `when`(startTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
             .thenReturn(startTransaction)
         `when`(finishTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
@@ -646,8 +654,18 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             mockFinishCallback,
         )
 
-        verify(startTransaction).setPosition(any(), eq(point.x.toFloat()), eq(point.y.toFloat()))
-        verify(finishTransaction).setPosition(any(), eq(point.x.toFloat()), eq(point.y.toFloat()))
+        verify(startTransaction).setPosition(
+            eq(taskLeash),
+            eq(point.x.toFloat()),
+            eq(point.y.toFloat())
+        )
+        verify(finishTransaction).setPosition(
+            eq(taskLeash),
+            eq(point.x.toFloat()),
+            eq(point.y.toFloat())
+        )
+        verify(startTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
+        verify(finishTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
         verify(changeMock).endRelOffset
     }
 
