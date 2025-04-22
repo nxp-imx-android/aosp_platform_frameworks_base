@@ -4427,7 +4427,7 @@ public abstract class Context {
                 // @hide: SIP_SERVICE,
                 USB_SERVICE,
                 LAUNCHER_APPS_SERVICE,
-                // @hide: SERIAL_SERVICE,
+                SERIAL_SERVICE,
                 // @hide: HDMI_CONTROL_SERVICE,
                 INPUT_SERVICE,
                 DISPLAY_SERVICE,
@@ -5998,13 +5998,12 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a {@link
-     * android.hardware.SerialManager} for access to serial ports.
+     * android.hardware.serial.SerialManager} for access to serial ports.
      *
      * @see #getSystemService(String)
-     * @see android.hardware.SerialManager
-     *
-     * @hide
+     * @see android.hardware.serial.SerialManager
      */
+    @FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
     public static final String SERIAL_SERVICE = "serial";
 
     /**

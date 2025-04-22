@@ -32,6 +32,8 @@ android_test {
         "androidx.test.ext.junit",
         "androidx.test.runner",
         "frameworks-base-testutils",
+        "mockito-kotlin-nodeps",
+        "mockito-target-minus-junit4",
         "platform-test-annotations",
         "services.core",
         "services.serial",
@@ -40,4 +42,6 @@ android_test {
     certificate: "platform",
     platform_apis: true,
     test_suites: ["device-tests"],
+    manifest: "AndroidManifest.xml",
+    additional_manifests: ["src/android/hardware/serial/AndroidManifest.xml"],
 }
