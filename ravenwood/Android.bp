@@ -354,6 +354,9 @@ java_library {
     static_libs: [
         "mockito-robolectric-prebuilt",
     ],
+    // TODO(b/412720779) Change this and all dependencies' sdk_version to "core_current",
+    // after making sure none of them use Android APIs.
+    sdk_version: "current",
 }
 
 java_library {
@@ -362,6 +365,9 @@ java_library {
     static_libs: [
         "inline-mockito-robolectric-prebuilt",
     ],
+    // TODO(b/412720779) Change this and all dependencies' sdk_version to "core_current",
+    // after making sure none of them use Android APIs.
+    sdk_version: "current",
 }
 
 // We define our own version of platform_compat_config's here, because:
