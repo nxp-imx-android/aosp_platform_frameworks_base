@@ -18,6 +18,10 @@ package com.android.systemui.notifications.ui.composable.row
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.view.View
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -43,12 +47,16 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 
 object BundleHeader {
@@ -66,8 +74,33 @@ object BundleHeader {
 }
 
 fun createComposeView(viewModel: BundleHeaderViewModel, context: Context): ComposeView {
-    // TODO(b/399588047): Check if we can init PlatformTheme once instead of once per ComposeView
-    return ComposeView(context).apply { setContent { PlatformTheme { BundleHeader(viewModel) } } }
+    return ComposeView(context).apply {
+        repeatWhenAttached {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                initOnBackPressureDispatcherOwner(this@repeatWhenAttached.lifecycle)
+                setContent {
+                    // TODO(b/399588047): Check if we can init PlatformTheme once instead of once
+                    //  per ComposeView
+                    PlatformTheme { BundleHeader(viewModel) }
+                }
+            }
+        }
+    }
+}
+
+private fun View.initOnBackPressureDispatcherOwner(lifecycle: Lifecycle) {
+    if (!SceneContainerFlag.isEnabled) {
+        setViewTreeOnBackPressedDispatcherOwner(
+            object : OnBackPressedDispatcherOwner {
+                override val onBackPressedDispatcher =
+                    OnBackPressedDispatcher().apply {
+                        setOnBackInvokedDispatcher(viewRootImpl.onBackInvokedDispatcher)
+                    }
+
+                override val lifecycle: Lifecycle = lifecycle
+            }
+        )
+    }
 }
 
 @Composable
