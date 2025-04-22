@@ -1767,7 +1767,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                                     entry.getKey(), entry.hashCode()));
                 }
             }
-            mNotifCollection.dismissNotifications(entriesWithRowsDismissedFromShade);
+            mNotifCollection.dismissNotifications(entriesWithRowsDismissedFromShade,
+                    /* fromBundle= */ false);
         }
     }
 

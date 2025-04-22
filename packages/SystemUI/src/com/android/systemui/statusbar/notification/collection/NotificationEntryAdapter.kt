@@ -47,6 +47,7 @@ class NotificationEntryAdapter(
     private val notificationActionClickManager: NotificationActionClickManager,
     private val highPriorityProvider: HighPriorityProvider,
     private val headsUpManager: HeadsUpManager,
+    private val onUserInteractionCallback: OnUserInteractionCallback,
     private val entry: NotificationEntry,
 ) : EntryAdapter {
     override fun getBackingHashCode(): Int {
@@ -210,8 +211,8 @@ class NotificationEntryAdapter(
         notificationActionClickManager.onNotificationActionClicked(entry)
     }
 
-    override fun getDismissState(): NotificationEntry.DismissState {
-        return entry.dismissState
+    override fun isParentDismissed(): Boolean {
+        return entry.dismissState == NotificationEntry.DismissState.PARENT_DISMISSED
     }
 
     override fun onEntryClicked(row: ExpandableNotificationRow) {
@@ -246,11 +247,11 @@ class NotificationEntryAdapter(
         headsUpManager.onEntryAnimatingAwayEnded(entry)
     }
 
-    override fun registerFutureDismissal(
-        callback: OnUserInteractionCallback,
-        reason: Int,
-    ): Runnable {
-        return callback.registerFutureDismissal(entry, reason)
+    override fun registerFutureDismissal(): Runnable {
+        return onUserInteractionCallback.registerFutureDismissal(
+            entry,
+            NotificationListenerService.REASON_CANCEL,
+        )
     }
 
     override fun markForReinflation(stage: RowContentBindStage) {

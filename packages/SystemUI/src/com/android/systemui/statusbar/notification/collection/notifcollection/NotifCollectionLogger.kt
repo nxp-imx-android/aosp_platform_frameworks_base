@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason
+import com.android.systemui.statusbar.notification.collection.NotifCollection.DismissalRunnable
 import com.android.systemui.statusbar.notification.collection.NotifCollection.FutureDismissal
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.logKey
@@ -400,7 +401,7 @@ class NotifCollectionLogger @Inject constructor(@NotificationLog private val buf
         )
     }
 
-    fun logFutureDismissalDoubleRun(dismissal: FutureDismissal) {
+    fun logFutureDismissalDoubleRun(dismissal: DismissalRunnable) {
         buffer.log(TAG, WARNING, { str1 = dismissal.label }, { "Double run: $str1" })
     }
 
@@ -604,6 +605,23 @@ class NotifCollectionLogger @Inject constructor(@NotificationLog private val buf
             INFO,
             { str1 = entry.logKey },
             { "CANCEL LOCAL DISMISS Not Dismissed $str1" },
+        )
+    }
+
+    fun logBundleDismissalRegistered(dismissal: DismissalRunnable) {
+        buffer.log(TAG, DEBUG, { str1 = dismissal.label }, { "Registered: $str1" })
+    }
+
+    fun logBundleDismissal(dismissal: DismissalRunnable, entry: NotificationEntry, type: String) {
+        buffer.log(
+            TAG,
+            DEBUG,
+            {
+                str1 = dismissal.label
+                str2 = type
+                str3 = entry.key
+            },
+            { "Dismissing $str2 (key=$str3) for: $str1" },
         )
     }
 }

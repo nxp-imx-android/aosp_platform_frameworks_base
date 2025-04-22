@@ -1824,7 +1824,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     /** @return true if the User has dismissed this notif's parent */
     public boolean isParentDismissed() {
         if (NotificationBundleUi.isEnabled()) {
-            return getEntryAdapter().getDismissState() == PARENT_DISMISSED;
+            return getEntryAdapter().isParentDismissed();
         } else {
             return getEntryLegacy().getDismissState() == PARENT_DISMISSED;
         }
@@ -1964,8 +1964,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (canEntryBeDismissed()) {
             if (mOnUserInteractionCallback != null) {
                 Runnable futureDismissal = NotificationBundleUi.isEnabled()
-                        ? getEntryAdapter().registerFutureDismissal(
-                        mOnUserInteractionCallback, REASON_CANCEL)
+                        ? getEntryAdapter().registerFutureDismissal()
                         : mOnUserInteractionCallback.registerFutureDismissal(
                                 getEntryLegacy(), REASON_CANCEL);
                 if (futureDismissal != null) {
