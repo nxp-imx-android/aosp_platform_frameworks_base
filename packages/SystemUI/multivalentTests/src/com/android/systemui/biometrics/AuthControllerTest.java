@@ -527,6 +527,12 @@ public class AuthControllerTest extends SysuiTestCase {
                 BiometricConstants.BIOMETRIC_ERROR_TIMEOUT);
     }
 
+    @Test
+    public void testOnAuthenticationFailedInvoked_coex_whenFaceAuthRejected_unableToProcess() {
+        testOnAuthenticationFailedInvoked_coex_whenFaceAuthRejected(
+                BiometricConstants.BIOMETRIC_ERROR_UNABLE_TO_PROCESS);
+    }
+
     private void testOnAuthenticationFailedInvoked_coex_whenFaceAuthRejected(int error) {
         final int modality = BiometricAuthenticator.TYPE_FACE;
         final int userId = 0;
