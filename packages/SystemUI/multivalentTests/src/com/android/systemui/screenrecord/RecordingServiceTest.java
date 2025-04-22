@@ -20,6 +20,7 @@ import static com.android.systemui.screenrecord.RecordingService.GROUP_KEY_ERROR
 import static com.android.systemui.screenrecord.RecordingService.GROUP_KEY_SAVED;
 import static com.android.systemui.screenrecord.RecordingService.NOTIF_GROUP_ID_ERROR_SAVING;
 import static com.android.systemui.screenrecord.RecordingService.NOTIF_GROUP_ID_SAVED;
+import static com.android.systemui.screenrecord.ScreenRecordUxController.INTENT_UPDATE_STATE;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -78,7 +79,7 @@ public class RecordingServiceTest extends SysuiTestCase {
     @Mock
     private UiEventLogger mUiEventLogger;
     @Mock
-    private RecordingController mController;
+    private ScreenRecordUxController mController;
     @Mock
     private NotificationManager mNotificationManager;
     @Mock
@@ -109,7 +110,7 @@ public class RecordingServiceTest extends SysuiTestCase {
 
     private class RecordingServiceTestable extends RecordingService {
         RecordingServiceTestable(
-                RecordingController controller, Executor executor,
+                ScreenRecordUxController controller, Executor executor,
                 Handler handler, UiEventLogger uiEventLogger,
                 NotificationManager notificationManager,
                 UserContextProvider userContextTracker, KeyguardDismissUtil keyguardDismissUtil,
@@ -328,8 +329,7 @@ public class RecordingServiceTest extends SysuiTestCase {
         } else {
             ArgumentCaptor<Intent> argumentCaptor = ArgumentCaptor.forClass(Intent.class);
             verify(mRecordingService).sendBroadcast(argumentCaptor.capture(), eq(PERMISSION_SELF));
-            assertEquals(RecordingController.INTENT_UPDATE_STATE,
-                    argumentCaptor.getValue().getAction());
+            assertEquals(INTENT_UPDATE_STATE, argumentCaptor.getValue().getAction());
         }
     }
 }

@@ -31,7 +31,7 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
-import com.android.systemui.screenrecord.RecordingController
+import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
@@ -46,7 +46,7 @@ constructor(
     @Main private val mainContext: CoroutineContext,
     @Background private val backgroundContext: CoroutineContext,
     private val screenRecordRepository: ScreenRecordRepository,
-    private val recordingController: RecordingController,
+    private val screenRecordUxController: ScreenRecordUxController,
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardDismissUtil: KeyguardDismissUtil,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
@@ -60,7 +60,9 @@ constructor(
                     when (data) {
                         is ScreenRecordModel.Starting -> {
                             Log.d(TAG, "Cancelling countdown")
-                            withContext(backgroundContext) { recordingController.cancelCountdown() }
+                            withContext(backgroundContext) {
+                                screenRecordUxController.cancelCountdown()
+                            }
                         }
                         is ScreenRecordModel.Recording -> {
                             screenRecordRepository.stopRecording(StopReason.STOP_QS_TILE)
@@ -86,7 +88,7 @@ constructor(
             panelInteractor.collapsePanels()
         }
 
-        val dialog = recordingController.createScreenRecordDialog(onStartRecordingClicked)
+        val dialog = screenRecordUxController.createScreenRecordDialog(onStartRecordingClicked)
 
         if (dialog == null) {
             Log.w(TAG, "showPrompt: dialog was null")

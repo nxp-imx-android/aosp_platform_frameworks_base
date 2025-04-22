@@ -16,6 +16,9 @@
 
 package com.android.systemui.screenrecord;
 
+import static com.android.systemui.screenrecord.ScreenRecordUxController.EXTRA_STATE;
+import static com.android.systemui.screenrecord.ScreenRecordUxController.INTENT_UPDATE_STATE;
+
 import android.app.BroadcastOptions;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -34,7 +37,6 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.broadcast.BroadcastDispatcher;
-import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.mediaprojection.SessionCreationSource;
@@ -48,14 +50,13 @@ import dagger.Lazy;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
-import javax.inject.Inject;
-
 /**
  * Helper class to initiate a screen recording
  */
-@SysUISingleton
 public class RecordingController
         implements CallbackController<RecordingController.RecordingStateChangeCallback> {
+
+    private final ScreenRecordUxController mScreenRecordUxController;
     private boolean mIsStarting;
     private boolean mIsRecording;
     private PendingIntent mStopIntent;
@@ -72,10 +73,6 @@ public class RecordingController
             mScreenRecordPermissionDialogDelegateFactory;
     private final ScreenRecordPermissionContentManager.Factory
             mScreenRecordPermissionContentManagerFactory;
-
-    protected static final String INTENT_UPDATE_STATE =
-            "com.android.systemui.screenrecord.UPDATE_STATE";
-    protected static final String EXTRA_STATE = "extra_state";
 
     private final CopyOnWriteArrayList<RecordingStateChangeCallback> mListeners =
             new CopyOnWriteArrayList<>();
@@ -110,8 +107,8 @@ public class RecordingController
     /**
      * Create a new RecordingController
      */
-    @Inject
     public RecordingController(
+            ScreenRecordUxController screenRecordUxController,
             @Main Executor mainExecutor,
             BroadcastDispatcher broadcastDispatcher,
             Lazy<ScreenCaptureDevicePolicyResolver> devicePolicyResolver,
@@ -123,6 +120,7 @@ public class RecordingController
                     screenRecordPermissionDialogDelegateFactory,
             ScreenRecordPermissionContentManager.Factory
                     screenRecordPermissionContentManagerFactory) {
+        mScreenRecordUxController = screenRecordUxController;
         mMainExecutor = mainExecutor;
         mDevicePolicyResolver = devicePolicyResolver;
         mBroadcastDispatcher = broadcastDispatcher;
@@ -141,20 +139,22 @@ public class RecordingController
     /**
      * MediaProjection host is SystemUI for the screen recorder, so return 'my user handle'
      */
-    private UserHandle getHostUserHandle() {
+    protected UserHandle getHostUserHandle() {
         return UserHandle.of(UserHandle.myUserId());
     }
 
     /**
      * MediaProjection host is SystemUI for the screen recorder, so return 'my process uid'
      */
-    private int getHostUid() {
+    protected int getHostUid() {
         return Process.myUid();
     }
 
-    /** Create a dialog to show screen recording options to the user.
-     *  If screen capturing is currently not allowed it will return a dialog
-     *  that warns users about it. */
+    /**
+     * Create a dialog to show screen recording options to the user.
+     * If screen capturing is currently not allowed it will return a dialog
+     * that warns users about it.
+     */
     public Dialog createScreenRecordDialog(@Nullable Runnable onStartRecordingClicked) {
         if (isScreenCaptureDisabled()) {
             return mScreenCaptureDisabledDialogDelegate.createSysUIDialog();
@@ -164,20 +164,22 @@ public class RecordingController
                 getHostUid(), SessionCreationSource.SYSTEM_UI_SCREEN_RECORDER);
 
         return mScreenRecordPermissionDialogDelegateFactory
-                .create(this, getHostUserHandle(), getHostUid(), onStartRecordingClicked)
+                .create(mScreenRecordUxController, getHostUserHandle(), getHostUid(),
+                        onStartRecordingClicked)
                 .createDialog();
     }
 
     /**
      * Create a view binder that controls the logic of views inside the screen record permission
      * view.
+     *
      * @param onStartRecordingClicked the callback that is run when the start button is clicked.
      */
     public ScreenRecordPermissionContentManager createScreenRecordPermissionContentManager(
             @Nullable Runnable onStartRecordingClicked
     ) {
         return mScreenRecordPermissionContentManagerFactory
-                .create(getHostUserHandle(), getHostUid(), this,
+                .create(getHostUserHandle(), getHostUid(), mScreenRecordUxController,
                         onStartRecordingClicked);
     }
 
@@ -191,10 +193,11 @@ public class RecordingController
 
     /**
      * Start counting down in preparation to start a recording
-     * @param ms Total time in ms to wait before starting
-     * @param interval Time in ms per countdown step
+     *
+     * @param ms          Total time in ms to wait before starting
+     * @param interval    Time in ms per countdown step
      * @param startIntent Intent to start a recording
-     * @param stopIntent Intent to stop a recording
+     * @param stopIntent  Intent to stop a recording
      */
     public void startCountdown(long ms, long interval, PendingIntent startIntent,
             PendingIntent stopIntent) {
@@ -252,7 +255,6 @@ public class RecordingController
 
     /**
      * Check if the recording is currently counting down to begin
-     * @return
      */
     public boolean isStarting() {
         return mIsStarting;
@@ -260,7 +262,6 @@ public class RecordingController
 
     /**
      * Check if the recording is ongoing
-     * @return
      */
     public synchronized boolean isRecording() {
         return mIsRecording;
@@ -268,6 +269,7 @@ public class RecordingController
 
     /**
      * Stop the recording and sets the stop reason to be used by the RecordingService
+     *
      * @param stopReason the method of the recording stopped (i.e. QS tile, status bar chip, etc.)
      */
     public void stopRecording(@StopReason int stopReason) {
@@ -287,7 +289,6 @@ public class RecordingController
 
     /**
      * Update the current status
-     * @param isRecording
      */
     public synchronized void updateState(boolean isRecording) {
         mRecordingControllerLogger.logStateUpdated(isRecording);
@@ -329,22 +330,26 @@ public class RecordingController
          *
          * @param millisUntilFinished Time in ms remaining in the countdown
          */
-        default void onCountdown(long millisUntilFinished) {}
+        default void onCountdown(long millisUntilFinished) {
+        }
 
         /**
          * Called when a countdown to recording has ended. This is a separate method so that if
          * needed, listeners can handle cases where recording fails to start
          */
-        default void onCountdownEnd() {}
+        default void onCountdownEnd() {
+        }
 
         /**
          * Called when a screen recording has started
          */
-        default void onRecordingStart() {}
+        default void onRecordingStart() {
+        }
 
         /**
          * Called when a screen recording has ended
          */
-        default void onRecordingEnd() {}
+        default void onRecordingEnd() {
+        }
     }
 }

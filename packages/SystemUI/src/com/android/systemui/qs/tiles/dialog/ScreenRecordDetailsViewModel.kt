@@ -17,11 +17,11 @@
 package com.android.systemui.qs.tiles.dialog
 
 import com.android.systemui.plugins.qs.TileDetailsViewModel
-import com.android.systemui.screenrecord.RecordingController
+import com.android.systemui.screenrecord.ScreenRecordUxController
 
 /** The view model used for the screen record details view in the Quick Settings */
 class ScreenRecordDetailsViewModel(
-    val recordingController: RecordingController,
+    val screenRecordUxController: ScreenRecordUxController,
     val onStartRecordingClicked: Runnable,
 ) : TileDetailsViewModel {
 

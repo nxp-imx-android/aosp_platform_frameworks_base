@@ -19,6 +19,8 @@ package com.android.systemui.screenrecord;
 import static android.os.Process.myUid;
 
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
+import static com.android.systemui.screenrecord.ScreenRecordUxController.EXTRA_STATE;
+import static com.android.systemui.screenrecord.ScreenRecordUxController.INTENT_UPDATE_STATE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -115,7 +117,7 @@ public class RecordingControllerTest extends SysuiTestCase {
                 .thenReturn(mScreenRecordPermissionContentManager);
         when(mScreenRecordPermissionDialogDelegate.createDialog())
                 .thenReturn(mScreenRecordSystemUIDialog);
-        mController = new RecordingController(
+        ScreenRecordLegacyUxControllerImpl uxController = new ScreenRecordLegacyUxControllerImpl(
                 mMainExecutor,
                 mBroadcastDispatcher,
                 () -> mDevicePolicyResolver,
@@ -126,6 +128,7 @@ public class RecordingControllerTest extends SysuiTestCase {
                 mScreenRecordPermissionDialogDelegateFactory,
                 mScreenRecordPermissionContentManagerFactory
         );
+        mController = uxController.getRecordingController();
         mController.addCallback(mCallback);
     }
 
@@ -196,8 +199,8 @@ public class RecordingControllerTest extends SysuiTestCase {
                 any(), any(), any());
 
         // When the receiver gets an update
-        Intent intent = new Intent(RecordingController.INTENT_UPDATE_STATE);
-        intent.putExtra(RecordingController.EXTRA_STATE, false);
+        Intent intent = new Intent(INTENT_UPDATE_STATE);
+        intent.putExtra(EXTRA_STATE, false);
         mController.mStateChangeReceiver.onReceive(mContext, intent);
 
         // then the state is updated

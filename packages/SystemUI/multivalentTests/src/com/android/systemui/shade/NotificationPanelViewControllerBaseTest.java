@@ -101,7 +101,7 @@ import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.QSFragmentLegacy;
 import com.android.systemui.res.R;
-import com.android.systemui.screenrecord.RecordingController;
+import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository;
@@ -242,7 +242,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected FragmentHostManager mFragmentHostManager;
     @Mock protected IStatusBarService mStatusBarService;
     @Mock protected NotificationRemoteInputManager mNotificationRemoteInputManager;
-    @Mock protected RecordingController mRecordingController;
+    @Mock protected ScreenRecordUxController mScreenRecordUxController;
     @Mock protected LockscreenGestureLogger mLockscreenGestureLogger;
     @Mock protected DumpManager mDumpManager;
     @Mock protected NotificationsQSContainerController mNotificationsQSContainerController;
@@ -636,7 +636,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mMediaDataManager,
                 mMediaHierarchyManager,
                 mAmbientState,
-                mRecordingController,
+                mScreenRecordUxController,
                 mFalsingManager,
                 mAccessibilityManager,
                 mLockscreenGestureLogger,
