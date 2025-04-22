@@ -23,8 +23,8 @@ import android.app.ActivityTaskManager;
 import android.os.RemoteException;
 import android.system.SystemCleaner;
 import android.util.AndroidRuntimeException;
+import android.util.Log;
 import android.util.Singleton;
-import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
@@ -74,10 +74,12 @@ public class TaskSnapshotManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Resolution {}
 
-    private final Object mLock = new Object();
-    @GuardedBy("mLock")
+    private static final Object sLock = new Object();
+    @GuardedBy("sLock")
     private final GlobalSnapshotTracker mGlobalSnapshotTracker = new GlobalSnapshotTracker();
     static final Cleaner sCleaner = SystemCleaner.cleaner();
+    @GuardedBy("sLock")
+    private TaskSnapshotListenerTracker mInternalListener;
     private static final TaskSnapshotManager sInstance = new TaskSnapshotManager();
     private TaskSnapshotManager() { }
 
@@ -100,26 +102,32 @@ public class TaskSnapshotManager {
         final long captureTime;
         final TaskSnapshot previousSnapshot;
         validateResolution(retrieveResolution);
-        synchronized (mLock) {
+        final SnapshotTracker st;
+        synchronized (sLock) {
             // Gets the latest snapshot from the local cache. This can be used to prevent the system
             // server from returning another snapshot that is the same as the local one.
-            final SnapshotTracker st = mGlobalSnapshotTracker.peekLatestSnapshot(
-                    taskId, retrieveResolution);
+            st = mGlobalSnapshotTracker.peekLatestSnapshot(taskId, retrieveResolution);
             // Create a temporary reference so the snapshot won't be cleared during IPC call.
             previousSnapshot = st != null ? st.mSnapshot.get() : null;
             captureTime = previousSnapshot != null ? st.mCaptureTime : -1;
+            if (st != null) {
+                st.increaseReference();
+            }
         }
         try {
             t = ISnapshotManagerSingleton.get().getTaskSnapshot(taskId,
                     captureTime, retrieveResolution);
         } catch (RemoteException r) {
-            Slog.e(TAG, "getTaskSnapshot fail: " + r);
+            Log.e(TAG, "getTaskSnapshot fail: " + r);
             throw r;
         }
         if (t == null) {
             return previousSnapshot;
         }
-        synchronized (mLock) {
+        synchronized (sLock) {
+            if (st != null) {
+                st.decreaseReference();
+            }
             mGlobalSnapshotTracker.createTracker(taskId, t);
         }
         return t;
@@ -142,15 +150,53 @@ public class TaskSnapshotManager {
         try {
             t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache);
         } catch (RemoteException r) {
-            Slog.e(TAG, "takeTaskSnapshot fail: " + r);
+            Log.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;
         }
         if (t != null) {
-            synchronized (mLock) {
+            synchronized (sLock) {
                 mGlobalSnapshotTracker.createTracker(taskId, t);
             }
         }
         return t;
+    }
+
+    /**
+     * Register task snapshot listener
+     */
+    public void registerTaskSnapshotListener(@NonNull TaskSnapshotListener listener) {
+        synchronized (sLock) {
+            if (mInternalListener == null) {
+                mInternalListener = new TaskSnapshotListenerTracker(this);
+                try {
+                    ISnapshotManagerSingleton.get().registerTaskSnapshotListener(mInternalListener);
+                } catch (RemoteException r) {
+                    Log.e(TAG, "registerTaskSnapshotListener fail: " + r);
+                }
+            }
+            mInternalListener.registerLocalListener(listener);
+        }
+    }
+
+    /**
+     * Unregister task snapshot listener
+     */
+    public void unregisterTaskSnapshotListener(@NonNull TaskSnapshotListener listener) {
+        synchronized (sLock) {
+            if (mInternalListener == null) {
+                return;
+            }
+            mInternalListener.unregisterLocalListener(listener);
+            if (mInternalListener.isEmpty()) {
+                try {
+                    ISnapshotManagerSingleton.get().unregisterTaskSnapshotListener(
+                            mInternalListener);
+                } catch (RemoteException r) {
+                    Log.e(TAG, "unregisterTaskSnapshotListener fail: " + r);
+                }
+                mInternalListener = null;
+            }
+        }
     }
 
     /**
@@ -191,8 +237,14 @@ public class TaskSnapshotManager {
             };
 
     void removeTracker(SnapshotTracker tracker) {
-        synchronized (mLock) {
-            mGlobalSnapshotTracker.removeTracker(tracker);
+        synchronized (sLock) {
+            mGlobalSnapshotTracker.removeTracker(tracker, false /* forceRemove */);
+        }
+    }
+
+    void createTracker(int taskId, TaskSnapshot snapshot) {
+        synchronized (sLock) {
+            mGlobalSnapshotTracker.createTracker(taskId, snapshot);
         }
     }
 
@@ -200,7 +252,7 @@ public class TaskSnapshotManager {
      * Dump snapshot usage in the process.
      */
     public void dump(PrintWriter pw) {
-        synchronized (mLock) {
+        synchronized (sLock) {
             mGlobalSnapshotTracker.dump(pw);
         }
     }
@@ -230,10 +282,14 @@ public class TaskSnapshotManager {
             }
             final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot);
             taskTracker.addTracker(tracker);
-            sCleaner.register(snapshot, () -> removeTracker(tracker));
+            sCleaner.register(snapshot, () -> {
+                synchronized (sLock) {
+                    removeTracker(tracker, true /* forceRemove */);
+                }
+            });
         }
 
-        void removeTracker(SnapshotTracker tracker) {
+        void removeTracker(SnapshotTracker tracker, boolean forceRemove) {
             if (tracker == null) {
                 return;
             }
@@ -242,7 +298,7 @@ public class TaskSnapshotManager {
             if (taskTracker == null) {
                 return;
             }
-            taskTracker.stopTrack(tracker);
+            taskTracker.stopTrack(tracker, forceRemove);
             if (taskTracker.isEmpty()) {
                 mSnapshotTrackers.remove(taskId);
             }
@@ -294,25 +350,47 @@ public class TaskSnapshotManager {
             }
 
             SnapshotTracker peekLatestSnapshot(@Resolution int resolution) {
-                if (resolution == RESOLUTION_ANY) {
-                    final SnapshotTracker hFirst = peekFirst(mHighResSortedTrackers);
-                    final SnapshotTracker lFirst = peekFirst(mLowResSortedTrackers);
-                    if (hFirst != null && lFirst != null) {
-                        return hFirst.mCaptureTime > lFirst.mCaptureTime ? hFirst : lFirst;
-                    } else {
-                        return hFirst != null ? hFirst : lFirst;
-                    }
+                final SnapshotTracker hFirst =
+                        (resolution == RESOLUTION_ANY || resolution == RESOLUTION_HIGH)
+                        ? peekFirst(mHighResSortedTrackers) : null;
+                final SnapshotTracker lFirst =
+                        (resolution == RESOLUTION_ANY || resolution == RESOLUTION_LOW)
+                        ? peekFirst(mLowResSortedTrackers) : null;
+
+                final SnapshotTracker tracker;
+                if (hFirst != null && lFirst != null) {
+                    tracker = hFirst.mCaptureTime > lFirst.mCaptureTime ? hFirst : lFirst;
+                } else {
+                    tracker = hFirst != null ? hFirst : lFirst;
                 }
-                final TreeSet<SnapshotTracker> targetingSet = resolution == RESOLUTION_LOW
-                        ? mLowResSortedTrackers : mHighResSortedTrackers;
-                return peekFirst(targetingSet);
+                if (tracker == null) {
+                    return null;
+                }
+                final TaskSnapshot snapshot = tracker.mSnapshot.get();
+                if (snapshot == null || !snapshot.isBufferValid()) {
+                    Log.w(TAG, "Remove unused tracker=" + tracker);
+                    stopTrack(tracker, true /* forceRemove */);
+                    return peekLatestSnapshot(resolution);
+                } else {
+                    return tracker;
+                }
             }
 
             private static SnapshotTracker peekFirst(TreeSet<SnapshotTracker> targetingSet) {
                 return targetingSet.isEmpty() ? null : targetingSet.getFirst();
             }
 
-            void stopTrack(SnapshotTracker tracker) {
+            void stopTrack(SnapshotTracker tracker, boolean forceRemove) {
+                final TaskSnapshot snapshot = tracker.mSnapshot.get();
+                final int remainReference = tracker.decreaseReference();
+                if (!forceRemove && remainReference > 0 && snapshot != null
+                        && snapshot.isBufferValid()) {
+                    return;
+                }
+                if (snapshot != null) {
+                    snapshot.setSnapshotTracker(null);
+                    snapshot.closeBuffer();
+                }
                 final TreeSet<SnapshotTracker> targetingSet = tracker.mIsLowResolution
                         ? mLowResSortedTrackers : mHighResSortedTrackers;
                 targetingSet.remove(tracker);
@@ -341,6 +419,7 @@ public class TaskSnapshotManager {
         final long mCaptureTime;
         final boolean mIsLowResolution;
         final WeakReference<TaskSnapshot> mSnapshot;
+        int mReferenceCount;
 
         SnapshotTracker(int taskId, TaskSnapshot snapshot) {
             super();
@@ -350,13 +429,23 @@ public class TaskSnapshotManager {
             mIsLowResolution = snapshot.isLowResolution();
             snapshot.setSnapshotTracker(this);
             mSnapshot = new WeakReference<>(snapshot);
+            mReferenceCount = 1;
+        }
+        void increaseReference() {
+            mReferenceCount++;
+        }
+
+        int decreaseReference() {
+            mReferenceCount -= 1;
+            return mReferenceCount;
         }
 
         @Override
         public String getMessage() {
             return "SnapshotTracker: @" + hashCode()
                     + " {TaskId=" + mTaskId + ", SnapshotId=" + mSnapshotId + " mCaptureTime="
-                    + mCaptureTime + ", isLowResolution=" + mIsLowResolution + "}";
+                    + mCaptureTime + " isLowResolution=" + mIsLowResolution
+                    + " mReferenceCount=" + mReferenceCount + "}";
         }
 
         void dump(PrintWriter pw) {

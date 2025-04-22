@@ -30,10 +30,13 @@ import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_R
 
 import android.hardware.HardwareBuffer;
 import android.os.Binder;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
 import android.os.Trace;
 import android.util.ArrayMap;
 import android.util.Slog;
 import android.view.WindowManager;
+import android.window.ITaskSnapshotListener;
 import android.window.ITaskSnapshotManager;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
@@ -56,8 +59,7 @@ class SnapshotController {
     final ActivitySnapshotController mActivitySnapshotController;
     private final WindowManagerService mService;
     private final ArrayList<WeakReference<HardwareBuffer>> mObsoleteSnapshots = new ArrayList<>();
-    final ITaskSnapshotManager mSnapshotManagerService = new SnapshotManagerService();
-
+    final SnapshotManagerService mSnapshotManagerService = new SnapshotManagerService();
     private static final String TAG = AbsAppSnapshotController.TAG;
     SnapshotController(WindowManagerService wms) {
         mService = wms;
@@ -299,6 +301,14 @@ class SnapshotController {
                 task.mUserId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
     }
 
+    void notifySnapshotChanged(int taskId, TaskSnapshot snapshot) {
+        mSnapshotManagerService.notifySnapshotChanged(taskId, snapshot);
+    }
+
+    void notifySnapshotInvalidate(int taskId) {
+        mSnapshotManagerService.notifySnapshotInvalidate(taskId);
+    }
+
     class SnapshotManagerService extends ITaskSnapshotManager.Stub {
 
         @Override
@@ -352,6 +362,67 @@ class SnapshotController {
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
+        }
+
+        /** Sets the task snapshot listener that gets callbacks when a task changes. */
+        @Override
+        public void registerTaskSnapshotListener(ITaskSnapshotListener listener) {
+            ActivityTaskManagerService.enforceTaskPermission("registerTaskStackListener()");
+            mRemoteTaskSnapshotListeners.register(listener);
+        }
+
+        /** Unregister a task snapshot listener so that it stops receiving callbacks. */
+        @Override
+        public void unregisterTaskSnapshotListener(ITaskSnapshotListener listener) {
+            ActivityTaskManagerService.enforceTaskPermission("unregisterTaskStackListener()");
+            mRemoteTaskSnapshotListeners.unregister(listener);
+        }
+
+        private interface TaskSnapshotConsumer {
+            void accept(ITaskSnapshotListener t) throws RemoteException;
+        }
+
+        void notifySnapshotChanged(int taskId, TaskSnapshot snapshot) {
+            snapshot.addReference(TaskSnapshot.REFERENCE_BROADCAST);
+            mService.mH.post(() -> {
+                forAllRemoteListeners(l -> l.onTaskSnapshotChanged(taskId, snapshot));
+                snapshot.removeReference(TaskSnapshot.REFERENCE_BROADCAST);
+            });
+        }
+
+        void notifySnapshotInvalidate(int taskId) {
+            mService.mH.post(() -> forAllRemoteListeners(l ->
+                    l.onTaskSnapshotInvalidated(taskId)));
+        }
+
+        /**
+         * Task snapshot listeners in remote processes.
+         * <p>
+         * Note that mRemoteTaskSnapshotListeners can be modified on any thread, but it can only be
+         * invoked on the handler thread of {@link WindowManagerService#mH}.
+         */
+        private final RemoteCallbackList<ITaskSnapshotListener> mRemoteTaskSnapshotListeners =
+                new RemoteCallbackList<>();
+
+        /**
+         * Iterates through all the registered remote listeners and executes the provided callback
+         * for each of them.
+         * <p>
+         * Note: {@link RemoteCallbackList#beginBroadcast()} must be called on the handler thread
+         *       of {@link WindowManagerService#mH}.
+         *
+         * @param callback The callback to execute for each remote listener.
+         */
+        private void forAllRemoteListeners(TaskSnapshotConsumer callback) {
+            for (int i = mRemoteTaskSnapshotListeners.beginBroadcast() - 1; i >= 0; i--) {
+                try {
+                    // Make a one-way callback to the listener
+                    callback.accept(mRemoteTaskSnapshotListeners.getBroadcastItem(i));
+                } catch (RemoteException e) {
+                    // Handled by the RemoteCallbackList.
+                }
+            }
+            mRemoteTaskSnapshotListeners.finishBroadcast();
         }
     }
 }

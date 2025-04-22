@@ -50,18 +50,18 @@ data class ThumbnailData(
         private fun makeThumbnail(snapshot: TaskSnapshot): Bitmap {
             var thumbnail: Bitmap? = null
             try {
-                snapshot.hardwareBuffer?.use { buffer ->
-                    thumbnail = Bitmap.wrapHardwareBuffer(buffer, snapshot.colorSpace)
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    thumbnail = snapshot.wrapToBitmap()
+                    snapshot.closeBuffer()
+                } else {
+                    snapshot.hardwareBuffer?.use { buffer ->
+                        thumbnail = Bitmap.wrapHardwareBuffer(buffer, snapshot.colorSpace)
+                    }
                 }
             } catch (ex: IllegalArgumentException) {
                 // TODO(b/157562905): Workaround for a crash when we get a snapshot without this
                 // state
-                Log.e(
-                    TAG,
-                    "Unexpected snapshot without USAGE_GPU_SAMPLED_IMAGE: " +
-                        "${snapshot.hardwareBuffer}",
-                    ex,
-                )
+                Log.e(TAG, "Unexpected snapshot without USAGE_GPU_SAMPLED_IMAGE", ex)
             }
             if (snapshot.densityDpi > 0 && thumbnail?.density != snapshot.densityDpi) {
                 Log.d(

@@ -273,10 +273,10 @@ public class TaskSnapshot implements Parcelable {
                 final TaskSnapshotManager.SnapshotTracker tracker = mSnapshotTracker.get();
                 if (tracker != null) {
                     TaskSnapshotManager.getInstance().removeTracker(tracker);
-                    mSnapshotTracker.clear();
                 }
+            } else {
+                mSnapshot.close();
             }
-            mSnapshot.close();
         }
     }
 
@@ -494,7 +494,11 @@ public class TaskSnapshot implements Parcelable {
     }
 
     void setSnapshotTracker(TaskSnapshotManager.SnapshotTracker tracker) {
-        mSnapshotTracker = new WeakReference<>(tracker);
+        if (tracker == null) {
+            mSnapshotTracker = null;
+        } else {
+            mSnapshotTracker = new WeakReference<>(tracker);
+        }
     }
 
     /**

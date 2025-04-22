@@ -16,6 +16,8 @@
 
 package android.window;
 
+import android.window.ITaskSnapshotListener;
+
 /**
  * @hide
  */
@@ -49,4 +51,7 @@ interface ITaskSnapshotManager {
      *         corresponding task can be found.
      */
     android.window.TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache);
+
+    void registerTaskSnapshotListener(in ITaskSnapshotListener listener);
+    void unregisterTaskSnapshotListener(in ITaskSnapshotListener listener);
 }

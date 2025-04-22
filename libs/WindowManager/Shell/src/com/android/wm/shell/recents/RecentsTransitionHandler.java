@@ -68,6 +68,7 @@ import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
 import android.window.PictureInPictureSurfaceTransaction;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowAnimationState;
@@ -579,8 +580,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "[%d] RecentsController.sendCancel: Snapshotting task=%d",
                                 mInstanceId, state.mTaskInfo.taskId);
-                        snapshots[i] = ActivityTaskManager.getService().takeTaskSnapshot(
-                                state.mTaskInfo.taskId, true /* updateCache */);
+                        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                            snapshots[i] = TaskSnapshotManager.getInstance().takeTaskSnapshot(
+                                    state.mTaskInfo.taskId, true /* updateCache */);
+                        } else {
+                            snapshots[i] = ActivityTaskManager.getService().takeTaskSnapshot(
+                                    state.mTaskInfo.taskId, true /* updateCache */);
+                        }
                     }
                 } catch (RemoteException e) {
                     taskIds = null;

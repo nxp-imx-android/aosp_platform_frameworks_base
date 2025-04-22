@@ -68,6 +68,7 @@ import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.LocalServices;
 import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -445,8 +446,13 @@ final class InputMonitor {
                         if (app != null) {
                             mDisplayContent.removeImeScreenshotImmediately();
                             if (app.getTask() != null) {
-                                mDisplayContent.mAtmService.takeTaskSnapshot(app.getTask().mTaskId,
-                                        true /* updateCache */);
+                                if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                                    mDisplayContent.mWmService.mTaskSnapshotController
+                                            .recordSnapshot(app.getTask());
+                                } else {
+                                    mDisplayContent.mAtmService.takeTaskSnapshot(
+                                            app.getTask().mTaskId, true /* updateCache */);
+                                }
                             }
                         }
                     } else {
