@@ -127,7 +127,7 @@ static BitmapPalette paletteForColorHSV(SkColor color) {
     return hsv[2] >= .5f ? BitmapPalette::Light : BitmapPalette::Dark;
 }
 
-static BitmapPalette filterPalette(const SkPaint* paint, BitmapPalette palette) {
+BitmapPalette filterPalette(const SkPaint* paint, BitmapPalette palette) {
     if (palette == BitmapPalette::Unknown || !paint || !paint->getColorFilter()) {
         return palette;
     }

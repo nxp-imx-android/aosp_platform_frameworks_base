@@ -863,7 +863,18 @@ constexpr bool has_bounds = std::experimental::is_detected_v<has_bounds_helper, 
 
 template <class T>
 constexpr color_area_fn colorAreaForOp() {
-    if constexpr (has_paint<T> && has_bounds<T>) {
+    if constexpr (has_palette<T> && has_bounds<T>) {
+        return [](const void* opRaw, ColorArea* accumulator) {
+            const T* op = reinterpret_cast<const T*>(opRaw);
+            const SkPaint* paint = &op->paint;
+            if (!paint) return;
+
+            auto rect = op->getConservativeBounds();
+            if (!rect.has_value()) return;
+
+            accumulator->addArea(*rect, *paint, op->palette);
+        };
+    } else if constexpr (has_paint<T> && has_bounds<T>) {
         return [](const void* opRaw, ColorArea* accumulator) {
             const T* op = reinterpret_cast<const T*>(opRaw);
             const SkPaint* paint = &op->paint;
