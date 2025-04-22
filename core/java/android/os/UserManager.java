@@ -2288,24 +2288,16 @@ public class UserManager {
     public static final int LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER = 1;
 
     /**
-     * Indicates that user cannot logout because there is no suitable user to logout to. This is
-     * generally applicable to Headless System User Mode devices that do not have an interactive
-     * system user.
-     * @hide
-     */
-    public static final int LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO = 2;
-
-    /**
      * Indicates that user cannot logout because user switch cannot happen.
      * @hide
      */
-    public static final int LOGOUTABILITY_STATUS_CANNOT_SWITCH = 3;
+    public static final int LOGOUTABILITY_STATUS_CANNOT_SWITCH = 2;
 
     /**
      * Indicates that user cannot logout because logout is not supported on the device.
      * @hide
      */
-    public static final int LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED = 4;
+    public static final int LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED = 3;
 
     /**
      * Result returned in {@link #getUserLogoutability()} indicating user logoutability.
@@ -2315,7 +2307,6 @@ public class UserManager {
     @IntDef(flag = false, prefix = { "LOGOUTABILITY_STATUS_" }, value = {
             LOGOUTABILITY_STATUS_OK,
             LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER,
-            LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO,
             LOGOUTABILITY_STATUS_CANNOT_SWITCH,
             LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED
     })
@@ -2812,7 +2803,6 @@ public class UserManager {
      * @return A {@link UserLogoutability} flag indicating if the user can logout,
      * one of {@link #LOGOUTABILITY_STATUS_OK},
      * {@link #LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER},
-     * {@link #LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO},
      * {@link #LOGOUTABILITY_STATUS_CANNOT_SWITCH}.
      * {@link #LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED}.
      * @hide

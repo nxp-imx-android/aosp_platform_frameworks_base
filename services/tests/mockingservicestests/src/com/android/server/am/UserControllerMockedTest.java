@@ -19,6 +19,7 @@ package com.android.server.am;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -81,8 +82,6 @@ public final class UserControllerMockedTest {
         mockSystemUserHeadlessMode(true);
         mockCanSwitchToHeadlessSystemUser(true);
         mockCurrentUser(TEST_USER_1);
-        when(mUserManagerInternal.getUserToLogoutCurrentUserTo())
-                .thenReturn(UserHandle.USER_SYSTEM);
 
         boolean result = mSpiedUserController.logoutUser(TEST_USER_1);
 
@@ -95,17 +94,16 @@ public final class UserControllerMockedTest {
     public void testLogoutUser_NonHsum_CanLogoutCurrentUser() {
         mockSystemUserHeadlessMode(false);
         mockCurrentUser(TEST_USER_1);
-        when(mUserManagerInternal.getUserToLogoutCurrentUserTo()).thenReturn(TEST_USER_2);
 
         boolean result = mSpiedUserController.logoutUser(TEST_USER_1);
 
         assertThat(result).isTrue();
-        verify(mSpiedUserController).switchUser(TEST_USER_2);
+        verify(mSpiedUserController).switchUser(UserHandle.USER_SYSTEM);
         verify(mSpiedUserController).stopUser(TEST_USER_1, false, null, null);
     }
 
     @Test
-    public void testLogoutUser_LogoutNonCurrentUser_NoSwitchUser() {
+    public void testLogoutUser_LogoutNonCurrentUser_HsumAndInteractiveUser0_NoSwitchUser() {
         mockSystemUserHeadlessMode(true);
         mockCanSwitchToHeadlessSystemUser(true);
         mockCurrentUser(TEST_USER_1);
@@ -114,12 +112,25 @@ public final class UserControllerMockedTest {
 
         assertThat(result).isTrue();
         // Logout of non-current user does not need switch user, but only stop user.
-        verify(mSpiedUserController, never()).switchUser(UserHandle.USER_SYSTEM);
+        verify(mSpiedUserController, never()).switchUser(anyInt());
         verify(mSpiedUserController).stopUser(TEST_USER_2, false, null, null);
     }
 
     @Test
-    public void testLogoutUser_CannotLogoutSystemUser() {
+    public void testLogoutUser_LogoutNonCurrentUser_NonHsum_NoSwitchUser() {
+        mockSystemUserHeadlessMode(false);
+        mockCurrentUser(TEST_USER_1);
+
+        boolean result = mSpiedUserController.logoutUser(TEST_USER_2);
+
+        assertThat(result).isTrue();
+        // Logout of non-current user does not need switch user, but only stop user.
+        verify(mSpiedUserController, never()).switchUser(anyInt());
+        verify(mSpiedUserController).stopUser(TEST_USER_2, false, null, null);
+    }
+
+    @Test
+    public void testLogoutUser_CannotLogoutSystemUser_HsumAndInteractiveUser0() {
         mockSystemUserHeadlessMode(true);
         mockCanSwitchToHeadlessSystemUser(true);
         mockCurrentUser(UserHandle.USER_SYSTEM);
@@ -129,7 +140,20 @@ public final class UserControllerMockedTest {
         assertThat(result).isFalse();
         // No switch user should have happened.
         verify(mSpiedUserController, never()).switchUser(anyInt());
-        verify(mSpiedUserController, never()).stopUser(UserHandle.USER_SYSTEM, false, null, null);
+        verify(mSpiedUserController, never()).stopUser(anyInt(), anyBoolean(), any(), any());
+    }
+
+    @Test
+    public void testLogoutUser_CannotLogoutSystemUser_NonHsum() {
+        mockSystemUserHeadlessMode(false);
+        mockCurrentUser(UserHandle.USER_SYSTEM);
+
+        boolean result = mSpiedUserController.logoutUser(UserHandle.USER_SYSTEM);
+
+        assertThat(result).isFalse();
+        // No switch user should have happened.
+        verify(mSpiedUserController, never()).switchUser(anyInt());
+        verify(mSpiedUserController, never()).stopUser(anyInt(), anyBoolean(), any(), any());
     }
 
     private void mockCurrentUser(@UserIdInt int userId) {
