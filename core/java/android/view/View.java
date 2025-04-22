@@ -8857,10 +8857,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             }
 
             if (android.view.accessibility.Flags.requestRectangleWithSource()) {
-                final Rect r = mAttachInfo.mTmpInvalRect;
-                getLocalVisibleRect(r);
-                requestRectangleOnScreen(r, false,
-                        RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
+                if (mAttachInfo != null) {
+                    final Rect r = mAttachInfo.mTmpInvalRect;
+                    getLocalVisibleRect(r);
+                    requestRectangleOnScreen(r, false,
+                            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
+                }
             }
         }
 
