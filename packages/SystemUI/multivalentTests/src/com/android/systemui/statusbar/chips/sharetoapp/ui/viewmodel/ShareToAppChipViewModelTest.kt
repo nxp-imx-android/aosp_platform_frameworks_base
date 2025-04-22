@@ -701,4 +701,34 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
             verify(kosmos.mockDialogTransitionAnimator)
                 .show(eq(mockScreenShareDialog), any(), any())
         }
+
+    @Test
+    fun chip_packageNameIsSet_entireScreen() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).managingPackageName)
+                .isEqualTo(NORMAL_PACKAGE)
+        }
+
+    @Test
+    fun chip_packageNameIsSet_singleTask() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            mediaProjectionRepo.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    NORMAL_PACKAGE,
+                    hostDeviceName = null,
+                    createTask(taskId = 1),
+                )
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).managingPackageName)
+                .isEqualTo(NORMAL_PACKAGE)
+        }
 }

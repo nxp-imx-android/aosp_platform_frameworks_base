@@ -58,6 +58,8 @@ sealed class OngoingActivityChipModel {
          * A key that uniquely identifies this chip. Used for better visual effects, like animation.
          */
         val key: String,
+        /** The package name of the app managing this chip. */
+        val managingPackageName: String? = null,
         /**
          * True if this chip is critical for privacy so we should keep it visible at all times, and
          * false otherwise.
@@ -84,6 +86,7 @@ sealed class OngoingActivityChipModel {
         val isHidden: Boolean = false,
         /** Whether the transition from hidden to shown should be animated. */
         val shouldAnimate: Boolean = true,
+
         /**
          * An optional per-chip ID used for logging. Should stay the same throughout the lifetime of
          * a single chip.
