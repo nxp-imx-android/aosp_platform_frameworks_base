@@ -3175,6 +3175,22 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    @Override
+    public void moveRootTaskToDisplayOnTopOrBottom(int taskId, int displayId, boolean onTop) {
+        mAmInternal.enforceCallingPermission(INTERNAL_SYSTEM_WINDOW,
+                "moveRootTaskToDisplayOnTopOrBottom()");
+        synchronized (mGlobalLock) {
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                ProtoLog.d(WM_DEBUG_TASKS, "moveRootTaskToDisplayOnTopOrBottom: " +
+                        "moving taskId=%d to displayId=%d, onTop=%b", taskId, displayId, onTop);
+                mRootWindowContainer.moveRootTaskToDisplay(taskId, displayId, onTop);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+    }
+
     /** Sets the task stack listener that gets callbacks when a task stack changes. */
     @Override
     public void registerTaskStackListener(ITaskStackListener listener) {
