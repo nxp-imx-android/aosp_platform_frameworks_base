@@ -30,7 +30,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.timeout;
 
 import static java.io.File.createTempFile;
 import static java.nio.file.Files.createTempDirectory;
@@ -67,11 +66,6 @@ import java.io.IOException;
 @Presubmit
 public class WindowTracingPerfettoTest {
     private static final String TEST_DATA_SOURCE_NAME = "android.windowmanager.test";
-
-    // The initial snapshot is written to perfetto asynchronously (not by the perfetto onStart
-    // thread). The timeout is used after the perfetto onStart returns (i.e. after the tracing
-    // session has started) to wait till the initial snapshot is actually written.
-    private static final int INITIAL_SNAPSHOT_TIMEOUT_MS = 5000;
 
     private static WindowManagerService sWmMock;
     private static Choreographer sChoreographerMock;
@@ -147,16 +141,12 @@ public class WindowTracingPerfettoTest {
     @Test
     public void trace_writesInitialStateSnapshot_whenTracingStarts() {
         startTracing(LogFrequency.LOG_FREQUENCY_TRANSACTION);
-        verify(sWmMock, timeout(INITIAL_SNAPSHOT_TIMEOUT_MS)
-                .times(1)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
+        verify(sWmMock, times(1)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
     }
 
     @Test
     public void trace_writesStateSnapshot_onLogStateCall() {
         startTracing(LogFrequency.LOG_FREQUENCY_TRANSACTION);
-        verify(sWmMock, timeout(INITIAL_SNAPSHOT_TIMEOUT_MS)
-                .times(1)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
-
         sWindowTracing.logState("where");
         verify(sWmMock, times(2)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
     }
@@ -192,8 +182,7 @@ public class WindowTracingPerfettoTest {
     public void dump_writesOneSingleStateSnapshot() {
         startTracing(LogFrequency.LOG_FREQUENCY_SINGLE_DUMP);
         sWindowTracing.logState("where");
-        verify(sWmMock, timeout(INITIAL_SNAPSHOT_TIMEOUT_MS)
-                .times(1)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
+        verify(sWmMock, times(1)).dumpDebugLocked(any(), eq(WindowTracingLogLevel.ALL));
     }
 
     private void startTracing(LogFrequency logFrequency) {
