@@ -52,6 +52,7 @@ import android.os.RemoteCallback;
 import android.os.UserHandle;
 import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.ParcelableKeyGenParameterSpec;
+import android.telephony.SubscriptionInfo;
 import android.telephony.data.ApnSetting;
 import com.android.internal.infra.AndroidFuture;
 import android.app.admin.DevicePolicyState;
@@ -623,6 +624,8 @@ interface IDevicePolicyManager {
 
     void setManagedSubscriptionsPolicy(in ManagedSubscriptionsPolicy policy);
     ManagedSubscriptionsPolicy getManagedSubscriptionsPolicy();
+
+    boolean isSubscriptionEnterpriseManaged(in SubscriptionInfo info, String packageName);
 
     DevicePolicyState getDevicePolicyState();
 

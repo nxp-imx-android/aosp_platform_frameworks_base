@@ -144,6 +144,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.ParcelableKeyGenParameterSpec;
 import android.security.keystore.StrongBoxUnavailableException;
 import android.service.restrictions.RestrictionsReceiver;
+import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.data.ApnSetting;
 import android.text.TextUtils;
@@ -11283,6 +11284,26 @@ public class DevicePolicyManager {
                 throw e.rethrowFromSystemServer();
             }
         }
+    }
+
+    /**
+     * Checks whether the given subscription is enterprise-managed.
+     *
+     * @param info The subscription to check.
+     * @param packageName The package to check against the subscription's group owner.
+     * @return whether the subscription is enterprise-managed.
+     * @hide
+     */
+    public boolean isSubscriptionEnterpriseManaged(
+            @NonNull SubscriptionInfo info, @NonNull String packageName) {
+        if (mService != null) {
+            try {
+                return mService.isSubscriptionEnterpriseManaged(info, packageName);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return false;
     }
 
     /**
