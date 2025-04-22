@@ -421,4 +421,14 @@ interface ITelecomService {
      * @see TelecomServiceImpl#waitForAudioToUpdate
      */
      void waitForAudioToUpdate(boolean expectActive);
+
+    /*
+     * @see TelecomServiceImpl#getCallConnectedIndicatorPreference
+     */
+    int getCallConnectedIndicatorPreference(in String callingPackage);
+
+    /**
+     * @see TelecomServiceImpl#setCallConnectedIndicatorPreference
+     */
+    void setCallConnectedIndicatorPreference(in String callingPackage, in int preference);
 }
