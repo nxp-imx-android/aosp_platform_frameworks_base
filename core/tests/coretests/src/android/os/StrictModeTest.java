@@ -29,6 +29,8 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.DisabledOnRavenwood(blockedBy = StrictMode.class,
+        reason = "Strict mode is not yet cleanly supported")
 public class StrictModeTest {
     private File mFile;
 
