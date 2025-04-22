@@ -1215,6 +1215,12 @@
         }
     </string>
 
+    <!-- Modes: title for when multiple modes are active.[CHAR LIMIT=20] -->
+    <string name="zen_modes_multiple_on_title">%s Modes</string>
+
+    <!-- Modes: subtitle for when multiple modes are active. Plural. [CHAR LIMIT=20] -->
+    <string name="zen_modes_multiple_on_status">On</string>
+
     <!-- Zen mode: Priority only introduction message on first use -->
     <string name="zen_priority_introduction">You won\'t be disturbed by sounds and vibrations, except from alarms, reminders, events, and callers you specify. You\'ll still hear anything you choose to play including music, videos, and games.</string>
 
