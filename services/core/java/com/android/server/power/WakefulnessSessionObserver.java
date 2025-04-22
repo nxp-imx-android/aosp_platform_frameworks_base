@@ -22,7 +22,7 @@ import static android.os.PowerManager.USER_ACTIVITY_EVENT_OTHER;
 import static android.os.PowerManagerInternal.isInteractive;
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.server.power.PowerManagerService.DEFAULT_SCREEN_OFF_TIMEOUT;
+import static com.android.server.power.ScreenTimeoutConstants.DEFAULT_SCREEN_OFF_TIMEOUT;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_NON_INTERACTIVE;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_SCREEN_LOCK;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_UNKNOWN;
