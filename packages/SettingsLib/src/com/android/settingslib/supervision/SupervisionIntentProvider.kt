@@ -16,9 +16,11 @@
 
 package com.android.settingslib.supervision
 
+import android.app.role.RoleManager
 import android.app.supervision.SupervisionManager
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.RequiresPermission
 
 /** Helper class meant to provide intent to launch supervision features. */
 object SupervisionIntentProvider {
@@ -64,14 +66,19 @@ object SupervisionIntentProvider {
     }
 
     /**
-     * Returns an [Intent] to the supervision pin recovery activity or null if supervision is
-     * disabled or the intent is not resolvable.
+     * Returns an [Intent] to the supervision pin recovery activity or null if there's no
+     * [android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION] role holder or the intent is not
+     * resolvable.
      */
+    @RequiresPermission("android.permission.MANAGE_ROLE_HOLDERS")
     @JvmStatic
     fun getPinRecoveryIntent(context: Context, action: PinRecoveryAction): Intent? {
-        val supervisionManager = context.getSystemService(SupervisionManager::class.java)
-        val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage ?: return null
-
+        val roleHolders =
+            context
+                .getSystemService(RoleManager::class.java)
+                ?.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION)
+        // Supervision role is exclusive, only one app may hold this role per user.
+        val supervisionAppPackage = roleHolders?.firstOrNull() ?: return null
         val intent = Intent(action.action).setPackage(supervisionAppPackage)
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
