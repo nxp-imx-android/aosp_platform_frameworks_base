@@ -279,6 +279,24 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         );
     }
 
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testSingleNotifPromotedOutOfGroupInBundle() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a bundle with a group with one child
+        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupSummary(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+
+        dispatchBuild();
+
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(0) // Child is promoted out of group inside bundle
+                )
+        );
+    }
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
