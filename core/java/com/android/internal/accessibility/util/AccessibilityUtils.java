@@ -42,6 +42,7 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.view.accessibility.AccessibilityManager;
 
+import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 
 import libcore.util.EmptyArray;
@@ -371,5 +372,16 @@ public final class AccessibilityUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the default value for
+     * {@link android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME}.
+     *
+     * @return The {@link State} whether the default value is on or off.
+     */
+    public static int getMagnificationMagnifyKeyboardDefaultValue(Context context) {
+        return context.getResources().getBoolean(
+                R.bool.config_magnification_magnify_keyboard_default) ? State.ON : State.OFF;
     }
 }

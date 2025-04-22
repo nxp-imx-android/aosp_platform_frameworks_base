@@ -326,6 +326,7 @@ import android.window.WindowContainerToken;
 import android.window.WindowContextInfo;
 
 import com.android.internal.R;
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
@@ -1049,9 +1050,10 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             boolean enabledMagnifyNavAndIme = Settings.Secure.getIntForUser(
-                        mContext.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
-                    0, mCurrentUserId) == 1;
+                    mContext.getContentResolver(),
+                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                    AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
+                    mCurrentUserId) == 1;
             if (mMagnifyNavAndIme == enabledMagnifyNavAndIme) {
                 return;
             }
