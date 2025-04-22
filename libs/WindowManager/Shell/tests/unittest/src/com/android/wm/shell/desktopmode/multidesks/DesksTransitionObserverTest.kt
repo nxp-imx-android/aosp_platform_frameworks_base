@@ -341,7 +341,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_changeDeskDisplay_updatesAllRepositories() {
         desktopUserRepositories.onUserChanged(USER_ID_1, mock())
         desktopUserRepositories.getProfile(USER_ID_1)
