@@ -101,6 +101,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 + " task-display-area-windowing-mode=" + suggestedDisplayArea.getWindowingMode()
                 + " suggested-display-area=" + suggestedDisplayArea);
 
+        boolean hasLaunchWindowingMode = false;
         final boolean inDesktopMode = suggestedDisplayArea.inFreeformWindowingMode()
                 || suggestedDisplayArea.getTopMostVisibleFreeformActivity() != null;
         if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue() && task == null
@@ -108,11 +109,10 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                     || inDesktopMode)) {
             if (options != null) {
                 final int windowingMode = options.getLaunchWindowingMode();
-                if (windowingMode == WINDOWING_MODE_UNDEFINED
-                        || windowingMode == WINDOWING_MODE_FREEFORM) {
+                if (windowingMode == WINDOWING_MODE_FREEFORM) {
                     // Launching freeform in desktop but not ready to resolve bounds since task is
                     // null, return RESULT_DONE to prevent other modifiers from setting bounds.
-                    outParams.mWindowingMode = options.getLaunchWindowingMode();
+                    outParams.mWindowingMode = windowingMode;
                     appendLog("launch-freeform");
                     return RESULT_DONE;
                 }
@@ -165,6 +165,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 outParams.mWindowingMode = sourceTask.getWindowingMode();
                 appendLog("inherit-from-source=" + outParams.mWindowingMode);
             }
+            hasLaunchWindowingMode = true;
         }
 
         if (phase == PHASE_WINDOWING_MODE) {
@@ -217,7 +218,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             appendLog("inherit-options=" + options.getLaunchWindowingMode());
             return RESULT_DONE;
         }
-        if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()
+                && hasLaunchWindowingMode) {
             return RESULT_DONE;
         }
         return RESULT_CONTINUE;
