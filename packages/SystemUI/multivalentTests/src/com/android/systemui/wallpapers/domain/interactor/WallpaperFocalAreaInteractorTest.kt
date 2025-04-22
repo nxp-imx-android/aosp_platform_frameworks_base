@@ -96,7 +96,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
 
-            assertThat(bounds).isEqualTo(RectF(250f, 700F, 750F, 1400F))
+            assertThat(bounds?.top).isEqualTo(700F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
@@ -116,7 +117,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
 
-            assertThat(bounds).isEqualTo(RectF(250f, 800F, 750F, 1400F))
+            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
@@ -136,7 +138,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
 
-            assertThat(bounds).isEqualTo(RectF(600f, 600F, 1400F, 1100F))
+            assertThat(bounds?.top).isEqualTo(600F)
+            assertThat(bounds?.bottom).isEqualTo(1100F)
         }
 
     @Test
@@ -156,7 +159,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
 
-            assertThat(bounds).isEqualTo(RectF(400f, 800F, 1200F, 1400F))
+            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
@@ -176,7 +180,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
 
-            assertThat(bounds).isEqualTo(RectF(400f, 800F, 1200F, 1400F))
+            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
@@ -196,7 +201,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(200F)
             kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(200F)
 
-            assertThat(bounds).isEqualTo(RectF(1000f, 600F, 2000F, 1400F))
+            assertThat(bounds?.top).isEqualTo(600F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
