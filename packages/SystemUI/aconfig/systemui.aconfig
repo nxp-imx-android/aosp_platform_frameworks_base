@@ -731,6 +731,16 @@ flag {
 }
 
 flag {
+    name: "clipboard_announce_live_region"
+    namespace: "systemui"
+    description: "Use live region for clipboard status announcement"
+    bug: "378856296"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screen_reactions"
     namespace: "systemui"
     description: "Enables the new screen recording UX"
@@ -752,16 +762,6 @@ flag {
     namespace: "systemui"
     description: "Show shared transitions from clipboard"
     bug: "360843770"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "clipboard_image_timeout"
-    namespace: "systemui"
-    description: "Wait for clipboard image to load before showing UI"
-    bug: "359864629"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
