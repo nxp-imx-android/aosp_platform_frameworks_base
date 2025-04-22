@@ -5015,6 +5015,9 @@
     <!-- Title of autoclick feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
     <string name="autoclick_feature_name">Autoclick</string>
 
+    <!-- Title of mouse keys feature, shown in the warning dialog about the mouse keys shortcut. [CHAR LIMIT=none] -->
+    <string name="mouse_keys_feature_name">Mouse keys</string>
+
     <!-- Text of hearing device disconnected state. [CHAR LIMIT=20] -->
     <string name="hearing_device_status_disconnected">Disconnected</string>
 

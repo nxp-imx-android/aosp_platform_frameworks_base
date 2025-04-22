@@ -3816,6 +3816,7 @@
   <java-symbol type="string" name="color_inversion_feature_name" />
   <java-symbol type="string" name="color_correction_feature_name" />
   <java-symbol type="string" name="autoclick_feature_name"/>
+  <java-symbol type="string" name="mouse_keys_feature_name"/>
   <java-symbol type="string" name="reduce_bright_colors_feature_name" />
   <java-symbol type="string" name="config_defaultAccessibilityService" />
   <java-symbol type="string" name="config_defaultSelectToSpeakService" />

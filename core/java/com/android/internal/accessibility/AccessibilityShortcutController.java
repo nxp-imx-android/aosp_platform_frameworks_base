@@ -99,6 +99,8 @@ public class AccessibilityShortcutController {
             new ComponentName("com.android.server.accessibility", "FontSize");
     public static final ComponentName AUTOCLICK_COMPONENT_NAME =
             new ComponentName("com.android.server.accessibility", "Autoclick");
+    public static final ComponentName MOUSE_KEYS_COMPONENT_NAME =
+            new ComponentName("com.android.server.accessibility", "MouseKeys");
 
     // The component name for the sub setting of Accessibility button in Accessibility settings
     public static final ComponentName ACCESSIBILITY_BUTTON_COMPONENT_NAME =
@@ -182,6 +184,11 @@ public class AccessibilityShortcutController {
                             Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED,
                             "1" /* Value to enable */, "0" /* Value to disable */,
                             R.string.autoclick_feature_name));
+            featuresMap.put(MOUSE_KEYS_COMPONENT_NAME,
+                    new ToggleableFrameworkFeatureInfo(
+                            Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED,
+                             "1" /* Value to enable */, "0" /* Value to disable */,
+                            R.string.mouse_keys_feature_name));
             if (SUPPORT_ONE_HANDED_MODE) {
                 featuresMap.put(ONE_HANDED_COMPONENT_NAME,
                         new ToggleableFrameworkFeatureInfo(
