@@ -1562,8 +1562,7 @@ constructor(
                             // TODO(b/397180418): re-use the start transaction once the
                             //  RemoteAnimation wrapper is cleaned up.
                             SurfaceControl.Transaction().use {
-                                it.reparent(window.leash, viewRoot.surfaceControl)
-                                it.apply()
+                                it.reparent(window.leash, viewRoot.surfaceControl).apply()
                             }
                         }
 
@@ -1585,6 +1584,24 @@ constructor(
                     override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
                         listener?.onTransitionAnimationEnd()
                         iCallback?.invoke()
+
+                        if (reparent) {
+                            // Relying on this try-catch is not great, but the existence of
+                            // RemoteAnimationRunnerCompat means that we can't reliably assume that
+                            // the transaction will be executed while the leash is still valid.
+                            // TODO(b/397180418): remove once the RemoteAnimation wrapper is cleaned
+                            //  up.
+                            try {
+                                // Reparent to null to avoid leaking the transition leash.
+                                // TODO(b/397180418): shouldn't be needed anymore once the
+                                //  RemoteAnimation wrapper is cleaned up.
+                                SurfaceControl.Transaction().use {
+                                    it.reparent(window.leash, null).apply()
+                                }
+                            } catch (e: IllegalStateException) {
+                                Log.e(TAG, "Failed to clean up transition leash: already released")
+                            }
+                        }
 
                         if (DEBUG_TRANSITION_ANIMATION) {
                             Log.d(
