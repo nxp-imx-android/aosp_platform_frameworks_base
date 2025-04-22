@@ -89,7 +89,7 @@ class ClientLifecycleManager {
      * @see WindowProcessController#setReportedProcState(int)
      */
     boolean scheduleTransactionItemNow(@NonNull IApplicationThread client,
-            @NonNull ClientTransactionItem transactionItem) throws RemoteException {
+            @NonNull ClientTransactionItem transactionItem) {
         final ClientTransaction clientTransaction = new ClientTransaction(client);
         clientTransaction.addTransactionItem(transactionItem);
         return scheduleTransaction(clientTransaction);
@@ -104,7 +104,7 @@ class ClientLifecycleManager {
      * @see ClientTransactionItem
      */
     boolean scheduleTransactionItem(@NonNull IApplicationThread client,
-            @NonNull ClientTransactionItem item) throws RemoteException {
+            @NonNull ClientTransactionItem item) {
         // Wait until RootWindowContainer#performSurfacePlacementNoTrace to dispatch all pending
         // transactions at once.
         final ClientTransaction clientTransaction = getOrCreatePendingTransaction(client);
@@ -123,7 +123,7 @@ class ClientLifecycleManager {
      * @see ClientTransactionItem
      */
     boolean scheduleTransactionItems(@NonNull IApplicationThread client,
-            @NonNull ClientTransactionItem... items) throws RemoteException {
+            @NonNull ClientTransactionItem... items) {
         return scheduleTransactionItems(client, false /* shouldDispatchImmediately */, items);
     }
 
@@ -143,7 +143,7 @@ class ClientLifecycleManager {
      */
     boolean scheduleTransactionItems(@NonNull IApplicationThread client,
             boolean shouldDispatchImmediately,
-            @NonNull ClientTransactionItem... items) throws RemoteException {
+            @NonNull ClientTransactionItem... items) {
         // Wait until RootWindowContainer#performSurfacePlacementNoTrace to dispatch all pending
         // transactions at once.
         final ClientTransaction clientTransaction = getOrCreatePendingTransaction(client);
