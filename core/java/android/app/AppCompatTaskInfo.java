@@ -106,6 +106,8 @@ public class AppCompatTaskInfo implements Parcelable {
     private static final int FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE = FLAG_BASE << 10;
     /** Top activity flag for whether activity opted out of edge to edge. */
     public static final int FLAG_OPT_OUT_EDGE_TO_EDGE = FLAG_BASE << 11;
+    /** Top activity flag for whether activity is letterboxed for a safe region. */
+    public static final int FLAG_SAFE_REGION_LETTERBOXED = FLAG_BASE << 12;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -121,7 +123,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_FULLSCREEN_OVERRIDE_USER,
             FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE,
             FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE,
-            FLAG_OPT_OUT_EDGE_TO_EDGE
+            FLAG_OPT_OUT_EDGE_TO_EDGE,
+            FLAG_SAFE_REGION_LETTERBOXED
     })
     public @interface TopActivityFlag {}
 
@@ -141,7 +144,7 @@ public class AppCompatTaskInfo implements Parcelable {
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
             | FLAG_IN_SIZE_COMPAT | FLAG_ELIGIBLE_FOR_LETTERBOX_EDU | FLAG_LETTERBOX_EDU_ENABLED
-            | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE;
+            | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE | FLAG_SAFE_REGION_LETTERBOXED;
 
     private AppCompatTaskInfo() {
         // Do nothing
@@ -321,6 +324,21 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public void setRestartMenuEnabledForDisplayMove(boolean enable) {
         setTopActivityFlag(FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE, enable);
+    }
+
+    /**
+     * @return {@code true} if the top activity bounds are letterboxed for a safe region.
+     */
+    public boolean isTopActivitySafeRegionLetterboxed() {
+        return isTopActivityFlagEnabled(FLAG_SAFE_REGION_LETTERBOXED);
+    }
+
+    /**
+     * Sets the top activity flag for whether the top activity bounds are letterboxed for a safe
+     * region.
+     */
+    public void setTopActivitySafeRegionLetterboxed(boolean enable) {
+        setTopActivityFlag(FLAG_SAFE_REGION_LETTERBOXED, enable);
     }
 
     /**
