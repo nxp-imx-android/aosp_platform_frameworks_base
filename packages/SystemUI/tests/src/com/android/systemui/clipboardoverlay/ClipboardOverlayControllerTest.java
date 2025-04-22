@@ -102,6 +102,8 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     @Mock
     private ClipboardTransitionExecutor mClipboardTransitionExecutor;
     @Mock
+    private ClipboardInputEventReceiver mClipboardInputEventReceiver;
+    @Mock
     private UiEventLogger mUiEventLogger;
     private FakeDisplayTracker mDisplayTracker = new FakeDisplayTracker(mContext);
 
@@ -199,6 +201,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
                 mExecutor,
                 mClipboardImageLoader,
                 mClipboardTransitionExecutor,
+                mClipboardInputEventReceiver,
                 mClipboardIndicationProvider,
                 mUiEventLogger,
                 fakeIntentCreator);
@@ -208,8 +211,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
     @After
     public void tearDown() {
-        // call the InputReceiver dispose method on the main thread
-        mMainHandler.post(() -> mOverlayController.hideImmediate());
+        mOverlayController.hideImmediate();
     }
 
     @Test

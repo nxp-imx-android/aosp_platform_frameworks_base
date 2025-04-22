@@ -45,14 +45,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.input.InputManager;
 import android.net.Uri;
-import android.os.Looper;
 import android.provider.DeviceConfig;
 import android.util.Log;
-import android.view.InputEvent;
-import android.view.InputEventReceiver;
-import android.view.InputMonitor;
 import android.view.MotionEvent;
 import android.view.WindowInsets;
 
@@ -67,6 +62,8 @@ import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayModule.Overl
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.res.R;
 import com.android.systemui.screenshot.TimeoutHandler;
+
+import kotlin.Unit;
 
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -96,6 +93,8 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     private final Executor mBgExecutor;
     private final ClipboardImageLoader mClipboardImageLoader;
     private final ClipboardTransitionExecutor mTransitionExecutor;
+    private final ClipboardInputEventReceiver mClipboardInputEventReceiver;
+
 
     private final ClipboardOverlayView mView;
     private final ClipboardIndicationProvider mClipboardIndicationProvider;
@@ -105,9 +104,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     private Runnable mOnRemoteCopyTapped;
     private Runnable mOnShareTapped;
     private Runnable mOnPreviewTapped;
-
-    private InputMonitor mInputMonitor;
-    private InputEventReceiver mInputEventReceiver;
 
     private BroadcastReceiver mCloseDialogsReceiver;
     private BroadcastReceiver mScreenshotReceiver;
@@ -192,6 +188,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             @Background Executor bgExecutor,
             ClipboardImageLoader clipboardImageLoader,
             ClipboardTransitionExecutor transitionExecutor,
+            ClipboardInputEventReceiver clipboardInputEventReceiver,
             ClipboardIndicationProvider clipboardIndicationProvider,
             UiEventLogger uiEventLogger,
             IntentCreator intentCreator) {
@@ -199,6 +196,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         mBroadcastDispatcher = broadcastDispatcher;
         mClipboardImageLoader = clipboardImageLoader;
         mTransitionExecutor = transitionExecutor;
+        mClipboardInputEventReceiver = clipboardInputEventReceiver;
         mClipboardIndicationProvider = clipboardIndicationProvider;
 
         mClipboardLogger = new ClipboardLogger(uiEventLogger);
@@ -469,29 +467,22 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     }
 
     private void monitorOutsideTouches() {
-        InputManager inputManager = mContext.getSystemService(InputManager.class);
-        mInputMonitor = inputManager.monitorGestureInput("clipboard overlay", 0);
-        mInputEventReceiver = new InputEventReceiver(
-                mInputMonitor.getInputChannel(), Looper.getMainLooper()) {
-            @Override
-            public void onInputEvent(InputEvent event) {
-                if (mShowingUi && event instanceof MotionEvent) {
-                    MotionEvent motionEvent = (MotionEvent) event;
-                    if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                        if (!mView.isInTouchRegion(
-                                (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
-                            if (clipboardSharedTransitions()) {
-                                finish(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
-                            } else {
-                                mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
-                                animateOut();
-                            }
+        mClipboardInputEventReceiver.monitorOutsideTouches(event -> {
+            if (mShowingUi && event instanceof MotionEvent motionEvent) {
+                if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    if (!mView.isInTouchRegion(
+                            (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
+                        if (clipboardSharedTransitions()) {
+                            finish(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
+                        } else {
+                            mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
+                            animateOut();
                         }
                     }
                 }
-                finishInputEvent(event, true /* handled */);
             }
-        };
+            return Unit.INSTANCE;
+        });
     }
 
     private void editImage(Uri uri) {
@@ -635,14 +626,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             mBroadcastDispatcher.unregisterReceiver(mScreenshotReceiver);
             mScreenshotReceiver = null;
         }
-        if (mInputEventReceiver != null) {
-            mInputEventReceiver.dispose();
-            mInputEventReceiver = null;
-        }
-        if (mInputMonitor != null) {
-            mInputMonitor.dispose();
-            mInputMonitor = null;
-        }
+        mClipboardInputEventReceiver.dispose();
         if (mOnSessionCompleteListener != null) {
             mOnSessionCompleteListener.run();
         }
