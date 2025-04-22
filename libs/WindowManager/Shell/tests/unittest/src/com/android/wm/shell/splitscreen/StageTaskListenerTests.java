@@ -31,7 +31,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.app.ActivityManager;
-import android.os.SystemProperties;
 import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
@@ -116,7 +115,7 @@ public final class StageTaskListenerTests extends ShellTestCase {
     @Test
     public void testRootTaskAppeared() {
         assertThat(mStageTaskListener.mRootTaskInfo.taskId).isEqualTo(mRootTask.taskId);
-        verify(mCallbacks).onRootTaskAppeared();
+        verify(mCallbacks).onRootTaskAppeared(mRootTask);
         verify(mCallbacks, never()).onStageVisibilityChanged(mStageTaskListener);
     }
 

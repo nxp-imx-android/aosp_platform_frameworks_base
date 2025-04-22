@@ -15,10 +15,15 @@
  */
 
 package com.android.wm.shell.splitscreen
+
 import android.app.ActivityManager
 import android.hardware.display.DisplayManager
+import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
+import android.window.TransitionInfo
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.common.split.SplitLayout
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 
@@ -94,7 +99,8 @@ class SplitMultiDisplayHelper(private val displayManager: DisplayManager) {
      * @return The root task info, or null if not found.
      */
     fun getDisplayRootTaskInfo(displayId: Int): ActivityManager.RunningTaskInfo? {
-        return displayTaskMap[displayId]?.rootTaskInfo
+        val targetDisplayId = if (Flags.enableMultiDisplaySplit()) displayId else DEFAULT_DISPLAY
+        return displayTaskMap[targetDisplayId]?.rootTaskInfo
     }
 
     /**
@@ -107,7 +113,52 @@ class SplitMultiDisplayHelper(private val displayManager: DisplayManager) {
         displayId: Int,
         rootTaskInfo: ActivityManager.RunningTaskInfo?
     ) {
-        val hierarchy = displayTaskMap.computeIfAbsent(displayId) { SplitTaskHierarchy() }
+        val targetDisplayId = if (Flags.enableMultiDisplaySplit()) displayId else DEFAULT_DISPLAY
+        val hierarchy = displayTaskMap.computeIfAbsent(targetDisplayId) { SplitTaskHierarchy() }
         hierarchy.rootTaskInfo = rootTaskInfo
+    }
+
+    fun getDisplayRootTaskLeash(displayId: Int): SurfaceControl? {
+        val targetDisplayId = if (Flags.enableMultiDisplaySplit()) displayId else DEFAULT_DISPLAY
+        return displayTaskMap[targetDisplayId]?.rootTaskLeash
+    }
+
+    fun setDisplayRootTaskLeash(
+        displayId: Int,
+        leash: SurfaceControl?
+    ) {
+        val targetDisplayId = if (Flags.enableMultiDisplaySplit()) displayId else DEFAULT_DISPLAY
+        val hierarchy = displayTaskMap.computeIfAbsent(targetDisplayId) { SplitTaskHierarchy() }
+        hierarchy.rootTaskLeash = leash
+    }
+
+    companion object {
+        /**
+         * Returns the display ID associated with the first change in the given [TransitionInfo].
+         * It prioritize the end display ID of the change. If the end display ID is invalid, fall back
+         * to the start display ID. If TransitionInfo has no changes, or if the first change has both
+         * invalid end display ID and invalid start display ID, this method returns DEFAULT_DISPLAY.
+         *
+         * @param info the [TransitionInfo] containing transition changes
+         * @return a valid display ID, or DEFAULT_DISPLAY as a fallback
+         */
+        @JvmStatic
+        fun getTransitionDisplayId(info: TransitionInfo): Int {
+            if (!Flags.enableMultiDisplaySplit()) (
+                return DEFAULT_DISPLAY
+            )
+
+            if (info.changes.isEmpty()) {
+                return DEFAULT_DISPLAY
+            }
+            // TODO: b/393217881 - take in a specific change instead of the first change for
+            //  multi display split related tasks.
+            val change: TransitionInfo.Change = info.changes.first()
+            var displayId = change.endDisplayId
+            if (displayId == Display.INVALID_DISPLAY) {
+                displayId = change.startDisplayId
+            }
+            return if (displayId != Display.INVALID_DISPLAY) displayId else DEFAULT_DISPLAY
+        }
     }
 }

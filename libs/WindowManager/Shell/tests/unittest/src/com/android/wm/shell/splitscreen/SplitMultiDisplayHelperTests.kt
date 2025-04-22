@@ -21,9 +21,11 @@ import android.hardware.display.DisplayManager
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags.enableMultiDisplaySplit
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.split.SplitLayout
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,6 +54,7 @@ class SplitMultiDisplayHelperTests : ShellTestCase() {
 
     @Before
     fun setUp() {
+        assumeTrue(enableMultiDisplaySplit())
         MockitoAnnotations.initMocks(this)
         mockDisplay1 = mockDisplayManager.getDisplay(Display.DEFAULT_DISPLAY) ?: mock(Display::class.java)
         mockDisplay2 = mockDisplayManager.getDisplay(Display.DEFAULT_DISPLAY + 1) ?: mock(Display::class.java)
