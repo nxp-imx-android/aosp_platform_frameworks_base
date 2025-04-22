@@ -997,6 +997,53 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    public void testBundle_childrenAssignedSection() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a Section for Package1
+        final NotifSectioner pkg2Section = spy(new PackageSectioner(PACKAGE_1));
+        mListBuilder.setSectioners(singletonList(pkg2Section));
+
+        // WHEN we build a list with a notif and group that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupSummary(3, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // THEN the notif and group are bundled
+        verifyBuiltList(
+            bundle(
+                BUNDLE_1,
+                notif(0),
+                group(
+                    summary(3),
+                    child(1),
+                    child(2)
+                )
+            )
+        );
+
+        assertEquals(1, mBuiltList.size());
+        PipelineEntry pipelineEntry = mBuiltList.get(0);
+        assertThat(pipelineEntry instanceof BundleEntry).isTrue();
+
+        // VERIFY all pipeline entries are assigned sections
+        BundleEntry bundleEntry = (BundleEntry) pipelineEntry;
+        assertNotNull(bundleEntry.getSection());
+
+        for (ListEntry listEntry: bundleEntry.getChildren()) {
+            assertNotNull(listEntry.getSection());
+
+            if (listEntry instanceof GroupEntry groupEntry) {
+                for (NotificationEntry child: groupEntry.getChildren()) {
+                    assertNotNull(child.getSection());
+                }
+            }
+        }
+    }
+
+    @Test
     public void testThatNotifComparatorsAreCalled() {
         // GIVEN a set of comparators that care about specific packages
         mListBuilder.setComparators(asList(
@@ -2868,6 +2915,9 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
         @Override
         public boolean isInSection(PipelineEntry entry) {
+            if (entry instanceof BundleEntry) {
+                return true;
+            }
             return mPackages.contains(
                     entry.asListEntry().getRepresentativeEntry().getSbn().getPackageName());
         }
