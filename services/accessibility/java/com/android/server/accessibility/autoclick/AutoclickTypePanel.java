@@ -389,8 +389,14 @@ public class AutoclickTypePanel {
 
         ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(/* index= */ 0);
         if (mPaused) {
+            String resumeText = mContext.getString(R.string.accessibility_autoclick_resume);
+            mPauseButton.setTooltipText(resumeText);
+            imageButton.setContentDescription(resumeText);
             imageButton.setImageDrawable(mResumeButtonDrawable);
         } else {
+            String pauseText = mContext.getString(R.string.accessibility_autoclick_pause);
+            mPauseButton.setTooltipText(pauseText);
+            imageButton.setContentDescription(pauseText);
             imageButton.setImageDrawable(mPauseButtonDrawable);
         }
     }

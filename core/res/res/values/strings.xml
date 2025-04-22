@@ -6229,6 +6229,8 @@
     <string name="accessibility_autoclick_long_press">Long press</string>
     <!-- Label for autoclick pause button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_pause">Pause</string>
+    <!-- Label for autoclick resume button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_resume">Resume</string>
     <!-- Label for autoclick position button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_position">Position</string>
     <!-- Label for autoclick scroll up button [CHAR LIMIT=NONE] -->
