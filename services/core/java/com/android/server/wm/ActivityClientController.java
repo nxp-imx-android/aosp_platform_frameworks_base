@@ -330,6 +330,49 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
+    public boolean isHandoffEnabled(IBinder token) {
+        final long origId = Binder.clearCallingIdentity();
+        boolean isHandoffEnabled = false;
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                isHandoffEnabled = r.isHandoffEnabled();
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+        return isHandoffEnabled;
+    }
+
+    @Override
+    public boolean isHandoffFullTaskRecreationAllowed(IBinder token) {
+        final long origId = Binder.clearCallingIdentity();
+        boolean isHandoffFullTaskRecreationAllowed = false;
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                isHandoffFullTaskRecreationAllowed = r.isHandoffFullTaskRecreationAllowed();
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+        return isHandoffFullTaskRecreationAllowed;
+    }
+
+    @Override
+    public void setHandoffEnabled(
+            IBinder token,
+            boolean handoffEnabled,
+            boolean allowFullTaskRecreation) {
+        final long origId = Binder.clearCallingIdentity();
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                r.setHandoffEnabled(handoffEnabled, allowFullTaskRecreation);
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+    }
+
+    @Override
     public void reportSizeConfigurations(IBinder token,
             SizeConfigurationBuckets sizeConfigurations) {
         ProtoLog.v(WM_DEBUG_CONFIGURATION, "Report configuration: %s %s",

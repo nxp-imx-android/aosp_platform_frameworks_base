@@ -105,6 +105,13 @@ interface IActivityClientController {
     boolean isImmersive(in IBinder token);
     void setImmersive(in IBinder token, boolean immersive);
 
+    boolean isHandoffEnabled(in IBinder token);
+    boolean isHandoffFullTaskRecreationAllowed(in IBinder token);
+    void setHandoffEnabled(
+        in IBinder token,
+        boolean handoffEnabled,
+        boolean allowFullTaskRecreation);
+
     boolean enterPictureInPictureMode(in IBinder token, in PictureInPictureParams params);
     void setPictureInPictureParams(in IBinder token, in PictureInPictureParams params);
     oneway void setShouldDockBigOverlays(in IBinder token, in boolean shouldDockBigOverlays);

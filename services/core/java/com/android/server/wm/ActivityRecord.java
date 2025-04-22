@@ -1304,7 +1304,7 @@ final class ActivityRecord extends WindowToken {
      * activity, this will return false.
      * @return if the entire task will be recreated when handing off this activity.
      */
-    boolean allowFullTaskRecreation() {
+    boolean isHandoffFullTaskRecreationAllowed() {
         if (!isHandoffEnabled()) {
             return false;
         }
