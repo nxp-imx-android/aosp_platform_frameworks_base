@@ -6423,13 +6423,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_landscapeDevice_resizable_undefinedOrientation_defaultLandscapeBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task = setUpFullscreenTask()
         setUpLandscapeDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
     }
@@ -6439,13 +6444,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_landscapeDevice_resizable_landscapeOrientation_defaultLandscapeBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task = setUpFullscreenTask(screenOrientation = SCREEN_ORIENTATION_LANDSCAPE)
         setUpLandscapeDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
     }
@@ -6455,7 +6465,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_landscapeDevice_resizable_portraitOrientation_resizablePortraitBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6465,7 +6475,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpLandscapeDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(RESIZABLE_PORTRAIT_BOUNDS)
     }
@@ -6475,7 +6490,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_landscapeDevice_unResizable_landscapeOrientation_defaultLandscapeBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6485,7 +6500,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpLandscapeDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
     }
@@ -6495,7 +6515,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_landscapeDevice_unResizable_portraitOrientation_unResizablePortraitBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6505,7 +6525,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 shouldLetterbox = true,
             )
         setUpLandscapeDisplay()
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(UNRESIZABLE_PORTRAIT_BOUNDS)
     }
@@ -6515,13 +6540,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_portraitDevice_resizable_undefinedOrientation_defaultPortraitBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task = setUpFullscreenTask(deviceOrientation = ORIENTATION_PORTRAIT)
         setUpPortraitDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_PORTRAIT_BOUNDS)
     }
@@ -6531,7 +6561,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_portraitDevice_resizable_portraitOrientation_defaultPortraitBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6541,7 +6571,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpPortraitDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_PORTRAIT_BOUNDS)
     }
@@ -6551,7 +6586,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_portraitDevice_resizable_landscapeOrientation_resizableLandscapeBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6562,7 +6597,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpPortraitDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(RESIZABLE_LANDSCAPE_BOUNDS)
     }
@@ -6572,7 +6612,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_portraitDevice_unResizable_portraitOrientation_defaultPortraitBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6583,7 +6623,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpPortraitDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(800f, 1280f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(800f, 1280f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(DEFAULT_PORTRAIT_BOUNDS)
     }
@@ -6593,7 +6638,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_portraitDevice_unResizable_landscapeOrientation_unResizableLandscapeBounds() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
 
         val task =
@@ -6605,7 +6650,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         setUpPortraitDisplay()
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(200f, 200f),
+            task,
+            mockSurface,
+        )
         val wct = getLatestDragToDesktopWct()
         assertThat(findBoundsChange(wct, task)).isEqualTo(UNRESIZABLE_LANDSCAPE_BOUNDS)
     }
@@ -6615,11 +6665,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_movesTaskToDesk() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
         val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(200f, 200f),
+            task,
+            mockSurface,
+        )
 
         val wct = getLatestDragToDesktopWct()
         verify(desksOrganizer).moveTaskToDesk(wct, deskId = 0, task)
@@ -6630,11 +6685,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_activatesDesk() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
         val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(200f, 200f),
+            task,
+            mockSurface,
+        )
 
         val wct = getLatestDragToDesktopWct()
         verify(desksOrganizer).activateDesk(wct, deskId = 0)
@@ -6645,11 +6705,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun dragToDesktop_triggersEnterDesktopListener() {
         val spyController = spy(controller)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
         val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(200f, 200f),
+            task,
+            mockSurface,
+        )
 
         verify(desktopModeEnterExitTransitionListener)
             .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
@@ -6663,11 +6728,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(dragToDesktopTransitionHandler.finishDragToDesktopTransition(any()))
             .thenReturn(transition)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR)
         val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
 
-        spyController.onDragPositioningEndThroughStatusBar(PointF(200f, 200f), task, mockSurface)
+        spyController.onDragPositioningEndThroughStatusBar(
+            DEFAULT_DISPLAY,
+            PointF(200f, 200f),
+            task,
+            mockSurface,
+        )
 
         verify(desksTransitionsObserver)
             .addPendingTransition(
@@ -6702,12 +6772,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
         whenever(
                 desktopModeVisualIndicator.calculateIndicatorType(
-                    eq(PointF(inputX, bounds.top.toFloat()))
+                    eq(DEFAULT_DISPLAY),
+                    eq(PointF(inputX, bounds.top.toFloat())),
                 )
             )
             .thenReturn(indicatorType)
 
-        spyController.onDragPositioningMove(task, mockSurface, inputX, inputY, bounds)
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            inputX,
+            inputY,
+            bounds,
+        )
 
         verify(visualIndicatorUpdateScheduler)
             .schedule(
@@ -6731,17 +6809,19 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningMove(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             200f,
             10f,
             Rect(100, -100, 500, 1000),
         )
 
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, -200f),
             currentDragBounds = Rect(100, -100, 500, 1000),
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6769,16 +6849,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val mockDisplayLayout = mock(DisplayLayout::class.java)
         whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
 
         val currentDragBounds = Rect(100, 200, 500, 1000)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
 
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6808,17 +6896,25 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val mockDisplayLayout = mock(DisplayLayout::class.java)
         whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
 
         val currentDragBounds = Rect(100, 200, 500, 1000)
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
         whenever(motionEvent.displayId).thenReturn(SECONDARY_DISPLAY_ID)
 
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6851,14 +6947,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
         desktopConfig.shouldMaximizeWhenDragToTopEdge = false
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
 
         // Drag move the task to the top edge
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = Rect(100, 50, 500, 1000),
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6888,15 +6992,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
         desktopConfig.shouldMaximizeWhenDragToTopEdge = true
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
 
         // Drag move the task to the top edge
         val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6944,15 +7056,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
         desktopConfig.shouldMaximizeWhenDragToTopEdge = true
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
 
         // Drag move the task to the top edge
         val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -6994,16 +7114,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
         whenever(motionEvent.displayId).thenReturn(DEFAULT_DISPLAY)
 
         // Drag move the task to the top edge
         val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -7050,16 +7178,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
         whenever(motionEvent.displayId).thenReturn(DEFAULT_DISPLAY)
 
         // Drag move the task to the top edge
         val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(task, mockSurface, 200f, 10f, Rect(100, 200, 500, 1000))
+        spyController.onDragPositioningMove(
+            task,
+            mockSurface,
+            DEFAULT_DISPLAY,
+            200f,
+            10f,
+            Rect(100, 200, 500, 1000),
+        )
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
+            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9016,6 +9152,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .updateVisualIndicator(
                 eq(task),
                 anyOrNull(),
+                any(),
                 anyOrNull(),
                 anyOrNull(),
                 eq(DesktopModeVisualIndicator.DragStartState.DRAGGED_INTENT),
