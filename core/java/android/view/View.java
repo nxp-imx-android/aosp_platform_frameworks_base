@@ -49,12 +49,7 @@ import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
 import static android.view.flags.Flags.calculateBoundsInParentFromBoundsInScreen;
 import static android.view.flags.Flags.enableUseMeasureCacheDuringForceLayout;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
-import static android.view.flags.Flags.toolkitFrameRateAnimationBugfix25q1;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateDefaultNormalReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateSmallUsesPercentReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateVelocityMappingReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateViewEnablingReadOnly;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
@@ -2476,18 +2471,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     protected static boolean sToolkitSetFrameRateReadOnlyFlagValue;
     private static boolean sToolkitMetricsForFrameRateDecisionFlagValue;
-    private static final boolean sToolkitFrameRateDefaultNormalReadOnlyFlagValue =
-            toolkitFrameRateDefaultNormalReadOnly();
     private static final boolean sToolkitFrameRateBySizeReadOnlyFlagValue =
             toolkitFrameRateBySizeReadOnly();
-    private static final boolean sToolkitFrameRateSmallUsesPercentReadOnlyFlagValue =
-            toolkitFrameRateSmallUsesPercentReadOnly();
-    private static final boolean sToolkitFrameRateViewEnablingReadOnlyFlagValue =
-            toolkitFrameRateViewEnablingReadOnly();
-    private static boolean sToolkitFrameRateVelocityMappingReadOnlyFlagValue =
-            toolkitFrameRateVelocityMappingReadOnly();
-    private static boolean sToolkitFrameRateAnimationBugfix25q1FlagValue =
-            toolkitFrameRateAnimationBugfix25q1();
     private static boolean sToolkitViewGroupFrameRateApiFlagValue =
             toolkitViewgroupSetRequestedFrameRateApi();
 
@@ -24037,8 +24022,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     }
 
                     // For VRR to vote the preferred frame rate
-                    if (sToolkitSetFrameRateReadOnlyFlagValue
-                            && sToolkitFrameRateViewEnablingReadOnlyFlagValue) {
+                    if (sToolkitSetFrameRateReadOnlyFlagValue) {
                         votePreferredFrameRate();
                     }
                 }
@@ -24050,8 +24034,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             if ((mPrivateFlags4 & PFLAG4_HAS_VIEW_PROPERTY_INVALIDATION)
                     == PFLAG4_HAS_VIEW_PROPERTY_INVALIDATION) {
                 // For VRR to vote the preferred frame rate
-                if (sToolkitSetFrameRateReadOnlyFlagValue
-                        && sToolkitFrameRateViewEnablingReadOnlyFlagValue) {
+                if (sToolkitSetFrameRateReadOnlyFlagValue) {
                     votePreferredFrameRate();
                 }
                 mPrivateFlags4 &= ~PFLAG4_HAS_VIEW_PROPERTY_INVALIDATION;
@@ -24739,8 +24722,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         // Increase the frame rate if there is a transformation that applies a matrix.
-        if (sToolkitFrameRateAnimationBugfix25q1FlagValue
-                && ((t.getTransformationType() & Transformation.TYPE_MATRIX) != 0)) {
+        if ((t.getTransformationType() & Transformation.TYPE_MATRIX) != 0) {
             mPrivateFlags4 |= PFLAG4_HAS_VIEW_PROPERTY_INVALIDATION;
             mPrivateFlags4 |= PFLAG4_HAS_MOVED;
         }
@@ -25913,26 +25895,18 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private void sizeChange(int newWidth, int newHeight, int oldWidth, int oldHeight) {
-        if (mAttachInfo != null && sToolkitFrameRateViewEnablingReadOnlyFlagValue) {
+        if (mAttachInfo != null) {
             boolean isSmall;
-            if (sToolkitFrameRateSmallUsesPercentReadOnlyFlagValue) {
-                int size = newWidth * newHeight;
-                float percent = size / mAttachInfo.mDisplayPixelCount;
-                isSmall = percent <= FRAME_RATE_SIZE_PERCENTAGE_THRESHOLD;
-            } else {
-                float density = mAttachInfo.mDensity;
-                int narrowSize = (int) (density * FRAME_RATE_NARROW_SIZE_DP);
-                int smallSize = (int) (density * FRAME_RATE_SQUARE_SMALL_SIZE_DP);
-                isSmall = newWidth <= narrowSize || newHeight <= narrowSize
-                        || (newWidth <= smallSize && newHeight <= smallSize);
-            }
+            int size = newWidth * newHeight;
+            float percent = size / mAttachInfo.mDisplayPixelCount;
+            isSmall = percent <= FRAME_RATE_SIZE_PERCENTAGE_THRESHOLD;
+
             if (isSmall) {
                 int category = sToolkitFrameRateBySizeReadOnlyFlagValue
                         ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
                 mSizeBasedFrameRateCategoryAndReason = category | FRAME_RATE_CATEGORY_REASON_SMALL;
             } else {
-                int category = sToolkitFrameRateDefaultNormalReadOnlyFlagValue
-                        ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
+                int category = FRAME_RATE_CATEGORY_NORMAL;
                 mSizeBasedFrameRateCategoryAndReason = category | FRAME_RATE_CATEGORY_REASON_LARGE;
             }
             mPrivateFlags4 |= PFLAG4_HAS_MOVED;
@@ -34422,9 +34396,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                                     | FRAME_RATE_CATEGORY_REASON_REQUESTED;
                     default -> {
                         // invalid frame rate, use default
-                        int category = sToolkitFrameRateDefaultNormalReadOnlyFlagValue
-                                ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
-                        frameRateCategory = category
+                        frameRateCategory = FRAME_RATE_CATEGORY_NORMAL
                                 | FRAME_RATE_CATEGORY_REASON_INVALID;
                     }
                 }
