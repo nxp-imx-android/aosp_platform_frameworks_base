@@ -21,6 +21,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
@@ -66,6 +67,12 @@ class PreferenceScreenBindingHelper(
             override val lifecycleScope: LifecycleCoroutineScope
                 get() = fragment.lifecycleScope
 
+            override val fragmentManager: FragmentManager
+                get() = fragment.parentFragmentManager
+
+            override val childFragmentManager: FragmentManager
+                get() = fragment.childFragmentManager
+
             override fun <T> findPreference(key: String) =
                 preferenceScreen.findPreference(key) as T?
 
@@ -86,7 +93,7 @@ class PreferenceScreenBindingHelper(
 
             override fun <I, O> registerForActivityResult(
                 contract: ActivityResultContract<I, O>,
-                callback: ActivityResultCallback<O>
+                callback: ActivityResultCallback<O>,
             ) = fragment.registerForActivityResult(contract, callback)
         }
 
