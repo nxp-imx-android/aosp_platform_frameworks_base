@@ -585,7 +585,7 @@ class JavaRecipient;
 
 template <typename T>
 class RecipientList : public RefBase {
-    List<sp<JavaRecipient<T> > > mList;
+    List<sp<JavaRecipient<T>>> mInternalList;
     Mutex mLock;
 
 public:
@@ -864,8 +864,8 @@ RecipientList<T>::~RecipientList() {
     // RecipientList recipients hold a weak reference to this object. If
     // this list is destroyed first, it means that unlinkToDeath is not
     // called. Warn them.
-    if (mList.size() > 0) {
-        for (auto iter = mList.begin(); iter != mList.end(); iter++) {
+    if (mInternalList.size() > 0) {
+        for (auto iter = mInternalList.begin(); iter != mInternalList.end(); iter++) {
             (*iter)->warnIfStillLive();
         }
     }
@@ -877,18 +877,18 @@ void RecipientList<T>::add(const sp<JavaRecipient<T> >& recipient) {
 
     LOG_DEATH_FREEZE("%s RecipientList @ %p : add JavaRecipient %p", logPrefix<T>(), this,
                      recipient.get());
-    mList.push_back(recipient);
+    mInternalList.push_back(recipient);
 }
 
 template <typename T>
 void RecipientList<T>::remove(const sp<JavaRecipient<T> >& recipient) {
     AutoMutex _l(mLock);
 
-    for (auto iter = mList.begin(); iter != mList.end(); iter++) {
+    for (auto iter = mInternalList.begin(); iter != mInternalList.end(); iter++) {
         if (*iter == recipient) {
             LOG_DEATH_FREEZE("%s RecipientList @ %p : remove JavaRecipient %p", logPrefix<T>(),
                              this, recipient.get());
-            mList.erase(iter);
+            mInternalList.erase(iter);
             return;
         }
     }
@@ -898,7 +898,7 @@ template <typename T>
 sp<JavaRecipient<T> > RecipientList<T>::find(jobject recipient) {
     AutoMutex _l(mLock);
 
-    for (auto iter = mList.begin(); iter != mList.end(); iter++) {
+    for (auto iter = mInternalList.begin(); iter != mInternalList.end(); iter++) {
         if ((*iter)->matches(recipient)) {
             return *iter;
         }
