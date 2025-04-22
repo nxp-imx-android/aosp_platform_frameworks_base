@@ -29,6 +29,7 @@ import android.window.WindowContainerToken;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
@@ -58,6 +59,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final FocusTransitionObserver mFocusTransitionObserver;
     private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
     private final Optional<DesktopImeHandler> mDesktopImeHandler;
+    private final Optional<DesktopBackNavTransitionObserver> mDesktopBackNavTransitionObserver;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
             new HashMap<>();
@@ -74,7 +76,8 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             FocusTransitionObserver focusTransitionObserver,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
-            Optional<DesktopImeHandler> desktopImeHandler) {
+            Optional<DesktopImeHandler> desktopImeHandler,
+            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver) {
         mTransitions = transitions;
         mDesktopImmersiveController = desktopImmersiveController;
         mWindowDecorViewModel = windowDecorViewModel;
@@ -82,6 +85,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mFocusTransitionObserver = focusTransitionObserver;
         mDesksTransitionObserver = desksTransitionObserver;
         mDesktopImeHandler = desktopImeHandler;
+        mDesktopBackNavTransitionObserver = desktopBackNavTransitionObserver;
         if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -115,6 +119,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
         // Call after the focus state update to have the correct focused window.
         mDesktopImeHandler.ifPresent(o -> o.onTransitionReady(transition, info));
+        mDesktopBackNavTransitionObserver.ifPresent(o ->  o.onTransitionReady(transition, info));
 
         final ArrayList<ActivityManager.RunningTaskInfo> taskInfoList = new ArrayList<>();
         final ArrayList<WindowContainerToken> taskParents = new ArrayList<>();

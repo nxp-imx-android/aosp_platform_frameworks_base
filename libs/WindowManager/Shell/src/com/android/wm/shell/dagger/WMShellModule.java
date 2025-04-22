@@ -92,6 +92,7 @@ import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
+import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
@@ -511,7 +512,8 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
-            Optional<DesktopImeHandler> desktopImeHandler) {
+            Optional<DesktopImeHandler> desktopImeHandler,
+            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
@@ -521,7 +523,8 @@ public abstract class WMShellModule {
                 focusTransitionObserver,
                 desksTransitionObserver,
                 desktopState,
-                desktopImeHandler);
+                desktopImeHandler,
+                desktopBackNavTransitionObserver);
     }
 
     @WMSingleton
@@ -1333,12 +1336,10 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<DesktopTasksTransitionObserver> provideDesktopTasksTransitionObserver(
-            Context context,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Transitions transitions,
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
-            Optional<BackAnimationController> backAnimationController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DesktopState desktopState,
             ShellInit shellInit) {
@@ -1350,12 +1351,29 @@ public abstract class WMShellModule {
                                         transitions,
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
-                                        backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         desktopState,
                                         shellInit)));
     }
 
+    @WMSingleton
+    @Provides
+    static Optional<DesktopBackNavTransitionObserver> provideDesktopBackNavTransitionObserver(
+            Optional<DesktopUserRepositories> desktopUserRepositories,
+            Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
+            Optional<BackAnimationController> backAnimationController,
+            DesktopState desktopState,
+            ShellInit shellInit) {
+        return desktopUserRepositories.flatMap(
+                repository ->
+                        Optional.of(
+                                new DesktopBackNavTransitionObserver(
+                                        repository,
+                                        desktopMixedTransitionHandler.get(),
+                                        backAnimationController.get(),
+                                        desktopState,
+                                        shellInit)));
+    }
     @WMSingleton
     @Provides
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
