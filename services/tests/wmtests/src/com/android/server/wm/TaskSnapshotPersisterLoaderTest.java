@@ -45,6 +45,7 @@ import androidx.test.filters.MediumTest;
 import com.android.server.wm.AppSnapshotLoader.PreRLegacySnapshotConfig;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
 import com.android.server.wm.TaskSnapshotPersister.RemoveObsoleteFilesQueueItem;
+import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,9 +82,12 @@ public class TaskSnapshotPersisterLoaderTest extends TaskSnapshotPersisterTestBa
         assertNotNull(snapshot);
         assertEquals(MOCK_SNAPSHOT_ID, snapshot.getId());
         assertEquals(TEST_INSETS, snapshot.getContentInsets());
-        assertNotNull(snapshot.getSnapshot());
         assertEquals(Configuration.ORIENTATION_PORTRAIT, snapshot.getOrientation());
-
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            assertNull(snapshot.getSnapshot());
+        } else {
+            assertNotNull(snapshot.getSnapshot());
+        }
         snapshot.closeBuffer();
         mPersister.persistSnapshot(1, mTestUserId, snapshot);
         mSnapshotPersistQueue.waitForQueueEmpty();

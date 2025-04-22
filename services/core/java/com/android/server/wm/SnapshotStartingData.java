@@ -19,6 +19,7 @@ package com.android.server.wm;
 import android.window.TaskSnapshot;
 
 import com.android.server.wm.StartingSurfaceController.StartingSurface;
+import com.android.window.flags.Flags;
 
 /**
  * Represents starting data for snapshot starting windows.
@@ -51,6 +52,10 @@ class SnapshotStartingData extends StartingData {
     }
 
     boolean isValid() {
-        return !mSnapshot.getHardwareBuffer().isClosed();
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            return mSnapshot.isBufferValid();
+        } else {
+            return !mSnapshot.getHardwareBuffer().isClosed();
+        }
     }
 }
