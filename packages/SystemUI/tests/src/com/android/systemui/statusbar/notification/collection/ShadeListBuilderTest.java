@@ -298,6 +298,25 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         );
     }
 
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundleSingleNotif() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN single notif that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY single notif shows in bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(0)
+                )
+        );
+    }
+
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundleGroupChildrenAreSorted() {
@@ -2370,6 +2389,22 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         assertFalse(ShadeListBuilder.isSorted(Arrays.asList(1, 2, 3, 4, 1), intCmp));
     }
 
+    private NotificationEntryBuilder addNotif(int index, String packageId, String channelId) {
+        final NotificationEntryBuilder builder = new NotificationEntryBuilder()
+                .setPkg(packageId)
+                .setId(nextId(packageId))
+                .setRank(nextRank())
+                .setChannel(new NotificationChannel(channelId, "channelName", 3));
+
+        builder.modifyNotification(mContext)
+                .setContentTitle("Top level singleton")
+                .setChannelId("test_channel");
+
+        assertEquals(mEntrySet.size() + mPendingSet.size(), index);
+        mPendingSet.add(builder);
+        return builder;
+    }
+
     /**
      * Adds a notif to the collection that will be passed to the list builder when
      * {@link #dispatchBuild()}s is called.
@@ -2382,18 +2417,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
      *         build() on the builder; that will be done on the next dispatchBuild().
      */
     private NotificationEntryBuilder addNotif(int index, String packageId) {
-        final NotificationEntryBuilder builder = new NotificationEntryBuilder()
-                .setPkg(packageId)
-                .setId(nextId(packageId))
-                .setRank(nextRank());
-
-        builder.modifyNotification(mContext)
-                .setContentTitle("Top level singleton")
-                .setChannelId("test_channel");
-
-        assertEquals(mEntrySet.size() + mPendingSet.size(), index);
-        mPendingSet.add(builder);
-        return builder;
+        return addNotif(index, packageId, "test_channel");
     }
 
     private NotificationEntryBuilder addGroupSummary(int index, String packageId, String groupId,
@@ -2616,7 +2640,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
                     for (int j = 0; j < actualBundle.getChildren().size(); j++) {
                         ListEntry actualChild = actualBundle.getChildren().get(j);
                         ExpectedEntry expectedChild = expectedBundle.children.get(j);
-                        if (actualChild instanceof NotificationEntry actualNotif) {
+                        if (expectedChild instanceof ExpectedNotif) {
                             verifyNotifEntry((ExpectedNotif) expectedChild, actualChild, j);
                         } else {
                             verifyGroupEntry((ExpectedGroup) expectedChild, actualChild, j);
