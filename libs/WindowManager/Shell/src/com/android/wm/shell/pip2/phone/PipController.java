@@ -670,6 +670,7 @@ public class PipController implements ConfigurationChangeListener,
     private void dump(PrintWriter pw, String prefix) {
         final String innerPrefix = "  ";
         pw.println(TAG);
+        PipUtils.dump(pw, innerPrefix);
         mPipBoundsAlgorithm.dump(pw, innerPrefix);
         mPipBoundsState.dump(pw, innerPrefix);
         mPipDisplayLayoutState.dump(pw, innerPrefix);
