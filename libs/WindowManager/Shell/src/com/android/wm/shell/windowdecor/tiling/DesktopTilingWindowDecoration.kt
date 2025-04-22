@@ -425,8 +425,6 @@ class DesktopTilingWindowDecoration(
         return null
     }
 
-    override fun onDragStart(taskId: Int) {}
-
     override fun onDragMove(taskId: Int) {
         removeTaskIfTiled(taskId)
     }

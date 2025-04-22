@@ -29,7 +29,6 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
-import static com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge;
@@ -94,6 +93,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.desktopmode.CaptionState;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum;
 import com.android.wm.shell.desktopmode.DesktopModeUtils;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
@@ -101,7 +101,6 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
-import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -155,25 +154,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @NonNull WindowDecorTaskResourceLoader mTaskResourceLoader;
     private final DesktopState mDesktopState;
     private final DesktopConfig mDesktopConfig;
+    private final WindowDecorationActions mWindowDecorationActions;
 
     private WindowDecorationViewHolder mWindowDecorViewHolder;
     private View.OnClickListener mOnCaptionButtonClickListener;
     private View.OnTouchListener mOnCaptionTouchListener;
     private View.OnLongClickListener mOnCaptionLongClickListener;
     private View.OnGenericMotionListener mOnCaptionGenericMotionListener;
-    private Function0<Unit> mOnMaximizeOrRestoreClickListener;
-    private Function0<Unit> mOnImmersiveOrRestoreClickListener;
-    private Function0<Unit> mOnLeftSnapClickListener;
-    private Function0<Unit> mOnRightSnapClickListener;
-    private Consumer<DesktopModeTransitionSource> mOnToDesktopClickListener;
-    private Function0<Unit> mOnToFullscreenClickListener;
-    private Function0<Unit> mOnToSplitscreenClickListener;
-    private Function0<Unit> mOnToFloatClickListener;
-    private Function0<Unit> mOnNewWindowClickListener;
-    private Function0<Unit> mOnManageWindowsClickListener;
-    private Function0<Unit> mOnChangeAspectRatioClickListener;
-    private Function0<Unit> mOnRestartClickListener;
-    private Function0<Unit> mOnMaximizeHoverListener;
     private DragPositioningCallback mDragPositioningCallback;
     private DragResizeInputListener mDragResizeListener;
     private RelayoutParams mRelayoutParams = new RelayoutParams();
@@ -196,7 +183,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private CapturedLink mCapturedLink;
     private Uri mGenericLink;
     private Uri mWebUri;
-    private Consumer<Intent> mOpenInBrowserClickListener;
 
     private ExclusionRegionListener mExclusionRegionListener;
 
@@ -225,6 +211,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
     private Runnable mSetAppInfoRunnable;
+
+    private final Function0<Unit> mCloseMaximizeMenuFunction = () -> {
+        closeMaximizeMenu();
+        return Unit.INSTANCE;
+    };
+
+    private final Function0<Unit> mCloseHandleMenuFunction = () -> {
+        closeHandleMenu();
+        return Unit.INSTANCE;
+    };
 
     public DesktopModeWindowDecoration(
             Context context,
@@ -256,7 +252,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            WindowDecorationActions windowDecorationActions) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, bgScope, bgExecutor, transitions, choreographer,
@@ -271,7 +268,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DefaultHandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionHandleRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
-                desktopState, desktopConfig);
+                desktopState, desktopConfig, windowDecorationActions);
     }
 
     DesktopModeWindowDecoration(
@@ -312,7 +309,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            WindowDecorationActions windowDecorationActions) {
         super(context, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
                 windowContainerTransactionSupplier, surfaceControlSupplier,
@@ -343,56 +341,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mDesktopModeUiEventLogger = desktopModeUiEventLogger;
         mDesktopState = desktopState;
         mDesktopConfig = desktopConfig;
-    }
-
-    /**
-     * Register a listener to be called back when one of the tasks' maximize/restore action is
-     * triggered.
-     * TODO(b/346441962): hook this up to double-tap and the header's maximize button, instead of
-     *  having the ViewModel deal with parsing motion events.
-     */
-    void setOnMaximizeOrRestoreClickListener(Function0<Unit> listener) {
-        mOnMaximizeOrRestoreClickListener = listener;
-    }
-
-    /**
-     * Registers a listener to be called back when one of the tasks' immersive/restore action is
-     * triggered.
-     */
-    void setOnImmersiveOrRestoreClickListener(Function0<Unit> listener) {
-        mOnImmersiveOrRestoreClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the decoration's snap-left action is triggered.*/
-    void setOnLeftSnapClickListener(Function0<Unit> listener) {
-        mOnLeftSnapClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the decoration's snap-right action is triggered. */
-    void setOnRightSnapClickListener(Function0<Unit> listener) {
-        mOnRightSnapClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the decoration's to-desktop action is triggered. */
-    void setOnToDesktopClickListener(Consumer<DesktopModeTransitionSource> listener) {
-        mOnToDesktopClickListener = listener;
-    }
-
-    /**
-     * Registers a listener to be called when the decoration's to-fullscreen action is triggered.
-     */
-    void setOnToFullscreenClickListener(Function0<Unit> listener) {
-        mOnToFullscreenClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the decoration's to-split action is triggered. */
-    void setOnToSplitScreenClickListener(Function0<Unit> listener) {
-        mOnToSplitscreenClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the decoration's to-split action is triggered. */
-    void setOnToFloatClickListener(Function0<Unit> listener) {
-        mOnToFloatClickListener = listener;
+        mWindowDecorationActions = windowDecorationActions;
     }
 
     /**
@@ -413,34 +362,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mTaskDragResizer.removeDragEventListener(dragResizeListener);
     }
 
-    /** Registers a listener to be called when the decoration's new window action is triggered. */
-    void setOnNewWindowClickListener(Function0<Unit> listener) {
-        mOnNewWindowClickListener = listener;
-    }
-
-    /**
-     * Registers a listener to be called when the decoration's manage windows action is
-     * triggered.
-     */
-    void setManageWindowsClickListener(Function0<Unit> listener) {
-        mOnManageWindowsClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the aspect ratio action is triggered. */
-    void setOnChangeAspectRatioClickListener(Function0<Unit> listener) {
-        mOnChangeAspectRatioClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the aspect ratio action is triggered. */
-    void setOnRestartClickListener(Function0<Unit> listener) {
-        mOnRestartClickListener = listener;
-    }
-
-    /** Registers a listener to be called when the maximize header button is hovered. */
-    void setOnMaximizeHoverListener(Function0<Unit> listener) {
-        mOnMaximizeHoverListener = listener;
-    }
-
     void setCaptionListeners(
             View.OnClickListener onCaptionButtonClickListener,
             View.OnTouchListener onCaptionTouchListener,
@@ -458,10 +379,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     void setDragPositioningCallback(DragPositioningCallback dragPositioningCallback) {
         mDragPositioningCallback = dragPositioningCallback;
-    }
-
-    void setOpenInBrowserClickListener(Consumer<Intent> listener) {
-        mOpenInBrowserClickListener = listener;
     }
 
     @Override
@@ -950,14 +867,15 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(
                     mResult.mRootView,
+                    mWindowDecorationActions,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
                     mOnCaptionLongClickListener,
                     mOnCaptionGenericMotionListener,
-                    mOnLeftSnapClickListener,
-                    mOnRightSnapClickListener,
-                    mOnMaximizeOrRestoreClickListener,
-                    mOnMaximizeHoverListener,
+                    /* onMaximizeHoverAnimationFinishedListener= */ () -> {
+                        createMaximizeMenu();
+                        return Unit.INSTANCE;
+                    },
                     mDesktopModeUiEventLogger);
         }
         throw new IllegalArgumentException("Unexpected layout resource id");
@@ -1274,6 +1192,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     void createOpenByDefaultDialog() {
+        if (isOpenByDefaultDialogActive()) return;
         mOpenByDefaultDialog = new OpenByDefaultDialog(
                 mContext,
                 mTaskInfo,
@@ -1432,8 +1351,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Create and display maximize menu window
      */
     void createMaximizeMenu() {
+        if (isMaximizeMenuActive()) return;
+        mDesktopModeUiEventLogger.log(mTaskInfo,
+                DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_REVEAL_MENU);
         mMaximizeMenu = mMaximizeMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
-                mDisplayController, mTaskInfo, mContext,
+                mDisplayController, mWindowDecorationActions, mTaskInfo, mContext,
                 (width, height) -> calculateMaximizeMenuPosition(width, height),
                 mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
 
@@ -1446,19 +1368,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                         && TaskInfoKt.getRequestingImmersive(mTaskInfo),
                 /* showSnapOptions= */ mTaskInfo.isResizeable,
-                mOnMaximizeOrRestoreClickListener,
-                mOnImmersiveOrRestoreClickListener,
-                mOnLeftSnapClickListener,
-                mOnRightSnapClickListener,
                 hovered -> {
                     mIsMaximizeMenuHovered = hovered;
                     onMaximizeHoverStateChanged();
                     return null;
                 },
-                () -> {
-                    closeMaximizeMenu();
-                    return null;
-                }
+                /* onOutsideTouchListener= */ mCloseMaximizeMenuFunction,
+                /* onMaximizeMenuClickedListener= */ mCloseMaximizeMenuFunction
         );
     }
 
@@ -1487,6 +1403,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Close the maximize menu window
      */
+    @VisibleForTesting
     void closeMaximizeMenu() {
         if (!isMaximizeMenuActive()) return;
         mMaximizeMenu.close(() -> {
@@ -1509,6 +1426,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Updates app info and creates and displays handle menu window.
      */
     void createHandleMenu(boolean minimumInstancesFound) {
+        if (isHandleMenuActive()) return;
         // Requests assist content. When content is received, calls {@link #onAssistContentReceived}
         // which sets app info and creates the handle menu.
         mMinimumInstancesFound = minimumInstancesFound;
@@ -1540,6 +1458,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mBgScope,
                 this,
                 mWindowManagerWrapper,
+                mWindowDecorationActions,
                 mTaskResourceLoader,
                 mRelayoutParams.mLayoutResId,
                 mSplitScreenController,
@@ -1562,18 +1481,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         );
         mWindowDecorViewHolder.onHandleMenuOpened();
         mHandleMenu.show(
-                /* onToDesktopClickListener= */ () -> {
-                    mOnToDesktopClickListener.accept(APP_HANDLE_MENU_BUTTON);
-                    return Unit.INSTANCE;
-                },
-                /* onToFullscreenClickListener= */ mOnToFullscreenClickListener,
-                /* onToSplitScreenClickListener= */ mOnToSplitscreenClickListener,
-                /* onToFloatClickListener= */ mOnToFloatClickListener,
-                /* onNewWindowClickListener= */ mOnNewWindowClickListener,
-                /* onManageWindowsClickListener= */ mOnManageWindowsClickListener,
-                /* onAspectRatioSettingsClickListener= */ mOnChangeAspectRatioClickListener,
                 /* openInBrowserClickListener= */ (intent) -> {
-                    mOpenInBrowserClickListener.accept(intent);
+                    mWindowDecorationActions.onOpenInBrowser(mTaskInfo.taskId, intent);
                     onCapturedLinkUsed();
                     if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
                         mWindowDecorCaptionHandleRepository.onAppToWebUsage();
@@ -1581,20 +1490,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     return Unit.INSTANCE;
                 },
                 /* onOpenByDefaultClickListener= */ () -> {
-                    if (!isOpenByDefaultDialogActive()) {
-                        createOpenByDefaultDialog();
-                    }
+                    createOpenByDefaultDialog();
                     return Unit.INSTANCE;
                 },
-                /* onRestartClickListener= */ mOnRestartClickListener,
-                /* onCloseMenuClickListener= */ () -> {
-                    closeHandleMenu();
-                    return Unit.INSTANCE;
-                },
-                /* onOutsideTouchListener= */ () -> {
-                    closeHandleMenu();
-                    return Unit.INSTANCE;
-                },
+                /* onCloseMenuClickListener= */ mCloseHandleMenuFunction,
+                /* onOutsideTouchListener= */ mCloseHandleMenuFunction,
+                /* onHandleMenuClickedListener= */ mCloseHandleMenuFunction,
                 /* forceShowSystemBars= */ inDesktopImmersive
         );
         if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
@@ -1603,9 +1504,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMinimumInstancesFound = false;
     }
 
-    void createManageWindowsMenu(@NonNull List<Pair<Integer, TaskSnapshot>> snapshotList,
-            @NonNull Function1<Integer, Unit> onIconClickListener
-    ) {
+    void createManageWindowsMenu(@NonNull List<Pair<Integer, TaskSnapshot>> snapshotList) {
+        final Function1<Integer, Unit> onOpenInstanceListener = (requestedTaskId) -> {
+            closeManageWindowsMenu();
+            mWindowDecorationActions.onOpenInstance(mTaskInfo, requestedTaskId);
+            return Unit.INSTANCE;
+        };
         if (mTaskInfo.isFreeform()) {
             // The menu uses display-wide coordinates for positioning, so make position the sum
             // of task position and caption position.
@@ -1621,7 +1525,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mSurfaceControlBuilderSupplier,
                     mSurfaceControlTransactionSupplier,
                     snapshotList,
-                    onIconClickListener,
+                    onOpenInstanceListener,
                     /* onOutsideClickListener= */ () -> {
                         closeManageWindowsMenu();
                         return Unit.INSTANCE;
@@ -1637,7 +1541,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mDesktopState,
                     mContext,
                     snapshotList,
-                    onIconClickListener,
+                    onOpenInstanceListener,
                     /* onOutsideClickListener= */ () -> {
                         closeManageWindowsMenu();
                         return Unit.INSTANCE;
@@ -1667,6 +1571,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Close the handle menu window.
      */
+    @VisibleForTesting
     void closeHandleMenu() {
         if (!isHandleMenuActive()) return;
         mWindowDecorViewHolder.onHandleMenuClosed();
@@ -2035,7 +1940,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeUiEventLogger desktopModeUiEventLogger,
                 DesktopModeCompatPolicy desktopModeCompatPolicy,
                 DesktopState desktopState,
-                DesktopConfig desktopConfig) {
+                DesktopConfig desktopConfig,
+                WindowDecorationActions windowDecorationActions) {
             return new DesktopModeWindowDecoration(
                     context,
                     userContext,
@@ -2066,7 +1972,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     desktopModeUiEventLogger,
                     desktopModeCompatPolicy,
                     desktopState,
-                    desktopConfig);
+                    desktopConfig,
+                    windowDecorationActions);
         }
     }
 
