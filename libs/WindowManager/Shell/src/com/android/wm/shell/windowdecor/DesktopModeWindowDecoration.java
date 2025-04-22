@@ -665,14 +665,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mBgExecutor.execute(mLoadAppInfoRunnable);
     }
 
-    /**
-     * Does a relayout without any new changes.
-     * This is used if other states have changed (e.g. {@link mIsRecentsTransitionRunning}.
-     */
-    private void relayout() {
-        relayout(mTaskInfo, mHasGlobalFocus, mExclusionRegion);
-    }
-
     private boolean showInputLayer() {
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
             return isCaptionVisible();
@@ -1964,11 +1956,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
-        // TODO (b/394791828): Remove this once we can remove the input layer.
-        if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
-                && !isRecentsTransitionRunning) {
-            relayout();
-        }
     }
 
     /**
