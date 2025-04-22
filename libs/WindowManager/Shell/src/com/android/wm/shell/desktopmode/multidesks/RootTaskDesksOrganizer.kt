@@ -146,6 +146,9 @@ class RootTaskDesksOrganizer(
             WINDOWING_MODE_FREEFORM,
             /* listener = */ this,
             /* removeWithTaskOrganizer = */ true,
+            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
+                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                .isTrue,
         )
     }
 
@@ -513,6 +516,9 @@ class RootTaskDesksOrganizer(
             WINDOWING_MODE_FREEFORM,
             /* listener = */ this,
             /* removeWithTaskOrganizer = */ true,
+            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
+                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                .isTrue,
         )
     }
 
