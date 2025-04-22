@@ -288,6 +288,17 @@
                    "exclude-annotation":"org.junit.Ignore"
                }
             ]
+        },
+        {
+            "name": "CtsPackageManagerBroadcastTestCases",
+            "options":[
+                {
+                    "exclude-annotation":"androidx.test.filters.FlakyTest"
+                },
+                {
+                    "exclude-annotation":"org.junit.Ignore"
+                }
+            ]
         }
     ],
     "presubmit-large":[
@@ -522,6 +533,17 @@
                {
                    "exclude-annotation":"org.junit.Ignore"
                }
+            ]
+        },
+        {
+            "name": "CtsPackageManagerBroadcastTestCases",
+            "options":[
+                {
+                    "exclude-annotation":"androidx.test.filters.FlakyTest"
+                },
+                {
+                    "exclude-annotation":"org.junit.Ignore"
+                }
             ]
         }
     ]
