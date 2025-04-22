@@ -391,7 +391,7 @@ abstract class DisplayDevice {
      * Sets display size while in a transaction.
      */
     public final void setDisplaySizeLocked(SurfaceControl.Transaction t, int width, int height) {
-        if (width != mLastDisplayWidth && height != mLastDisplayHeight) {
+        if (width != mLastDisplayWidth || height != mLastDisplayHeight) {
             mLastDisplayWidth = width;
             mLastDisplayHeight = height;
             t.setDisplaySize(mDisplayToken, width, height);
