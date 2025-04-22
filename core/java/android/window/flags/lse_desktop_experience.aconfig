@@ -605,6 +605,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_windowing_pip_in_overview_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables an umbrella flag for bugfixes related to PiP in Overview with Desktop Windowing."
+    bug: "412463446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_dragging_pip_across_displays"
     namespace: "lse_desktop_experience"
     description: "Enables dragging PiP across displays in extended mode."

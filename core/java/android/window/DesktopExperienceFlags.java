@@ -90,6 +90,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
     ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, false,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
+    ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX(
+            Flags::enableDesktopWindowingPipInOverviewBugfix, false,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX),
     ENABLE_DISPLAY_COMPAT_MODE(Flags::enableDisplayCompatMode, false,
             Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
