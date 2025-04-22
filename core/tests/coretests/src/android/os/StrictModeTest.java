@@ -17,6 +17,8 @@
 package android.os;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -59,5 +61,16 @@ public class StrictModeTest {
     public void testThreadMask() throws Exception {
         StrictMode.setThreadPolicyMask(0);
         assertEquals(0, StrictMode.getThreadPolicyMask());
+    }
+
+    @Test
+    public void testCredentialProtectedWhileLockedMask() {
+        // First set it disabled
+        assertFalse(StrictMode.getAndDisableCredentialProtectedWhileLocked());
+        // Then set it enabled
+        StrictMode.enableCredentialProtectedWhileLocked();
+        // Then disable it and expect it to be disabled
+        assertTrue(StrictMode.getAndDisableCredentialProtectedWhileLocked());
+        assertFalse(StrictMode.getAndDisableCredentialProtectedWhileLocked());
     }
 }

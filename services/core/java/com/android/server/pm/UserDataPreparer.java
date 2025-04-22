@@ -23,6 +23,7 @@ import android.content.pm.UserInfo;
 import android.os.Environment;
 import android.os.FileUtils;
 import android.os.RecoverySystem;
+import android.os.StrictMode;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
@@ -181,6 +182,9 @@ class UserDataPreparer {
 
     void destroyUserDataLI(String volumeUuid, int userId, int flags) {
         final StorageManager storage = mContext.getSystemService(StorageManager.class);
+        // Allow user data destruction to run while the user is locked.
+        final boolean wasCredentialProtectionWhileLockedEnabled =
+                StrictMode.getAndDisableCredentialProtectedWhileLocked();
         try {
             // Clean up app data, profile data, and media data
             mInstaller.destroyUserData(volumeUuid, userId, flags);
@@ -207,6 +211,10 @@ class UserDataPreparer {
         } catch (Exception e) {
             logCriticalInfo(Log.WARN,
                     "Failed to destroy user " + userId + " on volume " + volumeUuid + ": " + e);
+        } finally {
+            if (wasCredentialProtectionWhileLockedEnabled) {
+                StrictMode.enableCredentialProtectedWhileLocked();
+            }
         }
     }
 
