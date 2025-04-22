@@ -20,11 +20,11 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
+import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import android.annotation.NonNull;
 import android.content.pm.ApplicationInfo;
-
-import com.android.window.flags.Flags;
 
 /**
  * Encapsulate app-compat logic for multi-display environments.
@@ -64,7 +64,7 @@ class AppCompatDisplayCompatModePolicy {
      */
     boolean isRestartMenuEnabledForDisplayMove() {
         // Restart menu is only available to apps in display compat mode.
-        return Flags.enableRestartMenuForConnectedDisplays() && mDisplayChangedWithoutRestart
+        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue() && mDisplayChangedWithoutRestart
                 && getDisplayCompatModeConfigMask() != 0;
     }
 
@@ -101,7 +101,7 @@ class AppCompatDisplayCompatModePolicy {
      * display compat mode is not enabled for the activity.
      */
     int getDisplayCompatModeConfigMask() {
-        if (!Flags.enableDisplayCompatMode()) return 0;
+        if (!ENABLE_DISPLAY_COMPAT_MODE.isTrue()) return 0;
 
         if (mActivityRecord.info.applicationInfo.category != ApplicationInfo.CATEGORY_GAME) {
             // A large majority of apps that crash with display move are games. Apply this compat
