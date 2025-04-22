@@ -5207,6 +5207,9 @@ public class HdmiControlService extends SystemService {
         // of sound when CEC is disabled and eARC is enabled due to SAM being in the off state.
         if (!isCecControlEnabled()) {
             setSystemAudioActivated(true);
+        } else if (isTvDeviceEnabled() && tv().getAvrDeviceInfo() == null) {
+            // The AVR might not support CEC.
+            tv().changeSystemAudioMode(enabled, null);
         }
         getAudioManager().setWiredDeviceConnectionState(attributes, enabled ? 1 : 0);
     }
