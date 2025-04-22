@@ -5282,6 +5282,10 @@ package android.hardware.devicestate {
     field public static final int PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED = 1; // 0x1
     field public static final int PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN = 2; // 0x2
     field public static final int PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN = 3; // 0x3
+    field @FlaggedApi("android.hardware.devicestate.feature.flags.desktop_device_state_property_api") public static final int PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED = 104; // 0x68
+    field @FlaggedApi("android.hardware.devicestate.feature.flags.desktop_device_state_property_api") public static final int PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED = 101; // 0x65
+    field @FlaggedApi("android.hardware.devicestate.feature.flags.desktop_device_state_property_api") public static final int PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN = 102; // 0x66
+    field @FlaggedApi("android.hardware.devicestate.feature.flags.desktop_device_state_property_api") public static final int PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_SLATE = 103; // 0x67
     field public static final int PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP = 13; // 0xd
     field public static final int PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE = 14; // 0xe
   }
