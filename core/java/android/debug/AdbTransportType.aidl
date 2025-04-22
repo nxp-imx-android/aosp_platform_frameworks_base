@@ -25,5 +25,6 @@ package android.debug;
 enum AdbTransportType {
     USB,
     WIFI,
+    VSOCK,
 }
 
