@@ -4163,6 +4163,9 @@
     <!-- Whether to keep fullscreen magnification zoom level when context changes. -->
     <bool name="config_magnification_keep_zoom_level_when_context_changed">false</bool>
 
+    <!-- The default value whether to magnify IME and keyboard with fullscreen magnification . -->
+    <bool name="config_magnification_magnify_keyboard_default">false</bool>
+
     <!-- If true, the display will be shifted around in ambient mode. -->
     <bool name="config_enableBurnInProtection">false</bool>
 
