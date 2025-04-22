@@ -2289,62 +2289,122 @@ public final class StrictMode {
         setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmSqliteObjectLeaksEnabled() {
         return (sVmPolicy.mask & DETECT_VM_CURSOR_LEAKS) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmClosableObjectLeaksEnabled() {
         return (sVmPolicy.mask & DETECT_VM_CLOSABLE_LEAKS) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmRegistrationLeaksEnabled() {
         return (sVmPolicy.mask & DETECT_VM_REGISTRATION_LEAKS) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmFileUriExposureEnabled() {
         return (sVmPolicy.mask & DETECT_VM_FILE_URI_EXPOSURE) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmCleartextNetworkEnabled() {
         return (sVmPolicy.mask & DETECT_VM_CLEARTEXT_NETWORK) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmContentUriWithoutPermissionEnabled() {
         return (sVmPolicy.mask & DETECT_VM_CONTENT_URI_WITHOUT_PERMISSION) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmUntaggedSocketEnabled() {
         return (sVmPolicy.mask & DETECT_VM_UNTAGGED_SOCKET) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmImplicitDirectBootEnabled() {
         return (sVmPolicy.mask & DETECT_VM_IMPLICIT_DIRECT_BOOT) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmCredentialProtectedWhileLockedEnabled() {
         return (sVmPolicy.mask & DETECT_VM_CREDENTIAL_PROTECTED_WHILE_LOCKED) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmIncorrectContextUseEnabled() {
         return (sVmPolicy.mask & DETECT_VM_INCORRECT_CONTEXT_USE) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmUnsafeIntentLaunchEnabled() {
         return (sVmPolicy.mask & DETECT_VM_UNSAFE_INTENT_LAUNCH) != 0;
     }
 
-    /** @hide */
+    /**
+     * Note: This method should be used with caution. The value returned by this method is not
+     * guaranteed to be consistent across multiple calls because the value is read from the VM
+     * policy which can be changed by other threads.
+     * @hide
+     */
     public static boolean vmBackgroundActivityLaunchEnabled() {
         return (sVmPolicy.mask & DETECT_VM_BACKGROUND_ACTIVITY_LAUNCH_ABORTED) != 0;
     }
