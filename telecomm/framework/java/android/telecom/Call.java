@@ -1089,7 +1089,9 @@ public final class Call {
          *
          * @hide
          */
-        public UserHandle getAssociatedUser() {
+        @SystemApi
+        @FlaggedApi(Flags.FLAG_CALL_DETAILS_GET_ASSOCIATED_USER_API)
+        public @NonNull UserHandle getAssociatedUser() {
             return mAssociatedUser;
         }
 
