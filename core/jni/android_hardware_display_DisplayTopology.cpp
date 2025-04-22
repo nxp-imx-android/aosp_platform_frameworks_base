@@ -37,12 +37,12 @@ static struct {
     jfieldID displayId;
     jfieldID density;
     jfieldID boundsInGlobalDp;
-    jfieldID adjacentDisplays;
+    jfieldID adjacentEdges;
 } gDisplayTopologyGraphNodeClassInfo;
 
 static struct {
     jclass clazz;
-    jfieldID displayId;
+    jfieldID displayNode;
     jfieldID position;
     jfieldID offsetDp;
 } gDisplayTopologyGraphAdjacentDisplayClassInfo;
@@ -73,9 +73,13 @@ status_t android_hardware_display_DisplayTopologyDisplayBounds_toNative(JNIEnv* 
 
 status_t android_hardware_display_DisplayTopologyAdjacentDisplay_toNative(
         JNIEnv* env, jobject adjacentDisplayObj, DisplayTopologyAdjacentDisplay* adjacentDisplay) {
+    ScopedLocalRef<jobject>
+            displayNodeObj(env,
+                           env->GetObjectField(adjacentDisplayObj,
+                                               gDisplayTopologyGraphAdjacentDisplayClassInfo
+                                                       .displayNode));
     adjacentDisplay->displayId = ui::LogicalDisplayId{
-            env->GetIntField(adjacentDisplayObj,
-                             gDisplayTopologyGraphAdjacentDisplayClassInfo.displayId)};
+            env->GetIntField(displayNodeObj.get(), gDisplayTopologyGraphNodeClassInfo.displayId)};
     adjacentDisplay->position = static_cast<DisplayTopologyPosition>(
             env->GetIntField(adjacentDisplayObj,
                              gDisplayTopologyGraphAdjacentDisplayClassInfo.position));
@@ -102,14 +106,14 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
                                                                    &topologyGraph[displayId]
                                                                             .boundsInGlobalDp);
 
-    jobjectArray adjacentDisplaysArray = static_cast<jobjectArray>(
-            env->GetObjectField(nodeObj, gDisplayTopologyGraphNodeClassInfo.adjacentDisplays));
+    jobjectArray adjacentEdgesArray = static_cast<jobjectArray>(
+            env->GetObjectField(nodeObj, gDisplayTopologyGraphNodeClassInfo.adjacentEdges));
 
-    if (adjacentDisplaysArray) {
-        jsize length = env->GetArrayLength(adjacentDisplaysArray);
+    if (adjacentEdgesArray) {
+        jsize length = env->GetArrayLength(adjacentEdgesArray);
         for (jsize i = 0; i < length; i++) {
             ScopedLocalRef<jobject>
-                    adjacentDisplayObj(env, env->GetObjectArrayElement(adjacentDisplaysArray, i));
+                    adjacentDisplayObj(env, env->GetObjectArrayElement(adjacentEdgesArray, i));
             if (NULL == adjacentDisplayObj.get()) {
                 break; // found null element indicating end of used portion of the array
             }
@@ -171,17 +175,18 @@ int register_android_hardware_display_DisplayTopology(JNIEnv* env) {
     gDisplayTopologyGraphNodeClassInfo.boundsInGlobalDp =
             GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "mBoundsInGlobalDp",
                             "Landroid/graphics/RectF;");
-    gDisplayTopologyGraphNodeClassInfo.adjacentDisplays =
-            GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "mAdjacentDisplays",
-                            "[Landroid/hardware/display/DisplayTopologyGraph$AdjacentDisplay;");
+    gDisplayTopologyGraphNodeClassInfo.adjacentEdges =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "mAdjacentEdges",
+                            "[Landroid/hardware/display/DisplayTopologyGraph$AdjacentEdge;");
 
     jclass adjacentDisplayClazz =
-            FindClassOrDie(env, "android/hardware/display/DisplayTopologyGraph$AdjacentDisplay");
+            FindClassOrDie(env, "android/hardware/display/DisplayTopologyGraph$AdjacentEdge");
     gDisplayTopologyGraphAdjacentDisplayClassInfo.clazz =
             MakeGlobalRefOrDie(env, adjacentDisplayClazz);
-    gDisplayTopologyGraphAdjacentDisplayClassInfo.displayId =
-            GetFieldIDOrDie(env, gDisplayTopologyGraphAdjacentDisplayClassInfo.clazz, "mDisplayId",
-                            "I");
+    gDisplayTopologyGraphAdjacentDisplayClassInfo.displayNode =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphAdjacentDisplayClassInfo.clazz,
+                            "mDisplayNode",
+                            "Landroid/hardware/display/DisplayTopologyGraph$DisplayNode;");
     gDisplayTopologyGraphAdjacentDisplayClassInfo.position =
             GetFieldIDOrDie(env, gDisplayTopologyGraphAdjacentDisplayClassInfo.clazz, "mPosition",
                             "I");

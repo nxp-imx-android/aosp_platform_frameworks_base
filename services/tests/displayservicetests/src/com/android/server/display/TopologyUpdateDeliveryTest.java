@@ -175,10 +175,10 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
         int primaryDisplayId = 3;
         DisplayTopology.TreeNode root = new DisplayTopology.TreeNode(primaryDisplayId,
                 /* logicalWidth= */ 600, /* logicalHeight= */ 400, /* logicalDensity= */ 160,
-                DisplayTopology.TreeNode.POSITION_LEFT, /* offset= */ 0);
+                DisplayTopology.POSITION_LEFT, /* offset= */ 0);
         DisplayTopology.TreeNode child = new DisplayTopology.TreeNode(/* displayId= */ 1,
                 /* logicalWidth= */ 800, /* logicalHeight= */ 600, /* logicalDensity= */ 160,
-                DisplayTopology.TreeNode.POSITION_LEFT, /* offset= */ 0);
+                DisplayTopology.POSITION_LEFT, /* offset= */ 0);
         root.addChild(child);
         DisplayTopology topology = new DisplayTopology(root, primaryDisplayId);
         mDisplayManager.setDisplayTopology(topology);
