@@ -626,7 +626,7 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    private boolean mSaveBatteryUsageStatsOnReset;
+    private boolean mSaveBatteryUsageStatsOnNewSession;
     private boolean mResetBatteryHistoryOnNewSession;
     private boolean mAccumulateBatteryUsageStats;
     private BatteryUsageStatsProvider mBatteryUsageStatsProvider;
@@ -11690,13 +11690,13 @@ public class BatteryStatsImpl extends BatteryStats {
     /**
      * Associates the BatteryStatsImpl object with a BatteryUsageStatsProvider and PowerStatsStore
      * to allow for a snapshot of battery usage stats to be taken and stored just before battery
-     * reset.
+     * starting a new history buffer.
      */
-    public void saveBatteryUsageStatsOnReset(
+    public void saveBatteryUsageStatsOnNewSession(
             @NonNull BatteryUsageStatsProvider batteryUsageStatsProvider,
             @NonNull PowerStatsStore powerStatsStore,
             boolean accumulateBatteryUsageStats) {
-        mSaveBatteryUsageStatsOnReset = true;
+        mSaveBatteryUsageStatsOnNewSession = true;
         mBatteryUsageStatsProvider = batteryUsageStatsProvider;
         mPowerStatsStore = powerStatsStore;
         mAccumulateBatteryUsageStats = accumulateBatteryUsageStats;
@@ -11762,7 +11762,7 @@ public class BatteryStatsImpl extends BatteryStats {
         }
 
         mHandler.post(()-> {
-            saveBatteryUsageStatsOnReset();
+            saveBatteryUsageStatsOnNewSession();
             synchronized (BatteryStatsImpl.this) {
                 resetAllStatsLocked(mClock.uptimeMillis(), mClock.elapsedRealtime(), reason);
             }
@@ -11928,8 +11928,8 @@ public class BatteryStatsImpl extends BatteryStats {
         mHandler.sendEmptyMessage(MSG_REPORT_RESET_STATS);
     }
 
-    private void saveBatteryUsageStatsOnReset() {
-        if (!mSaveBatteryUsageStatsOnReset) {
+    private void saveBatteryUsageStatsOnNewSession() {
+        if (!mSaveBatteryUsageStatsOnNewSession) {
             return;
         }
 
@@ -15090,7 +15090,7 @@ public class BatteryStatsImpl extends BatteryStats {
                     &&  !mEnergyConsumerStatsConfig.isCompatible(config)) {
                 // Supported power buckets changed since last boot.
                 // Save accumulated battery usage stats before resetting
-                saveBatteryUsageStatsOnReset();
+                saveBatteryUsageStatsOnNewSession();
                 // Existing data is no longer reliable.
                 resetAllStatsLocked(SystemClock.uptimeMillis(), SystemClock.elapsedRealtime(),
                         RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
@@ -15102,7 +15102,7 @@ public class BatteryStatsImpl extends BatteryStats {
             if (mEnergyConsumerStatsConfig != null) {
                 // EnergyConsumer no longer supported
                 // Save accumulated battery usage stats before resetting
-                saveBatteryUsageStatsOnReset();
+                saveBatteryUsageStatsOnNewSession();
                 // Wipe out the current battery session data.
                 resetAllStatsLocked(SystemClock.uptimeMillis(), SystemClock.elapsedRealtime(),
                         RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
