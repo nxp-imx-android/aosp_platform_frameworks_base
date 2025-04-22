@@ -675,7 +675,6 @@ public final class OutputConfiguration implements Parcelable {
      * @see MultiResolutionImageReader
      * @see MultiResolutionStreamInfo
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public static @NonNull List<OutputConfiguration> createInstancesForMultiResolutionOutput(
             @NonNull Collection<MultiResolutionStreamInfo> streams,
             @Format int format)  {
@@ -731,7 +730,6 @@ public final class OutputConfiguration implements Parcelable {
      * @throws IllegalStateException If {@code outputConfigurations} already contains valid output
      *                               surfaces.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public static void setSurfacesForMultiResolutionOutput(
             @NonNull Collection<OutputConfiguration> outputConfigurations,
             @NonNull MultiResolutionImageReader multiResolutionImageReader) {
@@ -871,7 +869,6 @@ public final class OutputConfiguration implements Parcelable {
      * @param surfaceSize Size for the ImageReader surface.
      * @throws IllegalArgumentException if the Surface size is null or zero.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public OutputConfiguration(@Format int format, @NonNull Size surfaceSize) {
         this(format, surfaceSize,
                 format == ImageFormat.PRIVATE ? 0 : HardwareBuffer.USAGE_CPU_READ_OFTEN);
@@ -899,7 +896,6 @@ public final class OutputConfiguration implements Parcelable {
      * @param surfaceSize Size for the ImageReader surface.
      * @throws IllegalArgumentException if the Surface size is null or zero.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public OutputConfiguration(int surfaceGroupId, @Format int format, @NonNull Size surfaceSize) {
         this(surfaceGroupId, format, surfaceSize,
                 format == ImageFormat.PRIVATE ? 0 : HardwareBuffer.USAGE_CPU_READ_OFTEN);
@@ -926,7 +922,6 @@ public final class OutputConfiguration implements Parcelable {
      * @param usage The usage flags of the ImageReader output surface.
      * @throws IllegalArgumentException if the Surface size is null or zero.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public OutputConfiguration(@Format int format, @NonNull Size surfaceSize, @Usage long usage) {
         this(SURFACE_GROUP_ID_NONE, format, surfaceSize, usage);
     }
@@ -954,7 +949,6 @@ public final class OutputConfiguration implements Parcelable {
      * @param usage The usage flags of the ImageReader output surface.
      * @throws IllegalArgumentException if the Surface size is null or zero.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_DEVICE_SETUP)
     public OutputConfiguration(int surfaceGroupId, @Format int format,
             @NonNull Size surfaceSize, @Usage long usage) {
         checkNotNull(surfaceSize, "surfaceSize must not be null");
