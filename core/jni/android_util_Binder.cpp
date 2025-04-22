@@ -590,7 +590,7 @@ class RecipientList : public RefBase {
 
 public:
     RecipientList();
-    ~RecipientList();
+    virtual ~RecipientList();
 
     void add(const sp<JavaRecipient<T> >& recipient);
     void remove(const sp<JavaRecipient<T> >& recipient);
@@ -753,7 +753,7 @@ public:
         gcIfManyNewRefs(env);
     }
 
-    ~JavaDeathRecipient() {
+    virtual ~JavaDeathRecipient() {
         gNumDeathRefsDeleted.fetch_add(1, std::memory_order_relaxed);
     }
 
@@ -820,6 +820,8 @@ public:
     JavaFrozenStateChangeCallback(JNIEnv* env, jobject recipient /*a.k.a callback*/,
                                   const sp<RecipientList<IBinder::FrozenStateChangeCallback>>& list)
           : JavaRecipient(env, recipient, list, /*useWeakReference=*/true) {}
+
+    virtual ~JavaFrozenStateChangeCallback() {}
 
     void onStateChanged(const wp<IBinder>& who, State state) {
         LOG_DEATH_FREEZE("Receiving onStateChanged() on JavaFrozenStateChangeCallback %p. state: "
