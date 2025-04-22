@@ -27,6 +27,20 @@ import android.view.Surface;
 interface IVirtualCameraCallback {
 
     /**
+     * Called when the client application calls
+     * {@link android.hardware.camera2.CameraManager#openCamera}. This is the earliest signal that
+     * this camera will be used. At this point, no stream is opened yet, nor any configuration took
+     * place. The owner of the virtual camera can use this as signal to prepare the camera and
+     * reduce latency for when
+     * {@link android.hardware.camera2.CameraDevice#createCaptureSession(SessionConfiguration)} is
+     * called and before
+     * {@link
+     * android.hardware.camera2.CameraCaptureSession.StateCallback#onConfigured(CameraCaptureSession)}
+     * is called.
+     */
+    oneway void onOpenCamera();
+
+    /**
      * Called when one of the requested stream has been configured by the virtual camera service and
      * is ready to receive data onto its {@link Surface}
      *
