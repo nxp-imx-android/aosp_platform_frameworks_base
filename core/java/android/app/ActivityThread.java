@@ -1157,19 +1157,15 @@ public final class ActivityThread extends ClientTransactionHandler
                 CompatibilityInfo compatInfo, int resultCode, String data, Bundle extras,
                 boolean ordered, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage) {
-            long debugStoreId = -1;
-            if (DEBUG_STORE_ENABLED) {
-                debugStoreId = DebugStore.recordScheduleReceiver();
-            }
             updateProcessState(processState, false);
             ReceiverData r = new ReceiverData(intent, resultCode, data, extras,
                     ordered, false, assumeDelivered, mAppThread.asBinder(), sendingUser,
                     sendingUid, sendingPackage);
             r.info = info;
-            sendMessage(H.RECEIVER, r);
             if (DEBUG_STORE_ENABLED) {
-                DebugStore.recordEventEnd(debugStoreId);
+                DebugStore.recordScheduleBroadcastReceive(System.identityHashCode(r), intent);
             }
+            sendMessage(H.RECEIVER, r);
         }
 
         public final void scheduleReceiverList(List<ReceiverInfo> info) throws RemoteException {
@@ -1219,6 +1215,9 @@ public final class ActivityThread extends ClientTransactionHandler
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleCreateService. token="
                         + token);
             }
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleServiceCreate(System.identityHashCode(s), info);
+            }
             sendMessage(H.CREATE_SERVICE, s);
         }
 
@@ -1240,6 +1239,9 @@ public final class ActivityThread extends ClientTransactionHandler
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleBindService. token="
                         + token + " bindSeq=" + bindSeq);
+            }
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleServiceBind(System.identityHashCode(s), s.intent);
             }
             sendMessage(H.BIND_SERVICE, s);
         }
@@ -1273,6 +1275,9 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                     Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleServiceArgs. token="
                             + token + " startId=" + s.startId);
+                }
+                if (DEBUG_STORE_ENABLED) {
+                    DebugStore.recordScheduleServiceStart(System.identityHashCode(s), s.args);
                 }
                 sendMessage(H.SERVICE_ARGS, s);
             }
@@ -1341,6 +1346,9 @@ public final class ActivityThread extends ClientTransactionHandler
                 FileDescriptor applicationSharedMemoryFd,
                 long startRequestedElapsedTime,
                 long startRequestedUptime) {
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleBindApplication();
+            }
             if (services != null) {
                 if (false) {
                     // Test code to make sure the app could see the passed-in services.
@@ -1518,10 +1526,6 @@ public final class ActivityThread extends ClientTransactionHandler
                 boolean sticky, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage)
                 throws RemoteException {
-            long debugStoreId = -1;
-            if (DEBUG_STORE_ENABLED) {
-                debugStoreId = DebugStore.recordScheduleRegisteredReceiver();
-            }
             updateProcessState(processState, false);
 
             // We can't modify IIntentReceiver due to UnsupportedAppUsage, so
@@ -1545,9 +1549,6 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
                 receiver.performReceive(intent, resultCode, dataStr, extras, ordered, sticky,
                         sendingUser);
-            }
-            if (DEBUG_STORE_ENABLED) {
-                DebugStore.recordEventEnd(debugStoreId);
             }
         }
 
@@ -2548,7 +2549,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "bindApplication");
                     if (DEBUG_STORE_ENABLED) {
                         debugStoreId =
-                                DebugStore.recordHandleBindApplication();
+                                DebugStore.recordBindApplication();
                     }
                     AppBindData data = (AppBindData)msg.obj;
                     handleBindApplication(data);
@@ -2575,20 +2576,10 @@ public final class ActivityThread extends ClientTransactionHandler
                         }
                     }
                     ReceiverData receiverData = (ReceiverData) msg.obj;
-                    if (DEBUG_STORE_ENABLED) {
-                        debugStoreId =
-                            DebugStore.recordBroadcastReceive(
-                                receiverData.intent, System.identityHashCode(receiverData));
-                    }
-
                     try {
                         handleReceiver(receiverData);
                     } finally {
                         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-                        if (DEBUG_STORE_ENABLED) {
-                            DebugStore.recordEventEnd(debugStoreId);
-                            shouldLogLongMessage = false;
-                        }
                     }
                     break;
                 case CREATE_SERVICE:
@@ -2598,7 +2589,9 @@ public final class ActivityThread extends ClientTransactionHandler
                     }
                     CreateServiceData createServiceData = (CreateServiceData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
-                        debugStoreId = DebugStore.recordServiceCreate(createServiceData.info);
+                        debugStoreId =
+                                DebugStore.recordServiceCreate(
+                                        System.identityHashCode(msg.obj));
                     }
 
                     try {
@@ -2619,7 +2612,8 @@ public final class ActivityThread extends ClientTransactionHandler
                     BindServiceData bindData = (BindServiceData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
                         debugStoreId =
-                                DebugStore.recordServiceBind(bindData.rebind, bindData.intent);
+                                DebugStore.recordServiceBind(
+                                        System.identityHashCode(msg.obj));
                     }
                     try {
                         handleBindService(bindData);
@@ -2647,8 +2641,9 @@ public final class ActivityThread extends ClientTransactionHandler
                     }
                     ServiceArgsData serviceData = (ServiceArgsData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
-                        debugStoreId = DebugStore.recordServiceOnStart(serviceData.startId,
-                                serviceData.flags, serviceData.args);
+                        debugStoreId =
+                                DebugStore.recordServiceStart(
+                                        System.identityHashCode(msg.obj));
                     }
 
                     try {
@@ -5051,6 +5046,11 @@ public final class ActivityThread extends ClientTransactionHandler
                 + ": " + e.toString(), e);
         }
 
+        long debugStoreId = -1;
+        if(DEBUG_STORE_ENABLED) {
+            debugStoreId = DebugStore.recordBroadcastReceive(System.identityHashCode(data),
+                receiver.getClass().getSimpleName());
+        }
         try {
             if (localLOGV) Slog.v(
                 TAG, "Performing receive of " + data.intent
@@ -5075,6 +5075,9 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         } finally {
             sCurrentBroadcastIntent.set(null);
+            if(DEBUG_STORE_ENABLED) {
+                DebugStore.recordEventEnd(debugStoreId);
+            }
         }
 
         if (receiver.getPendingResult() != null) {
