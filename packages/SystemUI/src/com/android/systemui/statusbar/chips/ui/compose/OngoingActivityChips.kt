@@ -17,6 +17,9 @@
 package com.android.systemui.statusbar.chips.ui.compose
 
 import android.graphics.RectF
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -60,8 +63,9 @@ fun OngoingActivityChips(
         }
     }
 
-    val shownChips = chips.active.filter { !it.isHidden }
-    if (shownChips.isNotEmpty()) {
+    val activeChips = chips.active
+    if (activeChips.isNotEmpty()) {
+        // For performance reasons, only create the Row if we have chips. See b/401241197.
         Row(
             // The status bar clock will have some end padding so we don't need as much padding
             // at the beginning of the row (but we need more padding between chips)
@@ -69,19 +73,40 @@ fun OngoingActivityChips(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            shownChips.forEach {
+            activeChips.forEach {
                 key(it.key) {
-                    OngoingActivityChip(
-                        model = it,
-                        iconViewStore = iconViewStore,
-                        modifier =
-                            Modifier.sysuiResTag(it.key).onGloballyPositioned { coordinates ->
-                                onChipBoundsChanged.invoke(
-                                    it.key,
-                                    coordinates.boundsInWindow().toAndroidRectF(),
-                                )
-                            },
-                    )
+                    val chipModifier =
+                        Modifier.sysuiResTag(it.key).onGloballyPositioned { coordinates ->
+                            onChipBoundsChanged.invoke(
+                                it.key,
+                                coordinates.boundsInWindow().toAndroidRectF(),
+                            )
+                        }
+                    if (activeChips.size == 1) {
+                        // AnimatedVisibility works well if we have just 1 active chip, but it
+                        // causes some problems if there's 2 chips and then one chip becomes hidden.
+                        // For now, use AnimatedVisibility only if we only have 1 active chip. See
+                        // b/393581408.
+                        AnimatedVisibility(
+                            visible = !it.isHidden,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            OngoingActivityChip(
+                                model = it,
+                                iconViewStore = iconViewStore,
+                                modifier = chipModifier,
+                            )
+                        }
+                    } else {
+                        if (!it.isHidden) {
+                            OngoingActivityChip(
+                                model = it,
+                                iconViewStore = iconViewStore,
+                                modifier = chipModifier,
+                            )
+                        }
+                    }
                 }
             }
         }
