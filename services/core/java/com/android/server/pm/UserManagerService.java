@@ -5681,8 +5681,8 @@ public class UserManagerService extends IUserManager.Stub {
         checkCreateUsersPermission(flags);
 
         Preconditions.checkArgument(isUserTypeEligibleForPreCreation(userTypeDetails),
-                "cannot pre-create user of type " + userType);
-        Slog.i(LOG_TAG, "Pre-creating user of type " + userType);
+                "cannot pre-create user of type %s", userType);
+        Slogf.i(LOG_TAG, "Pre-creating user of type %s", userType);
 
         try {
             return createUserInternalUnchecked(/* name= */ null, userType, flags,

@@ -589,16 +589,16 @@ public final class UserTypeDetails {
             Preconditions.checkArgument(mName != null,
                     "Cannot create a UserTypeDetails with no name.");
             Preconditions.checkArgument(hasValidBaseType(),
-                    "UserTypeDetails " + mName + " has invalid baseType: " + mBaseType);
+                    "UserTypeDetails %s has invalid baseType: %d", mName, mBaseType);
             Preconditions.checkArgument(hasValidPropertyFlags(),
-                    "UserTypeDetails " + mName + " has invalid flags: "
-                            + Integer.toHexString(mDefaultUserInfoPropertyFlags));
+                    "UserTypeDetails %s has invalid flags: %s", mName,
+                            Integer.toHexString(mDefaultUserInfoPropertyFlags));
             checkSystemAndMainUserPreconditions();
             if (hasBadge()) {
                 Preconditions.checkArgument(mBadgeLabels != null && mBadgeLabels.length != 0,
-                        "UserTypeDetails " + mName + " has badge but no badgeLabels.");
+                        "UserTypeDetails %s has badge but no badgeLabels.", mName);
                 Preconditions.checkArgument(mBadgeColors != null && mBadgeColors.length != 0,
-                        "UserTypeDetails " + mName + " has badge but no badgeColors.");
+                        "UserTypeDetails %s has badge but no badgeColors.", mName);
             }
             if (!isProfile()) {
                 Preconditions.checkArgument(mDefaultCrossProfileIntentFilters == null
@@ -664,11 +664,11 @@ public final class UserTypeDetails {
             Preconditions.checkArgument(
                     ((mBaseType & UserInfo.FLAG_SYSTEM) != 0) ==
                             ((mDefaultUserInfoPropertyFlags & UserInfo.FLAG_PRIMARY) != 0),
-                    "UserTypeDetails " + mName + " cannot be SYSTEM xor PRIMARY.");
+                    "UserTypeDetails %s cannot be SYSTEM xor PRIMARY.", mName);
             // At most one MainUser is ever allowed at a time.
             Preconditions.checkArgument(
                     ((mDefaultUserInfoPropertyFlags & UserInfo.FLAG_MAIN) == 0) || mMaxAllowed == 1,
-                    "UserTypeDetails " + mName + " must not sanction more than one MainUser.");
+                    "UserTypeDetails %s must not sanction more than one MainUser.", mName);
         }
     }
 

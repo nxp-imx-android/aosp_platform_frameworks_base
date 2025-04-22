@@ -19699,7 +19699,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 subscriptionManager.setGroupOwner(subId, target.getPackageName());
             } catch (Exception e) {
                 // Shouldn't happen.
-                Slogf.e(LOG_TAG, e, "Error setting group owner for subId: " + subId);
+                Slogf.e(LOG_TAG, e, "Error setting group owner for subId: %d", subId);
             }
         }
     }

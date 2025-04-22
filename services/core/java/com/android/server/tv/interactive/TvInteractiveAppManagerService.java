@@ -1365,7 +1365,7 @@ public class TvInteractiveAppManagerService extends SystemService {
         public void notifyTvInputSessionData(
                 IBinder sessionToken, String type, Bundle data, int userId) {
             if (DEBUG) {
-                Slogf.d(TAG, "notifyTvInputSessionData(type=%d)", type);
+                Slogf.d(TAG, "notifyTvInputSessionData(type=%s)", type);
             }
             final int callingUid = Binder.getCallingUid();
             final int callingPid = Binder.getCallingPid();

@@ -5751,6 +5751,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
 
+        // String is not constant because it's using TextUtils.formatSimple
+        @SuppressWarnings("CompileTimeConstant")
         @Override
         public void setVirtualDeviceInputMethodForAllUsers(int deviceId, @Nullable String imeId) {
             Preconditions.checkArgument(deviceId != DEVICE_ID_DEFAULT,
