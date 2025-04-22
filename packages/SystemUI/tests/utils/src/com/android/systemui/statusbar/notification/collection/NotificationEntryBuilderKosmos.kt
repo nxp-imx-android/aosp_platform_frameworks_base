@@ -107,6 +107,7 @@ fun Kosmos.buildNotificationEntry(
                 )
             updateSbn {
                 setId(Random.nextInt())
+                setUser(UserHandle.of(ActivityManager.getCurrentUser()))
             }
         }
         .apply(block)
