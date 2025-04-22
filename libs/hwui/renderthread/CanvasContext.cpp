@@ -36,6 +36,8 @@
 
 #include "../Properties.h"
 #include "AnimationContext.h"
+#include "ColorArea.h"
+#include "FeatureFlags.h"
 #include "Frame.h"
 #include "LayerUpdateQueue.h"
 #include "Properties.h"
@@ -476,11 +478,17 @@ void CanvasContext::prepareTree(TreeInfo& info, int64_t* uiFrameInfo, int64_t sy
     mCurrentFrameInfo->markSyncStart();
 
     info.damageAccumulator = &mDamageAccumulator;
+    info.colorArea = &mColorArea;
     info.layerUpdateQueue = &mLayerUpdateQueue;
     info.damageGenerationId = mDamageId++;
     info.out.skippedFrameReason = std::nullopt;
 
     mAnimationContext->startFrame(info.mode);
+
+    if (target) {
+        determineColors(target);
+    }
+
     for (const sp<RenderNode>& node : mRenderNodes) {
         // Only the primary target node will be drawn full - all other nodes would get drawn in
         // real time mode. In case of a window, the primary node is the window content and the other
@@ -1026,6 +1034,7 @@ void CanvasContext::buildLayer(RenderNode* node) {
     ScopedActiveContext activeContext(this);
     TreeInfo info(TreeInfo::MODE_FULL, *this);
     info.damageAccumulator = &mDamageAccumulator;
+    info.colorArea = &mColorArea;
     info.layerUpdateQueue = &mLayerUpdateQueue;
     info.runAnimations = false;
     node->prepareTree(info);
@@ -1163,6 +1172,20 @@ SkRect CanvasContext::computeDirtyRect(const Frame& frame, SkRect* dirty) {
     }
 
     return windowDirty;
+}
+
+void CanvasContext::determineColors(const RenderNode* target) {
+    if (CC_UNLIKELY(view_accessibility_flags::force_invert_color() &&
+                    mForceDarkType == ForceDarkType::FORCE_INVERT_COLOR_DARK)) {
+        ATRACE_FORMAT("determineColors(): Color area calculation pre-pass");
+
+        // first pass: figure out if the app is light or dark mode
+        mColorArea.reset();
+
+        for (const sp<RenderNode>& node : mRenderNodes) {
+            node->gatherColorAreasForSubtree(mColorArea, target == node.get());
+        }
+    }
 }
 
 CanvasContext* CanvasContext::getActiveContext() {
