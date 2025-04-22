@@ -108,8 +108,8 @@ class VisualIndicatorUpdateSchedulerTest : ShellTestCase() {
     private val adjacentDisplay0To3 =
         AdjacentDisplay(displayId0, DisplayTopology.TreeNode.POSITION_LEFT, 0f)
 
-    private val displayNodes: Array<DisplayNode> =
-        arrayOf(
+    private val displayNodes =
+        listOf(
             DisplayNode(
                 displayId0,
                 TestDisplay.DISPLAY_0.dpi,
