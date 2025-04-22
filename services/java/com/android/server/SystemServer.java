@@ -300,7 +300,6 @@ import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.vcn.VcnLocation;
 import com.android.server.vibrator.VibratorManagerService;
 import com.android.server.voiceinteraction.VoiceInteractionManagerService;
-import com.android.server.vr.VrManagerService;
 import com.android.server.wallpaper.WallpaperManagerService;
 import com.android.server.wallpapereffectsgeneration.WallpaperEffectsGenerationManagerService;
 import com.android.server.wearable.WearableSensingManagerService;
@@ -1551,9 +1550,6 @@ public final class SystemServer implements Dumpable {
 
         boolean isAutomotive = RoSystemFeatures.hasFeatureAutomotive(context);
 
-        boolean enableVrService = context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_VR_MODE_HIGH_PERFORMANCE);
-
         try {
             final String SECONDARY_ZYGOTE_PRELOAD = "SecondaryZygotePreload";
             // We start the preload ~1s before the webview factory preparation, to
@@ -1735,12 +1731,6 @@ public final class SystemServer implements Dumpable {
                 startHidlServices();
                 traceLog.traceEnd();
             }, START_HIDL_SERVICES);
-
-            if (!isWatch && enableVrService) {
-                t.traceBegin("StartVrManagerService");
-                mSystemServiceManager.startService(VrManagerService.class);
-                t.traceEnd();
-            }
 
             t.traceBegin("StartInputManager");
             inputManager.setWindowManagerCallbacks(wm.getInputManagerCallback());
