@@ -316,7 +316,8 @@ public class RemoteInputController {
             Object itemToken = mOpen.get(i).second;
             boolean removeTokenMatches = (removeToken == null || itemToken == removeToken);
 
-            if (item == null || (item.isSameEntryAs(remove) && removeTokenMatches)) {
+            if (item == null
+                    || (remove != null && item.isSameEntryAs(remove) && removeTokenMatches)) {
                 mOpen.remove(i);
             } else if (item.isSameEntryAs(contains)) {
                 if (removeToken != null && removeToken != itemToken) {
