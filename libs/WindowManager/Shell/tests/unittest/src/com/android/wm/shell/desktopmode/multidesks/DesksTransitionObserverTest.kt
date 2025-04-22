@@ -32,6 +32,7 @@ import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
@@ -61,6 +62,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
     private lateinit var desktopUserRepositories: DesktopUserRepositories
     private lateinit var observer: DesksTransitionObserver
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var desktopConfig: FakeDesktopConfig
 
     private val repository: DesktopRepository
         get() = desktopUserRepositories.current
@@ -68,6 +70,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
     @Before
     fun setUp() {
         desktopState = FakeDesktopState()
+        desktopConfig = FakeDesktopConfig()
         desktopUserRepositories =
             DesktopUserRepositories(
                 ShellInit(TestShellExecutor()),
@@ -77,6 +80,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 testScope,
                 /* userManager= */ mock(),
                 desktopState,
+                desktopConfig,
             )
         observer = DesksTransitionObserver(desktopUserRepositories, mockDesksOrganizer)
     }

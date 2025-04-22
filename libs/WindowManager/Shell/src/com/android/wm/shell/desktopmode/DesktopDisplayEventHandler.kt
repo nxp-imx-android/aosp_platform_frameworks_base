@@ -152,6 +152,7 @@ class DesktopDisplayEventHandler(
                         desktopTasksController.createDesk(
                             displayId = displayId,
                             userId = repository.userId,
+                            enforceDeskLimit = false,
                             // TODO: b/393978539 - do not activate as a result of removing the
                             //  last desk from Overview. Let overview activate it once it is
                             //  selected or when the user goes home.

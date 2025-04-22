@@ -45,6 +45,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -100,6 +101,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
     private val displayController: DisplayController = mock()
     private val displayLayout: DisplayLayout = mock()
     private val desktopState = FakeDesktopState()
+    private val desktopConfig = FakeDesktopConfig()
 
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var handler: DesktopActivityOrientationChangeHandler
@@ -127,6 +129,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 testScope,
                 userManager,
                 desktopState,
+                desktopConfig,
             )
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }

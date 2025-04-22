@@ -512,6 +512,12 @@ class DesktopTasksController(
         runOnTransitStart?.invoke(transition)
     }
 
+    /** Returns whether a new desk can be created. */
+    fun canCreateDesks(repository: DesktopRepository = this.taskRepository): Boolean {
+        val deskLimit = desktopConfig.maxDeskLimit
+        return deskLimit == 0 || repository.getNumberOfDesks() < deskLimit
+    }
+
     /**
      * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
      * is created, but necessarily activated.
@@ -519,11 +525,22 @@ class DesktopTasksController(
     fun createDesk(
         displayId: Int,
         userId: Int = this.userId,
+        enforceDeskLimit: Boolean = true,
         activateDesk: Boolean = false,
         onResult: ((Int) -> Unit) = {},
     ) {
-        logV("addDesk displayId=%d, userId=%d", displayId, userId)
+        logV(
+            "createDesk displayId=%d, userId=%d enforceDeskLimit=%b",
+            displayId,
+            userId,
+            enforceDeskLimit,
+        )
         val repository = userRepositories.getProfile(userId)
+        if (enforceDeskLimit && !canCreateDesks(repository)) {
+            // At the limit, no-op.
+            logW("createDesk already at desk-limit, ignoring request")
+            return
+        }
         createDeskRoot(displayId, userId) { deskId ->
             if (deskId == null) {
                 logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
@@ -550,10 +567,16 @@ class DesktopTasksController(
         return deskId
     }
 
-    private suspend fun createDeskSuspending(displayId: Int, userId: Int): Int =
-        suspendCoroutine { cont ->
-            createDesk(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
+    private suspend fun createDeskSuspending(
+        displayId: Int,
+        userId: Int,
+        enforceDeskLimit: Boolean,
+    ): Int = suspendCoroutine { cont ->
+        createDesk(displayId = displayId, userId = userId, enforceDeskLimit = enforceDeskLimit) {
+            deskId ->
+            cont.resumeWith(Result.success(deskId))
         }
+    }
 
     private fun createDeskRoot(
         displayId: Int,
@@ -3667,7 +3690,8 @@ class DesktopTasksController(
     }
 
     private suspend fun getOrCreateDefaultDeskIdSuspending(displayId: Int): Int =
-        taskRepository.getDefaultDeskId(displayId) ?: createDeskSuspending(displayId, userId)
+        taskRepository.getDefaultDeskId(displayId)
+            ?: createDeskSuspending(displayId, userId, enforceDeskLimit = false)
 
     /** Removes the given desk. */
     fun removeDesk(deskId: Int, desktopRepository: DesktopRepository = taskRepository) {
@@ -4399,6 +4423,15 @@ class DesktopTasksController(
                         l.onActiveDeskChanged(displayId, newActiveDeskId, oldActiveDeskId)
                     }
                 }
+
+                override fun onCanCreateDesksChanged(canCreateDesks: Boolean) {
+                    ProtoLog.v(
+                        WM_SHELL_DESKTOP_MODE,
+                        "IDesktopModeImpl: onCanCreateDesksChanged canCreateDesks=%b",
+                        canCreateDesks,
+                    )
+                    remoteListener.call { l -> l.onCanCreateDesksChanged(canCreateDesks) }
+                }
             }
 
         private val visibleTasksListener: VisibleTasksListener =
@@ -4594,11 +4627,9 @@ class DesktopTasksController(
 
         private fun syncInitialState(c: DesktopTasksController) {
             remoteListener.call { l ->
-                // TODO: b/393962589 - implement desks limit.
-                val canCreateDesks = true
                 l.onListenerConnected(
                     c.taskRepository.getDeskDisplayStateForRemote(),
-                    canCreateDesks,
+                    c.canCreateDesks(),
                 )
             }
         }
