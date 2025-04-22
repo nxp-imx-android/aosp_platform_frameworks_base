@@ -34,10 +34,13 @@ public class PipSurfaceTransactionHelper {
 
     private final int mCornerRadius;
     private final int mShadowRadius;
+    private final float mMirrorOpacity;
 
     public PipSurfaceTransactionHelper(Context context) {
         mCornerRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
         mShadowRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
+        mMirrorOpacity = context.getResources().getFloat(
+                R.dimen.config_pipDraggingAcrossDisplaysOpacity);
     }
 
     /**
@@ -163,6 +166,16 @@ public class PipSurfaceTransactionHelper {
         return this;
     }
 
+    /**
+     * Sets default transformations for mirrors a given mirror root of a PiP {@param leash}.
+     */
+    public PipSurfaceTransactionHelper setMirrorTransformations(SurfaceControl.Transaction tx,
+            SurfaceControl leash) {
+        tx.setAlpha(leash, mMirrorOpacity);
+        tx.setLayer(leash, Integer.MAX_VALUE);
+        tx.show(leash);
+        return this;
+    }
 
     /**
      * Sets PiP translational, scaling and rotational transformations on a given transaction.

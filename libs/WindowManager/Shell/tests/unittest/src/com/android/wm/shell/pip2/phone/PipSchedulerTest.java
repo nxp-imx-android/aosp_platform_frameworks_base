@@ -49,6 +49,7 @@ import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
@@ -80,7 +81,13 @@ public class PipSchedulerTest {
     private static final Rect TEST_BOUNDS = new Rect(0, 0, 20, 20);
     private static final int DEFAULT_DISPLAY_ID = 0;
     private static final int EXTERNAL_DISPLAY_ID = 0;
+    private static final int SECONDARY_DISPLAY_ID = 2;
     private static final int DEFAULT_DPI = 250;
+    private final SurfaceControl mTestLeash = new SurfaceControl.Builder()
+            .setContainerLayer()
+            .setName("PipSchedulerTest")
+            .setCallsite("PipSchedulerTest")
+            .build();
 
     @Mock private Context mMockContext;
     @Mock private Resources mMockResources;
@@ -100,6 +107,7 @@ public class PipSchedulerTest {
     @Mock private DesktopPipTransitionController mMockDesktopPipTransitionController;
     @Mock private SurfaceControl mMockLeash;
     @Mock private DisplayLayout mMockDisplayLayout;
+    @Mock private PipDisplayLayoutState mMockDisplayLayoutState;
 
     @Captor private ArgumentCaptor<Runnable> mRunnableArgumentCaptor;
     @Captor private ArgumentCaptor<WindowContainerTransaction> mWctArgumentCaptor;
@@ -131,7 +139,7 @@ public class PipSchedulerTest {
                 mMockMainExecutor,
                 mMockPipTransitionState, Optional.of(mMockSplitScreenController),
                 Optional.of(mMockDesktopPipTransitionController), mMockPipDesktopState,
-                mDisplayController);
+                mDisplayController, mMockDisplayLayoutState);
         mPipScheduler.setPipTransitionController(mMockPipTransitionController);
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
         mPipScheduler.setPipAlphaAnimatorSupplier(
@@ -139,15 +147,10 @@ public class PipSchedulerTest {
                 mMockAlphaAnimator);
         final PictureInPictureParams params = new PictureInPictureParams.Builder().build();
         mPipScheduler.setPipParamsSupplier(() -> params);
-
-        SurfaceControl testLeash = new SurfaceControl.Builder()
-                .setContainerLayer()
-                .setName("PipSchedulerTest")
-                .setCallsite("PipSchedulerTest")
-                .build();
-        when(mMockPipTransitionState.getPinnedTaskLeash()).thenReturn(testLeash);
+        when(mMockPipTransitionState.getPinnedTaskLeash()).thenReturn(mTestLeash);
         // PiP is in a valid state by default.
         when(mMockPipTransitionState.isInPip()).thenReturn(true);
+        when(mMockDisplayLayoutState.getDisplayId()).thenReturn(DEFAULT_DISPLAY_ID);
     }
 
     @Test
@@ -315,6 +318,17 @@ public class PipSchedulerTest {
         mPipScheduler.scheduleUserResizePip(TEST_BOUNDS, 90);
 
         verify(mMockTransaction, times(1)).apply();
+    }
+
+    @Test
+    public void scheduleUserResizePip_differentFocusDisplayId_reparentsLeashToDisplay() {
+        setMockPipTaskToken();
+        when(mMockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true);
+
+        mPipScheduler.scheduleUserResizePip(TEST_BOUNDS, SECONDARY_DISPLAY_ID);
+
+        verify(mMockRootTaskDisplayAreaOrganizer, times(1)).reparentToDisplayArea(
+                eq(SECONDARY_DISPLAY_ID), eq(mTestLeash), eq(mMockTransaction));
     }
 
     @Test

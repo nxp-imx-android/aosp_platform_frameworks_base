@@ -48,6 +48,7 @@ public class PipSurfaceTransactionHelperTest {
 
     private static final int CORNER_RADIUS = 10;
     private static final int SHADOW_RADIUS = 20;
+    private static final float MIRROR_OPACITY = 0.5f;
 
     @Mock private Context mMockContext;
     @Mock private Resources mMockResources;
@@ -64,6 +65,8 @@ public class PipSurfaceTransactionHelperTest {
                 .thenReturn(CORNER_RADIUS);
         when(mMockResources.getDimensionPixelSize(eq(R.dimen.pip_shadow_radius)))
                 .thenReturn(SHADOW_RADIUS);
+        when(mMockResources.getFloat(eq(R.dimen.config_pipDraggingAcrossDisplaysOpacity)))
+                .thenReturn(MIRROR_OPACITY);
         when(mMockTransaction.setCornerRadius(any(SurfaceControl.class), anyFloat()))
                 .thenReturn(mMockTransaction);
         when(mMockTransaction.setShadowRadius(any(SurfaceControl.class), anyFloat()))
@@ -103,5 +106,14 @@ public class PipSurfaceTransactionHelperTest {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, true /* apply */);
 
         verify(mMockTransaction).setShadowRadius(eq(mTestLeash), eq((float) SHADOW_RADIUS));
+    }
+
+    @Test
+    public void setMirrorTransformations_setsAlphaAndLayer() {
+        mPipSurfaceTransactionHelper.setMirrorTransformations(mMockTransaction, mTestLeash);
+
+        verify(mMockTransaction).setAlpha(eq(mTestLeash), eq(MIRROR_OPACITY));
+        verify(mMockTransaction).setLayer(eq(mTestLeash), eq(Integer.MAX_VALUE));
+        verify(mMockTransaction).show(eq(mTestLeash));
     }
 }

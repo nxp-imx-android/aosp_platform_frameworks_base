@@ -39,6 +39,7 @@ import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
@@ -68,6 +69,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
     private final Context mContext;
     private final PipBoundsState mPipBoundsState;
+    private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final ShellExecutor mMainExecutor;
     private final PipTransitionState mPipTransitionState;
     private final DisplayController mDisplayController;
@@ -85,6 +87,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
     private PipAlphaAnimatorSupplier mPipAlphaAnimatorSupplier;
     private Supplier<PictureInPictureParams> mPipParamsSupplier;
+    private int mLastFocusedDisplayId;
 
     public PipScheduler(Context context,
             @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
@@ -94,7 +97,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             Optional<SplitScreenController> splitScreenControllerOptional,
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipDesktopState pipDesktopState,
-            DisplayController displayController) {
+            DisplayController displayController,
+            PipDisplayLayoutState pipDisplayLayoutState) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mMainExecutor = mainExecutor;
@@ -104,10 +108,12 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         mDesktopPipTransitionController = desktopPipTransitionController;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
         mDisplayController = displayController;
+        mPipDisplayLayoutState = pipDisplayLayoutState;
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipAlphaAnimatorSupplier = PipAlphaAnimator::new;
+        mLastFocusedDisplayId = mPipDisplayLayoutState.getDisplayId();
     }
 
     void setPipTransitionController(PipTransitionController pipTransitionController) {
@@ -258,18 +264,46 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     /**
      * Directly perform a scaled matrix transformation on the leash. This will not perform any
      * {@link WindowContainerTransaction}.
+     *
+     * @param toBounds          the bounds to transform the PiP leash to.
      */
     public void scheduleUserResizePip(Rect toBounds) {
-        scheduleUserResizePip(toBounds, 0f /* degrees */);
+        scheduleUserResizePip(toBounds, 0f /* degrees */,
+                mPipDisplayLayoutState.getDisplayId() /* focusedDisplayId */);
     }
 
     /**
      * Directly perform a scaled matrix transformation on the leash. This will not perform any
      * {@link WindowContainerTransaction}.
      *
-     * @param degrees the angle to rotate the bounds to.
+     * @param toBounds          the bounds to transform the PiP leash to.
+     * @param focusedDisplayId  the display ID of where the cursor currently is.
+     */
+    public void scheduleUserResizePip(Rect toBounds, int focusedDisplayId) {
+        scheduleUserResizePip(toBounds, 0f /* degrees */, focusedDisplayId);
+    }
+
+    /**
+     * Directly perform a scaled matrix transformation on the leash. This will not perform any
+     * {@link WindowContainerTransaction}.
+     *
+     * @param toBounds          the bounds to transform the PiP leash to.
+     * @param degrees           the angle to rotate the bounds to.
      */
     public void scheduleUserResizePip(Rect toBounds, float degrees) {
+        scheduleUserResizePip(toBounds, degrees,
+                mPipDisplayLayoutState.getDisplayId() /* focusedDisplayId */);
+    }
+
+    /**
+     * Directly perform a scaled matrix transformation on the leash. This will not perform any
+     * {@link WindowContainerTransaction}.
+     *
+     * @param toBounds          the bounds to transform the PiP leash to.
+     * @param degrees           the angle to rotate the bounds to.
+     * @param focusedDisplayId  the display ID of where the cursor currently is.
+     */
+    public void scheduleUserResizePip(Rect toBounds, float degrees, int focusedDisplayId) {
         if (toBounds.isEmpty() || !mPipTransitionState.isInPip()) {
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: Attempted to user resize PIP in invalid state, aborting;"
@@ -282,6 +316,13 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
         mPipSurfaceTransactionHelper.setPipTransformations(leash, tx, mPipBoundsState.getBounds(),
                 toBounds, degrees);
+        // Reparent PiP leash to the display where the cursor is currently on.
+        if (mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()
+                && focusedDisplayId != mLastFocusedDisplayId) {
+            mPipDesktopState.getRootTaskDisplayAreaOrganizer().reparentToDisplayArea(
+                    focusedDisplayId, leash, tx);
+            mLastFocusedDisplayId = focusedDisplayId;
+        }
         tx.apply();
     }
 
