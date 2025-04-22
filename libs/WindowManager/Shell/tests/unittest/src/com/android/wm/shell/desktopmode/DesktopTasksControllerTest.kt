@@ -10167,6 +10167,53 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_restoresTasksWithCorrectBounds() =
+        testScope.runTest {
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            val secondTaskBounds = Rect(400, 400, 1600, 900)
+            val secondTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = secondTaskBounds,
+                )
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+
+            controller.restoreDisplay(SECOND_DISPLAY_ON_RECONNECT, SECOND_DISPLAY_UNIQUE_ID)
+            runCurrent()
+
+            verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
+            val wct = wctCaptor.firstValue
+            assertThat(findBoundsChange(wct, firstTask)).isEqualTo(firstTaskBounds)
+            assertThat(findBoundsChange(wct, secondTask)).isEqualTo(secondTaskBounds)
+            wct.assertReorder(task = firstTask, toTop = true, includingParents = true)
+            wct.assertReorder(task = secondTask, toTop = true, includingParents = true)
+            verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(firstTask), eq(false))
+            verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(secondTask), eq(false))
+        }
+
+    @Test
+    @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
@@ -10572,7 +10619,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     private fun setUpFreeformTask(
         displayId: Int = DEFAULT_DISPLAY,
-        bounds: Rect? = null,
+        bounds: Rect = TASK_BOUNDS,
         active: Boolean = true,
         background: Boolean = false,
         deskId: Int? = null,
@@ -10589,15 +10636,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         }
         if (deskId != null) {
-            taskRepository.addTaskToDesk(
-                displayId,
-                deskId,
-                task.taskId,
-                isVisible = active,
-                TASK_BOUNDS,
-            )
+            taskRepository.addTaskToDesk(displayId, deskId, task.taskId, isVisible = active, bounds)
         } else {
-            taskRepository.addTask(displayId, task.taskId, isVisible = active, TASK_BOUNDS)
+            taskRepository.addTask(displayId, task.taskId, isVisible = active, bounds)
         }
         if (!background) {
             runningTasks.add(task)
@@ -10826,6 +10867,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     private companion object {
         const val SECOND_DISPLAY = 2
+        const val SECOND_DISPLAY_ON_RECONNECT = 3
+        const val SECOND_DISPLAY_UNIQUE_ID = "UNIQUE_ID"
         val STABLE_BOUNDS = Rect(0, 0, 1000, 1000)
         const val MAX_TASK_LIMIT = 6
         private const val TASKBAR_FRAME_HEIGHT = 200
