@@ -209,6 +209,15 @@ public class ConversationLayout extends FrameLayout
         mImportanceRingView = findViewById(R.id.conversation_icon_badge_ring);
         mConversationIconBadge = findViewById(R.id.conversation_icon_badge);
         mConversationIconBadgeBg = findViewById(R.id.conversation_icon_badge_bg);
+        if (notificationsRedesignTemplates()) {
+            // The left_icon in the header has the default rounded square background. Make sure
+            // we're using the circular background instead.
+            ImageView leftIcon = findViewById(R.id.left_icon);
+            if (leftIcon != null) {
+                leftIcon.setBackgroundResource(
+                        R.drawable.notification_2025_conversation_icon_background);
+            }
+        }
         mIcon.setOnVisibilityChangedListener((visibility) -> {
 
             // Let's hide the background directly or in an animated way

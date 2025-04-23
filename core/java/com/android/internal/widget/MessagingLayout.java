@@ -120,6 +120,15 @@ public class MessagingLayout extends FrameLayout
         mImageMessageContainer = findViewById(R.id.conversation_image_message_container);
         mRightIconView = findViewById(R.id.right_icon);
         mExpandButton = findViewById(R.id.expand_button);
+        if (notificationsRedesignTemplates()) {
+            // The left_icon in the header has the default rounded square background. Make sure
+            // we're using the circular background instead.
+            ImageView leftIcon = findViewById(R.id.left_icon);
+            if (leftIcon != null) {
+                leftIcon.setBackgroundResource(
+                        R.drawable.notification_2025_conversation_icon_background);
+            }
+        }
         // We still want to clip, but only on the top, since views can temporarily out of bounds
         // during transitions.
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();

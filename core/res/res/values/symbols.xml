@@ -4232,6 +4232,7 @@
   <java-symbol type="id" name="snooze_button" />
   <java-symbol type="dimen" name="text_size_body_2_material" />
   <java-symbol type="dimen" name="notification_icon_circle_size" />
+  <java-symbol type="drawable" name="notification_2025_conversation_icon_background" />
   <java-symbol type="drawable" name="notification_icon_circle" />
   <java-symbol type="drawable" name="notification_progress_icon_background" />
   <java-symbol type="dimen" name="messaging_avatar_size" />
