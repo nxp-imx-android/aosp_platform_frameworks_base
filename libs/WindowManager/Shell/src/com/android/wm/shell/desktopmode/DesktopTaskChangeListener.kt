@@ -139,18 +139,22 @@ class DesktopTaskChangeListener(
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
+
+        val isMinimized = desktopRepository.isMinimizedTask(taskInfo.taskId)
         // TODO: b/370038902 - Handle Activity#finishAndRemoveTask.
-        if (
-            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue ||
-                desktopRepository.isClosingTask(taskInfo.taskId)
-        ) {
-            // A task that's vanishing should be removed:
-            // - If it's closed by the X button which means it's marked as a closing task.
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue) {
+            // A task that is closing might have been minimized previously by
+            // [DesktopBackNavTransitionObserver]. If that's the case then do not remove it from
+            // the repo.
+            desktopRepository.removeClosingTask(taskInfo.taskId)
+            if (isMinimized) {
+                desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, isVisible = false)
+            } else {
+                desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+            }
+        } else {
             desktopRepository.removeClosingTask(taskInfo.taskId)
             desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
-        } else {
-            desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, isVisible = false)
-            desktopRepository.minimizeTask(taskInfo.displayId, taskInfo.taskId)
         }
     }
 
