@@ -257,7 +257,7 @@
     </style>
 
     <style name="SettingslibTextButtonStyle.Expressive"
-           parent="@style/Widget.Material3Expressive.Button.TextButton.Icon">
+           parent="@style/Widget.Material3Expressive.Button.TextButton">
         <item name="android:theme">@style/Theme.Material3.DynamicColors.DayNight</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

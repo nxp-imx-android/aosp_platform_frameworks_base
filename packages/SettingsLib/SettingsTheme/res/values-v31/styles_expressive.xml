@@ -17,7 +17,7 @@
 
 <resources>
     <style name="SettingsLibButtonStyle.Expressive.Filled"
-        parent="@style/Widget.Material3Expressive.Button.Icon">
+        parent="@style/Widget.Material3Expressive.Button">
         <item name="android:theme">@style/Theme.Material3.DynamicColors.DayNight</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -52,7 +52,7 @@
     </style>
 
     <style name="SettingsLibButtonStyle.Expressive.Tonal"
-        parent="@style/Widget.Material3Expressive.Button.TonalButton.Icon">
+        parent="@style/Widget.Material3Expressive.Button.TonalButton">
         <item name="android:theme">@style/Theme.Material3.DynamicColors.DayNight</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -87,7 +87,7 @@
     </style>
 
     <style name="SettingsLibButtonStyle.Expressive.Outline"
-        parent="@style/Widget.Material3Expressive.Button.OutlinedButton.Icon">
+        parent="@style/Widget.Material3Expressive.Button.OutlinedButton">
         <item name="android:theme">@style/Theme.Material3.DynamicColors.DayNight</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
