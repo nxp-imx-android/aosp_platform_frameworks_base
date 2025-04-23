@@ -25,6 +25,7 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_DISALL
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_BOUND_BY_FOREGROUND;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_FOREGROUND;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_GRACE_PERIOD;
+import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_NOTIFICATION_TOKEN;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_TOKEN;
 
@@ -219,7 +220,7 @@ class BackgroundLaunchProcessController {
                 return new BalVerdict(BAL_ALLOW_TOKEN,
                         "process allowed by callback (token ignored) tokens: " + binderTokens);
             }
-            return new BalVerdict(BAL_ALLOW_TOKEN,
+            return new BalVerdict(BAL_ALLOW_NOTIFICATION_TOKEN,
                     "process allowed by callback (token: " + activityStartAllowed.token()
                             + ") tokens: " + binderTokens);
         }
