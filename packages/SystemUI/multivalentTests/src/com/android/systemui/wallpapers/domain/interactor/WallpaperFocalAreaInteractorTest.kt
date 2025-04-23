@@ -21,10 +21,12 @@ import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
 import android.util.DisplayMetrics
+import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.keyguard.domain.interactor.keyguardSmartspaceInteractor
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
@@ -52,13 +54,19 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     lateinit var shadeRepository: ShadeRepository
     private lateinit var mockedResources: Resources
-    lateinit var underTest: WallpaperFocalAreaInteractor
+    private var underTest = kosmos.wallpaperFocalAreaInteractor
 
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
         mockedResources = mock<Resources>()
         whenever(kosmos.mockedContext.resources).thenReturn(mockedResources)
+        whenever(
+                kosmos.mockedContext.resources.getDimensionPixelSize(
+                    com.android.systemui.customization.clocks.R.dimen.enhanced_smartspace_height
+                )
+            )
+            .thenReturn(200)
         whenever(
                 mockedResources.getFloat(
                     Resources.getSystem()
@@ -75,6 +83,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                 context = kosmos.mockedContext,
                 wallpaperFocalAreaRepository = kosmos.wallpaperFocalAreaRepository,
                 shadeRepository = kosmos.shadeRepository,
+                smartspaceInteractor = kosmos.keyguardSmartspaceInteractor,
             )
     }
 
@@ -251,6 +260,51 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                     currentValue(kosmos.wallpaperFocalAreaRepository.wallpaperFocalAreaTapPosition)
                 )
                 .isEqualTo(PointF(0F, 0F))
+        }
+
+    @Test
+    fun onBcSmartspaceVisible_boundsUnderBcSmartspace() =
+        testScope.runTest {
+            overrideMockedResources(
+                mockedResources,
+                OverrideResources(
+                    screenWidth = 1000,
+                    screenHeight = 2000,
+                    centerAlignFocalArea = false,
+                ),
+            )
+            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            kosmos.shadeRepository.setShadeLayoutWide(false)
+            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
+            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
+            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
+            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(View.VISIBLE)
+
+            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
+        }
+
+    @Test
+    fun onBcSmartspaceNotVisible_boundsNotUnderBcSmartspace() =
+        testScope.runTest {
+            overrideMockedResources(
+                mockedResources,
+                OverrideResources(
+                    screenWidth = 1000,
+                    screenHeight = 2000,
+                    centerAlignFocalArea = false,
+                ),
+            )
+            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            kosmos.shadeRepository.setShadeLayoutWide(false)
+
+            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
+            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
+            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
+            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(View.INVISIBLE)
+
+            assertThat(bounds?.top).isEqualTo(700F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     data class OverrideResources(
