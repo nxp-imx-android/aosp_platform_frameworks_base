@@ -144,9 +144,6 @@ public class AppIdleHistoryTests extends AndroidTestCase {
         assertEquals(aih.getAppStandbyReason(PACKAGE_4, USER_ID, 3000),
                 REASON_MAIN_FORCED_BY_USER);
 
-        if (!Flags.avoidIdleCheck()) {
-            assertTrue(aih.shouldInformListeners(PACKAGE_1, USER_ID, 5000, STANDBY_BUCKET_RARE));
-        }
         assertFalse(aih.shouldInformListeners(PACKAGE_1, USER_ID, 5000, STANDBY_BUCKET_RARE));
         assertTrue(aih.shouldInformListeners(PACKAGE_1, USER_ID, 5000, STANDBY_BUCKET_FREQUENT));
     }

@@ -713,10 +713,6 @@ public class AppStandbyController
                 initializeDefaultsForSystemApps(UserHandle.USER_SYSTEM);
             }
 
-            if (!Flags.avoidIdleCheck() && mPendingOneTimeCheckIdleStates) {
-                postOneTimeCheckIdleStates();
-            }
-
             // Populate list of system packages and their app-ids.
             final List<ApplicationInfo> systemApps = mPackageManager.getInstalledApplications(
                     SYSTEM_PACKAGE_FLAGS);
@@ -2003,7 +1999,7 @@ public class AppStandbyController
                 mAdminProtectedPackages.put(userId, packageNames);
             }
         }
-        if (!Flags.avoidIdleCheck() || mInjector.getBootPhase() >= PHASE_BOOT_COMPLETED) {
+        if (mInjector.getBootPhase() >= PHASE_BOOT_COMPLETED) {
             postCheckIdleStates(userId);
         }
     }
@@ -2418,19 +2414,9 @@ public class AppStandbyController
             if (pkgInfo == null) {
                 continue;
             }
-            final String pkg = pkgInfo.packageName;
-            final boolean isHeadLess = !systemLauncherActivities.contains(pkg);
 
-            if (updateHeadlessSystemAppCache(pkg, isHeadLess)) {
-                if (!Flags.avoidIdleCheck()) {
-                    // Checking idle state for the each individual headless system app
-                    // during the boot up is not necessary, a full idle check for all
-                    // usres will be scheduled after boot completed.
-                    mHandler.obtainMessage(MSG_CHECK_PACKAGE_IDLE_STATE,
-                                    UserHandle.USER_SYSTEM, -1, pkg)
-                            .sendToTarget();
-                }
-            }
+            updateHeadlessSystemAppCache(pkgInfo.packageName,
+                    !systemLauncherActivities.contains(pkgInfo.packageName));
         }
         final long end = SystemClock.uptimeMillis();
         Slog.d(TAG, "Loaded headless system app cache in " + (end - start) + " ms:"
@@ -2474,8 +2460,6 @@ public class AppStandbyController
     @Override
     public void dumpState(String[] args, PrintWriter pw) {
         pw.println("Flags: ");
-        pw.println("    " + Flags.FLAG_AVOID_IDLE_CHECK
-                + ": " + Flags.avoidIdleCheck());
         pw.println("    " + Flags.FLAG_ADJUST_DEFAULT_BUCKET_ELEVATION_PARAMS
                 + ": " + Flags.adjustDefaultBucketElevationParams());
         pw.println("    " + Flags.FLAG_PERSIST_RESTORE_TO_RARE_APPS_LIST
