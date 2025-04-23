@@ -369,9 +369,6 @@ public final class ApduServiceInfo implements Parcelable {
                     } else if (mOffHostName.equals("SIM")) {
                         mOffHostName = "SIM1";
                     }
-                } else {
-                    // Default to SIM1 if no offhost name is specified.
-                    mOffHostName = "SIM1";
                 }
                 mStaticOffHostName = mOffHostName;
                 if (Flags.nfcAssociatedRoleServices()) {
