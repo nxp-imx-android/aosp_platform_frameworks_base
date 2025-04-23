@@ -124,8 +124,9 @@ constructor(
 ) {
     private var host: SurfaceControlViewHost
 
+    private var _surfacePackage: SurfaceControlViewHost.SurfacePackage? = null
     val surfacePackage: SurfaceControlViewHost.SurfacePackage
-        get() = checkNotNull(host.surfacePackage)
+        get() = _surfacePackage ?: checkNotNull(host.surfacePackage).also { _surfacePackage = it }
 
     private var smartSpaceView: View? = null
     private var largeDateView: View? = null
@@ -155,7 +156,11 @@ constructor(
                     previewViewModel.hostToken?.let { InputTransferToken(it) },
                     TAG,
                 )
-            disposables += DisposableHandle { host.release() }
+            disposables += DisposableHandle {
+                _surfacePackage?.release()
+                _surfacePackage = null
+                host.release()
+            }
         }
     }
 
