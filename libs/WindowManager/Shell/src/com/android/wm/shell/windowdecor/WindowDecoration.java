@@ -534,6 +534,37 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                     .setPosition(mTaskSurface, taskPosition.x, taskPosition.y);
         }
 
+        if (params.mSetTaskVisibilityPositionAndCrop) {
+            startT.show(mTaskSurface);
+        }
+
+        if (params.mShouldSetBackground) {
+            final int backgroundColorInt = mTaskInfo.taskDescription != null
+                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
+            mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
+            mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
+            mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
+            startT.setColor(mTaskSurface, mTmpColor);
+        } else {
+            startT.unsetColor(mTaskSurface);
+        }
+
+        updateTaskSurfaceOutline(params, startT, finishT, outResult);
+    }
+
+    private void updateTaskSurfaceOutline(
+            RelayoutParams params, SurfaceControl.Transaction startT,
+            SurfaceControl.Transaction finishT, RelayoutResult<T> outResult) {
+        if ((DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()
+                || DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue())
+                && !params.mInSyncWithTransition) {
+            // Update these outline properties only when the relayout is driven by Transition
+            // callbacks because they must be updated together with some of other properties (e.g.,
+            // position) which is set by transition handler although the outline properties are
+            // expected to be set by WindowDecoration instead of the transition handler.
+            return;
+        }
+
         if (outResult.mBorderSettings != null
                 && outResult.mBorderSettings.strokeWidth > 0) {
             startT.setBorderSettings(mTaskSurface, outResult.mBorderSettings);
@@ -551,34 +582,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 startT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
                 finishT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
             }
-        } else {
-            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-            }
-        }
-
-        if (params.mSetTaskVisibilityPositionAndCrop) {
-            startT.show(mTaskSurface);
-        }
-
-        if (params.mShouldSetBackground) {
-            final int backgroundColorInt = mTaskInfo.taskDescription != null
-                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
-            mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
-            mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
-            mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
-            startT.setColor(mTaskSurface, mTmpColor);
-        } else {
-            startT.unsetColor(mTaskSurface);
-        }
-
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             if (outResult.mCornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
                 finishT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
             }
         } else {
+            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
+                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+            }
             if (params.mCornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(mTaskSurface, params.mCornerRadius);
                 finishT.setCornerRadius(mTaskSurface, params.mCornerRadius);
@@ -915,6 +927,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         boolean mShouldSetAppBounds;
         boolean mShouldSetBackground;
 
+        boolean mInSyncWithTransition;
+
         void reset() {
             mLayoutResId = Resources.ID_NULL;
             mCaptionHeightCalculator = (ctx, display) -> 0;
@@ -946,6 +960,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mHasGlobalFocus = false;
             mShouldSetAppBounds = false;
             mShouldSetBackground = false;
+            mInSyncWithTransition = false;
         }
 
         boolean hasInputFeatureSpy() {
