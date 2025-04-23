@@ -55,6 +55,7 @@ import android.app.PendingIntent;
 import android.app.StatsManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManagerInternal;
 import android.appwidget.AppWidgetConfigActivityProxy;
@@ -5681,6 +5682,31 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         mAlarmManager.set(AlarmManager.ELAPSED_REALTIME,
                 SystemClock.elapsedRealtime() + mWidgetEventsReportIntervalMs,
                 "AppWidgetService_reportWidgetEvents", mReportWidgetEventsAlarm, mAlarmHandler);
+    }
+
+    @Override
+    @Nullable
+    public ParceledListSlice<AppWidgetEvent> queryAppWidgetEvents(String callingPackage,
+            long beginTime, long endTime) {
+        final int callingUserId = UserHandle.getCallingUserId();
+        if (DEBUG) {
+            Slog.i(TAG, "queryAppWidgetEvents() " + callingUserId);
+        }
+        mSecurityPolicy.enforceCallFromPackage(callingPackage);
+
+        UsageEvents usageEvents = mUsageStatsManagerInternal.queryEventsForUser(callingUserId,
+                beginTime, endTime, /* flags= */ 0);
+        if (usageEvents == null) return null;
+
+        List<AppWidgetEvent> widgetEvents = new ArrayList<>();
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (usageEvents.getNextEvent(event)) {
+            if (event.getPackageName().equals(callingPackage)
+                    && AppWidgetEvent.isAppWidgetEvent(event)) {
+                widgetEvents.add(AppWidgetEvent.fromUsageEvent(event));
+            }
+        }
+        return new ParceledListSlice<>(widgetEvents);
     }
 
     private final class CallbackHandler extends Handler {

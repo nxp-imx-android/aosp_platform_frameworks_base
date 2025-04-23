@@ -21,30 +21,38 @@ import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArraySet;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 
 /**
  * An immutable class that describes the event data for an app widget interaction event.
- *
- * @hide
  */
 @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
-public class AppWidgetEvent implements Parcelable {
+public final class AppWidgetEvent implements Parcelable {
     /**
      * Max number of clicked and scrolled IDs stored per event.
+     * @hide
      */
     public static final int MAX_NUM_ITEMS = 10;
 
     private final int mAppWidgetId;
-    private final long mDurationMs;
+    @NonNull
+    private final Duration mVisibleDuration;
+    @NonNull
+    private final Instant mStart;
+    @NonNull
+    private final Instant mEnd;
     @Nullable
     private final Rect mPosition;
     @Nullable
@@ -54,22 +62,42 @@ public class AppWidgetEvent implements Parcelable {
 
     /**
      * The app widget ID of the widget that generated this event.
+     *
+     * @see AppWidgetManager#getAppWidgetInfo(int)
      */
     public int getAppWidgetId() {
         return mAppWidgetId;
     }
 
     /**
-     * This contains a long that represents the duration of time in milliseconds during which the
-     * widget was visible.
+     * Describes the total duration of time during which the widget was visible. This may be
+     * different than the event time range (between {@link #getStart()} and {@link #getEnd()} if the
+     * widget was hidden and shown multiple times during the event time range.
      */
-    public long getDurationMs() {
-        return mDurationMs;
+    @NonNull
+    public Duration getVisibleDuration() {
+        return mVisibleDuration;
     }
 
     /**
-     * This rect with describes the global coordinates of the widget at the end of the interaction
-     * event.
+     * Describes the start of the time range that this event contains data for.
+     */
+    @NonNull
+    public Instant getStart() {
+        return mStart;
+    }
+
+    /**
+     * Describes the end of the time range that this event contains data for.
+     */
+    @NonNull
+    public Instant getEnd() {
+        return mEnd;
+    }
+
+    /**
+     * This rect with describes the global coordinates of the widget at the end of the event time
+     * range.
      */
     @Nullable
     public Rect getPosition() {
@@ -77,7 +105,10 @@ public class AppWidgetEvent implements Parcelable {
     }
 
     /**
-     * This describes which views have been clicked during a single impression of the widget.
+     * This returns the set of View IDs of the views which have been clicked during the event time
+     * range. Use {@link android.widget.RemoteViews#setAppWidgetEventTag(int, int)} to set a custom
+     * integer tag on a view for reporting clicks. If the tag is set, it will be used here instead
+     * of the View ID.
      */
     @Nullable
     public int[] getClickedIds() {
@@ -85,18 +116,23 @@ public class AppWidgetEvent implements Parcelable {
     }
 
     /**
-     * This describes which views have been scrolled during a single impression of the widget.
+     * This returns the set of View IDs of the views which have been scrolled during the event time
+     * range. Use {@link android.widget.RemoteViews#setAppWidgetEventTag(int, int)} to set a custom
+     * integer tag on a view for reporting scrolls. If the tag is set, it will be used here instead
+     * of the View ID.
      */
     @Nullable
     public int[] getScrolledIds() {
         return mScrolledIds;
     }
 
-    private AppWidgetEvent(int appWidgetId, long durationMs,
-            @Nullable Rect position, @Nullable int[] clickedIds,
-            @Nullable int[] scrolledIds) {
+    private AppWidgetEvent(int appWidgetId, @NonNull Duration visibleDuration,
+            @NonNull Instant start, @NonNull Instant end, @Nullable Rect position,
+            @Nullable int[] clickedIds, @Nullable int[] scrolledIds) {
         mAppWidgetId = appWidgetId;
-        mDurationMs = durationMs;
+        mVisibleDuration = visibleDuration;
+        mStart = start;
+        mEnd = end;
         mPosition = position;
         mClickedIds = clickedIds;
         mScrolledIds = scrolledIds;
@@ -105,18 +141,22 @@ public class AppWidgetEvent implements Parcelable {
     /**
      * Unflatten the AppWidgetEvent from a parcel.
      */
-    private AppWidgetEvent(Parcel in) {
+    private AppWidgetEvent(@NonNull Parcel in) {
         mAppWidgetId = in.readInt();
-        mDurationMs = in.readLong();
+        mVisibleDuration = Duration.ofMillis(in.readLong());
+        mStart = Instant.ofEpochMilli(in.readLong());
+        mEnd = Instant.ofEpochMilli(in.readLong());
         mPosition = in.readTypedObject(Rect.CREATOR);
         mClickedIds = in.createIntArray();
         mScrolledIds = in.createIntArray();
     }
 
     @Override
-    public void writeToParcel(Parcel out, int flags) {
+    public void writeToParcel(@NonNull Parcel out, int flags) {
         out.writeInt(mAppWidgetId);
-        out.writeLong(mDurationMs);
+        out.writeLong(mVisibleDuration.toMillis());
+        out.writeLong(mStart.toEpochMilli());
+        out.writeLong(mEnd.toEpochMilli());
         out.writeTypedObject(mPosition, flags);
         out.writeIntArray(mClickedIds);
         out.writeIntArray(mScrolledIds);
@@ -143,6 +183,7 @@ public class AppWidgetEvent implements Parcelable {
 
     /**
      * Create a PersistableBundle that represents this event.
+     * @hide
      */
     @NonNull
     public PersistableBundle toBundle() {
@@ -152,7 +193,9 @@ public class AppWidgetEvent implements Parcelable {
         extras.putString(UsageStatsManager.EXTRA_EVENT_CATEGORY,
                 AppWidgetManager.EVENT_CATEGORY_APPWIDGET);
         extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-        extras.putLong(AppWidgetManager.EXTRA_EVENT_DURATION_MS, mDurationMs);
+        extras.putLong(AppWidgetManager.EXTRA_EVENT_DURATION_MS, mVisibleDuration.toMillis());
+        extras.putLong(AppWidgetManager.EXTRA_EVENT_START, mStart.toEpochMilli());
+        extras.putLong(AppWidgetManager.EXTRA_EVENT_END, mEnd.toEpochMilli());
         if (mPosition != null) {
             extras.putIntArray(AppWidgetManager.EXTRA_EVENT_POSITION_RECT,
                 new int[]{mPosition.left, mPosition.top, mPosition.right, mPosition.bottom});
@@ -166,11 +209,56 @@ public class AppWidgetEvent implements Parcelable {
         return extras;
     }
 
+    /**
+     * Create an AppWidgetEvent from a {@link UsageEvents.Event}.
+     * @hide
+     */
+    @NonNull
+    public static AppWidgetEvent fromUsageEvent(@NonNull UsageEvents.Event usageEvent) {
+        PersistableBundle extras = usageEvent.getExtras();
+        int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID);
+        Duration duration = Duration.ofMillis(extras.getLong(
+                AppWidgetManager.EXTRA_EVENT_DURATION_MS, 0L));
+        Instant start = Instant.ofEpochMilli(extras.getLong(AppWidgetManager.EXTRA_EVENT_START,
+                0L));
+        Instant end = Instant.ofEpochMilli(extras.getLong(AppWidgetManager.EXTRA_EVENT_END, 0L));
+        Rect position = null;
+        int[] clickedIds = null;
+        int[] scrolledIds = null;
+        if (extras.containsKey(AppWidgetManager.EXTRA_EVENT_POSITION_RECT)) {
+            int[] positionArray = extras.getIntArray(AppWidgetManager.EXTRA_EVENT_POSITION_RECT);
+            if (positionArray != null && positionArray.length == 4) {
+                position = new Rect(positionArray[0], positionArray[1], positionArray[2],
+                        positionArray[3]);
+            }
+        }
+        if (extras.containsKey(AppWidgetManager.EXTRA_EVENT_CLICKED_VIEWS)) {
+            clickedIds = extras.getIntArray(AppWidgetManager.EXTRA_EVENT_CLICKED_VIEWS);
+        }
+        if (extras.containsKey(AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS)) {
+            scrolledIds = extras.getIntArray(AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS);
+        }
+        return new AppWidgetEvent(appWidgetId, duration, start, end, position, clickedIds,
+            scrolledIds);
+    }
+
     @Override
     public String toString() {
-        return TextUtils.formatSimple("AppWidgetEvent(appWidgetId=%d, durationMs=%d, position=%s,"
-                + " clickedIds=%s, scrolledIds=%s)", mAppWidgetId, mDurationMs, mPosition,
-            Arrays.toString(mClickedIds), Arrays.toString(mScrolledIds));
+        return TextUtils.formatSimple("AppWidgetEvent(appWidgetId=%d, duration=%s, start=%s, "
+                + "end=%s position=%s, clickedIds=%s, scrolledIds=%s)", mAppWidgetId,
+            mVisibleDuration, mStart, mEnd, mPosition, Arrays.toString(mClickedIds),
+            Arrays.toString(mScrolledIds));
+    }
+
+    /**
+     * Returns true if the given {@link UsageEvents.Event} contains an app widget interaction event.
+     * @hide
+     */
+    public static boolean isAppWidgetEvent(@NonNull UsageEvents.Event event) {
+        return event.getEventType() == UsageEvents.Event.USER_INTERACTION
+            && event.getExtras().getString(UsageStatsManager.EXTRA_EVENT_ACTION).equals(
+                AppWidgetManager.EVENT_TYPE_WIDGET_INTERACTION);
     }
 
     /**
@@ -184,7 +272,10 @@ public class AppWidgetEvent implements Parcelable {
         @NonNull
         private final ArraySet<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
         private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-        private long mDurationMs = 0;
+        private Instant mStart = Instant.MAX;
+        private Instant mEnd = Instant.MIN;
+        private Duration mDuration = Duration.ZERO;
+        private long mLastVisibilityChangeMillis = 0L;
         @Nullable
         private Rect mPosition = null;
 
@@ -196,8 +287,28 @@ public class AppWidgetEvent implements Parcelable {
             return this;
         }
 
-        public Builder addDurationMs(long durationMs) {
-            mDurationMs += durationMs;
+        /**
+         * Start a new visibility duration for this event.
+         */
+        public Builder startVisibility() {
+            Instant now = Instant.now();
+            if (now.isBefore(mStart)) {
+                mStart = now;
+            }
+            mLastVisibilityChangeMillis = SystemClock.uptimeMillis();
+            return this;
+        }
+
+        /**
+         * End the visibility duration, and add the duration to this event's total duration.
+         */
+        public Builder endVisibility() {
+            Instant now = Instant.now();
+            if (now.isAfter(mEnd)) {
+                mEnd = now;
+            }
+            mDuration = mDuration.plusMillis(
+                SystemClock.uptimeMillis() - mLastVisibilityChangeMillis);
             return this;
         }
 
@@ -234,7 +345,13 @@ public class AppWidgetEvent implements Parcelable {
                 throw new IllegalArgumentException("Trying to merge events with different app "
                     + "widget IDs: " + mAppWidgetId + " != " + event.getAppWidgetId());
             }
-            addDurationMs(event.getDurationMs());
+            if (event.getStart().isBefore(mStart)) {
+                mStart = event.getStart();
+            }
+            if (event.getEnd().isAfter(mEnd)) {
+                mEnd = event.getEnd();
+            }
+            mDuration = mDuration.plus(event.getVisibleDuration());
             setPosition(event.getPosition());
             addAllUntilMax(mClickedIds, event.getClickedIds());
             addAllUntilMax(mScrolledIds, event.getScrolledIds());
@@ -245,22 +362,24 @@ public class AppWidgetEvent implements Parcelable {
          * event yet.
          */
         public boolean isEmpty() {
-            return mAppWidgetId <= 0 || mDurationMs == 0L;
+            return mAppWidgetId <= 0 || mDuration.isZero();
         }
 
         /**
          * Resets the event data fields.
          */
         public void clear() {
-            mDurationMs = 0;
+            mDuration = Duration.ZERO;
+            mStart = Instant.MAX;
+            mEnd = Instant.MIN;
             mPosition = null;
             mClickedIds.clear();
             mScrolledIds.clear();
         }
 
         public AppWidgetEvent build() {
-            return new AppWidgetEvent(mAppWidgetId, mDurationMs, mPosition, toIntArray(mClickedIds),
-                toIntArray(mScrolledIds));
+            return new AppWidgetEvent(mAppWidgetId, mDuration, mStart, mEnd, mPosition,
+                    toIntArray(mClickedIds), toIntArray(mScrolledIds));
         }
 
         private static void addAllUntilMax(@NonNull ArraySet<Integer> set, @Nullable int[] toAdd) {

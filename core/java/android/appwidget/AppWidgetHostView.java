@@ -44,7 +44,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Parcelable;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
@@ -1115,8 +1114,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         private final AppWidgetEvent.Builder mEvent = new AppWidgetEvent.Builder();
         @Nullable
         private RemoteViews.InteractionHandler mInteractionHandler = null;
-        // Last time the widget became visible in SystemClock.uptimeMillis()
-        private long mVisibilityChangeMs = 0L;
         private boolean mIsVisible = false;
         private boolean mIsTracking = false;
 
@@ -1244,11 +1241,11 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
             boolean isVisible = isTracking && hasWindowFocus() && isVisibleToUser();
             if (!wasVisible && isVisible) {
                 // View has become visible, start the tracker.
-                mVisibilityChangeMs = SystemClock.uptimeMillis();
+                mEvent.startVisibility();
                 if (LOGD) Log.d(TAG, logName() + " became visible");
             } else if (wasVisible && !isVisible) {
                 // View is no longer visible, add duration.
-                mEvent.addDurationMs(SystemClock.uptimeMillis() - mVisibilityChangeMs);
+                mEvent.endVisibility();
                 if (LOGD) Log.d(TAG, logName() + " lost visibility");
             }
 
