@@ -515,6 +515,85 @@ public class UserControllerTest {
         continueUserSwitchAssertions(oldUserId, TEST_USER_ID, false, false);
     }
 
+    private void mockCanSwitchToHeadlessSystemUser(boolean canSwitch) {
+        doReturn(canSwitch).when(mInjector.mUserManagerMock)
+                .canSwitchToHeadlessSystemUser();
+    }
+
+    @Test
+    public void testLogoutUserDuringSwitchToSameUser_nonHsum()
+            throws InterruptedException {
+        mockIsHeadlessSystemUserMode(false);
+
+        // Start user -- this will update state of mUserController
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_FOREGROUND);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        // When logoutUser runs, the switchUser is still in progress.
+        mUserController.switchUser(TEST_USER_ID2);
+        mUserController.logoutUser(TEST_USER_ID2);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Verify that TEST_USER_ID2 is not running.
+        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
+        assertFalse(runningUserIds.contains(TEST_USER_ID2));
+    }
+
+    @Test
+    public void testLogoutUserDuringSwitchToSameUser_hsumAndInteractiveSystemUser()
+            throws InterruptedException {
+        mockIsHeadlessSystemUserMode(true);
+        mockCanSwitchToHeadlessSystemUser(true);
+
+        // Start user -- this will update state of mUserController
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_FOREGROUND);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        // When logoutUser runs, the switchUser is still in progress.
+        mUserController.switchUser(TEST_USER_ID2);
+        mUserController.logoutUser(TEST_USER_ID2);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Verify that TEST_USER_ID2 is not running.
+        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
+        assertFalse(runningUserIds.contains(TEST_USER_ID2));
+    }
+
+    @Test
+    public void testLogoutUser_nonHsum() throws InterruptedException {
+        mockIsHeadlessSystemUserMode(false);
+
+        // Start user -- this will update state of mUserController
+        mUserController.switchUser(UserHandle.USER_SYSTEM);
+        mUserController.switchUser(TEST_USER_ID);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Logout user.
+        mUserController.logoutUser(TEST_USER_ID);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Verify that TEST_USER_ID is not running.
+        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
+        assertFalse(runningUserIds.contains(TEST_USER_ID));
+    }
+
+    @Test
+    public void testLogoutUser_hsumAndInteractiveSystemUser() throws InterruptedException {
+        mockIsHeadlessSystemUserMode(true);
+        mockCanSwitchToHeadlessSystemUser(true);
+
+        // Start user -- this will update state of mUserController
+        mUserController.switchUser(UserHandle.USER_SYSTEM);
+        mUserController.switchUser(TEST_USER_ID);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Logout user.
+        mUserController.logoutUser(TEST_USER_ID);
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Verify that TEST_USER_ID is not running.
+        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
+        assertFalse(runningUserIds.contains(TEST_USER_ID));
+    }
+
     private void continueUserSwitchAssertions(int expectedOldUserId, int expectedNewUserId,
             boolean backgroundUserStopping, boolean expectScheduleBackgroundUserStopping) {
         Set<Integer> expectedCodes = new LinkedHashSet<>();

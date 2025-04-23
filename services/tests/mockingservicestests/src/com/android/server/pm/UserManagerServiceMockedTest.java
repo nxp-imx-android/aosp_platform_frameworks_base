@@ -964,7 +964,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystem_UserCanLogout()
+    public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_UserCanLogout()
             throws Exception {
         setSystemUserHeadless(true);
         addUser(USER_ID);
@@ -980,7 +980,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_HsumAndNonInteractiveHeadlessSystem_UserCannotLogout()
+    public void testGetUserLogoutability_HsumAndNonInteractiveHeadlessSystemUser_UserCannotLogout()
             throws Exception {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(false);
@@ -990,13 +990,16 @@ public final class UserManagerServiceMockedTest {
         mockUserIsInCall(false);
 
         assertThat(mUms.getUserLogoutability(USER_ID))
-                .isEqualTo(UserManager.LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO);
+                .isEqualTo(UserManager.LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED);
     }
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_Hsum_SystemUserCannotLogout() throws Exception {
+    public void
+            testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_SystemUserCannotLogout()
+                    throws Exception {
         setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
         mockCurrentUser(UserHandle.USER_SYSTEM);
         assertThat(mUms.getUserLogoutability(UserHandle.USER_SYSTEM))
                 .isEqualTo(UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER);
@@ -1016,6 +1019,7 @@ public final class UserManagerServiceMockedTest {
     @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_CannotSwitch_CannotLogout() throws Exception {
         setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
         addUser(USER_ID);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
