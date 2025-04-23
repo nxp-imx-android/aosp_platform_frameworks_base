@@ -22,6 +22,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_BACK
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_CHANGE_SPLITSCREEN_FOCUS_LEFT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_CHANGE_SPLITSCREEN_FOCUS_RIGHT
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_HOME
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT
@@ -83,6 +84,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW to MultiTasking,
             KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW to MultiTasking,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to MultiTasking,
+            KEY_GESTURE_TYPE_DESKTOP_MODE to MultiTasking,
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to AppCategories,
@@ -137,6 +139,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW to
                 R.string.shortcutHelper_category_split_screen,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to R.string.shortcutHelper_category_split_screen,
+            KEY_GESTURE_TYPE_DESKTOP_MODE to R.string.shortcutHelper_category_split_screen,
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to R.string.keyboard_shortcut_group_applications,
@@ -190,6 +193,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.system_desktop_mode_toggle_maximize_window,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to
                 R.string.system_multitasking_move_to_next_display,
+            KEY_GESTURE_TYPE_DESKTOP_MODE to R.string.system_multitasking_desktop_view,
 
             // Accessibility Category
             KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS to R.string.group_accessibility_toggle_bounce_keys,
