@@ -131,5 +131,5 @@ interface ITradeInMode {
      * Get ScreenPartStatus
      *
      */
-    ScreenPartStatus getScreenPartStatus();
+    ScreenPartStatus[] getScreenPartStatus();
 }
