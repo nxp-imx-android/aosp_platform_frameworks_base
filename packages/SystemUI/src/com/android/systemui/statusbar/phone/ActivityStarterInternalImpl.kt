@@ -543,7 +543,7 @@ constructor(
         showOverLockscreen: Boolean,
     ): Boolean {
         // TODO(b/294418322): always support launch animations when occluded.
-        val ignoreOcclusion = showOverLockscreen && Flags.mediaLockscreenLaunchAnimation()
+        val ignoreOcclusion = showOverLockscreen
         if (isKeyguardOccluded() && !ignoreOcclusion) {
             return false
         }
