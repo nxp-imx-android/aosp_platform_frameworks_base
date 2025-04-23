@@ -40,6 +40,6 @@ class WindowRootViewBlurInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(true)
 
-            assertThat(underTest.requestBlurForShade(30)).isFalse()
+            assertThat(underTest.requestBlurForShade(30, 1.0f)).isFalse()
         }
 }
