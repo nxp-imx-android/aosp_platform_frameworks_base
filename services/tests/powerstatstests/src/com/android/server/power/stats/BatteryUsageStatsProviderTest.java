@@ -916,7 +916,6 @@ public class BatteryUsageStatsProviderTest {
 
     @Test
     @EnableFlags({
-            Flags.FLAG_EXTENDED_BATTERY_HISTORY_CONTINUOUS_COLLECTION_ENABLED,
             Flags.FLAG_EXTENDED_BATTERY_HISTORY_COMPRESSION_ENABLED
     })
     public void testIncludeSubsetOfHistory() throws IOException {

@@ -40,16 +40,6 @@ flag {
 }
 
 flag {
-    name: "extended_battery_history_continuous_collection_enabled"
-    namespace: "backstage_power"
-    description: "Disable automatic reset of battery stats history on full charge"
-    bug: "381940953"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "extended_battery_history_compression_enabled"
     namespace: "backstage_power"
     description: "Compress each battery history chunk on disk"

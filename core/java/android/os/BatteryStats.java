@@ -6964,9 +6964,7 @@ public abstract class BatteryStats {
         }
 
         public HistoryPrinter(TimeZone timeZone, int flags) {
-            this(com.android.server.power.optimization.Flags
-                    .extendedBatteryHistoryContinuousCollectionEnabled()
-                    ? FORMAT_VERSION : FORMAT_LEGACY, timeZone, flags);
+            this(FORMAT_VERSION, timeZone, flags);
         }
 
         private HistoryPrinter(int formatVersion, TimeZone timeZone, int flags) {
