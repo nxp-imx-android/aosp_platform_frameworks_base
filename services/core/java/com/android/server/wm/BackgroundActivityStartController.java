@@ -80,6 +80,8 @@ import android.util.ArraySet;
 import android.util.DebugUtils;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.android.internal.R;
@@ -230,6 +232,12 @@ public class BackgroundActivityStartController {
     static final int BAL_ALLOW_BOUND_BY_FOREGROUND =
             FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_BOUND_BY_FOREGROUND;
 
+    static final int BAL_ALLOW_NOTIFICATION_TOKEN =
+            FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_NOTIFICATION_TOKEN;
+
+    static final int BAL_ALLOW_WALLPAPER =
+            FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_WALLPAPER;
+
     static String balCodeToString(@BalCode int balCode) {
         return switch (balCode) {
             case BAL_ALLOW_ALLOWLISTED_COMPONENT -> "BAL_ALLOW_ALLOWLISTED_COMPONENT";
@@ -245,6 +253,8 @@ public class BackgroundActivityStartController {
             case BAL_ALLOW_SDK_SANDBOX -> "BAL_ALLOW_SDK_SANDBOX";
             case BAL_ALLOW_TOKEN -> "BAL_ALLOW_TOKEN";
             case BAL_ALLOW_VISIBLE_WINDOW -> "BAL_ALLOW_VISIBLE_WINDOW";
+            case BAL_ALLOW_NOTIFICATION_TOKEN -> "BAL_ALLOW_NOTIFICATION_TOKEN";
+            case BAL_ALLOW_WALLPAPER -> "BAL_ALLOW_WALLPAPER";
             case BAL_BLOCK -> "BAL_BLOCK";
             default -> throw new IllegalArgumentException("Unexpected value: " + balCode);
         };
@@ -1053,14 +1063,22 @@ public class BackgroundActivityStartController {
         return BalVerdict.BLOCK;
     };
 
-    private final BalExemptionCheck mCheckCallerNonAppVisible = state -> {
-        if (state.mCallingUidHasNonAppVisibleWindow) {
+    private BalVerdict checkNonAppVisibleWindow(int uid, boolean hasNonAppVisibleWindow) {
+        if (hasNonAppVisibleWindow) {
+            SparseIntArray nonAppVisibleWindowDetails =
+                    getService().mActiveUids.getNonAppVisibleWindowDetails(uid);
+            if (nonAppVisibleWindowDetails.size() == 1 && nonAppVisibleWindowDetails.get(
+                    WindowManager.LayoutParams.TYPE_WALLPAPER) > 0) {
+                return new BalVerdict(BAL_ALLOW_WALLPAPER, "uid has wallpaper window");
+            }
             return new BalVerdict(BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
-                    "callingUid has non-app visible window "
-                    + getService().mActiveUids.getNonAppVisibleWindowDetails(state.mCallingUid));
+                    "uid has non-app visible window " + nonAppVisibleWindowDetails);
         }
         return BalVerdict.BLOCK;
-    };
+    }
+
+    private final BalExemptionCheck mCheckCallerNonAppVisible = state ->
+            checkNonAppVisibleWindow(state.mCallingUid, state.mCallingUidHasNonAppVisibleWindow);
 
     private final BalExemptionCheck mCheckCallerIsAllowlistedUid = state -> {
         // don't abort for the most important UIDs
@@ -1183,15 +1201,9 @@ public class BackgroundActivityStartController {
         return BalVerdict.BLOCK;
     };
 
-    private final BalExemptionCheck mCheckRealCallerNonAppVisible = state -> {
-        if (state.mRealCallingUidHasNonAppVisibleWindow) {
-            return new BalVerdict(BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
-                    "realCallingUid has non-app visible window "
-                            + getService().mActiveUids.getNonAppVisibleWindowDetails(
-                            state.mRealCallingUid));
-        }
-        return BalVerdict.BLOCK;
-    };
+    private final BalExemptionCheck mCheckRealCallerNonAppVisible =
+            state -> checkNonAppVisibleWindow(state.mRealCallingUid,
+                    state.mRealCallingUidHasNonAppVisibleWindow);
 
     // Don't abort if the realCallerApp or other processes of that uid are considered to be in
     // the foreground.
@@ -1951,7 +1963,8 @@ public class BackgroundActivityStartController {
             }
         }
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NON_APP_VISIBLE_WINDOW);
-        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_TOKEN);
+        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NOTIFICATION_TOKEN);
+        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_WALLPAPER);
 
         if (shouldLogStats(finalVerdict, state)) {
             String activityName;
