@@ -19,7 +19,6 @@ package com.android.wm.shell.transition;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
@@ -467,7 +466,12 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     }
 
     @Override
-    public Consumer<IBinder> handleRecentsRequest() {
+    public Consumer<IBinder> handleRecentsRequest(int displayId) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                " handleRecentsRequest displayId=%d deskActive=%b",
+                displayId,
+                mDesktopTasksController != null && mDesktopTasksController.isAnyDeskActive(
+                        displayId));
         if (mRecentsHandler != null) {
             if (mSplitHandler.isSplitScreenVisible()) {
                 return this::setRecentsTransitionDuringSplit;
@@ -475,8 +479,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                     && !mKeyguardHandler.isKeyguardAnimating()) {
                 return this::setRecentsTransitionDuringKeyguard;
             } else if (mDesktopTasksController != null
-                    // Check on the default display. Recents/gesture nav is only available there
-                    && mDesktopTasksController.isAnyDeskActive(DEFAULT_DISPLAY)) {
+                    && mDesktopTasksController.isAnyDeskActive(displayId)) {
                 return this::setRecentsTransitionDuringDesktop;
             }
         }
