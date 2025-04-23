@@ -511,6 +511,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
         return mHasOngoingLongPress;
     }
 
+    @VisibleForTesting
+    @AutoclickType int getActiveClickTypeForTest() {
+        return mActiveClickType;
+    }
+
     /**
      * Observes and updates various autoclick setting values.
      */
@@ -1039,7 +1044,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
 
         private void resetSelectedClickTypeIfNecessary() {
-            if (mRevertToLeftClick && mActiveClickType != AUTOCLICK_TYPE_LEFT_CLICK) {
+            if ((mRevertToLeftClick && mActiveClickType != AUTOCLICK_TYPE_LEFT_CLICK)
+                    || mActiveClickType == AUTOCLICK_TYPE_LONG_PRESS) {
                 mAutoclickTypePanel.resetSelectedClickType();
             }
         }
@@ -1227,7 +1233,6 @@ public class AutoclickController extends BaseEventStreamTransformation {
             upEvent.recycle();
         }
 
-        // TODO(b/400744833): Reset Autoclick type to left click whenever a long press happens.
         private void sendLongPress() {
             mHasOngoingLongPress = true;
             mLongPressDownTime = SystemClock.uptimeMillis();
