@@ -117,6 +117,11 @@ public class BatteryMeterViewController extends ViewController<BatteryMeterView>
                     pw.println(" location=" + mLocation);
                     mView.dump(pw, args);
                 }
+
+                @Override
+                public void onBatteryAlertStateChanged(boolean isAlert) {
+                    mView.onBatteryAlertStateChanged(isAlert);
+                }
             };
 
     private final UserTracker.Callback mUserChangedCallback =
