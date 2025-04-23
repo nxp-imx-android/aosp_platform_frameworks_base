@@ -742,7 +742,13 @@ class TestPhoneWindowManager {
     }
 
     void assertCloseAllDialogs() {
-        verify(mContext).closeSystemDialogs();
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mContext).sendBroadcastAsUser(intentCaptor.capture(), any(), any(), any());
+        Assert.assertEquals(
+                Intent.ACTION_CLOSE_SYSTEM_DIALOGS,
+                intentCaptor.getValue().getAction());
+        // Reset verifier for next call.
+        Mockito.clearInvocations(mContext);
     }
 
     void assertDreamRequest() {
