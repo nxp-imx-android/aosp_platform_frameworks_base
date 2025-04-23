@@ -113,11 +113,19 @@ interface UserRepository {
     /** Whether refresh users should be paused. */
     var isRefreshUsersPaused: Boolean
 
-    /** Whether logout for secondary users is enabled by admin device policy. */
-    val isSecondaryUserLogoutEnabled: StateFlow<Boolean>
+    /**
+     * Whether logout back to primary user can be performed by the device Policy Manager for the
+     * secondary account. See
+     * https://developer.android.com/work/dpc/dedicated-devices/multiple-users#logout for more
+     * details.
+     */
+    val isPolicyManagerLogoutEnabled: StateFlow<Boolean>
 
-    /** Whether logout into system user is enabled. */
-    val isLogoutToSystemUserEnabled: StateFlow<Boolean>
+    /**
+     * Whether logout can be performed by the UserManager, to support desktop-style logout into the
+     * neutral login space.
+     */
+    val isUserManagerLogoutEnabled: StateFlow<Boolean>
 
     /** Asynchronously refresh the list of users. This will cause [userInfos] to be updated. */
     fun refreshUsers()
@@ -128,11 +136,11 @@ interface UserRepository {
 
     fun isUserSwitcherEnabled(): Boolean
 
-    /** Performs logout logout for secondary users. */
-    suspend fun logOutSecondaryUser()
+    /** Performs logout from secondary user into primary user via DevicePolicyManager. */
+    suspend fun logOutWithPolicyManager()
 
-    /** Performs logout into the system user. */
-    suspend fun logOutToSystemUser()
+    /** Performs logout into the system user via UserManager. */
+    suspend fun logOutWithUserManager()
 
     /**
      * Returns the user ID of the "main user" of the device. This user may have access to certain
@@ -258,32 +266,25 @@ constructor(
 
     override val selectedUserInfo: Flow<UserInfo> = selectedUser.map { it.userInfo }
 
-    /** Whether the secondary user logout is enabled by the admin device policy. */
-    private val isSecondaryUserLogoutSupported: Flow<Boolean> =
+    /** Cold flow that emits upon ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED broadcast. */
+    private val devicePolicyManagerStateChangeEvents: Flow<Unit> =
         broadcastDispatcher
             .broadcastFlow(
-                filter =
-                    IntentFilter(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED)
-            ) { intent, _ ->
-                if (
-                    DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED == intent.action
-                ) {
-                    Unit
-                } else {
-                    null
-                }
-            }
-            .filterNotNull()
+                IntentFilter(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED)
+            )
             .onStart { emit(Unit) }
-            .map { _ -> devicePolicyManager.isLogoutEnabled() }
-            .flowOn(backgroundDispatcher)
 
     @SuppressLint("MissingPermission")
-    override val isSecondaryUserLogoutEnabled: StateFlow<Boolean> =
+    override val isPolicyManagerLogoutEnabled: StateFlow<Boolean> =
         selectedUser
             .flatMapLatestConflated { selectedUser ->
-                if (selectedUser.isEligibleForLogout()) {
-                    isSecondaryUserLogoutSupported
+                if (selectedUser.selectionStatus == SelectionStatus.SELECTION_COMPLETE) {
+                    devicePolicyManagerStateChangeEvents
+                        .map { _ ->
+                            devicePolicyManager.isLogoutEnabled() &&
+                                devicePolicyManager.logoutUser != null
+                        }
+                        .flowOn(backgroundDispatcher)
                 } else {
                     flowOf(false)
                 }
@@ -303,32 +304,37 @@ constructor(
     }
 
     @SuppressLint("MissingPermission")
-    override val isLogoutToSystemUserEnabled: StateFlow<Boolean> =
+    override val isUserManagerLogoutEnabled: StateFlow<Boolean> =
         selectedUser
-            .flatMapLatestConflated { selectedUser ->
-                if (selectedUser.isEligibleForLogout()) {
-                    flowOf(
-                        resources.getBoolean(
-                            com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
-                        )
-                    )
-                } else {
-                    flowOf(false)
+            .map { selectedUser ->
+                when {
+                    !resources.getBoolean(
+                        com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+                    ) -> false
+
+                    selectedUser.selectionStatus != SelectionStatus.SELECTION_COMPLETE -> false
+
+                    !android.multiuser.Flags.logoutUserApi() ->
+                        selectedUser.userInfo.id != UserHandle.USER_SYSTEM
+
+                    else ->
+                        withContext(backgroundDispatcher) {
+                            manager.getUserLogoutability(selectedUser.userInfo.id) ==
+                                UserManager.LOGOUTABILITY_STATUS_OK
+                        }
                 }
             }
             .stateIn(applicationScope, SharingStarted.Eagerly, false)
 
     @SuppressLint("MissingPermission")
-    override suspend fun logOutSecondaryUser() {
-        if (isSecondaryUserLogoutEnabled.value) {
+    override suspend fun logOutWithPolicyManager() {
+        if (isPolicyManagerLogoutEnabled.value) {
             withContext(backgroundDispatcher) { devicePolicyManager.logoutUser() }
         }
     }
 
-    override suspend fun logOutToSystemUser() {
-        // TODO(b/377493351) : start using proper logout API once it is available.
-        // Using reboot is a temporary solution.
-        if (isLogoutToSystemUserEnabled.value) {
+    override suspend fun logOutWithUserManager() {
+        if (isUserManagerLogoutEnabled.value) {
             if (android.multiuser.Flags.logoutUserApi()) {
                 withContext(backgroundDispatcher) {
                     val currentUserId = tracker.userId
