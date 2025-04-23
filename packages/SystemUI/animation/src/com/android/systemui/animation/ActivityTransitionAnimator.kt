@@ -1477,18 +1477,6 @@ constructor(
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
             val windowState = startingWindowState ?: controller.windowAnimatorState
 
-            // We only reparent launch animations. In current integrations, returns are not affected
-            // by the issue solved by reparenting, and they present additional problems when the
-            // view lives in the Status Bar.
-            // TODO(b/397646693): remove this exception.
-            val isEligibleForReparenting = controller.isLaunching
-            val viewRoot = controller.transitionContainer.viewRootImpl
-            val skipReparenting =
-                skipReparentTransaction || !window.leash.isValid || viewRoot == null
-            if (moveTransitionAnimationLayer() && isEligibleForReparenting && !skipReparenting) {
-                reparent = true
-            }
-
             // We animate the opening window and delegate the view expansion to [this.controller].
             val delegate = this.controller
             val controller =
@@ -1556,13 +1544,35 @@ constructor(
                             )
                         }
 
-                        if (reparent) {
+                        // We only reparent launch animations. In current integrations, returns are
+                        // not affected by the issue solved by reparenting, and they present
+                        // additional problems when the view lives in the Status Bar.
+                        // TODO(b/397646693): remove this exception.
+                        val isEligibleForReparenting = controller.isLaunching
+                        val viewRoot = controller.transitionContainer.viewRootImpl
+                        val skipReparenting =
+                            skipReparentTransaction || !window.leash.isValid || viewRoot == null
+                        if (
+                            moveTransitionAnimationLayer() &&
+                                isEligibleForReparenting &&
+                                !skipReparenting
+                        ) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
+                            // Note that it is possible that the leash gets released between the
+                            // check above and the call below. For this reason, we still need to
+                            // wrap the transaction in a try/catch and set the value of [reparent]
+                            // accordingly.
                             // TODO(b/397180418): re-use the start transaction once the
                             //  RemoteAnimation wrapper is cleaned up.
-                            SurfaceControl.Transaction().use {
-                                it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                            try {
+                                SurfaceControl.Transaction().use {
+                                    it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                                }
+                                reparent = true
+                            } catch (e: IllegalStateException) {
+                                Log.e(TAG, "Failed to reparent transition leash: already released")
+                                reparent = false
                             }
                         }
 
@@ -1636,18 +1646,19 @@ constructor(
                 } else {
                     null
                 }
-            val fadeWindowBackgroundLayer =
+            val shouldFadeWindowBackgroundLayer = {
                 if (reparent) {
                     false
                 } else {
                     !controller.isBelowAnimatingWindow
                 }
+            }
             animation =
                 transitionAnimator.startAnimation(
                     controller,
                     endState,
                     windowBackgroundColor,
-                    fadeWindowBackgroundLayer = fadeWindowBackgroundLayer,
+                    shouldFadeWindowBackgroundLayer = shouldFadeWindowBackgroundLayer,
                     drawHole = !controller.isBelowAnimatingWindow,
                     startVelocity = velocityPxPerS,
                     startFrameTime = windowState?.timestamp ?: -1,
