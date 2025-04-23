@@ -1284,46 +1284,90 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    public void testBundle_applyFiltersToChildren() {
+    public void testBundle_filterOutNotif() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
-        // GIVEN a notif filter
+        // GIVEN a notif filter for PACKAGE_1
         NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
         mListBuilder.addPreGroupFilter(filter1);
 
-        // GIVEN two notifs and one group that will be bundled
+        // GIVEN two notifs, where PACKAGE_1 be filtered out
         addNotif(0, PACKAGE_1, BUNDLE_1);
         addNotif(1, PACKAGE_2, BUNDLE_1);
-        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
-        addGroupChild(3, PACKAGE_1, GROUP_1, BUNDLE_1);
-        addGroupSummary(4, PACKAGE_1, GROUP_1, BUNDLE_1);
         dispatchBuild();
 
-        // VERIFY that filters were applied to notif and group
+        // VERIFY that the PACKAGE_1 notif was filtered out
         verifyBuiltList(
-                bundle(
-                        BUNDLE_1,
-                        notif(1)
-                )
+            bundle(
+                    BUNDLE_1,
+                    notif(1)
+            )
         );
     }
 
     @Test
-    public void testBundle_emptyBundleIsPruned() {
+    public void testBundle_filterOutGroupChild() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
-        // GIVEN a notif filter
+        // GIVEN a notif filter for PACKAGE_1
         NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
         mListBuilder.addPreGroupFilter(filter1);
 
-        // GIVEN a notif that will be bundled
+        // GIVEN a group where the PACKAGE_1 child will be filtered out
+        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_2, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_2, GROUP_1, BUNDLE_1);
+        addGroupSummary(3, PACKAGE_2, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that the PACKAGE_1 child was filtered out
+        verifyBuiltList(
+            bundle(
+                BUNDLE_1,
+                group(
+                    summary(3),
+                    child(1),
+                    child(2)
+                )
+            )
+        );
+    }
+
+    @Test
+    public void testBundle_pruneIncompleteGroup() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a group where its child will be promoted out due to group size
+        addGroupSummary(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addNotif(2, PACKAGE_2, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that the group was pruned
+        verifyBuiltList(
+            bundle(
+                BUNDLE_1,
+                notif(1),
+                notif(2)
+            )
+        );
+    }
+
+    @Test
+    public void testBundle_pruneEmptyBundle() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a notif filter for PACKAGE_1
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addPreGroupFilter(filter1);
+
+        // GIVEN a PACKAGE_1 notif that will be bundled, then filtered out
         addNotif(0, PACKAGE_1, BUNDLE_1);
         dispatchBuild();
 
-        // VERIFY that filters was applied and bundle was pruned
+        // VERIFY that notif was filtered out and bundle was pruned
         verifyBuiltList();
     }
-
 
     @Test
     public void testGroupTransformEntries() {
