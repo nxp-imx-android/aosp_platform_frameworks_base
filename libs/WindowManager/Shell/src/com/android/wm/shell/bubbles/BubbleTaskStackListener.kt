@@ -21,9 +21,9 @@ package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
-import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.util.getExitBubbleTransaction
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
@@ -145,15 +145,7 @@ class BubbleTaskStackListener(
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 
-        val wct = WindowContainerTransaction()
-        wct.setTaskForceExcludedFromRecents(task.token, false /* forceExcluded */)
-            .setLaunchNextToBubble(task.token, false /* launchNextToBubble */)
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-            wct.setDisableLaunchAdjacent(task.token, false)
-        }
-        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(task.token, false /* disablePip */)
-        }
+        val wct = getExitBubbleTransaction(task.token)
         taskOrganizer.applyTransaction(wct)
 
         taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
