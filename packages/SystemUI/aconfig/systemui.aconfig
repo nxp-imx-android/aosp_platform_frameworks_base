@@ -2102,3 +2102,10 @@ flag {
     description: "Overall changes on Sytem UI when current user is the Headless System User"
     bug: "408066623"
 }
+
+flag {
+    name: "enable_suggested_device_ui"
+    namespace: "systemui"
+    description: "Enables the UI for the suggested devices feature."
+    bug: "411452237"
+}

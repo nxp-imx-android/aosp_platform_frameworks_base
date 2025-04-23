@@ -27,7 +27,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.Barrier
 import com.android.internal.widget.CachingIconView
-import com.android.media.flags.Flags.enableSuggestedDeviceApi
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.FontStyles.GSF_HEADLINE_SMALL
 import com.android.systemui.FontStyles.GSF_LABEL_LARGE
 import com.android.systemui.FontStyles.GSF_LABEL_MEDIUM
@@ -125,7 +125,7 @@ class MediaViewHolder constructor(itemView: View) {
         @JvmStatic
         fun create(inflater: LayoutInflater, parent: ViewGroup): MediaViewHolder {
             val mediaView =
-                if (enableSuggestedDeviceApi()) {
+                if (enableSuggestedDeviceUi()) {
                     inflater.inflate(R.layout.media_session_view_with_suggestion, parent, false)
                 } else {
                     inflater.inflate(R.layout.media_session_view, parent, false)
@@ -163,7 +163,7 @@ class MediaViewHolder constructor(itemView: View) {
                     R.id.media_scrubbing_total_time,
                 )
                 .apply {
-                    if (enableSuggestedDeviceApi()) {
+                    if (enableSuggestedDeviceUi()) {
                         add(R.id.device_suggestion_container)
                     }
                 }

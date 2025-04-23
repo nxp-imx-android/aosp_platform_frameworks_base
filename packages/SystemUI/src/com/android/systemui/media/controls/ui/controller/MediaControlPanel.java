@@ -641,7 +641,7 @@ public class MediaControlPanel {
     }
 
     private void bindDeviceSuggestion(@NonNull MediaData data) {
-        if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
+        if (!Flags.enableSuggestedDeviceUi()) {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();

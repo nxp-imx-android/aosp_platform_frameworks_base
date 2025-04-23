@@ -43,9 +43,9 @@ import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -1217,7 +1217,7 @@ constructor(
     }
 
     fun onCarouselVisibleToUser() {
-        if (!enableSuggestedDeviceApi() || !mediaCarouselScrollHandler.visibleToUser) {
+        if (!enableSuggestedDeviceUi() || !mediaCarouselScrollHandler.visibleToUser) {
             return
         }
         val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
