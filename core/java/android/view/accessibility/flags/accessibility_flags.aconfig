@@ -58,6 +58,13 @@ flag {
 }
 
 flag {
+    name: "a11y_sort_direction_api"
+    namespace: "accessibility"
+    description: "Enables new APIs to convey the sort direction applied to the data associated with this node."
+    bug: "411187064"
+}
+
+flag {
     name: "allow_shortcut_chooser_on_lockscreen"
     namespace: "accessibility"
     description: "Allows the a11y shortcut disambig dialog to appear on the lockscreen"
