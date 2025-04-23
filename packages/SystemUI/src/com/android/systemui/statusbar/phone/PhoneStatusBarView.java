@@ -41,6 +41,7 @@ import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
+import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.phone.userswitcher.StatusBarUserSwitcherContainer;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.user.ui.binder.StatusBarUserChipViewBinder;
@@ -338,6 +339,10 @@ public class PhoneStatusBarView extends FrameLayout {
 
     private void updateWindowHeight() {
         if (Flags.statusBarStopUpdatingWindowHeight()) {
+            return;
+        }
+        if (StatusBarConnectedDisplays.isEnabled()) {
+            // Handled directly from StatusBarWindowControllerImpl (for each display)
             return;
         }
         mStatusBarWindowControllerStore.getDefaultDisplay().refreshStatusBarHeight();

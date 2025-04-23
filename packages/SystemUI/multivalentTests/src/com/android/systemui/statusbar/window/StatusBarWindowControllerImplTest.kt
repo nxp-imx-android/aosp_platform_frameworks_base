@@ -25,7 +25,7 @@ import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.fragments.fragmentService
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarRootModernization
-import com.android.systemui.statusbar.policy.statusBarConfigurationController
+import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -47,7 +47,7 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
     private val fakeWindowManager = kosmos.fakeWindowManager
     private val mockFragmentService = kosmos.fragmentService
     private val fakeStatusBarWindowViewInflater = kosmos.fakeStatusBarWindowViewInflater
-    private val statusBarConfigurationController = kosmos.statusBarConfigurationController
+    private val statusBarConfigurationController = kosmos.mockStatusBarConfigurationController
 
     @Before
     fun setUp() {
@@ -132,5 +132,25 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
         underTest.attach()
 
         assertThat(fakeWindowManager.addedViews.keys).containsExactly(windowView)
+    }
+
+    @Test
+    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun attachThenStops_connectedDisplaysFlagEnabled_registersAndUnregistersConfigControllerListener() {
+        underTest.attach()
+
+        verify(statusBarConfigurationController).addCallback(any())
+
+        underTest.stop()
+
+        verify(statusBarConfigurationController).removeCallback(any())
+    }
+
+    @Test
+    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun attach_connectedDisplaysFlagDisabled_doesNotRegisterConfigControllerListener() {
+        underTest.attach()
+
+        verify(statusBarConfigurationController, never()).addCallback(any())
     }
 }
