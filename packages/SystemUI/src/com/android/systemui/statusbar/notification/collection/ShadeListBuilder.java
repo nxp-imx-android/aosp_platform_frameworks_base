@@ -934,7 +934,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
     private void pruneEmptyGroupsFromBundle(BundleEntry bundleEntry,
             List<PipelineEntry> shadeList) {
-        // TODO(b/399736937) Add tests.
         List<ListEntry> bundleChildren = bundleEntry.getChildren();
         List<GroupEntry> emptyGroupsToRemove = new ArrayList<>();
         for (ListEntry listEntry : bundleChildren) {
@@ -978,7 +977,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                         groupsWithChildrenLostToStability);
 
             } else if (pipelineEntry instanceof BundleEntry bundleEntry) {
-                // TODO(b/399736937) Add tests.
                 // We don't need to prune groups here because groups were already pruned before
                 // being bundled.
                 pruneEmptyGroupsFromBundle(bundleEntry, shadeList);
