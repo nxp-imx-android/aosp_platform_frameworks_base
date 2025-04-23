@@ -26,11 +26,11 @@ import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
+import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -49,7 +49,7 @@ class TopLevelWindowEffects
 constructor(
     @Application private val context: Context,
     @Main private val mainDispatcher: CoroutineDispatcher,
-    @Background private val topLevelWindowEffectsScope: CoroutineScope,
+    @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
@@ -96,21 +96,19 @@ constructor(
                     bottomRoundedCornerResourceId = bottomRoundedCornerId,
                     physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
                     onEffectFinished = {
+                        if (root?.isAttachedToWindow == true) {
+                            windowManager.removeView(root)
+                            root = null
+                        }
                         runOnMainThread {
-                            if (root?.isAttachedToWindow == true) {
-                                windowManager.removeView(root)
-                                root = null
-                            }
                             notificationShadeWindowController.setRequestTopUi(false, TAG)
                         }
                     },
                     appZoomOutOptional = appZoomOutOptional,
                 )
             root?.let { rootView ->
-                runOnMainThread {
-                    notificationShadeWindowController.setRequestTopUi(true, TAG)
-                    windowManager.addView(rootView, getWindowManagerLayoutParams())
-                }
+                runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
+                windowManager.addView(rootView, getWindowManagerLayoutParams())
             }
         }
     }
