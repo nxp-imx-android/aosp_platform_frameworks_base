@@ -1284,6 +1284,48 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    public void testBundle_applyFiltersToChildren() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a notif filter
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addPreGroupFilter(filter1);
+
+        // GIVEN two notifs and one group that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        addNotif(1, PACKAGE_2, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(3, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupSummary(4, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that filters were applied to notif and group
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(1)
+                )
+        );
+    }
+
+    @Test
+    public void testBundle_emptyBundleIsPruned() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a notif filter
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addPreGroupFilter(filter1);
+
+        // GIVEN a notif that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that filters was applied and bundle was pruned
+        verifyBuiltList();
+    }
+
+
+    @Test
     public void testGroupTransformEntries() {
         // GIVEN a registered OnBeforeTransformGroupsListener
         RecordingOnBeforeTransformGroupsListener listener =

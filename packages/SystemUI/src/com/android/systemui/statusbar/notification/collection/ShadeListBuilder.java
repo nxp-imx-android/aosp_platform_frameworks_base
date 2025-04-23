@@ -612,7 +612,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     private void applyFilterToBundle(BundleEntry bundleEntry, long now, List<NotifFilter> filters) {
         List<ListEntry> bundleChildren = bundleEntry.getChildren();
         List<ListEntry> bundleChildrenToRemove = new ArrayList();
-        // TODO(b/399736937) Add tests
         for (ListEntry listEntry : bundleChildren) {
             if (listEntry instanceof GroupEntry groupEntry) {
                 applyFilterToGroup(groupEntry, now, filters);
