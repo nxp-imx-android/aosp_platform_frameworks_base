@@ -162,6 +162,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             (i.arguments.first() as Rect).set(stableBounds)
         }
         whenever(context.resources).thenReturn(resources)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
 
         tilingDecoration.onAppTiled(
@@ -191,6 +192,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             (i.arguments.first() as Rect).set(stableBounds)
         }
         whenever(context.resources).thenReturn(resources)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
         whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
 
         tilingDecoration.onAppTiled(
@@ -215,6 +217,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         val task1 = createVisibleTask()
         val stableBounds = STABLE_BOUNDS_MOCK
         whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(stableBounds)
         }

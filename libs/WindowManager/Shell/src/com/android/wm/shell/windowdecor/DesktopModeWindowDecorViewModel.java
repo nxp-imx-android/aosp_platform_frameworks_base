@@ -971,6 +971,30 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void onDeskActivated(int deskId, int displayId) {
+        if (!mDesktopTilingDecorViewModel.onDeskActivated(deskId)) {
+            return;
+        }
+
+        final DesktopRepository repository = mDesktopUserRepositories.getCurrent();
+        final Integer leftTaskId = repository.getLeftTiledTask(deskId);
+        final Integer rightTaskId =  repository.getRightTiledTask(deskId);
+        if (leftTaskId != null) {
+            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.get(leftTaskId);
+            final RunningTaskInfo taskInfo = decor.mTaskInfo;
+            final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
+            snapPersistedTaskToHalfScreen(taskInfo, currentBounds, SnapPosition.LEFT);
+        }
+
+        if (rightTaskId != null) {
+            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.get(rightTaskId);
+            final RunningTaskInfo taskInfo = decor.mTaskInfo;
+            final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
+            snapPersistedTaskToHalfScreen(taskInfo, currentBounds, SnapPosition.RIGHT);
+        }
+    }
+
+    @Override
     public void removeTaskIfTiled(int displayId, int taskId) {
         mDesktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId);
     }
@@ -1006,6 +1030,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @Override
     public void onDeskDeactivated(int deskId) {
         mDesktopTilingDecorViewModel.onDeskDeactivated(deskId);
+    }
+
+    @Override
+    public void onDisplayDisconnected(int disconnectedDisplayId,
+            boolean desktopModeSupportedOnNewDisplay) {
+        mDesktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId,
+                desktopModeSupportedOnNewDisplay);
     }
 
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener

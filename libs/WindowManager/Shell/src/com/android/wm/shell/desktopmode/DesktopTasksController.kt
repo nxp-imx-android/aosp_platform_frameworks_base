@@ -658,11 +658,14 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         // TODO: b/391652399 - Investigate why sometimes disconnect results in a black background.
         //  Additionally, investigate why wallpaper goes to front for inactive users.
+        val desktopModeSupportedOnDisplay =
+            desktopState.isDesktopModeSupportedOnDisplay(destinationDisplayId)
+        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId, desktopModeSupportedOnDisplay)
         removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
             val deskIds = desktopRepository.getDeskIds(disconnectedDisplayId).toList()
-            if (desktopState.isDesktopModeSupportedOnDisplay(destinationDisplayId)) {
+            if (desktopModeSupportedOnDisplay) {
                 // Desktop supported on display; reparent desks, focused desk on top.
                 for (deskId in deskIds) {
                     val toTop =
@@ -3634,12 +3637,14 @@ class DesktopTasksController(
                         displayId = displayId,
                         deskId = deskId,
                         enterTaskId = newTaskIdInFront,
+                        runOnTransitEnd = { snapEventHandler.onDeskActivated(deskId, displayId) },
                     )
                 } else {
                     DeskTransition.ActivateDesk(
                         token = transition,
                         displayId = displayId,
                         deskId = deskId,
+                        runOnTransitEnd = { snapEventHandler.onDeskActivated(deskId, displayId) },
                     )
                 }
             desksTransitionObserver.addPendingTransition(activateDeskTransition)

@@ -161,6 +161,31 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDesk_runsActivationCallback() {
+        val transition = Binder()
+        val change = Change(mock(), mock())
+        val callback: () -> Unit = mock()
+        whenever(mockDesksOrganizer.isDeskActiveAtEnd(change, deskId = 5)).thenReturn(true)
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                transition,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 5,
+                runOnTransitEnd = callback,
+            )
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0).apply { addChange(change) },
+        )
+
+        verify(callback).invoke()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDeskWithTask_updatesRepository() =
         testScope.runTest {
             val deskId = 5
@@ -185,6 +210,35 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
             assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
             assertThat(repository.getActiveTaskIdsInDesk(deskId)).contains(task.taskId)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDeskWithTask_runsActivationCallback() =
+        testScope.runTest {
+            val deskId = 5
+            val task = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
+            val transition = Binder()
+            val callback: () -> Unit = mock()
+            val change = Change(mock(), mock()).apply { taskInfo = task }
+            whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
+            val activateTransition =
+                DeskTransition.ActivateDeskWithTask(
+                    transition,
+                    displayId = DEFAULT_DISPLAY,
+                    deskId = deskId,
+                    enterTaskId = task.taskId,
+                    runOnTransitEnd = callback,
+                )
+            repository.addDesk(DEFAULT_DISPLAY, deskId = deskId)
+
+            observer.addPendingTransition(activateTransition)
+            observer.onTransitionReady(
+                transition = transition,
+                info = TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0).apply { addChange(change) },
+            )
+
+            verify(callback).invoke()
         }
 
     @Test
@@ -230,8 +284,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
         val deskChange = Change(mock(), mock())
         val callback: () -> Unit = mock()
         whenever(mockDesksOrganizer.isDeskChange(deskChange, deskId = 5)).thenReturn(true)
-        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
-            .also { it.runOnTransitEnd = callback }
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(transition, deskId = 5).also {
+                it.runOnTransitEnd = callback
+            }
         repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
         repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
 

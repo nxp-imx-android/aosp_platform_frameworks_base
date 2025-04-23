@@ -65,4 +65,18 @@ interface SnapEventHandler {
      * Notifies the snap handler of a desk being de-activated.
      */
     fun onDeskDeactivated(deskId: Int)
+
+    /**
+     * Notifies the snap event handler of a display disconnect event.
+     *
+     * [desktopModeSupportedOnNewDisplay] is a boolean that indicates whether a display supports
+     * desktop mode after the external display disconnection, for example a tablet or a secondary
+     * display.
+     */
+    fun onDisplayDisconnected(disconnectedDisplayId: Int, desktopModeSupportedOnNewDisplay: Boolean)
+
+    /**
+     * Notifies the snap event handler of a desk being activated.
+     */
+    fun onDeskActivated(deskId: Int, displayId: Int)
 }
