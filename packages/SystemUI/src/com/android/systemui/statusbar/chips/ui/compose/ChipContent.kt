@@ -33,6 +33,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -114,6 +115,7 @@ fun ChipContent(
                 style = textStyle,
                 color = textColor,
                 softWrap = false,
+                textAlign = TextAlign.Center,
                 modifier = modifier.neverDecreaseWidth(density),
             )
         }
