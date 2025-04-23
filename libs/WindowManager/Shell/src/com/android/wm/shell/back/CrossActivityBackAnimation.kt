@@ -44,6 +44,7 @@ import android.window.BackEvent.EDGE_RIGHT
 import android.window.BackMotionEvent
 import android.window.BackNavigationInfo
 import android.window.BackProgressAnimator
+import android.window.DesktopExperienceFlags
 import android.window.IOnBackInvokedCallback
 import com.android.internal.dynamicanimation.animation.FloatValueHolder
 import com.android.internal.dynamicanimation.animation.SpringAnimation
@@ -52,7 +53,6 @@ import com.android.internal.jank.Cuj
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.internal.policy.SystemBarUtils
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.enableMultidisplayTrackpadBackGesture
 import com.android.window.flags.Flags.predictiveBackTimestampApi
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -411,7 +411,7 @@ abstract class CrossActivityBackAnimation(
                 .setOpaque(false)
                 .setHidden(false)
 
-        if (enableMultidisplayTrackpadBackGesture()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
             rootTaskDisplayAreaOrganizer.attachToDisplayArea(
                 closingTarget!!.taskInfo.getDisplayId(), scrimBuilder)
         } else {
@@ -480,7 +480,7 @@ abstract class CrossActivityBackAnimation(
                 .setOpaque(true)
                 .setHidden(false)
 
-        if (enableMultidisplayTrackpadBackGesture()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
             rootTaskDisplayAreaOrganizer.attachToDisplayArea(
                 closingTarget!!.taskInfo.getDisplayId(), letterboxBuilder)
         } else {
