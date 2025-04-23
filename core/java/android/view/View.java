@@ -46,7 +46,6 @@ import static android.view.displayhash.DisplayHashResultCallback.EXTRA_DISPLAY_H
 import static android.view.flags.Flags.FLAG_SENSITIVE_CONTENT_APP_PROTECTION_API;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
-import static android.view.flags.Flags.calculateBoundsInParentFromBoundsInScreen;
 import static android.view.flags.Flags.enableUseMeasureCacheDuringForceLayout;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
@@ -974,13 +973,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * Ignore an optimization that skips unnecessary EXACTLY layout passes.
      */
     private static boolean sAlwaysRemeasureExactly = false;
-
-    /**
-     * When true calculates the bounds in parent from bounds in screen relative to its parents.
-     * This addresses the deprecated API (setBoundsInParent) in Compose, which causes empty
-     * getBoundsInParent call for Compose apps.
-     */
-    private static boolean sCalculateBoundsInParentFromBoundsInScreenFlagValue = false;
 
     /**
      * When true makes it possible to use onMeasure caches also when the force layout flag is
@@ -2564,8 +2556,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         sToolkitSetFrameRateReadOnlyFlagValue = toolkitSetFrameRateReadOnly();
         sToolkitMetricsForFrameRateDecisionFlagValue = toolkitMetricsForFrameRateDecision();
-        sCalculateBoundsInParentFromBoundsInScreenFlagValue =
-                calculateBoundsInParentFromBoundsInScreen();
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
     }
 
@@ -11216,11 +11206,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // deprecated, and only setBoundsInScreen is called.
         // The bounds in parent can be calculated by diff'ing the child view's bounds in screen with
         // the parent's.
-        if (sCalculateBoundsInParentFromBoundsInScreenFlagValue) {
-            getBoundsInParent(info, parentInfo, rect);
-        } else {
-            info.getBoundsInParent(rect);
-        }
+        getBoundsInParent(info, parentInfo, rect);
         structure.setDimens(rect.left, rect.top, 0, 0, rect.width(), rect.height());
         structure.setVisibility(VISIBLE);
         structure.setEnabled(info.isEnabled());
