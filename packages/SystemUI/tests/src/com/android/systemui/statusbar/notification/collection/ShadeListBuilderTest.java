@@ -319,6 +319,41 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_combineTwoNotifs_intoOneGroup() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN single notif that will be bundled
+        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY single notif shows in bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(0) // Child is promoted out of group inside bundle
+                )
+        );
+
+        // Add summary and child in same group
+        addGroupSummary(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // Verify new additions are grouped inside bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        group(
+                            summary(1),
+                            child(0),
+                            child(2)
+                        )
+                )
+        );
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundleGroupChildrenAreSorted() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -962,6 +997,53 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    public void testBundle_childrenAssignedSection() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a Section for Package1
+        final NotifSectioner pkg2Section = spy(new PackageSectioner(PACKAGE_1));
+        mListBuilder.setSectioners(singletonList(pkg2Section));
+
+        // WHEN we build a list with a notif and group that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupSummary(3, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // THEN the notif and group are bundled
+        verifyBuiltList(
+            bundle(
+                BUNDLE_1,
+                notif(0),
+                group(
+                    summary(3),
+                    child(1),
+                    child(2)
+                )
+            )
+        );
+
+        assertEquals(1, mBuiltList.size());
+        PipelineEntry pipelineEntry = mBuiltList.get(0);
+        assertThat(pipelineEntry instanceof BundleEntry).isTrue();
+
+        // VERIFY all pipeline entries are assigned sections
+        BundleEntry bundleEntry = (BundleEntry) pipelineEntry;
+        assertNotNull(bundleEntry.getSection());
+
+        for (ListEntry listEntry: bundleEntry.getChildren()) {
+            assertNotNull(listEntry.getSection());
+
+            if (listEntry instanceof GroupEntry groupEntry) {
+                for (NotificationEntry child: groupEntry.getChildren()) {
+                    assertNotNull(child.getSection());
+                }
+            }
+        }
+    }
+
+    @Test
     public void testThatNotifComparatorsAreCalled() {
         // GIVEN a set of comparators that care about specific packages
         mListBuilder.setComparators(asList(
@@ -1200,6 +1282,48 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         verify(filter2).shouldFilterOut(mEntrySet.get(1), 10047);
         verify(filter3).shouldFilterOut(mEntrySet.get(1), 10047);
     }
+
+    @Test
+    public void testBundle_applyFiltersToChildren() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a notif filter
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addPreGroupFilter(filter1);
+
+        // GIVEN two notifs and one group that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        addNotif(1, PACKAGE_2, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(3, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupSummary(4, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that filters were applied to notif and group
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(1)
+                )
+        );
+    }
+
+    @Test
+    public void testBundle_emptyBundleIsPruned() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a notif filter
+        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
+        mListBuilder.addPreGroupFilter(filter1);
+
+        // GIVEN a notif that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY that filters was applied and bundle was pruned
+        verifyBuiltList();
+    }
+
 
     @Test
     public void testGroupTransformEntries() {
@@ -2833,6 +2957,9 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
         @Override
         public boolean isInSection(PipelineEntry entry) {
+            if (entry instanceof BundleEntry) {
+                return true;
+            }
             return mPackages.contains(
                     entry.asListEntry().getRepresentativeEntry().getSbn().getPackageName());
         }

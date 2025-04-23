@@ -612,7 +612,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     private void applyFilterToBundle(BundleEntry bundleEntry, long now, List<NotifFilter> filters) {
         List<ListEntry> bundleChildren = bundleEntry.getChildren();
         List<ListEntry> bundleChildrenToRemove = new ArrayList();
-        // TODO(b/399736937) Add tests
         for (ListEntry listEntry : bundleChildren) {
             if (listEntry instanceof GroupEntry groupEntry) {
                 applyFilterToGroup(groupEntry, now, filters);
@@ -1273,7 +1272,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     private void assignSections() {
         Trace.beginSection("ShadeListBuilder.assignSections");
         // Assign sections to top-level elements and their children
-        // TODO(b/399736937) Add tests.
         for (PipelineEntry entry : mNotifList) {
             NotifSection section = applySections(entry);
 
