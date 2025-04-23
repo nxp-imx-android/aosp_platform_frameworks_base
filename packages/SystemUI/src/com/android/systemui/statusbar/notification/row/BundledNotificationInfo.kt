@@ -16,6 +16,10 @@
 package com.android.systemui.statusbar.notification.row
 
 import android.app.INotificationManager
+import android.app.NotificationChannel.NEWS_ID
+import android.app.NotificationChannel.PROMOTIONS_ID
+import android.app.NotificationChannel.RECS_ID
+import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.RemoteException
@@ -35,8 +39,8 @@ import com.android.systemui.statusbar.notification.promoted.domain.interactor.Pa
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
-import com.android.systemui.statusbar.notification.stack.StackStateAnimator
 import com.google.android.material.materialswitch.MaterialSwitch
+
 
 /**
  * The guts of a notification revealed when performing a long press, specifically for notifications
@@ -58,8 +62,8 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
         pkg: String,
         ranking: NotificationListenerService.Ranking,
         sbn: StatusBarNotification,
-        entry: NotificationEntry,
-        entryAdapter: EntryAdapter,
+        entry: NotificationEntry?,
+        entryAdapter: EntryAdapter?,
         onSettingsClick: OnSettingsClickListener?,
         onAppSettingsClick: OnAppSettingsClickListener,
         feedbackClickListener: OnFeedbackClickListener,
@@ -139,9 +143,16 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
             }
         }
         done.setAccessibilityDelegate(mGutsContainer.accessibilityDelegate)
-
-        findViewById<TextView>(R.id.feature_summary).setText(
-            resources.getString(R.string.notification_guts_bundle_summary, mAppName));
+        var label = ""
+        when (mSingleNotificationChannel.id) {
+            PROMOTIONS_ID -> label =
+                mContext.getString(R.string.notification_guts_promotions_summary)
+            RECS_ID -> label = mContext.getString(R.string.notification_guts_recs_summary)
+            NEWS_ID -> label = mContext.getString(R.string.notification_guts_news_summary)
+            SOCIAL_MEDIA_ID -> label =
+                mContext.getString(R.string.notification_guts_social_summary)
+        }
+        findViewById<TextView>(R.id.feature_summary).text = label;
 
         val dismissButton = findViewById<View>(R.id.inline_dismiss)
         dismissButton.setOnClickListener(mOnCloseClickListener)
