@@ -7644,7 +7644,8 @@ public abstract class BatteryStats {
     public static final int DUMP_DEVICE_WIFI_ONLY = 1<<6;
     public static final int DUMP_DEBUG_PERF_BASELINE = 1 << 7;
 
-    private void dumpHistory(PrintWriter pw, int flags, long histStart, boolean checkin) {
+    private void dumpHistory(PrintWriter pw, int flags, long histStart, boolean checkin,
+                              long monotonicClockStart) {
         final HistoryPrinter hprinter = new HistoryPrinter(flags);
         synchronized (this) {
             if (!checkin) {
@@ -7675,7 +7676,8 @@ public abstract class BatteryStats {
         boolean printed = false;
         HistoryEventTracker tracker = null;
         try (BatteryStatsHistoryIterator iterator =
-                     iterateBatteryStatsHistory(0, MonotonicClock.UNDEFINED)) {
+                     iterateBatteryStatsHistory(monotonicClockStart,
+                         MonotonicClock.UNDEFINED)) {
             HistoryItem rec;
             while ((rec = iterator.next()) != null) {
                 try {
@@ -7838,7 +7840,7 @@ public abstract class BatteryStats {
      */
     @SuppressWarnings("unused")
     public void dump(Context context, PrintWriter pw, int flags, int reqUid, long histStart,
-            BatteryStatsDumpHelper dumpHelper) {
+            BatteryStatsDumpHelper dumpHelper, long monotonicClockStart) {
         synchronized (this) {
             prepareForDumpLocked();
         }
@@ -7847,7 +7849,7 @@ public abstract class BatteryStats {
                 & (DUMP_HISTORY_ONLY|DUMP_CHARGED_ONLY|DUMP_DAILY_ONLY)) != 0;
 
         if ((flags&DUMP_HISTORY_ONLY) != 0 || !filtering) {
-            dumpHistory(pw, flags, histStart, false);
+            dumpHistory(pw, flags, histStart, false, monotonicClockStart);
             pw.println();
         }
 
@@ -8014,7 +8016,7 @@ public abstract class BatteryStats {
         }
 
         if ((flags & (DUMP_INCLUDE_HISTORY | DUMP_HISTORY_ONLY)) != 0) {
-            dumpHistory(pw, flags, histStart, true);
+            dumpHistory(pw, flags, histStart, true, 0);
         }
 
         if ((flags & DUMP_HISTORY_ONLY) != 0) {

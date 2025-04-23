@@ -5458,6 +5458,7 @@
   <java-symbol type="integer" name="config_aggregatedPowerStatsSpanDuration" />
   <java-symbol type="integer" name="config_accumulatedBatteryUsageStatsSpanSize" />
   <java-symbol type="integer" name="config_batteryHistoryStorageSize" />
+  <java-symbol type="integer" name="config_batteryHistoryDumpWindowSize" />
 
   <!--Dynamic Tokens-->
   <java-symbol name="system_accent1_0_light" type="color"/>

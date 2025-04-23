@@ -16770,8 +16770,9 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @GuardedBy("this")
+    @Override
     public void dump(Context context, PrintWriter pw, int flags, int reqUid, long histStart,
-            BatteryStatsDumpHelper dumpHelper) {
+            BatteryStatsDumpHelper dumpHelper, long monotonicClockStartTime) {
         if (DEBUG) {
             pw.println("mOnBatteryTimeBase:");
             mOnBatteryTimeBase.dump(pw, "  ");
@@ -16843,7 +16844,7 @@ public class BatteryStatsImpl extends BatteryStats {
             pr.println("*** Camera timer:");
             mCameraOnTimer.logState(pr, "  ");
         }
-        super.dump(context, pw, flags, reqUid, histStart, dumpHelper);
+        super.dump(context, pw, flags, reqUid, histStart, dumpHelper, monotonicClockStartTime);
 
         synchronized (this) {
             pw.print("Per process state tracking available: ");
