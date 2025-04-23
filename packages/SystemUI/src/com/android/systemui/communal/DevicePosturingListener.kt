@@ -59,7 +59,7 @@ constructor(
     private val dreamManager: DreamManager,
     private val posturingInteractor: PosturingInteractor,
     dreamSettingsInteractor: DreamSettingsInteractor,
-    batteryInteractor: BatteryInteractor,
+    private val batteryInteractor: BatteryInteractor,
     @Background private val bgScope: CoroutineScope,
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
     private val wakeLockBuilder: WakeLock.Builder,
@@ -69,7 +69,7 @@ constructor(
 
     private val wakeLock by lazy {
         wakeLockBuilder
-            .setMaxTimeout(SLIDING_WINDOW_DURATION.inWholeMilliseconds)
+            .setMaxTimeout(2 * SLIDING_WINDOW_DURATION.inWholeMilliseconds)
             .setTag(TAG)
             .setLevelsAndFlags(PowerManager.SCREEN_DIM_WAKE_LOCK)
             .build()
@@ -107,13 +107,16 @@ constructor(
             return
         }
 
-        postured
-            .distinctUntilChanged()
+        batteryInteractor.isDevicePluggedIn
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
-                columnName = "postured",
+                columnName = "isDevicePluggedIn",
                 initialValue = false,
             )
+            .launchInTraced("$TAG#collectIsDevicePluggedIn", bgScope)
+
+        postured
+            .distinctUntilChanged()
             .onEach { postured -> dreamManager.setDevicePostured(postured) }
             .launchInTraced("$TAG#collectPostured", bgScope)
 
@@ -129,11 +132,6 @@ constructor(
                 }
                 .dropWhile { !it }
                 .distinctUntilChanged()
-                .logDiffsForTable(
-                    tableLogBuffer = tableLogBuffer,
-                    columnName = "mayBePosturedSoon",
-                    initialValue = false,
-                )
                 .collect { mayBePosturedSoon ->
                     if (mayBePosturedSoon) {
                         wakeLock.acquire(TAG)
@@ -158,7 +156,9 @@ constructor(
             val state =
                 when (arg.lowercase()) {
                     "true" -> PosturedState.Postured
-                    "false" -> PosturedState.NotPostured
+                    "false" ->
+                        PosturedState.NotPostured(isStationary = false, inOrientation = false)
+
                     "clear" -> PosturedState.Unknown
                     else -> {
                         pw.println("Invalid argument!")
