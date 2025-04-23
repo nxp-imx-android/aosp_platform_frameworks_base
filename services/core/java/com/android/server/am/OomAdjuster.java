@@ -470,6 +470,30 @@ public abstract class OomAdjuster {
 
         /** Is memory level normal since last evaluation. */
         boolean isLastMemoryLevelNormal();
+
+        /** The ProcessState to assign to the Top process. */
+        @ActivityManager.ProcessState int getTopProcessState();
+
+        /** Keyguard is in the process of unlocking. */
+        boolean isUnlocking();
+
+        /** The notification shade is expanded. */
+        boolean hasExpandedNotificationShade();
+
+        /** The current Top process. */
+        @Nullable ProcessRecord getTopProcess();
+
+        /** The current Home process. */
+        @Nullable ProcessRecord getHomeProcess();
+
+        /** The current Heavy Weight process. */
+        @Nullable ProcessRecord getHeavyWeightProcess();
+
+        /** The current process showing UI if the device is in doze. */
+        @Nullable ProcessRecord getShowingUiWhileDozingProcess();
+
+        /** The previous process that showed an activity. */
+        @Nullable ProcessRecord getPreviousProcess();
     }
 
     boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
@@ -661,9 +685,9 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     protected int enqueuePendingTopAppIfNecessaryLSP() {
-        final int prevTopProcessState = mService.mAtmInternal.getTopProcessState();
+        final int prevTopProcessState = getTopProcessState();
         mService.enqueuePendingTopAppIfNecessaryLocked();
-        final int topProcessState = mService.mAtmInternal.getTopProcessState();
+        final int topProcessState = getTopProcessState();
         if (prevTopProcessState != topProcessState) {
             // Unlikely but possible: WM just updated the top process state, it may have
             // enqueued the new top app to the pending top UID list. Enqueue that one here too.
@@ -1712,6 +1736,70 @@ public abstract class OomAdjuster {
             return app.mReceivers.isReceivingBroadcast();
         } else {
             return app.mState.getCachedIsReceivingBroadcast(mTmpSchedGroup);
+        }
+    }
+
+    protected int getTopProcessState() {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getTopProcessState();
+        } else {
+            return mService.mAtmInternal.getTopProcessState();
+        }
+    }
+
+    protected boolean useTopSchedGroupForTopProcess() {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            if (mGlobalState.isUnlocking()) {
+                // Keyguard is unlocking, suppress the top process priority for now.
+                return false;
+            }
+            if (mGlobalState.hasExpandedNotificationShade()) {
+                // The notification shade is occluding the top process, suppress top.
+                return false;
+            }
+            return true;
+        } else {
+            return mService.mAtmInternal.useTopSchedGroupForTopProcess();
+        }
+    }
+
+    protected ProcessRecord getTopProcess() {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getTopProcess();
+        } else {
+            return mService.getTopApp();
+        }
+    }
+
+    protected boolean isHomeProcess(ProcessRecord proc) {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getHomeProcess() == proc;
+        } else {
+            return proc.mState.getCachedIsHomeProcess();
+        }
+    }
+
+    protected boolean isHeavyWeightProcess(ProcessRecord proc) {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getHeavyWeightProcess() == proc;
+        } else {
+            return proc.mState.getCachedIsHeavyWeight();
+        }
+    }
+
+    protected boolean isVisibleDozeUiProcess(ProcessRecord proc) {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getShowingUiWhileDozingProcess() == proc;
+        } else {
+            return proc.getWindowProcessController().isShowingUiWhileDozing();
+        }
+    }
+
+    protected boolean isPreviousProcess(ProcessRecord proc) {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            return mGlobalState.getPreviousProcess() == proc;
+        } else {
+            return proc.mState.getCachedIsPreviousProcess();
         }
     }
 

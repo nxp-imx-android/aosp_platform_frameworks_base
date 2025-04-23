@@ -7938,6 +7938,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     && (demoteTopAppReasons & DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE) == 0) {
                 mAtmService.mDemoteTopAppReasons =
                         demoteTopAppReasons | DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE;
+                mAtmService.mProcessStateController.setExpandedNotificationShadeAsync(true);
                 Trace.instant(TRACE_TAG_WINDOW_MANAGER, "demote-top-for-ns");
                 if (topApp != null) {
                     topApp.scheduleUpdateOomAdj();
@@ -7946,6 +7947,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     && (demoteTopAppReasons & DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE) != 0) {
                 mAtmService.mDemoteTopAppReasons =
                         demoteTopAppReasons & ~DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE;
+                mAtmService.mProcessStateController.setExpandedNotificationShadeAsync(false);
                 Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancel-demote-top-for-ns");
                 if (topApp != null) {
                     topApp.scheduleUpdateOomAdj();

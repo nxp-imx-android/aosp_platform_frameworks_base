@@ -113,7 +113,8 @@ public class CacheOomRankerTest {
         mAms = new ActivityManagerService(
                 new TestInjector(context), mServiceThreadRule.getThread());
         mAms.mActivityTaskManager = new ActivityTaskManagerService(context);
-        mAms.mActivityTaskManager.initialize(null, null, context.getMainLooper());
+        mAms.mActivityTaskManager.initialize(null, null, mAms.mProcessStateController,
+                context.getMainLooper());
         mAms.mAtmInternal = spy(mAms.mActivityTaskManager.getAtmInternal());
         mAms.mPackageManagerInt = mPackageManagerInt;
         doReturn(new ComponentName("", "")).when(mPackageManagerInt).getSystemUiServiceComponent();

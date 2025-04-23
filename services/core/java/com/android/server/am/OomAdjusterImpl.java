@@ -705,8 +705,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @Override
     protected void performUpdateOomAdjLSP(@OomAdjReason int oomAdjReason) {
-        final ProcessRecord topApp = mService.getTopApp();
-        mProcessStateCurTop = mService.mAtmInternal.getTopProcessState();
+        mProcessStateCurTop = getTopProcessState();
         // Clear any pending ones because we are doing a full update now.
         mPendingProcessSet.clear();
 
@@ -746,7 +745,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     private void fullUpdateLSP(@OomAdjReason int oomAdjReason) {
-        final ProcessRecord topApp = mService.getTopApp();
+        final ProcessRecord topApp = getTopProcess();
         final long now = mInjector.getUptimeMillis();
         final long nowElapsed = mInjector.getElapsedRealtimeMillis();
         final long oldTime = now - mConstants.mMaxEmptyTimeMillis;
@@ -819,7 +818,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     private void partialUpdateLSP(@OomAdjReason int oomAdjReason, ArraySet<ProcessRecord> targets) {
-        final ProcessRecord topApp = mService.getTopApp();
+        final ProcessRecord topApp = getTopProcess();
         final long now = mInjector.getUptimeMillis();
         final long nowElapsed = mInjector.getElapsedRealtimeMillis();
         final long oldTime = now - mConstants.mMaxEmptyTimeMillis;
@@ -1196,7 +1195,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // sched group/proc state adjustment is below
                 state.setSystemNoUi(false);
                 state.setAdjType("pers-top-ui");
-            } else if (state.getCachedHasVisibleActivities()) {
+            } else if (state.getHasVisibleActivities()) {
                 state.setSystemNoUi(false);
             }
             if (!state.isSystemNoUi()) {
@@ -1204,7 +1203,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     // screen on or animating, promote UI
                     state.setCurProcState(ActivityManager.PROCESS_STATE_PERSISTENT_UI);
                     state.setCurrentSchedulingGroup(SCHED_GROUP_TOP_APP);
-                } else if (!app.getWindowProcessController().isShowingUiWhileDozing()) {
+                } else if (!isVisibleDozeUiProcess(app)) {
                     // screen off, restrict UI scheduling
                     state.setCurProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
                     state.setCurrentSchedulingGroup(SCHED_GROUP_RESTRICTED);
@@ -1231,7 +1230,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         if (app == topApp && PROCESS_STATE_CUR_TOP == PROCESS_STATE_TOP) {
             // The last app on the list is the foreground app.
             adj = FOREGROUND_APP_ADJ;
-            if (mService.mAtmInternal.useTopSchedGroupForTopProcess()) {
+            if (useTopSchedGroupForTopProcess()) {
                 schedGroup = SCHED_GROUP_TOP_APP;
                 state.setAdjType("top-activity");
             } else {
@@ -1313,20 +1312,20 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         // Examine all non-top activities.
         boolean foregroundActivities = app == topApp;
-        if (!foregroundActivities && state.getCachedHasActivities()) {
+        if (!foregroundActivities && state.getHasActivities()) {
             state.computeOomAdjFromActivitiesIfNecessary(mTmpComputeOomAdjWindowCallback,
                     adj, foregroundActivities, hasVisibleActivities, procState, schedGroup,
                     appUid, logUid, PROCESS_STATE_CUR_TOP);
 
             adj = state.getCachedAdj();
             foregroundActivities = state.getCachedForegroundActivities();
-            hasVisibleActivities = state.getCachedHasVisibleActivities();
+            hasVisibleActivities = state.getHasVisibleActivities();
             procState = state.getCachedProcState();
             schedGroup = state.getCachedSchedGroup();
             state.setAdjType(state.getCachedAdjType());
         }
 
-        if (procState > PROCESS_STATE_CACHED_RECENT && state.getCachedHasRecentTasks()) {
+        if (procState > PROCESS_STATE_CACHED_RECENT && state.getHasRecentTasks()) {
             procState = PROCESS_STATE_CACHED_RECENT;
             state.setAdjType("cch-rec");
             if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
@@ -1452,7 +1451,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        if (state.getCachedIsHeavyWeight()) {
+        if (isHeavyWeightProcess(app)) {
             if (adj > HEAVY_WEIGHT_APP_ADJ) {
                 // We don't want to kill the current heavy-weight process.
                 adj = HEAVY_WEIGHT_APP_ADJ;
@@ -1471,7 +1470,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        if (state.getCachedIsHomeProcess()) {
+        if (isHomeProcess(app)) {
             if (adj > HOME_APP_ADJ) {
                 // This process is hosting what we currently consider to be the
                 // home app, so we don't want to let it go into the background.
@@ -1490,7 +1489,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
             }
         }
-        if (state.getCachedIsPreviousProcess() && state.getCachedHasActivities()) {
+        if (isPreviousProcess(app) && state.getHasActivities()) {
             // This was the previous process that showed UI to the user.  We want to
             // try to keep it around more aggressively, to give a good experience
             // around switching between two apps. However, we don't want to keep the
@@ -1580,7 +1579,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                                 "Raise procstate to started service: " + app);
                     }
                 }
-                if (!s.mKeepWarming && state.hasShownUi() && !state.getCachedIsHomeProcess()) {
+                if (!s.mKeepWarming && state.hasShownUi() && !isHomeProcess(app)) {
                     // If this process has shown some UI, let it immediately
                     // go to the LRU list because it may be pretty heavy with
                     // UI stuff.  We'll tag it with a label just to help
@@ -1922,7 +1921,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
                 // Not doing bind OOM management, so treat
                 // this guy more like a started service.
-                if (state.hasShownUi() && !state.getCachedIsHomeProcess()) {
+                if (state.hasShownUi() && !isHomeProcess(app)) {
                     // If this process has shown some UI, let it immediately
                     // go to the LRU list because it may be pretty heavy with
                     // UI stuff.  We'll tag it with a label just to help
@@ -1958,7 +1957,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // is less important than a state that can be actively running, then we don't
                 // care about the binding as much as we care about letting this process get into
                 // the LRU list to be killed and restarted if needed for memory.
-                if (state.hasShownUi() && !state.getCachedIsHomeProcess()
+                if (state.hasShownUi() && !isHomeProcess(app)
                         && clientAdj > CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD) {
                     if (adj >= CACHED_APP_MIN_ADJ) {
                         adjType = "cch-bound-ui-services";
@@ -2322,7 +2321,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         String adjType = null;
         if (adj > clientAdj) {
-            if (state.hasShownUi() && !state.getCachedIsHomeProcess()
+            if (state.hasShownUi() && !isHomeProcess(app)
                     && clientAdj > PERCEPTIBLE_APP_ADJ) {
                 adjType = "cch-ui-provider";
             } else {
