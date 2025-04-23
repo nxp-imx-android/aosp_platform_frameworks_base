@@ -14467,10 +14467,6 @@ package android.telecom {
     field @Deprecated public static final int STATE_PRE_DIAL_WAIT = 8; // 0x8
   }
 
-  public static class Call.Details {
-    method @FlaggedApi("com.android.server.telecom.flags.call_details_get_associated_user_api") @NonNull public android.os.UserHandle getAssociatedUser();
-  }
-
   @Deprecated public abstract static class Call.Listener extends android.telecom.Call.Callback {
     ctor @Deprecated public Call.Listener();
   }
