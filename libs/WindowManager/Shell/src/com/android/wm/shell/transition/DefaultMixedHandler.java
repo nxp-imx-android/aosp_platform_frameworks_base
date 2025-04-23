@@ -26,6 +26,7 @@ import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.PendingIntent;
@@ -56,6 +57,8 @@ import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -131,6 +134,27 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         /** Transition of a visible app into a bubble when launched from another bubble. */
         static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 15;
 
+        @IntDef(prefix = {"TYPE_"}, value = {
+                TYPE_ENTER_PIP_FROM_SPLIT,
+                TYPE_DISPLAY_AND_SPLIT_CHANGE,
+                TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE,
+                TYPE_RECENTS_DURING_SPLIT,
+                TYPE_KEYGUARD,
+                TYPE_RECENTS_DURING_KEYGUARD,
+                TYPE_RECENTS_DURING_DESKTOP,
+                TYPE_UNFOLD,
+                TYPE_ENTER_PIP_FROM_ACTIVITY_EMBEDDING,
+                TYPE_ENTER_PIP_REPLACE_FROM_SPLIT,
+                TYPE_ENTER_PIP_WITH_DISPLAY_CHANGE,
+                TYPE_OPEN_IN_DESKTOP,
+                TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE,
+                TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE,
+                TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        @interface MixedTransitionType {
+        }
+
         // Mixed transition sub-animation types
 
         /** The default animation for this mixed transition. */
@@ -140,9 +164,19 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         static final int ANIM_TYPE_GOING_HOME = 1;
 
         /** For RECENTS_DURING_SPLIT, is set when this turns into a pair->pair task switch. */
-        static final int ANIM_TYPE_PAIR_TO_PAIR = 1;
+        static final int ANIM_TYPE_PAIR_TO_PAIR = 2;
 
+        @IntDef(prefix = {"ANIM_TYPE_"}, value = {
+                ANIM_TYPE_DEFAULT,
+                ANIM_TYPE_GOING_HOME,
+                ANIM_TYPE_PAIR_TO_PAIR,
+        })
+        @interface SubAnimationType {
+        }
+
+        @MixedTransitionType
         final int mType;
+        @SubAnimationType
         int mAnimType = ANIM_TYPE_DEFAULT;
         final IBinder mTransition;
 
@@ -172,7 +206,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
          */
         int mInFlightSubAnimations = 0;
 
-        MixedTransition(int type, IBinder transition, Transitions player,
+        MixedTransition(@MixedTransitionType int type, IBinder transition, Transitions player,
                 MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
                 StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler) {
             mType = type;
@@ -424,7 +458,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return null;
     }
 
-    private DefaultMixedTransition createDefaultMixedTransition(int type, IBinder transition) {
+    private DefaultMixedTransition createDefaultMixedTransition(
+            @MixedTransition.MixedTransitionType int type, IBinder transition) {
         return new DefaultMixedTransition(
                 type, transition, mPlayer, this, mPipHandler, mSplitHandler, mKeyguardHandler,
                 mUnfoldHandler, mActivityEmbeddingController, mDesktopTasksController,
