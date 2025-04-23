@@ -41,6 +41,9 @@ import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.provider.Settings
+import android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED
+import android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.R
@@ -223,23 +226,91 @@ class SupervisionServiceTest {
     @Test
     fun setSupervisionEnabledForUser() {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        Settings.Secure.putInt(context.getContentResolver(), BROWSER_CONTENT_FILTERS_ENABLED, 1)
+        Settings.Secure.putInt(context.getContentResolver(), SEARCH_CONTENT_FILTERS_ENABLED, 1)
 
         service.setSupervisionEnabledForUser(USER_ID, true)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    BROWSER_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(1)
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    SEARCH_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(1)
 
         service.setSupervisionEnabledForUser(USER_ID, false)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    BROWSER_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(-1)
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    SEARCH_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(-1)
     }
 
     @Test
     fun setSupervisionEnabledForUser_internal() {
+        Settings.Secure.putInt(context.getContentResolver(), BROWSER_CONTENT_FILTERS_ENABLED, 1)
+        Settings.Secure.putInt(context.getContentResolver(), SEARCH_CONTENT_FILTERS_ENABLED, 0)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
 
         service.mInternal.setSupervisionEnabledForUser(USER_ID, true)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    BROWSER_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(1)
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    SEARCH_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(0)
 
         service.mInternal.setSupervisionEnabledForUser(USER_ID, false)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    BROWSER_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(-1)
+        assertThat(
+                Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    SEARCH_CONTENT_FILTERS_ENABLED,
+                    USER_ID,
+                )
+            )
+            .isEqualTo(0)
     }
 
     @Test
