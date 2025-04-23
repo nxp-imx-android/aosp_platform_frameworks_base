@@ -190,3 +190,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "hid_bluetooth_wakeup"
+    namespace: "desktop_pnp"
+    description: "Allow Bluetooth HID profile connection to fully wake up the device."
+    bug: "385357349"
+}

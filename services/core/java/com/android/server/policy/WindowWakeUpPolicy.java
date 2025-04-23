@@ -89,6 +89,7 @@ class WindowWakeUpPolicy {
                 com.android.internal.R.bool.config_allowTheaterModeWakeFromLidSwitch);
         mAllowTheaterModeWakeFromWakeGesture = res.getBoolean(
                 com.android.internal.R.bool.config_allowTheaterModeWakeFromGesture);
+
         if (supportInputWakeupDelegate()) {
             LocalServices.addService(WindowWakeUpPolicyInternal.class, new LocalService());
         }
@@ -235,6 +236,25 @@ class WindowWakeUpPolicy {
         wakeUp(mClock.uptimeMillis(), WAKE_REASON_GESTURE, "GESTURE");
         return true;
     }
+
+    /**
+     * Wakes up due to a Bluetooth HID profile connection.
+     *
+     * The policy at the theater mode is the same as the motion, because Bluetooth HID
+     * connection is caused by user motions.
+     *
+     * @return {@code true} if the policy allows the requested wake up and the request has been
+     *      executed; {@code false} otherwise.
+     */
+    boolean wakeUpFromBluetooth() {
+        if (!canWakeUp(mAllowTheaterModeWakeFromMotion)) {
+            if (DEBUG) Slog.d(TAG, "Unable to wake up from Bluetooth.");
+            return false;
+        }
+        wakeUp(mClock.uptimeMillis(), WAKE_REASON_WAKE_MOTION, "BLUETOOTH_DEVICE_CONNECTED");
+        return true;
+    }
+
 
     private boolean canWakeUp(boolean wakeInTheaterMode) {
         if (supportInputWakeupDelegate() && isDefaultDisplayOn()) {
