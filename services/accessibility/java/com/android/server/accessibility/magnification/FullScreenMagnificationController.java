@@ -1812,10 +1812,8 @@ public class FullScreenMagnificationController implements
      * @param scale     The new scale factor.
      */
     public void notifyScaleForInput(int displayId, float scale) {
-        if (Flags.magnificationEnlargePointerBugfix()) {
-            mControllerCtx.getInputManager()
-                    .setAccessibilityPointerIconScaleFactor(displayId, scale);
-        }
+        mControllerCtx.getInputManager()
+            .setAccessibilityPointerIconScaleFactor(displayId, scale);
     }
 
     /**

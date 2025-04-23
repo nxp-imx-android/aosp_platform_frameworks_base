@@ -207,16 +207,6 @@ flag {
 }
 
 flag {
-    name: "magnification_enlarge_pointer_bugfix"
-    namespace: "accessibility"
-    description: "When fullscreen magnification is enabled, pointer icon is enlarged"
-    bug: "355734856"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "manager_avoid_receiver_timeout"
     namespace: "accessibility"
     description: "Register receivers on background handler so they have more time to complete"
