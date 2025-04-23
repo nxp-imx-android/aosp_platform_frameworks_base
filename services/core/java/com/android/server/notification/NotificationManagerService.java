@@ -96,6 +96,7 @@ import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;
 import static android.content.Context.BIND_NOT_PERCEPTIBLE;
+import static android.content.Context.BIND_SIMULATE_ALLOW_FREEZE;
 import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_TELECOM;
 import static android.content.pm.PackageManager.FEATURE_TELEVISION;
@@ -129,6 +130,7 @@ import static android.service.notification.Flags.notificationForceGrouping;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 import static android.service.notification.Flags.redactSensitiveNotificationsBigTextStyle;
 import static android.service.notification.Flags.redactSensitiveNotificationsFromUntrustedListeners;
+import static android.service.notification.Flags.reportNlsStartAndEnd;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ONGOING;
@@ -216,6 +218,7 @@ import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.AutomaticZenRule;
 import android.app.IActivityManager;
+import android.app.IBinderSession;
 import android.app.ICallNotificationEventCallback;
 import android.app.INotificationManager;
 import android.app.ITransientNotification;
@@ -313,6 +316,7 @@ import android.service.notification.Condition;
 import android.service.notification.ConversationChannelWrapper;
 import android.service.notification.DeviceEffectsApplier;
 import android.service.notification.IConditionProvider;
+import android.service.notification.IDispatchCompletionListener;
 import android.service.notification.INotificationListener;
 import android.service.notification.IStatusBarNotificationHolder;
 import android.service.notification.ListenersDisablingEffectsProto;
@@ -13409,6 +13413,8 @@ public class NotificationManagerService extends SystemService {
     }
 
     public class NotificationListeners extends ManagedServices {
+        private static final Duration NLS_COMPLETION_GRACE_PERIOD = Duration.ofSeconds(10);
+
         static final String TAG_ENABLED_NOTIFICATION_LISTENERS = "enabled_listeners";
         static final String TAG_REQUESTED_LISTENERS = "request_listeners";
         static final String TAG_REQUESTED_LISTENER = "listener";
@@ -13420,6 +13426,21 @@ public class NotificationManagerService extends SystemService {
         static final String TAG_DISALLOWED= "disallowed";
         static final String XML_SEPARATOR = ",";
         static final String FLAG_SEPARATOR = "\\|";
+
+        static final String BINDER_TAG_ON_LISTENER_CONNECTED = "onListenerConnected";
+        static final String BINDER_TAG_ON_NOTIFICATION_POSTED = "onNotificationPostedFull";
+        static final String BINDER_TAG_ON_STATUS_BAR_ICONS_BEHAVIOR_CHANGED =
+                "onStatusBarIconsBehaviorChanged";
+        static final String BINDER_TAG_ON_NOTIFICATION_REMOVED = "onNotificationRemovedFull";
+        static final String BINDER_TAG_ON_NOTIFICATION_RANKING_UPDATE =
+                "onNotificationRankingUpdate";
+        static final String BINDER_TAG_ON_LISTENER_HINTS_CHANGED = "onListenerHintsChanged";
+        static final String BINDER_TAG_ON_INTERRUPTION_FILTER_CHANGED =
+                "onInterruptionFilterChanged";
+        static final String BINDER_TAG_ON_NOTIFICATION_CHANNEL_MODIFICATION =
+                "onNotificationChannelModification";
+        static final String BINDER_TAG_ON_NOTIFICATION_CHANNEL_GROUP_MODIFICATION =
+                "onNotificationChannelGroupModification";
 
         private final ArraySet<ManagedServiceInfo> mLightTrimListeners = new ArraySet<>();
 
@@ -13497,13 +13518,17 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected int getBindFlags() {
+        protected long getBindFlags() {
+            long freezeFlags = 0;
+            if (reportNlsStartAndEnd()) {
+                freezeFlags = BIND_SIMULATE_ALLOW_FREEZE;
+            }
             // Most of the same flags as the base, but also add BIND_NOT_PERCEPTIBLE
             // because too many 3P apps could be kept in memory as notification listeners and
             // cause extreme memory pressure.
             // TODO: Change the binding lifecycle of NotificationListeners to avoid this situation.
             return BIND_AUTO_CREATE | BIND_FOREGROUND_SERVICE
-                    | BIND_NOT_PERCEPTIBLE | BIND_ALLOW_WHITELIST_MANAGEMENT;
+                    | BIND_NOT_PERCEPTIBLE | BIND_ALLOW_WHITELIST_MANAGEMENT | freezeFlags;
         }
 
         @Override
@@ -13527,6 +13552,16 @@ public class NotificationManagerService extends SystemService {
         @Override
         protected boolean checkType(IInterface service) {
             return service instanceof INotificationListener;
+        }
+
+        private long reportBinderTransactionStarting(@NonNull IBinderSession session,
+                @NonNull String tag) {
+            try {
+                return session.binderTransactionStarting(tag);
+            } catch (RemoteException re) {
+                Slog.wtf(TAG, "Local call threw a remote exception", re);
+            }
+            return 0;
         }
 
         @Override
@@ -13559,8 +13594,29 @@ public class NotificationManagerService extends SystemService {
                     mTrustedListenerUids.add(info.uid);
                 }
             }
+            final IDispatchCompletionListener completionListener;
+            final long token;
+            if ((info.mBinderSession != null && reportNlsStartAndEnd())) {
+                final IBinderSession session = info.mBinderSession;
+                token = reportBinderTransactionStarting(session, BINDER_TAG_ON_LISTENER_CONNECTED);
+                completionListener = new IDispatchCompletionListener.Stub() {
+                    @Override
+                    public void notifyDispatchComplete(long dispatchToken) {
+                        mHandler.postDelayed(() -> {
+                            try {
+                                session.binderTransactionCompleted(dispatchToken);
+                            } catch (RemoteException e) {
+                                // Local call
+                            }
+                        }, NLS_COMPLETION_GRACE_PERIOD.toMillis());
+                    }
+                };
+            } else {
+                completionListener = null;
+                token = 0; // Will never be used as there is no completionListener.
+            }
             try {
-                listener.onListenerConnected(update);
+                listener.onListenerConnected(update, completionListener, token);
             } catch (RemoteException e) {
                 // we tried
             }
@@ -13828,15 +13884,25 @@ public class NotificationManagerService extends SystemService {
             // send to all currently bounds NASes since notifications from both users will appear in
             // the status bar
             for (final ManagedServiceInfo info : getServices()) {
+                final long token = getDispatchReportingToken(info,
+                        BINDER_TAG_ON_STATUS_BAR_ICONS_BEHAVIOR_CHANGED);
                 mHandler.post(() -> {
                     final INotificationListener listener = (INotificationListener) info.service;
                     try {
-                        listener.onStatusBarIconsBehaviorChanged(hideSilentStatusIcons);
+                        listener.onStatusBarIconsBehaviorChanged(hideSilentStatusIcons, token);
                     } catch (RemoteException ex) {
                         Slog.e(TAG, "unable to notify listener "
                                 + "(hideSilentStatusIcons): " + info, ex);
                     }
                 });
+            }
+        }
+
+        private long getDispatchReportingToken(ManagedServiceInfo info, String input) {
+            if (info.mBinderSession != null && reportNlsStartAndEnd()) {
+                return reportBinderTransactionStarting(info.mBinderSession, input);
+            } else {
+                return 0; // Will be unused because dispatch completion is disabled.
             }
         }
 
@@ -14373,15 +14439,17 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        private void notifyPosted(final ManagedServiceInfo info,
+        @VisibleForTesting
+        void notifyPosted(final ManagedServiceInfo info,
                 final StatusBarNotification sbn, NotificationRankingUpdate rankingUpdate) {
             final INotificationListener listener = (INotificationListener) info.service;
+            final long token = getDispatchReportingToken(info, BINDER_TAG_ON_NOTIFICATION_POSTED);
             try {
                 if (android.app.Flags.noSbnholder()) {
-                    listener.onNotificationPostedFull(sbn, rankingUpdate);
+                    listener.onNotificationPostedFull(sbn, rankingUpdate, token);
                 } else {
                     StatusBarNotificationHolder sbnHolder = new StatusBarNotificationHolder(sbn);
-                    listener.onNotificationPosted(sbnHolder, rankingUpdate);
+                    listener.onNotificationPosted(sbnHolder, rankingUpdate, token);
                 }
             } catch (DeadObjectException ex) {
                 Slog.wtf(TAG, "unable to notify listener (posted): " + info, ex);
@@ -14390,7 +14458,8 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        private void notifyRemoved(ManagedServiceInfo info, StatusBarNotification sbn,
+        @VisibleForTesting
+        void notifyRemoved(ManagedServiceInfo info, StatusBarNotification sbn,
                 NotificationRankingUpdate rankingUpdate, NotificationStats stats, int reason) {
             final INotificationListener listener = (INotificationListener) info.service;
             try {
@@ -14404,11 +14473,13 @@ public class NotificationManagerService extends SystemService {
                         && reason == REASON_ASSISTANT_CANCEL) {
                     reason = REASON_LISTENER_CANCEL;
                 }
+                final long token = getDispatchReportingToken(info,
+                        BINDER_TAG_ON_NOTIFICATION_REMOVED);
                 if (android.app.Flags.noSbnholder()) {
-                    listener.onNotificationRemovedFull(sbn, rankingUpdate, stats, reason);
+                    listener.onNotificationRemovedFull(sbn, rankingUpdate, stats, reason, token);
                 } else {
                     StatusBarNotificationHolder sbnHolder = new StatusBarNotificationHolder(sbn);
-                    listener.onNotificationRemoved(sbnHolder, rankingUpdate, stats, reason);
+                    listener.onNotificationRemoved(sbnHolder, rankingUpdate, stats, reason, token);
                 }
             } catch (DeadObjectException ex) {
                 Slog.wtf(TAG, "unable to notify listener (removed): " + info, ex);
@@ -14417,11 +14488,14 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        private void notifyRankingUpdate(ManagedServiceInfo info,
+        @VisibleForTesting
+        void notifyRankingUpdate(ManagedServiceInfo info,
                                          NotificationRankingUpdate rankingUpdate) {
             final INotificationListener listener = (INotificationListener) info.service;
+            final long token = getDispatchReportingToken(info,
+                    BINDER_TAG_ON_NOTIFICATION_RANKING_UPDATE);
             try {
-                listener.onNotificationRankingUpdate(rankingUpdate);
+                listener.onNotificationRankingUpdate(rankingUpdate, token);
             } catch (DeadObjectException ex) {
                 Slog.wtf(TAG, "unable to notify listener (ranking update): " + info, ex);
             } catch (RemoteException ex) {
@@ -14429,20 +14503,26 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        private void notifyListenerHintsChanged(ManagedServiceInfo info, int hints) {
+        @VisibleForTesting
+        void notifyListenerHintsChanged(ManagedServiceInfo info, int hints) {
             final INotificationListener listener = (INotificationListener) info.service;
+            final long token = getDispatchReportingToken(info,
+                    BINDER_TAG_ON_LISTENER_HINTS_CHANGED);
             try {
-                listener.onListenerHintsChanged(hints);
+                listener.onListenerHintsChanged(hints, token);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "unable to notify listener (listener hints): " + info, ex);
             }
         }
 
-        private void notifyInterruptionFilterChanged(ManagedServiceInfo info,
+        @VisibleForTesting
+        void notifyInterruptionFilterChanged(ManagedServiceInfo info,
                 int interruptionFilter) {
             final INotificationListener listener = (INotificationListener) info.service;
+            final long token = getDispatchReportingToken(info,
+                    BINDER_TAG_ON_INTERRUPTION_FILTER_CHANGED);
             try {
-                listener.onInterruptionFilterChanged(interruptionFilter);
+                listener.onInterruptionFilterChanged(interruptionFilter, token);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "unable to notify listener (interruption filter): " + info, ex);
             }
@@ -14452,19 +14532,26 @@ public class NotificationManagerService extends SystemService {
                 final String pkg, final UserHandle user, final NotificationChannel channel,
                 final int modificationType) {
             final INotificationListener listener = (INotificationListener) info.service;
+            final long token = getDispatchReportingToken(info,
+                    BINDER_TAG_ON_NOTIFICATION_CHANNEL_MODIFICATION);
             try {
-                listener.onNotificationChannelModification(pkg, user, channel, modificationType);
+                listener.onNotificationChannelModification(pkg, user, channel, modificationType,
+                        token);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "unable to notify listener (channel changed): " + info, ex);
             }
         }
 
-        private void notifyNotificationChannelGroupChanged(ManagedServiceInfo info,
+        @VisibleForTesting
+        void notifyNotificationChannelGroupChanged(ManagedServiceInfo info,
                 final String pkg, final UserHandle user, final NotificationChannelGroup group,
                 final int modificationType) {
             final INotificationListener listener = (INotificationListener) info.getService();
+            final long token = getDispatchReportingToken(info,
+                    BINDER_TAG_ON_NOTIFICATION_CHANNEL_GROUP_MODIFICATION);
             try {
-                listener.onNotificationChannelGroupModification(pkg, user, group, modificationType);
+                listener.onNotificationChannelGroupModification(pkg, user, group, modificationType,
+                        token);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "unable to notify listener (channel group changed): " + info, ex);
             }
