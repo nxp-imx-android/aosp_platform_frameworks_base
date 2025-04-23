@@ -33,6 +33,9 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionInfo
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
+import com.android.systemui.log.dagger.CommunalLog
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.kotlin.pairwise
@@ -69,12 +72,15 @@ constructor(
     @Main private val mainImmediateDispatcher: CoroutineDispatcher,
     private val sceneInteractor: CommunalSceneInteractor,
     private val repository: CommunalSceneTransitionRepository,
-    private val powerInteractor: PowerInteractor,
+    powerInteractor: PowerInteractor,
     keyguardInteractor: KeyguardInteractor,
+    @CommunalLog logBuffer: LogBuffer,
 ) : CoreStartable, CommunalSceneInteractor.OnSceneAboutToChangeListener {
 
     private var currentTransitionId: UUID? = null
     private var progressJob: Job? = null
+
+    private val logger = Logger(logBuffer, TAG)
 
     private val currentToState: KeyguardState
         get() = internalTransitionInteractor.currentTransitionInfoInternal().to
@@ -172,7 +178,7 @@ constructor(
                 currentTransitionId != null &&
                 idle.currentScene == prevTransition.toContent
         ) {
-            finishCurrentTransition()
+            finishCurrentTransition("transition finished")
         } else {
             // We may receive an Idle event without a corresponding Transition
             // event, such as when snapping to a scene without an animation, or the previous
@@ -185,18 +191,19 @@ constructor(
                 } else {
                     if (isReversedTransition) {
                         // Previous is a reversed transition, finish current ktf transition.
-                        finishCurrentTransition()
+                        finishCurrentTransition("previous transition is reversed")
                     }
                     // Do nothing as we are no longer in the hub state.
                     return
                 }
-            transitionKtfTo(targetState)
+            transitionKtfTo(targetState, "snap to a new state without transition")
             repository.nextLockscreenTargetState.value = null
         }
     }
 
-    private suspend fun finishCurrentTransition() {
+    private suspend fun finishCurrentTransition(reason: String) {
         if (currentTransitionId == null) return
+        logger.i({ "Finishing current keyguard transition: $str1" }) { str1 = reason }
         internalTransitionInteractor.updateTransition(
             currentTransitionId!!,
             1f,
@@ -205,7 +212,7 @@ constructor(
         resetTransitionData()
     }
 
-    private suspend fun finishReversedTransitionTo(state: KeyguardState) {
+    private suspend fun finishReversedTransitionTo(state: KeyguardState, reason: String) {
         val newTransition =
             TransitionInfo(
                 ownerName = this::class.java.simpleName,
@@ -214,7 +221,7 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.REVERSE,
             )
-        currentTransitionId = internalTransitionInteractor.startTransition(newTransition)
+        startTransition(newTransition, reason)
         internalTransitionInteractor.updateTransition(
             currentTransitionId!!,
             1f,
@@ -256,7 +263,10 @@ constructor(
             ) {
                 // Prev transition: Blank->Communal, X->hub running
                 // New transition: Blank->Communal (reversed->Blank), we should reverse->X
-                startReversedTransitionToState(nextKeyguardState.value)
+                startReversedTransitionToState(
+                    nextKeyguardState.value,
+                    "reverse to the next keyguard state",
+                )
                 collectProgress(transition, isReversed = true)
                 return
             }
@@ -266,7 +276,7 @@ constructor(
             ) {
                 // Prev transition: Communal->Blank, hub->X running
                 // New transition: Communal->Blank (reversed->Communal), we should reverse->hub
-                startReversedTransitionToState(KeyguardState.GLANCEABLE_HUB)
+                startReversedTransitionToState(KeyguardState.GLANCEABLE_HUB, "reverse to hub")
                 collectProgress(transition, isReversed = true)
                 return
             }
@@ -275,28 +285,34 @@ constructor(
         // same content key and toContent is just the target scene
         if (transition.toContent == CommunalScenes.Communal) {
             if (currentToState == KeyguardState.GLANCEABLE_HUB) {
-                transitionKtfTo(transitionInteractor.startedKeyguardTransitionStep.value.from)
+                transitionKtfTo(
+                    transitionInteractor.startedKeyguardTransitionStep.value.from,
+                    "make sure keyguard is ready to transition to hub",
+                )
             }
-            startTransitionToGlanceableHub()
+            startTransitionToGlanceableHub("blank -> communal scene transition started")
             collectProgress(transition)
         } else if (transition.toContent == CommunalScenes.Blank) {
             // Another transition started before this one is completed. Transition to the
             // GLANCEABLE_HUB state so that we can properly transition away from it.
-            transitionKtfTo(KeyguardState.GLANCEABLE_HUB)
-            startTransitionFromGlanceableHub()
+            transitionKtfTo(
+                KeyguardState.GLANCEABLE_HUB,
+                "another transition started before the previous one finished",
+            )
+            startTransitionFromGlanceableHub("communal -> blank scene transition started")
             collectProgress(transition)
         }
     }
 
-    private suspend fun transitionKtfTo(state: KeyguardState) {
+    private suspend fun transitionKtfTo(state: KeyguardState, reason: String) {
         val currentTransition = transitionInteractor.transitionState.value
         if (currentTransition.isFinishedIn(state)) {
             // This is already the state we want to be in
             resetTransitionData()
         } else if (currentTransition.isTransitioning(to = state)) {
-            finishCurrentTransition()
+            finishCurrentTransition(reason)
         } else {
-            finishReversedTransitionTo(state)
+            finishReversedTransitionTo(state, reason)
         }
     }
 
@@ -315,7 +331,7 @@ constructor(
             }
     }
 
-    private suspend fun startTransitionFromGlanceableHub() {
+    private suspend fun startTransitionFromGlanceableHub(reason: String) {
         val newTransition =
             TransitionInfo(
                 ownerName = this::class.java.simpleName,
@@ -325,10 +341,10 @@ constructor(
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
         repository.nextLockscreenTargetState.value = null
-        startTransition(newTransition)
+        startTransition(newTransition, reason)
     }
 
-    private suspend fun startTransitionToGlanceableHub() {
+    private suspend fun startTransitionToGlanceableHub(reason: String) {
         val currentState = internalTransitionInteractor.currentTransitionInfoInternal().to
         val newTransition =
             TransitionInfo(
@@ -338,10 +354,10 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
-        startTransition(newTransition)
+        startTransition(newTransition, reason)
     }
 
-    private suspend fun startReversedTransitionToState(state: KeyguardState) {
+    private suspend fun startReversedTransitionToState(state: KeyguardState, reason: String) {
         val currentState = internalTransitionInteractor.currentTransitionInfoInternal().to
         val newTransition =
             TransitionInfo(
@@ -351,12 +367,17 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.REVERSE,
             )
-        startTransition(newTransition)
+        startTransition(newTransition, reason)
     }
 
-    private suspend fun startTransition(transitionInfo: TransitionInfo) {
+    private suspend fun startTransition(transitionInfo: TransitionInfo, reason: String) {
         if (currentTransitionId != null) {
             resetTransitionData()
+        }
+        logger.i({ "Requesting keyguard transition $str1 -> $str2: $str3" }) {
+            str1 = transitionInfo.from.name
+            str2 = transitionInfo.to.name
+            str3 = reason
         }
         currentTransitionId = internalTransitionInteractor.startTransition(transitionInfo)
     }

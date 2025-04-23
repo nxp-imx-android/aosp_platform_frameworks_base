@@ -23,6 +23,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.power.domain.interactor.powerInteractor
 
 val Kosmos.communalSceneTransitionInteractor: CommunalSceneTransitionInteractor by
@@ -37,5 +38,6 @@ val Kosmos.communalSceneTransitionInteractor: CommunalSceneTransitionInteractor 
             repository = communalSceneTransitionRepository,
             keyguardInteractor = keyguardInteractor,
             powerInteractor = powerInteractor,
+            logBuffer = logcatLogBuffer(),
         )
     }
