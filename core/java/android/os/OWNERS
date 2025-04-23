@@ -144,3 +144,6 @@ per-file DropBoxManager* = mwachens@google.com
 
 # Flags
 per-file flags.aconfig = file:/FF_LEADS_OWNERS
+
+# Trade-In-Mode
+per-file ITradeInMode.aidl = file:/TRADE_IN_MODE_OWNERS
