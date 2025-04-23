@@ -2496,7 +2496,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     // Kick off any lingering app transitions form the MoveTaskToFront operation,
                     // but only consider the top activity on that display.
                     rootTask.executeAppTransition(targetOptions);
-                } else {
+                } else if (topRunningActivity.attachedToProcess()) {
                     resumedOnDisplay[0] |= topRunningActivity.makeActiveIfNeeded(target);
                 }
             });
