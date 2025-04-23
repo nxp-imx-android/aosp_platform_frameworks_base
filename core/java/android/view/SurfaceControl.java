@@ -4837,7 +4837,6 @@ public final class SurfaceControl implements Parcelable {
          * @return this
          * @see #setExtendedRangeBrightness
          **/
-        @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_LIMITED_HDR)
         public @NonNull Transaction setDesiredHdrHeadroom(@NonNull SurfaceControl sc,
                 @FloatRange(from = 0.0f) float desiredRatio) {
             checkPreconditions(sc);

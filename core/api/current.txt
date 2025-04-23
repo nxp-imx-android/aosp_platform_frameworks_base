@@ -53757,7 +53757,7 @@ package android.view {
     method @NonNull public android.view.SurfaceControl.Transaction setCrop(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Rect);
     method @NonNull public android.view.SurfaceControl.Transaction setDamageRegion(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Region);
     method @NonNull public android.view.SurfaceControl.Transaction setDataSpace(@NonNull android.view.SurfaceControl, int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") @NonNull public android.view.SurfaceControl.Transaction setDesiredHdrHeadroom(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0f) float);
+    method @NonNull public android.view.SurfaceControl.Transaction setDesiredHdrHeadroom(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0f) float);
     method @FlaggedApi("com.android.window.flags.sdk_desired_present_time") @NonNull public android.view.SurfaceControl.Transaction setDesiredPresentTimeNanos(long);
     method @NonNull public android.view.SurfaceControl.Transaction setExtendedRangeBrightness(@NonNull android.view.SurfaceControl, float, float);
     method @NonNull public android.view.SurfaceControl.Transaction setFrameRate(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0) float, int);
@@ -53867,7 +53867,7 @@ package android.view {
     method public android.view.SurfaceControl getSurfaceControl();
     method public void setChildSurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public void setCompositionOrder(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setSecure(boolean);
     method public void setSurfaceLifecycle(int);
     method @Deprecated @FlaggedApi("android.view.flags.deprecate_surface_view_z_order_apis") public void setZOrderMediaOverlay(boolean);
@@ -55574,7 +55574,7 @@ package android.view {
     method @Nullable public abstract android.view.View getCurrentFocus();
     method @NonNull public abstract android.view.View getDecorView();
     method public static int getDefaultFeatures(android.content.Context);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public float getDesiredHdrHeadroom();
+    method public float getDesiredHdrHeadroom();
     method public android.transition.Transition getEnterTransition();
     method public android.transition.Transition getExitTransition();
     method protected final int getFeatures();
@@ -55646,7 +55646,7 @@ package android.view {
     method public abstract void setDecorCaptionShade(int);
     method @Deprecated public void setDecorFitsSystemWindows(boolean);
     method protected void setDefaultWindowFormat(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setDimAmount(float);
     method public void setElevation(float);
     method public void setEnterTransition(android.transition.Transition);
@@ -56024,7 +56024,7 @@ package android.view {
     method public int describeContents();
     method public int getBlurBehindRadius();
     method public int getColorMode();
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public float getDesiredHdrHeadroom();
+    method public float getDesiredHdrHeadroom();
     method public int getFitInsetsSides();
     method public int getFitInsetsTypes();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean getFrameRateBoostOnTouchEnabled();
@@ -56036,7 +56036,7 @@ package android.view {
     method public void setBlurBehindRadius(@IntRange(from=0) int);
     method public void setCanPlayMoveAnimation(boolean);
     method public void setColorMode(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0f) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0f) float);
     method public void setFitInsetsIgnoringVisibility(boolean);
     method public void setFitInsetsSides(int);
     method public void setFitInsetsTypes(int);
