@@ -38,6 +38,13 @@ flag {
 }
 
 flag {
+    name: "enable_device_address_as_identifier_in_media_router_2"
+    namespace: "media_better_together"
+    description: "Allows audio devices to retain address in identifier and selection in MR2."
+    bug: "384408833"
+}
+
+flag {
     name: "enable_audio_policies_device_and_bluetooth_controller"
     is_exported: true
     namespace: "media_solutions"
