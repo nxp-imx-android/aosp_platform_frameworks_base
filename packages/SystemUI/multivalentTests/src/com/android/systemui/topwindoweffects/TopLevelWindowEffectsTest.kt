@@ -21,6 +21,7 @@ import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
 import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -79,6 +80,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                     SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
                 appZoomOutOptional = Optional.empty(),
                 notificationShadeWindowController = notificationShadeWindowController,
+                interactionJankMonitor = kosmos.interactionJankMonitor,
             )
         }
 
