@@ -3,13 +3,6 @@ container: "system"
 container: "system"
 
 flag {
-  name: "ranking_update_ashmem"
-  namespace: "systemui"
-  description: "This flag controls moving ranking update contents into ashmem"
-  bug: "249848655"
-}
-
-flag {
   name: "redact_sensitive_notifications_from_untrusted_listeners"
   is_exported: true
   namespace: "systemui"
