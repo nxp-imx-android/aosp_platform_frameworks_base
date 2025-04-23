@@ -408,7 +408,11 @@ public class AdbDebuggingManager {
 
                     Slog.d(TAG, "Recv packet: " + new String(Arrays.copyOfRange(buffer, 0, 2)));
 
+                    // These messages are send from AdbdAuthContext::SendPacket
+                    // in frameworks/native/libs/adbd_auth/adbd_auth.cpp
+
                     if (buffer[0] == 'P' && buffer[1] == 'K') {
+                        // PK adbauth.AdbdAuthPacketRequestAuthorization
                         String key = new String(Arrays.copyOfRange(buffer, 2, count));
                         Slog.d(TAG, "Received public key: " + key);
                         Message msg = mHandler.obtainMessage(
@@ -416,6 +420,7 @@ public class AdbDebuggingManager {
                         msg.obj = key;
                         mHandler.sendMessage(msg);
                     } else if (buffer[0] == 'D' && buffer[1] == 'C') {
+                        // DC adbauth.AdbdAuthPacketDisconnected
                         String key = new String(Arrays.copyOfRange(buffer, 2, count));
                         Slog.d(TAG, "Received disconnected message: " + key);
                         Message msg = mHandler.obtainMessage(
@@ -423,6 +428,7 @@ public class AdbDebuggingManager {
                         msg.obj = key;
                         mHandler.sendMessage(msg);
                     } else if (buffer[0] == 'C' && buffer[1] == 'K') {
+                        // CK adbauth.AdbdAuthPacketAuthenticated
                         String key = new String(Arrays.copyOfRange(buffer, 2, count));
                         Slog.d(TAG, "Received connected key message: " + key);
                         Message msg = mHandler.obtainMessage(
@@ -430,6 +436,7 @@ public class AdbDebuggingManager {
                         msg.obj = key;
                         mHandler.sendMessage(msg);
                     } else if (buffer[0] == 'W' && buffer[1] == 'E') {
+                        // WE adbauth.AdbdPacketTlsDeviceConnected
                         byte transportType = buffer[2];
                         String key = new String(Arrays.copyOfRange(buffer, 3, count));
                         switch (transportType) {
@@ -458,6 +465,7 @@ public class AdbDebuggingManager {
                                 break;
                         }
                     } else if (buffer[0] == 'W' && buffer[1] == 'F') {
+                        // WF adbauth.AdbdPacketTlsDeviceDisconnected
                         byte transportType = buffer[2];
                         String key = new String(Arrays.copyOfRange(buffer, 3, count));
                         switch (transportType) {
@@ -486,6 +494,7 @@ public class AdbDebuggingManager {
                                 break;
                         }
                     } else if (buffer[0] == 'T' && buffer[1] == 'P') {
+                        // TP adbauth.AdbdPacketTlsServerPort
                         if (count < 4) {
                             Slog.e(TAG, "Bad TP message length " + count);
                             break;
