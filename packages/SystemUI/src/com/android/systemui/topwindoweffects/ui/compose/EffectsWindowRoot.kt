@@ -38,7 +38,7 @@ class EffectsWindowRoot(
 ) : AbstractComposeView(context) {
 
     override fun onAttachedToWindow() {
-        ComposeInitializer.onAttachedToWindow(this)
+        ComposeInitializer.onAttachedToWindow(this, true)
         super.onAttachedToWindow()
     }
 
