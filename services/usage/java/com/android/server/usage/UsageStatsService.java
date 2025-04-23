@@ -670,11 +670,8 @@ public class UsageStatsService extends SystemService implements
                     mHandler.obtainMessage(MSG_REMOVE_USER, userId, 0).sendToTarget();
                 }
             } else if (Intent.ACTION_USER_STARTED.equals(action)) {
-                if (userId >= 0) {
-                    if (!Flags.disableIdleCheck() || userId > 0) {
-                        // Don't check idle state for USER_SYSTEM during the boot up.
-                        mHandler.obtainMessage(MSG_USER_STARTED, userId, 0).sendToTarget();
-                    }
+                if (userId > 0) {
+                    mHandler.obtainMessage(MSG_USER_STARTED, userId, 0).sendToTarget();
                 }
             }
         }
@@ -2061,8 +2058,6 @@ public class UsageStatsService extends SystemService implements
                 + ": " + Flags.useParceledList());
         pw.println("    " + Flags.FLAG_FILTER_BASED_EVENT_QUERY_API
                 + ": " + Flags.filterBasedEventQueryApi());
-        pw.println("    " + Flags.FLAG_DISABLE_IDLE_CHECK
-                + ": " + Flags.disableIdleCheck());
 
         final int[] userIds;
         synchronized (mLock) {
