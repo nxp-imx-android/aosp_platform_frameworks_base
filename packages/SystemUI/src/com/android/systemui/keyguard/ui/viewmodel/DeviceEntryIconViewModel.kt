@@ -140,8 +140,8 @@ constructor(
             KeyguardState.DREAMING,
             KeyguardState.GLANCEABLE_HUB,
             KeyguardState.GONE,
-            KeyguardState.OCCLUDED,
-            KeyguardState.UNDEFINED -> 0f
+            KeyguardState.OCCLUDED -> 0f
+            KeyguardState.UNDEFINED,
             KeyguardState.AOD,
             KeyguardState.ALTERNATE_BOUNCER,
             KeyguardState.LOCKSCREEN -> 1f
