@@ -3286,16 +3286,18 @@ class DesktopTasksController(
         displayLayout.getStableBoundsForDesktopMode(stableBounds)
 
         val activeTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
-        activeTasks.firstOrNull()?.let { activeTask ->
-            shellTaskOrganizer.getRunningTaskInfo(activeTask)?.let {
-                cascadeWindow(
-                    context.resources,
-                    stableBounds,
-                    it.configuration.windowConfiguration.bounds,
-                    bounds,
-                )
+        activeTasks
+            .firstOrNull { !taskRepository.isClosingTask(it) }
+            ?.let { activeTask ->
+                shellTaskOrganizer.getRunningTaskInfo(activeTask)?.let {
+                    cascadeWindow(
+                        context.resources,
+                        stableBounds,
+                        it.configuration.windowConfiguration.bounds,
+                        bounds,
+                    )
+                }
             }
-        }
     }
 
     /**
