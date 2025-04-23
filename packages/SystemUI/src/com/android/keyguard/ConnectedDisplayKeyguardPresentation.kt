@@ -27,10 +27,10 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.FrameLayout.LayoutParams
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.res.R
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.clocks.ClockRegistry
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -55,7 +55,6 @@ constructor(
     private lateinit var rootView: FrameLayout
     private var clock: View? = null
     private lateinit var faceController: ClockFaceController
-    private lateinit var clockFrame: FrameLayout
 
     private val clockChangedListener =
         object : ClockRegistry.ClockChangeListener {
@@ -126,11 +125,18 @@ constructor(
     }
 
     private fun setClock(clockController: ClockController) {
-        clock?.removeOnLayoutChangeListener(layoutChangeListener)
+        if (!ShadeWindowGoesAround.isEnabled) {
+            clock?.removeOnLayoutChangeListener(layoutChangeListener)
+        }
         rootView.removeAllViews()
 
         faceController = clockController.largeClock
-        clock = faceController.view.also { it.addOnLayoutChangeListener(layoutChangeListener) }
+        clock =
+            faceController.view.also {
+                if (!ShadeWindowGoesAround.isEnabled) {
+                    it.addOnLayoutChangeListener(layoutChangeListener)
+                }
+            }
         rootView.addView(
             clock,
             FrameLayout.LayoutParams(
