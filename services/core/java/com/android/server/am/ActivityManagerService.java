@@ -17432,6 +17432,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        public void moveErrorDialogsToDefaultDisplay(int displayId) {
+            mUiHandler.post(() -> {
+                synchronized (mProcLock) {
+                    mProcessList.forEachLruProcessesLOSP(false, app -> {
+                        if (app.getThread() == null) {
+                            return;
+                        }
+
+                        ErrorDialogController controller = app.mErrorState.getDialogController();
+                        controller.moveAllErrorDialogsToDefaultDisplay(displayId);
+                    });
+                }
+            });
+        }
+
+        @Override
         public void broadcastGlobalConfigurationChanged(int changes, boolean initLocale) {
             synchronized (ActivityManagerService.this) {
                 Intent intent = new Intent(Intent.ACTION_CONFIGURATION_CHANGED);
