@@ -17,6 +17,7 @@
 
 package com.android.systemui.lifecycle
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.MainThread
@@ -24,6 +25,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.lifecycleScope
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.util.Assert
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -41,7 +43,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /**
  * Runs the given [block] every time the [View] becomes attached (or immediately after calling this
@@ -146,13 +147,20 @@ private fun createLifecycleOwnerAndRun(
  * └───────────────┴───────────────────┴──────────────┴─────────────────┘
  * ```
  */
-class ViewLifecycleOwner(private val view: View) : LifecycleOwner {
+class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolean = false) :
+    LifecycleOwner {
 
     private val windowVisibleListener =
         ViewTreeObserver.OnWindowVisibilityChangeListener { updateState() }
     private val windowFocusListener = ViewTreeObserver.OnWindowFocusChangeListener { updateState() }
 
-    private val registry = LifecycleRegistry(this)
+    @SuppressLint("VisibleForTests") // required due to "createUnsafe" usage
+    private val registry =
+        if (useSeparateThreadUnsafe) {
+            LifecycleRegistry.createUnsafe(this)
+        } else {
+            LifecycleRegistry(this)
+        }
 
     fun onCreate() {
         registry.currentState = Lifecycle.State.CREATED
@@ -262,7 +270,7 @@ enum class WindowLifecycleState {
      * Indicates that the [View] is attached to a [android.view.Window], and the window is visible
      * and focused.
      */
-    FOCUSED
+    FOCUSED,
 }
 
 private val View.isAttached
