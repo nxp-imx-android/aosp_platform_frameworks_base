@@ -50,6 +50,7 @@ import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.Interpolators
@@ -85,6 +86,7 @@ sealed class DragToDesktopTransitionHandler(
     private val context: Context,
     private val transitions: Transitions,
     private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val desksOrganizer: DesksOrganizer,
     private val desktopUserRepositories: DesktopUserRepositories,
     protected val interactionJankMonitor: InteractionJankMonitor,
     private val bubbleController: Optional<BubbleController>,
@@ -875,8 +877,11 @@ sealed class DragToDesktopTransitionHandler(
                         startTransaction.setLayer(change.leash, it.dragLayer)
                     }
                 }
-                change.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM -> {
-                    // Other freeform tasks that are being restored go behind the dragged task.
+                // Other desktop tasks that are being restored go behind the dragged task.
+                change.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
+                // Except for the desk root, that should not be sent back or it might
+                // take the dragged task surface back with it.
+                && !desksOrganizer.isDeskChange(change) -> {
                     val draggedTaskLeash =
                         state.draggedTaskChange?.leash
                             ?: error("Expected dragged leash to be non-null")
@@ -1269,6 +1274,7 @@ constructor(
     context: Context,
     transitions: Transitions,
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    desksOrganizer: DesksOrganizer,
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     bubbleController: Optional<BubbleController>,
@@ -1281,6 +1287,7 @@ constructor(
         context,
         transitions,
         taskDisplayAreaOrganizer,
+        desksOrganizer,
         desktopUserRepositories,
         interactionJankMonitor,
         bubbleController,
@@ -1311,6 +1318,7 @@ constructor(
     context: Context,
     transitions: Transitions,
     taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    desksOrganizer: DesksOrganizer,
     desktopUserRepositories: DesktopUserRepositories,
     interactionJankMonitor: InteractionJankMonitor,
     bubbleController: Optional<BubbleController>,
@@ -1323,6 +1331,7 @@ constructor(
         context,
         transitions,
         taskDisplayAreaOrganizer,
+        desksOrganizer,
         desktopUserRepositories,
         interactionJankMonitor,
         bubbleController,
