@@ -806,14 +806,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             Log.d(TAG, "updateBroadcastInfoFromContentProvider: mContentResolver is null");
             return;
         }
-        String programInfo =
-                Settings.Secure.getString(
-                        mContentResolver, Settings.Secure.BLUETOOTH_LE_BROADCAST_PROGRAM_INFO);
-        if (programInfo == null) {
-            programInfo = getDefaultValueOfProgramInfo();
-        }
-        setProgramInfo(programInfo, /* updateContentResolver= */ false);
-
         String broadcastName =
                 Settings.Secure.getString(
                         mContentResolver, Settings.Secure.BLUETOOTH_LE_BROADCAST_NAME);
@@ -821,6 +813,14 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             broadcastName = getDefaultValueOfBroadcastName();
         }
         setBroadcastName(broadcastName, /* updateContentResolver= */ false);
+
+        String programInfo =
+                Settings.Secure.getString(
+                        mContentResolver, Settings.Secure.BLUETOOTH_LE_BROADCAST_PROGRAM_INFO);
+        if (programInfo == null) {
+            programInfo = broadcastName;
+        }
+        setProgramInfo(programInfo, /* updateContentResolver= */ false);
 
         String prefBroadcastCode =
                 Settings.Secure.getString(
@@ -1133,17 +1133,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     }
 
     private String getDefaultValueOfBroadcastName() {
-        // set the default value;
-        int postfix = ThreadLocalRandom.current().nextInt(DEFAULT_CODE_MIN, DEFAULT_CODE_MAX);
-        String name = BluetoothAdapter.getDefaultAdapter().getName();
-        if (name == null || name.isEmpty()) {
-            name = DEFAULT_BROADCAST_NAME_PREFIX;
-        }
-        return (name.length() < BROADCAST_NAME_PREFIX_MAX_LENGTH ? name : name.substring(0,
-                BROADCAST_NAME_PREFIX_MAX_LENGTH)) + UNDERLINE + postfix;
-    }
-
-    private String getDefaultValueOfProgramInfo() {
         // set the default value;
         int postfix = ThreadLocalRandom.current().nextInt(DEFAULT_CODE_MIN, DEFAULT_CODE_MAX);
         String name = BluetoothAdapter.getDefaultAdapter().getName();
