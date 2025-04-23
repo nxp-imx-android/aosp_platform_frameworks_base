@@ -315,7 +315,7 @@ fun BrightnessSlider(
     // Showing the warning toast if the current running app window has controlled the
     // brightness value.
     if (Flags.showToastWhenAppControlBrightness()) {
-        LaunchedEffect(interactionSource) {
+        LaunchedEffect(interactionSource, overriddenByAppState) {
             interactionSource.interactions.collect { interaction ->
                 if (interaction is DragInteraction.Start && overriddenByAppState) {
                     currentShowToast()
