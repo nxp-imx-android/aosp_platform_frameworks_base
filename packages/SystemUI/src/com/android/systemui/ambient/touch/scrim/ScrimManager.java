@@ -16,9 +16,14 @@
 
 package com.android.systemui.ambient.touch.scrim;
 
+import static android.service.dreams.Flags.dreamsV2;
+
+import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_DREAM;
 import static com.android.systemui.ambient.touch.scrim.dagger.ScrimModule.BOUNCERLESS_SCRIM_CONTROLLER;
 import static com.android.systemui.ambient.touch.scrim.dagger.ScrimModule.BOUNCER_SCRIM_CONTROLLER;
 
+import com.android.systemui.ambient.dagger.AmbientModule;
+import com.android.systemui.ambient.touch.TouchSurface;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 
@@ -37,6 +42,8 @@ public class ScrimManager {
     private final ScrimController mBouncerlessScrimController;
     private final KeyguardStateController mKeyguardStateController;
     private final Executor mExecutor;
+    @TouchSurface
+    private final int mTouchSurface;
 
     private ScrimController mCurrentController;
     private final HashSet<Callback> mCallbacks;
@@ -47,6 +54,7 @@ public class ScrimManager {
     public interface Callback {
         /**
          * Invoked when the controller changes.
+         *
          * @param controller The currently active {@link ScrimController}.
          */
         void onScrimControllerChanged(ScrimController controller);
@@ -63,13 +71,15 @@ public class ScrimManager {
     @Inject
     ScrimManager(@Main Executor executor,
             @Named(BOUNCER_SCRIM_CONTROLLER) ScrimController bouncerScrimController,
-            @Named(BOUNCERLESS_SCRIM_CONTROLLER)ScrimController bouncerlessScrimController,
+            @Named(BOUNCERLESS_SCRIM_CONTROLLER) ScrimController bouncerlessScrimController,
+            @Named(AmbientModule.SURFACE) int surface,
             KeyguardStateController keyguardStateController) {
         mExecutor = executor;
         mCallbacks = new HashSet<>();
         mBouncerlessScrimController = bouncerlessScrimController;
         mBouncerScrimController = bouncerScrimController;
         mKeyguardStateController = keyguardStateController;
+        mTouchSurface = surface;
 
         mKeyguardStateController.addCallback(mKeyguardStateCallback);
         updateController();
@@ -77,9 +87,12 @@ public class ScrimManager {
 
     private void updateController() {
         final ScrimController existingController = mCurrentController;
-        mCurrentController =  mKeyguardStateController.canDismissLockScreen()
-                ? mBouncerlessScrimController
-                : mBouncerScrimController;
+        final boolean alwaysUseBouncerless = mTouchSurface == SURFACE_DREAM && dreamsV2();
+
+        mCurrentController =
+                (alwaysUseBouncerless || mKeyguardStateController.canDismissLockScreen())
+                        ? mBouncerlessScrimController
+                        : mBouncerScrimController;
 
         if (existingController == mCurrentController) {
             return;
@@ -104,7 +117,6 @@ public class ScrimManager {
 
     /**
      * Returns the currently get {@link ScrimController}.
-     * @return
      */
     public ScrimController getCurrentController() {
         return mCurrentController;
