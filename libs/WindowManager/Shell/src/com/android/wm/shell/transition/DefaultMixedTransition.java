@@ -329,11 +329,13 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback,
             @NonNull BubbleTransitions bubbleTransitions) {
+        final Transitions.TransitionHandler handler = bubbleTransitions.getRunningEnterTransition(
+                transition);
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
-                + "entering Bubbles while an app is in the foreground");
+                + "entering Bubbles while an app is in the foreground by %s", handler);
         // TODO(b/408328557): Migrate to checking transition token
-        bubbleTransitions.getRunningEnterTransition(transition).startAnimation(
-                transition, info, startTransaction, finishTransaction, finishCallback);
+        handler.startAnimation(transition, info, startTransaction, finishTransaction,
+                finishCallback);
         return true;
     }
 
@@ -346,11 +348,13 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull Transitions.TransitionFinishCallback finishCallback,
             @NonNull StageCoordinator splitHandler,
             @NonNull BubbleTransitions bubbleTransitions) {
+        final Transitions.TransitionHandler handler = bubbleTransitions.getRunningEnterTransition(
+                transition);
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
-                + "entering Bubbles while Split-Screen is foreground.");
+                + "entering Bubbles while Split-Screen is foreground by %s", handler);
         // TODO(b/408328557): Migrate to checking transition token
-        bubbleTransitions.getRunningEnterTransition(transition).startAnimation(
-                transition, info, startTransaction, finishTransaction, finishCallback);
+        handler.startAnimation(transition, info, startTransaction, finishTransaction,
+                finishCallback);
         return true;
     }
 
@@ -386,7 +390,11 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 + "entering Bubbles from another bubbled task");
         boolean started = bubbleTransitions.startBubbleToBubbleLaunch(transition,
                 bubblingTask.getTaskInfo(), handler -> {
-                    bubbleTransitions.getRunningEnterTransition(transition).startAnimation(
+                    final Transitions.TransitionHandler h = bubbleTransitions
+                            .getRunningEnterTransition(transition);
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animation played by %s",
+                            h);
+                    h.startAnimation(
                             transition, info, startTransaction, finishTransaction, finishCallback);
                 });
         if (!started) {
