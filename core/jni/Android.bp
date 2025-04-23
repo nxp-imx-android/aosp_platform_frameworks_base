@@ -68,8 +68,6 @@ cc_library_shared_for_libandroid_runtime {
         },
     },
 
-    cpp_std: "gnu++20",
-
     srcs: [
         "android_animation_PropertyValuesHolder.cpp",
         "android_content_res_ApkAssets.cpp",
@@ -515,8 +513,6 @@ cc_library_shared_for_libandroid_runtime {
 
 cc_library_shared {
     name: "libvintf_jni",
-
-    cpp_std: "gnu++20",
 
     srcs: [
         "android_os_VintfObject.cpp",
