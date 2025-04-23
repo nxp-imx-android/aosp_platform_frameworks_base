@@ -430,8 +430,6 @@ public class AdbDebuggingManager {
                         msg.obj = key;
                         mHandler.sendMessage(msg);
                     } else if (buffer[0] == 'W' && buffer[1] == 'E') {
-                        // adbd_auth.h and AdbTransportType.aidl need to be kept in
-                        // sync.
                         byte transportType = buffer[2];
                         String key = new String(Arrays.copyOfRange(buffer, 3, count));
                         if (transportType == AdbTransportType.USB) {
