@@ -16,6 +16,7 @@
 package com.android.settingslib.widget
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
@@ -37,8 +38,7 @@ constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
-
-    @DrawableRes private var actionIcon: Int = 0
+    private var actionIcon: Drawable? = null
     private var actionIconContentDescription: CharSequence? = null
     private var action: ((CardPreference) -> Unit)? = null
 
@@ -58,6 +58,12 @@ constructor(
         @DrawableRes icon: Int,
         contentDescription: CharSequence?,
         action: ((CardPreference) -> Unit)?,
+    ) = setAdditionalAction(context.getDrawable(icon), contentDescription, action)
+
+    fun setAdditionalAction(
+        icon: Drawable?,
+        contentDescription: CharSequence?,
+        action: ((CardPreference) -> Unit)?,
     ) {
         actionIcon = icon
         actionIconContentDescription = contentDescription
@@ -69,10 +75,9 @@ constructor(
         super.onBindViewHolder(holder)
         holder.isDividerAllowedBelow = false
         holder.isDividerAllowedAbove = false
-
         (holder.findViewById(android.R.id.icon1) as ImageView).apply {
-            visibility = if (actionIcon != 0) View.VISIBLE else View.GONE
-            setImageResource(actionIcon)
+            visibility = if (actionIcon != null) View.VISIBLE else View.GONE
+            setImageDrawable(actionIcon)
             contentDescription = actionIconContentDescription
             setOnClickListener { action?.invoke(this@CardPreference) }
         }
