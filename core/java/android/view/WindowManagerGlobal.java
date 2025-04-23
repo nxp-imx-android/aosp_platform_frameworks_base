@@ -21,6 +21,8 @@ import static android.view.WindowManager.LayoutParams.LAST_APPLICATION_WINDOW;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPT_OUT_EDGE_TO_EDGE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 
+import static com.android.window.flags.Flags.currentAnimatorScaleUsesSharedMemory;
+
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -53,6 +55,7 @@ import android.window.WindowContext;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.policy.PhoneWindow;
 import com.android.internal.util.FastPrintWriter;
 
@@ -223,14 +226,19 @@ public final class WindowManagerGlobal {
             if (sWindowManagerService == null) {
                 sWindowManagerService = IWindowManager.Stub.asInterface(
                         ServiceManager.getService("window"));
-                try {
+                if (currentAnimatorScaleUsesSharedMemory()) {
+                    ValueAnimator.setDurationScale(
+                            ApplicationSharedMemory.getInstance().getCurrentAnimatorScale());
+                } else {
                     // Can be null if this is called before WindowManagerService is initialized.
                     if (sWindowManagerService != null) {
-                        ValueAnimator.setDurationScale(
+                        try {
+                            ValueAnimator.setDurationScale(
                                 sWindowManagerService.getCurrentAnimatorScale());
+                        } catch (RemoteException e) {
+                            throw e.rethrowFromSystemServer();
+                        }
                     }
-                } catch (RemoteException e) {
-                    throw e.rethrowFromSystemServer();
                 }
             }
             return sWindowManagerService;
