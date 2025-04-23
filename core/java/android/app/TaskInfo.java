@@ -362,6 +362,8 @@ public class TaskInfo {
      * Please use this with caution. This is just a short-term solution which should be migrated
      * to a more generic model vs. implying the Task is an App Bubble here.
      * @hide
+     *
+     * TODO(b/407669465): remove it once migrated to the new approach
      */
     public boolean isAppBubble;
 

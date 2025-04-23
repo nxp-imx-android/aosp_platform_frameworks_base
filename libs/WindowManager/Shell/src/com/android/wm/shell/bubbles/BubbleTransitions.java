@@ -131,6 +131,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether the given Task should be an App Bubble.
+     */
+    public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        return mBubbleController.shouldBeAppBubble(taskInfo);
+    }
+
+    /**
      * Returns whether bubbles are showing as the bubble bar.
      */
     public boolean isShowingAsBubbleBar() {

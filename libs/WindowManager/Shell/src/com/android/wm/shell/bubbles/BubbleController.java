@@ -1431,6 +1431,15 @@ public class BubbleController implements ConfigurationChangeListener,
         return bubble != null && bubble.getPreparingTransition() == null;
     }
 
+    /** Returns whether the given task should be an App Bubble */
+    public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        if (com.android.window.flags.Flags.rootTaskForBubble()) {
+            return mAppBubbleRootTaskInfo != null
+                    && taskInfo.parentTaskId == mAppBubbleRootTaskInfo.taskId;
+        }
+        return taskInfo.isAppBubble;
+    }
+
     public boolean isStackExpanded() {
         return mBubbleData.isExpanded();
     }
