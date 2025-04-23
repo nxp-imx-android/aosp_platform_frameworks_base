@@ -370,6 +370,36 @@ public class ActivityClient {
         }
     }
 
+    boolean isHandoffEnabled(IBinder token) {
+        try {
+            return getActivityClientController().isHandoffEnabled(token);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    boolean isHandoffFullTaskRecreationAllowed(IBinder token) {
+        try {
+            return getActivityClientController().isHandoffFullTaskRecreationAllowed(token);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    void setHandoffEnabled(
+            IBinder token,
+            boolean handoffEnabled,
+            boolean allowFullTaskRecreation) {
+        try {
+            getActivityClientController().setHandoffEnabled(
+                    token,
+                    handoffEnabled,
+                    allowFullTaskRecreation);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     boolean isImmersive(IBinder token) {
         try {
             return getActivityClientController().isImmersive(token);

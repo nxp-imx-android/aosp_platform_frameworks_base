@@ -4547,6 +4547,8 @@ package android.app {
     method @Deprecated public final boolean isChild();
     method public boolean isDestroyed();
     method public boolean isFinishing();
+    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffEnabled();
+    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffFullTaskRecreationAllowed();
     method public boolean isImmersive();
     method public boolean isInMultiWindowMode();
     method public boolean isInPictureInPictureMode();
@@ -4691,6 +4693,7 @@ package android.app {
     method public final void setFeatureDrawableResource(int, @DrawableRes int);
     method public final void setFeatureDrawableUri(int, android.net.Uri);
     method public void setFinishOnTouchOutside(boolean);
+    method @FlaggedApi("android.companion.enable_task_continuity") public final void setHandoffEnabled(boolean, boolean);
     method public void setImmersive(boolean);
     method public void setInheritShowWhenLocked(boolean);
     method public void setIntent(android.content.Intent);
