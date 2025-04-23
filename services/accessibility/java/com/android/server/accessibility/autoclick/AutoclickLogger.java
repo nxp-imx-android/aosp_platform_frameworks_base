@@ -62,4 +62,26 @@ public class AutoclickLogger {
         FrameworkStatsLog.write(FrameworkStatsLog.AUTOCLICK_SESSION_DURATION_REPORTED,
                 sessionDurationSeconds);
     }
+
+    /**
+     * Logs the state of autoclick settings.
+     *
+     * @param delayBeforeClickMs        Delay in milliseconds before autoclick triggers.
+     * @param cursorAreaSize            Size  for the autoclick cursor indicator.
+     * @param ignoreMinorCursorMovement Whether to ignore small cursor movements.
+     * @param revertToLeftClick         Whether to revert to left click after performing autoclick.
+     */
+    public static void logAutoclickSettingsState(
+            long delayBeforeClickMs,
+            int cursorAreaSize,
+            boolean ignoreMinorCursorMovement,
+            boolean revertToLeftClick) {
+
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.AUTOCLICK_SETTINGS_STATE_REPORTED,
+                delayBeforeClickMs,
+                cursorAreaSize,
+                ignoreMinorCursorMovement,
+                revertToLeftClick);
+    }
 }
