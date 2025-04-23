@@ -56,6 +56,7 @@ import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricStateListener;
 import android.hardware.biometrics.ComponentInfoInternal;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricContextListener;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
@@ -73,6 +74,9 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
@@ -130,6 +134,9 @@ public class AuthControllerTest extends SysuiTestCase {
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Mock
     private PackageManager mPackageManager;
@@ -643,6 +650,7 @@ public class AuthControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testErrorLockout_whenCredentialNotAllowed_sendsOnError() {
         showDialog(new int[] {1} /* sensorIds */, false /* credentialAllowed */);
         final int modality = BiometricAuthenticator.TYPE_FACE;
@@ -658,6 +666,7 @@ public class AuthControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testErrorLockoutPermanent_whenCredentialNotAllowed_sendsOnError() {
         showDialog(new int[] {1} /* sensorIds */, false /* credentialAllowed */);
         final int modality = BiometricAuthenticator.TYPE_FACE;

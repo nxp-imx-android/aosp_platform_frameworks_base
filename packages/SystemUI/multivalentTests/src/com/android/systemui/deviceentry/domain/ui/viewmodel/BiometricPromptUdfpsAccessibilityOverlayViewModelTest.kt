@@ -220,6 +220,7 @@ class BiometricPromptUdfpsAccessibilityOverlayViewModelTest() : SysuiTestCase() 
         kosmos.promptRepository.setPrompt(
             PromptInfo(),
             0,
+            activeModalities,
             0,
             0L,
             PromptKind.Biometric(activeModalities = activeModalities),

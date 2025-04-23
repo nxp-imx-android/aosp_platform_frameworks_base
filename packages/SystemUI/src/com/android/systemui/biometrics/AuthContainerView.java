@@ -82,6 +82,8 @@ import com.android.systemui.utils.windowmanager.WindowManagerUtils;
 
 import com.google.android.msdl.domain.MSDLPlayer;
 
+import kotlinx.coroutines.CoroutineScope;
+
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,8 +92,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Provider;
-
-import kotlinx.coroutines.CoroutineScope;
 
 /**
  * Top level container/controller for the BiometricPrompt UI.
@@ -231,6 +231,16 @@ public class AuthContainerView extends LinearLayout
         }
 
         @Override
+        public void onPauseAuthentication() {
+            mConfig.mCallback.onPauseAuthentication(getRequestId());
+        }
+
+        @Override
+        public void onResumeAuthentication() {
+            mConfig.mCallback.onResumeAuthentication(getRequestId());
+        }
+
+        @Override
         public void onStartDelayedFingerprintSensor() {
             mConfig.mCallback.onStartFingerprintNow(getRequestId());
         }
@@ -251,7 +261,13 @@ public class AuthContainerView extends LinearLayout
     @Override
     public void onCredentialMatched(@NonNull byte[] attestation) {
         mCredentialAttestation = attestation;
-        animateAway(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED);
+        if (isAllowDeviceCredentials()) {
+            animateAway(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED);
+        } else if (Flags.bpFallbackOptions()) {
+            mPromptSelectorInteractorProvider.get().onSwitchToAuth();
+            removeCredentialView();
+            mConfig.mCallback.onResumeAuthentication(getRequestId());
+        }
     }
 
     @Override
@@ -449,6 +465,12 @@ public class AuthContainerView extends LinearLayout
                 mBiometricCallback, mAuthContextPlugins);
 
         mLayout.addView(mCredentialView);
+    }
+
+    /** Removes the credential view from the biometric prompt */
+    private void removeCredentialView() {
+        mLayout.removeView(mCredentialView);
+        mCredentialView = null;
     }
 
     @Override
