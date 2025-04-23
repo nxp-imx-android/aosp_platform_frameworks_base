@@ -547,7 +547,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
             verify(view).findViewById<ViewGroup>(R.id.keyguard_message_area)
         }
 
-    @EnableFlags(Flags.FLAG_SHADE_LAUNCH_ACCESSIBILITY)
     @Test
     fun notifiesTheViewWhenLaunchAnimationIsRunning() {
         testScope.runTest {
