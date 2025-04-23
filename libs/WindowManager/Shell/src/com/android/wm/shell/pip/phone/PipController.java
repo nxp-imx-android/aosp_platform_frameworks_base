@@ -490,7 +490,8 @@ public class PipController implements PipTransitionController.PipTransitionCallb
         }
     }
 
-    private void onInit() {
+    @VisibleForTesting
+    void onInit() {
         mShellCommandHandler.addDumpCallback(this::dump, this);
         mPipInputConsumer = new PipInputConsumer(WindowManagerGlobal.getWindowManagerService(),
                 INPUT_CONSUMER_PIP, mMainExecutor);

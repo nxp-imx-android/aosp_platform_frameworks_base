@@ -95,6 +95,7 @@ import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.pip.PipContentOverlay;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import java.io.PrintWriter;
@@ -369,6 +370,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     private Rect mSwipeSourceRectHint;
 
     public PipTaskOrganizer(Context context,
+            @NonNull ShellInit shellInit,
             @NonNull SyncTransactionQueue syncTransactionQueue,
             @NonNull PipTransitionState pipTransitionState,
             @NonNull PipBoundsState pipBoundsState,
@@ -415,16 +417,20 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         mTaskOrganizer = shellTaskOrganizer;
         mMainExecutor = mainExecutor;
 
-        // TODO: Can be removed once wm components are created on the shell-main thread
         if (!PipUtils.isPip2ExperimentEnabled()) {
-            mMainExecutor.execute(() -> {
-                mTaskOrganizer.addListenerForType(this, TASK_LISTENER_TYPE_PIP);
-            });
-            mPipTransitionController.setPipOrganizer(this);
-            displayController.addDisplayWindowListener(this);
-            pipTransitionController.registerPipTransitionCallback(
-                    mPipTransitionCallback, mMainExecutor);
+            shellInit.addInitCallback(this::onInit, this);
         }
+    }
+
+    @VisibleForTesting
+    void onInit() {
+        // TODO: Can be removed once wm components are created on the shell-main thread
+        mMainExecutor.execute(() -> mTaskOrganizer.addListenerForType(
+                this, TASK_LISTENER_TYPE_PIP));
+        mPipTransitionController.setPipOrganizer(this);
+        mDisplayController.addDisplayWindowListener(this);
+        mPipTransitionController.registerPipTransitionCallback(
+                mPipTransitionCallback, mMainExecutor);
     }
 
     public PipTransitionController getTransitionController() {
