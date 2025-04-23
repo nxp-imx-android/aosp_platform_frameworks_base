@@ -334,7 +334,7 @@ constructor(
             else scrimsVisible && !areBlursDisabledForAppLaunch
 
     private fun zoomOutAsScale(zoomOutProgress: Float): Float =
-        if (spatialModelPushbackInShader()) zoomOutProgress * PUSHBACK_SCALE_FOR_APP
+        if (spatialModelPushbackInShader()) 1.0f - zoomOutProgress * PUSHBACK_SCALE_FOR_APP
         else 1.0f
 
     /** Callback that updates the window blur value and is called only once per frame. */
