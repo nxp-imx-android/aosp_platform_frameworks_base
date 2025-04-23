@@ -1320,6 +1320,7 @@ public class TransitionTests extends WindowTestsBase {
         mDisplayContent.setLastHasContent();
         mDisplayContent.requestChangeTransition(1 /* changes */, null /* displayChange */,
                 ActionChain.test());
+        assertTrue(mDisplayContent.mTransitionController.isCollecting());
         assertNotNull(mDisplayContent.getAsyncRotationController());
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(null);
         assertNull("Clear rotation controller if rotation is not changed",
@@ -1331,6 +1332,15 @@ public class TransitionTests extends WindowTestsBase {
                 mDisplayContent.getWindowConfiguration().getRotation() + 1);
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(null);
         assertNotNull("Keep rotation controller if rotation will be changed",
+                mDisplayContent.getAsyncRotationController());
+
+        mDisplayContent.getDisplayRotation().setRotation(
+                mDisplayContent.getWindowConfiguration().getRotation());
+        app.setVisibleRequested(false);
+        app.setVisible(false);
+        mDisplayContent.setFixedRotationLaunchingAppUnchecked(app);
+        mDisplayContent.onTransitionFinished();
+        assertNotNull("Keep rotation controller if a transition is collecting",
                 mDisplayContent.getAsyncRotationController());
     }
 

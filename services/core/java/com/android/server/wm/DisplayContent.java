@@ -2834,7 +2834,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // If the transition finished callback cannot match the token for some reason, make sure the
         // rotated state is cleared if it is already invisible.
         if (mFixedRotationLaunchingApp != null && !mFixedRotationLaunchingApp.isVisibleRequested()
-                && !mFixedRotationLaunchingApp.isVisible()) {
+                && !mFixedRotationLaunchingApp.isVisible()
+                // In case the next transition still needs the existing transform.
+                && !mTransitionController.isCollecting()) {
             clearFixedRotationLaunchingApp();
         }
         // If there won't be a transition to notify the launch is done, then it should be ready to
