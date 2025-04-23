@@ -5227,6 +5227,38 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_exemptFromDesktopFreeformTask_notInDesktop_returnSwitchToFullscreenWCT() {
+        taskRepository.setDeskInactive(deskId = 0)
+        val tda =
+            DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, /* featureId= */ 0).apply {
+                configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+            }
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(tda)
+        val freeformExemptTask =
+            createFreeformTask(displayId = DEFAULT_DISPLAY).apply {
+                baseActivity =
+                    ComponentName(
+                        context.resources.getString(com.android.internal.R.string.config_systemUi),
+                        /* cls= */ "",
+                    )
+            }
+
+        val wct = controller.handleRequest(Binder(), createTransition(freeformExemptTask))
+
+        assertNotNull(wct, "Should handle request")
+        val mode =
+            assertNotNull(
+                wct.changes[freeformExemptTask.token.asBinder()]?.windowingMode,
+                "Should have change for freeform task",
+            )
+        assertThat(mode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     @DisableFlags(
         Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION,
