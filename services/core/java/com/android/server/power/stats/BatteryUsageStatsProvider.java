@@ -32,7 +32,6 @@ import android.util.SparseArray;
 import com.android.internal.os.Clock;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.util.ArrayUtils;
-import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.BatteryStatsImpl.BatteryStatsSession;
 
 import java.io.PrintWriter;
@@ -282,9 +281,7 @@ public class BatteryUsageStatsProvider {
         if ((query.getFlags()
                 & BatteryUsageStatsQuery.FLAG_BATTERY_USAGE_STATS_INCLUDE_HISTORY) != 0) {
             batteryUsageStatsBuilder.setBatteryHistory(session.getHistory().copy(),
-                    Flags.extendedBatteryHistoryContinuousCollectionEnabled()
-                            ? query.getPreferredHistoryDurationMs()
-                            : Long.MAX_VALUE);
+                    query.getPreferredHistoryDurationMs());
         }
 
         mPowerAttributor.estimatePowerConsumption(batteryUsageStatsBuilder, session.getHistory(),

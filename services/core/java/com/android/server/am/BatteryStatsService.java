@@ -471,8 +471,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 Flags.extendedBatteryHistoryCompressionEnabled());
         mStats.saveBatteryUsageStatsOnNewSession(mBatteryUsageStatsProvider, mPowerStatsStore,
                 true);
-        mStats.resetBatteryHistoryOnNewSession(
-                !Flags.extendedBatteryHistoryContinuousCollectionEnabled());
 
         MultiStatePowerAttributor attributor = (MultiStatePowerAttributor) mPowerAttributor;
 
