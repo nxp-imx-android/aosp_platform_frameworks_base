@@ -31,11 +31,13 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Pair
 import android.util.TypedValue
+import android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP
 import android.window.TaskSnapshot
 import android.window.TransitionInfo
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.protolog.ShellProtoLogGroup
+import java.io.PrintWriter
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -312,6 +314,8 @@ object PipUtils {
      * Returns true if PiP2 implementation should be used. Besides the trunk stable flag,
      * system property can be used to override this read only flag during development.
      * It's currently limited to phone form factor, i.e., not enabled on ARC / TV.
+     *
+     * Special note: if PiP on Desktop Windowing is enabled, override the PiP2 gantry flag to be ON.
      */
     @JvmStatic
     fun isPip2ExperimentEnabled(): Boolean {
@@ -320,7 +324,9 @@ object PipUtils {
                 "org.chromium.arc", 0)
             val isTv = AppGlobals.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_LEANBACK, 0)
-            isPip2ExperimentEnabled = Flags.enablePip2() && !isArc && !isTv
+            val shouldOverridePip2Flag = ENABLE_DESKTOP_WINDOWING_PIP.isTrue
+            isPip2ExperimentEnabled = (Flags.enablePip2() || shouldOverridePip2Flag)
+                    && !isArc && !isTv
         }
         return isPip2ExperimentEnabled as Boolean
     }
@@ -342,5 +348,19 @@ object PipUtils {
     fun Context.isDarkSystemTheme(): Boolean {
         return (resources.configuration.uiMode and UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
+    }
+
+    /**
+     * Dumps information held by this class.
+     */
+    @JvmStatic
+    fun dump(pw: PrintWriter, prefix: String) {
+        pw.println("$prefix$TAG")
+        val innerPrefix1 = "$prefix  "
+        val innerPrefix2 = "$innerPrefix1  "
+        pw.println("${innerPrefix1}isPipUmoExperienceEnabled=${isPipUmoExperienceEnabled()}")
+        pw.println("${innerPrefix1}isPip2ExperimentEnabled=${isPip2ExperimentEnabled()}")
+        pw.println("${innerPrefix2}enablePip2=${Flags.enablePip2()}")
+        pw.println("${innerPrefix2}enableDwPip=${ENABLE_DESKTOP_WINDOWING_PIP.isTrue}")
     }
 }
