@@ -16,6 +16,7 @@
 
 package com.android.companiondevicemanager;
 
+import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_USER_REJECTED;
@@ -496,8 +497,12 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             return;
         }
 
-        title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), mAppLabel,
-                getString(R.string.device_type), deviceName);
+        if (DEVICE_PROFILE_COMPUTER.equals(deviceProfile)) {
+            title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), deviceName);
+        } else {
+            title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), mAppLabel,
+                    getString(R.string.device_type), deviceName);
+        }
 
         if (deviceIcon != null) {
             mDeviceIcon.setImageIcon(deviceIcon);
@@ -788,7 +793,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     // Enable the Allow button if the last element in the PermissionListRecyclerView is reached.
     private void enableAllowButtonIfNeeded(LinearLayoutManager layoutManager) {
         int lastVisibleItemPosition =
-                layoutManager.findLastCompletelyVisibleItemPosition();
+                layoutManager.findLastVisibleItemPosition();
         int numItems = mPermissionListRecyclerView.getAdapter().getItemCount();
 
         if (lastVisibleItemPosition >= numItems - 1) {
