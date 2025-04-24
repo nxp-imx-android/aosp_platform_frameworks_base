@@ -455,20 +455,7 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
         }
         viewRootImpl.getOnBackInvokedDispatcher().onMotionEvent(ev);
         // Intercept touch if back gesture is in progress.
-        boolean isBackGestureInProgress = viewRootImpl.getOnBackInvokedDispatcher()
-                .isBackGestureInProgress();
-        if (!isBackGestureInProgress && mWearGestureInterceptionDetector != null) {
-            boolean wasIntercepting = mWearGestureInterceptionDetector.isIntercepting();
-            boolean intercepting = mWearGestureInterceptionDetector.onInterceptTouchEvent(ev);
-            if (wasIntercepting != intercepting) {
-                viewRootImpl.updateDecorViewGestureInterception(intercepting);
-            }
-            if (intercepting) {
-                isBackGestureInProgress = true;
-            }
-        }
-
-        if (!isBackGestureInProgress) {
+        if (!viewRootImpl.getOnBackInvokedDispatcher().isBackGestureInProgress()) {
             return false;
         }
         // Intercept touch if back gesture is in progress.
@@ -559,8 +546,8 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
             }
         }
 
+        ViewRootImpl viewRootImpl = getViewRootImpl();
         if (!interceptMotionFromMoveToCancel()) {
-            ViewRootImpl viewRootImpl = getViewRootImpl();
             if (viewRootImpl != null) {
                 viewRootImpl.getOnBackInvokedDispatcher().onMotionEvent(event);
                 // Intercept touch if back gesture is in progress.
@@ -568,16 +555,17 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
                     return true;
                 }
             }
-            if (viewRootImpl != null && mWearGestureInterceptionDetector != null) {
-                boolean wasIntercepting = mWearGestureInterceptionDetector.isIntercepting();
-                boolean intercepting = mWearGestureInterceptionDetector
-                        .onInterceptTouchEvent(event);
-                if (wasIntercepting != intercepting) {
-                    viewRootImpl.updateDecorViewGestureInterception(intercepting);
-                }
-                if (intercepting) {
-                    return true;
-                }
+        }
+
+        if (viewRootImpl != null && mWearGestureInterceptionDetector != null) {
+            boolean wasIntercepting = mWearGestureInterceptionDetector.isIntercepting();
+            boolean intercepting = mWearGestureInterceptionDetector
+                    .onInterceptTouchEvent(event);
+            if (wasIntercepting != intercepting) {
+                viewRootImpl.updateDecorViewGestureInterception(intercepting);
+            }
+            if (intercepting) {
+                return true;
             }
         }
 
