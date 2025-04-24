@@ -237,7 +237,6 @@ constructor(
             bgExecutor.execute {
                 if (!started) {
                     // Fetch in case a suggestion already exists before registering for suggestions
-                    onSuggestedDeviceUpdated(localMediaManager.getSuggestedDevice())
                     localMediaManager.registerCallback(this)
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
