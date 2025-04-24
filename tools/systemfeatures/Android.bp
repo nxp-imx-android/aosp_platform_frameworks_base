@@ -91,7 +91,8 @@ genrule {
         "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeatures --readonly=false --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: > $(location RwFeatures.java) && " +
         "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeatures --readonly=true --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: --feature-apis=WATCH,PC > $(location RoFeatures.java) && " +
         "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeaturesFromXml --readonly=false --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RwFeaturesFromXml.java) && " +
-        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeaturesFromXml --readonly=true --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RoFeaturesFromXml.java)",
+        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeaturesFromXml --readonly=true --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RoFeaturesFromXml.java) && " +
+        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoUnavailableFeaturesFromXml --readonly=true --unavailable-feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RoUnavailableFeaturesFromXml.java)",
     out: [
         "RwNoFeatures.java",
         "RoNoFeatures.java",
@@ -99,6 +100,7 @@ genrule {
         "RoFeatures.java",
         "RwFeaturesFromXml.java",
         "RoFeaturesFromXml.java",
+        "RoUnavailableFeaturesFromXml.java",
     ],
     tools: ["systemfeatures-gen-tool"],
 }
@@ -144,6 +146,7 @@ genrule {
         "tests/gen/RoFeatures.java.gen",
         "tests/gen/RwFeaturesFromXml.java.gen",
         "tests/gen/RoFeaturesFromXml.java.gen",
+        "tests/gen/RoUnavailableFeaturesFromXml.java.gen",
     ],
 }
 

@@ -108,4 +108,14 @@ public class SystemFeaturesGeneratorApiTest {
         SystemFeaturesGenerator.generate(args, mOut);
         verify(mOut, never()).append(any());
     }
+
+    @Test
+    public void testUnavailableFeatureXmlFiles() throws IOException {
+        final String[] args = new String[] {
+            "com.foo.Features",
+            "--unavailable-feature-xml-files=tests/data/features-1.xml,tests/data/features-2.xml",
+        };
+        SystemFeaturesGenerator.generate(args, mOut);
+        verify(mOut, atLeastOnce()).append(any());
+    }
 }
