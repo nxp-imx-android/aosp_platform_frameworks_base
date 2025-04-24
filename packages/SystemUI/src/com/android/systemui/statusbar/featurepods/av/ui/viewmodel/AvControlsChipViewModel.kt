@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.statusbar.featurepods.popups.shared.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipViewModel
@@ -57,7 +58,7 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
                 PopupChipModel.Shown(
                     // TODO: Pass in color when the api supports it
                     chipId = chipId,
-                    icon = icon(sensorActivityModel = sensorActivityModel),
+                    icons = listOf(ChipIcon(icon(sensorActivityModel = sensorActivityModel))),
                     chipText = chipText(sensorActivityModel = sensorActivityModel),
                 )
         }
