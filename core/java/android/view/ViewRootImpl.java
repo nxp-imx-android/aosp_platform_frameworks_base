@@ -130,7 +130,6 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
-import static com.android.window.flags.Flags.enableBufferTransformHintFromDisplay;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
@@ -12723,15 +12722,7 @@ public final class ViewRootImpl implements ViewParent,
         // instead of mSurfaceControl#getTransformHint because there's a race where SurfaceFlinger
         // can set an incorrect transform hint for a few frames before it is aware of the updated
         // display rotation.
-        if (enableBufferTransformHintFromDisplay()) {
-            return mPreviousTransformHint;
-        }
-
-        if (mSurfaceControl.isValid()) {
-            return mSurfaceControl.getTransformHint();
-        } else {
-            return SurfaceControl.BUFFER_TRANSFORM_IDENTITY;
-        }
+        return mPreviousTransformHint;
     }
 
     @Override
