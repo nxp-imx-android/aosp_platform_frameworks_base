@@ -1608,6 +1608,8 @@ static jboolean android_os_BinderProxy_unlinkToDeath(JNIEnv* env, jobject obj,
             err = target->unlinkToDeath(origJDR, NULL, flags, &dr);
             if (err == NO_ERROR && dr != NULL) {
                 sp<IBinder::DeathRecipient> sdr = dr.promote();
+                LOG_ALWAYS_FATAL_IF(sdr != origJDR, "DeathRecipient mismatch, expected %p == %p",
+                                    origJDR.get(), sdr.get());
                 JavaDeathRecipient* jdr = static_cast<JavaDeathRecipient*>(sdr.get());
                 if (jdr != NULL) {
                     jdr->clearReference();
