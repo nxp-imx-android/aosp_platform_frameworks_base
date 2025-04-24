@@ -6563,6 +6563,7 @@ package android.app {
     field public static final String EXTRA_PROGRESS_MAX = "android.progressMax";
     field public static final String EXTRA_REMOTE_INPUT_DRAFT = "android.remoteInputDraft";
     field public static final String EXTRA_REMOTE_INPUT_HISTORY = "android.remoteInputHistory";
+    field @FlaggedApi("android.app.opt_in_rich_ongoing") public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.REQUEST_PROMOTED_ONGOING";
     field @Deprecated public static final String EXTRA_SELF_DISPLAY_NAME = "android.selfDisplayName";
     field public static final String EXTRA_SHOW_BIG_PICTURE_WHEN_COLLAPSED = "android.showBigPictureWhenCollapsed";
     field public static final String EXTRA_SHOW_CHRONOMETER = "android.showChronometer";

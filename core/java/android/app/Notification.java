@@ -234,6 +234,13 @@ public class Notification implements Parcelable
     public static final String EXTRA_NOTIFICATION_ID = "android.intent.extra.NOTIFICATION_ID";
 
     /**
+     * Optional extra for {@link Notification}. If provided, should contain a boolean indicating
+     * whether the notification is requesting promoted treatment.
+     */
+    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+    public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.REQUEST_PROMOTED_ONGOING";
+
+    /**
      * Use all default values (where applicable).
      */
     public static final int DEFAULT_ALL = ~0;
@@ -3295,14 +3302,33 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
-            return false;
+        if (Flags.optInRichOngoing()) {
+            // New promotable specs:
+            // Must explicitly request promotion
+            if (!extras.getBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, false)) {
+                return false;
+            }
+            // Must not have disqualifying characteristics
+            if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
+                return false;
+            }
+            // "Ongoing CallStyle" notifications may be promoted regardless of style
+            if (isOngoingCallStyle()) {
+                return true;
+            }
+            // Otherwise, promote if styled correctly and NOT colorized
+            return hasPromotableStyle() && !isColorizedRequested();
+        } else {
+            // Original promotable specs:
+            if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
+                return false;
+            }
+            // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
+            if (isOngoingCallStyle()) {
+                return true;
+            }
+            return isColorizedRequested() && hasPromotableStyle();
         }
-        // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
-        if (isOngoingCallStyle()) {
-            return true;
-        }
-        return isColorizedRequested() && hasPromotableStyle();
     }
 
     /** Returns whether the notification is CallStyle.forOngoingCall(). */
@@ -7108,7 +7134,7 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
-            if (mN.isPromotedOngoing()) {
+            if (mN.isPromotedOngoing() && !Flags.optInRichOngoing()) {
                 publicExtras.putBoolean(EXTRA_COLORIZED,
                         savedBundle.getBoolean(EXTRA_COLORIZED));
             }
