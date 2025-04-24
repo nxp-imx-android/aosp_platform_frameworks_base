@@ -16,12 +16,18 @@
 
 package com.android.systemui.statusbar.notification.stack
 
+import android.os.VibrationEffect
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.haptics.fakeVibratorHelper
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
+import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createRowGroup
@@ -46,6 +52,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private val stackScrollLayout = mock<NotificationStackScrollLayout>()
     private val sectionsManager = mock<NotificationSectionsManager>()
     private val msdlPlayer = kosmos.fakeMSDLPlayer
+    private val vibratorHelper = kosmos.fakeVibratorHelper
     private var canRowBeDismissed = true
     private var magneticAnimationsCancelled = MutableList(childrenNumber) { false }
 
@@ -235,7 +242,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
             // WHEN the interaction ends on the row
-            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = false, velocity = null)
 
             // THEN the state resets
             assertThat(underTest.currentState).isEqualTo(State.IDLE)
@@ -248,7 +255,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             setTargets()
 
             // WHEN the interaction ends on the row
-            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = false, velocity = null)
 
             // THEN the state resets
             assertThat(underTest.currentState).isEqualTo(State.IDLE)
@@ -261,7 +268,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             setDetachedState()
 
             // WHEN the interaction ends on the row
-            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = false, velocity = null)
 
             // THEN the state resets
             assertThat(underTest.currentState).isEqualTo(State.IDLE)
@@ -274,7 +281,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             setDetachedState()
 
             // WHEN the interaction ends on the row
-            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = false, velocity = null)
 
             // THEN magnetic animations are cancelled
             assertThat(magneticAnimationsCancelled[childrenNumber / 2]).isTrue()
@@ -290,10 +297,56 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             setTargets()
 
             // WHEN the interactionEnd is called on a target different from the swiped row
-            underTest.onMagneticInteractionEnd(neighborRow, null)
+            underTest.onMagneticInteractionEnd(neighborRow, dismissing = false, velocity = null)
 
             // THEN magnetic animations are cancelled
             assertThat(magneticAnimationsCancelled[neighborIndex]).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
+    fun onMagneticInteractionEnd_whenPulling_fromDismiss_playsMSDLThresholdHaptics() =
+        kosmos.testScope.runTest {
+            // GIVEN a threshold of 100 px
+            val threshold = 100f
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
+
+            // GIVEN that targets are set and the swiped row is being pulled
+            setTargets()
+            underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+
+            // WHEN the interaction ends on the row because it was dismissed
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = true, velocity = null)
+
+            // THEN threshold haptics play to indicate the dismissal
+            assertThat(msdlPlayer.latestTokenPlayed).isEqualTo(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
+    fun onMagneticInteractionEnd_whenPulling_fromDismiss_playsThresholdVibration() =
+        kosmos.testScope.runTest {
+            // GIVEN a threshold of 100 px
+            val threshold = 100f
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
+
+            // GIVEN that targets are set and the swiped row is being pulled
+            setTargets()
+            underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+
+            // WHEN the interaction ends on the row because it was dismissed
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = true, velocity = null)
+
+            // THEN threshold haptics play to indicate the dismissal
+            val composition =
+                VibrationEffect.startComposition()
+                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.7f)
+                    .compose()
+            assertThat(vibratorHelper.hasVibratedWithEffects(composition)).isTrue()
         }
 
     @Test

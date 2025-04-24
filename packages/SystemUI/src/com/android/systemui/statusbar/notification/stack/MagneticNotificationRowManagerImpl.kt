@@ -336,12 +336,19 @@ constructor(
         detachDirectionEstimator.reset()
     }
 
-    override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
+    override fun onMagneticInteractionEnd(
+        row: ExpandableNotificationRow,
+        dismissing: Boolean,
+        velocity: Float?,
+    ) {
         detachDirectionEstimator.reset()
         if (row.isSwipedTarget()) {
             when (currentState) {
                 State.TARGETS_SET -> currentState = State.IDLE
                 State.PULLING -> {
+                    if (dismissing) {
+                        playThresholdHaptics()
+                    }
                     snapNeighborsBack(velocity)
                     currentState = State.IDLE
                 }
