@@ -18,7 +18,6 @@ package com.android.systemui.clipboardoverlay;
 
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
-import static com.android.systemui.Flags.FLAG_CLIPBOARD_SHARED_TRANSITIONS;
 import static com.android.systemui.Flags.FLAG_SHOW_CLIPBOARD_INDICATION;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
@@ -289,19 +288,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_CLIPBOARD_SHARED_TRANSITIONS)
-    public void test_viewCallbacks_onShareTapped_sharedTransitionsOff() {
-        initController();
-        mOverlayController.setClipData(mSampleClipData, "");
-
-        mCallbacks.onShareButtonTapped();
-
-        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SHARE_TAPPED, 0, "");
-        verify(mClipboardOverlayView, times(1)).getExitAnimation();
-    }
-
-    @Test
-    @EnableFlags(FLAG_CLIPBOARD_SHARED_TRANSITIONS)
     public void test_viewCallbacks_onShareTapped() {
         initController();
         mOverlayController.setClipData(mSampleClipData, "");
@@ -315,19 +301,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_CLIPBOARD_SHARED_TRANSITIONS)
-    public void test_viewCallbacks_onDismissTapped_sharedTransitionsOff() {
-        initController();
-        mOverlayController.setClipData(mSampleClipData, "");
-
-        mCallbacks.onDismissButtonTapped();
-
-        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_DISMISS_TAPPED, 0, "");
-        verify(mClipboardOverlayView, times(1)).getExitAnimation();
-    }
-
-    @Test
-    @EnableFlags(FLAG_CLIPBOARD_SHARED_TRANSITIONS)
     public void test_viewCallbacks_onDismissTapped() {
         initController();
 
@@ -353,7 +326,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_CLIPBOARD_SHARED_TRANSITIONS)
     public void test_multipleDismissals_dismissesOnce() {
         initController();
 

@@ -666,16 +666,6 @@ flag {
 }
 
 flag {
-    name: "clipboard_shared_transitions"
-    namespace: "systemui"
-    description: "Show shared transitions from clipboard"
-    bug: "360843770"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "clipboard_use_description_mimetype"
     namespace: "systemui"
     description: "Read item mimetype from description rather than checking URI"
