@@ -171,6 +171,7 @@ class AppCompatController {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);
         getSizeCompatModePolicy().dump(pw, prefix);
+        getDisplayCompatModePolicy().dump(pw, prefix);
         getSafeRegionPolicy().dump(pw, prefix);
     }
 }

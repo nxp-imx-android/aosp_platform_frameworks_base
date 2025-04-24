@@ -201,6 +201,9 @@ class AppCompatSizeCompatModePolicy {
             pw.println(prefix + "mSizeCompatScale=" + mSizeCompatScale + " mSizeCompatBounds="
                     + mSizeCompatBounds);
         }
+        if (shouldCreateAppCompatDisplayInsets()) {
+            pw.println(prefix + "shouldCreateAppCompatDisplayInsets=true");
+        }
     }
 
     /**
