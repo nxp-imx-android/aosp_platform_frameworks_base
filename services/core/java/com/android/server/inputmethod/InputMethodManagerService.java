@@ -3799,8 +3799,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                             scheduleSwitchUserTaskLocked(userId, cs.mClient);
                             return InputBindResult.USER_SWITCHING;
                         }
-                        final int[] profileIdsWithDisabled = mUserManagerInternal.getProfileIds(
-                                mCurrentImeUserId, false /* enabledOnly */);
+                        final int[] profileIdsWithDisabled = getProfileIds(mCurrentImeUserId);
                         for (int profileId : profileIdsWithDisabled) {
                             if (profileId == userId) {
                                 scheduleSwitchUserTaskLocked(userId, cs.mClient);
@@ -3847,9 +3846,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
                     // Verify if caller is a background user.
                     if (!mConcurrentMultiUserModeEnabled && userId != mCurrentImeUserId) {
-                        if (ArrayUtils.contains(
-                                mUserManagerInternal.getProfileIds(mCurrentImeUserId, false),
-                                userId)) {
+                        if (ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId)) {
                             // cross-profile access is always allowed here to allow
                             // profile-switching.
                             scheduleSwitchUserTaskLocked(userId, cs.mClient);
@@ -4021,6 +4018,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
         return res;
+    }
+
+    @NonNull
+    private int[] getProfileIds(@UserIdInt int userId) {
+        if (android.multiuser.Flags.allowSupervisingProfile()) {
+            return mUserManagerInternal.getProfileIds(userId, /* enabledOnly */ false,
+                    /* includeAlwaysVisible */ true);
+        }
+        return mUserManagerInternal.getProfileIds(userId, /* enabledOnly */ false);
     }
 
     @GuardedBy("ImfLock.class")

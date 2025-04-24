@@ -29,6 +29,7 @@ import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
+import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -826,6 +827,22 @@ public final class UserManagerServiceMockedTest {
         for (int id : mUms.getProfileIdsExcludingHidden(0, true)) {
             assertThat(id).isNotEqualTo(privateProfileUser.id);
         }
+    }
+
+    @Test
+    @EnableFlags({android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE})
+    public void testGetProfileIdsIncludingAlwaysVisible_supervisingProfile() {
+        UserInfo supervisingProfile = mUms.createUserWithThrow("Supervising",
+                USER_TYPE_PROFILE_SUPERVISING, 0);
+        int mainUserId = mUms.getMainUserId();
+        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ true)).asList().containsExactly(
+                        mainUserId, supervisingProfile.id);
+        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ false)).asList().containsExactly(mainUserId);
+        assertThat(mUmi.getProfileIds(supervisingProfile.id, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ true)).asList().containsExactly(
+                        mainUserId, supervisingProfile.id);
     }
 
     @Test
