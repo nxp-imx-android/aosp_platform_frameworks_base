@@ -1659,15 +1659,8 @@ public class BubbleController implements ConfigurationChangeListener,
             @NonNull IBinder transition,
             Consumer<Transitions.TransitionHandler> onInflatedCallback) {
         if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return null;
-        // If there is an existing bubble then just show it
-        final String taskKey = Bubble.getAppBubbleKeyForTask(taskInfo);
-        if (mBubbleData.hasAnyBubbleWithKey(taskKey)) {
-            ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition(): "
-                    + "skipping due to existing bubbled task=%d", taskInfo.taskId);
-            return null;
-        }
 
-        // Otherwise, create a new bubble and show it
+        // Create a new bubble and show it
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition() taskId=%s",
                 taskInfo.taskId);

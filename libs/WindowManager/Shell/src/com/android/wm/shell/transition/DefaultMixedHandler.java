@@ -793,7 +793,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
      * Returns whether the given request for a launching bubble and should be handled by the
      * bubbles transition.
      */
-    public boolean requestHasBubbleEnter(TransitionRequestInfo request) {
+    public boolean requestHasBubbleEnter(@NonNull TransitionRequestInfo request) {
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
                 && mBubbleTransitions.hasPendingEnterTransition(request)
@@ -805,10 +805,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
      * Returns whether the given request for a launching task is from an app bubble and should be
      * handled by the bubbles transition.
      */
-    public boolean requestHasBubbleEnterFromAppBubble(TransitionRequestInfo request) {
+    public boolean requestHasBubbleEnterFromAppBubble(@NonNull TransitionRequestInfo request) {
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
                 && request.getTriggerTask().isAppBubble
+                && !mBubbleTransitions.hasBubbleWithTaskId(request.getTriggerTask().taskId)
                 // TODO(b/408453889): To be removed once we handle transitions with stack view
                 && mBubbleTransitions.isShowingAsBubbleBar();
     }
