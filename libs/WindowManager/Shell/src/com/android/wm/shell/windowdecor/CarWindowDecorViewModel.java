@@ -101,7 +101,7 @@ public abstract class CarWindowDecorViewModel
     }
 
     @Override
-    public void onFocusedTaskChanged(int taskId, boolean isFocusedOnDisplay,
+    public void onFocusedTaskChanged(RunningTaskInfo taskInfo, boolean isFocusedOnDisplay,
             boolean isFocusedGlobally) {
         // no-op
     }

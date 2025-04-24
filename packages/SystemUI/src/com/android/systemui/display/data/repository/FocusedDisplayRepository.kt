@@ -17,7 +17,7 @@
 package com.android.systemui.display.data.repository
 
 import android.annotation.MainThread
-import android.app.ActivityTaskManager.INVALID_TASK_ID
+import android.app.ActivityManager.RunningTaskInfo
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.stateIn
 interface FocusedDisplayRepository {
     /** Provides the currently focused display. */
     val focusedDisplayId: StateFlow<Int>
-    val globallyFocusedTaskId: StateFlow<Int>
+    val globallyFocusedTask: StateFlow<RunningTaskInfo?>
 }
 
 @SysUISingleton
@@ -55,26 +55,26 @@ constructor(
     transitions: ShellTransitions,
     @FocusedDisplayRepoLog logBuffer: LogBuffer,
 ) : FocusedDisplayRepository {
-    val focusTransitionData: Flow<Pair<Int, Int>> =
+    val focusTransitionData: Flow<Pair<Int, RunningTaskInfo?>> =
         conflatedCallbackFlow {
                 val listener =
                     object : FocusTransitionListener {
-                        private var taskId = INVALID_TASK_ID
+                        private var taskInfo: RunningTaskInfo? = null
                         private var displayId = DEFAULT_DISPLAY
 
                         override fun onFocusedDisplayChanged(displayId: Int) {
                             this.displayId = displayId
-                            trySend(Pair(displayId, taskId))
+                            trySend(Pair(displayId, taskInfo))
                         }
 
                         override fun onFocusedTaskChanged(
-                            taskId: Int,
+                            taskInfo: RunningTaskInfo,
                             isFocusedOnDisplay: Boolean,
                             isFocusedGlobally: Boolean,
                         ) {
                             if (isFocusedGlobally) {
-                                this.taskId = taskId
-                                trySend(Pair(displayId, taskId))
+                                this.taskInfo = taskInfo
+                                trySend(Pair(displayId, taskInfo))
                             }
                         }
                     }
@@ -94,8 +94,8 @@ constructor(
         focusTransitionData
             .map { it.first }
             .stateIn(backgroundScope, SharingStarted.Eagerly, DEFAULT_DISPLAY)
-    override val globallyFocusedTaskId: StateFlow<Int> =
+    override val globallyFocusedTask: StateFlow<RunningTaskInfo?> =
         focusTransitionData
             .map { it.second }
-            .stateIn(backgroundScope, SharingStarted.Eagerly, INVALID_TASK_ID)
+            .stateIn(backgroundScope, SharingStarted.Eagerly, null)
 }

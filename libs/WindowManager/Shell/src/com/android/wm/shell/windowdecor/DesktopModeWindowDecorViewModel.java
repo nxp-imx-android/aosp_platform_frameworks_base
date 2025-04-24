@@ -551,9 +551,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onFocusedTaskChanged(int taskId, boolean isFocusedOnDisplay,
+    public void onFocusedTaskChanged(RunningTaskInfo taskInfo, boolean isFocusedOnDisplay,
             boolean isFocusedGlobally) {
-        final WindowDecoration decor = mWindowDecorByTaskId.get(taskId);
+        final WindowDecoration decor = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (decor != null) {
             decor.relayout(decor.mTaskInfo, isFocusedGlobally, decor.mExclusionRegion);
         }
