@@ -17,6 +17,7 @@
 package com.android.settingslib.widget
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
@@ -39,7 +40,8 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     private var buttonCheckedListener: MaterialButtonToggleGroup.OnButtonCheckedListener? = null
 
     // Data to be applied during onBindViewHolder
-    private val buttonSetupData = mutableListOf<Triple<Int, String, Int>>() // (index, text, icon)
+    private val buttonSetupData =
+        mutableListOf<Triple<Int, String, SegmentedButtonIcon>>() // (index, text, icon)
     private val buttonVisibilityData = mutableListOf<Pair<Int, Boolean>>() // (index, visibility)
     private val buttonEnableData = mutableListOf<Pair<Int, Boolean>>() // (index, enable)
 
@@ -77,10 +79,20 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     fun setUpButton(index: Int, text: String, @DrawableRes icon: Int) {
         if (buttonGroup == null) {
             // Store data for later application
-            buttonSetupData.add(Triple(index, text, icon))
+            buttonSetupData.add(Triple(index, text, SegmentedButtonIcon.ResourceIcon(icon)))
         } else {
             // Apply data
-            applyButtonSetupData(index, text, icon)
+            applyButtonSetupData(index, text, SegmentedButtonIcon.ResourceIcon(icon))
+        }
+    }
+
+    fun setUpButton(index: Int, text: String, icon: Drawable) {
+        if (buttonGroup == null) {
+            // Store data for later application
+            buttonSetupData.add(Triple(index, text, SegmentedButtonIcon.DrawableIcon(icon)))
+        } else {
+            // Apply data
+            applyButtonSetupData(index, text, SegmentedButtonIcon.DrawableIcon(icon))
         }
     }
 
@@ -150,9 +162,15 @@ class SegmentedButtonPreference @JvmOverloads constructor(
         buttonEnableData.clear() // Clear data after applying
     }
 
-    private fun applyButtonSetupData(index: Int, text: String, @DrawableRes icon: Int) {
+    private fun applyButtonSetupData(index: Int, text: String, icon: SegmentedButtonIcon) {
         if (index in 0 until buttonLabels.size) {
-            (buttonGroup?.getChildAt(index) as? MaterialButton)?.setIconResource(icon)
+            when (icon) {
+                is SegmentedButtonIcon.ResourceIcon ->
+                    (buttonGroup?.getChildAt(index) as? MaterialButton)?.setIconResource(icon.resId)
+
+                is SegmentedButtonIcon.DrawableIcon ->
+                    (buttonGroup?.getChildAt(index) as? MaterialButton)?.icon = icon.drawable
+            }
             buttonLabels[index].text = text
         }
     }
@@ -176,5 +194,11 @@ class SegmentedButtonPreference @JvmOverloads constructor(
 
             buttonGroup?.check(button.id)
         }
+    }
+
+    private sealed interface SegmentedButtonIcon {
+        data class DrawableIcon(val drawable: Drawable) : SegmentedButtonIcon
+
+        data class ResourceIcon(@DrawableRes val resId: Int) : SegmentedButtonIcon
     }
 }
