@@ -108,7 +108,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     protected String mAppName;
     private int mAppUid;
     private String mDelegatePkg;
-    private NotificationChannel mSingleNotificationChannel;
+    protected NotificationChannel mSingleNotificationChannel;
     private int mStartingChannelImportance;
     private boolean mWasShownHighPriority;
     private boolean mPressedApply;
