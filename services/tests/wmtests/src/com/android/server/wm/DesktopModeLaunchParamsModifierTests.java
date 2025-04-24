@@ -1572,7 +1572,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testFreeformWindowingModeAppliedIfSourceTaskExists() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1583,7 +1584,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final ActivityRecord sourceActivity = new ActivityBuilder(task.mAtmService)
                 .setTask(sourceTask).build();
 
-        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task)
                 .setSource(sourceActivity).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
     }
