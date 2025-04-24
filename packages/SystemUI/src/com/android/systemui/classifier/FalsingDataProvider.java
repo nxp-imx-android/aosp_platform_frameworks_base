@@ -74,6 +74,7 @@ public class FalsingDataProvider {
     private boolean mDropLastEvent;
     private boolean mJustUnlockedWithFace;
     private boolean mA11YAction;
+    private boolean mShowingCommunalHub;
 
     @Inject
     public FalsingDataProvider(
@@ -474,6 +475,14 @@ public class FalsingDataProvider {
         mDirty = true;
 
         mSessionListeners.forEach(SessionListener::onSessionEnded);
+    }
+
+    public boolean isShowingCommunalHub() {
+        return mShowingCommunalHub;
+    }
+
+    void setShowingCommunalHub(boolean showingCommunalHub) {
+        mShowingCommunalHub = showingCommunalHub;
     }
 
     public boolean isJustUnlockedWithFace() {

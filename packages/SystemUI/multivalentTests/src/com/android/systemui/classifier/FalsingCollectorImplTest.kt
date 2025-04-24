@@ -15,14 +15,21 @@
  */
 package com.android.systemui.classifier
 
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import android.view.KeyEvent
 import android.view.MotionEvent
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.keyguard.KeyguardUpdateMonitor
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.dock.DockManager
@@ -30,11 +37,14 @@ import com.android.systemui.dock.dockManager
 import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
@@ -43,11 +53,12 @@ import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChang
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.util.kotlin.JavaAdapter
+import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.sensors.ProximitySensor
 import com.android.systemui.util.sensors.ThresholdSensor
 import com.android.systemui.util.time.fakeSystemClock
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,11 +73,13 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @RunWithLooper(setAsMainLooper = true)
-class FalsingCollectorImplTest : SysuiTestCase() {
+class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private var kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     private val isDeviceEntered = MutableStateFlow(false)
@@ -86,7 +99,6 @@ class FalsingCollectorImplTest : SysuiTestCase() {
     private var shadeInteractor =
         mock<ShadeInteractor> { on { isQsExpanded } doReturn MutableStateFlow(false) }
     private var batteryController = mock<BatteryController>()
-    private var javaAdapter = mock<JavaAdapter>()
     private var selectedUserInteractor = mock<SelectedUserInteractor>()
     private var deviceEntryInteractor =
         mock<DeviceEntryInteractor> { on { isDeviceEntered } doReturn isDeviceEntered }
@@ -113,10 +125,15 @@ class FalsingCollectorImplTest : SysuiTestCase() {
                 fakeSystemClock,
                 { selectedUserInteractor },
                 { communalInteractor },
+                { communalSceneInteractor },
                 { deviceEntryInteractor },
                 { sceneContainerOcclusionInteractor },
             )
         }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -458,4 +475,84 @@ class FalsingCollectorImplTest : SysuiTestCase() {
             underTest.onA11yAction()
             verify(falsingDataProvider).onA11yAction()
         }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
+    @DisableSceneContainer
+    fun testCommunalShowingChanged_dataProviderUpdated() =
+        kosmos.runTest {
+            // Communal is enabled.
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+
+            communalSceneRepository.changeScene(CommunalScenes.Blank)
+            verify(falsingDataProvider).isShowingCommunalHub = false
+
+            communalSceneRepository.changeScene(CommunalScenes.Communal)
+            verify(falsingDataProvider).isShowingCommunalHub = true
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
+    @EnableSceneContainer
+    fun testCommunalShowingChanged_dataProviderUpdated_sceneContainer() =
+        kosmos.runTest {
+            // Communal is enabled.
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+
+            sceneContainerRepository.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen))
+            )
+            verify(falsingDataProvider).isShowingCommunalHub = false
+
+            sceneContainerRepository.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Communal))
+            )
+            verify(falsingDataProvider).isShowingCommunalHub = true
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
+    @DisableSceneContainer
+    fun testCommunalShowingChanged_hubShowing_sessionEnds() =
+        kosmos.runTest {
+            // Communal is enabled.
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+            // Session is started.
+            underTest.onScreenTurningOn()
+            verify(falsingDataProvider).onSessionStarted()
+
+            // Communal shows.
+            communalSceneRepository.changeScene(CommunalScenes.Communal)
+
+            // Session ends.
+            verify(falsingDataProvider).onSessionEnd()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
+    @EnableSceneContainer
+    fun testCommunalShowingChanged_hubShowing_sessionEnds_sceneContainer() =
+        kosmos.runTest {
+            // Communal is enabled.
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+            // Session is started.
+            underTest.onScreenTurningOn()
+            verify(falsingDataProvider).onSessionStarted()
+
+            // Communal shows.
+            sceneContainerRepository.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Communal))
+            )
+
+            // Session ends.
+            verify(falsingDataProvider).onSessionEnd()
+        }
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+        }
+    }
 }

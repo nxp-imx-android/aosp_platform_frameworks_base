@@ -204,6 +204,13 @@ public class BrightLineFalsingManagerTest extends SysuiTestCase {
     }
 
     @Test
+    public void testSkipCommunalHub() {
+        assertThat(mBrightLineFalsingManager.isFalseTouch(Classifier.GENERIC)).isTrue();
+        when(mFalsingDataProvider.isShowingCommunalHub()).thenReturn(true);
+        assertThat(mBrightLineFalsingManager.isFalseTouch(Classifier.GENERIC)).isFalse();
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_NON_TOUCHSCREEN_DEVICES_BYPASS_FALSING)
     public void testTrackpadGesture() {
         assertThat(mBrightLineFalsingManager.isFalseTouch(Classifier.GENERIC)).isTrue();
