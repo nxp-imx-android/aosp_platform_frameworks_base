@@ -1123,6 +1123,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
             // types.
             int selectedClickType = mHoveredState ? AUTOCLICK_TYPE_LEFT_CLICK : mActiveClickType;
 
+            AutoclickLogger.logSelectedClickType(selectedClickType);
+
             // Handle scroll-specific click behavior.
             if (handleScrollClick()) {
                 return;
