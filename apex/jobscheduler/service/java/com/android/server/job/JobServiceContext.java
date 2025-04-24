@@ -322,7 +322,7 @@ public final class JobServiceContext implements ServiceConnection {
 
     // All instances of JobAnrTimer share the same arguments.
     private static final AnrTimer.Args sAnrTimerArgs =
-            new AnrTimer.Args().enable(com.android.server.utils.Flags.anrTimerJobService());
+            new AnrTimer.Args().enable(com.android.server.utils.Flags.anrTimerForJobService());
 
     /**
      * An AnrTimer for the JobServiceContext.  There is one instance for each JobServiceContext

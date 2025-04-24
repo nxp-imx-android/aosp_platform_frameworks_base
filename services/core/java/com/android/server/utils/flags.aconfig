@@ -10,9 +10,8 @@ flag {
 }
 
 flag {
-     name: "anr_timer_job_service"
+     name: "anr_timer_for_job_service"
      namespace: "system_performance"
-     is_fixed_read_only: true
      description: "Use AnrTimer to signal ANRs in JobScheduler"
      bug: "408440679"
 }
