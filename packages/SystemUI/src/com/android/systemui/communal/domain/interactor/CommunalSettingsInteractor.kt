@@ -26,6 +26,7 @@ import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.process.domain.interactor.ProcessInteractor
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -52,6 +53,7 @@ constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     @Background private val bgExecutor: Executor,
     private val repository: CommunalSettingsRepository,
+    private val processInteractor: ProcessInteractor,
     userInteractor: SelectedUserInteractor,
     private val userTracker: UserTracker,
 ) {
@@ -82,7 +84,7 @@ constructor(
     /** Whether communal hub is allowed by device policy for the current user */
     val allowedForCurrentUserByDevicePolicy: Flow<Boolean> =
         userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            repository.getAllowedByDevicePolicy(user)
+            getAllowedByDevicePolicy(user)
         }
 
     /** Whether the hub is enabled for the current user */
@@ -159,9 +161,7 @@ constructor(
         workProfileUserInfoCallbackFlow
             .flatMapLatest { workProfile ->
                 workProfile?.let {
-                    repository.getAllowedByDevicePolicy(it).map { allowed ->
-                        if (!allowed) it else null
-                    }
+                    getAllowedByDevicePolicy(it).map { allowed -> if (!allowed) it else null }
                 } ?: flowOf(null)
             }
             .stateIn(
@@ -169,4 +169,13 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = null,
             )
+
+    private fun getAllowedByDevicePolicy(user: UserInfo): Flow<Boolean> =
+        processInteractor.processUserReady.flatMapLatestConflated { ready ->
+            if (ready) {
+                repository.getAllowedByDevicePolicy(user)
+            } else {
+                flowOf(false)
+            }
+        }
 }

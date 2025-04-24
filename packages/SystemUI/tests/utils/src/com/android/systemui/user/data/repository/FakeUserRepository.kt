@@ -190,6 +190,10 @@ class FakeUserRepository @Inject constructor() : UserRepository {
     fun setUserUnlocked(userHandle: UserHandle, unlocked: Boolean) {
         _userUnlockedState.update { it + (userHandle to unlocked) }
     }
+
+    fun getMainUser(): UserInfo {
+        return MAIN_USER
+    }
 }
 
 @Module
