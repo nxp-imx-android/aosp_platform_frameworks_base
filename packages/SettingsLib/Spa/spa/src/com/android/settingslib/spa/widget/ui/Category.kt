@@ -144,7 +144,6 @@ fun LazyCategory(
     footer: @Composable () -> Unit = {},
     header: @Composable () -> Unit,
 ) {
-    header()
     Column(
         Modifier
             .padding(
@@ -162,12 +161,24 @@ fun LazyCategory(
             verticalArrangement = Arrangement.spacedBy(SettingsDimension.paddingTiny),
             state = state,
         ) {
+            item { CompositionLocalProvider(LocalIsInCategory provides false) { header() } }
+
             items(count = list.size, key = key) {
                 title?.invoke(it)?.let { title -> CategoryTitle(title) }
-                if (list.isNotEmpty() && it < list.size - 1) {
-                    CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
-                } else {
-                    Column(modifier = Modifier.clip(SettingsShape.BottomCornerMedium2)) {
+                when (it) {
+                    0 -> {
+                        Column(modifier = Modifier.clip(SettingsShape.TopCornerMedium2)) {
+                            CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                        }
+                    }
+
+                    list.size - 1 -> {
+                        Column(modifier = Modifier.clip(SettingsShape.BottomCornerMedium2)) {
+                            CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                        }
+                    }
+
+                    else -> {
                         CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
                     }
                 }

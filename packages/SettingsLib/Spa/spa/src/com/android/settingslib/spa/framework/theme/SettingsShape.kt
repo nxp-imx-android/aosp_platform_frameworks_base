@@ -33,6 +33,9 @@ object SettingsShape {
 
     val CornerExtraLarge1 = RoundedCornerShape(40.dp)
 
+    val TopCornerMedium2 =
+        RoundedCornerShape(CornerSize(20.dp), CornerSize(20.dp), CornerSize(0), CornerSize(0))
+
     val BottomCornerMedium2 =
         RoundedCornerShape(CornerSize(0), CornerSize(0), CornerSize(20.dp), CornerSize(20.dp))
 }
