@@ -4584,7 +4584,18 @@ public class AudioManager {
 
     /**
      *  Request audio focus.
-     *  Send a request to obtain the audio focus
+     *  Send a request to obtain the audio focus.
+     *
+     * <aside class="note"><b>Note:</b>
+     * If an app targets Android 15 (API level 35) or higher, it cannot request
+     * audio focus unless it's the top app or running a foreground service.
+     * This requirement is similar to the
+     * <a href="/media/media3/session/background-playback#service-declaration">requirements
+     * for audio playback</a>. If an app requests audio focus when it does not
+     * meet these requirements, the method returns
+     * {@link AudioManager#AUDIOFOCUS_REQUEST_FAILED}.
+     * </aside>
+     *
      *  @param l the listener to be notified of audio focus changes
      *  @param streamType the main audio stream type affected by the focus request
      *  @param durationHint use {@link #AUDIOFOCUS_GAIN_TRANSIENT} to indicate this focus request
@@ -4670,6 +4681,17 @@ public class AudioManager {
      * Request audio focus.
      * See the {@link AudioFocusRequest} for information about the options available to configure
      * your request, and notification of focus gain and loss.
+     *
+     * <aside class="note"><b>Note:</b>
+     * If an app targets Android 15 (API level 35) or higher, it cannot request
+     * audio focus unless it's the top app or running a foreground service.
+     * This requirement is similar to the
+     * <a href="/media/media3/session/background-playback#service-declaration">requirements
+     * for audio playback</a>. If an app requests audio focus when it does not
+     * meet these requirements, the method returns
+     * {@link AudioManager#AUDIOFOCUS_REQUEST_FAILED}.
+     * </aside>
+     *
      * @param focusRequest a {@link AudioFocusRequest} instance used to configure how focus is
      *   requested.
      * @return {@link #AUDIOFOCUS_REQUEST_FAILED}, {@link #AUDIOFOCUS_REQUEST_GRANTED}
