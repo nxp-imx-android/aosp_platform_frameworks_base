@@ -1269,7 +1269,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                                     && mWallpaper.lastDiedTime + MIN_WALLPAPER_CRASH_TIME
                                     > SystemClock.uptimeMillis()) {
                                 Slog.w(TAG, "Reverting to built-in wallpaper!");
-                                clearWallpaperLocked(FLAG_SYSTEM, mWallpaper.userId, false, null);
+                                clearWallpaperLocked(
+                                        mWallpaper.mWhich, mWallpaper.userId, false, null);
                             } else {
                                 mWallpaper.lastDiedTime = SystemClock.uptimeMillis();
                                 tryToRebind();
