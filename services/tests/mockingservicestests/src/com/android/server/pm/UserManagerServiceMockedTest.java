@@ -1219,6 +1219,22 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
     }
 
+    @Test
+    public void testCanSwitchToHeadlessSystemUser_true() {
+        mockCanSwitchToHeadlessSystemUser(true);
+
+        expect.withMessage("canSwitchToHeadlessSystemUser()")
+                .that(mUms.canSwitchToHeadlessSystemUser()).isTrue();
+    }
+
+    @Test
+    public void testCanSwitchToHeadlessSystemUser_false() {
+        mockCanSwitchToHeadlessSystemUser(false);
+
+        expect.withMessage("canSwitchToHeadlessSystemUser()")
+                .that(mUms.canSwitchToHeadlessSystemUser()).isFalse();
+    }
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
