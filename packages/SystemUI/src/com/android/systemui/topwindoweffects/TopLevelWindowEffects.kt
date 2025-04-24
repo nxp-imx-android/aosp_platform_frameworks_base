@@ -19,6 +19,7 @@ package com.android.systemui.topwindoweffects
 import android.content.Context
 import android.graphics.PixelFormat
 import android.view.Gravity
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.annotation.DrawableRes
@@ -92,28 +93,30 @@ constructor(
         if (root == null) {
             root =
                 EffectsWindowRoot(
-                    context = context,
-                    viewModelFactory = viewModelFactory,
-                    topRoundedCornerResourceId = topRoundedCornerId,
-                    bottomRoundedCornerResourceId = bottomRoundedCornerId,
-                    physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
-                    onEffectFinished = {
-                        if (root?.isAttachedToWindow == true) {
-                            windowManager.removeView(root)
-                            root = null
-                        }
-                        runOnMainThread {
-                            notificationShadeWindowController.setRequestTopUi(false, TAG)
-                        }
-                    },
-                    appZoomOutOptional = appZoomOutOptional,
-                    interactionJankMonitor = interactionJankMonitor,
-                )
+                        context = context,
+                        viewModelFactory = viewModelFactory,
+                        topRoundedCornerResourceId = topRoundedCornerId,
+                        bottomRoundedCornerResourceId = bottomRoundedCornerId,
+                        physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
+                        onEffectFinished = ::removeWindow,
+                        appZoomOutOptional = appZoomOutOptional,
+                        interactionJankMonitor = interactionJankMonitor,
+                    )
+                    .apply { visibility = View.GONE }
             root?.let { rootView ->
                 runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
                 windowManager.addView(rootView, getWindowManagerLayoutParams())
+                rootView.post { rootView.visibility = View.VISIBLE }
             }
         }
+    }
+
+    private suspend fun removeWindow() {
+        if (root?.isAttachedToWindow == true) {
+            windowManager.removeView(root)
+            root = null
+        }
+        runOnMainThread { notificationShadeWindowController.setRequestTopUi(false, TAG) }
     }
 
     private suspend fun runOnMainThread(block: () -> Unit) {
