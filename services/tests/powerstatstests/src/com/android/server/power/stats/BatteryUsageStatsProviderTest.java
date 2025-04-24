@@ -42,7 +42,6 @@ import android.os.Handler;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.UidBatteryConsumer;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 
@@ -53,7 +52,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.os.BatteryStatsHistoryIterator;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.os.PowerProfile;
-import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.processor.MultiStatePowerAttributor;
 
 import org.junit.Before;
@@ -915,14 +913,10 @@ public class BatteryUsageStatsProviderTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_EXTENDED_BATTERY_HISTORY_COMPRESSION_ENABLED
-    })
     public void testIncludeSubsetOfHistory() throws IOException {
         MockBatteryStatsImpl batteryStats = mStatsRule.getBatteryStats();
         BatteryHistoryDirectory store =
                 (BatteryHistoryDirectory) batteryStats.getHistory().getBatteryHistoryStore();
-        store.setFileCompressionEnabled(true);
         // Make history fragment size predictable. Without this protection, holding the history
         // directory lock in the background would prevent new fragments from being created.
         store.makeDirectoryLockUnconditional();
