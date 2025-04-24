@@ -27,18 +27,26 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
+import com.android.systemui.log.dagger.CommunalTableLog
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.util.kotlin.observeTriggerSensor
+import com.android.systemui.util.kotlin.pairwiseBy
 import com.android.systemui.util.kotlin.slidingWindow
 import com.android.systemui.util.sensors.AsyncSensorManager
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOn
@@ -56,7 +64,8 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
     @CommunalLog private val logBuffer: LogBuffer,
-    clock: SystemClock,
+    @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
+    private val clock: SystemClock,
 ) {
     private val logger = Logger(logBuffer, TAG)
 
@@ -74,64 +83,60 @@ constructor(
         merge(
                 observeTriggerSensor(Sensor.TYPE_PICK_UP_GESTURE)
                     // If pickup detected, avoid triggering posturing at all within the sliding
-                    // window by emitting a negative infinity value.
+                    // window by emitting a negative confidence.
                     .map { ConfidenceLevel.Negative(1f) }
                     .onEach { logger.i("pickup gesture detected") },
                 observeTriggerSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
                     // If motion detected, avoid triggering posturing at all within the sliding
-                    // window by emitting a negative infinity value.
+                    // window by emitting a negative confidence.
                     .map { ConfidenceLevel.Negative(1f) }
                     .onEach { logger.i("significant motion detected") },
-                repository.positionState
-                    .map { it.stationary }
-                    .filterNot { it is ConfidenceLevel.Unknown },
+                repository.positionState.map { it.stationary },
             )
-            .slidingWindow(SLIDING_WINDOW_DURATION, clock)
-            .filterNot { it.isEmpty() }
-            .map { window -> window.toConfidenceState() }
+            .aggregateConfidences()
 
     /**
      * Detects whether or not the device is in an upright orientation, applying a sliding window
      * smoothing algorithm.
      */
     private val orientationSmoothed: Flow<AggregatedConfidenceState> =
-        repository.positionState
-            .map { it.orientation }
-            .filterNot { it is ConfidenceLevel.Unknown }
-            .slidingWindow(SLIDING_WINDOW_DURATION, clock)
-            .filterNot { it.isEmpty() }
-            .map { window -> window.toConfidenceState() }
+        repository.positionState.map { it.orientation }.aggregateConfidences()
 
     /**
      * Posturing is composed of the device being stationary and in the correct orientation. If both
      * conditions are met, then consider it postured.
      */
-    private val posturedSmoothed: Flow<PosturedState> =
-        combine(stationarySmoothed, orientationSmoothed) {
-                stationaryConfidence,
-                orientationConfidence ->
-                logger.i({ "stationary: $str1 | orientation: $str2" }) {
+    private val posturedSmoothed: StateFlow<PosturedState> =
+        combine(stationarySmoothed, orientationSmoothed, ::Pair)
+            // Add small debounce to batch the processing of stationary and orientation changes
+            // which come in very close together.
+            .debounce(BATCHING_DEBOUNCE_DURATION)
+            .map { (stationaryConfidence, orientationConfidence) ->
+                val isStationary = stationaryConfidence.isStationary()
+                val isInOrientation = orientationConfidence.isInOrientation()
+
+                logger.i({ "stationary ($bool1): $str1 | orientation ($bool2): $str2" }) {
+                    bool1 = isStationary
                     str1 = stationaryConfidence.toString()
+                    bool2 = isInOrientation
                     str2 = orientationConfidence.toString()
                 }
-
-                val isStationary = stationaryConfidence.avgConfidence >= CONFIDENCE_THRESHOLD
-                val isInOrientation = orientationConfidence.avgConfidence >= CONFIDENCE_THRESHOLD
 
                 if (isStationary && isInOrientation) {
                     PosturedState.Postured
                 } else if (
-                    stationaryConfidence.latestConfidence >= CONFIDENCE_THRESHOLD &&
-                        orientationConfidence.latestConfidence >= CONFIDENCE_THRESHOLD
+                    stationaryConfidence.latestConfidence >= ENTER_CONFIDENCE_THRESHOLD &&
+                        orientationConfidence.latestConfidence >= ENTER_CONFIDENCE_THRESHOLD
                 ) {
                     // We may be postured soon since the latest confidence is above the threshold.
                     // If  no new events come in, we will eventually transition to postured at the
                     // end of the sliding window.
-                    PosturedState.MayBePostured
+                    PosturedState.MayBePostured(isStationary, isInOrientation)
                 } else {
-                    PosturedState.NotPostured
+                    PosturedState.NotPostured(isStationary, isInOrientation)
                 }
             }
+            .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = PosturedState.Unknown)
             .flowOn(bgDispatcher)
             .stateIn(
                 scope = applicationScope,
@@ -156,7 +161,23 @@ constructor(
         }
 
     /** Whether the device may become postured soon. */
-    val mayBePostured: Flow<Boolean> = posturedSmoothed.map { it == PosturedState.MayBePostured }
+    val mayBePostured: Flow<Boolean> = posturedSmoothed.map { it is PosturedState.MayBePostured }
+
+    /** Helper for aggregating the confidence levels in the sliding window. */
+    private fun Flow<ConfidenceLevel>.aggregateConfidences(): Flow<AggregatedConfidenceState> =
+        filterNot { it is ConfidenceLevel.Unknown }
+            .slidingWindow(SLIDING_WINDOW_DURATION, clock)
+            .pairwiseBy(emptyList()) { old, new ->
+                // If all elements have expired out of the window, then maintain only the last and
+                // most recent element.
+                if (old.isNotEmpty() && new.isEmpty()) {
+                    old.subList(old.lastIndex, old.lastIndex + 1)
+                } else {
+                    new
+                }
+            }
+            .distinctUntilChanged()
+            .map { window -> window.toConfidenceState() }
 
     /**
      * Helper for observing a trigger sensor, which automatically unregisters itself after it
@@ -167,20 +188,55 @@ constructor(
         return asyncSensorManager.observeTriggerSensor(sensor)
     }
 
+    private fun AggregatedConfidenceState.isStationary(): Boolean {
+        return avgConfidence >= getThreshold(posturedSmoothed.value.isStationary)
+    }
+
+    private fun AggregatedConfidenceState.isInOrientation(): Boolean {
+        return avgConfidence >= getThreshold(posturedSmoothed.value.inOrientation)
+    }
+
+    private fun getThreshold(currentlyMeetsThreshold: Boolean) =
+        if (currentlyMeetsThreshold) {
+            EXIT_CONFIDENCE_THRESHOLD
+        } else {
+            ENTER_CONFIDENCE_THRESHOLD
+        }
+
     companion object {
         const val TAG = "PosturingInteractor"
         val SLIDING_WINDOW_DURATION = 10.seconds
-        const val CONFIDENCE_THRESHOLD = 0.8f
+
+        /**
+         * The confidence threshold required to enter a stationary / orientation state. If the
+         * confidence is greater than this, we may enter a postured state.
+         */
+        const val ENTER_CONFIDENCE_THRESHOLD = 0.8f
+
+        /**
+         * The confidence threshold required to exit a stationary / orientation state. If the
+         * confidence is less than this, we may exit the postured state. This is smaller than
+         * [ENTER_CONFIDENCE_THRESHOLD] to help ensure we don't exit the state due to small amounts
+         * of motion, such as the user tapping on the screen.
+         */
+        const val EXIT_CONFIDENCE_THRESHOLD = 0.5f
+
+        /**
+         * Amount of time to keep the posturing algorithm running after the last subscriber
+         * unsubscribes. This helps ensure that if the charging connection is flaky, we don't lose
+         * the posturing state.
+         */
         val STOP_TIMEOUT_AFTER_UNSUBSCRIBE = 5.seconds
+
+        /** Debounce duration to batch the processing of events. */
+        val BATCHING_DEBOUNCE_DURATION = 10.milliseconds
     }
 }
 
 fun PosturedState.asBoolean(): Boolean? {
     return when (this) {
-        is PosturedState.Postured -> true
-        PosturedState.NotPostured -> false
-        PosturedState.MayBePostured -> false
         PosturedState.Unknown -> null
+        else -> isStationary && inOrientation
     }
 }
 

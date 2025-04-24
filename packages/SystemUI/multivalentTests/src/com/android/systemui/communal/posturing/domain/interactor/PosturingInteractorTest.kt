@@ -134,6 +134,8 @@ class PosturingInteractorTest : SysuiTestCase() {
             advanceTimeBy(PosturingInteractor.SLIDING_WINDOW_DURATION / 2)
             runCurrent()
 
+            advanceTimeByBatchingDuration()
+
             // The 0.2 confidence will have fallen out of the sliding window, and we should now flip
             // to true.
             assertThat(postured).isTrue()
@@ -164,6 +166,7 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             // If we detect a lift gesture, we should transition back to not postured.
             triggerSensor(sensor)
+            advanceTimeByBatchingDuration()
             assertThat(postured).isFalse()
 
             advanceTimeBy(9999.hours)
@@ -190,10 +193,13 @@ class PosturingInteractorTest : SysuiTestCase() {
                 )
             }
 
+            advanceTimeByBatchingDuration()
+
             assertThat(postured).isTrue()
 
             // If we detect a lift gesture, we should transition back to not postured immediately.
             triggerSensor(sensor)
+            advanceTimeByBatchingDuration()
             assertThat(postured).isFalse()
         }
 
@@ -218,6 +224,7 @@ class PosturingInteractorTest : SysuiTestCase() {
 
             // If we detect motion, we should transition back to not postured.
             triggerSensor(sensor)
+            advanceTimeByBatchingDuration()
             assertThat(postured).isFalse()
 
             advanceTimeBy(9999.hours)
@@ -230,7 +237,9 @@ class PosturingInteractorTest : SysuiTestCase() {
             val postured by collectLastValue(underTest.postured)
             assertThat(postured).isFalse()
 
-            underTest.setValueForDebug(PosturedState.NotPostured)
+            underTest.setValueForDebug(
+                PosturedState.NotPostured(isStationary = false, inOrientation = false)
+            )
             posturingRepository.fake.emitPositionState(
                 PositionState(
                     stationary = ConfidenceLevel.Positive(confidence = 1f),
@@ -262,6 +271,8 @@ class PosturingInteractorTest : SysuiTestCase() {
                 )
             )
 
+            advanceTimeByBatchingDuration()
+
             assertThat(mayBePostured).isFalse()
             assertThat(postured).isFalse()
 
@@ -274,6 +285,8 @@ class PosturingInteractorTest : SysuiTestCase() {
                 )
             )
 
+            advanceTimeByBatchingDuration()
+
             assertThat(mayBePostured).isFalse()
             assertThat(postured).isFalse()
 
@@ -285,6 +298,8 @@ class PosturingInteractorTest : SysuiTestCase() {
                     orientation = ConfidenceLevel.Positive(confidence = 1f),
                 )
             )
+
+            advanceTimeByBatchingDuration()
 
             assertThat(mayBePostured).isTrue()
             assertThat(postured).isFalse()
