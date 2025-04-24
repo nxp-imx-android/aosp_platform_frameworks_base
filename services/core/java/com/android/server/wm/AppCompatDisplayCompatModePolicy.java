@@ -26,6 +26,8 @@ import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONN
 import android.annotation.NonNull;
 import android.content.pm.ApplicationInfo;
 
+import java.io.PrintWriter;
+
 /**
  * Encapsulate app-compat logic for multi-display environments.
  *
@@ -64,8 +66,7 @@ class AppCompatDisplayCompatModePolicy {
      */
     boolean isRestartMenuEnabledForDisplayMove() {
         // Restart menu is only available to apps in display compat mode.
-        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue() && mDisplayChangedWithoutRestart
-                && getDisplayCompatModeConfigMask() != 0;
+        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue() && isInDisplayCompatMode();
     }
 
     /**
@@ -93,6 +94,14 @@ class AppCompatDisplayCompatModePolicy {
         mDisplayChangedWithoutRestart = false;
     }
 
+    private boolean isInDisplayCompatMode() {
+        return getDisplayCompatModeConfigMask() != 0;
+    }
+
+    private boolean isEligibleForDisplayCompatMode() {
+        return getStaticDisplayCompatModeConfigMask() != 0;
+    }
+
     /**
      * Returns the mask of the config changes that should not trigger activity restart with display
      * move for app-compat reasons.
@@ -101,6 +110,11 @@ class AppCompatDisplayCompatModePolicy {
      * display compat mode is not enabled for the activity.
      */
     int getDisplayCompatModeConfigMask() {
+        // Enable display compat mode only when display move is involved.
+        return mDisplayChangedWithoutRestart ? getStaticDisplayCompatModeConfigMask() : 0;
+    }
+
+    private int getStaticDisplayCompatModeConfigMask() {
         if (!ENABLE_DISPLAY_COMPAT_MODE.isTrue()) return 0;
 
         if (mActivityRecord.info.applicationInfo.category != ApplicationInfo.CATEGORY_GAME) {
@@ -109,15 +123,19 @@ class AppCompatDisplayCompatModePolicy {
             return 0;
         }
 
-        if (!mDisplayChangedWithoutRestart) {
-            // Enable display compat mode when display move is involved.
-            return 0;
-        }
-
         // If a specific config change is supported by the activity, it's exempted from this compat
         // treatment. This way, apps can opt out from display compat mode by handling all the config
         // changes that happen with display move by themselves.
         final int supportedConfigChanged = mActivityRecord.info.getRealConfigChanged();
         return DISPLAY_COMPAT_MODE_CONFIG_MASK & (~supportedConfigChanged);
+    }
+
+    void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
+        if (isEligibleForDisplayCompatMode()) {
+            pw.println(prefix + "isEligibleForDisplayCompatMode=true");
+        }
+        if (isInDisplayCompatMode()) {
+            pw.println(prefix + "isInDisplayCompatMode=true");
+        }
     }
 }
