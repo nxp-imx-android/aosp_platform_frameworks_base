@@ -211,8 +211,12 @@ public class DisplayController {
             final Context context = (displayId == Display.DEFAULT_DISPLAY)
                     ? mContext
                     : mContext.createDisplayContext(display);
-            final DisplayRecord record = new DisplayRecord(displayId);
-            DisplayLayout displayLayout = new DisplayLayout(context, display);
+            boolean hasStatusAndNavBars = false;
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                hasStatusAndNavBars = mDesktopState.isDesktopModeSupportedOnDisplay(displayId);
+            }
+            final DisplayRecord record = new DisplayRecord(displayId, hasStatusAndNavBars);
+            DisplayLayout displayLayout = record.createLayout(context, display);
             if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
                     && mUnpopulatedDisplayBounds.containsKey(displayId)) {
                 displayLayout.setGlobalBoundsDp(mUnpopulatedDisplayBounds.get(displayId));
@@ -224,7 +228,6 @@ public class DisplayController {
             }
         }
     }
-
 
     /** Called when a display rotate requested. */
     public void onDisplayChangeRequested(WindowContainerTransaction wct, int displayId,
@@ -298,7 +301,7 @@ public class DisplayController {
                     ? mContext
                     : mContext.createDisplayContext(display);
             final Context context = perDisplayContext.createConfigurationContext(newConfig);
-            final DisplayLayout displayLayout = new DisplayLayout(context, display);
+            final DisplayLayout displayLayout = dr.createLayout(context, display);
             if (mDisplayTopology != null) {
                 displayLayout.setGlobalBoundsDp(
                         mDisplayTopology.getAbsoluteBounds().get(
@@ -368,10 +371,16 @@ public class DisplayController {
 
     private void onDesktopModeEligibleChanged(int displayId) {
         synchronized (mDisplays) {
-            if (mDisplays.get(displayId) == null || getDisplay(displayId) == null) {
+            DisplayRecord r = mDisplays.get(displayId);
+            Display display = getDisplay(displayId);
+            if (r == null ||  display == null) {
                 Slog.w(TAG, "Skipping onDesktopModeEligibleChanged on unknown"
                         + " display, displayId=" + displayId);
                 return;
+            }
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                r.updateHasStatusAndNavBars(display,
+                        mDesktopState.isDesktopModeSupportedOnDisplay(display));
             }
             for (int i = mDisplayChangedListeners.size() - 1; i >= 0; --i) {
                 mDisplayChangedListeners.get(i).onDesktopModeEligibleChanged(displayId);
@@ -380,13 +389,36 @@ public class DisplayController {
     }
 
     private static class DisplayRecord {
-        private int mDisplayId;
+        private final int mDisplayId;
         private Context mContext;
         private DisplayLayout mDisplayLayout;
         private InsetsState mInsetsState = new InsetsState();
+        private boolean mHasStatusAndNavBars;
 
-        private DisplayRecord(int displayId) {
+        private DisplayRecord(int displayId, boolean hasStatusAndNavBars) {
             mDisplayId = displayId;
+            mHasStatusAndNavBars = hasStatusAndNavBars;
+        }
+
+        private DisplayLayout createLayout(Context context, Display display) {
+            if (mDisplayId != Display.DEFAULT_DISPLAY && mHasStatusAndNavBars) {
+                return new DisplayLayout(context, display, true /* hasNavigationBar */,
+                        true /* hasTaskBar */);
+            } else {
+                return new DisplayLayout(context, display);
+            }
+        }
+
+
+        private void updateHasStatusAndNavBars(Display display, boolean hasStatusAndNavBars) {
+            if (mHasStatusAndNavBars == hasStatusAndNavBars) {
+                return;
+            }
+            mHasStatusAndNavBars = hasStatusAndNavBars;
+            // Don't change how DEFAULT_DISPLAY is handled: the default heuristic is correct.
+            if (mDisplayId != Display.DEFAULT_DISPLAY) {
+                setDisplayLayout(mContext, createLayout(mContext, display));
+            }
         }
 
         private void setDisplayLayout(Context context, DisplayLayout displayLayout) {
