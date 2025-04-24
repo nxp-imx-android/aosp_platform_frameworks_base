@@ -1697,6 +1697,8 @@ public class ZenModeHelper {
         pw.print(prefix);
         pw.println("mConsolidatedPolicy=" + mConsolidatedPolicy.toString());
         synchronized (mConfigLock) {
+            pw.print(prefix);
+            pw.println("mConsolidatedDeviceEffects=" + mConsolidatedDeviceEffects.toString());
             final int N = mConfigs.size();
             for (int i = 0; i < N; i++) {
                 dump(pw, prefix, "mConfigs[u=" + mConfigs.keyAt(i) + "]", mConfigs.valueAt(i));
