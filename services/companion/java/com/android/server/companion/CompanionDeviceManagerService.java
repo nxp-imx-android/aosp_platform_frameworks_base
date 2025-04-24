@@ -241,7 +241,8 @@ public class CompanionDeviceManagerService extends SystemService {
 
         Binder.withCleanCallingIdentity(() -> {
             ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(mCompanionExemptionProcessor::updateAutoRevokeExemptions);
+            executor.execute(() -> mCompanionExemptionProcessor.updateAutoRevokeExemptions(
+                    user.getUserIdentifier()));
         });
     }
 
