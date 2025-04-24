@@ -7657,6 +7657,15 @@ final class ActivityRecord extends WindowToken {
     }
 
     /**
+     * Return {@code true} always since the activity is always filling parent bounds. The override
+     * is done because if the activity is letterboxed, the bounds may exclude the letterbox size.
+     */
+    @Override
+    boolean fillsParentBounds() {
+        return true;
+    }
+
+     /**
      * Returns whether activity bounds are letterboxed and are sandboxed to within the safe region
      * bounds.
      */
