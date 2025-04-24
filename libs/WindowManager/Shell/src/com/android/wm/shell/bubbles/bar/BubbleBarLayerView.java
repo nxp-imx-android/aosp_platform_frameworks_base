@@ -336,6 +336,14 @@ public class BubbleBarLayerView extends FrameLayout
             boolean isOverflowExpanded = b.getKey().equals(BubbleOverflow.KEY);
             final int width = mPositioner.getExpandedViewWidthForBubbleBar(isOverflowExpanded);
             final int height = mPositioner.getExpandedViewHeightForBubbleBar(isOverflowExpanded);
+            if (width <= 0 || height <= 0) {
+                Log.e(TAG,
+                        String.format("got expanded view with non-positive width=%d or height=%d."
+                                        + " this could result in the expanded view not having a"
+                                        + " surface!",
+                                width, height));
+            }
+
             mExpandedView.setVisibility(GONE);
             mExpandedView.setY(mPositioner.getExpandedViewBottomForBubbleBar() - height);
             mExpandedView.setLayerBoundsSupplier(() -> new Rect(0, 0, getWidth(), getHeight()));
