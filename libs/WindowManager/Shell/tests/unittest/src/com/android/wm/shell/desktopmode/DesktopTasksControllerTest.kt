@@ -9059,25 +9059,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_notifiesDesktopExit() {
-        val deskId = 0
-        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
-
-        val transition = Binder()
-        val finishWct = WindowContainerTransaction()
-        controller.onRecentsInDesktopAnimationFinishing(
-            transition = transition,
-            finishWct = finishWct,
-            returnToApp = false,
-            activeDeskIdOnRecentsStart = deskId,
-        )
-
-        verify(desktopModeEnterExitTransitionListener)
-            .onExitDesktopModeTransitionStarted(any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)

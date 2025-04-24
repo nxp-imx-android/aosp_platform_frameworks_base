@@ -40,10 +40,9 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyBoolean
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.eq
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -83,9 +82,9 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Before
     fun setUp() {
         whenever(mockPipDesktopState.isDesktopWindowingPipEnabled()).thenReturn(true)
-        whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
-        whenever(mockDesktopRepository.isAnyDeskActive(anyInt())).thenReturn(true)
-        whenever(mockDesktopRepository.getActiveDeskId(anyInt())).thenReturn(DESK_ID)
+        whenever(mockDesktopUserRepositories.getProfile(any())).thenReturn(mockDesktopRepository)
+        whenever(mockDesktopRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(DESK_ID)
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(freeformParentTask.taskId))
             .thenReturn(freeformParentTask)
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(fullscreenParentTask.taskId))
@@ -112,7 +111,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Test
     fun maybeUpdateParentInWct_nullParentInfo_noWctChanges() {
         val wct = WindowContainerTransaction()
-        whenever(mockShellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
+        whenever(mockShellTaskOrganizer.getRunningTaskInfo(any())).thenReturn(null)
 
         controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
 
@@ -225,14 +224,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                 )
         } else {
             verify(mockDesktopTasksController, never())
-                .performDesktopExitCleanUp(
-                    any(),
-                    anyInt(),
-                    anyInt(),
-                    anyBoolean(),
-                    anyBoolean(),
-                    anyBoolean(),
-                )
+                .performDesktopExitCleanUp(any(), anyOrNull(), any(), any(), any(), any(), any())
         }
     }
 
