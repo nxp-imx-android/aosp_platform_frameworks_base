@@ -152,6 +152,7 @@ public class CollapsingToolbarDelegate {
 
         initCollapsingToolbar(mCollapsingToolbarLayout, mAppBarLayout);
         mContentFrameLayout = view.findViewById(R.id.content_frame);
+        mActionButton = view.findViewById(R.id.action_button);
         if (activity instanceof AppCompatActivity) {
             Log.d(TAG, "onCreateView: from AppCompatActivity and sub-class.");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -173,7 +174,6 @@ public class CollapsingToolbarDelegate {
                 actionBar.setDisplayShowTitleEnabled(true);
             }
         }
-        mActionButton = view.findViewById(R.id.action_button);
 
         initFloatingToolbar(context, view.findViewById(R.id.floating_toolbar));
         return view;
@@ -298,11 +298,7 @@ public class CollapsingToolbarDelegate {
             return;
         }
         mCollapsingToolbarLayout.removeAllViews();
-        if (SettingsThemeHelper.isExpressiveTheme(inflater.getContext())) {
-            inflater.inflate(R.layout.settingslib_expressive_support_toolbar, mCollapsingToolbarLayout);
-        } else {
-            inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
-        }
+        inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
         final androidx.appcompat.widget.Toolbar supportToolbar =
                 mCollapsingToolbarLayout.findViewById(R.id.support_action_bar);
         final androidx.appcompat.app.ActionBar actionBar =
