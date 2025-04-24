@@ -38,7 +38,6 @@ import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
 import com.android.internal.widget.ConversationLayout;
 import com.android.internal.widget.ImageFloatingTextView;
-import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
@@ -497,7 +496,7 @@ public class NotificationGroupingUtil {
                 R.id.notification_header};
 
         @Override
-        public void apply(View parent, View child, boolean showLeftIcon, boolean reset) {
+        public void apply(View parent, View child, boolean apply, boolean reset) {
             ImageView leftIcon = child.findViewById(com.android.internal.R.id.left_icon);
             if (leftIcon == null) {
                 return;
@@ -510,13 +509,16 @@ public class NotificationGroupingUtil {
             if (leftIconUsesRightIconDrawable) {
                 // Use the right drawable when showing the left, unless the right is being kept
                 Drawable rightDrawable = rightIcon == null ? null : rightIcon.getDrawable();
-                leftIcon.setImageDrawable(showLeftIcon && !keepRightIcon ? rightDrawable : null);
+                leftIcon.setImageDrawable(apply && !keepRightIcon ? rightDrawable : null);
             }
-            leftIcon.setVisibility(showLeftIcon ? View.VISIBLE : View.GONE);
+            boolean shouldShowLeftIcon = notificationsRedesignTemplates()
+                            ? apply && leftIcon.getDrawable() != null
+                            : apply;
+            leftIcon.setVisibility(shouldShowLeftIcon ? View.VISIBLE : View.GONE);
 
             // update the right icon as well
             if (rightIcon != null) {
-                boolean showRightIcon = (keepRightIcon || !showLeftIcon)
+                boolean showRightIcon = (keepRightIcon || !apply)
                         && rightIcon.getDrawable() != null;
                 rightIcon.setVisibility(showRightIcon ? View.VISIBLE : View.GONE);
                 for (int viewId : MARGIN_ADJUSTED_VIEWS) {
