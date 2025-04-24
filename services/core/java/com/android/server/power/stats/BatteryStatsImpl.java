@@ -11701,13 +11701,6 @@ public class BatteryStatsImpl extends BatteryStats {
         mAccumulateBatteryUsageStats = accumulateBatteryUsageStats;
     }
 
-    /**
-     * Enables or disables battery history file compression.
-     */
-    public void setBatteryHistoryCompressionEnabled(boolean enabled) {
-        mBatteryHistoryDirectory.setFileCompressionEnabled(enabled);
-    }
-
     @GuardedBy("this")
     public void resetAllStatsAndHistoryLocked(int reason) {
         final long mSecUptime = mClock.uptimeMillis();
