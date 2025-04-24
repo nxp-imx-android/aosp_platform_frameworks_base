@@ -106,6 +106,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
     // further fine tuned based on user feedback.
     private static final float SCROLL_AMOUNT = 0.5f;
     protected static final long CONTINUOUS_SCROLL_INTERVAL = 30;
+    // Timestamp when autoclick was enabled, used to calculate session duration.
+    private final long mAutoclickEnabledTimestamp;
     private Handler mContinuousScrollHandler;
     private Runnable mContinuousScrollRunnable;
 
@@ -234,6 +236,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mTrace = trace;
         mContext = context;
         mUserId = userId;
+
+        // Record when autoclick is enabled, and store the enabled timestamp.
+        mAutoclickEnabledTimestamp = SystemClock.elapsedRealtime();
+        AutoclickLogger.logAutoclickEnabled();
     }
 
     @Override
@@ -361,6 +367,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
         if (mContinuousScrollHandler != null) {
             mContinuousScrollHandler.removeCallbacks(mContinuousScrollRunnable);
             mContinuousScrollHandler = null;
+        }
+
+        // Calculate session duration and log when autoclick is disabled.
+        if (mAutoclickEnabledTimestamp > 0) {
+            int sessionDurationSeconds =
+                    (int) ((SystemClock.elapsedRealtime() - mAutoclickEnabledTimestamp) / 1000);
+            AutoclickLogger.logAutoclickSessionDuration(sessionDurationSeconds);
         }
     }
 
