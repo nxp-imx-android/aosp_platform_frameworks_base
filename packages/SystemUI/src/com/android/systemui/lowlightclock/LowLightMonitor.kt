@@ -21,8 +21,8 @@ import android.os.UserHandle
 import com.android.dream.lowlight.LowLightDreamManager
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dreams.dagger.DreamModule
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.dreams.shared.model.WhenToDream

@@ -18,10 +18,10 @@ package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.content.res.Configuration
 import android.graphics.RectF
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad

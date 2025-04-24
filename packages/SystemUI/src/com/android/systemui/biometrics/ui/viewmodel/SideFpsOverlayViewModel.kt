@@ -30,12 +30,12 @@ import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
 import com.airbnb.lottie.model.KeyPath
 import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.Utils
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.biometrics.domain.interactor.SideFpsSensorInteractor
 import com.android.systemui.biometrics.domain.model.SideFpsSensorLocation
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.biometrics.shared.model.LottieCallback
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.keyguard.domain.interactor.DeviceEntrySideFpsOverlayInteractor
 import com.android.systemui.res.R
 import javax.inject.Inject

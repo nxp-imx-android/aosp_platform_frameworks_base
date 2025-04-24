@@ -18,8 +18,9 @@
 package com.android.systemui.biometrics.data.repository
 
 import android.util.Size
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.data.repository.DisplayStateRepository
+import com.android.systemui.display.shared.model.DisplayRotation
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject

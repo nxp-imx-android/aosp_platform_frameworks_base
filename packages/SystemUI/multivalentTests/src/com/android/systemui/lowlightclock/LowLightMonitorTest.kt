@@ -24,8 +24,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dream.lowlight.LowLightDreamManager
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.dreams.domain.interactor.dreamSettingsInteractorKosmos
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor

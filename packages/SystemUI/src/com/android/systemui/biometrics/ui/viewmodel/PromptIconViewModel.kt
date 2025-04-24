@@ -19,10 +19,10 @@ package com.android.systemui.biometrics.ui.viewmodel
 
 import android.annotation.RawRes
 import android.content.res.Configuration
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.combine
 import kotlinx.coroutines.flow.Flow

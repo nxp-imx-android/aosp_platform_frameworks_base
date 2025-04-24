@@ -19,10 +19,10 @@ package com.android.systemui.shade.domain.startable
 import android.content.Context
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.ShadeTouchLog
 import com.android.systemui.scene.domain.interactor.SceneInteractor

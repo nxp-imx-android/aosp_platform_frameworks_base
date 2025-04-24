@@ -24,10 +24,8 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.InstanceId
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Dumpable
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -40,6 +38,7 @@ import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.HelpFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.BiometricType
@@ -65,6 +64,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.errorprone.annotations.CompileTimeConstant
 import java.io.PrintWriter
 import java.util.concurrent.Executor

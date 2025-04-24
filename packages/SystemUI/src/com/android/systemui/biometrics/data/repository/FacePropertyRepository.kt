@@ -26,11 +26,9 @@ import android.hardware.face.IFaceAuthenticatorsRegisteredCallback
 import android.util.Log
 import android.util.RotationUtils
 import android.util.Size
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.biometrics.shared.model.LockoutMode
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.biometrics.shared.model.toLockoutMode
-import com.android.systemui.biometrics.shared.model.toRotation
 import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.common.coroutine.ConflatedCallbackFlow
@@ -39,6 +37,9 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.data.repository.DisplayStateRepository
+import com.android.systemui.display.shared.model.DisplayRotation
+import com.android.systemui.display.shared.model.toRotation
 import com.android.systemui.keyguard.shared.model.DevicePosture
 import com.android.systemui.res.R
 import java.util.concurrent.Executor
@@ -107,16 +108,16 @@ constructor(
                 val callback =
                     object : IFaceAuthenticatorsRegisteredCallback.Stub() {
                         override fun onAllAuthenticatorsRegistered(
-                            sensors: List<FaceSensorPropertiesInternal>,
+                            sensors: List<FaceSensorPropertiesInternal>
                         ) {
                             if (sensors.isEmpty()) return
                             trySendWithFailureLogging(
                                 FaceSensorInfo(
                                     sensors.first().sensorId,
-                                    sensors.first().sensorStrength.toSensorStrength()
+                                    sensors.first().sensorStrength.toSensorStrength(),
                                 ),
                                 TAG,
-                                "onAllAuthenticatorsRegistered"
+                                "onAllAuthenticatorsRegistered",
                             )
                         }
                     }
@@ -141,7 +142,7 @@ constructor(
                         // inner display).
                         override fun onPhysicalCameraAvailable(
                             cameraId: String,
-                            physicalCameraId: String
+                            physicalCameraId: String,
                         ) {
                             currentPhysicalCameraId = physicalCameraId
                             val cameraInfo =
@@ -151,7 +152,7 @@ constructor(
                             trySendWithFailureLogging(
                                 cameraInfo,
                                 TAG,
-                                "Update face sensor location to $cameraInfo."
+                                "Update face sensor location to $cameraInfo.",
                             )
                         }
 
@@ -166,7 +167,7 @@ constructor(
                         // initial physical ID for foldable devices.
                         override fun onPhysicalCameraUnavailable(
                             cameraId: String,
-                            physicalCameraId: String
+                            physicalCameraId: String,
                         ) {
                             if (currentPhysicalCameraId == null) {
                                 val cameraInfo =
@@ -177,7 +178,7 @@ constructor(
                                 trySendWithFailureLogging(
                                     cameraInfo,
                                     TAG,
-                                    "Update face sensor location to $cameraInfo."
+                                    "Update face sensor location to $cameraInfo.",
                                 )
                             }
                         }
@@ -188,7 +189,7 @@ constructor(
             .stateIn(
                 applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = if (cameraInfoList.isNotEmpty()) cameraInfoList[0] else null
+                initialValue = if (cameraInfoList.isNotEmpty()) cameraInfoList[0] else null,
             )
 
     private val supportedPosture =
@@ -206,7 +207,7 @@ constructor(
             .stateIn(
                 applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = null
+                initialValue = null,
             )
 
     override val sensorLocation: StateFlow<Point?> =
@@ -219,13 +220,13 @@ constructor(
                         defaultSensorLocation,
                         displayStateRepository.currentRotation,
                         displayStateRepository.currentDisplaySize,
-                        configurationRepository.scaleForResolution
+                        configurationRepository.scaleForResolution,
                     ) { defaultLocation, displayRotation, displaySize, scaleForResolution ->
                         computeCurrentFaceLocation(
                             defaultLocation,
                             displayRotation,
                             displaySize,
-                            scaleForResolution
+                            scaleForResolution,
                         )
                     }
                 }
@@ -233,7 +234,7 @@ constructor(
             .stateIn(
                 applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = null
+                initialValue = null,
             )
 
     private fun computeCurrentFaceLocation(
@@ -249,26 +250,27 @@ constructor(
         return rotateToCurrentOrientation(
             Point(
                 (defaultLocation.x * scaleForResolution).toInt(),
-                (defaultLocation.y * scaleForResolution).toInt()
+                (defaultLocation.y * scaleForResolution).toInt(),
             ),
             rotation,
-            displaySize
+            displaySize,
         )
     }
 
     private fun rotateToCurrentOrientation(
         inOutPoint: Point,
         rotation: DisplayRotation,
-        displaySize: Size
+        displaySize: Size,
     ): Point {
         RotationUtils.rotatePoint(
             inOutPoint,
             rotation.toRotation(),
             displaySize.width,
-            displaySize.height
+            displaySize.height,
         )
         return inOutPoint
     }
+
     override suspend fun getLockoutMode(userId: Int): LockoutMode {
         if (sensorInfo.value == null || faceManager == null) {
             return LockoutMode.NONE
@@ -283,7 +285,7 @@ constructor(
             loadCameraInfo(
                 R.string.config_protectedCameraId,
                 R.string.config_protectedPhysicalCameraId,
-                R.array.config_face_auth_props
+                R.array.config_face_auth_props,
             )
         if (outer != null) {
             list.add(outer)
@@ -293,7 +295,7 @@ constructor(
             loadCameraInfo(
                 R.string.config_protectedInnerCameraId,
                 R.string.config_protectedInnerPhysicalCameraId,
-                R.array.config_inner_face_auth_props
+                R.array.config_inner_face_auth_props,
             )
         if (inner != null) {
             list.add(inner)
@@ -304,7 +306,7 @@ constructor(
     private fun loadCameraInfo(
         cameraIdRes: Int,
         cameraPhysicalIdRes: Int,
-        cameraLocationRes: Int
+        cameraLocationRes: Int,
     ): CameraInfo? {
         val cameraId = applicationContext.getString(cameraIdRes)
         if (cameraId.isNullOrEmpty()) {

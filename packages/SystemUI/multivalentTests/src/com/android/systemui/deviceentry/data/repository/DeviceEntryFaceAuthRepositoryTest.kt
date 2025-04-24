@@ -39,7 +39,6 @@ import com.android.internal.logging.InstanceId.fakeInstanceId
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.concurrency.fakeExecutor
@@ -57,6 +56,7 @@ import com.android.systemui.deviceentry.shared.model.FaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer

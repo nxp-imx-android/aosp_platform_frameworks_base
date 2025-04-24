@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.biometrics.domain.interactor
+package com.android.systemui.display.domain.interactor
 
 import android.content.Context
 import android.content.res.Configuration
-import com.android.systemui.biometrics.data.repository.DisplayStateRepository
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.display.data.repository.DisplayStateRepository
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.unfold.compat.ScreenSizeFoldProvider
 import com.android.systemui.unfold.updates.FoldProvider
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
 /** Aggregates display state information. */
-// TODO(b/411335091): Move to com.android.systemui.display.domain.interactor.
 interface DisplayStateInteractor {
     /** Whether the default display is currently off. */
     val isDefaultDisplayOff: Flow<Boolean>

@@ -21,10 +21,10 @@ import android.view.accessibility.accessibilityManager
 import com.android.app.activityTaskManager
 import com.android.launcher3.icons.IconProvider
 import com.android.systemui.biometrics.domain.interactor.biometricStatusInteractor
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
 import com.android.systemui.biometrics.domain.interactor.udfpsOverlayInteractor
 import com.android.systemui.biometrics.udfpsUtils
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.util.mockito.mock
