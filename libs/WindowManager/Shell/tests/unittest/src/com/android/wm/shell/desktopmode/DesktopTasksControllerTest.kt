@@ -368,6 +368,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -1531,6 +1532,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -1558,6 +1560,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopMixedTransitionHandler.startLaunchTransition(
                     eq(TRANSIT_OPEN),
                     any(),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
@@ -2731,6 +2734,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(task1.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -2754,6 +2758,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(task1.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -2772,6 +2777,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(TRANSIT_TO_FRONT),
                     any(),
                     eq(task.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -2794,6 +2800,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(TRANSIT_TO_FRONT),
                     any(),
                     eq(task.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -2825,6 +2832,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(freeformTasks[0].taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -2854,6 +2862,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(freeformTasks[0].taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -2881,6 +2890,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(freeformTasks[0].taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -2902,6 +2912,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(TRANSIT_TO_FRONT),
                     any(),
                     eq(freeformTask.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -2971,6 +2982,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -2999,6 +3011,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(TRANSIT_OPEN),
                     any(),
                     eq(task.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -3032,6 +3045,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(task.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -3060,6 +3074,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(TRANSIT_OPEN),
                     any(),
                     eq(task.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -7372,6 +7387,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -7382,6 +7398,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .startLaunchTransition(
                 anyInt(),
                 wctCaptor.capture(),
+                anyOrNull(),
                 anyOrNull(),
                 anyOrNull(),
                 anyOrNull(),
@@ -7414,6 +7431,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopMixedTransitionHandler.startLaunchTransition(
                     anyInt(),
                     any(),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
@@ -7476,6 +7494,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(taskToRequest.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -7483,7 +7502,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         runOpenInstance(task, taskToRequest.taskId)
 
         verify(desktopMixedTransitionHandler)
-            .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull())
+            .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull(), anyOrNull())
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
         assertThat(wct.hierarchyOps).hasSize(1)
         wct.assertReorderAt(index = 0, taskToRequest)
@@ -7505,6 +7524,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(taskToRequest.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -7512,7 +7532,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         runOpenInstance(task, taskToRequest.taskId)
 
         verify(desktopMixedTransitionHandler)
-            .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull())
+            .startLaunchTransition(anyInt(), any(), anyInt(), anyOrNull(), anyOrNull(), anyOrNull())
         verify(desksOrganizer).reorderTaskToFront(any(), eq(0), eq(taskToRequest))
     }
 
@@ -7539,6 +7559,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyInt(),
                     wctCaptor.capture(),
                     anyInt(),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -7578,6 +7599,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyInt(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -7613,6 +7635,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyInt(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -7642,6 +7665,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyInt(),
                     any(),
                     anyInt(),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -8165,90 +8189,226 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled() {
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
             Rect(240, 700, 2160, 1900),
-            tabTearingAnimationFlagEnabled = true,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled() {
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
             Rect(240, 700, 2160, 1900),
-            tabTearingAnimationFlagEnabled = false,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = false,
         )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagEnabled() {
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
+    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
+            PointF(1200f, 700f),
+            Rect(240, 700, 2160, 1900),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = true,
+        )
+    }
+
+    @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
+            PointF(1200f, 700f),
+            Rect(240, 700, 2160, 1900),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = false,
+        )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
             PointF(50f, 700f),
             Rect(0, 0, 500, 1000),
-            tabTearingAnimationFlagEnabled = true,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagDisabled() {
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
             PointF(50f, 700f),
             Rect(0, 0, 500, 1000),
-            tabTearingAnimationFlagEnabled = false,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = false,
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
+    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
+            PointF(50f, 700f),
+            Rect(0, 0, 500, 1000),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = true,
+        )
+    }
+
+    @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
+            PointF(50f, 700f),
+            Rect(0, 0, 500, 1000),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = false,
+        )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
+            PointF(2500f, 700f),
+            Rect(500, 0, 1000, 1000),
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagEnabled() {
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
             PointF(2500f, 700f),
             Rect(500, 0, 1000, 1000),
-            tabTearingAnimationFlagEnabled = true,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = false,
         )
     }
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagDisabled() {
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
             PointF(2500f, 700f),
             Rect(500, 0, 1000, 1000),
-            tabTearingAnimationFlagEnabled = false,
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = true,
+        )
+    }
+
+    @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
+            PointF(2500f, 700f),
+            Rect(500, 0, 1000, 1000),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = false,
+        )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            PointF(1200f, 50f),
+            Rect(),
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
         )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagEnabled() {
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
+    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
             PointF(1200f, 50f),
             Rect(),
-            tabTearingAnimationFlagEnabled = true,
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = false,
         )
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagDisabled() {
+    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
             PointF(1200f, 50f),
             Rect(),
-            tabTearingAnimationFlagEnabled = false,
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = true,
+        )
+    }
+
+    @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+    )
+    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            PointF(1200f, 50f),
+            Rect(),
+            tabTearingMinimizeAnimationFlagEnabled = false,
+            tabTearingLaunchAnimationFlagEnabled = false,
         )
     }
 
@@ -8384,6 +8544,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         anyInt(),
                         anyOrNull(),
                         anyOrNull(),
+                        anyOrNull(),
                     )
                 )
                 .thenReturn(transition)
@@ -8415,6 +8576,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     any(),
                     any(),
                     eq(task.taskId),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                 )
@@ -8892,6 +9054,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(Binder())
@@ -8954,6 +9117,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     eq(launchingTask.taskId),
                     anyOrNull(),
                     anyOrNull(),
+                    anyOrNull(),
                 )
             )
             .thenReturn(transition)
@@ -8989,6 +9153,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopMixedTransitionHandler.startLaunchTransition(
                     eq(TRANSIT_OPEN),
                     any(),
+                    anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
@@ -9138,7 +9303,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         indicatorType: DesktopModeVisualIndicator.IndicatorType,
         inputCoordinate: PointF,
         expectedBounds: Rect,
-        tabTearingAnimationFlagEnabled: Boolean,
+        tabTearingMinimizeAnimationFlagEnabled: Boolean,
+        tabTearingLaunchAnimationFlagEnabled: Boolean,
     ) {
         setUpLandscapeDisplay()
         val task = setUpFreeformTask()
@@ -9177,6 +9343,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                     anyOrNull(),
                     anyOrNull(),
+                    eq(mockDragEvent),
                 )
             )
             .thenReturn(Binder())
@@ -9195,7 +9362,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(transitions).startTransition(any(), arg.capture(), anyOrNull())
         } else {
             expectedWindowingMode = WINDOWING_MODE_FREEFORM
-            if (tabTearingAnimationFlagEnabled) {
+            if (tabTearingMinimizeAnimationFlagEnabled || tabTearingLaunchAnimationFlagEnabled) {
                 verify(desktopMixedTransitionHandler)
                     .startLaunchTransition(
                         eq(TRANSIT_OPEN),
@@ -9203,10 +9370,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         anyOrNull(),
                         anyOrNull(),
                         anyOrNull(),
+                        eq(mockDragEvent),
                     )
             } else {
                 // All other launches use a special handler.
-                verify(dragAndDropTransitionHandler).handleDropEvent(arg.capture())
+                verify(dragAndDropTransitionHandler)
+                    .handleDropEvent(arg.capture(), eq(mockDragEvent))
             }
         }
         assertThat(
@@ -9426,7 +9595,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     ): WindowContainerTransaction {
         val arg = argumentCaptor<WindowContainerTransaction>()
         verify(desktopMixedTransitionHandler)
-            .startLaunchTransition(eq(type), arg.capture(), anyOrNull(), anyOrNull(), anyOrNull())
+            .startLaunchTransition(
+                eq(type),
+                arg.capture(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+            )
         return arg.lastValue
     }
 
