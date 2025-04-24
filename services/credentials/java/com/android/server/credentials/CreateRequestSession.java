@@ -146,9 +146,7 @@ public final class CreateRequestSession extends RequestSession<CreateCredentialR
         if (response != null) {
             mRequestSessionMetric.collectChosenProviderStatus(
                     ProviderStatusForMetrics.FINAL_SUCCESS.getMetricCode());
-            if (Flags.fixMetricDuplicationEmits()) {
-                mRequestSessionMetric.collectChosenClassType(mClientRequest.getType());
-            }
+            mRequestSessionMetric.collectChosenClassType(mClientRequest.getType());
             respondToClientWithResponseAndFinish(response);
         } else {
             mRequestSessionMetric.collectChosenProviderStatus(
