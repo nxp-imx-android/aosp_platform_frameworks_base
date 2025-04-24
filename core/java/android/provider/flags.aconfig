@@ -17,6 +17,19 @@ flag {
     bug: "290696572"
 }
 
+# OWNER = andonian TARGET=25Q3
+flag {
+    name: "launcher_data_access"
+    is_exported: true
+    namespace: "launcher3"
+    description: "This flag introduces a permission which protects a content provider within home/launcher applications that enables management of home screen metadata such as shortcut placement, launch intents, and labels."
+    bug: "379378706"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+    is_fixed_read_only: true
+}
+
 # OWNER = tgunn TARGET=25Q1
 flag {
     name: "allow_config_maximum_call_log_entries_per_sim"
