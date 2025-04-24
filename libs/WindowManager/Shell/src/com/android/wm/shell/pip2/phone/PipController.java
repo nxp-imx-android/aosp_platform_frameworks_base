@@ -45,6 +45,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.Preconditions;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayChangeController;
@@ -122,6 +123,8 @@ public class PipController implements ConfigurationChangeListener,
     // Wrapper for making Binder calls into PiP animation listener hosted in launcher's Recents.
     @Nullable private PipAnimationListener mPipRecentsAnimationListener;
 
+    private final PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
+            mSurfaceControlTransactionFactory;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     private boolean mWaitingToPlayDisplayChangeBoundsUpdate;
@@ -193,6 +196,8 @@ public class PipController implements ConfigurationChangeListener,
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mMainExecutor = mainExecutor;
         mImpl = new PipImpl();
+        mSurfaceControlTransactionFactory =
+                new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
 
         if (PipUtils.isPip2ExperimentEnabled()) {
             shellInit.addInitCallback(this::onInit, this);
@@ -370,6 +375,15 @@ public class PipController implements ConfigurationChangeListener,
     @Override
     public void onThemeChanged() {
         setDisplayLayout(new DisplayLayout(mContext, mContext.getDisplay()));
+        if (Flags.enablePipBoxShadows()) {
+            if (mPipTransitionState.isInPip()) {
+                SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+                mPipSurfaceTransactionHelper.onThemeChanged(mContext);
+                SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
+                mPipSurfaceTransactionHelper.shadow(tx, pipLeash, true /* applyShadowRadius */);
+                tx.apply();
+            }
+        }
     }
 
     //
