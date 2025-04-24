@@ -18,12 +18,16 @@ package android.view;
 
 import android.os.SystemClock;
 
+import com.android.graphics.hwui.flags.Flags;
+
 import java.util.function.Consumer;
 
 /** @hide */
 class HdrRenderState implements Consumer<Display> {
     // Targeting an animation from 1x to 5x over 400ms means we need to increase by 0.01/ms
     private static final float TRANSITION_PER_MS = 0.01f;
+
+    private static final boolean FLAG_ANIMATE_ENABLED = Flags.animateHdrTransitions();
 
     private final ViewRootImpl mViewRoot;
 
@@ -73,7 +77,7 @@ class HdrRenderState implements Consumer<Display> {
         long timeDelta = Math.max(Math.min(32, frameTimeMillis - mLastUpdateMillis), 8);
         final float maxStep = timeDelta * TRANSITION_PER_MS;
         mLastUpdateMillis = frameTimeMillis;
-        if (hasUpdate) {
+        if (hasUpdate && FLAG_ANIMATE_ENABLED) {
             if (isHdrEnabled()) {
                 float delta = mTargetHdrSdrRatio - mPreviousRenderRatio;
                 if (delta > maxStep) {
@@ -123,7 +127,7 @@ class HdrRenderState implements Consumer<Display> {
         mLastUpdateMillis = SystemClock.uptimeMillis();
         if (desiredRatio != mTargetDesiredHdrSdrRatio) {
             mTargetDesiredHdrSdrRatio = desiredRatio;
-            if (mTargetDesiredHdrSdrRatio > mDesiredHdrSdrRatio) {
+            if (mTargetDesiredHdrSdrRatio > mDesiredHdrSdrRatio || !FLAG_ANIMATE_ENABLED) {
                 mDesiredHdrSdrRatio = mTargetDesiredHdrSdrRatio;
             }
             forceUpdateHdrSdrRatio();
