@@ -1089,6 +1089,10 @@ public class AutoclickControllerTest {
         injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 100f, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
+        // When all messages (with delays) are processed.
+        mTestableLooper.moveTimeForward(2 * mController.LONG_PRESS_TIMEOUT);
+        mTestableLooper.processAllMessages();
+
         // Verify left click sent.
         assertThat(mMotionEventCaptor.downEvent).isNotNull();
         assertThat(mMotionEventCaptor.downEvent.getButtonState()).isEqualTo(
