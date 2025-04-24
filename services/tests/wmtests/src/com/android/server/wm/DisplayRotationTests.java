@@ -85,7 +85,6 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
 import com.android.server.wm.DisplayContent.FixedRotationTransitionListener;
-import com.android.server.wm.utils.DeviceStateTestUtils;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -800,7 +799,7 @@ public class DisplayRotationTests {
         final int rotation = mTarget.rotationForOrientation(SCREEN_ORIENTATION_LANDSCAPE,
                 Surface.ROTATION_0);
         assertTrue("Rotation should be sideways but it's "
-                + Surface.rotationToString(rotation),
+                        + Surface.rotationToString(rotation),
                 rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
     }
 
@@ -942,8 +941,7 @@ public class DisplayRotationTests {
 
         enableOrientationSensor();
 
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
-                DeviceStateTestUtils.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
         freezeRotation(Surface.ROTATION_270);
 
         mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
@@ -954,8 +952,7 @@ public class DisplayRotationTests {
 
         clearInvocations(sMockWm);
         // ... until half-fold
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED,
-                DeviceStateTestUtils.HALF_FOLDED);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
         assertTrue(waitForUiHandler());
         verify(sMockWm).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -963,8 +960,7 @@ public class DisplayRotationTests {
                 SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));
 
         // ... then transition back to flat
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
-                DeviceStateTestUtils.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
         assertTrue(waitForUiHandler());
         verify(sMockWm, atLeast(1)).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -981,8 +977,7 @@ public class DisplayRotationTests {
 
         enableOrientationSensor();
 
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN,
-                DeviceStateTestUtils.OPEN);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
         freezeRotation(Surface.ROTATION_270);
 
         mOrientationSensorListener.onSensorChanged(createSensorEvent(Surface.ROTATION_0));
@@ -993,8 +988,7 @@ public class DisplayRotationTests {
 
         clearInvocations(sMockWm);
         // ... half-fold -> still no rotation
-        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED,
-                DeviceStateTestUtils.HALF_FOLDED);
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
         assertTrue(waitForUiHandler());
         verify(sMockWm).updateRotation(false, false);
         assertTrue(waitForUiHandler());
@@ -1618,13 +1612,13 @@ public class DisplayRotationTests {
             mMockDisplayRotationReversionController =
                     mock(DisplayRotationReversionController.class);
             when(mMockDisplayContent.getRotationReversionController())
-                        .thenReturn(mMockDisplayRotationReversionController);
+                    .thenReturn(mMockDisplayRotationReversionController);
 
             mMockResolver = mock(ContentResolver.class);
             when(mMockContext.getContentResolver()).thenReturn(mMockResolver);
             mFakeSettingsProvider = new FakeSettingsProvider();
             when(mMockResolver.acquireProvider(Settings.AUTHORITY))
-                    .thenReturn(mFakeSettingsProvider.getIContentProvider());
+                        .thenReturn(mFakeSettingsProvider.getIContentProvider());
 
             mMockDisplayAddress = mock(DisplayAddress.class);
 

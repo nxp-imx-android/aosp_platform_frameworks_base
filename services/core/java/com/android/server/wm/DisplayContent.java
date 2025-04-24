@@ -1203,7 +1203,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDeviceStateListener =
                 (@NonNull DeviceStateController.DeviceStateEnum deviceStateEnum,
                         @NonNull DeviceState deviceState) -> mDisplayRotation.foldStateChanged(
-                        deviceStateEnum, deviceState);
+                        deviceStateEnum);
         mDeviceStateController.registerDeviceStateCallback(mDeviceStateListener,
                 new HandlerExecutor(mWmService.mH));
 
