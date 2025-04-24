@@ -72,7 +72,7 @@ public class RecordingControllerTest extends SysuiTestCase {
     private FakeSystemClock mFakeSystemClock = new FakeSystemClock();
     private FakeExecutor mMainExecutor = new FakeExecutor(mFakeSystemClock);
     @Mock
-    private RecordingController.RecordingStateChangeCallback mCallback;
+    private ScreenRecordUxController.StateChangeCallback mCallback;
     @Mock
     private BroadcastDispatcher mBroadcastDispatcher;
     @Mock
