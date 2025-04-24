@@ -17,15 +17,18 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
+import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
 import android.view.Display
 import android.view.View
+import android.util.Log
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -79,6 +82,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
+import com.android.wm.shell.windowdecor.viewholder.AppHandles
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -99,6 +103,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.util.Optional
+import java.util.concurrent.Executor
 
 /**
  * A view model that manages the visibility of the [CollapsedStatusBarFragment] based on the device
@@ -243,6 +249,8 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
+    appHandles: Optional<AppHandles>,
+    @Main sysuiMainExecutor: Executor,
 ) : HomeStatusBarViewModel, ExclusiveActivatable() {
 
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")

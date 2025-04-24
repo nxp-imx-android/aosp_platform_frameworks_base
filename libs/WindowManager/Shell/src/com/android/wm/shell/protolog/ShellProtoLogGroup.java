@@ -71,6 +71,8 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
             Consts.TAG_WM_COMPAT_UI),
     WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM_APP_COMPAT),
+    WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
+            Consts.TAG_WM_APP_HANDLES),
     TEST_GROUP(true, true, false, "WindowManagerShellProtoLogTest");
 
     private final boolean mEnabled;
@@ -141,6 +143,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_COMPAT_UI = "CompatUi";
         private static final String TAG_WM_APP_COMPAT = "AppCompat";
         private static final String TAG_WM_BUBBLES = "Bubbles";
+        private static final String TAG_WM_APP_HANDLES = "AppHandles";
 
         private static final boolean ENABLE_DEBUG = true;
         private static final boolean ENABLE_LOG_TO_PROTO_DEBUG = true;

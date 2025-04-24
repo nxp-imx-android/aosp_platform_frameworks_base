@@ -89,6 +89,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
+import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import java.util.Optional
@@ -164,6 +165,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val mockTilingWindowDecoration = mock<DesktopTilingDecorViewModel>()
+    protected val mockAppHandleNotifier = mock<AppHandleNotifier>()
     protected val motionEvent = mock<MotionEvent>()
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
@@ -268,6 +270,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockDesksOrganizer,
             desktopState,
             desktopConfig,
+            mockAppHandleNotifier,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
