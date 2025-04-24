@@ -47,6 +47,7 @@ public class LocaleStore {
     private static final HashMap<String, LocaleInfo> sLocaleCache = new HashMap<>();
     private static final String TAG = LocaleStore.class.getSimpleName();
     private static boolean sFullyInitialized = false;
+    private static boolean sLocationAvailable = false;
 
     public static class LocaleInfo implements Serializable {
         public static final int SUGGESTION_TYPE_NONE = 0;
@@ -317,6 +318,13 @@ public class LocaleStore {
         return result;
     }
 
+    /**
+     * @return whether SIM country or network country code is available during locale initialization
+     */
+    public static boolean isSimOrNwCountryAvailable() {
+        return sLocationAvailable;
+    }
+
     /*
      * This method is added for SetupWizard, to force an update of the suggested locales
      * when the SIM is initialized.
@@ -463,6 +471,7 @@ public class LocaleStore {
         }
 
         Set<String> simCountries = getSimCountries(context);
+        sLocationAvailable = !simCountries.isEmpty();
 
         final boolean isInDeveloperMode = Settings.Global.getInt(context.getContentResolver(),
                 Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
