@@ -3018,12 +3018,15 @@ class DesktopTasksController(
         val displayId = task.displayId
         val inDesktop = isAnyDeskActive(displayId)
         val isTransparentTask = desktopModeCompatPolicy.isTransparentTask(task)
+        val isFreeform = task.isFreeform
         logV(
-            "handleIncompatibleTaskLaunch taskId=%d displayId=%d isTransparent=%b inDesktop=%b",
+            "handleIncompatibleTaskLaunch taskId=%d displayId=%d isTransparent=%b inDesktop=%b" +
+                " isFreeform=%b",
             taskId,
             displayId,
             isTransparentTask,
             inDesktop,
+            isFreeform,
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             if (!inDesktop && !forceEnterDesktop(displayId)) return null
@@ -3051,14 +3054,14 @@ class DesktopTasksController(
             runOnTransitStart?.invoke(transition)
             return wct
         }
-        if (!inDesktop) {
-            logD("handleIncompatibleTaskLaunch not in desktop, nothing to do")
+        if (!inDesktop && !isFreeform) {
+            logD("handleIncompatibleTaskLaunch not in desktop, not a freeform task, nothing to do")
             return null
         }
         // Both opaque and transparent incompatible tasks need to be forced to fullscreen, but
         // opaque ones force-exit the desktop while transparent ones are just shown on top of the
         // desktop while keeping it active.
-        val willExitDesktop = !isTransparentTask
+        val willExitDesktop = inDesktop && !isTransparentTask
         if (willExitDesktop) {
             logD("handleIncompatibleTaskLaunch forcing task to fullscreen and exiting desktop")
         } else {
