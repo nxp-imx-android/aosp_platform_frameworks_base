@@ -16,14 +16,13 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
 
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 import android.app.Notification;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.NotificationHeaderView;
 import android.view.View;
@@ -117,6 +116,30 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         mGroup.setUserLocked(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED);
+    }
+
+    @Test
+    public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
+        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
+                NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED);
+    }
+
+
+    @Test
+    public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
+        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        mChildrenContainer.setChildrenExpanded(true);
+        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
+                NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
+    }
+
+    @Test
+    public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
+        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        mGroup.setUserLocked(true);
+        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
+                NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
     }
 
     @Test

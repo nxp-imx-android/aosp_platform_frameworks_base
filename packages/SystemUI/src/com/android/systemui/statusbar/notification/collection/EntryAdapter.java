@@ -230,8 +230,13 @@ public interface EntryAdapter {
             @NonNull NotifBindPipeline.BindCallback callback);
 
     /**
-     * Returns whether this entry is *within* a bundle. The bundle header will always return false.
+     * Returns whether this entry *is within* a bundle. The bundle header will always return false.
      */
     boolean isBundled();
+
+    /**
+     * Returns whether this entry *is* a bundle.
+     */
+    boolean isBundle();
 }
 

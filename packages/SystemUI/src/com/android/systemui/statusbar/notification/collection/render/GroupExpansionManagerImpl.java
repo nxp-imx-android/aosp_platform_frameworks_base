@@ -165,7 +165,14 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
         NotificationBundleUi.unsafeAssertInNewMode();
         ExpandableNotificationRow parent = entry.getRow().getNotificationParent();
         return mExpandedCollections.contains(entry)
-                || (parent != null && mExpandedCollections.contains(parent.getEntryAdapter()));
+                || (parent != null
+                    // When the entry itself is a summary, we want only the first condition to be
+                    // checked (am I expanded?). We only defer the check to the parent for leaf
+                    // nodes.
+                    // We should avoid referring back to the ENR here but given the entry we
+                    // currently can't check if the entry is a summary row here.
+                    && !entry.getRow().isSummaryWithChildren()
+                    && mExpandedCollections.contains(parent.getEntryAdapter()));
     }
 
     @Override

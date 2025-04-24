@@ -3268,11 +3268,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return getActualHeight();
         } else if (mGuts != null && mGuts.isExposed()) {
             return mGuts.getIntrinsicHeight();
-        } else if ((isChildInGroup() && !isGroupExpanded())) {
+        } else if (!NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
             return mPrivateLayout.getMinHeight();
         } else if (mSensitive && mHideSensitiveForIntrinsicHeight) {
             return getMinHeight();
-        } else if (mIsSummaryWithChildren) {
+        } else if (NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
+            return mChildrenContainer.getIntrinsicHeight();
+        } else if (NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
+            return mPrivateLayout.getMinHeight();
+        } else if (!NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
             return mChildrenContainer.getIntrinsicHeight();
         } else if (canShowHeadsUp() && isHeadsUpState()) {
             if (isPinned() || mHeadsupDisappearRunning) {
