@@ -38,28 +38,24 @@
             android:layout_weight="1"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
-            android:visibility="gone"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_2"
             android:layout_weight="1"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
-            android:visibility="gone"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_3"
             android:layout_weight="1"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
-            android:visibility="gone"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_4"
             android:layout_weight="1"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
-            android:visibility="gone"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
