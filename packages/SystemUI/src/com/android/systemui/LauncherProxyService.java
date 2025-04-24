@@ -833,7 +833,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                                 & SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0) {
                             return;
                         }
-                        mLauncherProxy.enterStageSplitFromRunningApp(leftOrTop);
+                        mLauncherProxy.enterStageSplitFromRunningApp(displayId, leftOrTop);
                     } catch (RemoteException e) {
                         Log.w(TAG_OPS, "Unable to enter stage split from the current running app");
                     }
