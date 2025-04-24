@@ -108,6 +108,7 @@ public final class StorageEventHelper extends StorageEventListener {
         }
 
         // Remove any apps installed on the forgotten volume
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         synchronized (mPm.mLock) {
             final List<? extends PackageStateInternal> packages =
                     mPm.mSettings.getVolumePackagesLPr(fsUuid);
@@ -125,7 +126,7 @@ public final class StorageEventHelper extends StorageEventListener {
             }
 
             mPm.mSettings.onVolumeForgotten(fsUuid);
-            mPm.writeSettingsLPrTEMP();
+            mPm.writeSettingsLPrTEMP(activeUsers);
         }
     }
 
@@ -207,6 +208,7 @@ public final class StorageEventHelper extends StorageEventListener {
             }
         }
 
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         synchronized (mPm.mLock) {
             final boolean isUpgrade = !PackagePartitions.FINGERPRINT.equals(ver.fingerprint);
             if (isUpgrade) {
@@ -219,7 +221,7 @@ public final class StorageEventHelper extends StorageEventListener {
             // Yay, everything is now upgraded
             ver.forceCurrent();
 
-            mPm.writeSettingsLPrTEMP();
+            mPm.writeSettingsLPrTEMP(activeUsers);
         }
 
         for (PackageFreezer freezer : freezers) {
@@ -246,6 +248,7 @@ public final class StorageEventHelper extends StorageEventListener {
         }
 
         final int[] userIds = mPm.mUserManager.getUserIds();
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         final ArrayList<AndroidPackage> unloaded = new ArrayList<>();
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
             synchronized (mPm.mLock) {
@@ -274,7 +277,7 @@ public final class StorageEventHelper extends StorageEventListener {
                     AttributeCache.instance().removePackage(ps.getPackageName());
                 }
 
-                mPm.writeSettingsLPrTEMP();
+                mPm.writeSettingsLPrTEMP(activeUsers);
             }
         }
 

@@ -126,6 +126,7 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
+import android.content.pm.UserInfo;
 import android.content.pm.VerifierInfo;
 import android.content.pm.parsing.result.ParseResult;
 import android.content.pm.parsing.result.ParseTypeImpl;
@@ -2551,6 +2552,7 @@ final class InstallPackageHelper {
                     PackageManagerException.INTERNAL_ERROR_MISSING_USER));
             return;
         }
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         synchronized (mPm.mLock) {
             // For system-bundled packages, we assume that installing an upgraded version
             // of the package implies that the user actually wants to run that new code,
@@ -2772,7 +2774,7 @@ final class InstallPackageHelper {
             installRequest.setReturnCode(PackageManager.INSTALL_SUCCEEDED);
             //to update install status
             Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "writeSettings");
-            mPm.writeSettingsLPrTEMP();
+            mPm.writeSettingsLPrTEMP(activeUsers);
             Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
         }
 
@@ -3322,6 +3324,7 @@ final class InstallPackageHelper {
             @NonNull PackageSetting stubPkgSetting) {
         final int parseFlags = mPm.getDefParseFlags() | ParsingPackageUtils.PARSE_CHATTY
                 | ParsingPackageUtils.PARSE_ENFORCE_CODE;
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
             final AndroidPackage pkg;
             try (PackageFreezer freezer =
@@ -3342,7 +3345,7 @@ final class InstallPackageHelper {
                             Process.INVALID_UID /* previousAppId */,
                             PermissionManagerServiceInternal.PackageInstalledParams.DEFAULT,
                             UserHandle.USER_ALL);
-                    mPm.writeSettingsLPrTEMP();
+                    mPm.writeSettingsLPrTEMP(activeUsers);
                     // Since compressed package can be system app only, we do not need to
                     // set restricted settings on it.
                 }
@@ -3375,7 +3378,7 @@ final class InstallPackageHelper {
                             stubPs.setEnabled(COMPONENT_ENABLED_STATE_DISABLED,
                                     UserHandle.USER_SYSTEM, "android");
                         }
-                        mPm.writeSettingsLPrTEMP();
+                        mPm.writeSettingsLPrTEMP(activeUsers);
                     }
                 }
                 return false;
@@ -3570,6 +3573,7 @@ final class InstallPackageHelper {
     private void setPackageInstalledForSystemPackage(@NonNull AndroidPackage pkg,
             @NonNull int[] allUserHandles, @Nullable int[] origUserHandles,
             boolean writeSettings) {
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mPm.mUserManager);
         // writer
         synchronized (mPm.mLock) {
             PackageSetting ps = mPm.mSettings.getPackageLPr(pkg.getPackageName());
@@ -3614,7 +3618,7 @@ final class InstallPackageHelper {
 
             // can downgrade to reader here
             if (writeSettings) {
-                mPm.writeSettingsLPrTEMP();
+                mPm.writeSettingsLPrTEMP(activeUsers);
             }
         }
     }
