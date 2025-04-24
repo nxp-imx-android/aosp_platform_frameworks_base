@@ -58,7 +58,6 @@ cc_library_static {
         "com_android_server_storage_AppFuseBridge.cpp",
         "com_android_server_SystemClockTime.cpp",
         "com_android_server_SystemServer.cpp",
-        "com_android_server_tv_TvUinputBridge.cpp",
         "com_android_server_tv_TvInputHal.cpp",
         "com_android_server_UsbAlsaDevice.cpp",
         "com_android_server_UsbAlsaJackDetector.cpp",
@@ -260,6 +259,7 @@ filegroup {
         "com_android_server_ConsumerIrService.cpp",
         "com_android_server_app_GameManagerService.cpp",
         "com_android_server_connectivity_Vpn.cpp",
+        "com_android_server_tv_TvUinputBridge.cpp",
         "com_android_server_utils_LazyJniRegistrar.cpp",
     ],
 }
