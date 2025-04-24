@@ -28,12 +28,19 @@ import kotlinx.coroutines.flow.asStateFlow
 @SysUISingleton
 /** Fake [FocusedDisplayRepository] for testing. */
 class FakeFocusedDisplayRepository @Inject constructor() : FocusedDisplayRepository {
-    private val flow = MutableStateFlow<Int>(Display.DEFAULT_DISPLAY)
+    private val displayFlow = MutableStateFlow<Int>(Display.DEFAULT_DISPLAY)
+    private val globalTaskFlow = MutableStateFlow<Int>(0)
 
     override val focusedDisplayId: StateFlow<Int>
-        get() = flow.asStateFlow()
+        get() = displayFlow.asStateFlow()
 
-    suspend fun setDisplayId(focusedDisplay: Int) = flow.emit(focusedDisplay)
+    override val globallyFocusedTaskId: StateFlow<Int>
+        get() = globalTaskFlow.asStateFlow()
+
+    suspend fun setDisplayId(focusedDisplay: Int) = displayFlow.emit(focusedDisplay)
+
+    suspend fun setGlobalTaskId(globallyFocusedTaskId: Int) =
+        globalTaskFlow.emit(globallyFocusedTaskId)
 }
 
 @Module
