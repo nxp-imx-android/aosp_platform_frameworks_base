@@ -27,6 +27,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
@@ -78,7 +79,8 @@ final class HsumBootUserInitializer {
                 shouldAlwaysHaveMainUser);
     }
 
-    private HsumBootUserInitializer(UserManagerInternal umi, ActivityManagerService am,
+    @VisibleForTesting
+    HsumBootUserInitializer(UserManagerInternal umi, ActivityManagerService am,
             PackageManagerService pms, ContentResolver contentResolver,
             boolean shouldAlwaysHaveMainUser) {
         mUmi = umi;
@@ -120,7 +122,13 @@ final class HsumBootUserInitializer {
                     UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN,
                     /* disallowedPackages= */ null,
                     /* token= */ null);
-            Slogf.i(TAG, "Successfully created MainUser, userId=%d", newInitialUser.id);
+            if (newInitialUser != null) {
+                Slogf.i(TAG, "Successfully created MainUser, userId=%d", newInitialUser.id);
+            } else {
+                // Should never happen in production, but it does on HsumBootUserInitiliazerTest
+                // (we could "fix" it by mocking the call, but it doesn't hurt to check anyways)
+                Slogf.wtf(TAG, "createUserEvenWhenDisallowed() returned null");
+            }
         } catch (UserManager.CheckedUserOperationException e) {
             Slogf.wtf(TAG, "Initial bootable MainUser creation failed", e);
         }
