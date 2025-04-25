@@ -18,8 +18,6 @@ package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.content.DialogInterface
 import android.content.packageManager
-import android.content.res.Configuration
-import android.content.res.mainResources
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
@@ -30,7 +28,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
-import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -558,17 +555,13 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @DisableChipsModernization
     @Test
-    fun chipsLegacy_twoChips_isLandscape_notSquished() =
+    fun chipsLegacy_twoChips_isWideScreen_notSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
             addOngoingCallState(key = "call", isAppVisible = false)
 
-            // WHEN we're in landscape
-            val config =
-                Configuration(kosmos.mainResources.configuration).apply {
-                    orientation = Configuration.ORIENTATION_LANDSCAPE
-                }
-            kosmos.fakeConfigurationRepository.onConfigurationChange(config)
+            // WHEN we're on a wide screen
+            kosmos.displayStateRepository.setIsWideScreen(true)
 
             val latest by collectLastValue(underTest.chipsLegacy)
 
@@ -581,55 +574,13 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @EnableChipsModernization
     @Test
-    fun chips_twoChips_isLandscape_notSquished() =
+    fun chips_twoChips_isWideScreen_notSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
             addOngoingCallState(key = "call")
 
-            // WHEN we're in landscape
-            val config =
-                Configuration(kosmos.mainResources.configuration).apply {
-                    orientation = Configuration.ORIENTATION_LANDSCAPE
-                }
-            kosmos.fakeConfigurationRepository.onConfigurationChange(config)
-
-            val latest by collectLastValue(underTest.chips)
-
-            // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat(latest!!.active[0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat(latest!!.active[1].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-        }
-
-    @DisableChipsModernization
-    @Test
-    fun chipsLegacy_twoChips_isLargeScreen_notSquished() =
-        kosmos.runTest {
-            screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(key = "call", isAppVisible = false)
-
-            // WHEN we're on a large screen
-            kosmos.displayStateRepository.setIsLargeScreen(true)
-
-            val latest by collectLastValue(underTest.chipsLegacy)
-
-            // THEN the chips aren't squished (squished chips would be icon only)
-            assertThat((latest!!.primary as OngoingActivityChipModel.Active).content)
-                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-            assertThat((latest!!.secondary as OngoingActivityChipModel.Active).content)
-                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
-        }
-
-    @EnableChipsModernization
-    @Test
-    fun chips_twoChips_isLargeScreen_notSquished() =
-        kosmos.runTest {
-            screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(key = "call")
-
-            // WHEN we're on a large screen
-            kosmos.displayStateRepository.setIsLargeScreen(true)
+            // WHEN we're on a wide screen
+            kosmos.displayStateRepository.setIsWideScreen(true)
 
             val latest by collectLastValue(underTest.chips)
 
