@@ -261,7 +261,7 @@
     <string name="enable_adb_summary" msgid="3711526030096574316">"连接 USB 后启用调试模式"</string>
     <string name="clear_adb_keys" msgid="3010148733140369917">"撤消 USB 调试授权"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"无线调试"</string>
-    <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"连接到 WLAN 后启用调试模式"</string>
+    <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"连接到 Wi-Fi 后启用调试模式"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"错误"</string>
     <string name="adb_wireless_settings" msgid="2295017847215680229">"无线调试"</string>
     <string name="adb_wireless_list_empty_off" msgid="1713707973837255490">"要查看和使用可用的设备，请开启无线调试"</string>
@@ -303,9 +303,9 @@
     <string name="mock_location_app_set" msgid="4706722469342913843">"模拟位置信息应用：<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"网络"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"无线显示认证"</string>
-    <string name="wifi_verbose_logging" msgid="1785910450009679371">"启用 WLAN 详细日志记录功能"</string>
-    <string name="wifi_scan_throttling" msgid="2985624788509913617">"WLAN 扫描调节"</string>
-    <string name="wifi_non_persistent_mac_randomization" msgid="7482769677894247316">"为 WLAN 热点随机生成非持久性 MAC 地址"</string>
+    <string name="wifi_verbose_logging" msgid="1785910450009679371">"启用 Wi-Fi 详细日志记录功能"</string>
+    <string name="wifi_scan_throttling" msgid="2985624788509913617">"Wi-Fi 扫描调节"</string>
+    <string name="wifi_non_persistent_mac_randomization" msgid="7482769677894247316">"为 Wi-Fi 网络随机生成非持久性 MAC 地址"</string>
     <string name="mobile_data_always_on" msgid="8275958101875563572">"始终开启移动数据网络"</string>
     <string name="tethering_hardware_offload" msgid="4116053719006939161">"网络共享硬件加速"</string>
     <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"显示没有名称的蓝牙设备"</string>
@@ -335,9 +335,9 @@
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"输入 DNS 提供商的主机名"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"无法连接"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"显示无线显示认证选项"</string>
-    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"提升 WLAN 日志记录级别（在 WLAN 选择器中显示每个 SSID 的 RSSI）"</string>
-    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"降低耗电量以及改善网络性能"</string>
-    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"启用此模式后，这台设备每次连接到已启用随机生成 MAC 地址功能的网络时，其 MAC 地址都可能会更改。"</string>
+    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"提升 Wi-Fi 日志记录级别（在 Wi-Fi 选择器中显示每个 SSID 的 RSSI）"</string>
+    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"降低耗电量并改善网络性能"</string>
+    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"启用此模式后，每当此设备连接到已启用随机生成 MAC 地址功能的网络时，其 MAC 地址都可能会更改。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"按流量计费"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"不按流量计费"</string>
     <string name="select_logd_size_title" msgid="1604578195914595173">"日志记录器缓冲区大小"</string>
@@ -351,7 +351,7 @@
     <string name="allow_mock_location" msgid="2102650981552527884">"允许模拟位置"</string>
     <string name="allow_mock_location_summary" msgid="179780881081354579">"允许模拟位置"</string>
     <string name="debug_view_attributes" msgid="3539609843984208216">"启用视图属性检查功能"</string>
-    <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"始终开启移动数据网络，即使 WLAN 网络已开启（便于快速切换网络）。"</string>
+    <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"始终开启移动数据网络，即使已开启 Wi-Fi 网络（便于快速切换网络）。"</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"使用网络共享硬件加速功能（如果可用）"</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"是否允许 USB 调试？"</string>
     <string name="adb_warning_message" msgid="8145270656419669221">"USB 调试仅用于开发目的。该功能可用于在您的计算机和设备之间复制数据、在您的设备上安装应用（事先不发通知）以及读取日志数据。"</string>
@@ -360,10 +360,10 @@
     <string name="adb_keys_warning_message" msgid="2968555274488101220">"是否针对您之前授权的所有计算机撤消 USB 调试的访问权限？"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"允许开发设置？"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"这些设置仅适用于开发工作。一旦启用，会导致您的设备以及设备上的应用崩溃或出现异常。"</string>
-    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"通过 USB 验证应用"</string>
+    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"验证通过 USB 安装的应用"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"检查通过 ADB/ADT 安装的应用是否存在有害行为。"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"系统将显示没有名称（只有 MAC 地址）的蓝牙设备"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"停用蓝牙绝对音量功能，以防在连接到远程设备时出现音量问题（例如音量高得让人无法接受或无法控制音量等）。"</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"停用蓝牙绝对音量功能，以防在连接到远程设备时出现音量问题，例如音量过高让人无法接受，或无法控制音量等。"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"启用“蓝牙 Gabeldorsche”功能堆栈。"</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"启用增强连接性功能。"</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"本地终端"</string>
@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"选择应用"</string>
     <string name="no_application" msgid="9038334538870247690">"无"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"等待调试程序"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"调试应用会在执行前等待附加调试器"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"被调试的应用会在执行前等待附加调试程序"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"输入"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"绘图"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"硬件加速渲染"</string>
@@ -390,13 +390,13 @@
     <string name="strict_mode" msgid="889864762140862437">"启用严格模式"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"应用在主线程上执行长时间操作时闪烁屏幕"</string>
     <string name="pointer_location" msgid="7516929526199520173">"指针位置"</string>
-    <string name="pointer_location_summary" msgid="957120116989798464">"屏幕叠加层显示当前触摸数据"</string>
+    <string name="pointer_location_summary" msgid="957120116989798464">"在屏幕叠加层上显示当前触摸数据"</string>
     <string name="show_touches" msgid="8437666942161289025">"显示点按操作反馈"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"显示点按操作的视觉反馈"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"显示按键操作"</string>
     <string name="show_key_presses_summary" msgid="725387457373015024">"显示实体按键操作的视觉反馈"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"显示触控板输入"</string>
-    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"一个屏幕叠加层，显示了触控板输入数据和已识别的手势"</string>
+    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"在屏幕叠加层上显示触控板输入数据和已识别的手势"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"显示面 (surface) 更新"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"窗口中的面 (surface) 更新时全部闪烁"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"显示视图更新"</string>
@@ -411,7 +411,7 @@
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"关闭 USB 音频转接"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"关闭自动转接至 USB 音频外围设备的功能"</string>
     <string name="debug_layout" msgid="1659216803043339741">"显示布局边界"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"显示剪辑边界、边距等。"</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"显示剪裁边界、边距等。"</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"强制使用从右到左的布局方向"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"强制将所有语言区域的屏幕布局方向改为从右到左"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"透明导航栏"</string>
@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"启用 GPU 调试层"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"允许为调试应用加载 GPU 调试层"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"启用详细供应商日志记录"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"在 bug 报告中包含其他设备特定的供应商日志，这些日志可能会含有隐私信息、消耗更多电量和/或使用更多存储空间。"</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"在 bug 报告中纳入其他的设备专属供应商日志，其中可能包含私密信息，并会消耗更多电量和/或使用更多存储空间。"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"一天后停用"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"详细供应商日志记录已结束"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"已启用一天"</string>
@@ -445,9 +445,9 @@
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"显示通知渠道警告"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"当应用未经有效渠道发布通知时，在屏幕上显示警告"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"强制允许将应用写入外部存储设备"</string>
-    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"允许将任何应用写入外部存储设备（无论清单值是什么）"</string>
+    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"允许将任何应用写入外部存储设备，不受清单值影响"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"强制将 activity 设为可调整大小"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"将所有 activity 设为可配合多窗口环境调整大小（无论清单值是什么）。"</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"将所有 activity 设为可配合多窗口环境调整大小，不受清单值影响。"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"启用可自由调整的窗口"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"桌面备份密码"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"桌面完整备份当前未设置密码保护"</string>
@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"管理员拥有其他用户没有的特殊权限。管理员可以管理所有用户、更新或重置此设备、修改设置、查看所有已安装的应用，以及授予或撤消其他用户的管理员权限。"</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"设为管理员"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"要现在设置该用户吗？"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"请让相应用户操作设备并设置他们自己的空间。"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"请确保对方现在可以使用该设备设置自己的空间。"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"要立即设置个人资料吗？"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"立即设置"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"以后再说"</string>
@@ -670,7 +670,7 @@
     <string name="profile_info_settings_title" msgid="105699672534365099">"个人资料信息"</string>
     <string name="user_need_lock_message" msgid="4311424336209509301">"您需要先设置锁定屏幕来保护您的应用和个人数据，然后才可以创建受限个人资料。"</string>
     <string name="user_set_lock_button" msgid="1427128184982594856">"设置屏幕锁定方式"</string>
-    <string name="user_switch_to_user" msgid="6975428297154968543">"切换到<xliff:g id="USER_NAME">%s</xliff:g>"</string>
+    <string name="user_switch_to_user" msgid="6975428297154968543">"切换到“<xliff:g id="USER_NAME">%s</xliff:g>”"</string>
     <string name="creating_new_user_dialog_message" msgid="7232880257538970375">"正在创建新用户…"</string>
     <string name="creating_new_guest_dialog_message" msgid="1114905602181350690">"正在创建新的访客…"</string>
     <string name="add_user_failed" msgid="4809887794313944872">"无法创建新用户"</string>

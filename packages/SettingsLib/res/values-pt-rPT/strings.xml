@@ -334,8 +334,8 @@
     <string name="private_dns_mode_provider" msgid="3619040641762557028">"Nome do anfitrião do fornecedor DNS privado"</string>
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Introduza o nome de anfitrião do fornecedor DNS"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Não foi possível estabelecer ligação"</string>
-    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Mostrar opções da certificação de display sem fios"</string>
-    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Aumentar o nível de reg. de Wi-Fi, mostrar por RSSI de SSID no Selec. de Wi-Fi"</string>
+    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Mostra opções da certificação de display sem fios"</string>
+    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Aumenta o nível de reg. de Wi-Fi e mostra RSSI por SSID no Selec. de Wi-Fi"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Reduz o consumo rápido da bateria e melhora o desempenho da rede"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Quando este modo estiver ativado, o endereço MAC deste dispositivo pode mudar sempre que o mesmo estabelece ligação a uma rede que tenha a seleção aleatória do MAC ativada."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Acesso limitado"</string>
@@ -374,12 +374,12 @@
     <string name="hdcp_checking_title" msgid="3155692785074095986">"Verificação HDCP"</string>
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Definir o comportamento da verificação HDCP"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Depuração"</string>
-    <string name="debug_app" msgid="8903350241392391766">"Selecionar a aplicação a depurar"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"Nenhuma aplicação a depurar definida"</string>
+    <string name="debug_app" msgid="8903350241392391766">"Selecionar a app a depurar"</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"Nenhuma app a depurar definida"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"A depurar aplicação: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"Selecionar app"</string>
     <string name="no_application" msgid="9038334538870247690">"Nenhuma"</string>
-    <string name="wait_for_debugger" msgid="7461199843335409809">"Aguarde pelo depurador"</string>
+    <string name="wait_for_debugger" msgid="7461199843335409809">"Aguardar pelo depurador"</string>
     <string name="wait_for_debugger_summary" msgid="6846330006113363286">"A aplicação depurada aguarda a anexação do depurador antes da execução"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"Introdução"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"Desenho"</string>
@@ -388,7 +388,7 @@
     <string name="debug_monitoring_category" msgid="1597387133765424994">"Monitorização"</string>
     <string name="window_management_category" msgid="2015535427098365170">"Gestão de janelas"</string>
     <string name="strict_mode" msgid="889864762140862437">"Modo rigoroso ativado"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"Piscar ecrã se app fazem oper. prolong. no tópico princ."</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"Destaque ecrã se apps fizerem operações prolongadas no tópico principal"</string>
     <string name="pointer_location" msgid="7516929526199520173">"Localização do ponteiro"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"Apresentar dados atuais de toque"</string>
     <string name="show_touches" msgid="8437666942161289025">"Mostrar toques"</string>
@@ -400,16 +400,16 @@
     <string name="show_screen_updates" msgid="2078782895825535494">"Mostrar superfície atualizada"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Destacar a superfície da janela ao atualizar"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Ver atualizações de vistas"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Destacar vistas em janelas quando desenhadas"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Destaque vistas em janelas quando desenhadas"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Atualizações de camadas de hardware"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Piscar camadas de hardware em verde ao atualizar"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"Depurar sobreposição GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Desativar sobreposições HW"</string>
-    <string name="disable_overlays_summary" msgid="1954852414363338166">"Usar sempre GPU para a composição do ecrã"</string>
+    <string name="disable_overlays_summary" msgid="1954852414363338166">"Usa sempre GPU para a composição do ecrã"</string>
     <string name="simulate_color_space" msgid="1206503300335835151">"Simular espaço da cor"</string>
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"Ativar vestígios OpenGL"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"Desativar encaminhamento áudio USB"</string>
-    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Desativar encam. auto. para periféricos áudio USB"</string>
+    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Desativa encaminhamento automático para periféricos áudio"</string>
     <string name="debug_layout" msgid="1659216803043339741">"Mostrar limites do esquema"</string>
     <string name="debug_layout_summary" msgid="8825829038287321978">"Apresentar limites de clipes, margens, etc."</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Forçar direção do esquema RTL"</string>
@@ -418,7 +418,7 @@
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Torne a cor de fundo da barra de navegação transparente por predefinição"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Permitir esbater janelas"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Forçar 4x MSAA"</string>
-    <string name="force_msaa_summary" msgid="9070437493586769500">"Ativar o 4x MSAA em aplicações OpenGL ES 2.0"</string>
+    <string name="force_msaa_summary" msgid="9070437493586769500">"Ativa o 4x MSAA em apps OpenGL ES 2.0"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Depurar operações de clipe não retangulares"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Renderização HWUI do perfil"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ativar camadas de depuração GPU"</string>
@@ -438,16 +438,16 @@
     <string name="shade_display_awareness_title" msgid="8000009404669495876">"Posição do painel no ecrã"</string>
     <string name="debug_applications_category" msgid="5394089406638954196">"Apps"</string>
     <string name="immediately_destroy_activities" msgid="1826287490705167403">"Não manter atividades"</string>
-    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Destruir atividades assim que o utilizador sair"</string>
+    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Elimine as atividades assim que o utilizador sair"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"Limite do processo em 2º plano"</string>
     <string name="show_all_anrs" msgid="9160563836616468726">"Mostrar ANRs em 2.º plano"</string>
-    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Mostrar caixa de diálogo A aplicação não está a responder para aplicações em segundo plano"</string>
+    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Veja a caixa de diálogo A aplicação não está a responder para apps em segundo plano"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Mostrar avisos do canal de notificações"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Mostra um aviso no ecrã quando uma aplicação publica uma notificação sem o canal ser válido"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"Forçar permissão de apps no armazenamento externo"</string>
-    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Torna qualquer aplicação elegível para ser gravada no armazenamento externo, independentemente dos valores do manifesto"</string>
+    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Torne qualquer app elegível para ser guardada no armazenamento externo, independentemente dos valores do manifesto"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Forçar as atividades a serem redimensionáveis"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Tornar todas as atividades redimensionáveis para várias janelas, independentemente dos valores do manifesto."</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Torna todas as atividades redimensionáveis para várias janelas, independentemente dos valores do manifesto."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Ativar janelas de forma livre"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Palavra-passe cópia do computador"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"As cópias de segurança completas no ambiente de trabalho não estão atualmente protegidas"</string>
@@ -520,7 +520,7 @@
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> – A carregar"</string>
     <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> – <xliff:g id="STATUS">%2$s</xliff:g> – Completo à(s) <xliff:g id="TIME">%3$s</xliff:g>"</string>
     <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> – Completamente carregado à(s) <xliff:g id="TIME">%2$s</xliff:g>"</string>
-    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Completamente carregado à(s) <xliff:g id="TIME">%1$s</xliff:g>"</string>
+    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Completamente carregada à(s) <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Completo à(s) <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Desconhecido"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"A carregar"</string>

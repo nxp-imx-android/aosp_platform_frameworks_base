@@ -421,7 +421,7 @@
     <string name="force_msaa_summary" msgid="9070437493586769500">"Ενεργοποίηση 4x MSAA σε εφαρμογές OpenGL ES 2.0"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Αποσφαλμάτωση σε λειτουργίες μη ορθογώνιας περιοχής"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Απόδοση HWUI προφίλ"</string>
-    <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ενεργ. επιπ. εντ. σφ. GPU"</string>
+    <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ενεργ. επιπ. αποσφ. GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Φόρτωση επιπ. εντοπ. σφ. GPU για εφαρμ. αντιμ. σφ."</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Ενεργ. λεπτ. καταγραφής προμ."</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Συμπερίληψη πρόσθετων αρχείων καταγραφής προμηθευτή για συγκεκριμένες συσκευές στις αναφορές σφαλμάτων, τα οποία ενδέχεται να περιέχουν ιδιωτικές πληροφορίες, να χρησιμοποιούν περισσότερη μπαταρία ή/και να χρησιμοποιούν περισσότερο αποθηκευτικό χώρο."</string>

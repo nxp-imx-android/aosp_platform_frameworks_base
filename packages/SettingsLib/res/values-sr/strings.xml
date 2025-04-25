@@ -303,7 +303,7 @@
     <string name="mock_location_app_set" msgid="4706722469342913843">"Апликација за лажну локацију: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"Умрежавање"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"Сертификација бежичног екрана"</string>
-    <string name="wifi_verbose_logging" msgid="1785910450009679371">"Омогући детаљнију евиденцију за Wi‑Fi"</string>
+    <string name="wifi_verbose_logging" msgid="1785910450009679371">"Омогући детаљнију евиденцију за WiFi"</string>
     <string name="wifi_scan_throttling" msgid="2985624788509913617">"Успоравање WiFi скенирања"</string>
     <string name="wifi_non_persistent_mac_randomization" msgid="7482769677894247316">"Насумично разврставање MAC адреса по WiFi-ју са прекидима"</string>
     <string name="mobile_data_always_on" msgid="8275958101875563572">"Мобилни подаци су увек активни"</string>
@@ -422,7 +422,7 @@
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Отклони грешке исецања области неправоугаоног облика"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Рендеруј помоћу HWUI-а"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Омогући слојеве за отклањање грешака GPU-a"</string>
-    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Учитава отклањање грешака GPU-a у апл. за отклањање грешака"</string>
+    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Омогућите учитавање слојева за отклањање грешака GPU-a у апликацијама за отклањање грешака"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Опширне евиденције продавца"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Уврштава у извештаје о грешкама додатне посебне евиденције продавца за уређаје, које могу да садрже приватне податке, да троше више батерије и/или да користе више меморије."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Онемогући после једног дана"</string>
@@ -759,7 +759,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"Емитујте апликацију <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"Промените излаз"</string>
     <string name="back_navigation_animation" msgid="8105467568421689484">"Анимације за покрет повратка са предвиђањем"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Омогућите анимације система за покрет повратка са предвиђањем."</string>
+    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Омогућава анимације система за покрет повратка са предвиђањем."</string>
     <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"Ово подешавање омогућава анимације система за покрет повратка са предвиђањем. Захтева подешавање дозволе enableOnBackInvokedCallback по апликацији на true у фајлу манифеста."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
     <string name="not_specified" msgid="5423502443185110328">"Није наведено"</string>

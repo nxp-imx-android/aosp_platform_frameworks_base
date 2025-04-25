@@ -258,7 +258,7 @@
     <string name="tethering_settings_not_available" msgid="266821736434699780">"Instellingen voor tethering zijn niet beschikbaar voor deze gebruiker"</string>
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Instellingen voor toegangspuntnamen zijn niet beschikbaar voor deze gebruiker"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB-foutopsporing"</string>
-    <string name="enable_adb_summary" msgid="3711526030096574316">"Foutopsporingsmodus bij USB-verbinding"</string>
+    <string name="enable_adb_summary" msgid="3711526030096574316">"Foutopsporingsmodus als USB is verbonden"</string>
     <string name="clear_adb_keys" msgid="3010148733140369917">"Autorisatie USB-foutopsporing intrekken"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Draadloze foutopsporing"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Foutopsporingsmodus als wifi is verbonden"</string>
@@ -288,7 +288,7 @@
     <string name="adb_wireless_qrcode_pairing_description" msgid="6014121407143607851">"Koppel apparaat via wifi door een QR-code te scannen"</string>
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Maak verbinding met een wifi-netwerk"</string>
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"adb, foutopsporing, ontwikkeling"</string>
-    <string name="bugreport_in_power" msgid="8664089072534638709">"Snelle link naar bugrapport"</string>
+    <string name="bugreport_in_power" msgid="8664089072534638709">"Snelkoppeling naar bugrapport"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Zet een knop in het aan/uit-menu om een bugrapport te maken"</string>
     <string name="keep_screen_on" msgid="1187161672348797558">"Stand-by"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"Scherm gaat nooit uit tijdens het opladen"</string>
@@ -363,13 +363,13 @@
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Apps verifiëren via USB"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Controleer apps die zijn geïnstalleerd via ADB/ADT op schadelijk gedrag"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Toon bluetooth-apparaten zonder naam (alleen MAC-adressen)"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Zet de functie voor absoluut volume van bluetooth uit bij volumeproblemen met externe apparaten, zoals een veel te hoog volume of geen volumeregeling"</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Zet de bluetooth-functie voor absoluut volume uit bij problemen met het volume van externe apparaten, zoals een veel te hoog volume of geen volumeregeling"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Zet de Gabeldorsche-functiestack voor bluetooth aan."</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"Hiermee wordt de functie voor verbeterde connectiviteit aangezet."</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"Lokale terminal"</string>
     <string name="enable_terminal_summary" msgid="2481074834856064500">"Terminal-app aanzetten die lokale shell-toegang biedt"</string>
     <string name="enable_linux_terminal_title" msgid="5076044866895670637">"Linux-ontwikkelomgeving"</string>
-    <string name="enable_linux_terminal_summary" msgid="2029479880888108902">"(Experimenteel) Linux-terminal uitvoeren op Android"</string>
+    <string name="enable_linux_terminal_summary" msgid="2029479880888108902">"(Experimenteel) Voer Linux-terminal uit op Android"</string>
     <string name="disable_linux_terminal_disclaimer" msgid="3054320531778388231">"Als je dit uitzet, worden Linux-terminalgegevens gewist"</string>
     <string name="hdcp_checking_title" msgid="3155692785074095986">"HDCP-controle"</string>
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"HDCP-controlegedrag instellen"</string>
@@ -394,7 +394,7 @@
     <string name="show_touches" msgid="8437666942161289025">"Tikken tonen"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"Toon visuele feedback voor tikken"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"Toetsaanslagen tonen"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"Visuele feedback tonen voor fysieke toetsaanslagen"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"Toon visuele feedback voor fysieke toetsaanslagen"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"Touchpadinvoer tonen"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Schermoverlay die gegevens van touchpadinvoer en herkende gebaren weergeeft"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Oppervlakupdates tonen"</string>
@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"GPU-foutopsporingslagen aanzetten"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Sta laden van GPU-foutopsporingslagen toe voor foutopsporingsapps"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Uitgebreide leverancierslogboeken aanzetten"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Neem aanvullende apparaatspecifieke leverancierslogboeken op in bugrapporten. Deze kunnen privégegevens bevatten, meer batterijlading gebruiken en/of meer opslagruimte gebruiken"</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Neem aanvullende apparaatspecifieke leverancierslogboeken op in bugrapporten. Deze kunnen privé-informatie bevatten, meer batterijlading gebruiken en/of meer opslagruimte gebruiken."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Uitzetten na één dag"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Uitgebreide leverancierslogboekregistratie is beëindigd"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Aangezet voor één dag"</string>
@@ -637,7 +637,7 @@
     <string name="storage_category" msgid="2287342585424631813">"Opslag"</string>
     <string name="shared_data_title" msgid="1017034836800864953">"Gedeelde gegevens"</string>
     <string name="shared_data_summary" msgid="5516326713822885652">"Bekijk gedeelde gegevens en pas ze aan"</string>
-    <string name="shared_data_no_blobs_text" msgid="3108114670341737434">"Er zijn geen gedeelde gegevens voor deze gebruiker."</string>
+    <string name="shared_data_no_blobs_text" msgid="3108114670341737434">"Er zijn geen gedeelde gegevens voor deze gebruiker"</string>
     <string name="shared_data_query_failure_text" msgid="3489828881998773687">"Er is een fout opgetreden bij het ophalen van gedeelde gegevens. Probeer het opnieuw."</string>
     <string name="blob_id_text" msgid="8680078988996308061">"ID gedeelde gegevens: <xliff:g id="BLOB_ID">%d</xliff:g>"</string>
     <string name="blob_expires_text" msgid="7882727111491739331">"Vervalt op <xliff:g id="DATE">%s</xliff:g>"</string>
