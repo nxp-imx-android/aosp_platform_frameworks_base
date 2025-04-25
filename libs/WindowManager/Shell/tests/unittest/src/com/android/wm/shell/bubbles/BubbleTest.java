@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.bubbles;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
@@ -295,6 +297,20 @@ public class BubbleTest extends ShellTestCase {
         assertThat(bubbleInfo.getKey()).isEqualTo(bubble.getKey());
         assertThat(bubbleInfo.getUserId()).isEqualTo(bubble.getUser().getIdentifier());
         assertThat(bubbleInfo.getPackageName()).isEqualTo(bubble.getPackageName());
+    }
+
+    @Test
+    public void testCleanupTaskView() {
+        // Create a bubble with a task id
+        TaskInfo info = mock(TaskInfo.class);
+        info.taskId = 123;
+        info.baseActivity = new ComponentName(mContext, "SomeActivity");
+        Bubble bubble = Bubble.createTaskBubble(info, new UserHandle(1),
+                null /* icon */, mMainExecutor, mBgExecutor);
+        assertThat(bubble.getTaskId()).isEqualTo(123);
+
+        bubble.cleanupTaskView();
+        assertThat(bubble.getTaskId()).isEqualTo(INVALID_TASK_ID);
     }
 
     private Intent createIntent() {
