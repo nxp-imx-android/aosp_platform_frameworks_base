@@ -3240,6 +3240,11 @@
          If false, only the MainUser is eligible to have profiles. -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
+    <!-- Whether the system should create the initial full user on boot.
+         Notice that if config_isMainUserPermanentAdmin is true, this config is
+         ignored (as the initial user is the main user). -->
+    <bool name="config_createInitialUser">false</bool>
+
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
