@@ -3716,21 +3716,13 @@ public class ActivityManager {
      * specified.
      */
     public List<ProcessErrorStateInfo> getProcessesInErrorState() {
-        if (Flags.rateLimitGetProcessesInErrorState()) {
-            return mErrorProcessesCache.get(() -> {
-                return getProcessesInErrorStateInternal();
-            });
-        } else {
-            return getProcessesInErrorStateInternal();
-        }
-    }
-
-    private List<ProcessErrorStateInfo> getProcessesInErrorStateInternal() {
-        try {
-            return getService().getProcessesInErrorState();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mErrorProcessesCache.get(() -> {
+            try {
+                return getService().getProcessesInErrorState();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        });
     }
 
     /**
