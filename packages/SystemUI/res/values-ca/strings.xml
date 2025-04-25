@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Canvia l\'idioma"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Mantén l\'idioma actual"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Comparteix la Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Afegeix una xarxa"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Vols permetre la depuració sense fil en aquesta xarxa?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nom de la xarxa (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAdreça Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Permet sempre en aquesta xarxa"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Icona de dispositiu Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Fes clic per configurar els detalls del dispositiu"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configura els detalls del dispositiu"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Comença a compartir l\'àudio amb <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Deixa de compartir l\'àudio amb <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Mostra tots els dispositius"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Vincula un dispositiu nou"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Es desconeix el percentatge de bateria."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"No definit"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gestiona a la configuració"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Cap mode actiu}=1{{mode} està actiu}many{# de modes actius}other{# modes actius}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"No t\'interromprà cap so ni cap vibració, tret dels de les alarmes, recordatoris, esdeveniments i trucades de les persones que especifiquis. Continuaràs sentint tot allò que decideixis reproduir, com ara música, vídeos i jocs."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"No t\'interromprà cap so ni cap vibració, tret dels de les alarmes. Continuaràs sentint tot allò que decideixis reproduir, com ara música, vídeos i jocs."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Personalitza"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrar"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Controls de volum %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Les trucades i les notificacions sonaran (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Volum del dispositiu convidat"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Introdueix opcions de configuració de sortida"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Els controls lliscants de volum s\'han desplegat"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Els controls lliscants de volum s\'han replegat"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Per connectar el teclat amb la tauleta, primer has d\'activar el Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activa"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activat: basat en cares"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Utilitza l\'organitzador de notificacions"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Per a <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Fet"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplica"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactiva"</string>
@@ -829,10 +837,10 @@
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Estat&lt;/b&gt;: s\'ha disminuït a Silenci"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Estat&lt;/b&gt;: s\'ha classificat amb un nivell superior"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Estat&lt;/b&gt;: s\'ha classificat amb un nivell inferior"</string>
-    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Es mostra a la part superior de les notificacions de les converses i com a foto de perfil a la pantalla de bloqueig"</string>
-    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Es mostra a la part superior de les notificacions de les converses i com a foto de perfil a la pantalla de bloqueig, apareix com una bombolla"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Es mostra a la part superior de les notificacions de les converses i com a foto de perfil a la pantalla de bloqueig, interromp el mode No molestis"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Es mostra a la part superior de les notificacions de les converses i com a foto de perfil a la pantalla de bloqueig, apareix com una bombolla, interromp el mode No molestis"</string>
+    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Es mostra a la part superior de les notificacions de converses i com a foto de perfil a la pantalla de bloqueig"</string>
+    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Es mostra a la part superior de les notificacions de converses i com a foto de perfil a la pantalla de bloqueig, i apareix com una bombolla"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Es mostra a la part superior de les notificacions de converses i com a foto de perfil a la pantalla de bloqueig, i interromp el mode No molestis"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Es mostra a la part superior de les notificacions de converses i com a foto de perfil a la pantalla de bloqueig; apareix com una bombolla i interromp el mode No molestis"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritat"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> no admet les funcions de converses"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Suggeriments"</string>
@@ -1367,7 +1375,7 @@
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Afegeix la icona"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"No afegeixis la icona"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Selecciona un usuari"</string>
-    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplicació està activa}many{# aplicacions estan actives}other{# aplicacions estan actives}}"</string>
+    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplicació està activa}many{# d\'aplicacions estan actives}other{# aplicacions estan actives}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Informació nova"</string>
     <string name="fgs_manager_dialog_title" msgid="5879184257257718677">"Aplicacions actives"</string>
     <string name="fgs_manager_dialog_message" msgid="2670045017200730076">"Aquestes aplicacions estan actives i executant-se, fins i tot quan no les utilitzes. Això en millora la funcionalitat, però també pot afectar la durada de la bateria."</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accessibilitat"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilitats"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privadesa"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"De les aplicacions del sistema"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"De les aplicacions que has instal·lat"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Pantalla"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconegut"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vols restablir totes les icones?"</string>

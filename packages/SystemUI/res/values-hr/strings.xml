@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Promijeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Zadrži trenutačni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Dijeli Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Dodaj mrežu"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Dopustiti bežično otklanjanje pogrešaka na ovoj mreži?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAdresa Wi‑Fija (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Uvijek dopusti na ovoj mreži"</string>
@@ -485,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije postavljeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u postavkama"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih načina}=1{Aktivno: {mode}}one{# način je aktivan}few{# načina su aktivna}other{# načina je aktivno}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas ometati zvukovi i vibracije, osim alarma, podsjetnika, događaja i pozivatelja koje navedete. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas ometati zvukovi i vibracije, osim alarma. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Prilagodi"</string>
@@ -750,8 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibriranje"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Kontrole glasnoće – %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Telefon će zvoniti za pozive i obavijesti (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Glasnoća gostujućeg uređaja"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Unesite postavke izlaza"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Proširivanje klizača za glasnoću"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Sažimanje klizača za glasnoću"</string>
@@ -812,8 +814,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Da biste povezali tipkovnicu s tabletom, morate uključiti Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na temelju lica"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Upotrijebite organizator obavijesti"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za aplikaciju <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
@@ -832,7 +842,7 @@
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Prikazuje se pri vrhu obavijesti razgovora i kao profilna slika na zaključanom zaslonu"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Prikazuje se pri vrhu obavijesti razgovora i kao profilna slika na zaključanom zaslonu, izgleda kao oblačić"</string>
     <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Prikazuje se pri vrhu obavijesti razgovora i kao profilna slika na zaključanom zaslonu, prekida Ne uznemiravaj"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Prikazuje se pri vrhu obavijesti razgovora i kao profilna slika na zaključanom zaslonu, izgleda kao oblačić, prekida Ne uznemiravaj"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Prikazuje se pri vrhu obavijesti razgovora i kao profilna slika na zaključanom zaslonu, pojavljuje se kao oblačić, prekida značajku Ne uznemiravaj"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritetno"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> ne podržava značajke razgovora"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Povratne informacije"</string>
@@ -915,13 +925,13 @@
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Snimanje zaslona"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Prikaz prečaca"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Natrag"</string>
-    <string name="group_system_access_home_screen" msgid="4130366993484706483">"Otvori početni zaslon"</string>
+    <string name="group_system_access_home_screen" msgid="4130366993484706483">"Otvaranje početnog zaslona"</string>
     <string name="group_system_overview_open_apps" msgid="5659958952937994104">"Prikaz nedavnih aplikacija"</string>
-    <string name="group_system_cycle_forward" msgid="5478663965957647805">"Listajte nedavne aplikacije (prema naprijed)"</string>
-    <string name="group_system_cycle_back" msgid="8194102916946802902">"Listajte nedavne aplikacije (unatrag)"</string>
+    <string name="group_system_cycle_forward" msgid="5478663965957647805">"Listanje nedavnih aplikacija (prema naprijed)"</string>
+    <string name="group_system_cycle_back" msgid="8194102916946802902">"Listanje nedavnih aplikacija (unatrag)"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Otvaranje popisa aplikacija"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Otvaranje postavki"</string>
-    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otvorite digitalnog asistenta"</string>
+    <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otvaranje digitalnog asistenta"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Zaključavanje zaslona"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Pisanje bilješke"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Obavljanje više zadataka"</string>
@@ -1591,10 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Pristupačnost"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Uslužni programi"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privatnost"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Iz aplikacija sustava"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Iz instaliranih aplikacija"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Prikaz"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite li poništiti sve pločice?"</string>

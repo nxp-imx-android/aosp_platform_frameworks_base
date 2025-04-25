@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"భాషను మార్చండి"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"ప్రస్తుత భాషను అలా ఉంచండి"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi షేర్ చేయండి"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"నెట్‌వర్క్ జోడించండి"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"ఈ నెట్‌వర్క్ ద్వారా వైర్‌లెస్ డీబగ్గింగ్‌ను అనుమతించాలా?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"నెట్‌వర్క్ పేరు (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi అడ్రస్ (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"ఈ నెట్‌వర్క్ నుండి ఎల్లప్పుడూ అనుమతించండి"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"బ్లూటూత్ పరికర చిహ్నం"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"పరికర వివరాలను కాన్ఫిగర్ చేయడానికి క్లిక్ చేయండి"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. పరికర వివరాలను కాన్ఫిగర్ చేయండి"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g>‌తో ఆడియోను షేర్ చేయడాన్ని ప్రారంభించండి"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g>‌తో ఆడియోను షేర్ చేయడాన్ని ఆపివేయండి"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"అన్ని పరికరాలను చూడండి"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"కొత్త డివైస్‌ని పెయిర్ చేయండి"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"బ్యాటరీ శాతం తెలియదు."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"సెట్ చేసి లేదు"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"సెట్టింగ్‌లలో మేనేజ్ చేయండి"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{యాక్టివ్ మోడ్స్ లేవు}=1{{mode} యాక్టివ్‌గా ఉంది}other{# మోడ్స్ యాక్టివ్‌గా ఉన్నాయి}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"మీరు పేర్కొనే అలారాలు, రిమైండర్‌లు, ఈవెంట్‌లు మరియు కాలర్‌ల నుండి మినహా మరే ఇతర ధ్వనులు మరియు వైబ్రేషన్‌లతో మీకు అంతరాయం కలగదు. మీరు ఇప్పటికీ సంగీతం, వీడియోలు మరియు గేమ్‌లతో సహా మీరు ప్లే చేయడానికి ఎంచుకున్నవి ఏవైనా వింటారు."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"అలారాలు నుండి మినహా మరే ఇతర ధ్వనులు మరియు వైబ్రేషన్‌లతో మీకు అంతరాయం కలగదు. మీరు ఇప్పటికీ సంగీతం, వీడియోలు మరియు గేమ్‌లతో సహా మీరు ప్లే చేయడానికి ఎంచుకున్నవి ఏవైనా వింటారు."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"అనుకూలంగా మార్చండి"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"వైబ్రేట్"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s వాల్యూమ్ నియంత్రణలు"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"కాల్స్‌ మరియు నోటిఫికేషన్‌లు రింగ్ అవుతాయి (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"గెస్ట్ డివైజ్ వాల్యూమ్"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"అవుట్‌పుట్ సెట్టింగ్‌లను ఎంటర్ చేయండి"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"వాల్యూమ్ స్లయిడర్‌లు విస్తరించబడ్డాయి"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"వాల్యూమ్ స్లయిడర్‌లు కుదించబడ్డాయి"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"మీ కీబోర్డ్‌ను మీ టాబ్లెట్‌తో కనెక్ట్ చేయడానికి, మీరు ముందుగా బ్లూటూత్ ఆన్ చేయాలి."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ఆన్ చేయి"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"\'ముఖం ఆధారం\'ను - ఆన్ చేయండి"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"నోటిఫికేషన్ ఆర్గనైజర్‌ను ఉపయోగించండి"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> కోసం"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"పూర్తయింది"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"అప్లయి చేయి"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ఆఫ్ చేయండి"</string>
@@ -938,8 +946,8 @@
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"విండోను విస్తరించండి"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"విండోను కుదించండి"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ఇన్‌పుట్"</string>
-    <string name="input_switch_input_language_next" msgid="3782155659868227855">"తర్వాత భాషకు స్విచ్ అవ్వండి"</string>
-    <string name="input_switch_input_language_previous" msgid="6043341362202336623">"మునుపటి భాషకు స్విచ్ అవ్వండి"</string>
+    <string name="input_switch_input_language_next" msgid="3782155659868227855">"తర్వాతి భాషకు మారండి"</string>
+    <string name="input_switch_input_language_previous" msgid="6043341362202336623">"మునుపటి భాషకు మారండి"</string>
     <string name="input_access_emoji" msgid="8105642858900406351">"ఎమోజిని యాక్సెస్ చేయండి"</string>
     <string name="input_access_voice_typing" msgid="7291201476395326141">"వాయిస్ టైపింగ్‌ను యాక్సెస్ చేయండి"</string>
     <string name="keyboard_shortcut_group_applications" msgid="7386239431100651266">"అప్లికేషన్‌లు"</string>
@@ -1266,7 +1274,7 @@
     <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(డిస్కనెక్ట్ అయ్యింది)"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"స్విచ్ చేయడం సాధ్యం కాదు. మళ్ళీ ట్రై చేయడానికి ట్యాప్ చేయండి."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
-    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"పరికరాన్ని కనెక్ట్ చేయండి"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"తెలియని యాప్"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"ప్రసారాన్ని ఆపివేయండి"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ఆడియో అవుట్‌పుట్ కోసం అందుబాటులో ఉన్న పరికరాలు."</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accessibility"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"యుటిలిటీలు"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"గోప్యత"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"సిస్టమ్ యాప్‌ల నుండి"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"మీ ఇన్‌స్టాల్ చేసిన యాప్‌ల నుండి"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"డిస్‌ప్లే"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"తెలియదు"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"టైల్స్ అన్ని రీసెట్ చేయాలా?"</string>

@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Changer la langue"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Garder la langue actuelle"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Partager le Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Ajouter un réseau"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Autoriser le débogage sans fil sur ce réseau?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nom du réseau (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAdresse Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Toujours autoriser sur ce réseau"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Icône de l\'appareil Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Cliquez pour configurer les détails de l\'appareil"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Configurer les détails de l\'appareil"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Commencer à partager le son avec <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Arrêter de partager le son avec <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Voir tous les appareils"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Associer un nouvel appareil"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Pourcentage de la pile inconnu."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Non défini"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gérer dans les paramètres"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Aucun mode actif}=1{Le mode {mode} est actif}one{# mode est actif}many{# de modes sont actifs}other{# modes sont actifs}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Vous ne serez pas dérangé par les sons et les vibrations, sauf pour les alarmes, les rappels, les événements et les appelants que vous sélectionnez. Vous entendrez tout ce que vous choisissez d\'écouter, y compris la musique, les vidéos et les jeux."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Vous ne serez pas dérangé par les sons et les vibrations, sauf pour les alarmes. Vous entendrez tout ce que vous choisissez d\'écouter, y compris la musique, les vidéos et les jeux."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Personnaliser"</string>
@@ -624,7 +625,7 @@
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Paramètres de notification"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Historique des notifications"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Nouvelles"</string>
-    <string name="notification_section_header_gentle" msgid="6804099527336337197">"Mode silencieux"</string>
+    <string name="notification_section_header_gentle" msgid="6804099527336337197">"Mode Silencieux"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notifications"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversations"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Effacer toutes les notifications silencieuses"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibration"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Commandes de volume de %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Les appels et les notifications seront annoncés par une sonnerie (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Volume de l\'appareil invité"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Entrer les paramètres de sortie"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Curseurs de volume développés"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Curseurs de volume réduits"</string>
@@ -812,12 +812,20 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Pour connecter votre clavier à votre tablette, vous devez d\'abord activer la connectivité Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activer"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activé : en fonction du visage"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Utiliser l\'organisateur de notifications"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Pour <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Terminé"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Appliquer"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Désactiver"</string>
-    <string name="notification_silence_title" msgid="8608090968400832335">"Mode silencieux"</string>
+    <string name="notification_silence_title" msgid="8608090968400832335">"Mode Silencieux"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Par défaut"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatique"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Aucun son ni vibration"</string>
@@ -830,9 +838,9 @@
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;État :&lt;/b&gt; élevé d\'un niveau"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;État :&lt;/b&gt; abaissé d\'un niveau"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage"</string>
-    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage, s\'affiche comme bulle"</string>
+    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage, s\'affiche sous forme de bulle"</string>
     <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage, interrompt le mode Ne pas déranger"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage, s\'affiche comme bulle, interrompt le mode Ne pas déranger"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"S\'affiche dans le haut des notifications de conversation et comme photo de profil à l\'écran de verrouillage, s\'affiche sous forme de bulle, interrompt le mode Ne pas déranger"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritaire"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ne prend pas en charge les fonctionnalités de conversation"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Commentaires"</string>
@@ -841,7 +849,7 @@
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Bloquer mises à jour en direct"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"Affichage des mises à jour en direct"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Les notifications épinglées affichent des informations en direct des applis et apparaissent toujours sur la barre d\'état et l\'écran de verrouillage"</string>
-    <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ces notifications ne peuvent pas être modifiées"</string>
+    <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ces notifications ne peuvent pas être modifiées."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Les notifications d\'appel ne peuvent pas être modifiées."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ce groupe de notifications ne peut pas être configuré ici"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Notification par mandataire"</string>
@@ -900,7 +908,7 @@
     <string name="keyboard_shortcut_join" msgid="3578314570034512676">"ou"</string>
     <string name="keyboard_shortcut_clear_text" msgid="6631051796030377857">"Effacez la requête de recherche"</string>
     <string name="keyboard_shortcut_search_list_title" msgid="4271769465397671138">"Raccourcis-clavier"</string>
-    <string name="keyboard_shortcut_search_list_hint" msgid="5982623262974326746">"Rechercher des raccourcis"</string>
+    <string name="keyboard_shortcut_search_list_hint" msgid="5982623262974326746">"Recherchez des raccourcis"</string>
     <string name="keyboard_shortcut_search_list_no_result" msgid="6819302191660875501">"Aucun raccourci trouvé"</string>
     <string name="keyboard_shortcut_search_category_system" msgid="1151182120757052669">"Système"</string>
     <string name="keyboard_shortcut_search_category_input" msgid="5440558509904296233">"Entrée"</string>
@@ -915,7 +923,7 @@
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
-    <string name="group_system_access_home_screen" msgid="4130366993484706483">"Aller à l’écran d’accueil"</string>
+    <string name="group_system_access_home_screen" msgid="4130366993484706483">"Accéder à l’écran d’accueil"</string>
     <string name="group_system_overview_open_apps" msgid="5659958952937994104">"Afficher les applis récentes"</string>
     <string name="group_system_cycle_forward" msgid="5478663965957647805">"Parcourir les applis récentes"</string>
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Parcourir les applis récentes en sens inverse"</string>
@@ -927,7 +935,7 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utiliser l\'Écran divisé avec l\'appli à droite"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utiliser l\'Écran divisé avec l\'appli à gauche"</string>
-    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utiliser le mode plein écran"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utiliser le mode Plein écran"</string>
     <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Utiliser le fenêtrage du bureau"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Passer à l\'appli à droite ou en dessous avec l\'Écran divisé"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Passer à l\'appli à gauche ou au-dessus avec l\'Écran divisé"</string>
@@ -954,7 +962,7 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7312554713993114342">"Maps"</string>
     <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"Activer/Désactiver les touches non répétées"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"Activer/Désactiver les touches de souris"</string>
-    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Activer/Désactiver les touches rémanentes"</string>
+    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Activer/Désactiver les Touches rémanentes"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Activer/Désactiver les touches lentes"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Activer/Désactiver l\'Accès vocal"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Activer/Désactiver TalkBack"</string>
@@ -1324,7 +1332,7 @@
     <string name="status_before_loading" msgid="1500477307859631381">"Le contenu sera bientôt affiché"</string>
     <string name="missed_call" msgid="4228016077700161689">"Appel manqué"</string>
     <string name="messages_count_overflow_indicator" msgid="7850934067082006043">"<xliff:g id="NUMBER">%d</xliff:g>+"</string>
-    <string name="people_tile_description" msgid="8154966188085545556">"Afficher les messages récents, les appels manqués et les mises à jour d\'état"</string>
+    <string name="people_tile_description" msgid="8154966188085545556">"Affichez les messages récents, les appels manqués et les mises à jour d\'état"</string>
     <string name="people_tile_title" msgid="6589377493334871272">"Conversation"</string>
     <string name="paused_by_dnd" msgid="7856941866433556428">"Interrompue par la fonctionnalité Ne pas déranger"</string>
     <string name="new_notification_text_content_description" msgid="2915029960094389291">"<xliff:g id="NAME">%1$s</xliff:g> a envoyé un message : <xliff:g id="NOTIFICATION">%2$s</xliff:g>"</string>
@@ -1499,7 +1507,7 @@
     <string name="shortcut_customize_mode_add_shortcut_description" msgid="7636040209946696120">"Pour créer ce raccourci, appuyez simultanément sur la touche d\'action et une ou plusieurs autres touches"</string>
     <string name="shortcut_customize_mode_remove_shortcut_description" msgid="6851287900585057128">"Cela supprimera définitivement votre raccourci personnalisé."</string>
     <string name="shortcut_customize_mode_reset_shortcut_description" msgid="2081849715634358684">"Cette action supprimera définitivement tous vos raccourcis personnalisés."</string>
-    <string name="shortcut_helper_search_placeholder" msgid="5488547526269871819">"Rechercher des raccourcis"</string>
+    <string name="shortcut_helper_search_placeholder" msgid="5488547526269871819">"Recherchez des raccourcis"</string>
     <string name="shortcut_helper_no_search_results" msgid="8554756497996692160">"Aucun résultat de recherche"</string>
     <string name="shortcut_helper_content_description_collapse_icon" msgid="8028015738431664954">"Icône Réduire"</string>
     <string name="shortcut_helper_content_description_meta_key" msgid="3989315044342124818">"Icône de la touche Action ou Méta"</string>
@@ -1514,7 +1522,7 @@
     <string name="shortcut_helper_content_description_drag_handle" msgid="5092426406009848110">"Poignée de déplacement"</string>
     <string name="shortcut_helper_keyboard_settings_buttons_label" msgid="6720967595915985259">"Paramètres du clavier"</string>
     <string name="shortcut_helper_customize_dialog_set_shortcut_button_label" msgid="4754492225010429382">"Définir un raccourci"</string>
-    <string name="shortcut_helper_customize_dialog_remove_button_label" msgid="6546386970440176552">"Supprimer"</string>
+    <string name="shortcut_helper_customize_dialog_remove_button_label" msgid="6546386970440176552">"Retirer"</string>
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"Oui, réinitialiser"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"Annuler"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"Appuyez sur une ou des touches"</string>
@@ -1565,7 +1573,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Rétroéclairage du clavier"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Niveau %1$d de %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"Domotique"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"Accès domotique en écran de veille"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"Accès rapide aux commandes domotiques sur écran de veille"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Annuler"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Pour revenir en arrière, balayez l\'écran vers la gauche ou vers la droite avec trois doigts sur le pavé tactile"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Pour accéder à l\'écran d\'accueil, balayez l\'écran vers le haut avec trois doigts sur le pavé tactile"</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accessibilité"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilitaires"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Confidentialité"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"À partir des applis système"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"À partir des applis que vous avez installées"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Affichage"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Inconnu"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Réinitialiser toutes les tuiles?"</string>
