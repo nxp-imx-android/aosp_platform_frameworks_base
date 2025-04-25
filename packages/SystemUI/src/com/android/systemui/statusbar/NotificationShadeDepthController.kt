@@ -19,12 +19,14 @@ package com.android.systemui.statusbar
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.app.WindowConfiguration
 import android.os.SystemClock
 import android.util.IndentingPrintWriter
 import android.util.Log
 import android.util.MathUtils
 import android.view.Choreographer
 import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.dynamicanimation.animation.FloatPropertyCompat
@@ -39,6 +41,7 @@ import com.android.systemui.Flags.spatialModelPushbackInShader
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -86,9 +89,10 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val appZoomOutOptional: Optional<AppZoomOut>,
+    private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
+    private val focusedDisplayRepository: FocusedDisplayRepository,
     @Application private val applicationScope: CoroutineScope,
     dumpManager: DumpManager,
-    private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : ShadeExpansionListener, Dumpable {
     companion object {
         private const val WAKE_UP_ANIMATION_ENABLED = true
@@ -126,6 +130,8 @@ constructor(
 
     // Only for dumpsys
     private var lastAppliedBlur = 0
+
+    private var isHomeFocused = true
 
     val maxBlurRadiusPx = blurUtils.maxBlurRadius
 
@@ -334,8 +340,11 @@ constructor(
             else scrimsVisible && !areBlursDisabledForAppLaunch
 
     private fun zoomOutAsScale(zoomOutProgress: Float): Float =
-        if (spatialModelPushbackInShader()) 1.0f - zoomOutProgress * PUSHBACK_SCALE_FOR_APP
-        else 1.0f
+        if (!spatialModelPushbackInShader()) 1.0f
+        else 1.0f - zoomOutProgress * getPushbackScale(isHomeFocused)
+
+    private fun getPushbackScale(isHomeFocused: Boolean): Float =
+        if (isHomeFocused) PUSHBACK_SCALE_FOR_LAUNCHER else PUSHBACK_SCALE_FOR_APP
 
     /** Callback that updates the window blur value and is called only once per frame. */
     @VisibleForTesting
@@ -476,6 +485,12 @@ constructor(
         if (spatialModelAppPushback()) {
             brightnessMirrorSpring.setStiffness(SpringForce.STIFFNESS_LOW)
             brightnessMirrorSpring.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+        }
+        applicationScope.launch {
+            focusedDisplayRepository.globallyFocusedTask.collect { focusedTask ->
+                if (focusedTask == null || focusedTask.displayId != DEFAULT_DISPLAY) return@collect
+                isHomeFocused = (focusedTask.activityType == WindowConfiguration.ACTIVITY_TYPE_HOME)
+            }
         }
         applicationScope.launch {
             wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
