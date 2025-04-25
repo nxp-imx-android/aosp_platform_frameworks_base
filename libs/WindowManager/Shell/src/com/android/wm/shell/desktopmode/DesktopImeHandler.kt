@@ -25,6 +25,7 @@ import android.os.IBinder
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.animation.PathInterpolator
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -160,7 +161,7 @@ class DesktopImeHandler(
     }
 
     private fun getFocusedTask(displayId: Int): ActivityManager.RunningTaskInfo? =
-        if (Flags.enableDisplayFocusInShellTransitions()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
             shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         } else {
             shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo -> taskInfo.isFocused }
