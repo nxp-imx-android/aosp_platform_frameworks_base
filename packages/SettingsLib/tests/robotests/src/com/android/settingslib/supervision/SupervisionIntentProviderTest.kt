@@ -27,15 +27,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 
 /**
  * Unit tests for [SupervisionIntentProvider].
@@ -44,13 +41,9 @@ import org.mockito.junit.MockitoRule
  */
 @RunWith(AndroidJUnit4::class)
 class SupervisionIntentProviderTest {
-    @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
-
-    @Mock private lateinit var mockPackageManager: PackageManager
-
-    @Mock private lateinit var mockSupervisionManager: SupervisionManager
-
-    @Mock private lateinit var mockRoleManager: RoleManager
+    private val mockPackageManager = mock<PackageManager>()
+    private val mockSupervisionManager = mock<SupervisionManager>()
+    private val mockRoleManager = mock<RoleManager>()
 
     private lateinit var context: Context
 
@@ -71,7 +64,7 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getSettingsIntent_nullSupervisionPackage() {
-        `when`(mockSupervisionManager.activeSupervisionAppPackage).thenReturn(null)
+        mockSupervisionManager.stub { on { activeSupervisionAppPackage } doReturn null }
 
         val intent = SupervisionIntentProvider.getSettingsIntent(context)
 
@@ -80,10 +73,13 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getSettingsIntent_unresolvedIntent() {
-        `when`(mockSupervisionManager.activeSupervisionAppPackage)
-            .thenReturn(SUPERVISION_APP_PACKAGE)
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(emptyList<ResolveInfo>())
+        mockSupervisionManager.stub {
+            on { activeSupervisionAppPackage } doReturn SUPERVISION_APP_PACKAGE
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                emptyList<ResolveInfo>()
+        }
 
         val intent = SupervisionIntentProvider.getSettingsIntent(context)
 
@@ -92,10 +88,13 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getSettingsIntent_resolvedIntent() {
-        `when`(mockSupervisionManager.activeSupervisionAppPackage)
-            .thenReturn(SUPERVISION_APP_PACKAGE)
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockSupervisionManager.stub {
+            on { activeSupervisionAppPackage } doReturn SUPERVISION_APP_PACKAGE
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent = SupervisionIntentProvider.getSettingsIntent(context)
 
@@ -106,8 +105,9 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_nullSupervisionPackage() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(emptyList())
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn emptyList()
+        }
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
                 context,
@@ -119,10 +119,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_unresolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(emptyList<ResolveInfo>())
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                emptyList<ResolveInfo>()
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -134,8 +138,10 @@ class SupervisionIntentProviderTest {
     }
 
     fun getConfirmSupervisionCredentialsIntent_unresolvedIntent() {
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(emptyList<ResolveInfo>())
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                emptyList<ResolveInfo>()
+        }
 
         val intent = SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(context)
 
@@ -144,10 +150,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_setup_resolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -162,10 +172,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_verify_resolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -181,10 +195,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_update_resolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -200,10 +218,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_setVerified_resolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -219,10 +241,14 @@ class SupervisionIntentProviderTest {
 
     @Test
     fun getPinRecoveryIntent_postSetupVerify_resolvedIntent() {
-        `when`(mockRoleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION))
-            .thenReturn(listOf(SUPERVISION_APP_PACKAGE))
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockRoleManager.stub {
+            on { getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION) } doReturn
+                listOf(SUPERVISION_APP_PACKAGE)
+        }
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent =
             SupervisionIntentProvider.getPinRecoveryIntent(
@@ -236,9 +262,12 @@ class SupervisionIntentProviderTest {
         assertThat(intent?.`package`).isEqualTo(SUPERVISION_APP_PACKAGE)
     }
 
+    @Test
     fun getConfirmSupervisionCredentialsIntent_resolvedIntent() {
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
-            .thenReturn(listOf(ResolveInfo()))
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
 
         val intent = SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(context)
         assertThat(intent).isNotNull()
