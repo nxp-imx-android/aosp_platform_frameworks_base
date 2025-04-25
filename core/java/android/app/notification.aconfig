@@ -91,6 +91,16 @@ flag {
 }
 
 flag {
+  name: "modes_ui_dnd_slice"
+  namespace: "systemui"
+  description: "Restores a (tweaked) DND slice in Settings; dependent on modes_ui"
+  bug: "406238205"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "modes_cleanup_implicit"
   namespace: "systemui"
   description: "Deletes implicit modes if never customized and not used for some time. Depends on MODES_UI"

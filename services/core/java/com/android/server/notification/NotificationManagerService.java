@@ -2730,6 +2730,13 @@ public class NotificationManagerService extends SystemService {
             @Override
             public void onConfigChanged() {
                 handleSavePolicyFile();
+                if (android.app.Flags.modesUiDndSlice()) {
+                    getContext().sendBroadcastAsUser(
+                            new Intent(
+                                    NotificationManager.ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL)
+                                    .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
+                            UserHandle.ALL, android.Manifest.permission.MANAGE_NOTIFICATIONS);
+                }
             }
 
             @Override

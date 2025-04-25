@@ -11391,6 +11391,18 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mContext).sendBroadcastAsUser(eqIntent(expected), eq(UserHandle.of(mUserId)));
     }
 
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_MODES_UI_DND_SLICE)
+    public void onConfigChanged_sendsInternalZenChangedBroadcast() throws Exception {
+        mService.mZenModeHelper.getCallbacks().forEach(c -> c.onConfigChanged());
+
+        Intent expected = new Intent(NotificationManager.ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL)
+                .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+
+        verify(mContext).sendBroadcastAsUser(eqIntent(expected), eq(UserHandle.ALL),
+                eq(android.Manifest.permission.MANAGE_NOTIFICATIONS));
+    }
+
     private static Intent isIntentWithAction(String wantedAction) {
         return argThat(
                 intent -> intent != null && wantedAction.equals(intent.getAction())
