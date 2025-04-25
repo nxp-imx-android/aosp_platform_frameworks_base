@@ -5842,6 +5842,7 @@
   <java-symbol type="string" name="accessibility_autoclick_scroll" />
   <java-symbol type="string" name="accessibility_autoclick_long_press" />
   <java-symbol type="string" name="accessibility_autoclick_pause" />
+  <java-symbol type="string" name="accessibility_autoclick_resume" />
   <java-symbol type="string" name="accessibility_autoclick_position" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_spacing" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_size" />

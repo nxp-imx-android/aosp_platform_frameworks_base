@@ -42,6 +42,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -302,13 +303,23 @@ public class AutoclickTypePanelTest {
 
     @Test
     public void pauseButton_onClick() {
+        String resumeText = mTestableContext.getString(R.string
+                .accessibility_autoclick_resume);
+        String pauseText = mTestableContext.getString(R.string
+                .accessibility_autoclick_pause);
+        ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(/* index= */ 0);
+
         mPauseButton.callOnClick();
         assertThat(mPaused).isTrue();
         assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+        assertThat(imageButton.getContentDescription().toString()).isEqualTo(resumeText);
+        assertThat(mPauseButton.getTooltipText().toString()).isEqualTo(resumeText);
 
         mPauseButton.callOnClick();
         assertThat(mPaused).isFalse();
         assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+        assertThat(imageButton.getContentDescription().toString()).isEqualTo(pauseText);
+        assertThat(mPauseButton.getTooltipText().toString()).isEqualTo(pauseText);
     }
 
     @Test
