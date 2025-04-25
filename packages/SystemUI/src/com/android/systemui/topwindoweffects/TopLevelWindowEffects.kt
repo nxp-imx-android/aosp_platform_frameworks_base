@@ -23,6 +23,7 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -57,6 +58,7 @@ constructor(
     // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
     private val notificationShadeWindowController: NotificationShadeWindowController,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : CoreStartable {
 
     private var root: EffectsWindowRoot? = null
@@ -105,6 +107,7 @@ constructor(
                         }
                     },
                     appZoomOutOptional = appZoomOutOptional,
+                    interactionJankMonitor = interactionJankMonitor,
                 )
             root?.let { rootView ->
                 runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
