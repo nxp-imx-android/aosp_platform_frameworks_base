@@ -89,6 +89,8 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
 import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 import com.android.wm.shell.splitscreen.StageTaskListener;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,6 +150,9 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
+
+    /** A haptics controller that plays haptic effects. */
+    private final MSDLPlayer mMSDLPlayer;
 
     private int mDividerWindowWidth;
     private int mDividerInsets;
@@ -215,7 +220,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             DisplayController displayController, DisplayImeController displayImeController,
             ShellTaskOrganizer taskOrganizer, int parallaxType, SplitState splitState,
             @ShellMainThread Handler handler, SplitStatusBarHider statusBarHider,
-            DesktopState desktopState) {
+            DesktopState desktopState, MSDLPlayer msdlPlayer) {
         mHandler = handler;
         mStatusBarHider = statusBarHider;
         mContext = context.createConfigurationContext(configuration);
@@ -234,6 +239,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mSurfaceEffectPolicy = new ResizingEffectPolicy(parallaxType, this);
         mSplitState = splitState;
         mDesktopState = desktopState;
+        mMSDLPlayer = msdlPlayer;
 
         final Resources res = mContext.getResources();
         mDimNonImeSide = res.getBoolean(R.bool.config_dimNonImeAttachedSide);
@@ -386,6 +392,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
     int getDividerPosition() {
         return mDividerPosition;
+    }
+
+    /** Returns the haptic player used in this class. */
+    public MSDLPlayer getHapticPlayer() {
+        return mMSDLPlayer;
     }
 
     /**

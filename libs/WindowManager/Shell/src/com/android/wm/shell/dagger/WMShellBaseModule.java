@@ -22,6 +22,7 @@ import static com.android.wm.shell.compatui.CompatUIStatusManager.COMPAT_UI_EDUC
 import static com.android.wm.shell.onehanded.OneHandedController.SUPPORT_ONE_HANDED_MODE;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -29,6 +30,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.UserManager;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.view.IWindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -147,12 +149,15 @@ import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandles;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import dagger.BindsOptionalOf;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 /**
  * Provides basic dependencies from {@link com.android.wm.shell}, these dependencies are only
@@ -242,6 +247,16 @@ public abstract class WMShellBaseModule {
             @ShellMainThread ShellExecutor mainExecutor) {
         return new TabletopModeController(
                 context, shellInit, postureController, displayController, mainExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    static MSDLPlayer provideMSDLPlayer(@Nullable Vibrator vibrator) {
+        return MSDLPlayer.Companion.createPlayer(
+                vibrator,
+                Executors.newSingleThreadExecutor(),
+                null /* useHapticFeedbackForToken */
+        );
     }
 
     @WMSingleton

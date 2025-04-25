@@ -192,6 +192,8 @@ import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationToolt
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
@@ -613,7 +615,8 @@ public abstract class WMShellModule {
             @ShellMainThread Handler mainHandler,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            IActivityTaskManager activityTaskManager,
+            MSDLPlayer msdlPlayer) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -640,7 +643,8 @@ public abstract class WMShellModule {
                 mainHandler,
                 rootDisplayAreaOrganizer,
                 desktopState,
-                activityTaskManager);
+                activityTaskManager,
+                msdlPlayer);
     }
 
     //

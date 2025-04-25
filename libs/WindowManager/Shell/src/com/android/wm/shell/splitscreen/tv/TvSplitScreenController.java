@@ -45,6 +45,8 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import java.util.Optional;
 
 /**
@@ -65,6 +67,7 @@ public class TvSplitScreenController extends SplitScreenController {
     private final Optional<RecentTasksController> mRecentTasksOptional;
     private final LaunchAdjacentController mLaunchAdjacentController;
     private final SplitState mSplitState;
+    private final MSDLPlayer mMSDLPlayer;
     private final RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
     private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
 
@@ -94,14 +97,15 @@ public class TvSplitScreenController extends SplitScreenController {
             SystemWindows systemWindows,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            IActivityTaskManager activityTaskManager,
+            MSDLPlayer msdlPlayer) {
         super(context, shellInit, shellCommandHandler, shellController, shellTaskOrganizer,
                 syncQueue, rootTDAOrganizer, displayController, displayImeController,
                 displayInsetsController, null, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, Optional.empty(),
                 Optional.empty(), null /* stageCoordinator */, multiInstanceHelper, splitState,
                 mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState,
-                activityTaskManager);
+                activityTaskManager, msdlPlayer);
 
         mTaskOrganizer = shellTaskOrganizer;
         mSyncQueue = syncQueue;
@@ -116,6 +120,7 @@ public class TvSplitScreenController extends SplitScreenController {
         mRecentTasksOptional = recentTasks;
         mLaunchAdjacentController = launchAdjacentController;
         mSplitState = splitState;
+        mMSDLPlayer = msdlPlayer;
 
         mMainHandler = mainHandler;
         mSystemWindows = systemWindows;
@@ -136,7 +141,7 @@ public class TvSplitScreenController extends SplitScreenController {
                 mIconProvider, mMainExecutor, mMainHandler,
                 mRecentTasksOptional, mLaunchAdjacentController, mSplitState, mSystemWindows,
                 mRootTDAOrganizer, mRootDisplayAreaOrganizer, getDesktopState(),
-                mActivityTaskManager);
+                mActivityTaskManager, mMSDLPlayer);
     }
 
 }
