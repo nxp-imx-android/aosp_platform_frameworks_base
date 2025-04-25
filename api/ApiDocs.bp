@@ -57,8 +57,8 @@ stubs_defaults {
 
         ":framework-adservices-sources",
         ":framework-appsearch-sources",
-        ":framework-connectivity-sources",
         ":framework-bluetooth-sources",
+        ":framework-connectivity-sources",
         ":framework-connectivity-tiramisu-updatable-sources",
         ":framework-graphics-srcs",
         ":framework-healthfitness-sources",
@@ -66,13 +66,13 @@ stubs_defaults {
         ":framework-nearby-sources",
         ":framework-nfc-updatable-sources",
         ":framework-ondevicepersonalization-sources",
-        ":framework-permission-sources",
         ":framework-permission-s-sources",
+        ":framework-permission-sources",
         ":framework-profiling-sources",
         ":framework-scheduling-sources",
         ":framework-sdkextensions-sources",
-        ":framework-statsd-sources",
         ":framework-sdksandbox-sources",
+        ":framework-statsd-sources",
         ":framework-tethering-srcs",
         ":framework-uwb-updatable-sources",
         ":framework-wifi-updatable-sources",
@@ -105,8 +105,8 @@ droidstubs {
         "module-classpath-stubs-defaults",
     ],
     flags: [
-        "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES\\)",
+        "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
     ],
     generate_stubs: false, // We're only using this module for the annotations.zip output, disable doc-stubs.
     write_sdk_values: false,
@@ -119,8 +119,8 @@ droidstubs {
         "module-classpath-stubs-defaults",
     ],
     flags: [
-        "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES\\)",
+        "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.SYSTEM_SERVER\\)",
     ],
     generate_stubs: false, // We're only using this module for the annotations.zip output, disable doc-stubs.
@@ -194,8 +194,8 @@ doc_defaults {
         "docs/html",
     ],
     knowntags: [
-        "docs/knowntags.txt",
         ":art.module.public.api{.doctags}",
+        "docs/knowntags.txt",
     ],
     custom_template: "droiddoc-templates-sdk",
     resourcesdir: "docs/html/reference/images/",
@@ -203,15 +203,15 @@ doc_defaults {
     lint_baseline: "javadoc-lint-baseline",
     flags: [
         "-android",
+        "-lerror",
         "-manifest $(location :frameworks-base-core-AndroidManifest.xml)",
         "-metalavaApiSince",
-        "-werror",
-        "-lerror",
         "-overview $(location :frameworks-base-java-overview)",
         // Federate Support Library references against local API file.
         "-federate SupportLib https://developer.android.com",
         "-federationapi SupportLib $(location :current-support-api)",
         // Federate Support Library references against local API file.
+        "-werror",
         "-federate AndroidX https://developer.android.com",
         "-federationapi AndroidX $(location :current-androidx-api)",
         // doclava contains checks for a few issues that are have been migrated to metalava.
@@ -227,16 +227,16 @@ doc_defaults {
     hdf: [
         "dac true",
         "sdk.codename O",
-        "sdk.preview.version 1",
-        "sdk.version 7.0",
-        "sdk.rel.id 1",
         "sdk.preview 0",
+        "sdk.preview.version 1",
+        "sdk.rel.id 1",
+        "sdk.version 7.0",
     ],
     arg_files: [
+        ":current-androidx-api",
+        ":current-support-api",
         ":frameworks-base-core-AndroidManifest.xml",
         ":frameworks-base-java-overview",
-        ":current-support-api",
-        ":current-androidx-api",
     ],
     // TODO(b/169090544): remove below aidl includes.
     aidl: {
@@ -281,8 +281,8 @@ droiddoc {
     proofread_file: "offline-sdk-referenceonly-docs-proofread.txt",
     flags: [
         "-offlinemode",
-        "-title \"Android SDK\"",
         "-referenceonly",
+        "-title \"Android SDK\"",
     ],
     static_doc_index_redirect: "docs/docs-documentation-redirect.html",
     static_doc_properties: "docs/source.properties",
@@ -306,8 +306,8 @@ droiddoc {
         "-hide 104",
         "-hide 108",
         "-offlinemode",
-        "-title \"Android System SDK\"",
         "-referenceonly",
+        "-title \"Android System SDK\"",
     ],
     static_doc_index_redirect: "docs/docs-documentation-redirect.html",
     static_doc_properties: "docs/source.properties",
@@ -320,13 +320,13 @@ droiddoc {
         ":framework-doc-stubs{.exportable}",
     ],
     hdf: [
-        "android.whichdoc online",
         "android.hasSamples true",
+        "android.whichdoc online",
     ],
     proofread_file: "ds-docs-proofread.txt",
     flags: [
         " -toroot /",
-        "-yamlV2",
+        "-devsite",
         "-samplegroup Admin",
         "-samplegroup Background",
         "-samplegroup Connectivity",
@@ -342,9 +342,8 @@ droiddoc {
         "-samplegroup UI",
         "-samplegroup Views",
         "-samplegroup Wearable",
-        "-devsite",
-        "-samplesdir",
-        "development/samples/browseable",
+        "-samplesdir development/samples/browseable",
+        "-yamlV2",
     ],
 }
 
@@ -354,8 +353,8 @@ droiddoc {
         ":framework-doc-stubs{.exportable}",
     ],
     flags: [
-        "-noJdkLink",
         "-links https://kotlinlang.org/api/latest/jvm/stdlib/^external/dokka/package-list",
+        "-noJdkLink",
         "-noStdlibLink",
     ],
     proofread_file: "ds-dokka-proofread.txt",
@@ -365,8 +364,8 @@ droiddoc {
 java_genrule {
     name: "ds-docs",
     tools: [
-        "zip2zip",
         "merge_zips",
+        "zip2zip",
     ],
     srcs: [
         ":ds-docs-java{.docs.zip}",
@@ -383,8 +382,8 @@ java_genrule {
 java_genrule {
     name: "ds-docs-switched",
     tools: [
-        "switcher4",
         "soong_zip",
+        "switcher4",
     ],
     srcs: [
         ":ds-docs-java{.docs.zip}",
@@ -411,10 +410,10 @@ droiddoc {
         "android.whichdoc online",
     ],
     flags: [
-        "-staticonly",
-        "-toroot /",
         "-devsite",
         "-ignoreJdLinks",
+        "-staticonly",
+        "-toroot /",
     ],
 }
 
@@ -428,8 +427,8 @@ droiddoc {
         "android.whichdoc online",
     ],
     flags: [
-        "-toroot /",
         "-atLinksNavtree",
         "-navtreeonly",
+        "-toroot /",
     ],
 }
