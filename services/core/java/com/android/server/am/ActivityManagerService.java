@@ -16091,6 +16091,59 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * Dump the bitmaps for processes
+     *
+     * @param fd The FileDescriptor to dump it into
+     * @throws RemoteException
+     */
+    @Override
+    @NeverCompile // Avoid size overhead of debugging code.
+    public void dumpBitmapsProto(ParcelFileDescriptor fd, String[] processes, int userId,
+                            boolean allPkgs, String dumpFormat) {
+        ProtoOutputStream proto = new ProtoOutputStream(fd.getFileDescriptor());
+        final ArrayList<ProcessRecord> procs = collectProcesses(null, 0, allPkgs, processes);
+        if (procs == null) {
+            return;
+        }
+
+        try {
+            mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+
+            for (int i = procs.size() - 1; i >= 0; i--) {
+                ProcessRecord r = procs.get(i);
+                final int pid = r.getPid();
+                final IApplicationThread thread = r.getThread();
+                if (thread == null) {
+                    continue;
+                }
+                try {
+                    if (pid == Process.myPid()) {
+                        // Directly dump to target proto for local dump to avoid hang.
+                        final long token = proto.start(BitmapDumpProto.APP_BITMAPS);
+                        ActivityThread.dumpBitmapsProto(proto, pid, r.processName, dumpFormat);
+                        proto.end(token);
+                        continue;
+                    }
+                    ByteTransferPipe tp = new ByteTransferPipe();
+                    try {
+                        thread.dumpBitmapsProto(tp.getWriteFd(), dumpFormat);
+                        proto.write(BitmapDumpProto.APP_BITMAPS, tp.get());
+                    } finally {
+                        tp.kill();
+                    }
+                } catch (IOException e) {
+                    Slog.e(TAG, "Failed to dump bitmaps from app " + r + ": " + e);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to dump bitmaps from app " + r + ": " + e);
+                }
+            }
+        } finally {
+            mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+            proto.flush();
+        }
+    }
+
     @Override
     public void setDumpHeapDebugLimit(String processName, int uid, long maxMemSize,
             String reportPackage) {

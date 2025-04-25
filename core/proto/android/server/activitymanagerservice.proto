@@ -1067,3 +1067,31 @@ message AppsStartInfoProto {
     optional int64 monotonic_time = 3;
 }
 // LINT.ThenChange(/services/core/java/com/android/server/am/AppStartInfoTracker.java)
+
+message BitmapDumpProto {
+    option (.android.msg_privacy).dest = DEST_AUTOMATIC;
+
+    message AppBitmapInfo {
+        option (.android.msg_privacy).dest = DEST_AUTOMATIC;
+
+        optional int32 pid = 1;
+        optional string process_name = 2;
+
+        message BitmapInfo {
+            option (.android.msg_privacy).dest = DEST_AUTOMATIC;
+
+            optional int64 id = 1;
+            optional int32 width = 2;
+            optional int32 height = 3;
+            optional int32 size = 4;
+            optional bool mutable = 5;
+            optional int32 config = 6;
+            optional int64 source = 7;
+            optional bytes content = 8;
+        }
+
+        repeated BitmapInfo bitmaps = 3;
+    }
+
+    repeated AppBitmapInfo app_bitmaps = 1;
+}
