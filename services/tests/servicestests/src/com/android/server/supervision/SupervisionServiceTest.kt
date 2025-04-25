@@ -414,6 +414,29 @@ class SupervisionServiceTest {
         assertThat(service.supervisionRecoveryInfo.id).isEqualTo(recoveryInfo.id)
     }
 
+    @Test
+    fun hasSupervisionCredentials() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
+
+        assertThat(service.hasSupervisionCredentials()).isTrue()
+    }
+
+    @Test
+    fun hasSupervisionCredentials_noSupervisingUser_returnsFalse() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
+
+        assertThat(service.hasSupervisionCredentials()).isFalse()
+    }
+
+    @Test
+    fun hasSupervisionCredentials_supervisingUserMissingSecureLock_returnsFalse() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
+
+        assertThat(service.hasSupervisionCredentials()).isFalse()
+    }
+
     private val systemSupervisionPackage: String
         get() = context.getResources().getString(R.string.config_systemSupervision)
 

@@ -198,19 +198,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
-        if (!isSupervisionEnabledForUser(userId)) {
+        if (!isSupervisionEnabledForUser(userId) || !hasSupervisionCredentials()) {
             return null;
-        }
-        // Verify the supervising user profile exists and has a secure credential set.
-        final int supervisingUserId = mInjector.getUserManagerInternal().getSupervisingProfileId();
-        final long token = Binder.clearCallingIdentity();
-        try {
-            if (supervisingUserId == UserHandle.USER_NULL
-                    || !mInjector.getKeyguardManager().isDeviceSecure(supervisingUserId)) {
-                return null;
-            }
-        } finally {
-            Binder.restoreCallingIdentity(token);
         }
         final Intent intent = new Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS);
         // explicitly set the package for security
@@ -247,6 +236,24 @@ public class SupervisionService extends ISupervisionManager.Stub {
             }
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean hasSupervisionCredentials() {
+        enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
+
+        // Verify the supervising user profile exists and has a secure credential set.
+        final int supervisingUserId = mInjector.getUserManagerInternal().getSupervisingProfileId();
+        final long token = Binder.clearCallingIdentity();
+        try {
+            if (supervisingUserId == UserHandle.USER_NULL
+                    || !mInjector.getKeyguardManager().isDeviceSecure(supervisingUserId)) {
+                return false;
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
         return true;
     }
 
