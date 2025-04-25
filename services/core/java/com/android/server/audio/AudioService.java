@@ -10020,17 +10020,25 @@ public class AudioService extends IAudioService.Stub
                             }
                         }
                     }
-                    // Mirror changes in SPEAKER ringtone volume on SCO when
-                    if (changed && mStreamType == AudioSystem.STREAM_RING
-                            && device == AudioSystem.DEVICE_OUT_SPEAKER) {
-                        for (int i = 0; i < mIndexMap.size(); i++) {
-                            int otherDevice = mIndexMap.keyAt(i);
-                            if (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)) {
-                                mIndexMap.put(otherDevice, index);
+
+                    if (changed) {
+                        // Mirror changes in SPEAKER ringtone volume on SCO
+                        if (mStreamType == AudioSystem.STREAM_RING
+                                && device == AudioSystem.DEVICE_OUT_SPEAKER) {
+                            for (int i = 0; i < mIndexMap.size(); i++) {
+                                int otherDevice = mIndexMap.keyAt(i);
+                                if (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)) {
+                                    mIndexMap.put(otherDevice, index);
+                                }
                             }
                         }
-                    }
-                    if (changed) {
+                        // Mirror BLE unicast headset and broadcast volume changes
+                        if (device == AudioSystem.DEVICE_OUT_BLE_HEADSET) {
+                            mIndexMap.put(AudioSystem.DEVICE_OUT_BLE_BROADCAST, index);
+                        } else if (device == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                            mIndexMap.put(AudioSystem.DEVICE_OUT_BLE_HEADSET, index);
+                        }
+
                         // If associated to volume group, update group cache
                         updateVolumeGroupIndex(device, /* forceMuteState= */ false);
 
