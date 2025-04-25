@@ -113,6 +113,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
+    private int mCursorAreaSize;
     private final int mUserId;
 
     // The position where scroll actually happens.
@@ -348,6 +349,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mAutoclickSettingsObserver = null;
         }
         if (mClickScheduler != null) {
+            // Log the current autoclick settings state (delay, cursor size etc.)
+            AutoclickLogger.logAutoclickSettingsState(
+                    mClickScheduler.mDelay,
+                    mCursorAreaSize,
+                    mClickScheduler.mIgnoreMinorCursorMovement,
+                    mClickScheduler.mRevertToLeftClick);
             mClickScheduler.cancel();
             mClickScheduler = null;
         }
@@ -787,7 +794,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         // Cursor area size corresponds to the ring indicator radius size.
         public void updateCursorAreaSize(int size) {
-            mAutoclickIndicatorView.setRadius(size);
+            mCursorAreaSize = size;
+            mAutoclickIndicatorView.setRadius(mCursorAreaSize);
         }
     }
 
