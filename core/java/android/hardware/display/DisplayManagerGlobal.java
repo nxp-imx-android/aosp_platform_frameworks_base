@@ -62,6 +62,7 @@ import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.display.feature.flags.Flags;
@@ -1435,7 +1436,7 @@ public final class DisplayManagerGlobal {
     @RequiresPermission(MANAGE_DISPLAYS)
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener, String packageName) {
-        if (!Flags.displayTopology()) {
+        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
             return;
         }
         if (listener == null) {
@@ -1461,7 +1462,7 @@ public final class DisplayManagerGlobal {
      */
     @RequiresPermission(MANAGE_DISPLAYS)
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
-        if (!Flags.displayTopology()) {
+        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
             return;
         }
         if (listener == null) {
