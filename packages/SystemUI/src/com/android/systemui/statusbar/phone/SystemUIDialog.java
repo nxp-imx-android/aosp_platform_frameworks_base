@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.phone;
 
-import static com.android.systemui.Flags.spatialModelAppPushback;
+import static com.android.systemui.Flags.moveTransitionAnimationLayer;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -294,7 +294,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                         () -> targetView.getResources().getDisplayMetrics())
         );
 
-        if (spatialModelAppPushback()) {
+        if (moveTransitionAnimationLayer()) {
             // Elevation doesn't seem to be useful anymore (there are no more shadows below
             // dialogs), and it creates a weird flickering behavior due to some obscure Window
             // Manager treatment. See b/404508609#comment3 for more details.
