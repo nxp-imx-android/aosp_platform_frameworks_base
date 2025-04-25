@@ -433,10 +433,13 @@ public class TaskViewTest extends ShellTestCase {
         mTaskViewTransitions.prepareOpenAnimation(mTaskViewTaskController, true /* newTask */,
                 new SurfaceControl.Transaction(), new SurfaceControl.Transaction(), mTaskInfo,
                 mLeash, wct);
+        final SurfaceControl taskLeash = mTaskViewTaskController.getTaskLeash();
         mTaskView.surfaceCreated(mock(SurfaceHolder.class));
         mTaskViewTaskController.prepareCloseAnimation();
 
         verify(mViewListener).onTaskRemovalStarted(eq(mTaskInfo.taskId));
+        assertThat(mTaskViewTaskController.getTaskLeash()).isNull();
+        assertThat(taskLeash.isValid()).isFalse();
     }
 
     @Test
@@ -584,6 +587,15 @@ public class TaskViewTest extends ShellTestCase {
                     eq(true));
             verify(mTaskViewTransitions).updateBoundsState(eq(mTaskViewTaskController), eq(bounds));
         }
+    }
+
+    @Test
+    public void testPrepareOpenAnimation_copiesLeash() {
+        mTaskViewTransitions.prepareOpenAnimation(mTaskViewTaskController, true /* newTask */,
+                new SurfaceControl.Transaction(), new SurfaceControl.Transaction(), mTaskInfo,
+                mLeash, new WindowContainerTransaction());
+
+        assertThat(mTaskViewTaskController.getTaskLeash()).isNotEqualTo(mLeash);
     }
 
     @Test
