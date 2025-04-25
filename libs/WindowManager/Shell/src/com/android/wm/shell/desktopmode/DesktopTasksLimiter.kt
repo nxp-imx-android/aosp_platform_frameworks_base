@@ -20,6 +20,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.os.IBinder
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
@@ -154,15 +155,42 @@ class DesktopTasksLimiter(
         ) {
             val launchDetails = pendingTaskLimitTransitionTokens.remove(transition) ?: return
             logV("handleTaskLimitTransitionReady, transition=$transition, info=$info")
+            markClosingTasks(taskRepository, info, launchDetails)
             transitions.runOnIdle {
                 val expandedTaskIds =
-                    taskRepository.getExpandedTasksIdsInDeskOrdered(launchDetails.deskId)
-                logV("runOnIdle, expandedTasks=$expandedTaskIds")
+                    taskRepository.getExpandedTasksIdsInDeskOrdered(launchDetails.deskId).filter {
+                        !taskRepository.isClosingTask(it)
+                    }
+                logV("runOnIdle, expandedTasks=$expandedTaskIds, after transition=$transition")
                 val taskIdToMinimize =
                     getTaskIdToMinimize(expandedTaskIds, /* launchingNewIntent= */ false)
                 if (taskIdToMinimize != null) {
                     triggerMinimizeTransition(launchDetails.deskId, taskIdToMinimize)
                 }
+            }
+        }
+
+        private fun markClosingTasks(
+            taskRepository: DesktopRepository,
+            info: TransitionInfo,
+            launchDetails: LaunchDetails,
+        ) {
+            // markClosingTasks() is a workaround while
+            // ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS is ramping up, so don't run this
+            // logic when that flag has been enabled.
+            if (DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
+                return
+            }
+            info.changes.forEach { change ->
+                val taskInfo = change.taskInfo ?: return@forEach
+                if (change.mode != TRANSIT_CLOSE || !taskInfo.isFreeform) {
+                    return@forEach
+                }
+                taskRepository.addClosingTask(
+                    taskInfo.displayId,
+                    launchDetails.deskId,
+                    taskInfo.taskId,
+                )
             }
         }
 
