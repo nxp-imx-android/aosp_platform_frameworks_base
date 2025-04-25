@@ -14689,7 +14689,8 @@ package android.telecom {
 
   public final class Call {
     method @Deprecated public void addListener(android.telecom.Call.Listener);
-    method public void enterBackgroundAudioProcessing();
+    method @Deprecated @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public void enterBackgroundAudioProcessing();
+    method @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public void enterBackgroundAudioProcessing(int);
     method public void exitBackgroundAudioProcessing(boolean);
     method @Deprecated public void removeListener(android.telecom.Call.Listener);
     field @Deprecated public static final int STATE_PRE_DIAL_WAIT = 8; // 0x8

@@ -73,6 +73,7 @@ public final class ParcelableCall implements Parcelable {
         private String mActiveChildCallId;
         private Uri mContactPhotoUri;
         private UserHandle mAssociatedUser;
+        private int mAudioProcessingUseCase;
 
         public ParcelableCallBuilder setId(String id) {
             mId = id;
@@ -238,6 +239,11 @@ public final class ParcelableCall implements Parcelable {
             return this;
         }
 
+        public ParcelableCallBuilder setAudioProcessingUseCase(int useCase) {
+            mAudioProcessingUseCase = useCase;
+            return this;
+        }
+
         public ParcelableCall createParcelableCall() {
             return new ParcelableCall(
                     mId,
@@ -271,7 +277,8 @@ public final class ParcelableCall implements Parcelable {
                     mContactDisplayName,
                     mActiveChildCallId,
                     mContactPhotoUri,
-                    mAssociatedUser);
+                    mAssociatedUser,
+                    mAudioProcessingUseCase);
         }
 
         public static ParcelableCallBuilder fromParcelableCall(ParcelableCall parcelableCall) {
@@ -310,6 +317,7 @@ public final class ParcelableCall implements Parcelable {
             newBuilder.mActiveChildCallId = parcelableCall.mActiveChildCallId;
             newBuilder.mContactPhotoUri = parcelableCall.mContactPhotoUri;
             newBuilder.mAssociatedUser = parcelableCall.mAssociatedUser;
+            newBuilder.mAudioProcessingUseCase = parcelableCall.mAudioProcessingUseCase;
             return newBuilder;
         }
     }
@@ -347,6 +355,7 @@ public final class ParcelableCall implements Parcelable {
     private final String mActiveChildCallId; // Only valid for CDMA conferences
     private final Uri mContactPhotoUri;
     private final UserHandle mAssociatedUser;
+    private final int mAudioProcessingUseCase;
 
     public ParcelableCall(
             String id,
@@ -380,7 +389,8 @@ public final class ParcelableCall implements Parcelable {
             String contactDisplayName,
             String activeChildCallId,
             Uri contactPhotoUri,
-            UserHandle associatedUser
+            UserHandle associatedUser,
+            int audioProcessingUseCase
     ) {
         mId = id;
         mState = state;
@@ -414,6 +424,7 @@ public final class ParcelableCall implements Parcelable {
         mActiveChildCallId = activeChildCallId;
         mContactPhotoUri = contactPhotoUri;
         mAssociatedUser = associatedUser;
+        mAudioProcessingUseCase = audioProcessingUseCase;
     }
 
     /** The unique ID of the call. */
@@ -653,6 +664,11 @@ public final class ParcelableCall implements Parcelable {
         return mActiveChildCallId;
     }
 
+    public @Call.AudioProcessingUseCase int getAudioProcessingUseCase() {
+        return mAudioProcessingUseCase;
+    }
+
+
     /** Responsible for creating ParcelableCall objects for deserialized Parcels. */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static final @android.annotation.NonNull Parcelable.Creator<ParcelableCall> CREATOR =
@@ -696,6 +712,7 @@ public final class ParcelableCall implements Parcelable {
             String activeChildCallId = source.readString();
             Uri contactPhotoUri = source.readParcelable(classLoader, Uri.class);
             UserHandle associatedUser = source.readParcelable(classLoader, UserHandle.class);
+            int audioProcessingUseCase = source.readInt();
             return new ParcelableCallBuilder()
                     .setId(id)
                     .setState(state)
@@ -729,6 +746,7 @@ public final class ParcelableCall implements Parcelable {
                     .setActiveChildCallId(activeChildCallId)
                     .setContactPhotoUri(contactPhotoUri)
                     .setAssociatedUser(associatedUser)
+                    .setAudioProcessingUseCase(audioProcessingUseCase)
                     .createParcelableCall();
         }
 
@@ -780,6 +798,7 @@ public final class ParcelableCall implements Parcelable {
         destination.writeString(mActiveChildCallId);
         destination.writeParcelable(mContactPhotoUri, 0);
         destination.writeParcelable(mAssociatedUser, 0);
+        destination.writeInt(mAudioProcessingUseCase);
     }
 
     @Override

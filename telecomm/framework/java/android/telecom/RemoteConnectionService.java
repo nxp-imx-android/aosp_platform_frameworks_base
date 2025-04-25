@@ -529,6 +529,16 @@ final class RemoteConnectionService {
                 ResultReceiver callback, Session.Info sessionInfo) {
             // Do nothing
         }
+
+        @Override
+        public void setAudioProcessing(String callId, Session.Info sessionInfo, int useCase) {
+            // Do nothing
+        }
+
+        @Override
+        public void setSimulatedRinging(String callId, Session.Info sessionInfo) {
+            // Do nothing
+        }
     };
 
     private final ConnectionServiceAdapterServant mServant =

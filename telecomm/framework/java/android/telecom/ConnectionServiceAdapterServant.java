@@ -747,6 +747,16 @@ final class ConnectionServiceAdapterServant {
             args.arg5 = sessionInfo;
             mHandler.obtainMessage(MSG_QUERY_LOCATION, args).sendToTarget();
         }
+
+        @Override
+        public void setAudioProcessing(String callId, Session.Info sessionInfo, int useCase) {
+            // Do nothing
+        }
+
+        @Override
+        public void setSimulatedRinging(String callId, Session.Info sessionInfo) {
+            // Do nothing
+        }
     };
 
     public ConnectionServiceAdapterServant(IConnectionServiceAdapter delegate) {

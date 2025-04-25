@@ -54,7 +54,7 @@ oneway interface IInCallAdapter {
 
     void requestCallEndpointChange(in CallEndpoint endpoint, in ResultReceiver callback);
 
-    void enterBackgroundAudioProcessing(String callId);
+    void enterBackgroundAudioProcessing(String callId, int useCase);
 
     void exitBackgroundAudioProcessing(String callId, boolean shouldRing);
 

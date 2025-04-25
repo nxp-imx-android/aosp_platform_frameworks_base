@@ -43864,6 +43864,7 @@ package android.telecom {
     method public void conference(android.telecom.Call);
     method public void deflect(android.net.Uri);
     method public void disconnect();
+    method @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public int getAudioProcessingUseCase();
     method public java.util.List<java.lang.String> getCannedTextResponses();
     method public java.util.List<android.telecom.Call> getChildren();
     method public java.util.List<android.telecom.Call> getConferenceableCalls();
@@ -43898,6 +43899,10 @@ package android.telecom {
     method public void swapConference();
     method public void unhold();
     method public void unregisterCallback(android.telecom.Call.Callback);
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int AUDIO_PROCESSING_USE_CASE_ASK_TO_HOLD = 3; // 0x3
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int AUDIO_PROCESSING_USE_CASE_CALL_SCREENING = 2; // 0x2
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int AUDIO_PROCESSING_USE_CASE_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int AUDIO_PROCESSING_USE_CASE_VOICEMAIL = 1; // 0x1
     field @Deprecated public static final String AVAILABLE_PHONE_ACCOUNTS = "selectPhoneAccountAccounts";
     field public static final String EVENT_CLEAR_DIAGNOSTIC_MESSAGE = "android.telecom.event.CLEAR_DIAGNOSTIC_MESSAGE";
     field public static final String EVENT_DISPLAY_DIAGNOSTIC_MESSAGE = "android.telecom.event.DISPLAY_DIAGNOSTIC_MESSAGE";
@@ -44268,6 +44273,7 @@ package android.telecom {
     method public final android.net.Uri getAddress();
     method public final int getAddressPresentation();
     method public final boolean getAudioModeIsVoip();
+    method @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public final int getAudioProcessingUseCase();
     method @Deprecated public final android.telecom.CallAudioState getCallAudioState();
     method public final String getCallerDisplayName();
     method public final int getCallerDisplayNamePresentation();
@@ -44331,6 +44337,7 @@ package android.telecom {
     method public final void setActive();
     method public final void setAddress(android.net.Uri, int);
     method public final void setAudioModeIsVoip(boolean);
+    method @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public final void setAudioProcessing(int);
     method @Deprecated public final void setAudioRoute(int);
     method public final void setCallerDisplayName(String, int);
     method public final void setCallerNumberVerificationStatus(int);
@@ -44349,6 +44356,7 @@ package android.telecom {
     method public final void setPulling();
     method public final void setRingbackRequested(boolean);
     method public final void setRinging();
+    method @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public final void setSimulatedRinging();
     method public final void setStatusHints(android.telecom.StatusHints);
     method public final void setVideoProvider(android.telecom.Connection.VideoProvider);
     method public final void setVideoState(int);
@@ -44432,6 +44440,7 @@ package android.telecom {
     field public static final int PROPERTY_SELF_MANAGED = 128; // 0x80
     field public static final int PROPERTY_WIFI = 8; // 0x8
     field public static final int STATE_ACTIVE = 4; // 0x4
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int STATE_AUDIO_PROCESSING = 8; // 0x8
     field public static final int STATE_DIALING = 3; // 0x3
     field public static final int STATE_DISCONNECTED = 6; // 0x6
     field public static final int STATE_HOLDING = 5; // 0x5
@@ -44439,6 +44448,7 @@ package android.telecom {
     field public static final int STATE_NEW = 1; // 0x1
     field public static final int STATE_PULLING_CALL = 7; // 0x7
     field public static final int STATE_RINGING = 2; // 0x2
+    field @FlaggedApi("com.android.server.telecom.flags.enable_audio_processing_use_case") public static final int STATE_SIMULATED_RINGING = 9; // 0x9
     field public static final int VERIFICATION_STATUS_FAILED = 2; // 0x2
     field public static final int VERIFICATION_STATUS_NOT_VERIFIED = 0; // 0x0
     field public static final int VERIFICATION_STATUS_PASSED = 1; // 0x1

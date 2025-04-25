@@ -198,9 +198,9 @@ public final class InCallAdapter {
     /**
      * @see Call#enterBackgroundAudioProcessing()
      */
-    public void enterBackgroundAudioProcessing(String callId) {
+    public void enterBackgroundAudioProcessing(String callId, int useCase) {
         try {
-            mAdapter.enterBackgroundAudioProcessing(callId);
+            mAdapter.enterBackgroundAudioProcessing(callId, useCase);
         } catch (RemoteException e) {
         }
     }
