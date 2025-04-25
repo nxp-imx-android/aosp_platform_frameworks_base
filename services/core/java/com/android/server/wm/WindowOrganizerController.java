@@ -1496,7 +1496,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 container.addLocalInsetsFrameProvider(
-                        hop.getInsetsFrameProvider(), hop.getInsetsFrameOwner());
+                        hop.getInsetsFrameProvider(), hop.getCaller());
                 break;
             }
             case HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER: {
@@ -1507,7 +1507,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 container.removeLocalInsetsFrameProvider(
-                        hop.getInsetsFrameProvider(), hop.getInsetsFrameOwner());
+                        hop.getInsetsFrameProvider(), hop.getCaller());
                 break;
             }
             case HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP: {
@@ -1602,6 +1602,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 if (container instanceof DisplayContent displayContent) {
                     displayContent.getDisplayPolicy().setSystemBarVisibilityOverride(
+                            hop.getCaller(),
                             hop.getForciblyShowingInsetsTypes(),
                             hop.getForciblyHidingInsetsTypes());
                 } else {

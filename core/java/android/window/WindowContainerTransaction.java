@@ -276,6 +276,7 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction setSystemBarVisibilityOverride(
             @NonNull WindowContainerToken display,
+            @NonNull IBinder caller,
             @InsetsType int forciblyShowingInsetsTypes,
             @InsetsType int forciblyHidingInsetsTypes) {
         final int forciblyShowingAndHidingTypes =
@@ -288,6 +289,7 @@ public final class WindowContainerTransaction implements Parcelable {
         final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
                 HierarchyOp.HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE)
                 .setContainer(display.asBinder())
+                .setCaller(caller)
                 .setSystemBarVisibilityOverride(
                         forciblyShowingInsetsTypes, forciblyHidingInsetsTypes)
                 .build();
@@ -966,7 +968,7 @@ public final class WindowContainerTransaction implements Parcelable {
                                 .setArbitraryRectangle(frame)
                                 .setBoundingRects(boundingRects)
                                 .setFlags(flags))
-                        .setInsetsFrameOwner(owner)
+                        .setCaller(owner)
                         .build();
         mHierarchyOps.add(hierarchyOp);
         return this;
@@ -990,7 +992,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER)
                         .setContainer(receiver.asBinder())
                         .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type))
-                        .setInsetsFrameOwner(owner)
+                        .setCaller(owner)
                         .build();
         mHierarchyOps.add(hierarchyOp);
         return this;
@@ -1819,7 +1821,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private InsetsFrameProvider mInsetsFrameProvider;
 
         @Nullable
-        private IBinder mInsetsFrameOwner;
+        private IBinder mCaller;
 
         // Moves/reparents to top of parent when {@code true}, otherwise moves/reparents to bottom.
         private boolean mToTop;
@@ -2062,7 +2064,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mIncludingParents = copy.mIncludingParents;
             mReparent = copy.mReparent;
             mInsetsFrameProvider = copy.mInsetsFrameProvider;
-            mInsetsFrameOwner = copy.mInsetsFrameOwner;
+            mCaller = copy.mCaller;
             mToTop = copy.mToTop;
             mReparentTopOnly = copy.mReparentTopOnly;
             mWindowingModes = copy.mWindowingModes;
@@ -2092,7 +2094,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mIncludingParents = in.readBoolean();
             mReparent = in.readStrongBinder();
             mInsetsFrameProvider = in.readTypedObject(InsetsFrameProvider.CREATOR);
-            mInsetsFrameOwner = in.readStrongBinder();
+            mCaller = in.readStrongBinder();
             mToTop = in.readBoolean();
             mReparentTopOnly = in.readBoolean();
             mWindowingModes = in.createIntArray();
@@ -2134,8 +2136,8 @@ public final class WindowContainerTransaction implements Parcelable {
         }
 
         @Nullable
-        public IBinder getInsetsFrameOwner() {
-            return mInsetsFrameOwner;
+        public IBinder getCaller() {
+            return mCaller;
         }
 
         @NonNull
@@ -2344,7 +2346,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER:
                     sb.append("container=").append(mContainer)
                             .append(" provider=").append(mInsetsFrameProvider)
-                            .append(" owner=").append(mInsetsFrameOwner);
+                            .append(" caller=").append(mCaller);
                     break;
                 case HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP:
                     sb.append("container=").append(mContainer)
@@ -2391,6 +2393,7 @@ public final class WindowContainerTransaction implements Parcelable {
                     break;
                 case HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE:
                     sb.append(" container=").append(mContainer)
+                            .append(" caller=").append(mCaller)
                             .append(" mForciblyShowingInsetsTypes=")
                             .append(WindowInsets.Type.toString(mForciblyShowingInsetsTypes))
                             .append(" mForciblyHidingInsetsTypes=")
@@ -2415,7 +2418,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mIncludingParents);
             dest.writeStrongBinder(mReparent);
             dest.writeTypedObject(mInsetsFrameProvider, flags);
-            dest.writeStrongBinder(mInsetsFrameOwner);
+            dest.writeStrongBinder(mCaller);
             dest.writeBoolean(mToTop);
             dest.writeBoolean(mReparentTopOnly);
             dest.writeIntArray(mWindowingModes);
@@ -2472,7 +2475,7 @@ public final class WindowContainerTransaction implements Parcelable {
             private InsetsFrameProvider mInsetsFrameProvider;
 
             @Nullable
-            private IBinder mInsetsFrameOwner;
+            private IBinder mCaller;
 
             private boolean mToTop;
 
@@ -2550,8 +2553,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
-            Builder setInsetsFrameOwner(@Nullable IBinder owner) {
-                mInsetsFrameOwner = owner;
+            Builder setCaller(@Nullable IBinder caller) {
+                mCaller = caller;
                 return this;
             }
 
@@ -2673,7 +2676,7 @@ public final class WindowContainerTransaction implements Parcelable {
                         ? Arrays.copyOf(mActivityTypes, mActivityTypes.length)
                         : null;
                 hierarchyOp.mInsetsFrameProvider = mInsetsFrameProvider;
-                hierarchyOp.mInsetsFrameOwner = mInsetsFrameOwner;
+                hierarchyOp.mCaller = mCaller;
                 hierarchyOp.mToTop = mToTop;
                 hierarchyOp.mReparentTopOnly = mReparentTopOnly;
                 hierarchyOp.mLaunchOptions = mLaunchOptions;
