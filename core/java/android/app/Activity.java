@@ -10081,6 +10081,38 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
+     * Retrieves {@link HandoffActivityData} representing this activity, allowing it to be recreated
+     * on another device owned by the user.
+     *
+     * The system automatically handles calling #onHandoffActivityDataRequested. This will only be
+     * called if {@link #isHandoffEnabled} is {@code true} for this activity.
+     *
+     * If {@link #isHandoffEnabled} is {@code true}, the activity is expected to return a non-null
+     * value. Returning {@code null} will present an error to the user indicating Handoff
+     * unexpectedly failed.
+     *
+     * If the current activity is in the foreground on the current device, the app's icon
+     * representing this activity will be shown on other nearby devices owned
+     * by the user. If the user selects this icon, the system will call this method
+     * to retrieve the data needed to recreate this activity on another device.
+     *
+     * When this activity is stopped, the system will call this method
+     * to retrieve {@link HandoffActivityData} for caching. This allows the user
+     * to hand this activity off to another device even if it is not currently
+     * running. In these situations, {@link HandoffActivityDataRequestInfo#isActiveRequest}
+     * will be {@code false}.
+     *
+     * @param requestInfo the request info for the activity data.
+     * @return the activity data for handoff.
+     */
+    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Nullable
+    public HandoffActivityData onHandoffActivityDataRequested(
+        @NonNull HandoffActivityDataRequestInfo requestInfo) {
+      return null;
+    }
+
+    /**
      * Interface for observing screen captures of an {@link Activity}.
      */
     public interface ScreenCaptureCallback {

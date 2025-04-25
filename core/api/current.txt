@@ -4592,6 +4592,7 @@ package android.app {
     method public void onEnterAnimationComplete();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
     method public void onGetDirectActions(@NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.List<android.app.DirectAction>>);
+    method @FlaggedApi("android.companion.enable_task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
     method public boolean onKeyDown(int, android.view.KeyEvent);
     method public boolean onKeyLongPress(int, android.view.KeyEvent);
     method public boolean onKeyMultiple(int, int, android.view.KeyEvent);
@@ -6182,6 +6183,27 @@ package android.app {
     method public int getApplicationGrammaticalGender();
     method @FlaggedApi("android.app.system_terms_of_address_enabled") @RequiresPermission("android.permission.READ_SYSTEM_GRAMMATICAL_GENDER") public int getSystemGrammaticalGender();
     method public void setRequestedApplicationGrammaticalGender(int);
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.content.ComponentName getComponentName();
+    method @NonNull public android.os.PersistableBundle getExtras();
+    method @Nullable public android.net.Uri getFallbackUri();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityData> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public static final class HandoffActivityData.Builder {
+    ctor public HandoffActivityData.Builder(@NonNull android.content.ComponentName);
+    method @NonNull public android.app.HandoffActivityData build();
+    method @NonNull public android.app.HandoffActivityData.Builder setExtras(@NonNull android.os.PersistableBundle);
+    method @NonNull public android.app.HandoffActivityData.Builder setFallbackUri(@Nullable android.net.Uri);
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityDataRequestInfo {
+    ctor public HandoffActivityDataRequestInfo(boolean);
+    method public boolean isActiveRequest();
   }
 
   public class Instrumentation {
