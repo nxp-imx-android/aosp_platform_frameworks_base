@@ -142,9 +142,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * If an ACTION_UUID intent comes in within
      * MAX_UUID_DELAY_FOR_AUTO_CONNECT milliseconds, we will try auto-connect
      * again with the new UUIDs
-     * The value is reset if a manual disconnection happens.
+     * The value is reset if a disconnection happens.
      */
     private long mConnectAttempted = -1;
+    private boolean isAclConnectedBrEdr = false;
+    private boolean isAclConnectedLe = false;
 
     // Active device state
     private boolean mIsActiveDeviceA2dp = false;
@@ -1121,11 +1123,36 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         }
     }
 
-    void onAclStateChanged(int state) {
-        if (state == BluetoothAdapter.STATE_DISCONNECTED) {
-            mConnectAttempted = -1;
+    void onAclStateChanged(int state, int transport) {
+        if (BluetoothUtils.D) {
+            Log.d(
+                    TAG,
+                    "onAclStateChanged: device "
+                            + mDevice.getAnonymizedAddress()
+                            + ", state "
+                            + state
+                            + ", transport "
+                            + transport);
+        }
+        boolean isUpdatedToConnected = state == BluetoothAdapter.STATE_CONNECTED;
+        if (isUpdatedToConnected) {
+            // Only update timestamp for the first ACL connection
+            if (!isAclConnectedLe && !isAclConnectedBrEdr) {
+                mConnectAttempted = SystemClock.elapsedRealtime();
+            }
+        }
+
+        if (transport == BluetoothDevice.TRANSPORT_LE) {
+            isAclConnectedLe = isUpdatedToConnected;
         } else {
-            mConnectAttempted = SystemClock.elapsedRealtime();
+            isAclConnectedBrEdr = isUpdatedToConnected;
+        }
+
+        if (!isUpdatedToConnected) {
+            // Reset the connection time if both classic and LE are disconnected.
+            if (!isAclConnectedLe && !isAclConnectedBrEdr) {
+                mConnectAttempted = -1;
+            }
         }
     }
 
