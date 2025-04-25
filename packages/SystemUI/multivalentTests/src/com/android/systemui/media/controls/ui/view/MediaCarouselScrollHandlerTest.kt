@@ -34,7 +34,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.Mock
 import org.mockito.Mockito.anyInt
@@ -62,7 +61,6 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
     @Mock lateinit var seekBarUpdateListener: (visibleToUser: Boolean) -> Unit
     @Mock lateinit var closeGuts: (immediate: Boolean) -> Unit
     @Mock lateinit var falsingManager: FalsingManager
-    @Mock lateinit var onCarouselVisibleToUser: () -> Unit
     @Mock lateinit var logger: MediaUiEventLogger
     @Mock lateinit var contentContainer: ViewGroup
     @Mock lateinit var settingsButton: View
@@ -92,7 +90,6 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
                 seekBarUpdateListener,
                 closeGuts,
                 falsingManager,
-                onCarouselVisibleToUser,
                 logger,
             )
         mediaCarouselScrollHandler.playerWidthPlusPadding = carouselWidth
@@ -249,19 +246,6 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
 
         verify(mediaCarousel, never()).smoothScrollTo(anyInt(), anyInt())
         verify(mediaCarousel, never()).animationTargetX = anyFloat()
-    }
-
-    @Test
-    fun testCarouselScrollToNewIndex_onCarouselVisibleToUser() {
-        setupMediaContainer(visibleIndex = 0)
-        whenever(mediaCarousel.relativeScrollX).thenReturn(carouselWidth)
-        mediaCarouselScrollHandler.visibleToUser = true
-        val captor = ArgumentCaptor.forClass(View.OnScrollChangeListener::class.java)
-        verify(mediaCarousel).setOnScrollChangeListener(captor.capture())
-
-        captor.value.onScrollChange(null, 0, 0, 0, 0)
-
-        verify(onCarouselVisibleToUser).invoke()
     }
 
     private fun setupMediaContainer(visibleIndex: Int, showsSettingsButton: Boolean = true) {
