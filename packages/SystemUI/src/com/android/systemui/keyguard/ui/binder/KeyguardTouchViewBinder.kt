@@ -22,6 +22,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.common.ui.view.TouchHandlingView
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -31,6 +32,7 @@ import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.MutableStateFlow
 
 object KeyguardTouchViewBinder {
     /**
@@ -56,7 +58,20 @@ object KeyguardTouchViewBinder {
             )
 
         view.repeatWhenAttached {
+            val isLongPressHandlingEnabled = MutableStateFlow(false)
+
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch("$TAG#viewModel.isLongPressHandlingEnabled") {
+                    isLongPressHandlingEnabled.collect { isEnabled ->
+                        view.contentDescription =
+                            if (isEnabled) {
+                                view.resources.getString(R.string.accessibility_desc_lock_screen)
+                            } else {
+                                null
+                            }
+                    }
+                }
+
                 view.viewModel(
                     traceName = "KeyguardTouchViewBinderViewModel",
                     minWindowLifecycleState = WindowLifecycleState.ATTACHED,
@@ -65,6 +80,8 @@ object KeyguardTouchViewBinder {
                     view.setSnapshotBinding {
                         view.setLongPressHandlingEnabled(viewModel.isLongPressHandlingEnabled)
                         view.setDoublePressHandlingEnabled(viewModel.isDoubleTapHandlingEnabled)
+
+                        isLongPressHandlingEnabled.value = viewModel.isLongPressHandlingEnabled
                     }
 
                     view.listener =
