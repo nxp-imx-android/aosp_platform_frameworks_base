@@ -3188,7 +3188,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         // without a running process.
         if (!transition.allReady()) {
             // Print unsatisfied conditions.
-            transition.onReadyTimeout();
+            transition.onSyncGroupTimeout(true /* isReadinessTimeout */);
             Assert.fail(transition + " must be ready by onStartingWindowDrawn");
         }
 

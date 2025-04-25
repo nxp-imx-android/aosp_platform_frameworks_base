@@ -71,7 +71,9 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_RECENTS_ANIM;
+import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_SNAPSHOT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_SPLASH_SCREEN;
+import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_TIMEOUT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_WINDOWS_DRAWN;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
 import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
@@ -296,6 +298,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     boolean mPriorVisibilityMightBeDirty = false;
 
     final TransitionController.Logger mLogger = new TransitionController.Logger();
+
+    /** Whether the corresponding sync group is timed out. */
+    private boolean mIsTimedOut;
 
     /** Whether this transition was forced to play early (eg for a SLEEP signal). */
     private boolean mForcePlaying = false;
@@ -2538,11 +2543,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             ActivityRecord r = mParticipants.valueAt(i).asActivityRecord();
             if (r == null || !r.isVisibleRequested()) continue;
+            if (mIsTimedOut) {
+                reasons.put(r, APP_TRANSITION_TIMEOUT);
+                continue;
+            }
             int transitionReason = APP_TRANSITION_WINDOWS_DRAWN;
             // At this point, r is "ready", but if it's not "ALL ready" then it is probably only
             // ready due to starting-window.
-            if (r.mStartingData instanceof SplashScreenStartingData && !r.mLastAllReadyAtSync) {
-                transitionReason = APP_TRANSITION_SPLASH_SCREEN;
+            if (r.mStartingData != null && !r.mLastAllReadyAtSync) {
+                transitionReason = r.mStartingData instanceof SplashScreenStartingData
+                        ? APP_TRANSITION_SPLASH_SCREEN
+                        : APP_TRANSITION_SNAPSHOT;
             } else if (r.isActivityTypeHomeOrRecents() && isTransientLaunch(r)) {
                 transitionReason = APP_TRANSITION_RECENTS_ANIM;
             }
@@ -3847,7 +3858,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     @Override
-    public void onReadyTimeout() {
+    public void onSyncGroupTimeout(boolean isReadinessTimeout) {
+        mIsTimedOut = true;
+        if (!isReadinessTimeout) {
+            return;
+        }
         if (!mController.useFullReadyTracking()) {
             Slog.e(TAG, "#" + mSyncId + " readiness timeout, used=" + mReadyTrackerOld.mUsed
                     + " deferReadyDepth=" + mReadyTrackerOld.mDeferReadyDepth
