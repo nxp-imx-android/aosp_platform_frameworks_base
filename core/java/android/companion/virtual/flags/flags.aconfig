@@ -180,3 +180,10 @@ flag {
     description: "Do not duplicate frames if no input is received and the capture request is not PREVIEW"
     bug: "383779587"
 }
+
+flag {
+    name: "computer_control_access"
+    namespace: "virtual_devices"
+    description: "Enable VDM access for computer control"
+    bug: "410570802"
+}

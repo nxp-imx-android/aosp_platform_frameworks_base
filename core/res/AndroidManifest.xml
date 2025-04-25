@@ -8538,6 +8538,13 @@
     <permission android:name="android.permission.CREATE_VIRTUAL_DEVICE"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application access to computer control features.
+     @hide -->
+    <permission android:name="android.permission.COMPUTER_CONTROL_ACCESS"
+        android:protectionLevel="internal|knownSigner"
+        android:knownCerts="@array/config_computerControlAccessKnownSigners"
+        android:featureFlag="android.companion.virtualdevice.flags.computer_control_access"/>
+
     <!-- @SystemApi Must be required by a safety source to send an update using the
              {@link android.safetycenter.SafetyCenterManager}.
              <p>Protection level: internal|privileged
