@@ -166,17 +166,20 @@ adb shell setprop persist.wm.debug.finish_activity \"\"
 adb reboot
 ```
 
-## Tracing transition requests in the Shell
+## Tracing transition starts/finishes in the Shell
 
-To trace where a new WM transition is started in the Shell, you can enable this system property:
+To trace where a new WM transition is started and finished in the Shell, you can enable these system
+properties respectively:
 ```shell
 # Enabling
 adb shell setprop persist.wm.debug.start_shell_transition true
+adb shell setprop persist.wm.debug.finish_shell_transition true
 adb reboot
 adb logcat -s "ShellTransitions"
 
 # Disabling
 adb shell setprop persist.wm.debug.start_shell_transition \"\"
+adb shell setprop persist.wm.debug.finish_shell_transition \"\"
 adb reboot
 ```
 
