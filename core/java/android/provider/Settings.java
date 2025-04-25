@@ -11592,6 +11592,9 @@ public final class Settings {
          * Whether or not the UDFPS device is enabling the screen off unlock settings.
          * @hide
          */
+        @TestApi
+        @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi without associated feature
         public static final String SCREEN_OFF_UNLOCK_UDFPS_ENABLED = "screen_off_udfps_enabled";
 
         /**
