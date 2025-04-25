@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade;
 
-import static com.android.systemui.Flags.shadeLaunchAccessibility;
 import static com.android.systemui.Flags.communalShadeTouchHandlingFixes;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
@@ -249,13 +248,11 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 Edge.create(LOCKSCREEN, DREAMING)),
                 mLockscreenToDreamingTransition);
         Flow<Boolean> isLaunchAnimationRunning =
-                shadeLaunchAccessibility()
-                        ? combineFlows(
-                                notificationLaunchAnimationInteractor.isLaunchAnimationRunning(),
-                                shadeAnimationInteractor.isLaunchingActivity(),
-                                (notificationLaunching, shadeLaunching) ->
-                                        notificationLaunching || shadeLaunching)
-                        : notificationLaunchAnimationInteractor.isLaunchAnimationRunning();
+                combineFlows(
+                        notificationLaunchAnimationInteractor.isLaunchAnimationRunning(),
+                        shadeAnimationInteractor.isLaunchingActivity(),
+                        (notificationLaunching, shadeLaunching) ->
+                                notificationLaunching || shadeLaunching);
         collectFlow(
                 mView,
                 isLaunchAnimationRunning,
@@ -740,11 +737,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 mLaunchAnimationTimeout = mClock.uptimeMillis() + 5000;
             }
 
-            if (shadeLaunchAccessibility()) {
-                // The view needs to know when an animation is ongoing so it can intercept
-                // unnecessary accessibility events.
-                mView.setAnimatingContentLaunch(running);
-            }
+            // The view needs to know when an animation is ongoing so it can intercept
+            // unnecessary accessibility events.
+            mView.setAnimatingContentLaunch(running);
 
             mExpandAnimationRunning = running;
             mNotificationShadeWindowController.setLaunchingActivity(mExpandAnimationRunning);

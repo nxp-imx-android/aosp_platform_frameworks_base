@@ -1878,16 +1878,6 @@ flag {
 }
 
 flag {
-   name: "shade_launch_accessibility"
-   namespace: "systemui"
-   description: "Intercept accessibility focus events for the Shade during launch animations to avoid stray TalkBack events."
-   bug: "379222226"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "expand_collapse_privacy_dialog"
   namespace: "systemui"
   description: "Add expand and collapse actions to accessibility, to allow announcement in TalkBack when state changes."
