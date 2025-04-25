@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.applicationContext
 import android.os.fakeExecutorHandler
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.bouncerRepository
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
@@ -35,6 +36,7 @@ import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
@@ -43,6 +45,7 @@ import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
 import com.android.systemui.haptics.qs.qsLongPressEffect
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.fromGoneTransitionInteractor
@@ -175,6 +178,9 @@ class KosmosJavaAdapter() {
     val deviceEntryInteractor by lazy { kosmos.deviceEntryInteractor }
     val deviceEntryUdfpsInteractor by lazy { kosmos.deviceEntryUdfpsInteractor }
     val deviceUnlockedInteractor by lazy { kosmos.deviceUnlockedInteractor }
+    val deviceEntryFingerprintAuthInteractor by lazy { kosmos.deviceEntryFingerprintAuthInteractor }
+    val deviceEntryFingerprintAuthRepository by lazy { kosmos.deviceEntryFingerprintAuthRepository }
+    val fingerprintPropertyRepository by lazy { kosmos.fingerprintPropertyRepository }
     val communalInteractor by lazy { kosmos.communalInteractor }
     val communalSceneInteractor by lazy { kosmos.communalSceneInteractor }
     val communalSettingsInteractor by lazy { kosmos.communalSettingsInteractor }
@@ -296,8 +302,10 @@ class KosmosJavaAdapter() {
         return kosmos.buildNotificationEntry(block = block)
     }
 
-    fun buildNotificationEntry(context : Context?,
-                               block: NotificationEntryBuilder.() -> Unit = {}): NotificationEntry {
+    fun buildNotificationEntry(
+        context: Context?,
+        block: NotificationEntryBuilder.() -> Unit = {},
+    ): NotificationEntry {
         return kosmos.buildNotificationEntry(context = context, block = block)
     }
 
