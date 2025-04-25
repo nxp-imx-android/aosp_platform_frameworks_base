@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Тілді өзгерту"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Қазіргі тіл тұра берсін"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi желісін бөлісу"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Желі қосу"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Бұл желіде сымсыз түзетуге рұқсат етілсін бе?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Желі атауы (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi мекенжайы (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Осы желіде үнемі рұқсат ету"</string>
@@ -485,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Орнатылмаған"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"\"Параметрлер\" бөлімінде реттеу"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Қосулы режим жоқ}=1{{mode} қосулы}other{# режим қосулы}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Оятқыш, еске салғыш, іс-шара мен өзіңіз көрсеткен контактілердің қоңырауларынан басқа дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойын сияқты медиафайлдарды қоссаңыз, оларды естисіз."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Дабылдардан басқа ешқандай дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойындар сияқты ойнатылатын контентті ести алатын боласыз."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Реттеу"</string>
@@ -750,8 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"дірілдету"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Дыбысты басқару элементтері: %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Қоңыраулар мен хабарландырулар дыбысы қосулы (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Қонақ құрылғының дыбыс деңгейі"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Шығыс параметрлерін енгізу"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Дыбыс деңгейінің жүгірткі реттегіштері жайылды."</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Дыбыс деңгейінің жүгірткі реттегіштері жиылды."</string>
@@ -812,8 +814,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Пернетақтаны планшетке қосу үшін алдымен Bluetooth функциясын қосу керек."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Қосу"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Қосулы – бет негізінде"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Хабарландыру ұйымдастырушысын пайдалану"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> үшін"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Дайын"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Қолдану"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Өшіру"</string>
@@ -911,16 +921,16 @@
     <string name="keyboard_shortcut_a11y_filter_input" msgid="4589316004510335529">"Енгізу жылдам пәрмендерін көрсетеді."</string>
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Қолданбаларды ашатын жылдам пәрмендерді көрсетеді."</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Қазіргі қолданбаға арналған жылдам пәрмендер көрсетіледі."</string>
-    <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Хабарландыруларды көру"</string>
+    <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Хабарландыру­ларды көру"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Скриншот жасау"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Пернелер тіркесімдерін көрсету"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Артқа"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Негізгі экранға өту"</string>
-    <string name="group_system_overview_open_apps" msgid="5659958952937994104">"Соңғы қолданбаларды көру"</string>
+    <string name="group_system_overview_open_apps" msgid="5659958952937994104">"Соңғы қолданбалар­­ды көру"</string>
     <string name="group_system_cycle_forward" msgid="5478663965957647805">"Соңғы қолданбалар тізімінде алға өту"</string>
     <string name="group_system_cycle_back" msgid="8194102916946802902">"Соңғы қолданбалар тізімінде артқа өту"</string>
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Қолданбалар тізімін ашу"</string>
-    <string name="group_system_access_system_settings" msgid="8731721963449070017">"Параметрлерді ашу"</string>
+    <string name="group_system_access_system_settings" msgid="8731721963449070017">"Параметрлер­ді ашу"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Цифрлық көмекшіні ашу"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Экранды құлыптау"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Ескертпе жазу"</string>
@@ -1591,10 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Арнайы мүмкіндіктер"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Утилиталар"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Құпиялық"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Жүйе қолданбаларынан"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Сіз орнатқан қолданбалардан"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Дисплей"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Белгісіз"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Барлық бөлшекті бастапқы күйге қайтару керек пе?"</string>

@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ენის შეცვლა"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"მიმდინარე ენის დატოვება"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi-ს გაზიარება"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"ქსელის დამატება"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"დაუშვებთ ამ ქსელში შეცდომების უსადენო გამართვას?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"ქსელის სახელი (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi მისამართი (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"ყოველთვის დაშვება ამ ქსელში"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth მოწყობილობის ხატულა"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"დააწკაპუნეთ მოწყობილობის დეტალების კონფიგურირებისთვის"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. მოწყობილობის დეტალის კონფიგურაცია"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g>-თან აუდიოს გაზიარების დაწყება"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g>-თან აუდიოს გაზიარების შეწყვეტა"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ყველა მოწყობილობის ნახვა"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ახალი მოწყობილობის დაწყვილება"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ბატარეის პროცენტული მაჩვენებელი უცნობია."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"არ არის დაყენებული"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"პარამეტრებში მართვა"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{აქტიური რეჟიმები არ მოიძებნა}=1{{mode} აქტიურია}other{აქტიურია # რეჟიმი}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"თქვენ მიერ მითითებული მაღვიძარების, შეხსენებების, მოვლენებისა და ზარების გარდა, არავითარი ხმა და ვიბრაცია არ შეგაწუხებთ. თქვენ მაინც შეძლებთ სასურველი კონტენტის, მაგალითად, მუსიკის, ვიდეოებისა და თამაშების აუდიოს მოსმენა."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"მაღვიძარების გარდა, არავითარი ხმა და ვიბრაცია არ შეგაწუხებთ. თქვენ მაინც შეძლებთ სასურველი კონტენტის, მაგალითად, მუსიკის, ვიდეოებისა და თამაშების აუდიოს მოსმენა."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"მორგება"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"ვიბრაცია"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s-ის ხმის მართვის საშუალებები"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"ზარებისა და შეტყობინებების მიღებისას დაირეკება (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"სტუმარი მოწყობილობის ხმა"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"აუდიოს გამოსვლის პარამეტრების გახსნა"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"ხმის სლაიდერების გაფართოება"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"ხმის სლაიდერების ჩაკეცვა"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"კლავიატურის ტაბლეტთან დასაკავშირებლად, ჯერ უნდა ჩართოთ Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ჩართვა"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ჩართული — სახის მიხედვით"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"შეტყობინების ორგანიზატორის გამოყენება"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>-ისთვის"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"მზადაა"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"მისადაგება"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"გამორთვა"</string>
@@ -1004,7 +1012,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ამოსაშლელად, ჩავლებით გადმოიტანეთ აქ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"თქვენ გჭირდებათ მოზაიკის <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ფილა მაინც"</string>
     <string name="qs_edit" msgid="5583565172803472437">"რედაქტირება"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"პარამეტრების ფილის რედაქტირება"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"ფილების რედაქტირება"</string>
     <string name="tuner_time" msgid="2450785840990529997">"დრო"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"საათების, წუთებისა და წამების ჩვენება"</item>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"მარტივი წვდომა"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"ხელსაწყოები"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"კონფიდენციალურობა"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"სისტემის აპებიდან"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"დაინსტალირებული აპებიდან"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ეკრანი"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"უცნობი"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"გსურთ ყველა ფილის გადაყენება?"</string>

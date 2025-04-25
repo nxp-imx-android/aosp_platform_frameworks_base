@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Spremeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Obdrži trenutni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Deli Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Dodaj omrežje"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Ali dovolite brezžično odpravljanje napak v tem omrežju?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Ime omrežja (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nNaslov omrežja Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Vedno dovoli v tem omrežju"</string>
@@ -152,7 +151,7 @@
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Želite ustaviti predvajanje?"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen_with_device" msgid="1474703115926205251">"Trenutno predvajate celotni zaslon v napravi <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen" msgid="8419219169553867625">"Trenutno predvajate celotni zaslon v napravi v bližini"</string>
-    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"Trenutno predvajate aplikacijo <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> v napravi <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
+    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"Trenutno predvajate aplikacijo <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> v napravi <xliff:g id="DEVICE_NAME">%2$s</xliff:g>."</string>
     <string name="cast_to_other_device_stop_dialog_message_specific_app" msgid="8616103075630934513">"Trenutno predvajate aplikacijo <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> v napravi v bližini"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"Trenutno predvajate v napravi <xliff:g id="DEVICE_NAME">%1$s</xliff:g>"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"Trenutno predvajate v napravi v bližini"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona naprave Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite za konfiguriranje podrobnosti o napravi"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfiguriranje podrobnosti o napravi"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Začetek deljenja zvoka z napravo <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Ustavitev deljenja zvoka z napravo <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Ogled vseh naprav"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Seznanitev nove naprave"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Neznan odstotek napolnjenosti baterije."</string>
@@ -485,6 +482,8 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ni nastavljeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljanje v nastavitvah"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Ni aktivnih načinov}=1{Način {mode} je aktiven}one{# način je aktiven}two{# načina sta aktivna}few{# načini so aktivni}other{# načinov je aktivnih}}"</string>
+    <string name="zen_modes_multiple_on_title" msgid="7876813862065005399">"Načini: %s"</string>
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Vklopljeno"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Ne bodo vas motili zvoki ali vibriranje, razen v primeru alarmov, opomnikov, dogodkov in klicateljev, ki jih določite. Še vedno pa boste slišali vse, kar se boste odločili predvajati, vključno z glasbo, videoposnetki in igrami."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Ne bodo vas motili zvoki ali vibriranje, razen v primeru alarmov. Še vedno pa boste slišali vse, kar se boste odločili predvajati, vključno z glasbo, videoposnetki in igrami."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Prilagodi"</string>
@@ -536,7 +535,7 @@
     <string name="icon_description_for_pending_widget" msgid="8413816401868001755">"Ikona aplikacije za nameščanje pripomočka"</string>
     <string name="edit_widget" msgid="9030848101135393954">"Urejanje pripomočka"</string>
     <string name="button_to_remove_widget" msgid="3948204829181214098">"Odstrani"</string>
-    <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Dodajanje pripomočka"</string>
+    <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Dodaj pripomoček"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Končano"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Dodajte pripomočke"</string>
     <string name="title_for_empty_state_cta" msgid="6161654421223450530">"Hitro dostopajte do priljubljenih pripomočkov za aplikacije brez odklepanja tabličnega računalnika."</string>
@@ -750,8 +749,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibriranje"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Kontrolniki glasnosti za %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Klici in obvestila bodo pozvonili (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Glasnost naprave gosta"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Vnos izhodnih nastavitev"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Razširitev drsnikov za glasnost"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Strnitev drsnikov za glasnost"</string>
@@ -812,8 +810,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Če želite povezati tipkovnico in tablični računalnik, vklopite Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Vklop"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Vklopljeno – na podlagi obraza"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Uporaba organizatorja obvestil"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za aplikacijo <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Končano"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Uporabi"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Izklopi"</string>
@@ -1591,10 +1597,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Dostopnost"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Orodja"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Zasebnost"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Iz sistemskih aplikacij"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Iz nameščenih aplikacij"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Zaslon"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Neznano"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite ponastaviti vse ploščice?"</string>

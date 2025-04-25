@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Badilisha lugha"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Usibadilishe lugha ya sasa"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Shiriki Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Weka mtandao"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Ungependa kuruhusu utatuzi usiotumia waya kwenye mtandao huu?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Jina la Mtandao (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAnwani ya Wi-Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Ruhusu kila wakati kwenye mtandao huu"</string>
@@ -485,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Haijawekwa"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Dhibiti katika mipangilio"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Hakuna hali zinazotumika}=1{Unatumia {mode}}other{Unatumia hali #}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Hutasumbuliwa na sauti na mitetemo, isipokuwa kengele, vikumbusho, matukio na simu zinazopigwa na watu uliobainisha. Bado utasikia chochote utakachochagua kucheza, ikiwa ni pamoja na muziki, video na michezo."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Hutasumbuliwa na sauti na mitetemo, isipokuwa kengele. Bado utasikia chochote utakachochagua kucheza, ikiwa ni pamoja na muziki, video na michezo."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Badilisha upendavyo"</string>
@@ -750,8 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"tetema"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Vidhibiti %s vya sauti"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Itatoa mlio arifa ikitumwa na simu ikipigwa (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Sauti ya kifaa kigeni"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Weka mipangilio ya sauti inayotoka"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Vitelezi vya sauti vimepanuliwa"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Vitelezi vya kiwango cha sauti vimekunjwa"</string>
@@ -812,8 +814,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Ili uunganishe Kibodi yako kwenye kompyuta yako kibao, lazima kwanza uwashe Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Washa"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Imewashwa - Inayolenga nyuso"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Tumia Kipanga Arifa"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Mahususi kwa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Nimemaliza"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tumia"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Zima"</string>
@@ -1488,7 +1498,7 @@
     <string name="shortcut_helper_category_multitasking" msgid="7413381961404090136">"Majukumu mengi"</string>
     <string name="shortcutHelper_category_split_screen" msgid="1159669813444812244">"Gawa skrini"</string>
     <string name="shortcutHelper_category_accessibility" msgid="8068337792277570938">"Ufikivu"</string>
-    <string name="shortcut_helper_category_input" msgid="8674018654124839566">"Kifaa cha kuingiza data"</string>
+    <string name="shortcut_helper_category_input" msgid="8674018654124839566">"Kuingiza data"</string>
     <string name="shortcut_helper_category_app_shortcuts" msgid="8010249408308587117">"Njia za mikato za programu"</string>
     <string name="shortcut_helper_category_current_app_shortcuts" msgid="4017840565974573628">"Programu Inayotumika Sasa"</string>
     <string name="shortcut_helper_category_a11y" msgid="6314444792641773464">"Ufikivu"</string>
@@ -1499,7 +1509,7 @@
     <string name="shortcut_customize_mode_add_shortcut_description" msgid="7636040209946696120">"Ili kuanzisha njia hii ya mkato, bonyeza kitufe cha Vitendo na ufunguo mmoja au zaidi kwa pamoja"</string>
     <string name="shortcut_customize_mode_remove_shortcut_description" msgid="6851287900585057128">"Hatua hii itaondoa kabisa njia yako maalum ya mkato."</string>
     <string name="shortcut_customize_mode_reset_shortcut_description" msgid="2081849715634358684">"Hatua hii itafuta kabisa njia zako zote maalum za mkato."</string>
-    <string name="shortcut_helper_search_placeholder" msgid="5488547526269871819">"Njia mkato za kutafutia"</string>
+    <string name="shortcut_helper_search_placeholder" msgid="5488547526269871819">"Tafuta njia za mikato"</string>
     <string name="shortcut_helper_no_search_results" msgid="8554756497996692160">"Hamna matokeo ya utafutaji"</string>
     <string name="shortcut_helper_content_description_collapse_icon" msgid="8028015738431664954">"Kunja aikoni"</string>
     <string name="shortcut_helper_content_description_meta_key" msgid="3989315044342124818">"Aikoni ya kitufe cha Vitendo au cha Meta"</string>
@@ -1591,10 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Ufikivu"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Vipengee"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Faragha"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Kutoka kwenye programu za mfumo"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Kutoka kwenye programu ulizoweka kwenye kifaa"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Mwonekano"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Visivyojulikana"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Ungependa kubadilisha vigae vyote?"</string>

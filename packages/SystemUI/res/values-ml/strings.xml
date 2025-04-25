@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ഭാഷ മാറ്റുക"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"നിലവിലെ ഭാഷ നിലനിർത്തുക"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"വൈഫൈ പങ്കിടുക"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"നെറ്റ്‌വർക്ക് ചേർക്കൂ"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"ഈ നെറ്റ്‌വർക്കിൽ വയർലെസ് ഡീബഗ്ഗിംഗ് അനുവദിക്കണോ?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"നെറ്റ്‌വർക്കിന്റെ പേര് (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nവൈഫൈ വിലാസം (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"ഈ നെറ്റ്‌വർക്കിൽ എപ്പോഴും അനുവദിക്കുക"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth ഉപകരണ ഐക്കൺ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ഉപകരണത്തിന്റെ വിശദാംശങ്ങൾ കോൺഫിഗർ ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ഉപകരണ വിശദാംശങ്ങൾ കോൺഫിഗർ ചെയ്യുക"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> എന്നതുമായി ഓഡിയോ പങ്കിടുന്നത് ആരംഭിക്കുക"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> എന്നതുമായി ഓഡിയോ പങ്കിടുന്നത് നിർത്തുക"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"എല്ലാ ഉപകരണങ്ങളും കാണുക"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"പുതിയ ഉപകരണം ജോടിയാക്കുക"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ബാറ്ററി ശതമാനം അജ്ഞാതമാണ്."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"സജ്ജീകരിച്ചിട്ടില്ല"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ക്രമീകരണത്തിൽ മാനേജ് ചെയ്യുക"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{സജീവ മോഡുകൾ ഒന്നുമില്ല}=1{{mode} സജീവമാണ്}other{# മോഡുകൾ സജീവമാണ്}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"നിങ്ങൾ സജ്ജീകരിച്ച അലാറങ്ങൾ, റിമൈൻഡറുകൾ, ഇവന്റുകൾ, കോളർമാർ എന്നിവയിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"അലാറങ്ങളിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"ഇഷ്‌ടാനുസൃതമാക്കുക"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"വൈബ്രേറ്റ് ചെയ്യുക"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s ശബ്‌ദ നിയന്ത്രണങ്ങൾ"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"കോളുകളും അറിയിപ്പുകളും ലഭിക്കുമ്പോൾ റിംഗ് ചെയ്യും (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"അതിഥി ഉപകരണത്തിന്റെ വോളിയം"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"ഔട്ട്പുട്ട് ക്രമീകരണം നൽകുക"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"വോളിയം സ്ലൈഡറുകൾ വികസിപ്പിച്ചു"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"വോളിയം സ്ലൈഡറുകൾ ചുരുക്കി"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"നിങ്ങളുടെ ടാബ്‌ലെറ്റുമായി കീബോർഡ് കണക്റ്റുചെയ്യുന്നതിന്, ആദ്യം Bluetooth ഓണാക്കേണ്ടതുണ്ട്."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"അറിയിപ്പ് ഓർഗനൈസർ ഉപയോഗിക്കുക"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്ന കുട്ടിക്ക്"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"ഉപയോഗസഹായി"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"യൂട്ടിലിറ്റികൾ"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"സ്വകാര്യത"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"സിസ്റ്റം ആപ്പുകളിൽ നിന്നുള്ളത്"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"നിങ്ങൾ ഇൻസ്റ്റാൾ ചെയ്ത ആപ്പുകളിൽ നിന്നുള്ളത്"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ഡിസ്‌പ്ലേ"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"അജ്ഞാതം"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"എല്ലാ ടൈലുകളും റീസെറ്റ് ചെയ്യണോ?"</string>

@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"भाषा बदला"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"सध्याची भाषा ठेवा"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"वाय-फाय शेअर करा"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"नेटवर्क जोडा"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"या नेटवर्कवर वायरलेस डीबगिंग करण्यासाठी अनुमती द्यायची का?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"नेटवर्कचे नाव (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nवाय-फाय ॲड्रेस (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"या नेटवर्कवर नेहमी अनुमती द्या"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ब्लूटूथ डिव्‍हाइस आयकन"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"डिव्हाइसचे तपशील कॉन्फिगर करण्यासाठी क्लिक करा"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. डिव्हाइसचे तपशील कॉन्फिगर करा"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> सह ऑडिओ शेअर करणे सुरू करा"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> सह ऑडिओ शेअर करणे थांबवा"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"सर्व डिव्हाइस पहा"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"नवीन डिव्हाइस पेअर करा"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"बॅटरीच्या चार्जिंगची टक्केवारी माहित नाही."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट केलेला नाही"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग्जमध्ये व्यवस्थापित करा"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोणतेही अ‍ॅक्टिव्ह मोड नाहीत}=1{{mode} अ‍ॅक्टिव्ह आहे}other{# मोड अ‍ॅक्टिव्ह आहेत}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"अलार्म, रिमाइंडर, इव्‍हेंट आणि तुम्ही निश्चित केलेल्या कॉलर व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"अलार्म व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"सानुकूलित करा"</string>
@@ -551,7 +552,7 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"विजेट काढून टाका"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"निवडलेले विजेट ठेवा"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"लॉक स्‍क्रीन विजेट"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"तुमचा टॅबलेट लॉक केला, तरी कोणीही तुमच्या लॉक स्क्रीनवरील विजेट पाहू शकतो."</string>
+    <string name="communal_widget_picker_description" msgid="490515450110487871">"तुमचा टॅबलेट लॉक केला, तरी कोणीही तुमच्या लॉक स्क्रीनवरील विजेट पाहू शकते."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"विजेटची निवड रद्द करा"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"उंची कमी करा"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"उंची वाढवा"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"व्हायब्रेट करा"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s व्हॉल्यूम नियंत्रण"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"कॉल आणि सूचना वाजतील (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"अतिथी डिव्हाइस व्‍हॉल्‍यूम"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"आउटपुट सेटिंग्ज एंटर करा"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"व्हॉल्यूम स्लायडर विस्तारित केले आहेत"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"व्हॉल्यूम स्लायडर कोलॅप्स केले आहेत"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"तुमचा कीबोर्ड तुमच्या टॅबलेटसह कनेक्ट करण्यासाठी, तुम्ही प्रथम ब्लूटूथ सुरू करणे आवश्यक आहे."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"सुरू - चेहऱ्यावर आधारित"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"नोटिफिकेशन व्यवस्थापक वापरा"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> साठी"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
@@ -841,7 +849,7 @@
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"या अ‍ॅपवरील लाइव्ह अपडेट ब्लॉक करा"</string>
     <string name="live_notifications_title" msgid="1586553354601345379">"लाइव्ह अपडेट दाखवत आहे"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"पिन केलेली नोटिफिकेशन अ‍ॅप्समधील लाइव्ह माहिती दाखवतात आणि नेहमी स्टेटस बार व लॉक स्‍क्रीनवर दिसतात"</string>
-    <string name="notification_unblockable_desc" msgid="2073030886006190804">"या सूचनांमध्ये सुधारणा केली जाऊ शकत नाही."</string>
+    <string name="notification_unblockable_desc" msgid="2073030886006190804">"या नोटिफिकेशनमध्ये फेरबदल केला जाऊ शकत नाही."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कॉलशी संबंधित सूचनांमध्ये फेरबदल केला जाऊ शकत नाही."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"या सूचनांचा संच येथे कॉन्फिगर केला जाऊ शकत नाही"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"प्रॉक्सी केलेल्या सूचना"</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"अ‍ॅक्सेसिबिलिटी"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"उपयुक्तता"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"गोपनीयता"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"सिस्टीम ॲप्सवरून"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"तुम्ही इंस्टॉल केलेल्या ॲप्सवरून"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"डिस्प्ले"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सर्व टाइल रीसेट करायच्या?"</string>

@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Promeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Zadrži aktuelni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Deli WiFi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"Dodajte mrežu"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Želite da dozvolite bežično otklanjanje grešaka na ovoj mreži?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi adresa (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Uvek dozvoli na ovoj mreži"</string>
@@ -89,7 +88,7 @@
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"IT administrator blokira pravljenje snimaka ekrana"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Izmeni"</string>
     <string name="screenshot_edit_description" msgid="3333092254706788906">"Izmenite snimak ekrana"</string>
-    <string name="screenshot_share_label" msgid="1653061117238861559">"Delite"</string>
+    <string name="screenshot_share_label" msgid="1653061117238861559">"Deli"</string>
     <string name="screenshot_share_description" msgid="2861628935812656612">"Delite snimak ekrana"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Snimite još"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Odbacite snimak ekrana"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona Bluetooth uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite da biste konfigurisali detalje o uređaju"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurišite detalje o uređaju"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Počnite da delite zvuk sa: <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Zaustavite deljenje zvuka sa: <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Pogledajte sve uređaje"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Uparite novi uređaj"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Procenat napunjenosti baterije nije poznat."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije podešeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u podešavanjima"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih režima}=1{Aktivan je {mode} režim}one{Aktivan je # režim}few{Aktivna su # režima}other{Aktivno je # režima}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas uznemiravati zvukovi i vibracije osim za alarme, podsetnike, događaje i pozivaoce koje navedete. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas uznemiravati zvukovi i vibracije osim za alarme. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Prilagodi"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibracija"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Kontrole za jačinu zvuka za %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Melodija zvona za pozive i obaveštenja je uključena (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Jačina zvuka uređaja gosta"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Unesite podešavanja izlaznog signala"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Klizači za jačinu zvuka su prošireni"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Klizači za jačinu zvuka su skupljeni"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Da biste povezali tastaturu sa tabletom, prvo morate da uključite Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na osnovu lica"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Koristite Organizator obaveštenja"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Pristupačnost"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Uslužne aplikacije"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privatnost"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Iz sistemskih aplikacija"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Iz aplikacija koje ste instalirali"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Ekran"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite da resetujete sve pločice?"</string>

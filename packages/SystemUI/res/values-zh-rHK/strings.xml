@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"變更語言"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"保留目前語言"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"分享 Wi‑Fi"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"新增網絡"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"要在此網絡上允許無線偵錯功能嗎？"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"網絡名稱 (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi 地址 (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"一律允許在此網絡上執行"</string>
@@ -485,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未設定"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"在「設定」中管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{沒有啟用模式}=1{已啟用{mode}}other{已啟用 # 個模式}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"你不會受到聲音和震動騷擾 (鬧鐘、提醒、活動和你指定的來電者鈴聲除外)。當你選擇播放音樂、影片和遊戲等，仍可以聽到該內容的聲音。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"你不會受到聲音和震動騷擾 (鬧鐘除外)。當你選擇播放音樂、影片和遊戲等，仍可以聽到該內容的聲音。"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"自訂"</string>
@@ -750,8 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"震動"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s音量控制項"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"有來電和通知時會發出鈴聲 (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"訪客裝置音量"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"輸入輸出設定"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"打開咗音量滑桿"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"閂埋咗音量滑桿"</string>
@@ -812,8 +814,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"如要將鍵盤連接至平板電腦，請先開啟藍牙。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"開啟"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"已開啟 - 根據面孔偵測"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"使用「通知整理工具」"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"套用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"關閉"</string>
@@ -1367,7 +1377,7 @@
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"新增圖塊"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"不要新增圖塊"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"選取使用者"</string>
-    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{已啟用 # 個應用程式}other{已啟用 # 個應用程式}}"</string>
+    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# 個應用程式使用中}other{# 個應用程式使用中}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"新資料"</string>
     <string name="fgs_manager_dialog_title" msgid="5879184257257718677">"使用中的應用程式"</string>
     <string name="fgs_manager_dialog_message" msgid="2670045017200730076">"這些應用程式已啟用並執行 (即使你沒有使用)。這會提升應用程式的功能，但也可影響電池壽命。"</string>
@@ -1591,10 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"無障礙功能"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"實用程式"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"私隱"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"來自系統應用程式"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"來自你安裝的應用程式"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"螢幕"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"要重設所有圖塊嗎？"</string>

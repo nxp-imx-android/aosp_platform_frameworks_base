@@ -60,8 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ભાષા બદલો"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"વર્તમાન ભાષા રાખો"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"વાઇ-ફાઇ શેર કરો"</string>
-    <!-- no translation found for add_network_button_text (4046392140897987570) -->
-    <skip />
+    <string name="add_network_button_text" msgid="4046392140897987570">"નેટવર્ક ઉમેરો"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"આ નેટવર્ક પર વાયરલેસ ડિબગીંગની મંજૂરી આપીએ?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"નેટવર્કનું નામ (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nવાઇ-ફાઇ ઍડ્રેસ (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"આ નેટવર્ક પર હંમેશા મંજૂરી આપો"</string>
@@ -248,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"બ્લૂટૂથ ડિવાઇસનું આઇકન"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ડિવાઇસની વિગત ગોઠવવા માટે ક્લિક કરો"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ડિવાઇસની વિગત ગોઠવો"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> સાથે ઑડિયો શેર કરવાનું શરૂ કરો"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> સાથે ઑડિયો શેર કરવાનું બંધ કરો"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"બધા ડિવાઇસ જુઓ"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"નવા ડિવાઇસ સાથે જોડાણ કરો"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"બૅટરીની ટકાવારી અજાણ છે."</string>
@@ -485,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"સેટઅપ કર્યું નથી"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"સેટિંગમાં જઈને મેનેજ કરો"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{કોઈ સક્રિય મોડ નથી}=1{{mode} સક્રિય છે}one{# મોડ સક્રિય છે}other{# મોડ સક્રિય છે}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"અલાર્મ, રિમાઇન્ડર, ઇવેન્ટ અને તમે ઉલ્લેખ કરો તે કૉલર સિવાય તમને ધ્વનિ કે વાઇબ્રેશન દ્વારા ખલેલ પહોંચાડવામાં આવશે નહીં. સંગીત, વીડિઓ અને રમતો સહિત તમે જે કંઈપણ ચલાવવાનું પસંદ કરશો તે સંભળાતું રહેશે."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"અલાર્મ સિવાય તમને ધ્વનિ કે વાઇબ્રેશન દ્વારા ખલેલ પહોંચાડવામાં આવશે નહીં. સંગીત, વીડિઓ અને રમતો સહિત તમે જે કંઈપણ ચલાવવાનું પસંદ કરશો તે સંભળાતું રહેશે."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"કસ્ટમાઇઝ કરો"</string>
@@ -750,8 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"વાઇબ્રેટ"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s વૉલ્યૂમ નિયંત્રણો"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"કૉલ અને નોટિફિકેશનની રિંગ (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>) પર વાગશે"</string>
-    <!-- no translation found for volume_dialog_guest_device_volume_description (9147246287155716705) -->
-    <skip />
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"અતિથિ ડિવાઇસનું વૉલ્યૂમ"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"આઉટપુટના સેટિંગ દાખલ કરો"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"વૉલ્યૂમના સ્લાઇડર મોટા કરવામાં આવ્યા"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"વૉલ્યૂમના સ્લાઇડર નાના કરવામાં આવ્યા"</string>
@@ -812,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"તમારા ટેબ્લેટ સાથે કીબોર્ડ કનેક્ટ કરવા માટે, તમારે પહેલાં બ્લૂટૂથ ચાલુ કરવાની જરૂર પડશે."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ચાલુ કરો"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ચાલુ છે - ચહેરા આધારિત રોટેશન"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"નોટિફિકેશન ઑર્ગેનાઇઝરનો ઉપયોગ કરો"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> માટે"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
@@ -1591,10 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"ઍક્સેસિબિલિટી"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"યુટિલિટી"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"પ્રાઇવસી"</string>
-    <!-- no translation found for qs_edit_mode_category_providedBySystemApps (8010990312139645288) -->
-    <skip />
-    <!-- no translation found for qs_edit_mode_category_providedByApps (4736433865199049415) -->
-    <skip />
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"સિસ્ટમની ઍપમાંથી"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"તમે ઇન્સ્ટૉલ કરેલી ઍપમાંથી"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ડિસ્પ્લે"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"અજાણ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"તમામ ટાઇલ રીસેટ કરીએ?"</string>
