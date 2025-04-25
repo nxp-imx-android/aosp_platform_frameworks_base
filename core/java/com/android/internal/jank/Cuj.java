@@ -867,7 +867,7 @@ public class Cuj {
             case CUJ_NOTIFICATIONS_ANIMATED_ACTION:
                 return "NOTIFICATIONS_ANIMATED_ACTION";
             case CUJ_LPP_ASSIST_INVOCATION_EFFECT:
-                return "CUJ_LPP_ASSIST_INVOCATION_EFFECT";
+                return "LPP_ASSIST_INVOCATION_EFFECT";
         }
         return "UNKNOWN";
     }
