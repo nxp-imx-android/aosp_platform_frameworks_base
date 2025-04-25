@@ -17,6 +17,7 @@
 package com.android.systemui.topwindoweffects.ui.compose
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -50,6 +51,8 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.util.Optional
 import kotlin.math.max
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.compose.values.motionTestValues
 
 private val SqueezeColor = Color.Black
 private val SqueezeEffectMaxThickness = 16.dp
@@ -140,11 +143,12 @@ fun SqueezeEffect(
         }
     }
 
+    val density = LocalDensity.current
     val screenWidthPx = LocalWindowInfo.current.containerSize.width
     val screenHeightPx = LocalWindowInfo.current.containerSize.height
     val longEdgePx = max(screenHeightPx, screenWidthPx)
     val zoomPotentialPx =
-        with(LocalDensity.current) {
+        with(density) {
             (SqueezeEffectMaxThickness.toPx() - SqueezeEffectOverlapShortEdgeThickness.toPx()) * 2
         }
     val zoomOutScale = 1f - (longEdgePx - zoomPotentialPx) / longEdgePx
@@ -155,11 +159,18 @@ fun SqueezeEffect(
         }
     }
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    val squeezeThickness =
+        with(density) { SqueezeEffectMaxThickness.toPx() * squeezeProgress.value }
+
+    Canvas(
+        modifier =
+            Modifier.fillMaxSize().motionTestValues {
+                squeezeThickness exportAs MotionTestKeys.squeezeThickness
+            }
+    ) {
         if (squeezeProgress.value <= 0) {
             return@Canvas
         }
-        val squeezeThickness = SqueezeEffectMaxThickness.toPx() * squeezeProgress.value
 
         drawRect(color = SqueezeColor, size = Size(size.width, squeezeThickness))
 
@@ -241,4 +252,9 @@ private fun DrawScope.drawTransform(
             )
         }
     }
+}
+
+@VisibleForTesting
+object MotionTestKeys {
+    val squeezeThickness = MotionTestValueKey<Float>("squeezeThickness")
 }
