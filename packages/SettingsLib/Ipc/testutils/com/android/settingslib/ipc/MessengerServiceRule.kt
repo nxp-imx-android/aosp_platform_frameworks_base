@@ -35,12 +35,15 @@ import org.robolectric.android.controller.ServiceController
 /** Rule for messenger service testing. */
 open class MessengerServiceRule<C : MessengerServiceClient>(
     private val serviceClass: Class<out MessengerService>,
-    val client: C,
+    private val nullableClient: C? = null,
 ) : TestWatcher() {
     val application: Application = ApplicationProvider.getApplicationContext()
     val isRobolectric = Build.FINGERPRINT.contains("robolectric")
 
     private var serviceController: ServiceController<out Service>? = null
+
+    val client: C
+        get() = nullableClient!!
 
     init {
         if (isRobolectric) {
@@ -59,7 +62,7 @@ open class MessengerServiceRule<C : MessengerServiceClient>(
     }
 
     override fun finished(description: Description) {
-        client.close()
+        nullableClient?.close()
         if (isRobolectric) {
             runBlocking {
                 withContext(Dispatchers.Main) { serviceController?.run { unbind().destroy() } }
