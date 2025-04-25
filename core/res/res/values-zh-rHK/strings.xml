@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"超暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助聽器"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"自動點擊"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已中斷連線"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已連線"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"運作中"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"宣傳"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"新聞"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"建議"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"你可以設定這些通知的重要性。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"列為重要的原因：涉及的人。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自訂應用程式通知"</string>

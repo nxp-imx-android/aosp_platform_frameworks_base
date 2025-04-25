@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ಇನ್ನಷ್ಟು ಮಬ್ಬು"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ಶ್ರವಣ ಸಾಧನಗಳು"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ಆಟೋಕ್ಲಿಕ್"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ಡಿಸ್‌ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ಸಕ್ರಿಯವಾಗಿದೆ"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ಪ್ರೊಮೋಷನ್‍ಗಳು"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ಸಾಮಾಜಿಕ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ಸುದ್ದಿ"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"ಶಿಫಾರಸುಗಳು"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"ನೀವು ಈ ಅಧಿಸೂಚನೆಗಳ ಪ್ರಾಮುಖ್ಯತೆಯನ್ನು ಹೊಂದಿಸಿರುವಿರಿ."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ಜನರು ತೊಡಗಿಕೊಂಡಿರುವ ಕಾರಣ ಇದು ಅತ್ಯಂತ ಪ್ರಮುಖವಾಗಿದೆ."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ಕಸ್ಟಮ್ ಆ್ಯಪ್ ನೋಟಿಫಿಕೇಶನ್"</string>

@@ -340,7 +340,7 @@
     <string name="permgroupdesc_readMediaVisual" msgid="4080463241903508688">"તમારા ડિવાઇસ પર ફોટા અને વીડિયો ઍક્સેસ કરવા માટે"</string>
     <string name="permgrouplab_microphone" msgid="2480597427667420076">"માઇક્રોફોન"</string>
     <string name="permgroupdesc_microphone" msgid="1047786732792487722">"ઑડિઓ રેકોર્ડ કરવાની"</string>
-    <string name="permgrouplab_activityRecognition" msgid="3324466667921775766">"શારીરિક પ્રવૃત્તિ"</string>
+    <string name="permgrouplab_activityRecognition" msgid="3324466667921775766">"શારીરિક ઍક્ટિવિટી"</string>
     <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"તમારી શારીરિક પ્રવૃત્તિને ઍક્સેસ કરવી"</string>
     <string name="permgrouplab_camera" msgid="9090413408963547706">"કૅમેરા"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"ચિત્રો લેવાની અને વીડિઓ રેકોર્ડ કરવાની"</string>
@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"એક્સ્ટ્રા ડિમ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"સાંભળવામાં સહાય કરતા ડિવાઇસ"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ઑટોક્લિક"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ડિસ્કનેક્ટેડ છે"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"કનેક્ટેડ છે"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"સક્રિય"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"પ્રમોશન"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"સામાજિક"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ન્યૂઝ"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"સુઝાવો"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"તમે આ સૂચનાઓનું મહત્વ સેટ કર્યું છે."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"શામેલ થયેલ લોકોને કારણે આ મહત્વપૂર્ણ છે."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ઍપનું કસ્ટમ નોટિફિકેશન"</string>
