@@ -264,9 +264,6 @@ class BroadcastController {
 
     private static void traceRegistrationBegin(String receiverId, IIntentReceiver receiver,
             IntentFilter filter, int userId) {
-        if (!Flags.traceReceiverRegistration()) {
-            return;
-        }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             final StringBuilder sb = new StringBuilder("registerReceiver: ");
             sb.append(Binder.getCallingUid()); sb.append('/');
@@ -289,9 +286,6 @@ class BroadcastController {
     }
 
     private static void traceRegistrationEnd() {
-        if (!Flags.traceReceiverRegistration()) {
-            return;
-        }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
         }
@@ -624,9 +618,6 @@ class BroadcastController {
     }
 
     private static void traceUnregistrationBegin(IIntentReceiver receiver) {
-        if (!Flags.traceReceiverRegistration()) {
-            return;
-        }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                     TextUtils.formatSimple("unregisterReceiver: %d/%s", Binder.getCallingUid(),
@@ -635,9 +626,6 @@ class BroadcastController {
     }
 
     private static void traceUnregistrationEnd() {
-        if (!Flags.traceReceiverRegistration()) {
-            return;
-        }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
         }
@@ -820,9 +808,6 @@ class BroadcastController {
 
     private static int traceBroadcastIntentBegin(Intent intent, IIntentReceiver resultTo,
             boolean ordered, boolean sticky, int callingUid, int realCallingUid, int userId) {
-        if (!Flags.traceReceiverRegistration()) {
-            return BroadcastQueue.traceBegin("broadcastIntentLockedTraced");
-        }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             final StringBuilder sb = new StringBuilder("broadcastIntent: ");
             sb.append(callingUid); sb.append('/');
