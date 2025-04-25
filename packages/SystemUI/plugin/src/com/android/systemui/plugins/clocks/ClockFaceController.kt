@@ -48,7 +48,13 @@ interface ClockFaceController {
     companion object {
         fun ClockFaceController.updateTheme(mutateTheme: (ThemeConfig) -> ThemeConfig) {
             val theme = mutateTheme(this.theme)
-            if (this.theme == theme) return
+
+            // Themes with null seeds are always considered to have changed since we don't know
+            // at this point if the context's color theme has been updated externally.
+            // TODO(b/364680879): Capture context's color and compare when applicable.
+            val hasChanged = this.theme != theme || theme.seedColor == null
+            if (!hasChanged) return
+
             events.onThemeChanged(theme)
             this.theme = theme
         }
