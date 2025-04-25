@@ -1027,9 +1027,6 @@ public final class BatteryService extends SystemService {
     }
 
     private static void traceBatteryChangedBroadcastEvent(Intent intent, boolean forceUpdate) {
-        if (!com.android.server.flags.Flags.traceBatteryChangedBroadcastEvent()) {
-            return;
-        }
         if (!Trace.isTagEnabled(Trace.TRACE_TAG_SYSTEM_SERVER)) return;
 
         final StringBuilder builder = new StringBuilder();
