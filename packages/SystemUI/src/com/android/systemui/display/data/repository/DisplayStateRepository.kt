@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.biometrics.data.repository
+package com.android.systemui.display.data.repository
 
 import android.content.Context
 import android.util.DisplayMetrics
 import android.util.Size
 import android.view.DisplayInfo
-import com.android.systemui.biometrics.shared.model.DisplayRotation
-import com.android.systemui.biometrics.shared.model.toDisplayRotation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY
-import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.display.shared.model.DisplayRotation
+import com.android.systemui.display.shared.model.toDisplayRotation
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope

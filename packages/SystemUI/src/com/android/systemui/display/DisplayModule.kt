@@ -38,6 +38,8 @@ import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
 import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractorModule
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractor
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractorImpl
@@ -70,6 +72,10 @@ interface DisplayModule {
     fun bindsDeviceStateRepository(
         deviceStateRepository: DeviceStateRepositoryImpl
     ): DeviceStateRepository
+
+    @Binds
+    @SysUISingleton
+    fun bindsDisplayStateInteractor(impl: DisplayStateInteractorImpl): DisplayStateInteractor
 
     @Binds
     fun bindsFocusedDisplayRepository(

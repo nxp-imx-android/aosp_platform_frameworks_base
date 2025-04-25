@@ -24,6 +24,7 @@ import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.shared.customization.data.SensorLocation
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope

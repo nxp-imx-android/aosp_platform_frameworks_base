@@ -19,6 +19,7 @@ package com.android.systemui.biometrics.domain.interactor
 import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.biometrics.data.repository.promptRepository
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 

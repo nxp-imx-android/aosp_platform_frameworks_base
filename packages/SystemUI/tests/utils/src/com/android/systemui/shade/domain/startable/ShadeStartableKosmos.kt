@@ -19,8 +19,8 @@
 package com.android.systemui.shade.domain.startable
 
 import android.content.applicationContext
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.common.ui.data.repository.configurationRepository
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope

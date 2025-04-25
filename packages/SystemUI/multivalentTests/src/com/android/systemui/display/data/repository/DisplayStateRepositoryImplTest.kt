@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.biometrics.data.repository
+package com.android.systemui.display.data.repository
 
 import android.content.res.Configuration
 import android.util.DisplayMetrics
@@ -26,11 +26,9 @@ import android.view.Surface
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState
-import com.android.systemui.display.data.repository.FakeDeviceStateRepository
-import com.android.systemui.display.data.repository.FakeDisplayRepository
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever

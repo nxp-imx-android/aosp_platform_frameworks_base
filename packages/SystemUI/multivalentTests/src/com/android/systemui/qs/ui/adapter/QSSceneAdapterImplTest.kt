@@ -24,10 +24,10 @@ import androidx.asynclayoutinflater.view.AsyncLayoutInflater
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.common.ui.data.repository.FakeConfigurationRepository
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractorImpl
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testDispatcher

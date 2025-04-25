@@ -25,11 +25,11 @@ import androidx.asynclayoutinflater.view.AsyncLayoutInflater
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.applications.InterestingConfigChanges
 import com.android.systemui.Dumpable
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.QSContainerImpl
