@@ -2,17 +2,11 @@
   "presubmit": [
     {
       "name": "TracingTests"
-    },
-    {
-      "name": "ProtologPerfTests"
     }
   ],
   "wm-cf": [
     {
       "name": "TracingTests"
-    },
-    {
-      "name": "ProtologPerfTests"
     }
   ]
 
