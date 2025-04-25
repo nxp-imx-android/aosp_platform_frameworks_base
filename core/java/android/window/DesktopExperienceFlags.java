@@ -131,11 +131,11 @@ public enum DesktopExperienceFlags {
     ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, false,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND),
     ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS(
-            Flags::enablePersistingDisplaySizeForConnectedDisplays, false,
+            Flags::enablePersistingDisplaySizeForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS),
     ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY(Flags::enablePerDisplayDesktopWallpaperActivity,
             false, Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY),
-    ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS(Flags::enablePresentationForConnectedDisplays, false,
+    ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS(Flags::enablePresentationForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, false,
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
@@ -144,7 +144,7 @@ public enum DesktopExperienceFlags {
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             false, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
     ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS(
-            Flags::enableSizeCompatModeImprovementsForConnectedDisplays, false,
+            Flags::enableSizeCompatModeImprovementsForConnectedDisplays, true,
             Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS),
     ENABLE_SYS_DECORS_CALLBACKS_VIA_WM(Flags::enableSysDecorsCallbacksViaWm,
             false, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
