@@ -20,7 +20,6 @@ import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import static com.android.settingslib.flags.Flags.legacyLeAudioSharing;
 import static com.android.systemui.Flags.communalHub;
-import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
@@ -531,25 +530,14 @@ public class MediaControlPanel {
                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(clickIntent,
                         mLockscreenUserManager.getCurrentUserId());
                 if (showOverLockscreen) {
-                    if (mediaLockscreenLaunchAnimation()) {
-                        mActivityStarter.startPendingIntentMaybeDismissingKeyguard(
-                                clickIntent,
-                                /* dismissShade = */ true,
-                                /* intentSentUiThreadCallback = */ null,
-                                buildLaunchAnimatorController(mMediaViewHolder.getPlayer()),
-                                /* fillIntent = */ null,
-                                /* extraOptions = */ null,
-                                /* customMessage */ null);
-                    } else {
-                        try {
-                            ActivityOptions opts = ActivityOptions.makeBasic();
-                            opts.setPendingIntentBackgroundActivityStartMode(
-                                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-                            clickIntent.send(opts.toBundle());
-                        } catch (PendingIntent.CanceledException e) {
-                            Log.e(TAG, "Pending intent for " + key + " was cancelled");
-                        }
-                    }
+                    mActivityStarter.startPendingIntentMaybeDismissingKeyguard(
+                            clickIntent,
+                            /* dismissShade = */ true,
+                            /* intentSentUiThreadCallback = */ null,
+                            buildLaunchAnimatorController(mMediaViewHolder.getPlayer()),
+                            /* fillIntent = */ null,
+                            /* extraOptions = */ null,
+                            /* customMessage */ null);
                 } else {
                     mActivityStarter.postStartActivityDismissingKeyguard(clickIntent,
                             buildLaunchAnimatorController(mMediaViewHolder.getPlayer()));
