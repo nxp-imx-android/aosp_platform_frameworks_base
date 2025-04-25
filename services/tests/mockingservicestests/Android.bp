@@ -397,6 +397,16 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FrameworksMockingServicesTests_server_bitmapoffloadservicetest",
+    base: "FrameworksMockingServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.bitmapoffload"],
+}
+
+test_module_config {
     name: "FrameworksMockingServicesTests_service_batteryServiceTest",
     base: "FrameworksMockingServicesTests",
     test_suites: ["device-tests"],

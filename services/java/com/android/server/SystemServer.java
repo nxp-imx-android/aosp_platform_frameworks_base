@@ -146,6 +146,7 @@ import com.android.server.biometrics.BiometricService;
 import com.android.server.biometrics.sensors.face.FaceService;
 import com.android.server.biometrics.sensors.fingerprint.FingerprintService;
 import com.android.server.biometrics.sensors.iris.IrisService;
+import com.android.server.bitmapoffload.BitmapOffloadService;
 import com.android.server.blob.BlobStoreManagerService;
 import com.android.server.broadcastradio.BroadcastRadioService;
 import com.android.server.camera.CameraServiceProxy;
@@ -2293,6 +2294,11 @@ public final class SystemServer implements Dumpable {
             } catch (Throwable e) {
                 reportWtf("starting UpdateLockService", e);
             }
+            t.traceEnd();
+
+            // Start bitmap offloader
+            t.traceBegin("StartBitmapOffloadService");
+            mSystemServiceManager.startService(BitmapOffloadService.class);
             t.traceEnd();
 
             t.traceBegin("StartNotificationManager");

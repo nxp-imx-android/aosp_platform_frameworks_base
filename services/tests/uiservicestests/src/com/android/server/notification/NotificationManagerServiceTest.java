@@ -117,6 +117,7 @@ import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
 import static android.service.notification.Condition.SOURCE_CONTEXT;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_TRUE;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING;
@@ -333,6 +334,8 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.UiServiceTestCase;
+import com.android.server.bitmapoffload.BitmapOffloadContract;
+import com.android.server.bitmapoffload.BitmapOffloadInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
@@ -485,6 +488,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private PowerManager mPowerManager;
     @Mock
     private LightsManager mLightsManager;
+    @Mock
+    private BitmapOffloadInternal mBitmapOffloader;
+
     private final ArrayList<WakeLock> mAcquiredWakeLocks = new ArrayList<>();
     private final TestPostNotificationTrackerFactory mPostNotificationTrackerFactory =
             new TestPostNotificationTrackerFactory();
@@ -816,7 +822,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi, mToastRateLimiter,
                 mPermissionHelper, mock(UsageStatsManagerInternal.class), mTelecomManager, mLogger,
                 mTestFlagResolver, mPermissionManager, mPowerManager,
-                mPostNotificationTrackerFactory, mUiEventLogger);
+                mPostNotificationTrackerFactory, mUiEventLogger, mBitmapOffloader);
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));
@@ -18894,6 +18900,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void onDisplayRemoveSystemDecorations_cancelToasts() throws RemoteException {
         final String testPackage = "testPackageName";
         final INotificationManager service = ((INotificationManager) mService.mService);
@@ -18940,5 +18947,73 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mUiEventLogger.numLogs()).isEqualTo(1);
         assertThat(mUiEventLogger.get(0).eventId).isEqualTo(NOTIFICATION_POSTED_CACHED.getId());
         assertThat(mUiEventLogger.get(0).uid).isEqualTo(mUid);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyBigPictureResourceIconNotOffloaded() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 0);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        final Notification ntf = createBigPictureNotification(true, true, false);
+        final long timePostedMs = System.currentTimeMillis();
+
+        StatusBarNotification sbn = new StatusBarNotification(PKG_O, "pkg", 1481, "tag",
+                UID_O, 0, ntf, UserHandle.getUserHandleForUid(UID_O), null, timePostedMs);
+
+        assertNull(ntf.extras.get(EXTRA_PICTURE));
+        assertNotNull(ntf.extras.get(EXTRA_PICTURE_ICON));
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+
+        waitForIdle();
+
+        StatusBarNotification[] notifsAfter = mBinderService.getActiveNotifications(mPkg);
+        assertEquals(1, notifsAfter.length);
+
+        Notification updatedNtf = notifsAfter[0].getNotification();
+
+        assertNull(ntf.extras.get(EXTRA_PICTURE));
+        assertNotNull(ntf.extras.get(EXTRA_PICTURE_ICON));
+        Icon icon = updatedNtf.extras.getParcelable(EXTRA_PICTURE_ICON);
+        assertEquals(icon.getType(), Icon.TYPE_RESOURCE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyBigPictureBitmapOffloaded() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 0);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        final Notification ntf = createBigPictureNotification(true, true, true);
+        final long timePostedMs = System.currentTimeMillis();
+
+        StatusBarNotification sbn = new StatusBarNotification(PKG_O, "pkg", 1481, "tag",
+                UID_O, 0, ntf, UserHandle.getUserHandleForUid(UID_O), null, timePostedMs);
+
+        assertNotNull(ntf.extras.get(EXTRA_PICTURE));
+        assertNull(ntf.extras.get(EXTRA_PICTURE_ICON));
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+
+        waitForIdle();
+
+        StatusBarNotification[] notifsAfter = mBinderService.getActiveNotifications(mPkg);
+        assertEquals(1, notifsAfter.length);
+
+        Notification updatedNtf = notifsAfter[0].getNotification();
+
+        assertNull(updatedNtf.extras.get(EXTRA_PICTURE));
+        assertNotNull(updatedNtf.extras.get(EXTRA_PICTURE_ICON));
+
+        Icon icon = updatedNtf.extras.getParcelable(EXTRA_PICTURE_ICON);
+        assertEquals(icon.getType(), Icon.TYPE_URI);
+        assertEquals(icon.getUri(), offloadUri);
     }
 }
