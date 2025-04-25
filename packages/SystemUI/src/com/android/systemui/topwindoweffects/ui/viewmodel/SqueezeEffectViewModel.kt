@@ -47,8 +47,4 @@ class SqueezeEffectViewModel @AssistedInject constructor(keyEventInteractor: Key
     interface Factory {
         fun create(): SqueezeEffectViewModel
     }
-
-    companion object {
-        const val ZOOM_OUT_SCALE = 0.05f
-    }
 }
