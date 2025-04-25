@@ -317,10 +317,10 @@
     <string name="bluetooth_select_map_version_dialog_title" msgid="7085934373987428460">"Veldu Bluetooth MAP-útgáfu"</string>
     <string name="bluetooth_select_a2dp_codec_type" msgid="952001408455456494">"Bluetooth hljóðkóðari"</string>
     <string name="bluetooth_select_a2dp_codec_type_dialog_title" msgid="7510542404227225545">"Virkja Bluetooth-hljóðkóðara\nVal"</string>
-    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Bluetooth hljóðtökutíðni"</string>
+    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Bluetooth-hljóðtökutíðni"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate_dialog_title" msgid="5876305103137067798">"Virkja Bluetooth-hljóðkóðara\nVal: upptökutíðni"</string>
     <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"Óvirkt þýðir að síminn eða höfuðtólin styðja þetta ekki"</string>
-    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Bluetooth hljóðbitar í úrtaki"</string>
+    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Bluetooth-hljóðbitar í úrtaki"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample_dialog_title" msgid="4898693684282596143">"Virkja Bluetooth-hljóðkóðara\nVal: bitar í úrtaki"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode" msgid="364277285688014427">"Hljóðrásarstilling Bluetooth"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode_dialog_title" msgid="2076949781460359589">"Virkja Bluetooth-hljóðkóðara\nVal: hljóðrásarstilling"</string>
@@ -418,7 +418,7 @@
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Stilla gagnsæjan bakgrunnslit yfirlitsstiku sem sjálfgefinn"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Leyfa að gera glugga ósk."</string>
     <string name="force_msaa" msgid="4081288296137775550">"Þvinga 4x MSAA"</string>
-    <string name="force_msaa_summary" msgid="9070437493586769500">"Virkja 4x MSAA í OpenGL ES 2.0 forritum"</string>
+    <string name="force_msaa_summary" msgid="9070437493586769500">"Virkja 4x MSAA í OpenGL ES 2.0-forritum"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Villuleita klippt svæði sem ekki eru rétthyrnd"</string>
     <string name="track_frame_time" msgid="522674651937771106">"HWUI-teiknun prófíls"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Virkja villuleit skják."</string>

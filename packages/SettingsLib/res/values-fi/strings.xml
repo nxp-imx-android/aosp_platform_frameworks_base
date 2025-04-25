@@ -298,8 +298,8 @@
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"Salli käynnistysohjelman lukituksen avaaminen"</string>
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"Sallitaanko OEM:n lukituksen avaus?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"VAROITUS: laitteen suojaustoiminnot eivät toimi tämän asetuksen ollessa käytössä."</string>
-    <string name="mock_location_app" msgid="6269380172542248304">"Valitse valesijaintisovellus"</string>
-    <string name="mock_location_app_not_set" msgid="6972032787262831155">"Valesijaintisovellusta ei ole valittu"</string>
+    <string name="mock_location_app" msgid="6269380172542248304">"Valitse imitoidun sijainnin sovellus"</string>
+    <string name="mock_location_app_not_set" msgid="6972032787262831155">"Imitoidun sijainnin sovellusta ei valittu"</string>
     <string name="mock_location_app_set" msgid="4706722469342913843">"Valesijaintisovellus: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"Yhteysominaisuudet"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"Langattoman näytön sertifiointi"</string>
@@ -449,7 +449,7 @@
     <string name="force_resizable_activities" msgid="7143612144399959606">"Pakota kaikki toiminnot hyväksymään koon muutos"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Pakota kaikki toiminnot hyväksymään koon muuttaminen usean ikkunan tilassa luettelon arvoista riippumatta"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Ota käyttöön vapaamuotoiset ikkunat"</string>
-    <string name="local_backup_password_title" msgid="4631017948933578709">"Varmuuskop. salasana"</string>
+    <string name="local_backup_password_title" msgid="4631017948933578709">"Varmuuskopion salasana"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"Tietokoneen kaikkien tietojen varmuuskopiointia ei ole tällä hetkellä suojattu"</string>
     <string name="local_backup_password_summary_change" msgid="1707357670383995567">"Vaihda tai poista tietokoneen kaikkien tietojen varmuuskopioinnin salasana koskettamalla."</string>
     <string name="local_backup_password_toast_success" msgid="4891666204428091604">"Uusi varasalasana asetettiin"</string>

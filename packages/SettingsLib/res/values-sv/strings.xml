@@ -444,9 +444,9 @@
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"Visa dialogrutan om att appen inte svarar för bakgrundsappar"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Visa varningar om aviseringskanal"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Visa varningar på skärmen när en app lägger upp en avisering utan en giltig kanal"</string>
-    <string name="force_allow_on_external" msgid="9187902444231637880">"Tillåt appar i externt lagringsutrymme"</string>
+    <string name="force_allow_on_external" msgid="9187902444231637880">"Tvinga att tillåta appar i externt lagringsutrymme"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Allar appar kan skrivas till extern lagring, oavsett manifestvärden"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"Framtvinga storleksanpassning för aktiviteter"</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"Tvinga storleksanpassning för aktiviteter"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Gör det möjligt att ändra storleken på alla aktiviteter i flerfönsterläge, oavsett manifestvärden."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Aktivera frihandsfönster"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Lösenord för säkerhetskopia av datorn"</string>

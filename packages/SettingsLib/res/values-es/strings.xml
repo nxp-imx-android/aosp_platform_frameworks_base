@@ -337,7 +337,7 @@
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Muestra opciones para la certificación de la pantalla inalámbrica"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Aumenta el nivel de registro de la conexión Wi-Fi y se muestra por SSID RSSI en el selector Wi-Fi"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Reduce el consumo de batería y mejora el rendimiento de la red"</string>
-    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Si este modo está habilitado, es posible que la dirección MAC del dispositivo cambie cada vez que se conecte a una red que tenga habilitada la aleatorización de MAC."</string>
+    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Si este modo está habilitado, es posible que la dirección MAC del dispositivo cambie cada vez que se conecte a una red que tenga habilitada la aleatorización de MAC"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Medida"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"No medida"</string>
     <string name="select_logd_size_title" msgid="1604578195914595173">"Tamaños de los búferes de registro"</string>
@@ -363,7 +363,7 @@
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Verificar aplicaciones por USB"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Comprueba las aplicaciones instaladas por ADB/ADT para detectar comportamientos dañinos"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Muestra los dispositivos Bluetooth sin nombre (solo direcciones MAC)"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Inhabilita la función de volumen absoluto de Bluetooth si se producen problemas de \\nvolumen con dispositivos remotos (p. ej., volumen excesivamente alto o falta de control)"</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Inhabilita la función de volumen absoluto de Bluetooth si se producen problemas de volumen con dispositivos remotos (p. ej., volumen excesivamente alto o falta de control)"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Habilita la pila de funciones de Bluetooth Gabeldorsche"</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"Habilita la función de conectividad mejorada."</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"Terminal local"</string>
@@ -400,10 +400,10 @@
     <string name="show_screen_updates" msgid="2078782895825535494">"Mostrar cambios de superficies"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Hace parpadear todas las superficies de la ventana cuando se actualizan"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Ver actualizaciones de vista"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Hacer parpadear las vistas dentro de las ventanas cuando se dibujan"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Hace parpadear las vistas dentro de las ventanas cuando se dibujan"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Ver actualizaciones de capas de hardware"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Hacer parpadear las capas de hardware en verde cuando se actualizan"</string>
-    <string name="debug_hw_overdraw" msgid="8944851091008756796">"Depurar sobredibujos de GPU"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Hace parpadear las capas de hardware en verde cuando se actualizan"</string>
+    <string name="debug_hw_overdraw" msgid="8944851091008756796">"Depurar overdraw de GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Inhabilitar superposiciones de hardware"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Usa siempre la GPU para componer pantallas"</string>
     <string name="simulate_color_space" msgid="1206503300335835151">"Simular espacio de color"</string>
@@ -415,7 +415,7 @@
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Forzar dirección RTL"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Fuerza la dirección RTL para todos los idiomas"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Barra de navegación transparente"</string>
-    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Haz que el color de fondo de la barra de navegación sea transparente de forma predeterminada"</string>
+    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Hace que el color de fondo de la barra de navegación sea transparente de forma predeterminada"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Permitir difuminar ventanas"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Forzar MSAA 4x"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Habilita MSAA 4x en aplicaciones de OpenGL ES 2.0"</string>
@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Activar capas de depuración de GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Permite cargar capas de depuración de GPU en aplicaciones de depuración"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Habilitar registro de proveedor detallado"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluye otros registros de proveedor específicos del dispositivo en informes de errores, lo que puede añadir información privada, usar más batería u ocupar más espacio de almacenamiento."</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluye otros registros de proveedor específicos del dispositivo en informes de errores, que pueden contener información privada, usar más batería u ocupar más almacenamiento"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Inhabilitar después de un día"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"El registro de proveedor detallado ha finalizado"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Habilitado durante un día"</string>
@@ -438,14 +438,14 @@
     <string name="shade_display_awareness_title" msgid="8000009404669495876">"Posición del panel en la pantalla"</string>
     <string name="debug_applications_category" msgid="5394089406638954196">"Aplicaciones"</string>
     <string name="immediately_destroy_activities" msgid="1826287490705167403">"No mantener actividades"</string>
-    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Destruir actividades cuando el usuario salga de ellas"</string>
+    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Destruye actividades cuando el usuario salga de ellas"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"Límitar procesos en segundo plano"</string>
-    <string name="show_all_anrs" msgid="9160563836616468726">"Mostrar ANR en segundo plano"</string>
+    <string name="show_all_anrs" msgid="9160563836616468726">"Mostrar ANRs en segundo plano"</string>
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"Muestra un cuadro de diálogo que informa de que la aplicación no responde en aplicaciones en segundo plano"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Ver advertencias del canal de notificaciones"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Muestra una advertencia en pantalla cuando una aplicación publica una notificación sin un canal válido"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"Forzar permitir aplicaciones en almacenamiento externo"</string>
-    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Permite que cualquier aplicación se pueda escribir en un almacenamiento externo independientemente de los valores de manifiesto"</string>
+    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Permite que cualquier aplicación se pueda escribir en un almacenamiento externo independientemente de los valores de manifiesto."</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Forzar que las actividades puedan cambiar de tamaño"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Permite que todas las actividades puedan cambiar de tamaño en multiventana independientemente de los valores de manifiesto"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Habilitar ventanas de forma libre"</string>

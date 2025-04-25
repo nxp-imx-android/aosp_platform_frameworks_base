@@ -306,7 +306,7 @@
     <string name="wifi_verbose_logging" msgid="1785910450009679371">"Omogući detaljni zapisnik za WiFi"</string>
     <string name="wifi_scan_throttling" msgid="2985624788509913617">"Usporavanje skeniranja WiFi-ja"</string>
     <string name="wifi_non_persistent_mac_randomization" msgid="7482769677894247316">"Nasumični odabir MAC adrese prema WiFi mreži s prekidima"</string>
-    <string name="mobile_data_always_on" msgid="8275958101875563572">"Prijenos podataka na mobilnoj mreži uvijek aktivan"</string>
+    <string name="mobile_data_always_on" msgid="8275958101875563572">"Prenos podataka na mobilnoj mreži uvijek aktivan"</string>
     <string name="tethering_hardware_offload" msgid="4116053719006939161">"Hardversko ubrzavanje dijeljenja internetske veze"</string>
     <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"Prikaži Bluetooth uređaje bez naziva"</string>
     <string name="bluetooth_disable_absolute_volume" msgid="1452342324349203434">"Onemogući apsolutnu jačinu zvuka"</string>
@@ -415,11 +415,11 @@
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Prisilno postavi raspored s desna ulijevo"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Prisilno postavljanje rasporeda ekrana s desna ulijevo za sve regije"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Providna navigacijska traka"</string>
-    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Postavite boju pozadine navigacijske trake na providno prema zadanim postavkama"</string>
+    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Zadano postavlja boju pozadine navigacijske trake na providno"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Dozvoli zamućenja prozora"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Prinudno primijeni 4x MSAA"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Omogućava 4x MSAA u OpenGL ES 2.0 aplikacijama"</string>
-    <string name="show_non_rect_clip" msgid="7499758654867881817">"Otkl. greške na operac. nepravoug. isjecanja"</string>
+    <string name="show_non_rect_clip" msgid="7499758654867881817">"Otkloni greške nepravougaonih isijecanja"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Iscrtavanje pomoću HWUI-a"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Omogući slojeve za otklanjanje grešaka na GPU-u"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Omogućite slojeve za otkl. grešaka na GPU-u za apl. za otkl. grešaka"</string>
@@ -446,7 +446,7 @@
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Prikaz upozorenja na ekranu kada aplikacija pošalje obavještenje bez važećeg kanala"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"Nametni aplikacije na vanjskoj pohrani"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Omogućava upisivanje svih aplikacija u vanjsku pohranu, bez obzira na prikazane vrijednosti"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"Nametni aktivnostima mijenjanje veličina"</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"Nametni mogućnost promjene veličine aktivnosti"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Omogućava mijenjanje veličine svih aktivnosti za prikaz s više prozora, bez obzira na prikazane vrijednosti"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Omogući prozore nepravilnih oblika"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Lozinka sigurnosne kopije za računar"</string>
@@ -478,8 +478,8 @@
     <string name="transcode_disable_cache" msgid="3160069309377467045">"Onemogućite keš memoriju za transkodiranje"</string>
     <string name="runningservices_settings_title" msgid="6460099290493086515">"Pokrenute usluge"</string>
     <string name="runningservices_settings_summary" msgid="1046080643262665743">"Prikaz i kontrola trenutno pokrenutih usluga"</string>
-    <string name="select_webview_provider_title" msgid="3917815648099445503">"Postavljanje WebViewa"</string>
-    <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"Podesi WebView"</string>
+    <string name="select_webview_provider_title" msgid="3917815648099445503">"Primjena WebViewa"</string>
+    <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"Postavi primjenu WebViewa"</string>
     <string name="select_webview_provider_toast_text" msgid="8512254949169359848">"Ovaj izbor više ne vrijedi. Pokušajte ponovo."</string>
     <string name="webview_launch_devtools_title" msgid="8009687433555367112">"Alati za programere za WebView"</string>
     <string name="webview_launch_devtools_no_package" msgid="3182544553665113721">"Paket WebViewa nije pronađen."</string>

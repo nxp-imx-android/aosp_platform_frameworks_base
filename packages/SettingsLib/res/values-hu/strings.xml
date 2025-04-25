@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Az adminisztrátorok olyan speciális jogosultságokkal rendelkeznek, amelyekkel a többi felhasználó nem. Az adminisztrátorok kezelhetik az összes felhasználót, frissíthetik vagy visszaállíthatják az eszközt, módosíthatják a beállításokat, megnézhetik az összes telepített alkalmazást, valamint megadhatnak és visszavonhatnak adminisztrátori jogosultságokat más felhasználóknál."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Adminisztrátori jogosultság megadása"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"Beállít most egy felhasználót?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Győződjön meg arról, hogy a személy hozzá tud férni az eszközhöz, hogy beállíthassa a területét"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"Győződjön meg arról, hogy a személy hozzá tud férni az eszközhöz, hogy beállíthassa a területét."</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Létrehoz most egy profilt?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Beállítás most"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Most nem"</string>

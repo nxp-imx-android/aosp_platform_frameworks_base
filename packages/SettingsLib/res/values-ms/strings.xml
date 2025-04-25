@@ -361,7 +361,7 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Benarkan tetapan pembangunan?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Tetapan ini adalah untuk penggunaan pembangunan sahaja. Peranti dan aplikasi yang terdapat padanya boleh rosak atau tidak berfungsi dengan betul."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Sahkan apl melalui USB"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Semak apl yang dipasang melalui ADB/ADT untuk tingkah laku yang berbahaya."</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Semak kehadiran tingkah laku yang berbahaya pada apl yang dipasang melalui ADB/ADT."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Peranti Bluetooth tanpa nama (alamat MAC sahaja) akan dipaparkan"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Lumpuhkan ciri kelantangan mutlak Bluetooth jika ada masalah kelantangan pada peranti kawalan jauh seperti kelantangan yang sangat kuat atau tidak terkawal."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Mendayakan tindanan ciri Gabeldorche Bluetooth."</string>
@@ -399,10 +399,10 @@
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Tindanan skrin memaparkan data input pad sentuh dan gerak isyarat yang dikenali"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Tunjuk kemaskinian permukaan"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Denyar permukaan tetingkap apabila dikemas kini"</string>
-    <string name="show_hw_screen_updates" msgid="2021286231267747506">"Tunjuk kemaskinian paparan"</string>
+    <string name="show_hw_screen_updates" msgid="2021286231267747506">"Tunjukkan kemaskinian paparan"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Denyar paparan dalam tetingkap apabila dilukis"</string>
-    <string name="show_hw_layers_updates" msgid="5268370750002509767">"Tunjukkan kemas kini perkakasan"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Denyar hijau lapisan perkakasan yang dikemas kini"</string>
+    <string name="show_hw_layers_updates" msgid="5268370750002509767">"Tunjukkan kemaskinian perkakasan"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Denyar hijau lapisan perkakasan yang dikemaskinikan"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"Nyahpepijat lebih lukis GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Lumpuhkan tindihan HW"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Sentiasa gunakan GPU untuk komposit skrin"</string>

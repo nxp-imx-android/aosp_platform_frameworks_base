@@ -294,7 +294,7 @@
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"Obrazovka se při nabíjení nepřepne do režimu spánku"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Povolit protokol Bluetooth HCI"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Zaznamenávat pakety Bluetooth. (Po změně tohoto nastavení zapněte nebo vypněte Bluetooth.)"</string>
-    <string name="oem_unlock_enable" msgid="5334869171871566731">"Odemknutí OEM"</string>
+    <string name="oem_unlock_enable" msgid="5334869171871566731">"Odemykání OEM"</string>
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"Povolit odemknutí zavaděče"</string>
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"Povolit odemknutí OEM?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"UPOZORNĚNÍ: Pokud bude toto nastavení zapnuto, nebudou v tomto zařízení fungovat funkce ochrany zařízení."</string>
@@ -393,11 +393,11 @@
     <string name="pointer_location_summary" msgid="957120116989798464">"Překryvná vrstva zobrazuje aktuální data o dotycích"</string>
     <string name="show_touches" msgid="8437666942161289025">"Zobrazovat klepnutí"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"Zobrazovat vizuální zpětnou vazbu pro klepnutí"</string>
-    <string name="show_key_presses" msgid="6360141722735900214">"Zobrazit stisknutí klávesy"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"Zobrazit vizuální odezvu při stisknutí fyzické klávesy"</string>
-    <string name="touchpad_visualizer" msgid="3707916068870825115">"Zobrazit vstup touchpadu"</string>
-    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Překryvná vrstva obrazovky zobrazující vstupní data touchpadu a rozpoznaná gesta"</string>
-    <string name="show_screen_updates" msgid="2078782895825535494">"Zobrazit obnovení obsahu"</string>
+    <string name="show_key_presses" msgid="6360141722735900214">"Zobrazovat stisknutí klávesy"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"Zobrazovat vizuální odezvu při stisknutí fyzické klávesy"</string>
+    <string name="touchpad_visualizer" msgid="3707916068870825115">"Zobrazovat vstup touchpadu"</string>
+    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Překryvná vrstva obrazovky zobrazuje vstupní data touchpadu a rozpoznaná gesta"</string>
+    <string name="show_screen_updates" msgid="2078782895825535494">"Zobrazovat obnovení obsahu"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Rozbliká obsah okna při aktualizaci"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Ukazovat aktualizace zobrazení"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Rozblikat zobrazení v oknech při vykreslování"</string>
@@ -410,14 +410,14 @@
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"Povolit trasování OpenGL"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"Zakázat směrování zvuku do USB"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Vypnout automatické směrování zvuku do zvukových periferií USB"</string>
-    <string name="debug_layout" msgid="1659216803043339741">"Zobrazit ohraničení"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"U výstřižku zobrazit ohraničení, okraje atd."</string>
-    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Vynutit rozvržení zprava doleva"</string>
-    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Vynutit ve všech jazycích rozvržení obrazovky zprava doleva"</string>
+    <string name="debug_layout" msgid="1659216803043339741">"Zobrazovat ohraničení"</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"U výstřižku zobrazovat ohraničení, okraje atd."</string>
+    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Vynucovat rozvržení zprava doleva"</string>
+    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Vynucovat ve všech jazycích rozvržení obrazovky zprava doleva"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Průhledný navigační panel"</string>
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"Nastavit ve výchozím nastavení barvu navigačního panelu na průhlednou"</string>
     <string name="window_blurs" msgid="6831008984828425106">"Povolit rozmazávání oken"</string>
-    <string name="force_msaa" msgid="4081288296137775550">"Vynutit 4x MSAA"</string>
+    <string name="force_msaa" msgid="4081288296137775550">"Vynucovat 4x MSAA"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Povolit 4x MSAA v aplikacích OpenGL ES 2.0"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"Ladit operace s neobdélníkovými výstřižky"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Profilovat vykreslování rozhraním HWUI"</string>
@@ -444,9 +444,9 @@
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"U aplikací na pozadí zobrazí dialog „Aplikace neodpovídá“"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Zobrazovat upozornění ohledně kanálu oznámení"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Když aplikace odešle oznámení bez platného kanálu, na obrazovce se zobrazí upozornění"</string>
-    <string name="force_allow_on_external" msgid="9187902444231637880">"Vynutit povolení aplikací na externím úložišti"</string>
+    <string name="force_allow_on_external" msgid="9187902444231637880">"Vynucovat povolení aplikací na externím úložišti"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Každou aplikaci bude možné zapsat do externího úložiště, bez ohledu na hodnoty manifestu"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"Vynutit možnost změny velikosti aktivit"</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"Vynucovat možnost změny velikosti aktivit"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Umožní změnu velikosti všech aktivit na několik oken (bez ohledu na hodnoty manifestu)"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Aktivovat okna s volným tvarem"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Heslo pro zálohy v počítači"</string>

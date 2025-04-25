@@ -402,7 +402,7 @@
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Görünüm güncellemelerini göster"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Çizildiğinde pencerelerin içini yakıp söndür"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Donanım katmanı güncellemelerini göster"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Güncellenirken donanım katmanlarını yeşil renkte yanıp söndür"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Güncellenirken donanım katmanlarını yeşil renkte yakıp söndür"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU fazla çizim hatasını ayıkla"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"Donanım katmanlarını devre dışı bırak"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Ekran oluştururken her zaman GPU\'yu kullan"</string>

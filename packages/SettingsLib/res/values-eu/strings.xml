@@ -411,7 +411,7 @@
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"Desgaitu USB bidez audioa bideratzeko aukera"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"Desgaitu USB bidezko audio-gailuetara automatikoki bideratzeko aukera"</string>
     <string name="debug_layout" msgid="1659216803043339741">"Erakutsi diseinu-mugak"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"Erakutsi kliparen mugak, marjinak, etab."</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"Erakutsi ebakiaren mugak, marjinak, etab."</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"Eskuinetik ezkerrerako norabidea"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"Behartu pantaila-diseinuaren norabidea eskuin-ezker izatera lurraldeko ezarpen guztiekin"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"Nabigazio-barra gardena"</string>
@@ -419,7 +419,7 @@
     <string name="window_blurs" msgid="6831008984828425106">"Gaitu leiho-lausotzeak"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Behartu 4x MSAA"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Gaitu 4x MSAA, OpenGL ES 2.0 aplikazioetan"</string>
-    <string name="show_non_rect_clip" msgid="7499758654867881817">"Araztu angeluzuzenak ez diren klip-eragiketak"</string>
+    <string name="show_non_rect_clip" msgid="7499758654867881817">"Araztu angeluzuzenak ez diren ebaketa-eragiketak"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Profilaren HWUI errendatzea"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Gaitu GPUaren arazketa-geruzak"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Eman GPUaren arazketa-geruzak kargatzeko baimena arazketa-aplikazioei"</string>

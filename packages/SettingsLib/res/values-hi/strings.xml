@@ -294,7 +294,7 @@
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"चार्ज होते समय स्‍क्रीन कभी भी बंद नहीं होगी"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"ब्लूटूथ HCI स्‍नूप लॉग चालू करें"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"ब्लूटूथ पैकेट कैप्चर करें. (यह सेटिंग बदलने के बाद ब्लूटूथ टॉगल करें)"</string>
-    <string name="oem_unlock_enable" msgid="5334869171871566731">"OEM अनलॉक करें"</string>
+    <string name="oem_unlock_enable" msgid="5334869171871566731">"ओईएम से अनलॉक करने की सेटिंग"</string>
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"बूटलोडर को अनलाॅक किए जाने की अनुमति दें"</string>
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"OEM अनलॉक करने की अनुमति दें?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"चेतावनी: इस सेटिंग के चालू रहने पर डिवाइस सुरक्षा सुविधाएं इस डिवाइस पर काम नहीं करेंगी."</string>
@@ -311,7 +311,7 @@
     <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"बिना नाम वाले ब्लूटूथ डिवाइस दिखाएं"</string>
     <string name="bluetooth_disable_absolute_volume" msgid="1452342324349203434">"ब्लूटूथ से आवाज़ के कंट्रोल की सुविधा रोकें"</string>
     <string name="bluetooth_enable_gabeldorsche" msgid="9131730396242883416">"Gabeldorsche चालू करें"</string>
-    <string name="bluetooth_select_avrcp_version_string" msgid="1710571610177659127">"ब्लूटूथ AVRCP वर्शन"</string>
+    <string name="bluetooth_select_avrcp_version_string" msgid="1710571610177659127">"ब्लूटूथ का AVRCP वर्शन"</string>
     <string name="bluetooth_select_avrcp_version_dialog_title" msgid="7846922290083709633">"ब्लूटूथ AVRCP वर्शन चुनें"</string>
     <string name="bluetooth_select_map_version_string" msgid="526308145174175327">"ब्लूटूथ का MAP वर्शन"</string>
     <string name="bluetooth_select_map_version_dialog_title" msgid="7085934373987428460">"ब्लूटूथ का MAP वर्शन चुनें"</string>
@@ -344,13 +344,13 @@
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"प्रति लॉग बफ़र लॉगर आकार चुनें"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"लॉगर सतत मेमोरी साफ़ करें?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"जब हम सतत लॉगर के साथ निगरानी करना बंद कर देते हैं, तो हमें आपके डिवाइस पर मौजूद लॉगर डेटा को मिटाने की आवश्यकता होती है."</string>
-    <string name="select_logpersist_title" msgid="447071974007104196">"डिवाइस पर लॉगर डेटा लगातार इकट्ठा करें"</string>
+    <string name="select_logpersist_title" msgid="447071974007104196">"लॉगर डेटा को डिवाइस पर लगातार सेव करें"</string>
     <string name="select_logpersist_dialog_title" msgid="7745193591195485594">"डिवाइस पर सतत रूप से संग्रहित करने के लिए लॉग बफ़र चुनें"</string>
     <string name="select_usb_configuration_title" msgid="6339801314922294586">"USB कॉन्फ़िगरेशन चुनें"</string>
     <string name="select_usb_configuration_dialog_title" msgid="3579567144722589237">"USB कॉन्फ़िगरेशन चुनें"</string>
     <string name="allow_mock_location" msgid="2102650981552527884">"कृत्रिम स्‍थानों को अनुमति दें"</string>
     <string name="allow_mock_location_summary" msgid="179780881081354579">"कृत्रिम स्‍थानों को अनुमति दें"</string>
-    <string name="debug_view_attributes" msgid="3539609843984208216">"व्यू एट्रिब्यूट देखने की सुविधा चालू करें"</string>
+    <string name="debug_view_attributes" msgid="3539609843984208216">"व्यू एट्रिब्यूट जांचने की सुविधा चालू करें"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"वाई-फ़ाई चालू रहने पर भी मोबाइल डेटा हमेशा चालू रखें (तेज़ी से नेटवर्क स्विच करने के लिए)."</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"हार्डवेयर से तेज़ी लाने के लिए टेदर करने की सुविधा मौजूद होने पर उसका इस्तेमाल करें"</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"USB डीबग करने की अनुमति दें?"</string>
@@ -383,10 +383,10 @@
     <string name="wait_for_debugger_summary" msgid="6846330006113363286">"डीबग किया गया ऐप्लिकेशन प्रोसेस के पहले डीबगर के अटैच होने का इंतज़ार करता है"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"इनपुट"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"ड्रॉइंग"</string>
-    <string name="debug_hw_drawing_category" msgid="5830815169336975162">"हार्डवेयर ऐक्सेलरेटेड रेंडरिंग"</string>
+    <string name="debug_hw_drawing_category" msgid="5830815169336975162">"जीपीयू रेंडरिंग"</string>
     <string name="media_category" msgid="8122076702526144053">"मीडिया"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"निगरानी"</string>
-    <string name="window_management_category" msgid="2015535427098365170">"Window Management"</string>
+    <string name="window_management_category" msgid="2015535427098365170">"विंडो मैनेज करने की अनुमति"</string>
     <string name="strict_mode" msgid="889864762140862437">"स्ट्रिक्ट मोड चालू रखें"</string>
     <string name="strict_mode_summary" msgid="1838248687233554654">"थ्रेड पर लंबा प्रोसेस होने पर स्‍क्रीन फ़्लैश करें"</string>
     <string name="pointer_location" msgid="7516929526199520173">"पॉइंटर की जगह"</string>
@@ -396,33 +396,33 @@
     <string name="show_key_presses" msgid="6360141722735900214">"दबाए गए बटन दिखाएं"</string>
     <string name="show_key_presses_summary" msgid="725387457373015024">"दबाए गए बटन का विज़ुअल फ़ीडबैक दिखाएं"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"टचपैड इनपुट दिखाएं"</string>
-    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"स्क्रीन ओवरले में टचपैड इनपुट का डेटा और पहचाने गए जेस्चर दिख रहे हैं"</string>
+    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"स्क्रीन ओवरले में टचपैड इनपुट का डेटा और पहचाने गए जेस्चर दिखाएं"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"सर्फ़ेस अपडेट दिखाएं"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"अपडेट होने पर पूरे विंडो सर्फ़ेस फ़्लैश करें"</string>
-    <string name="show_hw_screen_updates" msgid="2021286231267747506">"जीपीयू व्यू के अपडेट दिखाएं"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"GPU से बनाए गए व्यू, विंडो में फ़्लैश करता है"</string>
+    <string name="show_hw_screen_updates" msgid="2021286231267747506">"अपडेट किए गए व्यू दिखाएं"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"व्यू ड्रॉ किए जाने पर, विंडो में फ़्लैश दिखाएं"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"हार्डवेयर लेयर अपडेट दिखाएं"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"हार्डवेयर लेयर अपडेट होने पर हरा फ़्लैश दिखाएं"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"जीपीयू ओवरड्रॉ डीबग करें"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"एचडब्ल्यू ओवरले बंद करें"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"स्‍क्रीन कंपोज़िटिंग के लिए हमेशा जीपीयू का इस्तेमाल करें"</string>
-    <string name="simulate_color_space" msgid="1206503300335835151">"रंग स्पेस सिम्युलेट करें"</string>
+    <string name="simulate_color_space" msgid="1206503300335835151">"कलर स्पेस सिम्युलेट करें"</string>
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"OpenGL ट्रेस चालू करें"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"यूएसबी ऑडियो रूटिंग बंद करें"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"यूएसबी ऑडियो पेरिफ़ेरल पर अपने-आप रूटिंग होना बंद करें"</string>
-    <string name="debug_layout" msgid="1659216803043339741">"लेआउट सीमाएं दिखाएं"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"क्लिप सीमाएं, मार्जिन वगैरह दिखाएं."</string>
+    <string name="debug_layout" msgid="1659216803043339741">"लेआउट का दायरा दिखाएं"</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"क्लिप की बाउंड्री, मार्जिन वगैरह दिखाएं."</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"लेआउट की दिशा दाएं से बाएं करें"</string>
     <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"सभी भाषाओं के लिए स्क्रीन लेआउट की दिशा दाएं से बाएं रखें"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"पारदर्शी बैकग्राउंड वाला नेविगेशन बार"</string>
-    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"नेविगेशन बार के बैकग्राउंड के रंग को डिफ़ॉल्ट रूप से पारदर्शी के तौर पर सेट करें"</string>
+    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"नेविगेशन बार के बैकग्राउंड का रंग, डिफ़ॉल्ट रूप से पारदर्शी सेट करें"</string>
     <string name="window_blurs" msgid="6831008984828425106">"विंडो का बैकग्राउंड धुंधला करने की सुविधा चालू करें"</string>
     <string name="force_msaa" msgid="4081288296137775550">"4x MSAA को हर हाल में चालू करें"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 ऐप में 4x MSAA को चालू करें"</string>
-    <string name="show_non_rect_clip" msgid="7499758654867881817">"उन क्लिप ऑपरेशन को डीबग करें, जो आयताकार नहीं हैं"</string>
+    <string name="show_non_rect_clip" msgid="7499758654867881817">"उन क्लिप ऑपरेशन को डीबग करें जिनमें रेक्टैंगल नहीं हैं"</string>
     <string name="track_frame_time" msgid="522674651937771106">"प्रोफ़ाइल HWUI रेंडरिंग"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"जीपीयू डीबग लेयर चालू करें"</string>
-    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"डीबग ऐप के लिए जीपीयू डीबग लेयर लोड करने दें"</string>
+    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"डीबग लायक ऐप के लिए जीपीयू डीबग लेयर लोड करने दें"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"वर्बोस वेंडर लॉगिंग चालू करें"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"गड़बड़ियों की रिपोर्ट में डिवाइस से जुड़े अतिरिक्त वेंडर लॉग शामिल करें. इन लॉग में निजी जानकारी, बैटरी का ज़्यादा इस्तेमाल, और/या डिवाइस का स्टोरेज ज़्यादा इस्तेमाल करने की जानकारी हो सकती है."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"एक दिन बाद बंद करें"</string>
@@ -434,14 +434,14 @@
     <string name="window_animation_scale_title" msgid="5236381298376812508">"विंडो ऐनिमेशन स्‍केल"</string>
     <string name="transition_animation_scale_title" msgid="1278477690695439337">"ट्रांज़िशन ऐनिमेशन स्‍केल"</string>
     <string name="animator_duration_scale_title" msgid="7082913931326085176">"ऐनिमेटर ड्यूरेशन स्केल"</string>
-    <string name="overlay_display_devices_title" msgid="5411894622334469607">"कई साइज़ के डिसप्ले बनाएं"</string>
-    <string name="shade_display_awareness_title" msgid="8000009404669495876">"शेड दिखने की स्थिति"</string>
+    <string name="overlay_display_devices_title" msgid="5411894622334469607">"अतिरिक्त वर्चुअल डिसप्ले बनाने की सेटिंग"</string>
+    <string name="shade_display_awareness_title" msgid="8000009404669495876">"शेड दिखने की जगह"</string>
     <string name="debug_applications_category" msgid="5394089406638954196">"ऐप्लिकेशन"</string>
-    <string name="immediately_destroy_activities" msgid="1826287490705167403">"गतिविधियों को न रखें"</string>
-    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"उपयोगकर्ता के छोड़ते ही हर गतिविधि को खत्म करें"</string>
+    <string name="immediately_destroy_activities" msgid="1826287490705167403">"गतिविधियों को सेव न करें"</string>
+    <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"उपयोगकर्ता के छोड़ते ही हर गतिविधि को मिटाएं"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"बैकग्राउंड प्रोसेस की सीमा"</string>
-    <string name="show_all_anrs" msgid="9160563836616468726">"बैकग्राउंड के ANRs दिखाएं"</string>
-    <string name="show_all_anrs_summary" msgid="8562788834431971392">"बैकग्राउंड में चलने वाले ऐप्लिकेशन के लिए, \'ऐप्लिकेशन नहीं चल रहा\' मैसेज दिखाएं"</string>
+    <string name="show_all_anrs" msgid="9160563836616468726">"बैकग्राउंड के एएनआर दिखाएं"</string>
+    <string name="show_all_anrs_summary" msgid="8562788834431971392">"बैकग्राउंड में चलने वाले ऐप्लिकेशन के लिए, \'ऐप्लिकेशन काम नहीं कर रहा है\' मैसेज दिखाएं"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"चैनल से जुड़ी चेतावनी दिखाएं"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"कोई ऐप, मान्य चैनल के बिना सूचना पोस्ट करे, तो स्क्रीन पर चेतावनी दिखाएं"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"ऐप्लिकेशन को बाहरी स्टोरेज पर ही चलाएं"</string>
@@ -477,7 +477,7 @@
     <string name="transcode_notification" msgid="5560515979793436168">"ट्रांसकोडिंग की सूचनाएं दिखाएं"</string>
     <string name="transcode_disable_cache" msgid="3160069309377467045">"कैश को ट्रांसकोड करने की सुविधा बंद करें"</string>
     <string name="runningservices_settings_title" msgid="6460099290493086515">"चालू सेवाएं"</string>
-    <string name="runningservices_settings_summary" msgid="1046080643262665743">"इस समय चल रही सेवाओं को देखें और कंट्रोल करें"</string>
+    <string name="runningservices_settings_summary" msgid="1046080643262665743">"मौजूदा समय में चल रही सेवाओं को देखें और कंट्रोल करें"</string>
     <string name="select_webview_provider_title" msgid="3917815648099445503">"वेबव्यू लागू करें"</string>
     <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"वेबव्यू सेट करें"</string>
     <string name="select_webview_provider_toast_text" msgid="8512254949169359848">"यह चुनाव अब मान्य नहीं है. दोबारा कोशिश करें."</string>
@@ -658,8 +658,8 @@
     <string name="user_grant_admin_title" msgid="5157031020083343984">"क्या इस व्यक्ति को एडमिन बनाना है?"</string>
     <string name="user_grant_admin_message" msgid="1673791931033486709">"एडमिन के पास अन्य लोगों के मुकाबले खास अधिकार होते हैं. एडमिन के पास ये अधिकार होते हैं: सभी लोगों को मैनेज करना, इस डिवाइस को अपडेट या रीसेट करना, सेटिंग में बदलाव करना, इंस्टॉल किए गए सभी ऐप्लिकेशन देखना, और अन्य लोगों को एडमिन के खास अधिकार देना या उन्हें वापस लेना."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"एडमिन बनाएं"</string>
-    <string name="user_setup_dialog_title" msgid="8037342066381939995">"उपयोगकर्ता खाता सेटअप करना है?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"पक्का करें कि उपयोगकर्ता, डिवाइस पर अपने खाते को पसंद के हिसाब से सेट अप करने के लिए मौजूद हो"</string>
+    <string name="user_setup_dialog_title" msgid="8037342066381939995">"उपयोगकर्ता खाता सेट अप करना है?"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"पक्का करें कि उपयोगकर्ता, डिवाइस पर अपना खाता सेट अप करने के लिए मौजूद हो"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"प्रोफ़ाइल अभी सेट करें?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"अभी सेट अप करें"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"रद्द करें"</string>
@@ -712,7 +712,7 @@
     <string name="cached_apps_freezer_disabled" msgid="4816382260660472042">"बंद है"</string>
     <string name="cached_apps_freezer_enabled" msgid="8866703500183051546">"चालू है"</string>
     <string name="cached_apps_freezer_reboot_dialog_text" msgid="695330563489230096">"बदली गई सेटिंग को लागू करने के लिए, डिवाइस को रीस्टार्ट करना होगा. अपने डिवाइस को रीस्टार्ट करें या रद्द करें."</string>
-    <string name="media_transfer_wired_headphone_name" msgid="8698668536022665254">"तार वाला हेडफ़ोन"</string>
+    <string name="media_transfer_wired_headphone_name" msgid="8698668536022665254">"वायर वाला हेडफ़ोन"</string>
     <string name="media_transfer_headphone_name" msgid="1157798825650178478">"तार वाला हेडफ़ोन"</string>
     <string name="media_transfer_usb_audio_name" msgid="1789292056757821355">"यूएसबी ऑडियो"</string>
     <string name="media_transfer_wired_device_mic_name" msgid="7115192790725088698">"तार वाला माइक्रोफ़ोन"</string>
@@ -762,7 +762,7 @@
     <string name="back_navigation_animation_summary" msgid="741292224121599456">"पीछे जाने पर झलक दिखाने वाले हाथ के जेस्चर के लिए सिस्टम ऐनिमेशन चालू करें."</string>
     <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"यह सेटिंग, सिस्टम के ऐनिमेशन को प्रिडिक्टिव जेस्चर ऐनिमेशन के लिए चालू कर देती है. मेनिफ़ेस्ट फ़ाइल में enableOnBackInvokedCallback की सेटिंग को हर ऐप्लिकेशन के हिसाब से \'सही\' पर सेट होना चाहिए."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <string name="not_specified" msgid="5423502443185110328">"जानकारी नहीं दी गई"</string>
+    <string name="not_specified" msgid="5423502443185110328">"बताया नहीं गया है"</string>
     <string name="neuter" msgid="2075249330106127310">"नपुंसक लिंग"</string>
     <string name="feminine" msgid="1529155595310784757">"महिला"</string>
     <string name="masculine" msgid="4653978041013996303">"पुरुष"</string>
