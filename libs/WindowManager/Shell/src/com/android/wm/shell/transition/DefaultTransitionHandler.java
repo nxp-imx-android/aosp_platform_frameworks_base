@@ -573,12 +573,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 backgroundColorForTransition = getTransitionBackgroundColorIfSet(change, a,
                         backgroundColorForTransition);
 
-                if (!isTask && a.getExtensionEdges() != 0x0) {
-                    startTransaction.setEdgeExtensionEffect(
-                            change.getLeash(), a.getExtensionEdges());
-                    finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
-                }
-
                 final Rect clipRect = TransitionUtil.isClosingType(mode)
                         ? new Rect(mRotator.getEndBoundsInStartRotation(change))
                         : new Rect(change.getEndAbsBounds());
@@ -596,6 +590,12 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     // always rely solely on endAbsBounds and need to also max with endRelOffset.
                     animRelOffset.x = Math.max(animRelOffset.x, change.getEndRelOffset().x);
                     animRelOffset.y = Math.max(animRelOffset.y, change.getEndRelOffset().y);
+                }
+                if (!isTask && a.getExtensionEdges() != 0x0
+                        && animRelOffset.x == 0 && animRelOffset.y == 0) {
+                    startTransaction.setEdgeExtensionEffect(
+                            change.getLeash(), a.getExtensionEdges());
+                    finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
                 }
 
                 if (isActivity && !isActivityLevel
