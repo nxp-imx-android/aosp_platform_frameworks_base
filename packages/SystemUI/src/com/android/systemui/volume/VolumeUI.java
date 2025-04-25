@@ -52,11 +52,11 @@ public class VolumeUI implements CoreStartable, ConfigurationController.Configur
 
     @Inject
     public VolumeUI(Context context,
-            VolumeDialogComponent volumeDialogComponent,
-            AudioRepository audioRepository,
-            AudioSharingInteractor audioSharingInteractor,
-            JavaAdapter javaAdapter,
-            VolumeLogger volumeLogger) {
+                    VolumeDialogComponent volumeDialogComponent,
+                    AudioRepository audioRepository,
+                    AudioSharingInteractor audioSharingInteractor,
+                    JavaAdapter javaAdapter,
+                    VolumeLogger volumeLogger) {
         mContext = context;
         mVolumeComponent = volumeDialogComponent;
         mAudioRepository = audioRepository;
@@ -67,7 +67,6 @@ public class VolumeUI implements CoreStartable, ConfigurationController.Configur
 
     @Override
     public void start() {
-        mAudioRepository.init();
         boolean enableVolumeUi = mContext.getResources().getBoolean(R.bool.enable_volume_ui);
         boolean enableSafetyWarning =
                 mContext.getResources().getBoolean(R.bool.enable_safety_warning);

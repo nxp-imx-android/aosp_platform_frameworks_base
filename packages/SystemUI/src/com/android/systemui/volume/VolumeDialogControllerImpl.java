@@ -60,7 +60,6 @@ import androidx.lifecycle.Observer;
 import com.android.settingslib.volume.MediaSessions;
 import com.android.settingslib.volume.MediaSessions.SessionId;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
@@ -259,15 +258,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     protected void setVolumeController() {
-        if (Flags.useVolumeController()) {
-            mVolumeControllerAdapter.collectToController(mVolumeController);
-        } else {
-            try {
-                mAudio.setVolumeController(mVolumeController);
-            } catch (SecurityException e) {
-                Log.w(TAG, "Unable to set the volume controller", e);
-            }
-        }
+        mVolumeControllerAdapter.collectToController(mVolumeController);
     }
 
     protected void setAudioManagerStreamVolume(int stream, int level, int flag) {
@@ -462,11 +453,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     private void onNotifyVisibleW(boolean visible) {
-        if (Flags.useVolumeController()) {
-            mVolumeControllerAdapter.notifyVolumeControllerVisible(visible);
-        } else {
-            mAudio.notifyVolumeControllerVisible(mVolumeController, visible);
-        }
+        mVolumeControllerAdapter.notifyVolumeControllerVisible(visible);
         if (!visible) {
             if (updateActiveStreamW(-1)) {
                 mCallbacks.onStateChanged(mState);
