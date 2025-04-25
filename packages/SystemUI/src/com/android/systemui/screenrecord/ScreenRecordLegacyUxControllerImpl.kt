@@ -31,8 +31,7 @@ import java.util.concurrent.Executor
 /**
  * [ScreenRecordUxController] implementation of the existing screen recording workflow.
  *
- * This class forwards all calls to the underlying [RecordingController] instance. It manages its
- * own set of listeners and bridges them to the original controller's callback mechanism.
+ * This class forwards all calls to the underlying [RecordingController] instance.
  */
 class ScreenRecordLegacyUxControllerImpl(
     @Main private val mainExecutor: Executor,
@@ -60,28 +59,6 @@ class ScreenRecordLegacyUxControllerImpl(
             screenRecordPermissionDialogDelegateFactory,
             screenRecordPermissionContentManagerFactory,
         )
-
-    private val listeners = mutableListOf<ScreenRecordUxController.StateChangeCallback>()
-
-    // Internal bridge callback that forwards events from the Java controller to Kotlin listeners.
-    private val internalCallbackBridge =
-        object : RecordingController.RecordingStateChangeCallback {
-            override fun onCountdown(millisUntilFinished: Long) {
-                listeners.forEach { it.onCountdown(millisUntilFinished) }
-            }
-
-            override fun onCountdownEnd() {
-                listeners.forEach { it.onCountdownEnd() }
-            }
-
-            override fun onRecordingStart() {
-                listeners.forEach { it.onRecordingStart() }
-            }
-
-            override fun onRecordingEnd() {
-                listeners.forEach { it.onRecordingEnd() }
-            }
-        }
 
     /** @see RecordingController.isScreenCaptureDisabled */
     override val isScreenCaptureDisabled: Boolean
@@ -151,35 +128,21 @@ class ScreenRecordLegacyUxControllerImpl(
     }
 
     /**
-     * Adds a listener to receive screen recording state changes. Registers the internal bridge
-     * callback with the underlying [RecordingController] if this is the first listener added.
+     * Adds a listener to receive screen recording state changes.
      *
      * @param listener The [StateChangeCallback] to add.
      */
     override fun addCallback(listener: ScreenRecordUxController.StateChangeCallback) {
-        // Add the listener before checking size and potentially registering the bridge
-        if (listeners.add(listener)) {
-            // If this was the first listener added, register the bridge callback
-            if (listeners.size == 1) {
-                recordingController.addCallback(internalCallbackBridge)
-            }
-        }
+        recordingController.addCallback(listener)
     }
 
     /**
-     * Removes a listener that was previously added. Unregisters the internal bridge callback from
-     * the underlying [RecordingController] if this was the last listener removed.
+     * Removes a listener that was previously added.
      *
      * @param listener The [StateChangeCallback] to remove.
      */
     override fun removeCallback(listener: ScreenRecordUxController.StateChangeCallback) {
-        // Remove the listener before checking size and potentially unregistering the bridge
-        if (listeners.remove(listener)) {
-            // If this was the last listener, unregister the bridge callback
-            if (listeners.isEmpty()) {
-                recordingController.removeCallback(internalCallbackBridge)
-            }
-        }
+        recordingController.removeCallback(listener)
     }
 
     companion object {

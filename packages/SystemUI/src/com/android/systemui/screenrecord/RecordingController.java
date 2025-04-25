@@ -54,7 +54,7 @@ import java.util.concurrent.Executor;
  * Helper class to initiate a screen recording
  */
 public class RecordingController
-        implements CallbackController<RecordingController.RecordingStateChangeCallback> {
+        implements CallbackController<ScreenRecordUxController.StateChangeCallback> {
 
     private final ScreenRecordUxController mScreenRecordUxController;
     private boolean mIsStarting;
@@ -74,7 +74,7 @@ public class RecordingController
     private final ScreenRecordPermissionContentManager.Factory
             mScreenRecordPermissionContentManagerFactory;
 
-    private final CopyOnWriteArrayList<RecordingStateChangeCallback> mListeners =
+    private final CopyOnWriteArrayList<ScreenRecordUxController.StateChangeCallback> mListeners =
             new CopyOnWriteArrayList<>();
 
     private final Lazy<ScreenCaptureDevicePolicyResolver> mDevicePolicyResolver;
@@ -207,7 +207,7 @@ public class RecordingController
         mCountDownTimer = new CountDownTimer(ms, interval) {
             @Override
             public void onTick(long millisUntilFinished) {
-                for (RecordingStateChangeCallback cb : mListeners) {
+                for (ScreenRecordUxController.StateChangeCallback cb : mListeners) {
                     cb.onCountdown(millisUntilFinished);
                 }
             }
@@ -216,7 +216,7 @@ public class RecordingController
             public void onFinish() {
                 mIsStarting = false;
                 mIsRecording = true;
-                for (RecordingStateChangeCallback cb : mListeners) {
+                for (ScreenRecordUxController.StateChangeCallback cb : mListeners) {
                     cb.onCountdownEnd();
                 }
                 try {
@@ -248,7 +248,7 @@ public class RecordingController
         }
         mIsStarting = false;
 
-        for (RecordingStateChangeCallback cb : mListeners) {
+        for (ScreenRecordUxController.StateChangeCallback cb : mListeners) {
             cb.onCountdownEnd();
         }
     }
@@ -298,7 +298,7 @@ public class RecordingController
             mBroadcastDispatcher.unregisterReceiver(mStateChangeReceiver);
         }
         mIsRecording = isRecording;
-        for (RecordingStateChangeCallback cb : mListeners) {
+        for (ScreenRecordUxController.StateChangeCallback cb : mListeners) {
             if (isRecording) {
                 cb.onRecordingStart();
             } else {
@@ -312,44 +312,12 @@ public class RecordingController
     }
 
     @Override
-    public void addCallback(@NonNull RecordingStateChangeCallback listener) {
+    public void addCallback(@NonNull ScreenRecordUxController.StateChangeCallback listener) {
         mListeners.add(listener);
     }
 
     @Override
-    public void removeCallback(@NonNull RecordingStateChangeCallback listener) {
+    public void removeCallback(@NonNull ScreenRecordUxController.StateChangeCallback listener) {
         mListeners.remove(listener);
-    }
-
-    /**
-     * A callback for changes in the screen recording state
-     */
-    public interface RecordingStateChangeCallback {
-        /**
-         * Called when a countdown to recording has updated
-         *
-         * @param millisUntilFinished Time in ms remaining in the countdown
-         */
-        default void onCountdown(long millisUntilFinished) {
-        }
-
-        /**
-         * Called when a countdown to recording has ended. This is a separate method so that if
-         * needed, listeners can handle cases where recording fails to start
-         */
-        default void onCountdownEnd() {
-        }
-
-        /**
-         * Called when a screen recording has started
-         */
-        default void onRecordingStart() {
-        }
-
-        /**
-         * Called when a screen recording has ended
-         */
-        default void onRecordingEnd() {
-        }
     }
 }
