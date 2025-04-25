@@ -63,6 +63,7 @@ import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.widget.Toast
 import android.window.DesktopExperienceFlags
+import android.window.DesktopExperienceFlags.DesktopExperienceFlag
 import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
 import android.window.DesktopExperienceFlags.ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import android.window.DesktopModeFlags
@@ -1246,7 +1247,7 @@ class DesktopTasksController(
     ) {
         val taskInfo: TaskInfo? =
             shellTaskOrganizer.getRunningTaskInfo(taskId)
-                ?: if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+                ?: if (enableAltTabKqsFlatenning.isTrue) {
                     recentTasksController?.findTaskInBackground(taskId)
                 } else {
                     null
@@ -1310,7 +1311,7 @@ class DesktopTasksController(
 
         // When a task is background, update wct to start task.
         if (
-            com.android.launcher3.Flags.enableAltTabKqsFlatenning() &&
+            enableAltTabKqsFlatenning.isTrue &&
                 shellTaskOrganizer.getRunningTaskInfo(task.taskId) == null &&
                 task is RecentTaskInfo
         ) {
@@ -3311,7 +3312,7 @@ class DesktopTasksController(
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
-        } else if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+        } else if (enableAltTabKqsFlatenning.isTrue) {
             // Until multiple desktops is enabled, we still want to reorder the task to top so that
             // if the task is not on top we can still switch to it using Alt+Tab.
             wct.reorder(taskInfo.token, /* onTop= */ true)
@@ -3319,7 +3320,7 @@ class DesktopTasksController(
 
         val deskId =
             taskRepository.getDeskIdForTask(taskInfo.taskId)
-                ?: if (com.android.launcher3.Flags.enableAltTabKqsFlatenning()) {
+                ?: if (enableAltTabKqsFlatenning.isTrue) {
                     taskRepository.getActiveDeskId(displayId)
                 } else {
                     null
@@ -4743,6 +4744,13 @@ class DesktopTasksController(
          * A placeholder for a synthetic transition that isn't backed by a true system transition.
          */
         val SYNTHETIC_TRANSITION: IBinder = Binder()
+
+        private val enableAltTabKqsFlatenning: DesktopExperienceFlag =
+            DesktopExperienceFlag(
+                com.android.launcher3.Flags::enableAltTabKqsFlatenning,
+                /* shouldOverrideByDevOption= */ false,
+                com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
+            )
     }
 
     /** Defines interface for classes that can listen to changes for task resize. */
