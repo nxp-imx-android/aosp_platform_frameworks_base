@@ -537,20 +537,7 @@ public class PipResizeGestureHandler {
         }
     }
 
-    private void snapToMovementBoundsEdge(Rect bounds, Rect movementBounds) {
-        final int leftEdge = bounds.left;
 
-
-        final int fromLeft = Math.abs(leftEdge - movementBounds.left);
-        final int fromRight = Math.abs(movementBounds.right - leftEdge);
-
-        // The PIP will be snapped to either the right or left edge, so calculate which one
-        // is closest to the current position.
-        final int newLeft = fromLeft < fromRight
-                ? movementBounds.left : movementBounds.right;
-
-        bounds.offsetTo(newLeft, mLastResizeBounds.top);
-    }
 
     /**
      * Resizes the pip window and updates user-resized bounds.
@@ -561,11 +548,8 @@ public class PipResizeGestureHandler {
     void userResizeTo(Rect bounds, float snapFraction) {
         Rect finalBounds = new Rect(bounds);
 
-        // get the current movement bounds
-        final Rect movementBounds = mPipBoundsAlgorithm.getMovementBounds(finalBounds);
-
         // snap the target bounds to the either left or right edge, by choosing the closer one
-        snapToMovementBoundsEdge(finalBounds, movementBounds);
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
 
         // apply the requested snap fraction onto the target bounds
         mPipBoundsAlgorithm.applySnapFraction(finalBounds, snapFraction);
@@ -597,15 +581,10 @@ public class PipResizeGestureHandler {
                     resizeRectAboutCenter(mLastResizeBounds, mMinSize.x, mMinSize.y);
                 }
 
-                // get the current movement bounds
-                final Rect movementBounds = mPipBoundsAlgorithm
-                        .getMovementBounds(mLastResizeBounds);
-
                 // snap mLastResizeBounds to the correct edge based on movement bounds
-                snapToMovementBoundsEdge(mLastResizeBounds, movementBounds);
+                mPipBoundsAlgorithm.snapToMovementBoundsEdge(mLastResizeBounds);
 
-                final float snapFraction = mPipBoundsAlgorithm.getSnapFraction(
-                        mLastResizeBounds, movementBounds);
+                final float snapFraction = mPipBoundsAlgorithm.getSnapFraction(mLastResizeBounds);
                 mPipBoundsAlgorithm.applySnapFraction(mLastResizeBounds, snapFraction);
 
                 // disable any touch events beyond resizing too

@@ -62,7 +62,12 @@ import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import com.android.wm.shell.common.pip.PipBoundsAlgorithm
+import com.android.wm.shell.pip2.animation.PipResizeAnimator
+import com.android.wm.shell.pip2.phone.PipTransitionState.EXITED_PIP
+import com.android.wm.shell.pip2.phone.PipTransitionState.EXITING_PIP
 import org.junit.Rule
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.never
 
 /**
@@ -80,12 +85,14 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockPipScheduler = mock<PipScheduler>()
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockPipBoundsState = mock<PipBoundsState>()
+    private val mockPipBoundsAlgorithm = mock<PipBoundsAlgorithm>()
     private val mockTaskInfo = mock<ActivityManager.RunningTaskInfo>()
     private val mockDisplayController = mock<DisplayController>()
     private val mockTransaction = mock<SurfaceControl.Transaction>()
     private val mockLeash = mock<SurfaceControl>()
     private val mockFactory = mock<PipSurfaceTransactionHelper.SurfaceControlTransactionFactory>()
     private val mockSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
+    private val mockPipResizeAnimator = mock<PipResizeAnimator>()
 
     private lateinit var testableResources: TestableResources
     private lateinit var resources: Resources
@@ -135,6 +142,13 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
                 any()
             )
         ).thenReturn(mockSurfaceTransactionHelper)
+        whenever(
+            mockSurfaceTransactionHelper.round(
+                any(),
+                any(),
+                any()
+            )
+        ).thenReturn(mockSurfaceTransactionHelper)
         defaultTda =
             DisplayAreaInfo(mock<WindowContainerToken>(), ORIGIN_DISPLAY_ID, /* featureId = */ 0)
         whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(ORIGIN_DISPLAY_ID)).thenReturn(
@@ -154,15 +168,24 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         pipDisplayTransferHandler =
             PipDisplayTransferHandler(
                 mContext, mockPipTransitionState, mockPipScheduler,
-                mockRootTaskDisplayAreaOrganizer, mockPipBoundsState, mockDisplayController
+                mockRootTaskDisplayAreaOrganizer, mockPipBoundsState, mockDisplayController,
+                mockPipDisplayLayoutState, mockPipBoundsAlgorithm
             )
         pipDisplayTransferHandler.setSurfaceControlTransactionFactory(mockFactory)
         pipDisplayTransferHandler.setSurfaceTransactionHelper(mockSurfaceTransactionHelper)
+        pipDisplayTransferHandler.setPipResizeAnimatorSupplier {
+                context, pipSurfaceTransactionHelper, leash, startTx, finishTx, baseBounds,
+                startBounds, endBounds, duration, delta -> mockPipResizeAnimator
+        }
     }
 
     @Test
     fun scheduleMovePipToDisplay_setsTransitionState() {
-        pipDisplayTransferHandler.scheduleMovePipToDisplay(ORIGIN_DISPLAY_ID, TARGET_DISPLAY_ID)
+        pipDisplayTransferHandler.scheduleMovePipToDisplay(
+            ORIGIN_DISPLAY_ID,
+            TARGET_DISPLAY_ID,
+            DESTINATION_BOUNDS
+        )
 
         verify(mockPipTransitionState).setState(eq(SCHEDULED_BOUNDS_CHANGE), any())
     }
@@ -178,11 +201,25 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
-        verify(mockPipScheduler).scheduleMoveToDisplay(eq(ORIGIN_DISPLAY_ID), eq(TARGET_DISPLAY_ID))
+        verify(mockPipScheduler).scheduleMoveToDisplay(eq(TARGET_DISPLAY_ID), anyOrNull())
     }
 
     @Test
-    fun onPipTransitionStateChanged_changingPipBounds_finishesChangingBounds() {
+    fun onPipTransitionStateChanged_schedulingBoundsChange_withinSameDisplay_doesNotScheduleMove() {
+        val extra = Bundle()
+        extra.putInt(ORIGIN_DISPLAY_ID_KEY, ORIGIN_DISPLAY_ID)
+        extra.putInt(TARGET_DISPLAY_ID_KEY, ORIGIN_DISPLAY_ID)
+        pipDisplayTransferHandler.onPipTransitionStateChanged(
+            UNDEFINED,
+            SCHEDULED_BOUNDS_CHANGE,
+            extra
+        )
+
+        verify(mockPipScheduler, never()).scheduleMoveToDisplay(any(), anyOrNull())
+    }
+
+    @Test
+    fun onPipTransitionStateChanged_changingPipBounds_changesPipTransitionStates() {
         val extra = Bundle()
         val destinationBounds = Rect(0, 0, 100, 100)
         extra.putParcelable(PIP_START_TX, SurfaceControl.Transaction())
@@ -195,7 +232,9 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
-        verify(mockPipScheduler).scheduleFinishPipBoundsChange(eq(destinationBounds))
+        verify(mockPipTransitionState).state = eq(EXITING_PIP)
+        verify(mockPipTransitionState).state = eq(EXITED_PIP)
+        verify(mockPipResizeAnimator).start()
     }
 
     @Test
@@ -338,5 +377,6 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         const val TEST_SHADOW_RADIUS = 5
         val START_DRAG_COORDINATES = PointF(100f, 100f)
         val PIP_BOUNDS = Rect(0, 0, 700, 700)
+        val DESTINATION_BOUNDS = Rect(100, 100, 800, 800)
     }
 }
