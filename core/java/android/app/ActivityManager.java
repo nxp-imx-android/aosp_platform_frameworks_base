@@ -257,7 +257,7 @@ public class ActivityManager {
 
     /**
      * Query handler for mGetCurrentUserIdCache - returns a cached value of the current foreground
-     * user id if the backstage_power/android.app.cache_get_current_user_id flag is enabled.
+     * user id.
      */
     private static final IpcDataCache.QueryHandler<Void, Integer> mGetCurrentUserIdQuery =
             new IpcDataCache.QueryHandler<>() {
@@ -268,12 +268,6 @@ public class ActivityManager {
                     } catch (RemoteException e) {
                         throw e.rethrowFromSystemServer();
                     }
-                }
-
-                @Override
-                public boolean shouldBypassCache(Void query) {
-                    // If the flag to enable the new caching behavior is off, bypass the cache.
-                    return !Flags.cacheGetCurrentUserId();
                 }
             };
 
