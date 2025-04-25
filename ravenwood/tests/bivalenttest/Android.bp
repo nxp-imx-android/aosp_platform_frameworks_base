@@ -128,5 +128,6 @@ android_test {
     defaults: ["ravenwood-bivalent-device-defaults"],
     ravenizer: {
         enabled: true,
+        flags: ["--no-jdk-patch"],
     },
 }
