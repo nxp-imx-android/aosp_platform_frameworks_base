@@ -4259,21 +4259,13 @@ public class ActivityManager {
      * specified.
      */
     public List<RunningAppProcessInfo> getRunningAppProcesses() {
-        if (!Flags.rateLimitGetRunningAppProcesses()) {
-            return getRunningAppProcessesInternal();
-        } else {
-            return mRunningProcessesCache.get(() -> {
-                return getRunningAppProcessesInternal();
-            });
-        }
-    }
-
-    private List<RunningAppProcessInfo> getRunningAppProcessesInternal() {
-        try {
-            return getService().getRunningAppProcesses();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mRunningProcessesCache.get(() -> {
+            try {
+                return getService().getRunningAppProcesses();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        });
     }
 
     /**
