@@ -162,6 +162,9 @@ filegroup {
 java_library {
     name: "Slogf",
     srcs: ["core/java/com/android/server/utils/Slogf.java"],
+    libs: [
+        "error_prone_annotations",
+    ],
 }
 
 // TODO(b/411222385): used only by FrameworksMockingServicesTests,
