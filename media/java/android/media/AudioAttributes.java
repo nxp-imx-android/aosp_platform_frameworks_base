@@ -22,6 +22,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 // TODO switch from HIDL imports to AIDL
@@ -37,6 +38,8 @@ import android.util.IntArray;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.util.proto.ProtoOutputStream;
+
+import androidx.annotation.IntRange;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -698,6 +701,21 @@ public final class AudioAttributes implements Parcelable {
         return (mFlags & FLAG_CONTENT_SPATIALIZED) != 0;
     }
 
+    /**
+     * @hide
+     * Returns the test identifier value set with {@link Builder#setTestId(long)}.
+     * @return the test ID value, or {@link #VALUE_TEST_ID_NONE} is none found
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    public long getTestId() {
+        if (mBundle == null) {
+            return VALUE_TEST_ID_NONE;
+        }
+        return mBundle.getLong(KEY_TEST_ID, VALUE_TEST_ID_NONE);
+    }
+
+
     /** @hide */
     @IntDef(flag = false, value = {
             SPATIALIZATION_BEHAVIOR_AUTO,
@@ -1337,6 +1355,24 @@ public final class AudioAttributes implements Parcelable {
             mFlags |= FLAG_CALL_REDIRECTION;
             return this;
         }
+
+        /**
+         * @hide
+         * Sets a test identifier in the attributes
+         * @param testId value of the identifier
+         * @return the same Builder instance.
+         */
+        @TestApi
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature
+        public @NonNull Builder setTestId(@IntRange(from = 0L) long testId) {
+            if (testId < 0) {
+                throw new IllegalArgumentException("Test ID value must be 0 or greater");
+            }
+            final Bundle testBundle = new Bundle(1);
+            testBundle.putLong(KEY_TEST_ID, testId);
+            addBundle(testBundle);
+            return this;
+        }
     };
 
     @Override
@@ -1352,6 +1388,20 @@ public final class AudioAttributes implements Parcelable {
      * see definition of kAudioAttributesMarshallTagFlattenTags
      */
     public final static int FLATTEN_TAGS = 0x1;
+
+    /**
+     * Key in the Bundle to access the test ID value
+     */
+    private static final String KEY_TEST_ID = "key_test_id";
+    /**
+     * @hide
+     * Value when no test ID value was given in {@link Builder#setTestId(long)}
+     * @see #getTestId()
+     * @see Builder#setTestId(long)
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature
+    public static final long VALUE_TEST_ID_NONE = Long.MIN_VALUE;
 
     private final static int ATTR_PARCEL_IS_NULL_BUNDLE = -1977;
     private final static int ATTR_PARCEL_IS_VALID_BUNDLE = 1980;
