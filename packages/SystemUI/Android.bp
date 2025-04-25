@@ -107,7 +107,7 @@ filegroup {
         "tests/src/**/systemui/media/dialog/MediaOutputBroadcastDialogTest.java",
         "tests/src/**/systemui/media/dialog/MediaOutputDialogTest.java",
         "tests/src/**/systemui/settings/brightness/BrightnessDialogTest.kt",
-        "tests/src/**/systemui/shared/clocks/view/SimpleDigitalClockTextViewTest.kt",
+        "tests/src/**/systemui/shared/clocks/view/DigitalClockTextViewTest.kt",
         "tests/src/**/systemui/statusbar/policy/SecurityControllerTest.java",
         "tests/src/**/systemui/lifecycle/SysUiViewModelTest.kt",
         "tests/src/**/systemui/keyguard/ui/viewmodel/KeyguardQuickAffordancesCombinedViewModelTest.kt",

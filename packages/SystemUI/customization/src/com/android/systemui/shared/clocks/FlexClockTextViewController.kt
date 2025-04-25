@@ -20,9 +20,13 @@ import android.graphics.Rect
 import android.icu.util.TimeZone
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Interpolator
 import android.widget.RelativeLayout
-import com.android.systemui.animation.TextAnimator
+import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalTimespec
+import com.android.systemui.customization.clocks.DigitalTimespecHandler
+import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
@@ -36,14 +40,9 @@ import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
-import com.android.systemui.shared.clocks.view.HorizontalAlignment
-import com.android.systemui.shared.clocks.view.SimpleDigitalClockTextView
-import com.android.systemui.shared.clocks.view.VerticalAlignment
+import com.android.systemui.shared.clocks.view.FlexClockTextView
 import java.util.Locale
 
-private val TAG = SimpleDigitalHandLayerController::class.simpleName!!
-
-// TODO(b/364680879): The remains of ClockDesign. Cut further.
 data class LayerConfig(
     val style: FontTextStyle,
     val aodStyle: FontTextStyle,
@@ -52,24 +51,12 @@ data class LayerConfig(
     val timeFormatter: DigitalTimeFormatter?,
 )
 
-data class DigitalAlignment(
-    val horizontalAlignment: HorizontalAlignment?,
-    val verticalAlignment: VerticalAlignment?,
-)
-
-data class FontTextStyle(
-    val lineHeight: Float? = null,
-    val fontSizeScale: Float? = null,
-    val transitionDuration: Long = TextAnimator.DEFAULT_ANIMATION_DURATION,
-    val transitionInterpolator: Interpolator? = null,
-)
-
-open class SimpleDigitalHandLayerController(
+open class FlexClockTextViewController(
     private val clockCtx: ClockContext,
     private val layerCfg: LayerConfig,
     isLargeClock: Boolean,
-) : SimpleClockLayerController {
-    override val view = SimpleDigitalClockTextView(clockCtx, isLargeClock)
+) : FlexClockViewController {
+    override val view = FlexClockTextView(clockCtx, isLargeClock)
     private val logger = Logger(clockCtx.messageBuffer, TAG)
     private val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.timeFormatter!!)
     override var onViewBoundsChanged by view::onViewBoundsChanged
@@ -219,4 +206,8 @@ open class SimpleDigitalHandLayerController(
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }
+
+    companion object {
+        private val TAG = FlexClockTextViewController::class.simpleName!!
+    }
 }

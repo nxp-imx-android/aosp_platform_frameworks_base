@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks.view
+package com.android.systemui.customization.clocks.view
 
 import android.annotation.SuppressLint
 import android.graphics.Canvas
@@ -22,7 +22,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
-import android.graphics.Rect
 import android.os.VibrationEffect
 import android.text.TextPaint
 import android.util.AttributeSet
@@ -30,7 +29,6 @@ import android.util.Log
 import android.util.MathUtils.lerp
 import android.util.TypedValue
 import android.view.MotionEvent
-import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
@@ -44,8 +42,12 @@ import com.android.systemui.animation.TextAnimator
 import com.android.systemui.animation.TextAnimatorListener
 import com.android.systemui.customization.clocks.CanvasUtil.translate
 import com.android.systemui.customization.clocks.CanvasUtil.use
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.DigitTranslateAnimator
+import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.PaintUtil.getTextBounds
 import com.android.systemui.customization.clocks.ViewUtils.measuredSize
 import com.android.systemui.customization.clocks.ViewUtils.size
 import com.android.systemui.plugins.clocks.ClockAxisStyle
@@ -55,69 +57,25 @@ import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.size
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.Flags.ambientAod
-import com.android.systemui.shared.clocks.ClockContext
-import com.android.systemui.shared.clocks.DigitTranslateAnimator
-import com.android.systemui.shared.clocks.DimensionParser
-import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
-import com.android.systemui.shared.clocks.FontTextStyle
 import java.lang.Thread
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-private val TAG = SimpleDigitalClockTextView::class.simpleName!!
+interface DigitalClockTextViewParent {
+    fun animateFidget(x: Float, y: Float)
 
-private val tempRect = Rect()
+    fun updateMeasuredSize()
 
-private fun Paint.getTextBounds(text: CharSequence): VRectF {
-    this.getTextBounds(text, 0, text.length, tempRect)
-    return VRectF(tempRect)
-}
+    fun updateLocation()
 
-private fun nearEqual(a: Float, b: Float, tolerance: Float): Boolean {
-    return abs(a - b) < tolerance
-}
+    fun requestLayout()
 
-enum class VerticalAlignment {
-    TOP,
-    BOTTOM,
-    BASELINE,
-    CENTER,
-}
-
-enum class HorizontalAlignment {
-    LEFT {
-        override fun resolveXAlignment(view: View) = XAlignment.LEFT
-    },
-    RIGHT {
-        override fun resolveXAlignment(view: View) = XAlignment.RIGHT
-    },
-    START {
-        override fun resolveXAlignment(view: View): XAlignment {
-            return if (view.isLayoutRtl()) XAlignment.RIGHT else XAlignment.LEFT
-        }
-    },
-    END {
-        override fun resolveXAlignment(view: View): XAlignment {
-            return if (view.isLayoutRtl()) XAlignment.LEFT else XAlignment.RIGHT
-        }
-    },
-    CENTER {
-        override fun resolveXAlignment(view: View) = XAlignment.CENTER
-    };
-
-    abstract fun resolveXAlignment(view: View): XAlignment
-}
-
-enum class XAlignment {
-    LEFT,
-    RIGHT,
-    CENTER,
+    fun invalidate()
 }
 
 @SuppressLint("AppCompatCustomView")
-open class SimpleDigitalClockTextView(
+abstract class DigitalClockTextView(
     val clockCtx: ClockContext,
     val isLargeClock: Boolean,
     attrs: AttributeSet? = null,
@@ -126,38 +84,29 @@ open class SimpleDigitalClockTextView(
     lateinit var textStyle: FontTextStyle
     lateinit var aodStyle: FontTextStyle
 
-    private val isLegacyFlex = clockCtx.settings.clockId == FLEX_CLOCK_ID
-    private val fixedAodAxes =
-        when {
-            !isLegacyFlex -> fromAxes(AOD_WEIGHT_AXIS, WIDTH_AXIS)
-            isLargeClock -> fromAxes(FLEX_AOD_LARGE_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
-            else -> fromAxes(FLEX_AOD_SMALL_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
-        }
+    data class FontVariations(
+        val lockscreen: String,
+        val doze: String,
+        val chargeLockscreen: String,
+        val chargeDoze: String,
+        val fidget: String,
+    ) {
+        fun getStandard(isDozing: Boolean): String = if (isDozing) doze else lockscreen
 
-    private var lsFontVariation: String = ""
-    private var aodFontVariation: String = ""
-    private var fidgetFontVariation: String = ""
-    private var chargeLSFontVariation: String = ""
-    private var chargeAODFontVariation: String = ""
-
-    private fun updateFontVariations(lsAxes: ClockAxisStyle, aodAxes: ClockAxisStyle) {
-        lsFontVariation = lsAxes.toFVar()
-        aodFontVariation = aodAxes.toFVar()
-        fidgetFontVariation = buildAnimationTargetVariation(lsAxes, FIDGET_DISTS).toFVar()
-        chargeLSFontVariation = buildAnimationTargetVariation(lsAxes, CHARGE_DISTS).toFVar()
-        chargeAODFontVariation = buildAnimationTargetVariation(aodAxes, CHARGE_DISTS).toFVar()
+        fun getCharge(isDozing: Boolean): String = if (isDozing) chargeDoze else chargeLockscreen
     }
 
+    private var fontVariations: FontVariations
+
+    abstract fun initializeFontVariations(): FontVariations
+
+    abstract fun updateFontVariations(lsAxes: ClockAxisStyle): FontVariations
+
     init {
-        val roundAxis = if (!isLegacyFlex) ROUND_AXIS else FLEX_ROUND_AXIS
-        val lsFontAxes =
-            if (!isLegacyFlex) fromAxes(LS_WEIGHT_AXIS, WIDTH_AXIS, ROUND_AXIS, SLANT_AXIS)
-            else fromAxes(FLEX_LS_WEIGHT_AXIS, FLEX_LS_WIDTH_AXIS, FLEX_ROUND_AXIS, SLANT_AXIS)
-        updateFontVariations(lsFontAxes, fixedAodAxes.copyWith(fromAxes(roundAxis, SLANT_AXIS)))
+        fontVariations = initializeFontVariations()
     }
 
     var onViewBoundsChanged: ((VRectF) -> Unit)? = null
-    private val parser = DimensionParser(clockCtx.context)
     var maxSingleDigitHeight = -1f
     var maxSingleDigitWidth = -1f
     var digitTranslateAnimator: DigitTranslateAnimator? = null
@@ -179,7 +128,7 @@ open class SimpleDigitalClockTextView(
     private var prevTextBounds = VRectF.ZERO
     // targetTextBounds holds the state we are interpolating to
     private var targetTextBounds = VRectF.ZERO
-    protected val logger = ClockLogger(this, clockCtx.messageBuffer, this::class.simpleName!!)
+    protected val logger = ClockLogger(this, clockCtx.messageBuffer, TAG)
         get() = field ?: ClockLogger.INIT_LOGGER
 
     private var aodDozingInterpolator: Interpolator = Interpolators.LINEAR
@@ -210,7 +159,8 @@ open class SimpleDigitalClockTextView(
         if (super.onTouchEvent(evt)) return true
 
         if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_UP) {
-            (parent as? FlexClockView)?.animateFidget(evt.x, evt.y) ?: animateFidget(evt.x, evt.y)
+            (parent as? DigitalClockTextViewParent)?.animateFidget(evt.x, evt.y)
+                ?: animateFidget(evt.x, evt.y)
             return true
         }
 
@@ -244,16 +194,16 @@ open class SimpleDigitalClockTextView(
     }
 
     fun updateAxes(lsAxes: ClockAxisStyle, isAnimated: Boolean) {
-        updateFontVariations(lsAxes, lsAxes.copyWith(fixedAodAxes))
-        logger.updateAxes(lsFontVariation, aodFontVariation, isAnimated)
+        fontVariations = updateFontVariations(lsAxes)
+        logger.updateAxes(fontVariations.lockscreen, fontVariations.doze, isAnimated)
 
-        lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
+        lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(fontVariations.lockscreen)
         typeface = lockScreenPaint.typeface
 
         updateTextBounds()
 
         textAnimator.setTextStyle(
-            TextAnimator.Style(fVar = lsFontVariation),
+            TextAnimator.Style(fVar = fontVariations.lockscreen),
             TextAnimator.Animation(
                 animate = isAnimated && isAnimationEnabled,
                 duration = AXIS_CHANGE_ANIMATION_DURATION,
@@ -331,7 +281,7 @@ open class SimpleDigitalClockTextView(
             drawnProgress = interpProgress
             val measureSize = computeMeasuredSize(interpBounds)
             setInterpolatedSize(measureSize)
-            (parent as? FlexClockView)?.run {
+            (parent as? DigitalClockTextViewParent)?.run {
                 updateMeasuredSize()
                 updateLocation()
             } ?: setInterpolatedLocation(measureSize)
@@ -365,7 +315,7 @@ open class SimpleDigitalClockTextView(
     override fun invalidate() {
         logger.invalidate()
         super.invalidate()
-        (parent as? FlexClockView)?.invalidate()
+        (parent as? DigitalClockTextViewParent)?.invalidate()
     }
 
     fun refreshTime() {
@@ -378,7 +328,7 @@ open class SimpleDigitalClockTextView(
         logger.animateDoze(isDozing, isAnimated)
         textAnimator.setTextStyle(
             TextAnimator.Style(
-                fVar = if (isDozing) aodFontVariation else lsFontVariation,
+                fVar = fontVariations.getStandard(isDozing),
                 color = if (isDozing) aodColor else lockscreenColor,
                 textSize = if (isDozing) aodFontSizePx else lockScreenPaint.textSize,
             ),
@@ -391,7 +341,7 @@ open class SimpleDigitalClockTextView(
 
         if (!isAnimated) {
             requestLayout()
-            (parent as? FlexClockView)?.requestLayout()
+            (parent as? DigitalClockTextViewParent)?.requestLayout()
         }
     }
 
@@ -403,18 +353,14 @@ open class SimpleDigitalClockTextView(
         logger.animateCharge()
 
         textAnimator.setTextStyle(
-            TextAnimator.Style(
-                fVar = if (dozeFraction == 0f) chargeLSFontVariation else chargeAODFontVariation
-            ),
+            TextAnimator.Style(fVar = fontVariations.getCharge(dozeFraction != 0f)),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = CHARGE_ANIMATION_DURATION,
                 interpolator = CHARGE_INTERPOLATOR,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
-                        TextAnimator.Style(
-                            fVar = if (dozeFraction == 0f) lsFontVariation else aodFontVariation
-                        ),
+                        TextAnimator.Style(fVar = fontVariations.getStandard(dozeFraction != 0f)),
                         TextAnimator.Animation(
                             animate = isAnimationEnabled,
                             duration = CHARGE_ANIMATION_DURATION,
@@ -436,14 +382,14 @@ open class SimpleDigitalClockTextView(
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
         textAnimator.setTextStyle(
-            TextAnimator.Style(fVar = fidgetFontVariation),
+            TextAnimator.Style(fVar = fontVariations.fidget),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
                 interpolator = FIDGET_INTERPOLATOR,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
-                        TextAnimator.Style(fVar = lsFontVariation),
+                        TextAnimator.Style(fVar = fontVariations.lockscreen),
                         TextAnimator.Animation(
                             animate = isAnimationEnabled,
                             duration = FIDGET_ANIMATION_DURATION,
@@ -596,7 +542,7 @@ open class SimpleDigitalClockTextView(
     fun applyStyles(textStyle: FontTextStyle, aodStyle: FontTextStyle?) {
         this.textStyle = textStyle
         lockScreenPaint.strokeJoin = Paint.Join.ROUND
-        lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
+        lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(fontVariations.lockscreen)
         lockScreenPaint.fontFeatureSettings = if (isLargeClock) "" else "pnum"
         typeface = lockScreenPaint.typeface
         textStyle.lineHeight?.let { lineHeight = it.roundToInt() }
@@ -655,7 +601,7 @@ open class SimpleDigitalClockTextView(
             textAnimator.textInterpolator.onTargetPaintModified()
             textAnimator.setTextStyle(
                 TextAnimator.Style(
-                    fVar = lsFontVariation,
+                    fVar = fontVariations.lockscreen,
                     textSize = lockScreenPaint.textSize,
                     color = lockscreenColor,
                 )
@@ -699,6 +645,8 @@ open class SimpleDigitalClockTextView(
     }
 
     companion object {
+        private val TAG = DigitalClockTextView::class.simpleName!!
+
         private val PORTER_DUFF_XFER_MODE_PAINT =
             Paint().also { it.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT) }
 
@@ -730,23 +678,5 @@ open class SimpleDigitalClockTextView(
                 AxisAnimation(GSFAxes.ROUND, 0f),
                 AxisAnimation(GSFAxes.SLANT, 0f),
             )
-
-        private val LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 400f
-        private val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT to 200f
-        private val WIDTH_AXIS = GSFAxes.WIDTH to 85f
-        private val ROUND_AXIS = GSFAxes.ROUND to 0f
-        private val SLANT_AXIS = GSFAxes.SLANT to 0f
-
-        // Axes for Legacy version of the Flex Clock
-        private val FLEX_LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 600f
-        private val FLEX_AOD_LARGE_WEIGHT_AXIS = GSFAxes.WEIGHT to 74f
-        private val FLEX_AOD_SMALL_WEIGHT_AXIS = GSFAxes.WEIGHT to 133f
-        private val FLEX_LS_WIDTH_AXIS = GSFAxes.WIDTH to 100f
-        private val FLEX_AOD_WIDTH_AXIS = GSFAxes.WIDTH to 43f
-        private val FLEX_ROUND_AXIS = GSFAxes.ROUND to 100f
-
-        private fun fromAxes(vararg axes: Pair<AxisDefinition, Float>): ClockAxisStyle {
-            return ClockAxisStyle(axes.map { (def, value) -> def.tag to value }.toMap())
-        }
     }
 }

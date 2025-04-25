@@ -19,6 +19,13 @@ package com.android.systemui.shared.clocks
 import android.graphics.Rect
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
+import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalTimespec
+import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.view.DigitalAlignment
+import com.android.systemui.customization.clocks.view.HorizontalAlignment
+import com.android.systemui.customization.clocks.view.VerticalAlignment
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
@@ -31,25 +38,22 @@ import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
-import com.android.systemui.shared.clocks.view.FlexClockView
-import com.android.systemui.shared.clocks.view.HorizontalAlignment
-import com.android.systemui.shared.clocks.view.VerticalAlignment
+import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 
-class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
-    SimpleClockLayerController {
+class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClockViewController {
     private val logger =
-        Logger(clockCtx.messageBuffer, ComposedDigitalLayerController::class.simpleName!!)
+        Logger(clockCtx.messageBuffer, FlexClockViewGroupController::class.simpleName!!)
 
-    val layerControllers = mutableListOf<SimpleClockLayerController>()
+    val layerControllers = mutableListOf<FlexClockViewController>()
     val dozeState = DefaultClockController.AnimationState(1F)
 
-    override val view = FlexClockView(clockCtx)
+    override val view = FlexClockViewGroup(clockCtx)
     override var onViewBoundsChanged by view::onViewBoundsChanged
 
     init {
         fun createController(cfg: LayerConfig) {
-            val controller = SimpleDigitalHandLayerController(clockCtx, cfg, isLargeClock = true)
+            val controller = FlexClockTextViewController(clockCtx, cfg, isLargeClock = true)
             view.addView(controller.view)
             layerControllers.add(controller)
         }
@@ -61,7 +65,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                 aodStyle =
                     FontTextStyle(
                         transitionInterpolator = Interpolators.EMPHASIZED,
-                        transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
+                        transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
                     ),
 
                 // Placeholder Timespec Values

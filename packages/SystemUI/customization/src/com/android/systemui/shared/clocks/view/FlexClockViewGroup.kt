@@ -28,9 +28,12 @@ import androidx.core.view.children
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.CanvasUtil.translate
 import com.android.systemui.customization.clocks.CanvasUtil.use
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.DigitTranslateAnimator
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.ViewUtils.measuredSize
+import com.android.systemui.customization.clocks.view.DigitalClockTextViewParent
 import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockViewIds
@@ -38,8 +41,6 @@ import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.max
 import com.android.systemui.plugins.clocks.VPointF.Companion.times
 import com.android.systemui.plugins.clocks.VRectF
-import com.android.systemui.shared.clocks.ClockContext
-import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import java.util.Locale
 import kotlin.collections.filterNotNull
 import kotlin.collections.map
@@ -50,7 +51,8 @@ import kotlin.math.roundToInt
 
 fun clamp(value: Float, minVal: Float, maxVal: Float): Float = max(min(value, maxVal), minVal)
 
-class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
+class FlexClockViewGroup(clockCtx: ClockContext) :
+    ViewGroup(clockCtx.context), DigitalClockTextViewParent {
     protected val logger = ClockLogger(this, clockCtx.messageBuffer, this::class.simpleName!!)
         get() = field ?: ClockLogger.INIT_LOGGER
 
@@ -72,12 +74,12 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
             field = value
         }
 
-    var _childViews: List<SimpleDigitalClockTextView>? = null
-    val childViews: List<SimpleDigitalClockTextView>
+    var _childViews: List<FlexClockTextView>? = null
+    val childViews: List<FlexClockTextView>
         get() {
             return _childViews
                 ?: this.children
-                    .map { child -> child as? SimpleDigitalClockTextView }
+                    .map { child -> child as? FlexClockTextView }
                     .filterNotNull()
                     .toList()
                     .also { _childViews = it }
@@ -136,7 +138,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         if (child == null) return
         logger.onViewAdded(child)
         super.onViewAdded(child)
-        (child as? SimpleDigitalClockTextView)?.let {
+        (child as? FlexClockTextView)?.let {
             it.digitTranslateAnimator = DigitTranslateAnimator { invalidate() }
         }
         child.setWillNotDraw(true)
@@ -173,7 +175,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         super.requestLayout()
     }
 
-    fun updateMeasuredSize() =
+    override fun updateMeasuredSize() =
         updateMeasuredSize(
             measuredWidthAndState,
             measuredHeightAndState,
@@ -189,7 +191,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         setMeasuredDimension(size.x.roundToInt(), size.y.roundToInt())
     }
 
-    fun updateLocation() {
+    override fun updateLocation() {
         val layoutBounds = this.layoutBounds ?: return
         val bounds = VRectF.fromCenter(layoutBounds.center, this.measuredSize)
         setFrame(
@@ -346,7 +348,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         }
     }
 
-    fun animateFidget(x: Float, y: Float) {
+    override fun animateFidget(x: Float, y: Float) {
         childViews.forEach { it.animateFidget(x, y) }
     }
 
