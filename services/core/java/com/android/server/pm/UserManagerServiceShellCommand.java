@@ -262,7 +262,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         boolean verbose = false;
         boolean criticalOnly = false;
-        int mode = UserSystemPackageInstaller.USER_TYPE_PACKAGE_WHITELIST_MODE_NONE;
+        int mode = UserSystemPackageInstaller.USER_TYPE_PACKAGE_ALLOWLIST_MODE_NONE;
         String opt;
         while ((opt = getNextOption()) != null) {
             switch (opt) {
@@ -287,7 +287,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                 + ", mode=" + UserSystemPackageInstaller.modeToString(mode));
 
         try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ")) {
-            mSystemPackageInstaller.dumpPackageWhitelistProblems(ipw, mode, verbose,
+            mSystemPackageInstaller.dumpPackageAllowlistProblems(ipw, mode, verbose,
                     criticalOnly);
         }
         return 0;

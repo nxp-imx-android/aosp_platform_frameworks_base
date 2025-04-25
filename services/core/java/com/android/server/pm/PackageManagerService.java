@@ -1811,7 +1811,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     /** Install/uninstall system packages for all users based on their user-type, as applicable. */
     private void installAllowlistedSystemPackages() {
-        if (mUserManager.installWhitelistedSystemPackages(isFirstBoot(), isDeviceUpgrading(),
+        if (mUserManager.installAllowlistedSystemPackages(isFirstBoot(), isDeviceUpgrading(),
                 mExistingPackages)) {
             scheduleWritePackageRestrictions(USER_ALL);
             scheduleWriteSettings();
