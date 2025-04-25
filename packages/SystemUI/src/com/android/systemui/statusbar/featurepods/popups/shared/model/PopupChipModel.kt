@@ -28,16 +28,16 @@ sealed class PopupChipId(val value: String) {
     data object AvControlsIndicator : PopupChipId("AvControlsIndicator")
 }
 
+/** Model for an optionally clickable icon that is displayed on the chip. */
+data class ChipIcon(val icon: Icon, val onClick: (() -> Unit)? = null)
+
 /** Defines the behavior of the chip when hovered over. */
 sealed interface HoverBehavior {
-    /** No specific hover behavior. The default icon will be shown. */
+    /** No specific hover behavior. The default icons will be shown. */
     data object None : HoverBehavior
 
-    /**
-     * Shows a button on hover with the given [icon] and executes [onIconPressed] when the icon is
-     * pressed.
-     */
-    data class Button(val icon: Icon, val onIconPressed: () -> Unit) : HoverBehavior
+    /** Shows a list of buttons on hover with the given [icons] */
+    data class Buttons(val icons: List<ChipIcon>) : HoverBehavior
 }
 
 /** Model for individual status bar popup chips. */
@@ -52,8 +52,8 @@ sealed class PopupChipModel {
 
     data class Shown(
         override val chipId: PopupChipId,
-        /** Default icon displayed on the chip */
-        val icon: Icon,
+        /** Icons shown on the chip when no specific hover behavior. */
+        val icons: List<ChipIcon>,
         val chipText: String,
         val isPopupShown: Boolean = false,
         val showPopup: () -> Unit = {},

@@ -28,15 +28,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.featurepods.popups.shared.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.shared.model.HoverBehavior
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 
@@ -118,30 +117,13 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
             val hoverBehavior = viewModel.hoverBehavior
             val iconBackgroundColor = contentColorFor(chipBackgroundColor)
             val iconInteractionSource = remember { MutableInteractionSource() }
-            Icon(
-                icon =
-                    when {
-                        isHovered && hoverBehavior is HoverBehavior.Button -> hoverBehavior.icon
-                        else -> viewModel.icon
-                    },
-                modifier =
-                    Modifier.height(20.dp)
-                        .width(20.dp)
-                        .thenIf(isHovered) {
-                            Modifier.background(color = iconBackgroundColor, shape = CircleShape)
-                                .padding(2.dp)
-                        }
-                        .thenIf(hoverBehavior is HoverBehavior.Button) {
-                            Modifier.clickable(
-                                role = Role.Button,
-                                onClick = (hoverBehavior as HoverBehavior.Button).onIconPressed,
-                                indication = ripple(),
-                                interactionSource = iconInteractionSource,
-                                enabled = isHovered,
-                            )
-                        },
-                tint = iconColor,
-            )
+
+            val chipIcons =
+                when {
+                    isHovered && hoverBehavior is HoverBehavior.Buttons -> hoverBehavior.icons
+                    else -> viewModel.icons
+                }
+            ChipIcons(chipIcons = chipIcons)
 
             val text = viewModel.chipText
             val textStyle = MaterialTheme.typography.labelLarge
@@ -182,6 +164,19 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
                         ),
             )
         }
+    }
+}
+
+@Composable
+private fun ChipIcons(chipIcons: List<ChipIcon>) {
+    for (chipIcon in chipIcons) {
+        Icon(
+            icon = chipIcon.icon,
+            modifier =
+                Modifier.size(20.dp).thenIf(chipIcon.onClick != null) {
+                    Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
+                },
+        )
     }
 }
 
