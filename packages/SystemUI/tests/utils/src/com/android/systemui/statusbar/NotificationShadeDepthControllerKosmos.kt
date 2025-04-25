@@ -24,6 +24,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.plugins.statusbar.statusBarStateController
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.shadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.phone.biometricUnlockController
@@ -50,9 +51,10 @@ var Kosmos.notificationShadeDepthController by Fixture {
             shadeModeInteractor = shadeModeInteractor,
             windowRootViewBlurInteractor = windowRootViewBlurInteractor,
             appZoomOutOptional = Optional.empty(),
+            shadeDisplaysRepository = { shadeDisplaysRepository },
+            focusedDisplayRepository = fakeFocusedDisplayRepository,
             applicationScope = applicationCoroutineScope,
             dumpManager = dumpManager,
-            shadeDisplaysRepository = { shadeDisplaysRepository },
         )
         .apply { root = mock<View>() }
 }

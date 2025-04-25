@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation
+import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.kosmos.testScope
@@ -90,6 +91,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
+    @Mock private lateinit var focusedDisplayRepository: FocusedDisplayRepository
     @Mock private lateinit var root: View
     @Mock private lateinit var viewRootImpl: ViewRootImpl
     @Mock private lateinit var windowToken: IBinder
@@ -138,9 +140,10 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 shadeModeInteractor,
                 windowRootViewBlurInteractor,
                 appZoomOutOptional,
+                { shadeDisplayRepository },
+                focusedDisplayRepository,
                 applicationScope,
                 dumpManager,
-                { shadeDisplayRepository },
             )
         notificationShadeDepthController.shadeAnimation = shadeAnimation
         notificationShadeDepthController.brightnessMirrorSpring = brightnessSpring
