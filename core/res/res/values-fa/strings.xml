@@ -1227,7 +1227,7 @@
     <string name="delete" msgid="1514113991712129054">"حذف"</string>
     <string name="copyUrl" msgid="6229645005987260230">"‏کپی URL"</string>
     <string name="selectTextMode" msgid="3225108910999318778">"انتخاب متن"</string>
-    <string name="undo" msgid="3175318090002654673">"لغو"</string>
+    <string name="undo" msgid="3175318090002654673">"واگرد"</string>
     <string name="redo" msgid="7231448494008532233">"ازنو انجام دادن"</string>
     <string name="autofill" msgid="511224882647795296">"تکمیل خودکار"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"انتخاب متن"</string>
@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"بسیار کم‌نور"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"دستگاه‌های کمک‌شنوایی"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"کلیک خودکار"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"متصل نیست"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"وصل شد"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"فعال"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"تبلیغات ویژه"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"اجتماعی"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"اخبار"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"توصیه‌ها"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"شما اهمیت این اعلان‌ها را تنظیم می‌کنید."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"به دلیل افراد درگیر مهم است."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"اعلان برنامه سفارشی"</string>

@@ -235,7 +235,7 @@
     <string name="power_dialog" product="tablet" msgid="8333207765671417261">"Options de la tablette"</string>
     <string name="power_dialog" product="tv" msgid="7792839006640933763">"Options d\'Android TV"</string>
     <string name="power_dialog" product="default" msgid="1107775420270203046">"Options du téléphone"</string>
-    <string name="silent_mode" msgid="8796112363642579333">"Mode silencieux"</string>
+    <string name="silent_mode" msgid="8796112363642579333">"Mode Silencieux"</string>
     <string name="turn_on_radio" msgid="2961717788170634233">"Activer le mode sans fil"</string>
     <string name="turn_off_radio" msgid="7222573978109933360">"Désactiver le mode sans fil"</string>
     <string name="screen_lock" msgid="2072642720826409809">"Verrouillage de l\'écran"</string>
@@ -280,7 +280,7 @@
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Saisie d\'une capture d\'écran pour le rapport de bogue dans # seconde.}one{Saisie d\'une capture d\'écran pour le rapport de bogue dans # seconde.}many{Saisie d\'une capture d\'écran pour le rapport de bogue dans # secondes.}other{Saisie d\'une capture d\'écran pour le rapport de bogue dans # secondes.}}"</string>
     <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Capture d\'écran prise avec le rapport de bogue"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Échec de la prise de capture d\'écran avec le rapport de bogue"</string>
-    <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Mode silencieux"</string>
+    <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Mode Silencieux"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Le son est désactivé."</string>
     <string name="global_action_silent_mode_off_status" msgid="6608006545950920042">"Le son est activé."</string>
     <string name="global_actions_toggle_airplane_mode" msgid="6911684460146916206">"Mode Avion"</string>
@@ -1322,7 +1322,7 @@
     <string name="unsupported_display_size_show" msgid="980129850974919375">"Toujours afficher"</string>
     <string name="unsupported_compile_sdk_message" msgid="7326293500707890537">"<xliff:g id="APP_NAME">%1$s</xliff:g> a été conçue pour une version incompatible du système d\'exploitation Android et peut se comporter de manière inattendue. Il se peut qu\'une version mise à jour de l\'appli soit proposée."</string>
     <string name="unsupported_compile_sdk_show" msgid="1601210057960312248">"Toujours afficher"</string>
-    <string name="unsupported_compile_sdk_check_update" msgid="1103639989147664456">"Vérifier la présence de mises à jour"</string>
+    <string name="unsupported_compile_sdk_check_update" msgid="1103639989147664456">"Rechercher des mises à jour"</string>
     <string name="smv_application" msgid="3775183542777792638">"L\'appli <xliff:g id="APPLICATION">%1$s</xliff:g> (du processus <xliff:g id="PROCESS">%2$s</xliff:g>) a enfreint ses propres règles du mode strict."</string>
     <string name="smv_process" msgid="1398801497130695446">"Le processus <xliff:g id="PROCESS">%1$s</xliff:g> a enfreint ses propres règles du mode strict."</string>
     <string name="android_upgrading_title" product="default" msgid="7279077384220829683">"Mise à jour du téléphone en cours…"</string>
@@ -1806,6 +1806,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Réduction supplémentaire de la luminosité"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Appareils auditifs"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatique"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Déconnecté"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connecté"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Actif"</string>
@@ -2044,7 +2046,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promotions"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Médias sociaux"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Actualités"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Recommandations"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Vous définissez l\'importance de ces notifications."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ces notifications sont importantes en raison des participants."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notification d\'appli personnalisée"</string>
@@ -2096,7 +2099,7 @@
     <string name="app_streaming_blocked_message_for_settings_dialog" product="tablet" msgid="3286849551133045896">"Impossible d\'accéder à ce contenu sur votre <xliff:g id="DEVICE">%1$s</xliff:g>. Essayez sur votre tablette à la place."</string>
     <string name="app_streaming_blocked_message_for_settings_dialog" product="default" msgid="6264287556598916295">"Impossible d\'accéder à ce contenu sur votre <xliff:g id="DEVICE">%1$s</xliff:g>. Essayez sur votre téléphone à la place."</string>
     <string name="deprecated_target_sdk_message" msgid="5246906284426844596">"Cette appli a été conçue pour une ancienne version d\'Android. Elle pourrait ne pas fonctionner correctement, et ne comprend pas les dernières protections des données confidentielles et de sécurité. Vérifiez s\'il existe une mise à jour ou contactez le développeur de l\'appli."</string>
-    <string name="deprecated_target_sdk_app_store" msgid="8456784048558808909">"Vérifier la présence de mises à jour"</string>
+    <string name="deprecated_target_sdk_app_store" msgid="8456784048558808909">"Rechercher des mises à jour"</string>
     <string name="deprecated_abi_message" msgid="6820548011196218091">"Cette appli n\'est pas compatible avec la dernière version d\'Android. Vérifiez s\'il existe une mise à jour ou communiquez avec le développeur de l\'appli."</string>
     <string name="new_sms_notification_title" msgid="6528758221319927107">"Vous avez de nouveaux messages"</string>
     <string name="new_sms_notification_content" msgid="3197949934153460639">"Ouvrez l\'appli de messagerie texte pour l\'afficher"</string>
@@ -2152,7 +2155,7 @@
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626">"Mettre à jour ces éléments sous "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>" : <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> et <xliff:g id="TYPE_2">%3$s</xliff:g>?"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"Enregistrer"</string>
     <string name="autofill_save_no" msgid="9212826374207023544">"Non, merci"</string>
-    <string name="autofill_save_notnow" msgid="2853932672029024195">"Pas maintenant"</string>
+    <string name="autofill_save_notnow" msgid="2853932672029024195">"Plus tard"</string>
     <string name="autofill_save_never" msgid="6821841919831402526">"Jamais"</string>
     <string name="autofill_update_yes" msgid="4608662968996874445">"Mettre à jour"</string>
     <string name="autofill_continue_yes" msgid="7914985605534510385">"Continuer"</string>

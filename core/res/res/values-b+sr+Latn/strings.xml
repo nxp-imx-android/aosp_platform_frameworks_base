@@ -614,7 +614,7 @@
     <string name="permdesc_bluetooth" product="tablet" msgid="3053222571491402635">"Dozvoljava aplikaciji da pregleda konfiguraciju Bluetooth-a na tabletu, kao i da uspostavlja i prihvata veze sa uparenim uređajima."</string>
     <string name="permdesc_bluetooth" product="tv" msgid="8851534496561034998">"Dozvoljava aplikaciji da pregleda konfiguraciju Bluetooth-a na Android TV uređaju i da uspostavlja i prihvata veze sa uparenim uređajima."</string>
     <string name="permdesc_bluetooth" product="default" msgid="2779606714091276746">"Dozvoljava aplikaciji da pregleda konfiguraciju Bluetooth-a na telefonu, kao i da uspostavlja i prihvata veze sa uparenim uređajima."</string>
-    <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"otkrivanje i uparivanje sa obližnjim Bluetooth uređ."</string>
+    <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"otkrivanje i uparivanje sa Bluetooth uređajima u blizini"</string>
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"Dozvoljava aplikaciji da otkriva Bluetooth uređaje u blizini i uparuje se sa njima"</string>
     <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"povezivanje sa uparenim Bluetooth uređajima"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"Dozvoljava aplikaciji da se povezuje sa uparenim Bluetooth uređajima"</string>
@@ -1806,6 +1806,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Dodatno zatamni"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Slušni aparati"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatski klik"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Veza je prekinuta"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Povezano"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktivno"</string>
@@ -2044,7 +2046,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocije"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Društvene mreže"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Vesti"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Preporuke"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Vi podešavate važnost ovih obaveštenja."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ovo je važno zbog ljudi koji učestvuju."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Prilagođeno obaveštenje o aplikaciji"</string>

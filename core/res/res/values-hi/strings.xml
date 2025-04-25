@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"स्क्रीन की रोशनी को सामान्य लेवल से और कम करने की सुविधा"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"कान की मशीन"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"अपने-आप क्लिक होने की सुविधा"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"डिसकनेक्ट हो गया"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"कनेक्ट हो गया"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"चालू है"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"प्रमोशन"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"सोशल"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"खबरें"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"सुझाव"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"आपने इन सूचनाओं की अहमियत सेट की है."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"यह मौजूद व्यक्तियों के कारण महत्वपूर्ण है."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ऐप्लिकेशन की सूचना पसंद के मुताबिक बनाएं"</string>
