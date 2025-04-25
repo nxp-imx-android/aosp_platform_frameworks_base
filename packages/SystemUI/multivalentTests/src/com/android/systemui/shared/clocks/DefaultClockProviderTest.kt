@@ -117,7 +117,7 @@ class DefaultClockProviderTest : SysuiTestCase() {
         verify(mockSmallClockView).setColors(DOZE_COLOR, Color.MAGENTA)
         verify(mockLargeClockView).setColors(DOZE_COLOR, Color.MAGENTA)
 
-        clock.initialize(true, 0f, 0f, null)
+        clock.initialize(true, 0f, 0f)
 
         // This is the default darkTheme color
         val expectedColor = context.resources.getColor(android.R.color.system_accent1_100)
@@ -137,7 +137,7 @@ class DefaultClockProviderTest : SysuiTestCase() {
         verify(mockSmallClockView).setColors(expectedAodColor, Color.MAGENTA)
         verify(mockLargeClockView).setColors(expectedAodColor, Color.MAGENTA)
 
-        clock.initialize(true, 0f, 0f, null)
+        clock.initialize(true, 0f, 0f)
 
         val expectedColor = Color.MAGENTA
         verify(mockSmallClockView).setColors(expectedAodColor, expectedColor)

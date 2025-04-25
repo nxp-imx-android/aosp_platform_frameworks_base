@@ -27,6 +27,7 @@ import com.android.systemui.plugins.PluginListener
 import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListeners
 import com.android.systemui.plugins.clocks.ClockId
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockMetadata
@@ -176,6 +177,7 @@ class ClockRegistryTest : SysuiTestCase() {
         fakeDefaultProvider =
             FakeClockPlugin().addClock(DEFAULT_CLOCK_ID, { mockDefaultClock }, { pickerConfig })
         whenever(mockContext.contentResolver).thenReturn(mockContentResolver)
+        whenever(mockClock.eventListeners).thenReturn(ClockEventListeners())
 
         val captor = argumentCaptor<PluginListener<ClockProviderPlugin>>()
         registry =

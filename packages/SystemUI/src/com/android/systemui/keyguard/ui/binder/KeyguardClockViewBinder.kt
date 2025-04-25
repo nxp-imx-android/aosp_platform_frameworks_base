@@ -92,6 +92,7 @@ object KeyguardClockViewBinder {
                                     viewModel.clockSize.value,
                                 )
                                 applyConstraints(clockSection, keyguardRootView, true)
+                                currentClock?.apply { eventListeners.fire { onChangeComplete() } }
                             }
                         }
                         .invokeOnCompletion {

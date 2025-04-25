@@ -33,21 +33,16 @@ interface ClockController {
     val config: ClockConfig
 
     @get:SimpleProperty
-    /** Events that clocks may need to respond to */
+    /** Events that this clock may need to respond to */
     val events: ClockEvents
 
+    @get:SimpleProperty
+    /** Listener group that will receive events from the clock */
+    val eventListeners: ClockEventListeners
+
     /** Initializes various rendering parameters. If never called, provides reasonable defaults. */
-    fun initialize(
-        isDarkTheme: Boolean,
-        dozeFraction: Float,
-        foldFraction: Float,
-        clockListener: ClockEventListener?,
-    )
+    fun initialize(isDarkTheme: Boolean, dozeFraction: Float, foldFraction: Float)
 
     /** Optional method for dumping debug information */
     fun dump(pw: PrintWriter)
-}
-
-interface ClockEventListener {
-    fun onBoundsChanged(bounds: VRectF)
 }
