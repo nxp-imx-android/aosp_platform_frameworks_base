@@ -1057,6 +1057,13 @@ flag {
 }
 
 flag {
+    name: "enable_reject_home_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enable the reject home transition, which runs if home is invoked on a display which lacks a home."
+    bug: "378443899"
+}
+
+flag {
     name: "enable_request_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
