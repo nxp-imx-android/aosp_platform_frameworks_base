@@ -3520,16 +3520,12 @@ public class ActivityManager {
      * manage its memory.
      */
     public void getMemoryInfo(MemoryInfo outInfo) {
-        if (Flags.rateLimitGetMemoryInfo()) {
-            synchronized (mMemoryInfoCache) {
-                mMemoryInfoCache.get(() -> {
-                    getMemoryInfoInternal(mRateLimitedMemInfo);
-                    return mRateLimitedMemInfo;
-                });
-                mRateLimitedMemInfo.copyTo(outInfo);
-            }
-        } else {
-            getMemoryInfoInternal(outInfo);
+        synchronized (mMemoryInfoCache) {
+            mMemoryInfoCache.get(() -> {
+                getMemoryInfoInternal(mRateLimitedMemInfo);
+                return mRateLimitedMemInfo;
+            });
+            mRateLimitedMemInfo.copyTo(outInfo);
         }
     }
 
