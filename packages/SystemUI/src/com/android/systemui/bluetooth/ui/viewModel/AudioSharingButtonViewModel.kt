@@ -59,7 +59,7 @@ constructor(
         combine(
                 bluetoothStateInteractor.bluetoothStateUpdate,
                 deviceItemInteractor.deviceItemUpdate,
-                audioSharingInteractor.isAudioSharingOn
+                audioSharingInteractor.isAudioSharingOn,
             ) { bluetoothState, deviceItem, audioSharingOn ->
                 getButtonState(bluetoothState, deviceItem, audioSharingOn)
             }
@@ -70,7 +70,7 @@ constructor(
     private fun getButtonState(
         bluetoothState: Boolean,
         deviceItem: List<DeviceItem>,
-        audioSharingOn: Boolean
+        audioSharingOn: Boolean,
     ): AudioSharingButtonState {
         return when {
             // Don't show button when bluetooth is off
@@ -79,20 +79,22 @@ constructor(
             audioSharingOn ->
                 AudioSharingButtonState.Visible(
                     R.string.quick_settings_bluetooth_audio_sharing_button_sharing,
-                    isActive = true
+                    isActive = true,
                 )
             // When not broadcasting, don't show button if there's connected source in any device
             deviceItem.any {
                 BluetoothUtils.hasConnectedBroadcastSource(
                     it.cachedBluetoothDevice,
-                    localBluetoothManager
+                    localBluetoothManager,
                 )
             } -> AudioSharingButtonState.Gone
-            // Show audio sharing when there's a connected LE audio device
-            deviceItem.any { BluetoothUtils.isActiveLeAudioDevice(it.cachedBluetoothDevice) } ->
+            // Show audio sharing when there's a device connecting to the LE audio assistant profile
+            deviceItem.any {
+                it.cachedBluetoothDevice.isConnectedLeAudioBroadcastAssistantDevice
+            } ->
                 AudioSharingButtonState.Visible(
                     R.string.quick_settings_bluetooth_audio_sharing_button,
-                    isActive = false
+                    isActive = false,
                 )
             else -> AudioSharingButtonState.Gone
         }
