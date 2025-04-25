@@ -29,6 +29,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 
@@ -301,7 +302,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
     protected void handleUpdateState(BooleanState state, Object arg) {
         state.label = mContext.getString(R.string.quick_settings_cast_title);
         state.contentDescription = state.label;
-        state.stateDescription = "";
+        ArrayList<CharSequence> stateDescriptionParts = new ArrayList<>();
         state.value = false;
         final List<CastDevice> devices = mController.getCastDevices();
         boolean connecting = false;
@@ -311,9 +312,8 @@ public class CastTile extends QSTileImpl<BooleanState> {
             if (device.getState() == CastDevice.CastState.Connected) {
                 state.value = true;
                 state.secondaryLabel = getDeviceName(device);
-                state.stateDescription = state.stateDescription + ","
-                        + mContext.getString(
-                        R.string.accessibility_cast_name, state.label);
+                stateDescriptionParts
+                        .add(mContext.getString(R.string.accessibility_cast_name, state.label));
                 connecting = false;
                 break;
             } else if (device.getState() == CastDevice.CastState.Connecting) {
@@ -338,7 +338,10 @@ public class CastTile extends QSTileImpl<BooleanState> {
             state.secondaryLabel = noWifi;
             state.forceExpandIcon = false;
         }
-        state.stateDescription = state.stateDescription + ", " + state.secondaryLabel;
+        if (!TextUtils.isEmpty(state.secondaryLabel)) {
+            stateDescriptionParts.add(state.secondaryLabel);
+        }
+        state.stateDescription = String.join(", ", stateDescriptionParts);
     }
 
     @Override
