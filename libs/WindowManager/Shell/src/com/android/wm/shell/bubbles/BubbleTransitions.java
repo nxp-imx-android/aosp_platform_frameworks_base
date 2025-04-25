@@ -137,6 +137,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether there is an existing bubble with the given task id.
+     */
+    public boolean hasBubbleWithTaskId(int taskId) {
+        return mBubbleData.getBubbleInStackWithTaskId(taskId) != null;
+    }
+
+    /**
      * Returns whether there is a pending transition for the given request.
      */
     public boolean hasPendingEnterTransition(@NonNull TransitionRequestInfo info) {
@@ -145,8 +152,7 @@ public class BubbleTransitions {
         }
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             if (mPendingEnterTransitions.containsKey(cookie)) {
-                if (mBubbleData.hasAnyBubbleWithKey(Bubble.getAppBubbleKeyForTask(
-                        info.getTriggerTask()))) {
+                if (hasBubbleWithTaskId(info.getTriggerTask().taskId)) {
                     // We'll let this transition fall through and let the normal TaskViewTransitions
                     // play it
                     mPendingEnterTransitions.remove(cookie);
@@ -169,7 +175,7 @@ public class BubbleTransitions {
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             final TransitionHandler handler = mPendingEnterTransitions.remove(cookie);
             if (handler != null) {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transfering pending to playing transition for"
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transferring pending to playing transition for"
                                 + "cookie=%s", cookie);
                 mPendingEnterTransitions.remove(cookie);
                 mEnterTransitions.put(transition, handler);
