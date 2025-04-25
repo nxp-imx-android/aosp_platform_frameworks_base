@@ -30,6 +30,13 @@
         android:clipChildren="false"
         android:clipToPadding="false">
         <View
+            android:id="@+id/screenshot_saving_live_region"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:accessibilityLiveRegion="polite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+        <View
             android:id="@+id/screenshot_preview_border"
             android:layout_width="0dp"
             android:layout_height="0dp"

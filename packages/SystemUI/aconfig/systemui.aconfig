@@ -778,6 +778,16 @@ flag {
 }
 
 flag {
+    name: "screenshot_announce_live_region"
+    namespace: "systemui"
+    description: "Use live region for screenshot saving announcement"
+    bug: "383642111"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_action_dismiss_system_windows"
     namespace: "systemui"
     description: "Dismiss existing system windows when starting action from screenshot UI"
