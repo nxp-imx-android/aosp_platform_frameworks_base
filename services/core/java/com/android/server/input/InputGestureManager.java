@@ -22,7 +22,6 @@ import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGest
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.server.flags.Flags.newBugreportKeyboardShortcut;
-import static com.android.window.flags.Flags.enableMoveToNextDisplayShortcut;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -186,7 +185,7 @@ final class InputGestureManager {
                     KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT
             ));
         }
-        if (enableMoveToNextDisplayShortcut()) {
+        if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
             systemShortcuts.add(createKeyGesture(
                     KeyEvent.KEYCODE_D,
                     KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,

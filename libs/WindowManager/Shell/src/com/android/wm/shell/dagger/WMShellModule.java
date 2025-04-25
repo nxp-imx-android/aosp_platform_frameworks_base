@@ -38,6 +38,7 @@ import android.view.Choreographer;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import androidx.annotation.OptIn;
@@ -48,7 +49,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -192,17 +192,18 @@ import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationToolt
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
+
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -1077,7 +1078,7 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DesktopState desktopState) {
         if (desktopState.canEnterDesktopMode()
-                && (Flags.enableMoveToNextDisplayShortcut()
+                && (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,

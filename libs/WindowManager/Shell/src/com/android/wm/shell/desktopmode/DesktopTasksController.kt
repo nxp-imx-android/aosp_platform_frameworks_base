@@ -1712,7 +1712,7 @@ class DesktopTasksController(
             }
             if (bounds != null) {
                 wct.setBounds(task.token, bounds)
-            } else if (Flags.enableMoveToNextDisplayShortcut()) {
+            } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
                 applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
             }
         }
@@ -1772,7 +1772,10 @@ class DesktopTasksController(
             return
         }
 
-        if (!Flags.enableNonDefaultDisplaySplit() || !Flags.enableMoveToNextDisplayShortcut()) {
+        if (
+            !Flags.enableNonDefaultDisplaySplit() ||
+                !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue
+        ) {
             return
         }
 
