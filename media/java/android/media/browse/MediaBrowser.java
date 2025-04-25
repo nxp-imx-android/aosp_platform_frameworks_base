@@ -42,6 +42,8 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.android.media.mediasession.flags.Flags;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -463,7 +465,17 @@ public final class MediaBrowser {
 
         boolean bound = false;
         try {
-            int bindServiceFlags = Context.BIND_AUTO_CREATE | Context.BIND_INCLUDE_CAPABILITIES;
+            int bindServiceFlags;
+            if (Flags.avoidMediaBrowserIncludeCapabilitiesIfNotNeeded()) {
+                bindServiceFlags = Context.BIND_AUTO_CREATE;
+                if (mRootHints == null
+                        || (!mRootHints.containsKey(BrowserRoot.EXTRA_EXCLUDE_CAPABILITIES)
+                                && !mRootHints.containsKey(BrowserRoot.EXTRA_RECENT))) {
+                    bindServiceFlags |= Context.BIND_INCLUDE_CAPABILITIES;
+                }
+            } else {
+                bindServiceFlags = Context.BIND_AUTO_CREATE | Context.BIND_INCLUDE_CAPABILITIES;
+            }
             bound = mContext.bindService(intent, mServiceConnection, bindServiceFlags);
         } catch (Exception ex) {
             Log.e(TAG, "Failed binding to service " + mServiceComponent);
