@@ -1001,7 +1001,7 @@ public class UserManagerService extends IUserManager.Stub {
                 if (user != null) {
                     user.startRealtime = SystemClock.elapsedRealtime();
                     if (targetUser.getUserIdentifier() == UserHandle.USER_SYSTEM
-                            && targetUser.isFull()) {
+                            && user.info.supportsSwitchTo()) {
                         mUms.setLastEnteredForegroundTimeToNow(user);
                     }
                 }
@@ -1442,7 +1442,7 @@ public class UserManagerService extends IUserManager.Stub {
     private @UserIdInt int getPreviousOrFirstSwitchableUser()
             throws UserManager.CheckedUserOperationException {
         // Return the previous foreground user, if there is one.
-        final int previousUser = getPreviousFullUserToEnterForeground();
+        final int previousUser = getPreviousUserToEnterForeground();
         if (previousUser != UserHandle.USER_NULL) {
             Slogf.i(LOG_TAG, "Boot user is previous user %d", previousUser);
             return previousUser;
@@ -1475,7 +1475,7 @@ public class UserManagerService extends IUserManager.Stub {
    }
 
     @Override
-    public @CanBeNULL @UserIdInt int getPreviousFullUserToEnterForeground() {
+    public @CanBeNULL @UserIdInt int getPreviousUserToEnterForeground() {
         checkQueryOrCreateUsersPermission("get previous user");
         int previousUser = UserHandle.USER_NULL;
         long latestEnteredTime = 0;
@@ -1485,8 +1485,8 @@ public class UserManagerService extends IUserManager.Stub {
             for (int i = 0; i < userSize; i++) {
                 final UserData userData = mUsers.valueAt(i);
                 final int userId = userData.info.id;
-                if (userId != currentUser && userData.info.isFull() && !userData.info.partial
-                        && userData.info.isEnabled() && !mRemovingUserIds.get(userId)) {
+                if (userId != currentUser && !userData.info.partial && userData.info.isEnabled()
+                        && !mRemovingUserIds.get(userId)) {
                     final long userEnteredTime = userData.mLastEnteredForegroundTimeMillis;
                     if (userEnteredTime > latestEnteredTime) {
                         latestEnteredTime = userEnteredTime;
