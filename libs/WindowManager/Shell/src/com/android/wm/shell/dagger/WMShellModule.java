@@ -110,6 +110,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.DisplayDisconnectTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
@@ -830,6 +831,7 @@ public abstract class WMShellModule {
             DesktopModeDragAndDropTransitionHandler desktopModeDragAndDropTransitionHandler,
             ToggleResizeDesktopTaskTransitionHandler toggleResizeDesktopTaskTransitionHandler,
             DragToDesktopTransitionHandler dragToDesktopTransitionHandler,
+            DisplayDisconnectTransitionHandler displayDisconnectTransitionHandler,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
@@ -880,6 +882,7 @@ public abstract class WMShellModule {
                 desktopModeDragAndDropTransitionHandler,
                 toggleResizeDesktopTaskTransitionHandler,
                 dragToDesktopTransitionHandler,
+                displayDisconnectTransitionHandler,
                 desktopImmersiveController.get(),
                 desktopUserRepositories,
                 desktopRepositoryInitializer,
@@ -1037,6 +1040,14 @@ public abstract class WMShellModule {
                         context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
                         desktopUserRepositories, interactionJankMonitor, bubbleController,
                         desktopState);
+    }
+
+    @WMSingleton
+    @Provides
+    static DisplayDisconnectTransitionHandler provideDesktopDisconnectTransitionHandler(
+            Transitions transitions,
+            ShellInit shellInit) {
+        return new DisplayDisconnectTransitionHandler(transitions, shellInit);
     }
 
     @WMSingleton
