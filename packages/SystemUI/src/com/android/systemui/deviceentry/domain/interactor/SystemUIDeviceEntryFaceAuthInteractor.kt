@@ -259,7 +259,9 @@ constructor(
 
     private val isBouncerVisible: Flow<Boolean> by lazy {
         if (SceneContainerFlag.isEnabled) {
-            sceneInteractor.get().transitionState.map { it.isIdle(Overlays.Bouncer) }
+            sceneInteractor.get().transitionState.map {
+                it.isTransitioning(to = Overlays.Bouncer) || it.isIdle(Overlays.Bouncer)
+            }
         } else {
             primaryBouncerInteractor.get().isShowing
         }
