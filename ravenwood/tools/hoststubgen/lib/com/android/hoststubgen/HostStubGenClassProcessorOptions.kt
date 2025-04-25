@@ -62,6 +62,8 @@ open class HostStubGenClassProcessorOptions(
 
     val throwExceptionType: SetOnce<String> = SetOnce("java.lang.UnsupportedOperationException"),
 
+    val disableJdkPatch: SetOnce<Boolean> = SetOnce(false),
+
     val enableClassChecker: SetOnce<Boolean> = SetOnce(false),
     val enablePreTrace: SetOnce<Boolean> = SetOnce(false),
     val enablePostTrace: SetOnce<Boolean> = SetOnce(false),
@@ -136,8 +138,9 @@ open class HostStubGenClassProcessorOptions(
 
             "--delete-finals" -> deleteFinals.set(true)
 
-            "--throw-exception" ->
-                throwExceptionType.set(nextArg())
+            "--throw-exception" -> throwExceptionType.set(nextArg())
+
+            "--no-jdk-patch" -> disableJdkPatch.set(true)
 
             // Following options are for debugging.
             "--enable-class-checker" -> enableClassChecker.set(true)
