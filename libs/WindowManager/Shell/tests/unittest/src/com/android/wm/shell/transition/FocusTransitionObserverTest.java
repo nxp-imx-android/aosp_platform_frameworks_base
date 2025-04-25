@@ -26,6 +26,8 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,6 +52,7 @@ import com.android.wm.shell.shared.FocusTransitionListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,18 +87,19 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         // First, open a task on the default display.
         TransitionInfo info = mock(TransitionInfo.class);
         final List<TransitionInfo.Change> changes = new ArrayList<>();
-        setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change1 = setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
                 DEFAULT_DISPLAY, true /* focused */);
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
         verify(mListener, never()).onFocusedDisplayChanged(anyInt());
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
 
         // Open a task on the secondary display.
-        setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change2 = setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
                 SECONDARY_DISPLAY_ID, true /* focused */);
         setupDisplayToTopChange(changes, SECONDARY_DISPLAY_ID);
         when(info.getChanges()).thenReturn(changes);
@@ -103,10 +107,12 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         mShellExecutor.flushAll();
         verify(mListener, times(1))
                 .onFocusedDisplayChanged(SECONDARY_DISPLAY_ID);
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
 
         // Moving only the default display back to front, and verify that affected tasks are also
@@ -118,10 +124,12 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         mShellExecutor.flushAll();
         verify(mListener, times(1))
                 .onFocusedDisplayChanged(DEFAULT_DISPLAY);
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                true /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
     }
 
     @Test
@@ -131,26 +139,29 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         // Open 2 tasks on the default display.
         TransitionInfo info = mock(TransitionInfo.class);
         final List<TransitionInfo.Change> changes = new ArrayList<>();
-        setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change1 = setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
                 DEFAULT_DISPLAY, true /* focused */);
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
         verify(mListener, never()).onFocusedDisplayChanged(anyInt());
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
         changes.clear();
 
-        setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change2 = setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
                 DEFAULT_DISPLAY, true /* focused */);
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                false /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(false) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
         changes.clear();
 
@@ -161,10 +172,12 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                false /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(false) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
     }
 
 
@@ -175,19 +188,20 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         // First, open a task on the default display.
         TransitionInfo info = mock(TransitionInfo.class);
         final List<TransitionInfo.Change> changes = new ArrayList<>();
-        setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change1 = setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
                 DEFAULT_DISPLAY, true /* focused */);
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
         verify(mListener, never()).onFocusedDisplayChanged(anyInt());
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
         changes.clear();
 
         // Open 2 tasks on the secondary display.
-        setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change2 = setupTaskChange(changes, 2 /* taskId */, TRANSIT_OPEN,
                 SECONDARY_DISPLAY_ID, true /* focused */);
         setupDisplayToTopChange(changes, SECONDARY_DISPLAY_ID);
         when(info.getChanges()).thenReturn(changes);
@@ -195,23 +209,27 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         mShellExecutor.flushAll();
         verify(mListener, times(1))
                 .onFocusedDisplayChanged(SECONDARY_DISPLAY_ID);
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                true /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
         changes.clear();
 
-        setupTaskChange(changes, 3 /* taskId */, TRANSIT_OPEN,
+        TransitionInfo.Change change3 = setupTaskChange(changes, 3 /* taskId */, TRANSIT_OPEN,
                 SECONDARY_DISPLAY_ID, true /* focused */);
         setupDisplayToTopChange(changes, SECONDARY_DISPLAY_ID);
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                false /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(3 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(false) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change3.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
         changes.clear();
 
@@ -224,21 +242,24 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         when(info.getChanges()).thenReturn(changes);
         mFocusTransitionObserver.updateFocusState(info);
         mShellExecutor.flushAll();
-        verify(mListener, times(1)).onFocusedTaskChanged(1 /* taskId */,
-                false /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(2 /* taskId */,
-                true /* isFocusedOnDisplay */, false /* isFocusedGlobally */);
-        verify(mListener, times(1)).onFocusedTaskChanged(3 /* taskId */,
-                true /* isFocusedOnDisplay */, true /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change1.getTaskInfo())),
+                eq(false) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change2.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change3.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
         clearInvocations(mListener);
     }
 
-    private void setupTaskChange(List<TransitionInfo.Change> changes, int taskId,
+    private TransitionInfo.Change setupTaskChange(List<TransitionInfo.Change> changes, int taskId,
             @TransitionMode int mode, int displayId, boolean focused) {
-        setupTaskChange(changes, taskId, mode, displayId, displayId, focused);
+        return setupTaskChange(changes, taskId, mode, displayId, displayId, focused);
     }
 
-    private void setupTaskChange(List<TransitionInfo.Change> changes, int taskId,
+    private TransitionInfo.Change setupTaskChange(List<TransitionInfo.Change> changes, int taskId,
             @TransitionMode int mode, int startDisplayId, int endDisplayId, boolean focused) {
         TransitionInfo.Change change = mock(TransitionInfo.Change.class);
         RunningTaskInfo taskInfo = mock(RunningTaskInfo.class);
@@ -251,6 +272,7 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         when(change.getTaskInfo()).thenReturn(taskInfo);
         when(change.getMode()).thenReturn(mode);
         changes.add(change);
+        return change;
     }
 
 
@@ -260,5 +282,19 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         when(change.hasFlags(FLAG_IS_DISPLAY)).thenReturn(true);
         when(change.getEndDisplayId()).thenReturn(displayId);
         changes.add(change);
+    }
+
+    private static class RunningTaskInfoMatcher implements ArgumentMatcher<RunningTaskInfo> {
+
+        private final RunningTaskInfo mExpectedTaskInfo;
+
+        public RunningTaskInfoMatcher(RunningTaskInfo runningTaskInfo) {
+            mExpectedTaskInfo = runningTaskInfo;
+        }
+
+        @Override
+        public boolean matches(RunningTaskInfo actualTaskInfo) {
+            return mExpectedTaskInfo.taskId == actualTaskInfo.taskId;
+        }
     }
 }

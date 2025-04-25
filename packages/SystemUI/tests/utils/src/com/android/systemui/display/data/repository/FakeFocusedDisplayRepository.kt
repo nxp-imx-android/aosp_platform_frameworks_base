@@ -16,6 +16,7 @@
 
 package com.android.systemui.display.data.repository
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.view.Display
 import com.android.systemui.dagger.SysUISingleton
 import dagger.Binds
@@ -28,19 +29,19 @@ import kotlinx.coroutines.flow.asStateFlow
 @SysUISingleton
 /** Fake [FocusedDisplayRepository] for testing. */
 class FakeFocusedDisplayRepository @Inject constructor() : FocusedDisplayRepository {
-    private val displayFlow = MutableStateFlow<Int>(Display.DEFAULT_DISPLAY)
-    private val globalTaskFlow = MutableStateFlow<Int>(0)
+    private val displayFlow = MutableStateFlow(Display.DEFAULT_DISPLAY)
+    private val globalTaskFlow = MutableStateFlow(RunningTaskInfo())
 
     override val focusedDisplayId: StateFlow<Int>
         get() = displayFlow.asStateFlow()
 
-    override val globallyFocusedTaskId: StateFlow<Int>
+    override val globallyFocusedTask: StateFlow<RunningTaskInfo>
         get() = globalTaskFlow.asStateFlow()
 
     suspend fun setDisplayId(focusedDisplay: Int) = displayFlow.emit(focusedDisplay)
 
-    suspend fun setGlobalTaskId(globallyFocusedTaskId: Int) =
-        globalTaskFlow.emit(globallyFocusedTaskId)
+    suspend fun setGlobalTask(runningTaskInfo: RunningTaskInfo) =
+        globalTaskFlow.emit(runningTaskInfo)
 }
 
 @Module
