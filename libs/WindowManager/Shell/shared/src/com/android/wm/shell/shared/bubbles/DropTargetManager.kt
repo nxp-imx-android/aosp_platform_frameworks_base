@@ -19,8 +19,10 @@ package com.android.wm.shell.shared.bubbles
 import android.content.Context
 import android.graphics.RectF
 import android.util.TypedValue
+import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.ValueAnimator
@@ -41,10 +43,12 @@ class DropTargetManager(
 ) {
 
     private var state: DragState? = null
-    private val dropTargetView = DropTargetView(context)
-    private var animator: ValueAnimator? = null
+
+    @VisibleForTesting val dropTargetView = DropTargetView(context)
+    @VisibleForTesting var secondDropTargetView: DropTargetView? = null
     private var morphRect: RectF = RectF(0f, 0f, 0f, 0f)
     private val isLayoutRtl = container.isLayoutRtl
+    private val viewAnimatorsMap = mutableMapOf<View, ValueAnimator>()
 
     private companion object {
         const val MORPH_ANIM_DURATION = 250L
@@ -58,26 +62,38 @@ class DropTargetManager(
         val state = DragState(dragZones, draggedObject)
         dragZoneChangedListener.onInitialDragZoneSet(state.initialDragZone)
         this.state = state
-        animator?.cancel()
-        setupDropTarget()
+        viewAnimatorsMap.values.forEach { it.cancel() }
+        setupDropTarget(dropTargetView)
+        if (dragZones.any { it.secondDropTarget != null }) {
+            secondDropTargetView = secondDropTargetView ?: DropTargetView(context)
+            setupDropTarget(secondDropTargetView)
+        } else {
+            secondDropTargetView?.let { container.removeView(it) }
+            secondDropTargetView = null
+        }
     }
 
-    private fun setupDropTarget() {
-        if (dropTargetView.parent != null) container.removeView(dropTargetView)
-        container.addView(dropTargetView, 0)
-        dropTargetView.alpha = 0f
+    private fun setupDropTarget(view: View?) {
+        if (view == null) return
+        if (view.parent != null) container.removeView(view)
+        container.addView(view, 0)
+        view.alpha = 0f
 
-        dropTargetView.elevation = TypedValue.applyDimension(
+        view.elevation = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             DROP_TARGET_ELEVATION_DP, context.resources.displayMetrics
         )
         // Match parent and the target is drawn within the view
-        dropTargetView.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        view.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
     }
 
-    /** Called when the user drags to a new location. */
-    fun onDragUpdated(x: Int, y: Int) {
-        val state = state ?: return
+    /**
+     * Called when the user drags to a new location.
+     *
+     * @return DragZone that matches provided x and y coordinates.
+     */
+    fun onDragUpdated(x: Int, y: Int): DragZone? {
+        val state = state ?: return null
         val oldDragZone = state.currentDragZone
         val newDragZone = state.getMatchingDragZone(x = x, y = y)
         state.currentDragZone = newDragZone
@@ -85,50 +101,78 @@ class DropTargetManager(
             dragZoneChangedListener.onDragZoneChanged(
                 draggedObject = state.draggedObject,
                 from = oldDragZone,
-                to = newDragZone
+                to = newDragZone,
             )
             updateDropTarget()
         }
+        return newDragZone
     }
 
     /** Called when the drag ended. */
     fun onDragEnded() {
         val dropState = state ?: return
-        startFadeAnimation(from = dropTargetView.alpha, to = 0f) {
-            container.removeView(dropTargetView)
+        startFadeAnimation(dropTargetView, to = 0f) { container.removeView(dropTargetView) }
+        startFadeAnimation(secondDropTargetView, to = 0f) {
+            container.removeView(secondDropTargetView)
+            secondDropTargetView = null
         }
         dragZoneChangedListener.onDragEnded(dropState.currentDragZone)
         state = null
     }
 
     private fun updateDropTarget() {
-        val currentDragZone = state?.currentDragZone ?: return
+        val dropState = state ?: return
+        val currentDragZone = dropState.currentDragZone
+        if (currentDragZone == null) {
+            startFadeAnimation(dropTargetView, to = 0f)
+            startFadeAnimation(secondDropTargetView, to = 0f) {
+                container.removeView(secondDropTargetView)
+            }
+            return
+        }
         val dropTargetRect = currentDragZone.dropTarget
         when {
-            dropTargetRect == null -> startFadeAnimation(from = dropTargetView.alpha, to = 0f)
+            dropTargetRect == null -> startFadeAnimation(dropTargetView, to = 0f)
+
             dropTargetView.alpha == 0f -> {
                 dropTargetView.update(RectF(dropTargetRect.rect), dropTargetRect.cornerRadius)
-                startFadeAnimation(from = 0f, to = 1f)
+                startFadeAnimation(dropTargetView, to = 1f)
             }
+
             else -> startMorphAnimation(dropTargetRect)
+        }
+
+        val secondDropTargetRect = currentDragZone.secondDropTarget
+        when {
+            secondDropTargetRect == null -> startFadeAnimation(secondDropTargetView, to = 0f)
+            else -> {
+                val secondDropTargetView = secondDropTargetView ?: return
+                secondDropTargetView.update(
+                    RectF(secondDropTargetRect.rect),
+                    secondDropTargetRect.cornerRadius,
+                )
+                startFadeAnimation(secondDropTargetView, to = 1f)
+            }
         }
     }
 
-    private fun startFadeAnimation(from: Float, to: Float, onEnd: (() -> Unit)? = null) {
-        animator?.cancel()
+    private fun startFadeAnimation(view: View?, to: Float, onEnd: (() -> Unit)? = null) {
+        if (view == null) return
+        val from = view.alpha
+        viewAnimatorsMap[view]?.cancel()
         val duration =
             if (from < to) DROP_TARGET_ALPHA_IN_DURATION else DROP_TARGET_ALPHA_OUT_DURATION
         val animator = ValueAnimator.ofFloat(from, to).setDuration(duration)
-        animator.addUpdateListener { _ -> dropTargetView.alpha = animator.animatedValue as Float }
+        animator.addUpdateListener { _ -> view.alpha = animator.animatedValue as Float }
         if (onEnd != null) {
             animator.doOnEnd(onEnd)
         }
-        this.animator = animator
+        viewAnimatorsMap[view] = animator
         animator.start()
     }
 
     private fun startMorphAnimation(dropTargetRect: DropTargetRect) {
-        animator?.cancel()
+        viewAnimatorsMap[dropTargetView]?.cancel()
         val startAlpha = dropTargetView.alpha
         val startRect = dropTargetView.getRect()
         val endRect = dropTargetRect.rect
@@ -143,16 +187,17 @@ class DropTargetManager(
             morphRect.bottom = (startRect.bottom + (endRect.bottom - startRect.bottom) * fraction)
             dropTargetView.update(morphRect, dropTargetRect.cornerRadius)
         }
-        this.animator = animator
+        viewAnimatorsMap[dropTargetView] = animator
         animator.start()
     }
 
     /** Stores the current drag state. */
     private inner class DragState(
         private val dragZones: List<DragZone>,
-        val draggedObject: DraggedObject
+        val draggedObject: DraggedObject,
     ) {
-        val initialDragZone = draggedObject.initialLocation?.let {
+        val initialDragZone =
+            draggedObject.initialLocation?.let {
                 if (it.isOnLeft(isLayoutRtl)) {
                     dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
                 } else {
@@ -162,17 +207,18 @@ class DropTargetManager(
         var currentDragZone: DragZone? = initialDragZone
 
         fun getMatchingDragZone(x: Int, y: Int): DragZone? {
-            return dragZones.firstOrNull { it.contains(x, y) } ?: currentDragZone
+            return dragZones.firstOrNull { it.contains(x, y) }
         }
     }
 
     private val DraggedObject.initialLocation: BubbleBarLocation?
-        get() = when (this) {
-            is Bubble -> initialLocation
-            is BubbleBar -> initialLocation
-            is ExpandedView -> initialLocation
-            is LauncherIcon -> null
-        }
+        get() =
+            when (this) {
+                is Bubble -> initialLocation
+                is BubbleBar -> initialLocation
+                is ExpandedView -> initialLocation
+                is LauncherIcon -> null
+            }
 
     /** An interface to be notified when drag zones change. */
     interface DragZoneChangedListener {
