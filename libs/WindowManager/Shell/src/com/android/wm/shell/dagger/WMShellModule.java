@@ -1302,12 +1302,13 @@ public abstract class WMShellModule {
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             @ShellMainThread CoroutineScope mainScope,
             UserManager userManager,
-            DesktopState desktopState
+            DesktopState desktopState,
+            DesktopConfig desktopConfig
     ) {
         return new DesktopUserRepositories(shellInit, shellController,
                 desktopPersistentRepository,
                 desktopRepositoryInitializer,
-                mainScope, userManager, desktopState);
+                mainScope, userManager, desktopState, desktopConfig);
     }
 
     @WMSingleton

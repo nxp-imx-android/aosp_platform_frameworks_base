@@ -44,6 +44,7 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopImmersiveController.Direction
 import com.android.wm.shell.desktopmode.DesktopImmersiveController.ExitReason.USER_INTERACTION
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -82,6 +83,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     @Mock private lateinit var mockDisplayLayout: DisplayLayout
     private val transactionSupplier = { StubTransaction() }
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var desktopConfig: FakeDesktopConfig
 
     private lateinit var controller: DesktopImmersiveController
     private lateinit var desktopRepository: DesktopRepository
@@ -89,6 +91,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     @Before
     fun setUp() {
         desktopState = FakeDesktopState()
+        desktopConfig = FakeDesktopConfig()
         userRepositories =
             DesktopUserRepositories(
                 ShellInit(TestShellExecutor()),
@@ -98,6 +101,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
                 mock(),
                 mock(),
                 desktopState,
+                desktopConfig,
             )
         whenever(mockDisplayController.getDisplayLayout(DEFAULT_DISPLAY))
             .thenReturn(mockDisplayLayout)

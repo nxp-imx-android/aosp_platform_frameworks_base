@@ -31,6 +31,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -45,6 +46,7 @@ class DesktopRepository(
     private val persistentRepository: DesktopPersistentRepository,
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
     val userId: Int,
+    val desktopConfig: DesktopConfig,
 ) {
     /** A display that supports desktops. */
     private class DesktopDisplay(val displayId: Int) {
@@ -173,6 +175,9 @@ class DesktopRepository(
     /** Returns a list of all [Desk]s in the repository. */
     private fun desksSequence(): Sequence<Desk> = desktopData.desksSequence()
 
+    /** Returns the number of desks across all displays. */
+    fun getNumberOfDesks() = desktopData.getNumberOfDesks()
+
     /** Returns the number of desks in the given display. */
     fun getNumberOfDesks(displayId: Int) = desktopData.getNumberOfDesks(displayId)
 
@@ -215,22 +220,36 @@ class DesktopRepository(
     /** Adds the given desk under the given display. */
     fun addDesk(displayId: Int, deskId: Int) {
         logD("addDesk for displayId=%d and deskId=%d", displayId, deskId)
+        val couldCreateDesk = canCreateDesks()
         desktopData.createDesk(displayId, deskId)
+        val canCreateDesk = canCreateDesks()
         deskChangeListeners.forEach { (listener, executor) ->
-            executor.execute { listener.onDeskAdded(displayId = displayId, deskId = deskId) }
+            executor.execute {
+                listener.onDeskAdded(displayId = displayId, deskId = deskId)
+                if (couldCreateDesk != canCreateDesk) {
+                    listener.onCanCreateDesksChanged(canCreateDesk)
+                }
+            }
         }
     }
 
     /** Update the data to reflect a desk changing displays. */
     fun onDeskDisplayChanged(deskId: Int, newDisplayId: Int) {
+        val couldCreateDesk = canCreateDesks()
         val desk =
             desktopData.getDesk(deskId)?.deepCopy()
                 ?: error("Expected to find desk with id: $deskId")
         desk.displayId = newDisplayId
+        // TODO: b/412484513 - consider de-duping unnecessary updates to listeners, such as the one
+        //  made here by |removeDesk| that will be reverted at the end of this method.
         removeDesk(deskId)
         desktopData.addDesk(newDisplayId, desk)
+        val canCreateDesk = canCreateDesks()
         deskChangeListeners.forEach { (listener, executor) ->
             executor.execute { listener.onDeskAdded(displayId = newDisplayId, deskId = deskId) }
+            if (couldCreateDesk != canCreateDesk) {
+                listener.onCanCreateDesksChanged(canCreateDesk)
+            }
         }
     }
 
@@ -973,6 +992,7 @@ class DesktopRepository(
     /** Removes the given desk and returns the active tasks in that desk. */
     fun removeDesk(deskId: Int): Set<Int> {
         logD("removeDesk %d", deskId)
+        val couldCreateDesks = canCreateDesks()
         val desk =
             desktopData.getDesk(deskId)
                 ?: return emptySet<Int>().also {
@@ -981,6 +1001,7 @@ class DesktopRepository(
         val wasActive = desktopData.getActiveDesk(desk.displayId)?.deskId == desk.deskId
         val activeTasks = ArraySet(desk.activeTasks)
         desktopData.remove(desk.deskId)
+        val canCreateDesks = canCreateDesks()
         notifyVisibleTaskListeners(desk.displayId, getVisibleTaskCount(displayId = desk.displayId))
         deskChangeListeners.forEach { (listener, executor) ->
             executor.execute {
@@ -992,6 +1013,9 @@ class DesktopRepository(
                     )
                 }
                 listener.onDeskRemoved(displayId = desk.displayId, deskId = desk.deskId)
+                if (couldCreateDesks != canCreateDesks) {
+                    listener.onCanCreateDesksChanged(canCreateDesks)
+                }
             }
         }
         if (
@@ -1118,6 +1142,13 @@ class DesktopRepository(
         }
     }
 
+    private fun canCreateDesks(): Boolean {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return false
+        val deskLimit = desktopConfig.maxDeskLimit
+        if (deskLimit == 0) return true
+        return deskLimit > desktopData.getNumberOfDesks()
+    }
+
     internal fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("${prefix}DesktopRepository")
@@ -1169,6 +1200,9 @@ class DesktopRepository(
 
         /** Called when the active desk in a display has changed. */
         fun onActiveDeskChanged(displayId: Int, newActiveDeskId: Int, oldActiveDeskId: Int)
+
+        /** Called when the conditions that allow the creation of a new desk change. */
+        fun onCanCreateDesksChanged(canCreateDesks: Boolean)
     }
 
     /** Listens to changes for active tasks in desktop mode. */
@@ -1214,6 +1248,9 @@ class DesktopRepository(
 
         /** Returns all the active desks of all displays. */
         fun getAllActiveDesks(): Set<Desk>
+
+        /** Returns the number of desks across all displays. */
+        fun getNumberOfDesks(): Int
 
         /** Returns the number of desks in the given display. */
         fun getNumberOfDesks(displayId: Int): Int
@@ -1302,6 +1339,8 @@ class DesktopRepository(
             deskByDisplayId.valueIterator().asSequence().toSet()
 
         override fun getNumberOfDesks(displayId: Int): Int = 1
+
+        override fun getNumberOfDesks(): Int = 1
 
         override fun getOrderedDesks(displayId: Int): List<Desk> =
             listOf(getDesk(deskId = displayId))
@@ -1411,6 +1450,11 @@ class DesktopRepository(
                 }
                 .toSet()
         }
+
+        override fun getNumberOfDesks(): Int =
+            desktopDisplays.valueIterator().asSequence().sumOf { display ->
+                display.orderedDesks.size
+            }
 
         override fun getNumberOfDesks(displayId: Int): Int =
             desktopDisplays[displayId]?.orderedDesks?.size ?: 0

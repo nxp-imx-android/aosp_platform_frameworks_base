@@ -44,6 +44,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -102,6 +103,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     private lateinit var shellInit: ShellInit
     private lateinit var testScope: CoroutineScope
     private val desktopState = FakeDesktopState()
+    private val desktopConfig = FakeDesktopConfig()
 
     @Before
     fun setUp() {
@@ -119,6 +121,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 testScope,
                 userManager,
                 desktopState,
+                desktopConfig,
             )
         desktopTaskRepo = userRepositories.current
         desktopTasksLimiter =

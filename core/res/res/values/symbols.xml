@@ -6009,6 +6009,9 @@
   <!-- Maximum number of active tasks on a given Desktop Windowing session. Set to 0 for unlimited. -->
   <java-symbol type="integer" name="config_maxDesktopWindowingActiveTasks"/>
 
+  <!-- Maximum number desks on a device running Desktop Windowing. Set to 0 for unlimited. -->
+  <java-symbol type="integer" name="config_maxDesktopWindowingDesks"/>
+
   <!-- Whether a display enters desktop mode by default when the windowing mode of the display's
        root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->
   <java-symbol type="bool" name="config_enterDesktopByDefaultOnFreeformDisplay" />

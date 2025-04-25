@@ -78,6 +78,9 @@ interface DesktopConfig {
     /** Returns the maximum limit on the number of tasks to show in on a desk at any one time. */
     val maxTaskLimit: Int
 
+    /** Returns the maximum limit on the number of desks a user can create. */
+    val maxDeskLimit: Int
+
     /** Override density for tasks when they're inside the desktop.  */
     val desktopDensityOverride: Int
 

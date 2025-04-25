@@ -44,6 +44,8 @@ class FakeDesktopConfig : DesktopConfig {
 
     override var maxTaskLimit: Int = 0
 
+    override var maxDeskLimit: Int = 0
+
     override var desktopDensityOverride: Int = 284
 
     override fun dump(

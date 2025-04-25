@@ -92,6 +92,12 @@ class DesktopConfigImpl(
             context.getResources().getInteger(R.integer.config_maxDesktopWindowingActiveTasks),
         )
 
+    override val maxDeskLimit: Int =
+        SystemProperties.getInt(
+            MAX_DESK_LIMIT_SYS_PROP,
+            context.getResources().getInteger(R.integer.config_maxDesktopWindowingDesks),
+        )
+
     override val desktopDensityOverride: Int =
         SystemProperties.getInt("persist.wm.debug.desktop_mode_density", 284)
 
@@ -144,6 +150,15 @@ class DesktopConfigImpl(
          * recording window, or Bluetooth pairing window).
          */
         private const val MAX_TASK_LIMIT_SYS_PROP = "persist.wm.debug.desktop_max_task_limit"
+
+        /**
+         * Sysprop declaring the maximum number of Desks a user can create.
+         *
+         * If it is not defined, then `R.integer.config_maxDesktopWindowingDesks` is used.
+         *
+         * The limit does NOT affect desks created by connecting additional displays.
+         */
+        private const val MAX_DESK_LIMIT_SYS_PROP = "persist.wm.debug.desktop_max_desk_limit"
 
         /**
          * Sysprop declaring whether to enable drag-to-maximize for desktop windows.
