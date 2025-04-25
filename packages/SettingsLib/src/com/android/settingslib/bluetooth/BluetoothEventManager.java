@@ -585,7 +585,9 @@ public class BluetoothEventManager {
                     Log.w(TAG, "ActiveDeviceChangedHandler: unknown action " + action);
                     return;
             }
-            activeDevice.onAclStateChanged(state);
+            int transport = intent
+                    .getIntExtra(BluetoothDevice.EXTRA_TRANSPORT, BluetoothDevice.TRANSPORT_BREDR);
+            activeDevice.onAclStateChanged(state, transport);
             dispatchAclStateChanged(activeDevice, state);
         }
     }
