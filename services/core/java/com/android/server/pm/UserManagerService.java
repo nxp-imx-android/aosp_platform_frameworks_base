@@ -1374,6 +1374,10 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public void setBootUser(@UserIdInt int userId) {
         checkCreateUsersPermission("Set boot user");
+        setBootUserIdUnchecked(userId);
+    }
+
+    private void setBootUserIdUnchecked(@UserIdInt int userId) {
         synchronized (mUsersLock) {
             // TODO(b/263381643): Change to EventLog.
             Slogf.i(LOG_TAG, "setBootUser %d", userId);
@@ -8423,6 +8427,11 @@ public class UserManagerService extends IUserManager.Stub {
             }
 
             return getBootUserUnchecked();
+        }
+
+        @Override
+        public void setBootUserId(@UserIdInt int userId) {
+            setBootUserIdUnchecked(userId);
         }
 
         @Override
