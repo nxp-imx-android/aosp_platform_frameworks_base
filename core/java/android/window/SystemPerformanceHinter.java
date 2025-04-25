@@ -26,8 +26,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.gui.EarlyWakeupInfo;
-import android.os.Binder;
 import android.os.PerformanceHintManager;
 import android.os.Trace;
 import android.util.Log;
@@ -168,9 +166,6 @@ public class SystemPerformanceHinter {
     private @Nullable PerformanceHintManager.Session mAdpfSession;
     private @Nullable DisplayRootProvider mDisplayRootProvider;
 
-    /** Token for early wakeup requests to SurfaceFlinger. */
-    private EarlyWakeupInfo mEarlyWakeupInfo = new EarlyWakeupInfo();
-
     /**
      * Constructor for the hinter.
      * @hide
@@ -191,8 +186,6 @@ public class SystemPerformanceHinter {
         mTransaction = transactionSupplier != null
                 ? transactionSupplier.get()
                 : new SurfaceControl.Transaction();
-        mEarlyWakeupInfo.token = new Binder();
-        mEarlyWakeupInfo.trace = SystemPerformanceHinter.class.getName();
     }
 
     /**
@@ -272,7 +265,7 @@ public class SystemPerformanceHinter {
 
         // Global flags
         if (nowEnabled(oldGlobalFlags, newGlobalFlags, HINT_SF_EARLY_WAKEUP)) {
-            mTransaction.setEarlyWakeupStart(mEarlyWakeupInfo);
+            mTransaction.setEarlyWakeupStart();
             transactionChanged = true;
             if (isTraceEnabled) {
                 asyncTraceBegin(HINT_SF_EARLY_WAKEUP, Display.INVALID_DISPLAY);
@@ -322,7 +315,7 @@ public class SystemPerformanceHinter {
 
         // Global flags
         if (nowDisabled(oldGlobalFlags, newGlobalFlags, HINT_SF_EARLY_WAKEUP)) {
-            mTransaction.setEarlyWakeupEnd(mEarlyWakeupInfo);
+            mTransaction.setEarlyWakeupEnd();
             transactionChanged = true;
             if (isTraceEnabled) {
                 asyncTraceEnd(HINT_SF_EARLY_WAKEUP);
