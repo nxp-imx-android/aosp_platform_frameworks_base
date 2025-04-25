@@ -4825,16 +4825,12 @@ public class ActivityManager {
      * {@link RunningAppProcessInfo#importanceReasonCode}.
      */
     public static void getMyMemoryState(RunningAppProcessInfo outState) {
-        if (Flags.rateLimitGetMyMemoryState()) {
-            synchronized (mMyMemoryStateCache) {
-                mMyMemoryStateCache.get(() -> {
-                    getMyMemoryStateInternal(mRateLimitedMemState);
-                    return mRateLimitedMemState;
-                });
-                mRateLimitedMemState.copyTo(outState);
-            }
-        } else {
-            getMyMemoryStateInternal(outState);
+        synchronized (mMyMemoryStateCache) {
+            mMyMemoryStateCache.get(() -> {
+                getMyMemoryStateInternal(mRateLimitedMemState);
+                return mRateLimitedMemState;
+            });
+            mRateLimitedMemState.copyTo(outState);
         }
     }
 
