@@ -38,9 +38,6 @@ class BundleHeaderViewModel(val interactor: BundleInteractor) {
     val numberOfChildren
         get() = interactor.numberOfChildren
 
-    val hasUnreadMessages
-        get() = interactor.hasUnreadMessages
-
     val bundleIcon
         get() = interactor.bundleIcon
 
@@ -71,10 +68,7 @@ class BundleHeaderViewModel(val interactor: BundleInteractor) {
     fun onHeaderClicked(scope: CoroutineScope) {
         val targetScene =
             when (state.currentScene) {
-                BundleHeader.Scenes.Collapsed -> {
-                    interactor.rowExpanded()
-                    BundleHeader.Scenes.Expanded
-                }
+                BundleHeader.Scenes.Collapsed -> BundleHeader.Scenes.Expanded
                 BundleHeader.Scenes.Expanded -> BundleHeader.Scenes.Collapsed
                 else -> error("Unknown Scene")
             }

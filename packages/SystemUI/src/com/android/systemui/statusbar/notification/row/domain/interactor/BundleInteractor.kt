@@ -27,16 +27,9 @@ class BundleInteractor(private val repository: BundleRepository) {
     val numberOfChildren
         get() = repository.numberOfChildren
 
-    val hasUnreadMessages
-        get() = repository.hasUnreadMessages
-
     val bundleIcon
         get() = repository.bundleIcon
 
     val previewIcons
         get() = repository.previewIcons
-
-    fun rowExpanded() {
-        repository.hasUnreadMessages = false
-    }
 }

@@ -170,7 +170,6 @@ private fun ContentScope.BundleHeaderContent(
 
         ExpansionControl(
             collapsed = collapsed,
-            hasUnread = viewModel.hasUnreadMessages,
             numberToShow = viewModel.numberOfChildren,
             modifier = Modifier.padding(start = 8.dp, end = 16.dp),
         )
