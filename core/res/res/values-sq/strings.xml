@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Shumë më i zbehtë"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Pajisjet e dëgjimit"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Klikimi automatik"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Shkëputur"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Lidhur"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktive"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promovime"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Sociale"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Lajme"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Rekomandime"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Ke caktuar rëndësinë e këtyre njoftimeve."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Është i rëndësishëm për shkak të personave të përfshirë."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Njoftim i personalizuar për aplikacionin"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacionet"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Gjurmët e tua të gishtave nuk mund të njihen më. Konfiguro përsëri \"Shkyçjen me gjurmën e gishtit\"."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Pajisja USB është e futur kur është e kyçur"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Pajisja USB është e futur kur Android është i kyçur. Për ta përdorur pajisjen, shkyç fillimisht Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Pajisja USB është e futur kur Android është i kyçur. Për ta përdorur pajisjen, shkyç fillimisht Android dhe më pas fut përsëri pajisjen USB për ta përdorur."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Kapaciteti i karikimit mund të reduktohet ose mund të mos ofrohet kur është e kyçur."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitet i dyshimtë i USB-së"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinjali i të dhënave të USB-së është çaktivizuar."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ke probleme me \"Shkyçjen me gjurmën e gishtit\"?"</string>

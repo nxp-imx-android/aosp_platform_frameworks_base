@@ -87,10 +87,9 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     public VeiledResizeTaskPositioner(ShellTaskOrganizer taskOrganizer,
             DesktopModeWindowDecoration windowDecoration,
             DisplayController displayController,
-            DragPositioningCallbackUtility.DragEventListener dragEventListener,
             Transitions transitions, InteractionJankMonitor interactionJankMonitor,
             @ShellMainThread Handler handler, DesktopState desktopState) {
-        this(taskOrganizer, windowDecoration, displayController, dragEventListener,
+        this(taskOrganizer, windowDecoration, displayController,
                 SurfaceControl.Transaction::new, transitions, interactionJankMonitor, handler,
                 desktopState);
     }
@@ -98,14 +97,12 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
     public VeiledResizeTaskPositioner(ShellTaskOrganizer taskOrganizer,
             DesktopModeWindowDecoration windowDecoration,
             DisplayController displayController,
-            DragPositioningCallbackUtility.DragEventListener dragEventListener,
             Supplier<SurfaceControl.Transaction> supplier, Transitions transitions,
             InteractionJankMonitor interactionJankMonitor, @ShellMainThread Handler handler,
             DesktopState desktopState) {
         mDesktopWindowDecoration = windowDecoration;
         mTaskOrganizer = taskOrganizer;
         mDisplayController = displayController;
-        mDragEventListeners.add(dragEventListener);
         mTransactionSupplier = supplier;
         mTransitions = transitions;
         mInteractionJankMonitor = interactionJankMonitor;
@@ -129,10 +126,6 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
                         true /* includingParents */);
                 mTaskOrganizer.applyTransaction(wct);
             }
-        }
-        for (DragPositioningCallbackUtility.DragEventListener dragEventListener :
-                mDragEventListeners) {
-            dragEventListener.onDragStart(mDesktopWindowDecoration.mTaskInfo.taskId);
         }
         mRepositionTaskBounds.set(mTaskBoundsAtDragStart);
         int rotation = mDesktopWindowDecoration

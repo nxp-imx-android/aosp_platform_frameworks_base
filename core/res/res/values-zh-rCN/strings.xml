@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"极暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听装置"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"自动点击"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已断开连接"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已连接"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"活跃"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"促销"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"资讯"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"建议"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"这些通知的重要程度由您来设置。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"这条通知涉及特定的人，因此被归为重要通知。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自定义应用通知"</string>
@@ -2102,7 +2105,7 @@
     <string name="profile_encrypted_title" msgid="9001208667521266472">"部分功能可能会受到限制"</string>
     <string name="profile_encrypted_detail" msgid="5279730442756849055">"工作资料已锁定"</string>
     <string name="profile_encrypted_message" msgid="1128512616293157802">"点按即可解锁工作资料"</string>
-    <string name="usb_mtp_launch_notification_title" msgid="774319638256707227">"已连接到<xliff:g id="PRODUCT_NAME">%1$s</xliff:g>"</string>
+    <string name="usb_mtp_launch_notification_title" msgid="774319638256707227">"已连接到“<xliff:g id="PRODUCT_NAME">%1$s</xliff:g>”"</string>
     <string name="usb_mtp_launch_notification_description" msgid="6942535713629852684">"点按即可查看文件"</string>
     <string name="pin_target" msgid="8036028973110156895">"置顶"</string>
     <string name="pin_specific_target" msgid="7824671240625957415">"将<xliff:g id="LABEL">%1$s</xliff:g>置顶"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"应用"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"系统无法再识别您的指纹。请重新设置“指纹解锁”功能。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"锁定时插入了 USB 设备"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB 设备是在 Android 设备处于锁定状态时插入的。若要使用 USB 设备，请先解锁 Android 设备。"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB 设备是在 Android 设备处于锁定状态时插入的。若要使用 USB 设备，请先解锁 Android 设备，然后重新插入 USB 设备。"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"当设备处于锁定状态时，充电功能可能会降低或无法使用。"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活动"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 数据信号已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用指纹解锁时遇到问题了吗？"</string>

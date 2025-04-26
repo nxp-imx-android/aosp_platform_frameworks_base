@@ -1047,20 +1047,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // transaction.
             mService.getLifecycleManager().dispatchPendingTransaction(proc.getThread());
         }
-        final boolean isSuccessful;
-        try {
-            isSuccessful = mService.getLifecycleManager().scheduleTransactionItems(
-                    proc.getThread(),
-                    // Immediately dispatch the transaction, so that if it fails, the server can
-                    // restart the process and retry now.
-                    true /* shouldDispatchImmediately */,
-                    launchActivityItem, lifecycleItem);
-        } catch (RemoteException e) {
-            // TODO(b/323801078): remove Exception when cleanup
-            return e;
-        }
-        if (com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
-                && !isSuccessful) {
+        final boolean isSuccessful = mService.getLifecycleManager().scheduleTransactionItems(
+                proc.getThread(),
+                // Immediately dispatch the transaction, so that if it fails, the server can
+                // restart the process and retry now.
+                true /* shouldDispatchImmediately */,
+                launchActivityItem, lifecycleItem);
+        if (!isSuccessful) {
             return new DeadObjectException("Failed to dispatch the ClientTransaction to dead"
                     + " process. See earlier log for more details.");
         }

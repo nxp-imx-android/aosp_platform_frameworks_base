@@ -29,6 +29,7 @@ import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
+import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -829,6 +830,22 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags({android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE})
+    public void testGetProfileIdsIncludingAlwaysVisible_supervisingProfile() {
+        UserInfo supervisingProfile = mUms.createUserWithThrow("Supervising",
+                USER_TYPE_PROFILE_SUPERVISING, 0);
+        int mainUserId = mUms.getMainUserId();
+        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ true)).asList().containsExactly(
+                        mainUserId, supervisingProfile.id);
+        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ false)).asList().containsExactly(mainUserId);
+        assertThat(mUmi.getProfileIds(supervisingProfile.id, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ true)).asList().containsExactly(
+                        mainUserId, supervisingProfile.id);
+    }
+
+    @Test
     @RequiresFlagsEnabled({
         FLAG_ALLOW_PRIVATE_PROFILE,
         FLAG_BLOCK_PRIVATE_SPACE_CREATION,
@@ -964,7 +981,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystem_UserCanLogout()
+    public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_UserCanLogout()
             throws Exception {
         setSystemUserHeadless(true);
         addUser(USER_ID);
@@ -980,7 +997,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_HsumAndNonInteractiveHeadlessSystem_UserCannotLogout()
+    public void testGetUserLogoutability_HsumAndNonInteractiveHeadlessSystemUser_UserCannotLogout()
             throws Exception {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(false);
@@ -990,13 +1007,16 @@ public final class UserManagerServiceMockedTest {
         mockUserIsInCall(false);
 
         assertThat(mUms.getUserLogoutability(USER_ID))
-                .isEqualTo(UserManager.LOGOUTABILITY_STATUS_NO_SUITABLE_USER_TO_LOGOUT_TO);
+                .isEqualTo(UserManager.LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED);
     }
 
     @Test
     @EnableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_Hsum_SystemUserCannotLogout() throws Exception {
+    public void
+            testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_SystemUserCannotLogout()
+                    throws Exception {
         setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
         mockCurrentUser(UserHandle.USER_SYSTEM);
         assertThat(mUms.getUserLogoutability(UserHandle.USER_SYSTEM))
                 .isEqualTo(UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER);
@@ -1016,6 +1036,7 @@ public final class UserManagerServiceMockedTest {
     @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_CannotSwitch_CannotLogout() throws Exception {
         setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
         addUser(USER_ID);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
@@ -1217,6 +1238,22 @@ public final class UserManagerServiceMockedTest {
 
         var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
         expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
+    }
+
+    @Test
+    public void testCanSwitchToHeadlessSystemUser_true() {
+        mockCanSwitchToHeadlessSystemUser(true);
+
+        expect.withMessage("canSwitchToHeadlessSystemUser()")
+                .that(mUms.canSwitchToHeadlessSystemUser()).isTrue();
+    }
+
+    @Test
+    public void testCanSwitchToHeadlessSystemUser_false() {
+        mockCanSwitchToHeadlessSystemUser(false);
+
+        expect.withMessage("canSwitchToHeadlessSystemUser()")
+                .that(mUms.canSwitchToHeadlessSystemUser()).isFalse();
     }
 
     /**

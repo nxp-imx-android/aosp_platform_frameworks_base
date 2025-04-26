@@ -91,7 +91,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertThrows;
+import static org.testng.Assert.assertTrue;
 
 import static java.util.Collections.emptyList;
 
@@ -145,6 +148,7 @@ import android.security.KeyChain;
 import android.security.keystore.AttestationUtils;
 import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
+import android.telephony.UiccAccessRule;
 import android.telephony.data.ApnSetting;
 import android.test.MoreAsserts;
 import android.util.ArraySet;
@@ -4840,7 +4844,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
             int flags) throws Exception {
         mContext.binder.callingUid = uid;
         dpm.setLockTaskPackages(who, packages);
-        MoreAsserts.assertEquals(packages, dpm.getLockTaskPackages(who));
+        assertEquals(packages, dpm.getLockTaskPackages(who));
         for (String p : packages) {
             assertThat(dpm.isLockTaskPermitted(p)).isTrue();
         }
@@ -8806,6 +8810,54 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
         // Verify that EuiccManager was not called to delete the subscription.
         verifyNoMoreInteractions(getServices().euiccManager);
+    }
+
+    @Test
+    public void isSubscriptionEnterpriseManaged_packageNameIsGroupOwner_returnsTrue() {
+        SubscriptionInfo subscription = new SubscriptionInfo.Builder().setCardId(1).setId(
+                42).setGroupOwner("package-name").build();
+
+        assertTrue(dpm.isSubscriptionEnterpriseManaged(subscription, "package-name"));
+    }
+
+    @Test
+    public void isSubscriptionEnterpriseManaged_packageNameIsNotGroupOwner_returnsFalse() {
+        SubscriptionInfo subscription = new SubscriptionInfo.Builder().setCardId(1).setId(
+                42).setGroupOwner("another-package-name").build();
+
+        assertFalse(dpm.isSubscriptionEnterpriseManaged(subscription, "package-name"));
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_ENTERPRISE_ESIM_USING_CARRIER_PRIVILEGES)
+    @Test
+    public void isSubscriptionEnterpriseManaged_hasEnterpriseMarkerInAccessRules_returnsTrue() {
+        String enterpriseCarrierConfig =
+                "5715E84E9FEFDD8CEB019F3CE2DC5B73A24D155363D3731D40CA1852F41A5059:com.android"
+                        + ".notanapp.enterprise_sim";
+
+        SubscriptionInfo subscription = new SubscriptionInfo.Builder().setCardId(
+                1).setCarrierConfigAccessRules(
+                UiccAccessRule.decodeRulesFromCarrierConfig(
+                        new String[]{enterpriseCarrierConfig})).setId(
+                42).build();
+
+        assertTrue(dpm.isSubscriptionEnterpriseManaged(subscription, "does-not-matter"));
+    }
+
+    @RequiresFlagsDisabled(Flags.FLAG_ENTERPRISE_ESIM_USING_CARRIER_PRIVILEGES)
+    @Test
+    public void isSubscriptionEnterpriseManaged_hasEnterpriseMarkerInAccessRules_returnsFalse() {
+        String enterpriseCarrierConfig =
+                "5715E84E9FEFDD8CEB019F3CE2DC5B73A24D155363D3731D40CA1852F41A5059:com.android"
+                        + ".notanapp.enterprise_sim";
+
+        SubscriptionInfo subscription = new SubscriptionInfo.Builder().setCardId(
+                1).setCarrierConfigAccessRules(
+                UiccAccessRule.decodeRulesFromCarrierConfig(
+                        new String[]{enterpriseCarrierConfig})).setId(
+                42).build();
+
+        assertFalse(dpm.isSubscriptionEnterpriseManaged(subscription, "does-not-matter"));
     }
 
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {

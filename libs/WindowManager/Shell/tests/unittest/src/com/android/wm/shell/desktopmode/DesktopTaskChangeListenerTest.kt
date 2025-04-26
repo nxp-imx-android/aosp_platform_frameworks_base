@@ -235,16 +235,28 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun onTaskClosing_backNavEnabled_nonClosingTask_minimizesTaskInRepo() {
+    fun onTaskClosing_backNavEnabled_removedFromRepo() {
         val task = createFreeformTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desktopUserRepositories.current.isClosingTask(task.taskId)).thenReturn(false)
 
         desktopTaskChangeListener.onTaskClosing(task)
 
+        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
+    fun onTaskClosing_backNavEnabled_minimizedTask_notRemovedFromRepo() {
+        val task = createFreeformTask().apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desktopUserRepositories.current.isMinimizedTask(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskClosing(task)
+
         verify(desktopUserRepositories.current)
-            .updateTask(task.displayId, task.taskId, isVisible = false)
-        verify(desktopUserRepositories.current).minimizeTask(task.displayId, task.taskId)
+            .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
+        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
     }
 
     @Test

@@ -31,6 +31,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.Flags;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
@@ -87,6 +88,7 @@ class FalsingCollectorImpl implements FalsingCollector {
     private final KeyguardStateController mKeyguardStateController;
     private final Lazy<ShadeInteractor> mShadeInteractorLazy;
     private final Lazy<CommunalInteractor> mCommunalInteractorLazy;
+    private final Lazy<CommunalSceneInteractor> mCommunalSceneInteractorLazy;
     private final BatteryController mBatteryController;
     private final DockManager mDockManager;
     private final DelayableExecutor mMainExecutor;
@@ -178,6 +180,7 @@ class FalsingCollectorImpl implements FalsingCollector {
             SystemClock systemClock,
             Lazy<SelectedUserInteractor> userInteractor,
             Lazy<CommunalInteractor> communalInteractorLazy,
+            Lazy<CommunalSceneInteractor> communalSceneInteractorLazy,
             Lazy<DeviceEntryInteractor> deviceEntryInteractor,
             Lazy<SceneContainerOcclusionInteractor> sceneContainerOcclusionInteractor) {
         mFalsingDataProvider = falsingDataProvider;
@@ -195,6 +198,7 @@ class FalsingCollectorImpl implements FalsingCollector {
         mSystemClock = systemClock;
         mUserInteractor = userInteractor;
         mCommunalInteractorLazy = communalInteractorLazy;
+        mCommunalSceneInteractorLazy = communalSceneInteractorLazy;
         mDeviceEntryInteractor = deviceEntryInteractor;
         mSceneContainerOcclusionInteractor = sceneContainerOcclusionInteractor;
     }
@@ -227,10 +231,11 @@ class FalsingCollectorImpl implements FalsingCollector {
                 this::onQsExpansionChanged
         );
         final CommunalInteractor communalInteractor = mCommunalInteractorLazy.get();
+        final CommunalSceneInteractor communalSceneInteractor = mCommunalSceneInteractorLazy.get();
         mJavaAdapter.alwaysCollectFlow(
                 BooleanFlowOperators.INSTANCE.allOf(
                         communalInteractor.isCommunalEnabled(),
-                        communalInteractor.isCommunalShowing()),
+                        communalSceneInteractor.isIdleOnCommunal()),
                 this::onShowingCommunalHubChanged
         );
 
@@ -273,6 +278,9 @@ class FalsingCollectorImpl implements FalsingCollector {
     private void onShowingCommunalHubChanged(boolean isShowing) {
         logDebug("REAL: onShowingCommunalHubChanged(" + isShowing + ")");
         mShowingCommunalHub = isShowing;
+        if (Flags.communalShadeTouchHandlingFixes()) {
+            mFalsingDataProvider.setShowingCommunalHub(isShowing);
+        }
         updateSessionActive();
     }
 

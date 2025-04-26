@@ -16,8 +16,8 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.callChipViewModel

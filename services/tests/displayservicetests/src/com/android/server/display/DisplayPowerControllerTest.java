@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.inOrder;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
@@ -104,6 +105,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
@@ -1349,14 +1351,19 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    public void testSetBrightness_BrightnessShouldBeClamped() {
+    public void testSetBrightness_BrightnessShouldBeUnlamped() {
         float clampedBrightness = 0.6f;
+        float unclampedBrightness = 0.8f;
+        int userSerial = 123;
         when(mHolder.hbmController.getCurrentBrightnessMax()).thenReturn(clampedBrightness);
 
         mHolder.dpc.setBrightness(PowerManager.BRIGHTNESS_MAX);
-        mHolder.dpc.setBrightness(0.8f, /* userSerial= */ 123);
+        mHolder.dpc.setBrightness(unclampedBrightness, userSerial);
 
-        verify(mHolder.brightnessSetting, times(2)).setBrightness(clampedBrightness);
+        InOrder inOrder = inOrder(mHolder.brightnessSetting);
+        inOrder.verify(mHolder.brightnessSetting).setBrightness(PowerManager.BRIGHTNESS_MAX);
+        inOrder.verify(mHolder.brightnessSetting).setUserSerial(userSerial);
+        inOrder.verify(mHolder.brightnessSetting).setBrightness(unclampedBrightness);
     }
 
     @Test

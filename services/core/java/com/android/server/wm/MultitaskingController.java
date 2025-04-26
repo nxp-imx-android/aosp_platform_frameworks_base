@@ -21,6 +21,8 @@ import static android.Manifest.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,13 +30,17 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Slog;
+import android.util.SparseArray;
 import android.window.IMultitaskingController;
+import android.window.IMultitaskingControllerCallback;
 import android.window.IMultitaskingDelegate;
 
 import androidx.annotation.RequiresPermission;
 
 import com.android.server.am.ActivityManagerService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -47,46 +53,94 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
     private static final boolean DEBUG = true;
 
-    private MultitaskingControllerProxy mProxy;
+    // All proxies indexed by calling process id.
+    private final SparseArray<MultitaskingControllerProxy> mProxies = new SparseArray<>();
+
+    @Nullable
+    private IMultitaskingDelegate mShellDelegate;
+
+    private final DelegateCallback mDelegateCallback = new DelegateCallback();
+
+    private final DeathRecipient mShellDelegateDeathRecipient = new ShellDeathRecipient();
 
     @Override
-    public void registerMultitaskingDelegate(IMultitaskingDelegate delegate) {
+    public IMultitaskingControllerCallback setMultitaskingDelegate(
+            IMultitaskingDelegate delegate) {
         if (DEBUG) {
-            Slog.d(TAG, "registerMultitaskingDelegate: " + delegate);
+            Slog.d(TAG, "setMultitaskingDelegate: " + delegate);
         }
-        enforceTaskPermission("registerMultitaskingDelegate()");
+        enforceTaskPermission("setMultitaskingDelegate()");
         Objects.requireNonNull(delegate);
-        if (mProxy != null) {
-            throw new IllegalStateException("Cannot register more than one MultitaskingDelegate.");
+
+        synchronized (this) {
+            try {
+                if (mShellDelegate != null) {
+                    mShellDelegate.asBinder().unlinkToDeath(mShellDelegateDeathRecipient, 0);
+                }
+                mShellDelegate = delegate;
+                mShellDelegate.asBinder().linkToDeath(mShellDelegateDeathRecipient, 0);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Unable to set Shell delegate", e);
+            }
         }
-        // TODO(b/407149510): Handle the case when SysUI crashes and remove the delegate or the
-        // proxy, then init again when it comes back.
-        mProxy = new MultitaskingControllerProxy(delegate);
+        return mDelegateCallback;
     }
 
     @Override
-    public IMultitaskingDelegate getClientInterface() {
+    public IMultitaskingDelegate getClientInterface(
+            IMultitaskingControllerCallback callback) {
         if (DEBUG) {
             Slog.d(TAG, "getClientInterface");
         }
         enforceMultitaskingControlPermission("getClientInterface()");
-        if (mProxy == null) {
-            throw new IllegalStateException("WM Shell multitasking delegate not registered.");
+        Objects.requireNonNull(callback);
+
+        final int callingPid = Binder.getCallingPid();
+        final int callingUid = Binder.getCallingUid();
+
+        synchronized (this) {
+            if (mShellDelegate == null) {
+                throw new IllegalStateException("WM Shell multitasking delegate not registered.");
+            }
+            MultitaskingControllerProxy proxy = mProxies.get(callingPid);
+            if (proxy == null) {
+                proxy = new MultitaskingControllerProxy(callback, callingPid, callingUid);
+                try {
+                    IBinder binder = callback.asBinder();
+                    binder.linkToDeath(proxy, 0);
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
+                mProxies.put(callingPid, proxy);
+            } else {
+                if (proxy.mCallback != callback) {
+                    throw new IllegalArgumentException(
+                            "An existing client interface with a different callback found.");
+                }
+            }
+            return proxy;
         }
-        return mProxy;
     }
 
     /**
      * A proxy class that applies the policy restrictions to the calls coming from the app clients
      * and passes to the registered WM Shell delegate.
      */
-    private static class MultitaskingControllerProxy extends IMultitaskingDelegate.Stub {
-        @NonNull
-        private final IMultitaskingDelegate mDelegate;
+    private class MultitaskingControllerProxy extends IMultitaskingDelegate.Stub
+            implements DeathRecipient {
+        final int mPid;
+        final int mUid;
+        final IMultitaskingControllerCallback mCallback;
+        private final List<IBinder> mBubbleTokens = new ArrayList<>();
 
-        MultitaskingControllerProxy(@NonNull IMultitaskingDelegate delegate) {
-            Objects.requireNonNull(delegate);
-            mDelegate = delegate;
+        MultitaskingControllerProxy(
+                @NonNull IMultitaskingControllerCallback callback,
+                int pid,
+                int uid) {
+            Objects.requireNonNull(callback);
+            mCallback = callback;
+            mPid = pid;
+            mUid = uid;
         }
 
         @RequiresPermission(REQUEST_SYSTEM_MULTITASKING_CONTROLS)
@@ -99,6 +153,9 @@ class MultitaskingController extends IMultitaskingController.Stub {
             }
             enforceMultitaskingControlPermission("createBubble()");
             Objects.requireNonNull(token);
+            if (mBubbleTokens.contains(token)) {
+                throw new IllegalArgumentException("Bubble already exists for token");
+            }
             Objects.requireNonNull(intent);
             final ComponentName componentName = intent.getComponent();
             if (componentName == null) {
@@ -109,7 +166,8 @@ class MultitaskingController extends IMultitaskingController.Stub {
             final long origId = Binder.clearCallingIdentity();
             try {
                 // TODO: sanitize the incoming intent?
-                mDelegate.createBubble(token, intent, collapsed);
+                mShellDelegate.createBubble(token, intent, collapsed);
+                mBubbleTokens.add(token);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception creating bubble", e);
             } finally {
@@ -125,10 +183,14 @@ class MultitaskingController extends IMultitaskingController.Stub {
             }
             enforceMultitaskingControlPermission("updateBubbleState()");
             Objects.requireNonNull(token);
+            if (!mBubbleTokens.contains(token)) {
+                Slog.e(TAG, "Can't update Bubble state - none found for provided token");
+                return;
+            }
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.updateBubbleState(token, collapsed);
+                mShellDelegate.updateBubbleState(token, collapsed);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception updating bubble state", e);
             } finally {
@@ -144,10 +206,14 @@ class MultitaskingController extends IMultitaskingController.Stub {
             }
             enforceMultitaskingControlPermission("updateBubbleMessage()");
             Objects.requireNonNull(token);
+            if (!mBubbleTokens.contains(token)) {
+                Slog.e(TAG, "Can't update Bubble message - none found for provided token");
+                return;
+            }
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.updateBubbleMessage(token, message);
+                mShellDelegate.updateBubbleMessage(token, message);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception updating bubble message", e);
             } finally {
@@ -163,15 +229,66 @@ class MultitaskingController extends IMultitaskingController.Stub {
             }
             enforceMultitaskingControlPermission("removeBubble()");
             Objects.requireNonNull(token);
+            if (!mBubbleTokens.contains(token)) {
+                Slog.e(TAG, "Can't remove Bubble - none found for provided token");
+                return;
+            }
 
             final long origId = Binder.clearCallingIdentity();
             try {
-                mDelegate.removeBubble(token);
+                mShellDelegate.removeBubble(token);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception removing bubble", e);
             } finally {
                 Binder.restoreCallingIdentity(origId);
             }
+        }
+
+        @SuppressLint("MissingPermission") // Bubble removal is automatic in this case
+        @Override
+        public void binderDied() {
+            if (DEBUG) {
+                Slog.d(TAG, "Client binder died");
+            }
+            synchronized (MultitaskingController.this) {
+                final long origId = Binder.clearCallingIdentity();
+                try {
+                    for (IBinder token : mBubbleTokens) {
+                        try {
+                            mShellDelegate.removeBubble(token);
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Exception cleaning up bubbles for a dead binder", e);
+                        }
+                    }
+                    mProxies.remove(mPid);
+                } finally {
+                    Binder.restoreCallingIdentity(origId);
+                }
+            }
+        }
+    }
+
+    private class DelegateCallback extends IMultitaskingControllerCallback.Stub {
+        @Override
+        public void onBubbleRemoved(IBinder token) {
+            if (DEBUG) {
+                Slog.d(TAG, "Shell reported bubble removed");
+            }
+            synchronized (MultitaskingController.this) {
+                for (int i = 0; i < mProxies.size(); i++) {
+                    MultitaskingControllerProxy proxy = mProxies.valueAt(i);
+                    if (proxy.mBubbleTokens.contains(token)) {
+                        proxy.mBubbleTokens.remove(token);
+                        try {
+                            proxy.mCallback.onBubbleRemoved(token);
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Exception notifying client about bubble removal", e);
+                        }
+                        return;
+                    }
+                }
+            }
+            Slog.e(TAG, "Shell reported bubble removed for a non-registered client");
         }
     }
 
@@ -189,4 +306,25 @@ class MultitaskingController extends IMultitaskingController.Stub {
         Slog.w(TAG, msg);
         throw new SecurityException(msg);
     }
+
+    private class ShellDeathRecipient implements DeathRecipient {
+        @Override
+        public void binderDied() {
+            synchronized (this) {
+                Slog.w(TAG, "Clearing MultitaskingController state - Shell binder death");
+                mShellDelegate = null;
+                for (int i = 0; i < mProxies.size(); i++) {
+                    MultitaskingControllerProxy proxy = mProxies.valueAt(i);
+                    for (IBinder token : proxy.mBubbleTokens) {
+                        try {
+                            proxy.mCallback.onBubbleRemoved(token);
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Exception notifying client after Shell death", e);
+                        }
+                    }
+                    proxy.mBubbleTokens.clear();
+                }
+            }
+        }
+    };
 }

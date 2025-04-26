@@ -73,17 +73,6 @@ flag {
 
 flag {
     namespace: "window_surfaces"
-    name: "enable_buffer_transform_hint_from_display"
-    description: "Always use display info to determine VRI's buffer transform hint"
-    is_fixed_read_only: true
-    bug: "301238858"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "window_surfaces"
     name: "set_sc_properties_in_client"
     description: "Set VRI SC properties in the client instead of system server"
     is_fixed_read_only: true
@@ -141,6 +130,17 @@ flag {
     description: "Fix lifetime issue with SurfaceControl's created by SCVH"
     is_fixed_read_only: true
     bug: "407989942"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_host_input_transfer_token"
+    namespace: "window_surfaces"
+    description: "Update host InpuTransferToken on view attach"
+    is_fixed_read_only: true
+    bug: "392965431"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

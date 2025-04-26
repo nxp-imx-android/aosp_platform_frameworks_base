@@ -48,67 +48,69 @@ class UserLogoutInteractorTest : SysuiTestCase() {
     fun setUp() {
         userRepository.setUserInfos(USER_INFOS)
         runBlocking { userRepository.setSelectedUserInfo(USER_INFOS[2]) }
-        userRepository.setLogoutToSystemUserEnabled(false)
-        userRepository.setSecondaryUserLogoutEnabled(false)
+        userRepository.setUserManagerLogoutEnabled(false)
+        userRepository.setPolicyManagerLogoutEnabled(false)
     }
 
     @Test
     fun logOut_doesNothing_whenBothLogoutOptionsAreDisabled() {
         testScope.runTest {
             val isLogoutEnabled by collectLastValue(underTest.isLogoutEnabled)
-            val secondaryUserLogoutCount = userRepository.logOutSecondaryUserCallCount
-            val logoutToSystemUserCount = userRepository.logOutToSystemUserCallCount
+            val secondaryUserLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
             assertThat(isLogoutEnabled).isFalse()
             underTest.logOut()
-            assertThat(userRepository.logOutSecondaryUserCallCount)
+            assertThat(userRepository.logOutWithPolicyManagerCallCount)
                 .isEqualTo(secondaryUserLogoutCount)
-            assertThat(userRepository.logOutToSystemUserCallCount)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
                 .isEqualTo(logoutToSystemUserCount)
         }
     }
 
     @Test
-    fun logOut_logsOutSecondaryUser_whenAdminEnabledSecondaryLogout() {
+    fun logOut_logsOutUsingPolicyManager_whenPolicyManagerLogoutIsEnabled() {
         testScope.runTest {
             val isLogoutEnabled by collectLastValue(underTest.isLogoutEnabled)
-            val lastLogoutCount = userRepository.logOutSecondaryUserCallCount
-            val logoutToSystemUserCount = userRepository.logOutToSystemUserCallCount
-            userRepository.setSecondaryUserLogoutEnabled(true)
+            val lastLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
+            userRepository.setPolicyManagerLogoutEnabled(true)
             assertThat(isLogoutEnabled).isTrue()
             underTest.logOut()
-            assertThat(userRepository.logOutSecondaryUserCallCount).isEqualTo(lastLogoutCount + 1)
-            assertThat(userRepository.logOutToSystemUserCallCount)
+            assertThat(userRepository.logOutWithPolicyManagerCallCount)
+                .isEqualTo(lastLogoutCount + 1)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
                 .isEqualTo(logoutToSystemUserCount)
         }
     }
 
     @Test
-    fun logOut_logsOutToSystemUser_whenLogoutToSystemUserIsEnabled() {
+    fun logOut_logsOutUsingUserManager_whenLogoutWithUserManagerIsEnabled() {
         testScope.runTest {
             val isLogoutEnabled by collectLastValue(underTest.isLogoutEnabled)
-            val lastLogoutCount = userRepository.logOutSecondaryUserCallCount
-            val logoutToSystemUserCount = userRepository.logOutToSystemUserCallCount
-            userRepository.setLogoutToSystemUserEnabled(true)
+            val lastLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
+            userRepository.setUserManagerLogoutEnabled(true)
             assertThat(isLogoutEnabled).isTrue()
             underTest.logOut()
-            assertThat(userRepository.logOutSecondaryUserCallCount).isEqualTo(lastLogoutCount)
-            assertThat(userRepository.logOutToSystemUserCallCount)
+            assertThat(userRepository.logOutWithPolicyManagerCallCount).isEqualTo(lastLogoutCount)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
                 .isEqualTo(logoutToSystemUserCount + 1)
         }
     }
 
     @Test
-    fun logOut_secondaryUserTakesPrecedence() {
+    fun logOut_policyManagerTakesPrecedence() {
         testScope.runTest {
             val isLogoutEnabled by collectLastValue(underTest.isLogoutEnabled)
-            val lastLogoutCount = userRepository.logOutSecondaryUserCallCount
-            val logoutToSystemUserCount = userRepository.logOutToSystemUserCallCount
-            userRepository.setLogoutToSystemUserEnabled(true)
-            userRepository.setSecondaryUserLogoutEnabled(true)
+            val lastLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
+            userRepository.setUserManagerLogoutEnabled(true)
+            userRepository.setPolicyManagerLogoutEnabled(true)
             assertThat(isLogoutEnabled).isTrue()
             underTest.logOut()
-            assertThat(userRepository.logOutSecondaryUserCallCount).isEqualTo(lastLogoutCount + 1)
-            assertThat(userRepository.logOutToSystemUserCallCount)
+            assertThat(userRepository.logOutWithPolicyManagerCallCount)
+                .isEqualTo(lastLogoutCount + 1)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
                 .isEqualTo(logoutToSystemUserCount)
         }
     }

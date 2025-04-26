@@ -89,6 +89,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 datastoreScope,
                 userManager,
                 desktopState,
+                desktopConfig,
             )
     }
 

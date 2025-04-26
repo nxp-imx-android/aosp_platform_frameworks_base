@@ -41,6 +41,7 @@ import android.window.WindowContext
 import androidx.core.animation.doOnEnd
 import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.applications.InterestingConfigChanges
+import com.android.systemui.Flags.screenshotAnnounceLiveRegion
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.clipboardoverlay.ClipboardOverlayController
@@ -254,7 +255,11 @@ internal constructor(
     private fun prepareViewForNewScreenshot(screenshot: ScreenshotData, oldPackageName: String?) {
         window.whenWindowAttached {
             announcementResolver.getScreenshotAnnouncement(screenshot.userHandle.identifier) {
-                viewProxy.announceForAccessibility(it)
+                if (screenshotAnnounceLiveRegion()) {
+                    viewProxy.setSavingAnnouncement(it)
+                } else {
+                    viewProxy.announceForAccessibility(it)
+                }
             }
         }
 

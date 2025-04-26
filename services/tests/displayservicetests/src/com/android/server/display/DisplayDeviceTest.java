@@ -167,18 +167,18 @@ public class DisplayDeviceTest {
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         mDisplayDeviceInfo.installOrientation = Surface.ROTATION_0;
-        mDisplayDeviceInfo.width = 100;
+        mDisplayDeviceInfo.width = WIDTH;
         mDisplayDeviceInfo.height = 200;
         displayDevice.configureDisplaySizeLocked(mMockTransaction);
-        verify(mMockTransaction).setDisplaySize(isNull(), eq(100), eq(200));
+        verify(mMockTransaction).setDisplaySize(isNull(), eq(WIDTH), eq(200));
 
         Mockito.clearInvocations(mMockTransaction);
 
         mDisplayDeviceInfo.installOrientation = Surface.ROTATION_180;
         mDisplayDeviceInfo.width = 300;
-        mDisplayDeviceInfo.height = 400;
+        mDisplayDeviceInfo.height = 200;
         displayDevice.configureDisplaySizeLocked(mMockTransaction);
-        verify(mMockTransaction).setDisplaySize(isNull(), eq(300), eq(400));
+        verify(mMockTransaction).setDisplaySize(isNull(), eq(300), eq(200));
     }
 
     @Test
@@ -186,18 +186,18 @@ public class DisplayDeviceTest {
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         mDisplayDeviceInfo.installOrientation = Surface.ROTATION_90;
-        mDisplayDeviceInfo.width = 100;
+        mDisplayDeviceInfo.width = WIDTH;
         mDisplayDeviceInfo.height = 200;
         displayDevice.configureDisplaySizeLocked(mMockTransaction);
-        verify(mMockTransaction).setDisplaySize(isNull(), eq(200), eq(100));
+        verify(mMockTransaction).setDisplaySize(isNull(), eq(200), eq(WIDTH));
 
         Mockito.clearInvocations(mMockTransaction);
 
         mDisplayDeviceInfo.installOrientation = Surface.ROTATION_270;
         mDisplayDeviceInfo.width = 300;
-        mDisplayDeviceInfo.height = 400;
+        mDisplayDeviceInfo.height = 200;
         displayDevice.configureDisplaySizeLocked(mMockTransaction);
-        verify(mMockTransaction).setDisplaySize(isNull(), eq(400), eq(300));
+        verify(mMockTransaction).setDisplaySize(isNull(), eq(200), eq(300));
     }
 
     @Test

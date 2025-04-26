@@ -16,14 +16,7 @@
 
 package com.android.server.wm;
 
-import android.annotation.NonNull;
-import android.content.Context;
-import android.database.ContentObserver;
-import android.hardware.devicestate.DeviceState;
-import android.os.Handler;
 import android.provider.Settings;
-
-import com.android.window.flags.Flags;
 
 /**
  * Syncs ACCELEROMETER_ROTATION and DEVICE_STATE_ROTATION_LOCK setting to consistent values.
@@ -41,39 +34,7 @@ import com.android.window.flags.Flags;
  */
 
 public class DeviceStateAutoRotateSettingController {
-    private final DeviceStateAutoRotateSettingIssueLogger mDeviceStateAutoRotateSettingIssueLogger;
-    private final Context mContext;
-    private final Handler mHandler;
-
-    public DeviceStateAutoRotateSettingController(Context context,
-            DeviceStateAutoRotateSettingIssueLogger deviceStateAutoRotateSettingIssueLogger,
-            Handler handler) {
-        // TODO(b/350946537) Refactor implementation
-        mDeviceStateAutoRotateSettingIssueLogger = deviceStateAutoRotateSettingIssueLogger;
-        mContext = context;
-        mHandler = handler;
-        registerDeviceStateAutoRotateSettingObserver();
-    }
-
-    /** Notify controller device state has changed */
-    public void onDeviceStateChange(@NonNull DeviceState deviceState) {
-        if (Flags.enableDeviceStateAutoRotateSettingLogging()) {
-            mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
-        }
-    }
-
-    private void registerDeviceStateAutoRotateSettingObserver() {
-        mContext.getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor(Settings.Secure.DEVICE_STATE_ROTATION_LOCK),
-                false,
-                new ContentObserver(mHandler) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        if (Flags.enableDeviceStateAutoRotateSettingLogging()) {
-                            mDeviceStateAutoRotateSettingIssueLogger
-                                    .onDeviceStateAutoRotateSettingChange();
-                        }
-                    }
-                });
+    // TODO(b/350946537) Refactor implementation
+    public DeviceStateAutoRotateSettingController() {
     }
 }

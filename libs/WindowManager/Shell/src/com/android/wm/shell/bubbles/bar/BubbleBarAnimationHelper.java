@@ -641,7 +641,9 @@ public class BubbleBarAnimationHelper {
      * Cancel current animations
      */
     public void cancelAnimations() {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.cancelAnimations()");
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.cancelAnimations(): "
+                + "hasRunningAnimator=%b",
+                (mRunningAnimator != null && mRunningAnimator.isRunning()));
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
         BubbleBarExpandedView bbev = getExpandedView();
         if (bbev != null) {

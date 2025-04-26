@@ -238,7 +238,7 @@
     <string name="turn_on_radio" msgid="2961717788170634233">"ਵਾਇਰਲੈਸ ਚਾਲੂ ਕਰੋ"</string>
     <string name="turn_off_radio" msgid="7222573978109933360">"ਵਾਇਰਲੈਸ ਬੰਦ ਕਰੋ"</string>
     <string name="screen_lock" msgid="2072642720826409809">"ਸਕ੍ਰੀਨ ਲਾਕ"</string>
-    <string name="power_off" msgid="4111692782492232778">"ਫ਼ੋਨ ਬੰਦ ਕਰੋ"</string>
+    <string name="power_off" msgid="4111692782492232778">"ਪਾਵਰ ਬੰਦ ਕਰੋ"</string>
     <string name="silent_mode_silent" msgid="5079789070221150912">"ਰਿੰਗਰ ਬੰਦ"</string>
     <string name="silent_mode_vibrate" msgid="8821830448369552678">"ਰਿੰਗਰ ਥਰਥਰਾਹਟ"</string>
     <string name="silent_mode_ring" msgid="6039011004781526678">"ਰਿੰਗਰ ਚਾਲੂ"</string>
@@ -262,7 +262,7 @@
     <string name="global_actions" product="tv" msgid="3871763739487450369">"Android TV ਦੇ ਵਿਕਲਪ"</string>
     <string name="global_actions" product="default" msgid="6410072189971495460">"ਫ਼ੋਨ ਚੋਣਾਂ"</string>
     <string name="global_action_lock" msgid="6949357274257655383">"ਸਕ੍ਰੀਨ ਲਾਕ"</string>
-    <string name="global_action_power_off" msgid="4404936470711393203">"ਫ਼ੋਨ ਬੰਦ ਕਰੋ"</string>
+    <string name="global_action_power_off" msgid="4404936470711393203">"ਪਾਵਰ ਬੰਦ ਕਰੋ"</string>
     <string name="global_action_power_options" msgid="1185286119330160073">"ਪਾਵਰ"</string>
     <string name="global_action_restart" msgid="4678451019561687074">"ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"ਐਮਰਜੈਂਸੀ"</string>
@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ਜ਼ਿਆਦਾ ਘੱਟ ਚਮਕ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ਸੁਣਨ ਵਾਲੇ ਡੀਵਾਈਸ"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ਸਵੈ-ਕਲਿੱਕ"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ਕਨੈਕਟ ਹੈ"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ਕਿਰਿਆਸ਼ੀਲ"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ਪ੍ਰਮੋਸ਼ਨ"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ਸੋਸ਼ਲ ਐਪਾਂ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ਖਬਰਾਂ"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"ਸਿਫ਼ਾਰਸ਼ਾਂ"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"ਤੁਸੀਂ ਇਹਨਾਂ ਸੂਚਨਾਵਾਂ ਦੀ ਮਹੱਤਤਾ ਸੈੱਟ ਕੀਤੀ।"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ਇਹ ਸ਼ਾਮਲ ਲੋਕਾਂ ਦੇ ਕਾਰਨ ਮਹੱਤਵਪੂਰਨ ਹੈ।"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ਵਿਉਂਤੀ ਐਪ ਸੂਚਨਾ"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ਐਪਲੀਕੇਸ਼ਨਾਂ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ਤੁਹਾਡੇ ਫਿੰਗਰਪ੍ਰਿੰਟਾਂ ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ਲਾਕ ਹੋਣ \'ਤੇ USB ਡੀਵਾਈਸ ਨੂੰ ਪਲੱਗ-ਇਨ ਕੀਤਾ ਗਿਆ"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android ਲਾਕ ਹੋਣ \'ਤੇ USB ਡੀਵਾਈਸ ਨੂੰ ਪਲੱਗ-ਇਨ ਕੀਤਾ ਗਿਆ। ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ Android ਨੂੰ ਅਣਲਾਕ ਕਰੋ।"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android ਲਾਕ ਹੋਣ \'ਤੇ USB ਡੀਵਾਈਸ ਨੂੰ ਪਲੱਗ-ਇਨ ਕੀਤਾ ਗਿਆ। ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ Android ਨੂੰ ਅਣਲਾਕ ਕਰੋ ਅਤੇ ਫਿਰ USB ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਉਸਨੂੰ ਦੁਬਾਰਾ ਲਗਾਓ।"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"ਲਾਕ ਹੋਣ \'ਤੇ ਚਾਰਜਿੰਗ ਸਮਰੱਥਾ ਘਟ ਸਕਦੀ ਹੈ ਜਾਂ ਅਣਉਪਲਬਧ ਹੋ ਸਕਦੀ ਹੈ।"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ਸ਼ੱਕੀ USB ਸਰਗਰਮੀ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ਡਾਟਾ ਸਿਗਨਲ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ਕੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਆ ਰਹੀ ਹੈ?"</string>

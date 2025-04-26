@@ -259,7 +259,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"このユーザーはアクセスポイント名設定を利用できません"</string>
     <string name="enable_adb" msgid="8072776357237289039">"USB デバッグ"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"USB 接続時にデバッグモードにする"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"USB デバッグの許可の取り消し"</string>
+    <string name="clear_adb_keys" msgid="3010148733140369917">"USB デバッグの許可を取り消し"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"ワイヤレス デバッグ"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Wi-Fi 接続時にデバッグモードにする"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"エラー"</string>
@@ -291,7 +291,7 @@
     <string name="bugreport_in_power" msgid="8664089072534638709">"バグレポートのショートカット"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"電源ボタンメニューにバグレポートを取得するボタンを表示する"</string>
     <string name="keep_screen_on" msgid="1187161672348797558">"スリープモードにしない"</string>
-    <string name="keep_screen_on_summary" msgid="1510731514101925829">"充電中に画面をスリープにしない"</string>
+    <string name="keep_screen_on_summary" msgid="1510731514101925829">"充電中に画面をスリープにしません"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Bluetooth HCI スヌープログ"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Bluetooth パケットをキャプチャします（設定変更後はBluetoothをオフ/オンしてください）。"</string>
     <string name="oem_unlock_enable" msgid="5334869171871566731">"OEM ロック解除"</string>
@@ -309,7 +309,7 @@
     <string name="mobile_data_always_on" msgid="8275958101875563572">"モバイルデータを常に ON にする"</string>
     <string name="tethering_hardware_offload" msgid="4116053719006939161">"テザリング時のハードウェア アクセラレーション"</string>
     <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"Bluetooth デバイスを名前なしで表示"</string>
-    <string name="bluetooth_disable_absolute_volume" msgid="1452342324349203434">"絶対音量を無効にする"</string>
+    <string name="bluetooth_disable_absolute_volume" msgid="1452342324349203434">"絶対音量を無効化"</string>
     <string name="bluetooth_enable_gabeldorsche" msgid="9131730396242883416">"Gabeldorsche を有効にする"</string>
     <string name="bluetooth_select_avrcp_version_string" msgid="1710571610177659127">"Bluetooth AVRCP バージョン"</string>
     <string name="bluetooth_select_avrcp_version_dialog_title" msgid="7846922290083709633">"Bluetooth AVRCP バージョンを選択する"</string>
@@ -334,7 +334,7 @@
     <string name="private_dns_mode_provider" msgid="3619040641762557028">"プライベート DNS プロバイダのホスト名"</string>
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"DNS プロバイダのホスト名を入力"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"接続できませんでした"</string>
-    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"ワイヤレス ディスプレイ認証のオプションを表示"</string>
+    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"ワイヤレス ディスプレイ認証のオプションを表示します"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Wi-Fi ログレベルを上げて、Wi-Fi 選択ツールで SSID RSSI ごとに表示します"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"電池の消耗が軽減され、ネットワーク パフォーマンスが改善されます"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ON にすると、MAC アドレスのランダム化が有効なネットワークに接続するたびに、このデバイスの MAC アドレスが変わる可能性があります。"</string>
@@ -350,7 +350,7 @@
     <string name="select_usb_configuration_dialog_title" msgid="3579567144722589237">"USB設定の選択"</string>
     <string name="allow_mock_location" msgid="2102650981552527884">"擬似ロケーションを許可"</string>
     <string name="allow_mock_location_summary" msgid="179780881081354579">"擬似ロケーションを許可する"</string>
-    <string name="debug_view_attributes" msgid="3539609843984208216">"表示属性検査を有効にする"</string>
+    <string name="debug_view_attributes" msgid="3539609843984208216">"表示属性検査を有効化"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"ネットワークの切替速度を向上させるため、Wi‑Fi の利用時でもモバイルデータを常に ON にします。"</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"テザリング時にハードウェア アクセラレーションを使用します（使用可能な場合）"</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"USB デバッグを許可しますか？"</string>
@@ -361,9 +361,9 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"開発用の設定を許可しますか？"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"これらの設定は開発専用に設計されています。そのためデバイスやデバイス上のアプリが故障したり正常に動作しなくなったりするおそれがあります。"</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB 経由のアプリも検証"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"ADB/ADT 経由でインストールされたアプリに不正な動作がないかを確認する"</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"ADB/ADT 経由でインストールされたアプリに不正な動作がないかを確認します"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Bluetooth デバイスを名前なしで（MAC アドレスのみで）表示します"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"リモートデバイスで音量に関する問題（音量が大きすぎる、制御できないなど）が発生した場合に、Bluetooth の絶対音量の機能を無効にする"</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"リモートデバイスで音量に関する問題（音量が大きすぎる、制御できないなど）が発生した場合に、Bluetooth の絶対音量の機能を無効にします"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Bluetooth Gabeldorsche 機能スタックを有効にします。"</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"接続強化機能を有効にします。"</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"ローカルターミナル"</string>
@@ -388,28 +388,28 @@
     <string name="debug_monitoring_category" msgid="1597387133765424994">"モニタリング"</string>
     <string name="window_management_category" msgid="2015535427098365170">"ウィンドウ管理"</string>
     <string name="strict_mode" msgid="889864762140862437">"厳格モードを有効にする"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"メインスレッドの処理が長引く場合は画面を点滅させる"</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"メインスレッドの処理が長引く場合は画面を点滅させます"</string>
     <string name="pointer_location" msgid="7516929526199520173">"ポインタの位置"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"現在のタップデータをオーバーレイ表示する"</string>
     <string name="show_touches" msgid="8437666942161289025">"タップを表示"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"タップを視覚表示する"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"キーの押下を表示"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"物理キーが押下されたことを視覚的に表示"</string>
-    <string name="touchpad_visualizer" msgid="3707916068870825115">"タッチパッド入力を表示する"</string>
-    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"タッチパッドの入力データと認識されたデータを画面オーバーレイで表示する"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"物理キーが押下されたことを視覚的に表示する"</string>
+    <string name="touchpad_visualizer" msgid="3707916068870825115">"タッチパッド入力を表示"</string>
+    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"タッチパッドの入力データと認識されたジェスチャーを画面オーバーレイで表示する"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"表示面の更新を通知"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"更新時にウィンドウの表示面全体を点滅させる"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"画面の更新を表示"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"描画時にウィンドウ内の表示を点滅させる"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"描画時にウィンドウ内の表示を点滅させます"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"ハードウェア層の更新を表示"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"更新されたハードウェア層を緑で点滅させる"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"更新されたハードウェア層を緑で点滅させます"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU オーバードローをデバッグ"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"HW オーバーレイを無効化"</string>
-    <string name="disable_overlays_summary" msgid="1954852414363338166">"画面合成に常に GPU を使用する"</string>
+    <string name="disable_overlays_summary" msgid="1954852414363338166">"画面合成に常に GPU を使用します"</string>
     <string name="simulate_color_space" msgid="1206503300335835151">"色空間シミュレート"</string>
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"OpenGLトレースを有効化"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"USB オーディオ ルーティングを無効化"</string>
-    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"USB オーディオ周辺機器への自動ルーティングを無効にする"</string>
+    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"USB オーディオ周辺機器への自動ルーティングを無効にします"</string>
     <string name="debug_layout" msgid="1659216803043339741">"レイアウト境界を表示"</string>
     <string name="debug_layout_summary" msgid="8825829038287321978">"クリップの境界線、マージンなどを表示"</string>
     <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"RTL レイアウト方向を使用"</string>
@@ -418,12 +418,12 @@
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"ナビゲーション バーの背景色をデフォルトで透明にします"</string>
     <string name="window_blurs" msgid="6831008984828425106">"ウィンドウ レベルでのぼかしを許可"</string>
     <string name="force_msaa" msgid="4081288296137775550">"4x MSAA を適用"</string>
-    <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 アプリで 4x MSAA を有効にする"</string>
+    <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 アプリで 4x MSAA を有効にします"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"非矩形クリップ操作をデバッグ"</string>
     <string name="track_frame_time" msgid="522674651937771106">"HWUI レンダリングのプロファイル作成"</string>
-    <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"GPU デバッグレイヤの有効化"</string>
-    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"デバッグアプリに GPU デバッグレイヤの読み込みを許可"</string>
-    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"ベンダーの詳細なロギングを有効にする"</string>
+    <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"GPU デバッグレイヤを有効化"</string>
+    <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"デバッグアプリに GPU デバッグレイヤの読み込みを許可します"</string>
+    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"ベンダーの詳細なロギングを有効化"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"バグレポートには、その他のデバイス固有のベンダーログが含まれます。これには、非公開の情報が含まれることがあります。また、バッテリーやストレージの使用量が増えることもあります。"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"1 日後に無効にする"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"ベンダーの詳細なロギングが終了しました"</string>
@@ -477,7 +477,7 @@
     <string name="transcode_notification" msgid="5560515979793436168">"コード変換に関する通知の表示"</string>
     <string name="transcode_disable_cache" msgid="3160069309377467045">"コード変換のキャッシュを無効にする"</string>
     <string name="runningservices_settings_title" msgid="6460099290493086515">"実行中のサービス"</string>
-    <string name="runningservices_settings_summary" msgid="1046080643262665743">"現在実行中のサービスを表示して制御する"</string>
+    <string name="runningservices_settings_summary" msgid="1046080643262665743">"現在実行中のサービスを表示して制御します"</string>
     <string name="select_webview_provider_title" msgid="3917815648099445503">"WebView の実装"</string>
     <string name="select_webview_provider_dialog_title" msgid="2444261109877277714">"WebView の実装の設定"</string>
     <string name="select_webview_provider_toast_text" msgid="8512254949169359848">"この選択は無効になりました。もう一度お試しください。"</string>
@@ -759,7 +759,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"<xliff:g id="SWITCHAPP">%1$s</xliff:g> をブロードキャスト"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"出力を変更"</string>
     <string name="back_navigation_animation" msgid="8105467568421689484">"予測型「戻る」アニメーション"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"予測型「戻る」のシステム アニメーションを有効にする。"</string>
+    <string name="back_navigation_animation_summary" msgid="741292224121599456">"予測型「戻る」のシステム アニメーションを有効にします"</string>
     <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"この設定は、予測型操作のシステム アニメーションを有効にします。アプリごとにマニフェスト ファイルで enableOnBackInvokedCallback を true に設定する必要があります。"</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="not_specified" msgid="5423502443185110328">"指定しない"</string>

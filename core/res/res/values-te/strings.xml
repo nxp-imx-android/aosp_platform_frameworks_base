@@ -1803,8 +1803,10 @@
     <string name="color_correction_feature_name" msgid="7975133554160979214">"కలర్ కరెక్షన్"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"వన్-హ్యాండెడ్ మోడ్"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ఎక్స్‌ట్రా డిమ్"</string>
-    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"వినికిడి పరికరాలు"</string>
+    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"హియరింగ్ డివైజ్‌‌‌లు"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ఆటో-క్లిక్"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"డిస్‌కనెక్ట్ అయింది"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"కనెక్ట్ చేయబడింది"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"యాక్టివ్"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ప్రమోషన్లు"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"సోషల్ మీడియా"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"వార్తలు"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"సిఫార్సులు"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"మీరు ఈ నోటిఫికేషన్‌ల ప్రాముఖ్యతను సెట్ చేశారు."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ఇందులో పేర్కొనబడిన వ్యక్తులను బట్టి ఇది చాలా ముఖ్యమైనది."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"అనుకూల యాప్ నోటిఫికేషన్"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"అప్లికేషన్‌లు"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"మీ వేలిముద్రలను ఇకపై గుర్తించడం సాధ్యం కాదు. వేలిముద్ర అన్‌లాక్‌ను మళ్లీ సెటప్ చేయండి."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"లాక్ చేసి ఉన్నప్పుడు USB డివైజ్ ప్లగ్-ఇన్ అయి ఉంది"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android లాక్ అయినప్పుడు USB డివైజ్ ప్లగ్-ఇన్ చేయబడింది. డివైజ్‌ను ఉపయోగించడానికి, దయచేసి ముందుగా Androidను అన్‌లాక్ చేయండి."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android లాక్ అయినప్పుడు USB డివైజ్ ప్లగ్-ఇన్ చేయబడింది. డివైజ్‌ను ఉపయోగించడానికి, దయచేసి ముందుగా Androidను అన్‌లాక్ చేసి, ఆ తర్వాత, USB డివైజ్‌ను ఉపయోగించడానికి దాన్ని మళ్లీ ఇన్‌సర్ట్ చేయండి."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"లాక్ చేసినప్పుడు ఛార్జింగ్ సామర్థ్యం తగ్గవచ్చు లేదా అందుబాటులో ఉండకపోవచ్చు."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB యాక్టివిటీ అనుమానాస్పదంగా ఉంది"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB డేటా సిగ్నల్ డిజేబుల్ అయింది."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"వేలిముద్ర అన్‌లాక్‌తో సమస్య ఉందా?"</string>

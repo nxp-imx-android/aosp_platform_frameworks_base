@@ -25,11 +25,11 @@ import androidx.asynclayoutinflater.view.AsyncLayoutInflater
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.applications.InterestingConfigChanges
 import com.android.systemui.Dumpable
-import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.QSContainerImpl
@@ -48,12 +48,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -196,6 +198,7 @@ interface QSSceneAdapter {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class QSSceneAdapterImpl
 @VisibleForTesting
@@ -331,13 +334,17 @@ constructor(
                 }
             }
             launch {
-                shadeModeInteractor.shadeMode.collect {
-                    qsImpl.value?.setInSplitShade(it is ShadeMode.Split)
-                }
-            }
-            launch {
-                combine(displayStateInteractor.isLargeScreen, qsImpl.filterNotNull(), ::Pair)
-                    .collect { it.second.setIsNotificationPanelFullWidth(!it.first) }
+                combine(
+                        qsImpl.filterNotNull(),
+                        shadeModeInteractor.shadeMode,
+                        displayStateInteractor.isWideScreen,
+                    ) { qsImpl, shadeMode, isWideScreen ->
+                        qsImpl.setInSplitShade(shadeMode is ShadeMode.Split)
+                        qsImpl.setIsNotificationPanelFullWidth(
+                            shadeMode is ShadeMode.Single || !isWideScreen
+                        )
+                    }
+                    .collect()
             }
         }
     }

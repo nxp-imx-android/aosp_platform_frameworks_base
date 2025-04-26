@@ -1439,7 +1439,6 @@ public abstract class Window {
      * @see #getDesiredHdrHeadroom()
      * @see Display#getHdrSdrRatio()
      */
-    @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_LIMITED_HDR)
     public void setDesiredHdrHeadroom(
             @FloatRange(from = 0.0f, to = 10000.0) float desiredHeadroom) {
         final WindowManager.LayoutParams attrs = getAttributes();
@@ -1452,7 +1451,6 @@ public abstract class Window {
      * @return The amount of HDR headroom set, or 0 for automatic/default behavior.
      * @see #setDesiredHdrHeadroom(float)
      */
-    @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_LIMITED_HDR)
     public float getDesiredHdrHeadroom() {
         return getAttributes().getDesiredHdrHeadroom();
     }

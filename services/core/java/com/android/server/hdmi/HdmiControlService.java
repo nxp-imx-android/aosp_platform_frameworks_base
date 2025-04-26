@@ -707,13 +707,18 @@ public class HdmiControlService extends SystemService {
         publishBinderService(Context.HDMI_CONTROL_SERVICE, new BinderService());
 
         if (mCecController != null) {
-            // Register broadcast receiver for power state change.
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_SCREEN_OFF);
-            filter.addAction(Intent.ACTION_SCREEN_ON);
-            filter.addAction(Intent.ACTION_SHUTDOWN);
-            filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
-            getContext().registerReceiver(mHdmiControlBroadcastReceiver, filter);
+            // Register broadcast receiver for power state change with high priority.
+            IntentFilter powerFilter = new IntentFilter();
+            powerFilter.addAction(Intent.ACTION_SCREEN_OFF);
+            powerFilter.addAction(Intent.ACTION_SCREEN_ON);
+            powerFilter.addAction(Intent.ACTION_SHUTDOWN);
+            powerFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
+            getContext().registerReceiver(mHdmiControlBroadcastReceiver, powerFilter);
+
+            // Register broadcast receiver for configuration change.
+            IntentFilter configFilter = new IntentFilter();
+            configFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+            getContext().registerReceiver(mHdmiControlBroadcastReceiver, configFilter);
 
             // Register ContentObserver to monitor the settings change.
             registerContentObserver();
@@ -5207,6 +5212,9 @@ public class HdmiControlService extends SystemService {
         // of sound when CEC is disabled and eARC is enabled due to SAM being in the off state.
         if (!isCecControlEnabled()) {
             setSystemAudioActivated(true);
+        } else if (isTvDeviceEnabled() && tv().getAvrDeviceInfo() == null) {
+            // The AVR might not support CEC.
+            tv().changeSystemAudioMode(enabled, null);
         }
         getAudioManager().setWiredDeviceConnectionState(attributes, enabled ? 1 : 0);
     }

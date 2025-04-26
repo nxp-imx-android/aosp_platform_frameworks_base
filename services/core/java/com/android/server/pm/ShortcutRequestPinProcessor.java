@@ -380,7 +380,7 @@ class ShortcutRequestPinProcessor {
         // (Because we can't always force enable it automatically as it may be a stale
         // manifest shortcut.)
         Preconditions.checkArgument(shortcutInfo.isEnabled(),
-                "Shortcut ID=" + shortcutInfo + " already exists but disabled.");
+                "Shortcut ID=%s already exists but disabled.", shortcutInfo);
     }
 
     private boolean startRequestConfirmActivity(ComponentName activity, int launcherUserId,

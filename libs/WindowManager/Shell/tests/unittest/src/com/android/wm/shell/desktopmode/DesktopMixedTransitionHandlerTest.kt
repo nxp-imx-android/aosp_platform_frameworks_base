@@ -88,6 +88,8 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     @Mock lateinit var freeformTaskTransitionHandler: FreeformTaskTransitionHandler
     @Mock lateinit var closeDesktopTaskTransitionHandler: CloseDesktopTaskTransitionHandler
     @Mock lateinit var desktopMinimizationTransitionHandler: DesktopMinimizationTransitionHandler
+    @Mock
+    lateinit var desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler
     @Mock lateinit var desktopImmersiveController: DesktopImmersiveController
     @Mock lateinit var interactionJankMonitor: InteractionJankMonitor
     @Mock lateinit var mockHandler: Handler
@@ -121,6 +123,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 closeDesktopTaskTransitionHandler,
                 desktopImmersiveController,
                 desktopMinimizationTransitionHandler,
+                desktopModeDragAndDropTransitionHandler,
                 interactionJankMonitor,
                 mockHandler,
                 shellInit,
@@ -256,6 +259,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     @DisableFlags(
         Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
         Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
     )
     fun startLaunchTransition_immersiveAndAppLaunchFlagsDisabled_doesNotUseMixedHandler() {
         val wct = WindowContainerTransaction()

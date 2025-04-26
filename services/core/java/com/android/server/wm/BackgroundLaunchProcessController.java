@@ -25,6 +25,7 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_DISALL
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_BOUND_BY_FOREGROUND;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_FOREGROUND;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_GRACE_PERIOD;
+import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_NOTIFICATION_TOKEN;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_TOKEN;
 
@@ -118,7 +119,8 @@ class BackgroundLaunchProcessController {
     BalVerdict areBackgroundActivityStartsAllowed(
             int pid, int uid, String packageName,
             int appSwitchState, BalCheckConfiguration checkConfiguration,
-            boolean hasActivityInVisibleTask, boolean hasBackgroundActivityStartPrivileges,
+            boolean hasActivityInVisibleTask, boolean inPinnedWindow,
+            boolean hasBackgroundActivityStartPrivileges,
             long lastStopAppSwitchesTime, long lastActivityLaunchTime,
             long lastActivityFinishTime) {
         // Allow if the proc is instrumenting with background activity starts privs.
@@ -140,9 +142,11 @@ class BackgroundLaunchProcessController {
                 && isBoundByForegroundUid()) {
             return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid");
         }
-        // Allow if the caller has an activity in any foreground task.
-        if (checkConfiguration.checkOtherExemptions && hasActivityInVisibleTask
-                && appSwitchState != APP_SWITCH_DISALLOW) {
+        // Allow if the caller has an activity in any foreground task, unless it's a pinned window
+        // and not a foreground service start.
+        if ((checkConfiguration.isCheckingForFgsStart || !inPinnedWindow)
+                && checkConfiguration.checkOtherExemptions
+                && hasActivityInVisibleTask && appSwitchState != APP_SWITCH_DISALLOW) {
             return new BalVerdict(BAL_ALLOW_FOREGROUND, /*background*/
                     "process has activity in foreground task");
         }
@@ -216,7 +220,7 @@ class BackgroundLaunchProcessController {
                 return new BalVerdict(BAL_ALLOW_TOKEN,
                         "process allowed by callback (token ignored) tokens: " + binderTokens);
             }
-            return new BalVerdict(BAL_ALLOW_TOKEN,
+            return new BalVerdict(BAL_ALLOW_NOTIFICATION_TOKEN,
                     "process allowed by callback (token: " + activityStartAllowed.token()
                             + ") tokens: " + binderTokens);
         }

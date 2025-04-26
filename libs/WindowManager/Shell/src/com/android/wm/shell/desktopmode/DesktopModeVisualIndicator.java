@@ -39,6 +39,7 @@ import android.graphics.Region;
 import android.util.Pair;
 import android.view.Display;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import androidx.annotation.VisibleForTesting;
@@ -258,8 +259,8 @@ public class DesktopModeVisualIndicator {
      * display, including no visible indicator, and update the indicator.
      */
     @NonNull
-    IndicatorType updateIndicatorType(PointF inputCoordinates) {
-        final IndicatorType result = calculateIndicatorType(inputCoordinates);
+    IndicatorType updateIndicatorType(int displayId, PointF inputCoordinates) {
+        final IndicatorType result = calculateIndicatorType(displayId, inputCoordinates);
         updateIndicatorWithType(result);
         return result;
     }
@@ -269,7 +270,13 @@ public class DesktopModeVisualIndicator {
      * display, including no visible indicator.
      */
     @NonNull
-    IndicatorType calculateIndicatorType(PointF inputCoordinates) {
+    IndicatorType calculateIndicatorType(int displayId, PointF inputCoordinates) {
+        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
+                && mTaskInfo.displayId != displayId) {
+            // TODO(b/411292927): Allow indicator to show on the target display (`displayId`)
+            // even if it differs from the task's original display.
+            return NO_INDICATOR;
+        }
         final IndicatorType result;
         if (mUseSmallTabletRegions) {
             result = getIndicatorSmallTablet(inputCoordinates);

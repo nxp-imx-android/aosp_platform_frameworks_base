@@ -118,6 +118,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         mHideTaskWithSurface = hideTaskWithSurface;
     }
 
+    @VisibleForTesting
+    SurfaceControl getTaskLeash() {
+        return mTaskLeash;
+    }
+
     SurfaceControl getSurfaceControl() {
         return mSurfaceControl;
     }
@@ -212,7 +217,10 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     private void resetTaskInfo() {
         mTaskInfo = null;
         mTaskToken = null;
-        mTaskLeash = null;
+        if (mTaskLeash != null) {
+            mTaskLeash.release();
+            mTaskLeash = null;
+        }
         mPendingInfo = null;
         mTaskNotFound = false;
     }
@@ -261,7 +269,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         }
         mTaskInfo = taskInfo;
         mTaskToken = taskInfo.token;
-        mTaskLeash = leash;
+        mTaskLeash = new SurfaceControl(leash, "TaskController.onTaskAppeared");
 
         if (mSurfaceCreated) {
             // Surface is ready, so just reparent the task to this surface control
@@ -295,14 +303,12 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         // we know about -- so leave clean-up here even if shell transitions are enabled.
         if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
 
-        final SurfaceControl taskLeash = mTaskLeash;
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             handleAndNotifyTaskRemoval(taskInfo);
         } else {
             handleAndNotifyTaskRemoval(mTaskInfo);
         }
 
-        mTransaction.reparent(taskLeash, null).apply();
         resetTaskInfo();
     }
 
@@ -580,7 +586,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         mPendingInfo = null;
         mTaskInfo = taskInfo;
         mTaskToken = mTaskInfo.token;
-        mTaskLeash = leash;
+        mTaskLeash = new SurfaceControl(leash, "TaskController.prepareOpen");
         if (!mSurfaceCreated) {
             return null;
         }

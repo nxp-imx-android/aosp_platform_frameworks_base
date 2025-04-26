@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extra dimmen"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Hoortoestellen"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatisch klikken"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Verbinding verbroken"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Verbonden"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Actief"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promoties"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Sociaal"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Nieuws"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Aanbevelingen"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Je stelt het belang van deze meldingen in."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Dit is belangrijk vanwege de betrokken mensen."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Aangepaste app-melding"</string>
@@ -2429,10 +2432,10 @@
     <string name="window_magnification_prompt_content" msgid="8159173903032344891">"Je kunt nu een deel van je scherm vergroten"</string>
     <string name="turn_on_magnification_settings_action" msgid="8521433346684847700">"Aanzetten in Instellingen"</string>
     <string name="dismiss_action" msgid="1728820550388704784">"Sluiten"</string>
-    <string name="sensor_privacy_start_use_mic_notification_content_title" msgid="2420858361276370367">"Microfoon van apparaat niet meer blokkeren"</string>
-    <string name="sensor_privacy_start_use_camera_notification_content_title" msgid="7287720213963466672">"Blokkeren van apparaatcamera opheffen"</string>
+    <string name="sensor_privacy_start_use_mic_notification_content_title" msgid="2420858361276370367">"Microfoon van apparaat deblokkeren"</string>
+    <string name="sensor_privacy_start_use_camera_notification_content_title" msgid="7287720213963466672">"Camera van apparaat deblokkeren"</string>
     <string name="sensor_privacy_start_use_notification_content_text" msgid="7595608891015777346">"Voor &lt;b&gt;<xliff:g id="APP">%s</xliff:g>&lt;/b&gt; en alle andere apps en services"</string>
-    <string name="sensor_privacy_start_use_dialog_turn_on_button" msgid="7089318886628390827">"Niet meer blokkeren"</string>
+    <string name="sensor_privacy_start_use_dialog_turn_on_button" msgid="7089318886628390827">"Deblokkeren"</string>
     <string name="sensor_privacy_notification_channel_label" msgid="936036783155261349">"Sensorprivacy"</string>
     <string name="splash_screen_view_icon_description" msgid="180638751260598187">"App-icoon"</string>
     <string name="splash_screen_view_branding_description" msgid="7911129347402728216">"Merkafbeelding voor app"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Je vingerafdrukken worden niet meer herkend. Stel Ontgrendelen met vingerafdruk opnieuw in."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-apparaat aangesloten terwijl vergrendeld"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Het USB-apparaat is aangesloten terwijl Android is vergrendeld. Als je het apparaat wilt gebruiken, ontgrendel je eerst Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Het USB-apparaat is aangesloten terwijl Android is vergrendeld. Als je het apparaat wilt gebruiken, ontgrendel je eerst Android en plaats je het USB-apparaat opnieuw om het te gebruiken."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"De oplaadmogelijkheden kunnen beperkt zijn of niet beschikbaar zijn indien vergrendeld."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdachte USB-activiteit"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-gegevenssignaal is uitgezet."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Heb je problemen met Ontgrendelen met vingerafdruk?"</string>

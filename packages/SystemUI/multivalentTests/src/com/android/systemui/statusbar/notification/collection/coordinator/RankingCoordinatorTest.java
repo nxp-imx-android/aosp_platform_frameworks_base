@@ -155,6 +155,24 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
+    public void testSilentHeader_clearableBundle_enableClearSectionTrue() {
+        // Set up bundle with clearable listEntry child
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
+        ListEntry listEntry = new ListEntry(mEntry.getKey(), 0L) {
+            @Nullable
+            @Override
+            public NotificationEntry getRepresentativeEntry() {
+                return mEntry;
+            }
+        };
+        setSbnClearable(true);
+        bundleEntry.addChild(listEntry);
+
+        mSilentSectioner.onEntriesUpdated(Arrays.asList(bundleEntry));
+        verify(mSilentHeaderController).setClearSectionEnabled(eq(true));
+    }
+
+    @Test
     public void testUnfilteredState() {
         // GIVEN no suppressed visual effects + app not suspended
         mEntry.setRanking(getRankingForUnfilteredNotif().build());

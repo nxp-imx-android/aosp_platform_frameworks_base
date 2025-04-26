@@ -2773,17 +2773,6 @@ public class ComputerEngine implements Computer {
             enforceCrossUserPermission(Binder.getCallingUid(), userId, false, false,
                     !isRecentsAccessingChildProfiles(Binder.getCallingUid(), userId),
                     "MATCH_ANY_USER flag requires INTERACT_ACROSS_USERS permission");
-        } else if (!Flags.removeCrossUserPermissionHack()
-                && (flags & PackageManager.MATCH_UNINSTALLED_PACKAGES) != 0
-                && isCallerSystemUser
-                && mUserManager.hasProfile(UserHandle.USER_SYSTEM)) {
-            // If the caller wants all packages and has a profile associated with it,
-            // then match all users. This is to make sure that launchers that need to access
-            //work
-            // profile apps don't start breaking. TODO: Remove this hack when launchers stop
-            //using
-            // MATCH_UNINSTALLED_PACKAGES to query apps in other profiles. b/31000380
-            flags |= PackageManager.MATCH_ANY_USER;
         }
         return updateFlags(flags, userId);
     }

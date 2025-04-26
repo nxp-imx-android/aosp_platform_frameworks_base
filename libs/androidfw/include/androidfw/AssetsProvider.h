@@ -110,8 +110,14 @@ struct ZipAssetsProvider : public AssetsProvider {
 
  private:
   struct PathOrDebugName;
+
+  // There are applications that decided to dlsym and call this constructor somehow, so we
+  // have to keep it for backwards compatibility.
   ZipAssetsProvider(ZipArchive* handle, PathOrDebugName&& path, package_property_t flags,
-                    ModDate last_mod_time);
+                    time_t last_mod_time);
+  // ModTime is time_t on Win32, need to change the parameter order to make it overloadable.
+  ZipAssetsProvider(ZipArchive* handle, PathOrDebugName&& path, ModDate last_mod_time,
+                    package_property_t flags);
 
   struct PathOrDebugName {
     static PathOrDebugName Path(std::string value) {

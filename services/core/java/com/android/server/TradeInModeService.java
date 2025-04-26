@@ -252,16 +252,17 @@ public final class TradeInModeService extends SystemService {
 
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
-        public int getScreenPartStatus() throws RemoteException {
-            SurfaceControl b = new SurfaceControl.Builder().setName("TIM").build();
+        public int[] getScreenPartStatus() throws RemoteException {
+            int[] statuses = new int[DisplayControl.getPhysicalDisplayIds().length];
+            int index = 0;
             // loop through all displayId to find id of internal display
             for (long physicalDisplayId : DisplayControl.getPhysicalDisplayIds()) {
-                SurfaceControl.StaticDisplayInfo info = b.getStaticDisplayInfo(physicalDisplayId);
-                if (info.isInternal) {
-                    return info.screenPartStatus;
+                SurfaceControl.StaticDisplayInfo info = SurfaceControl.getStaticDisplayInfo(physicalDisplayId);
+                if (info != null && info.isInternal) {
+                    statuses[index++] = info.screenPartStatus;
                 }
             }
-            return 0;
+            return statuses;
         }
 
         @Override

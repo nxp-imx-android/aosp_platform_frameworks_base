@@ -84,7 +84,7 @@ import java.util.Objects;
  *
  * @hide
  */
-public abstract class AnrTimer<V> implements AutoCloseable {
+public class AnrTimer<V> implements AutoCloseable {
 
     /**
      * The log tag.
@@ -113,14 +113,18 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      * is no valid pid available.
      * @return a valid pid or zero.
      */
-    public abstract int getPid(V obj);
+    public int getPid(V obj) {
+        return 0;
+    }
 
     /**
      * Fetch the Linux uid from the object. The returned value may be zero to indicate that there
      * is no valid uid available.
      * @return a valid uid or zero.
      */
-    public abstract int getUid(V obj);
+    public int getUid(V obj) {
+        return 0;
+    }
 
     /**
      * Return true if tracing is feature-enabled.  This has no effect unless tracing is configured.
@@ -437,6 +441,7 @@ public abstract class AnrTimer<V> implements AutoCloseable {
         /** Start a timer by sending a message to the client's handler. */
         @Override
         void start(@NonNull V arg, int pid, int uid, long timeoutMs) {
+            cancel(arg);
             final Message msg = mHandler.obtainMessage(mWhat, arg);
             mHandler.sendMessageDelayed(msg, timeoutMs);
         }
@@ -667,8 +672,24 @@ public abstract class AnrTimer<V> implements AutoCloseable {
      * @param timeoutMs The timer timeout, in milliseconds.
      */
     public void start(@NonNull V arg, long timeoutMs) {
+        start(arg, getPid(arg), getUid(arg), timeoutMs);
+    }
+
+    /**
+     * Start a timer associated with arg, pid, and uid.  The same object must be used to cancel,
+     * accept, or discard a timer later.  If a timer already exists with the same arg, then the
+     * existing timer is canceled and a new timer is created.  The timeout is signed but negative
+     * delays are nonsensical.  Rather than throw an exception, timeouts less than 0ms are forced to
+     * 0ms.  This allows a client to deliver an immediate timeout via the AnrTimer.
+     *
+     * @param arg The key by which the timer is known.  This is never examined or modified.
+     * @param pid The process ID of the process that is being timed.
+     * @param uid The UID of the process that is being timed.
+     * @param timeoutMs The timer timeout, in milliseconds.
+     */
+    public void start(@NonNull V arg, int pid, int uid, long timeoutMs) {
         if (timeoutMs < 0) timeoutMs = 0;
-        mFeature.start(arg, getPid(arg), getUid(arg), timeoutMs);
+        mFeature.start(arg, pid, uid, timeoutMs);
     }
 
     /**

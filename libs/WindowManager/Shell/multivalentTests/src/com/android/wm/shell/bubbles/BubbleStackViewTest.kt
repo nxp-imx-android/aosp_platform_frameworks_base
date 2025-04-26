@@ -46,6 +46,7 @@ import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -309,6 +310,73 @@ class BubbleStackViewTest {
             verify(sysuiProxy).onStackExpandChanged(false)
             shellExecutor.flushAll()
         }
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_SWIPE_UP_CLEANUP)
+    @Test
+    fun expandStack_clearsImeRunnable() {
+        val bubble = createAndInflateBubble()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+        }
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        // Set up a pending runnable to be cleared
+        bubbleStackViewManager.onImeHidden = Runnable {
+            fail("IME runnable should not be called when IME is hidden")
+        }
+
+        positioner.setImeVisible(false, 0)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // simulate a request from the bubble data listener to expand the stack
+            bubbleStackView.isExpanded = true
+            verify(sysuiProxy).onStackExpandChanged(true)
+            shellExecutor.flushAll()
+        }
+
+        // Ime runnable is reset
+        assertThat(bubbleStackViewManager.onImeHidden).isNull()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_SWIPE_UP_CLEANUP)
+    @Test
+    fun collapseStack_clearsImeRunnable() {
+        val bubble = createAndInflateBubble()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+        }
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        positioner.setImeVisible(false, 0)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // simulate a request from the bubble data listener to expand the stack
+            bubbleStackView.isExpanded = true
+            verify(sysuiProxy).onStackExpandChanged(true)
+            shellExecutor.flushAll()
+        }
+
+        // Set up a pending runnable to be cleared
+        bubbleStackViewManager.onImeHidden = Runnable {
+            fail("IME runnable should not be called when IME is hidden")
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // simulate a request from the bubble data listener to collapse the stack
+            bubbleStackView.isExpanded = false
+            verify(sysuiProxy).onStackExpandChanged(false)
+            shellExecutor.flushAll()
+        }
+
+        // Check that the runnable is cleared
+        assertThat(bubbleStackViewManager.onImeHidden).isNull()
     }
 
     @Test
@@ -706,6 +774,10 @@ class BubbleStackViewTest {
 
         override fun hideCurrentInputMethod(onImeHidden: Runnable?) {
             this.onImeHidden = onImeHidden
+        }
+
+        override fun clearImeHiddenRunnable() {
+            this.onImeHidden = null
         }
     }
 

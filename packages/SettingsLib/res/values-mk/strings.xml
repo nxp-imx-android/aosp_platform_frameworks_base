@@ -81,7 +81,7 @@
     <string name="speed_label_fast" msgid="2677719134596044051">"Брза"</string>
     <string name="speed_label_very_fast" msgid="8215718029533182439">"Многу брза"</string>
     <string name="wifi_passpoint_expired" msgid="6540867261754427561">"Истечено"</string>
-    <string name="preference_summary_default_combination" msgid="2644094566845577901">"<xliff:g id="STATE">%1$s</xliff:g>/<xliff:g id="DESCRIPTION">%2$s</xliff:g>"</string>
+    <string name="preference_summary_default_combination" msgid="2644094566845577901">"<xliff:g id="STATE">%1$s</xliff:g> / <xliff:g id="DESCRIPTION">%2$s</xliff:g>"</string>
     <string name="bluetooth_disconnected" msgid="7739366554710388701">"Не е поврзано"</string>
     <string name="bluetooth_disconnecting" msgid="7638892134401574338">"Се исклучува..."</string>
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Се поврзува..."</string>
@@ -324,7 +324,7 @@
     <string name="bluetooth_select_a2dp_codec_bits_per_sample_dialog_title" msgid="4898693684282596143">"Вклучете го аудио кодекот преку Bluetooth\nСелекција: бит-по-семпл"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode" msgid="364277285688014427">"Режим на канал за аудио преку Bluetooth"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode_dialog_title" msgid="2076949781460359589">"Вклучете го аудио кодекот преку Bluetooth\nСелекција: режим на канал"</string>
-    <string name="bluetooth_select_a2dp_codec_ldac_playback_quality" msgid="3233402355917446304">"Кодек за LDAC-аудио преку Bluetooth: квалитет на репродукција"</string>
+    <string name="bluetooth_select_a2dp_codec_ldac_playback_quality" msgid="3233402355917446304">"LDAC-кодек за аудио преку Bluetooth: Квалитет на репродукција"</string>
     <string name="bluetooth_select_a2dp_codec_ldac_playback_quality_dialog_title" msgid="7274396574659784285">"Вклучете селекција на кодек за LDAC-аудио\nпреку Bluetooth: квалитет на репродукција"</string>
     <string name="bluetooth_select_a2dp_codec_streaming_label" msgid="2040810756832027227">"Емитување: <xliff:g id="STREAMING_PARAMETER">%1$s</xliff:g>"</string>
     <string name="select_private_dns_configuration_title" msgid="7887550926056143018">"Приватен DNS"</string>
@@ -395,7 +395,7 @@
     <string name="show_touches_summary" msgid="3692861665994502193">"Прикажувај визуелни повратни информации за допири"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"Прикаж. притисн. копчиња"</string>
     <string name="show_key_presses_summary" msgid="725387457373015024">"Визуелно го прикажува притискањето на копчињата"</string>
-    <string name="touchpad_visualizer" msgid="3707916068870825115">"Прикажи влезен податок од допирната подлога"</string>
+    <string name="touchpad_visualizer" msgid="3707916068870825115">"Прикажувај влезни податоци од допирната подлога"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Преклопување на екранот што прикажува влезни податоци од допирната подлога и познати движења"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Прикажи ажурир. површина"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Осветли површ. на прозорци при нивно ажурирање"</string>
@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Овозм. отстр. греш. на GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Дозволи вчитување GPU-слоеви за отстранув. грешки"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Опширна евиденција на продавачи"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Вклучува дополнителна евиденција на продавачи во извештаите за грешки за конкретен уред, којашто може да содржи приватни податоци, повеќе да ја користи батеријата и/или да користи повеќе капацитет."</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Вклучува дополнителна евиденција на продавачи во извештаите за грешки за конкретен уред, којашто може да содржи приватни податоци, повеќе да ја користи батеријата и/или да користи повеќе простор."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Оневозможи по еден ден"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Опширната евиденција на продавачи заврши"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Овозможено за еден ден"</string>

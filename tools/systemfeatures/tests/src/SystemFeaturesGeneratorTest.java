@@ -252,4 +252,37 @@ public class SystemFeaturesGeneratorTest {
         assertThat(compiledFeatures.get(PackageManager.FEATURE_EMBEDDED).version).isEqualTo(1);
         assertThat(compiledFeatures.get(PackageManager.FEATURE_WIFI).version).isEqualTo(0);
     }
+
+    @Test
+    public void testReadonlyWithUnavailableFeaturesFromXml() {
+        // Always use the build-time feature version for explicit feature queries for unavailable
+        // features, never falling back to the runtime query.
+        assertThat(RoUnavailableFeaturesFromXml.hasFeaturePc(mContext)).isFalse();
+        assertThat(RoUnavailableFeaturesFromXml.hasFeatureWatch(mContext)).isFalse();
+        verify(mPackageManager, never()).hasSystemFeature(anyString(), anyInt());
+
+        // When parsing only unavailable feature types from XML, conditional queries should reflect:
+        //  * Disabled if the feature was *ever* declared w/ <unavailable-feature />
+        //  * Unknown otherwise.
+
+        // <unavailable-feature />
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature(PackageManager.FEATURE_PC, 0))
+                .isFalse();
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature(PackageManager.FEATURE_WATCH, 0))
+                .isFalse();
+
+        // For other feature types, conditional queries should report null (unknown).
+        assertThat(
+                        RoUnavailableFeaturesFromXml.maybeHasFeature(
+                                PackageManager.FEATURE_BLUETOOTH, 0))
+                .isNull();
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature(PackageManager.FEATURE_EMBEDDED, 0))
+                .isNull();
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature(PackageManager.FEATURE_WIFI, 0))
+                .isNull();
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature("com.arbitrary.feature", 0))
+                .isNull();
+        assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature("", 0)).isNull();
+        assertThat(RoUnavailableFeaturesFromXml.getReadOnlySystemEnabledFeatures()).isEmpty();
+    }
 }

@@ -16,6 +16,9 @@
 
 package com.android.systemui.screenrecord;
 
+import static com.android.systemui.screenrecord.ScreenRecordUxController.EXTRA_STATE;
+import static com.android.systemui.screenrecord.ScreenRecordUxController.INTENT_UPDATE_STATE;
+
 import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -91,7 +94,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     private static final String PERMISSION_SELF = "com.android.systemui.permission.SELF";
     protected static final String EXTRA_NOTIFICATION_ID = "notification_id";
 
-    private final RecordingController mController;
+    private final ScreenRecordUxController mController;
     protected final KeyguardDismissUtil mKeyguardDismissUtil;
     private final Handler mMainHandler;
     private ScreenRecordingAudioSource mAudioSource = ScreenRecordingAudioSource.NONE;
@@ -107,7 +110,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     private RecordingServiceStrings mStrings;
 
     @Inject
-    public RecordingService(RecordingController controller, @LongRunning Executor executor,
+    public RecordingService(ScreenRecordUxController controller, @LongRunning Executor executor,
             @Main Handler handler, UiEventLogger uiEventLogger,
             NotificationManager notificationManager,
             UserContextProvider userContextTracker, KeyguardDismissUtil keyguardDismissUtil,
@@ -292,8 +295,8 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
             // Main user has a reference to the correct controller, so no need to use a broadcast
             mController.updateState(state);
         } else {
-            Intent intent = new Intent(RecordingController.INTENT_UPDATE_STATE);
-            intent.putExtra(RecordingController.EXTRA_STATE, state);
+            Intent intent = new Intent(INTENT_UPDATE_STATE);
+            intent.putExtra(EXTRA_STATE, state);
             intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
             sendBroadcast(intent, PERMISSION_SELF);
         }

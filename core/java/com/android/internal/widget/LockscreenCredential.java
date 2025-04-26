@@ -246,7 +246,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
      */
     public void zeroize() {
         if (mCredential != null) {
-            LockPatternUtils.zeroize(mCredential);
+            ArrayUtils.zeroize(mCredential);
             mCredential = null;
         }
     }
@@ -255,7 +255,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
      * Copies the given array into a new non-movable array.
      */
     private static byte[] copyOfArrayNonMovable(byte[] array) {
-        byte[] copy = LockPatternUtils.newNonMovableByteArray(array.length);
+        byte[] copy = ArrayUtils.newNonMovableByteArray(array.length);
         System.arraycopy(array, 0, copy, 0, array.length);
         return copy;
     }
@@ -355,7 +355,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
             byte[] sha1 = MessageDigest.getInstance("SHA-1").digest(saltedPassword);
             byte[] md5 = MessageDigest.getInstance("MD5").digest(saltedPassword);
 
-            LockPatternUtils.zeroize(saltedPassword);
+            ArrayUtils.zeroize(saltedPassword);
             return HexEncoding.encodeToString(ArrayUtils.concat(sha1, md5));
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError("Missing digest algorithm: ", e);
@@ -449,7 +449,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
      * @return A byte array representing the input
      */
     private static byte[] charsToBytesTruncating(CharSequence chars) {
-        byte[] bytes = LockPatternUtils.newNonMovableByteArray(chars.length());
+        byte[] bytes = ArrayUtils.newNonMovableByteArray(chars.length());
         for (int i = 0; i < chars.length(); i++) {
             bytes[i] = (byte) chars.charAt(i);
         }

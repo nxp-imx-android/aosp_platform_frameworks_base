@@ -568,6 +568,12 @@ public class CameraServiceProxy extends SystemService
 
         @Override
         public void onDesktopModeEligibleChanged(int displayId) { }
+
+        @Override
+        public void onDisplayAddSystemDecorations(int displayId) { }
+
+        @Override
+        public void onDisplayRemoveSystemDecorations(int displayId) { }
     }
 
 

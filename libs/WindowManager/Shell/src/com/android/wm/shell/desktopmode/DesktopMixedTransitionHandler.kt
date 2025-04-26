@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.os.Handler
 import android.os.IBinder
+import android.view.DragEvent
 import android.view.SurfaceControl
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_OPEN
@@ -54,6 +55,7 @@ class DesktopMixedTransitionHandler(
     private val closeDesktopTaskTransitionHandler: CloseDesktopTaskTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val desktopMinimizationTransitionHandler: DesktopMinimizationTransitionHandler,
+    private val desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler,
     private val interactionJankMonitor: InteractionJankMonitor,
     @ShellMainThread private val handler: Handler,
     shellInit: ShellInit,
@@ -136,10 +138,12 @@ class DesktopMixedTransitionHandler(
         taskId: Int?,
         minimizingTaskId: Int? = null,
         exitingImmersiveTask: Int? = null,
+        dragEvent: DragEvent? = null,
     ): IBinder {
         if (
             !DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue &&
-                !DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue
+                !DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue &&
+                !DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
         ) {
             return transitions.startTransition(transitionType, wct, /* handler= */ null)
         }
@@ -160,6 +164,7 @@ class DesktopMixedTransitionHandler(
                     launchingTask = taskId,
                     minimizingTask = minimizingTaskId,
                     exitingImmersiveTask = exitingImmersiveTask,
+                    dragEvent = dragEvent,
                 )
             )
         }
@@ -297,6 +302,17 @@ class DesktopMixedTransitionHandler(
             minimizeChange?.let {
                 applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
             }
+        }
+        if (
+            DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue &&
+                pending.dragEvent != null
+        ) {
+            return desktopModeDragAndDropTransitionHandler.startAnimation(
+                info,
+                pending.dragEvent,
+                startTransaction,
+                finishCallback,
+            )
         }
         if (immersiveExitChange != null) {
             subAnimationCount = 2
@@ -521,6 +537,7 @@ class DesktopMixedTransitionHandler(
             val launchingTask: Int?,
             val minimizingTask: Int?,
             val exitingImmersiveTask: Int?,
+            val dragEvent: DragEvent? = null,
         ) : PendingMixedTransition()
 
         /**

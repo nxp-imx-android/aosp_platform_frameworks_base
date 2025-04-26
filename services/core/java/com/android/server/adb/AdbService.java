@@ -122,13 +122,18 @@ public class AdbService extends IAdbManager.Stub {
 
         @Override
         public boolean isAdbEnabled(byte transportType) {
-            if (transportType == AdbTransportType.USB) {
-                return mIsAdbUsbEnabled;
-            } else if (transportType == AdbTransportType.WIFI) {
-                return mIsAdbWifiEnabled;
+            switch (transportType) {
+                case AdbTransportType.USB:
+                    return mIsAdbUsbEnabled;
+                case AdbTransportType.WIFI:
+                    return mIsAdbWifiEnabled;
+                case AdbTransportType.VSOCK:
+                    throw new IllegalArgumentException(
+                            "AdbTransportType.VSOCK is not yet supported here");
+                default:
+                    throw new IllegalArgumentException(
+                        "isAdbEnabled called with unimplemented transport type=" + transportType);
             }
-            throw new IllegalArgumentException(
-                    "isAdbEnabled called with unimplemented transport type=" + transportType);
         }
 
         @Override
@@ -420,22 +425,34 @@ public class AdbService extends IAdbManager.Stub {
         Slog.d(TAG, "setAdbEnabled(" + enable + "), mIsAdbUsbEnabled=" + mIsAdbUsbEnabled
                  + ", mIsAdbWifiEnabled=" + mIsAdbWifiEnabled + ", transportType=" + transportType);
 
-        if (transportType == AdbTransportType.USB && enable != mIsAdbUsbEnabled) {
-            mIsAdbUsbEnabled = enable;
-        } else if (transportType == AdbTransportType.WIFI && enable != mIsAdbWifiEnabled) {
-            mIsAdbWifiEnabled = enable;
-            if (mIsAdbWifiEnabled) {
-                // Start adb over WiFi.
-                SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "1");
-                acquireMulticastLock();
-            } else {
-                // Stop adb over WiFi.
-                SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "0");
-                releaseMulticastLock();
-            }
-        } else {
-            // No change
-            return;
+        switch (transportType) {
+            case AdbTransportType.USB:
+                if (enable == mIsAdbUsbEnabled) {
+                    return;
+                }
+                mIsAdbUsbEnabled = enable;
+                break;
+            case AdbTransportType.WIFI:
+                if (enable == mIsAdbWifiEnabled) {
+                    return;
+                }
+                mIsAdbWifiEnabled = enable;
+                if (mIsAdbWifiEnabled) {
+                    // Start adb over WiFi.
+                    SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "1");
+                    acquireMulticastLock();
+                } else {
+                    // Stop adb over WiFi.
+                    SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "0");
+                    releaseMulticastLock();
+                }
+                break;
+            case AdbTransportType.VSOCK:
+                Slog.e(TAG, "AdbTransportType.VSOCK is not yet supported here");
+                return;
+            default:
+                Slog.e(TAG, "Unknown transport type=" + transportType);
+                return;
         }
 
         if (enable) {

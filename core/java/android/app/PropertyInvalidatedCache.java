@@ -668,8 +668,10 @@ public class PropertyInvalidatedCache<Query, Result> {
 
         // True if this handler is in test mode.  If it is in test mode, then nonces are stored
         // and retrieved from mTestNonce.
+        // Note that we use volatile to avoid the need to take a lock on hot paths for any reads,
+        // but we still protect functional reads/writes by the lock.
         @GuardedBy("mLock")
-        private boolean mTestMode;
+        private volatile boolean mTestMode;
 
         // This is the local value of the nonce, as last set by the NonceHandler.  It is always
         // updated by the setNonce() operation.  The getNonce() operation returns this value in
@@ -703,8 +705,13 @@ public class PropertyInvalidatedCache<Query, Result> {
          * the local mShadowNonce.
          */
         long getNonce() {
-            synchronized (mLock) {
-                if (mTestMode) return mShadowNonce;
+            // As this get is on many critical hot paths, avoid the test-specific lock if possible.
+            if (mTestMode) {
+                synchronized (mLock) {
+                    if (mTestMode) {
+                        return mShadowNonce;
+                    }
+                }
             }
             return getNonceInternal();
         }
@@ -2435,8 +2442,10 @@ public class PropertyInvalidatedCache<Query, Result> {
         // The highest string index extracted from the string block.  -1 means no strings have
         // been seen.  This is used to skip strings that have already been processed, when the
         // string block is updated.
+        // Note that we also mark this volatile to avoid needing the lock when fetching the nonce
+        // and validating the index, which is safe as this value is monotonically increasing.
         @GuardedBy("mLock")
-        private int mHighestIndex = -1;
+        private volatile int mHighestIndex = -1;
 
         // The number bytes of the string block that has been used.  This is a statistics.
         @GuardedBy("mLock")
@@ -2533,7 +2542,6 @@ public class PropertyInvalidatedCache<Query, Result> {
         // Throw an exception if the nonce handle is invalid.  The handle is bad if it is out of
         // range of allocated handles.  Note that NONCE_HANDLE_INVALID will throw: this is
         // important for setNonce().
-        @GuardedBy("mLock")
         private void throwIfBadHandle(int handle) {
             if (handle < 0 || handle > mHighestIndex) {
                 throw new IllegalArgumentException("invalid nonce handle: " + handle);
@@ -2588,18 +2596,16 @@ public class PropertyInvalidatedCache<Query, Result> {
 
         // Thin wrapper around the native method.
         public boolean setNonce(int handle, long value) {
-            synchronized (mLock) {
-                throwIfBadHandle(handle);
-                throwIfImmutable();
-                return nativeSetNonce(mPtr, handle, value);
-            }
+            // No lock needed as the underlying write is guarded with an atomic.
+            throwIfBadHandle(handle);
+            throwIfImmutable();
+            return nativeSetNonce(mPtr, handle, value);
         }
 
         public long getNonce(int handle) {
-            synchronized (mLock) {
-                throwIfBadHandle(handle);
-                return nativeGetNonce(mPtr, handle);
-            }
+            // No lock needed as the underlying read is guarded with an atomic.
+            throwIfBadHandle(handle);
+            return nativeGetNonce(mPtr, handle);
         }
 
         /**

@@ -259,7 +259,6 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(AConfigFlags.FLAG_SHADE_LAUNCH_ACCESSIBILITY)
     fun requestSendAccessibilityEvent_duringLaunchAnimation_blocksFocusEvent() {
         underTest.setAnimatingContentLaunch(true)
 

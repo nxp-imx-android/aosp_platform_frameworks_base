@@ -22,8 +22,8 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_SUPPORTED_OVERRIDE;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
-import static com.android.window.flags.Flags.enableSizeCompatModeImprovementsForConnectedDisplays;
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
@@ -201,6 +201,9 @@ class AppCompatSizeCompatModePolicy {
             pw.println(prefix + "mSizeCompatScale=" + mSizeCompatScale + " mSizeCompatBounds="
                     + mSizeCompatBounds);
         }
+        if (shouldCreateAppCompatDisplayInsets()) {
+            pw.println(prefix + "shouldCreateAppCompatDisplayInsets=true");
+        }
     }
 
     /**
@@ -371,7 +374,7 @@ class AppCompatSizeCompatModePolicy {
         // relatively fixed.
         overrideConfig.colorMode = fullConfig.colorMode;
         overrideConfig.densityDpi = fullConfig.densityDpi;
-        if (enableSizeCompatModeImprovementsForConnectedDisplays()) {
+        if (ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS.isTrue()) {
             overrideConfig.touchscreen = fullConfig.touchscreen;
             overrideConfig.navigation = fullConfig.navigation;
             overrideConfig.keyboard = fullConfig.keyboard;

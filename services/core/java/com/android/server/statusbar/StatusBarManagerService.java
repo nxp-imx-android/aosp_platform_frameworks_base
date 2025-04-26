@@ -96,6 +96,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowInsetsController.Appearance;
 import android.view.WindowInsetsController.Behavior;
+import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -172,6 +173,12 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
     static final long REQUEST_LISTENING_OTHER_USER_NOOP = 242194868L;
+
+    private static final DesktopExperienceFlag STATUS_BAR_CONNECTED_DISPLAYS =
+            new DesktopExperienceFlag(
+                    Flags::statusBarConnectedDisplays,
+                    /* shouldOverrideByDevOption= */ true,
+                    Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS);
 
     private final Context mContext;
 
@@ -1372,7 +1379,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         enforceValidCallingUser();
 
         synchronized (mLock) {
-            if (Flags.statusBarConnectedDisplays()) {
+          if(STATUS_BAR_CONNECTED_DISPLAYS.isTrue()) {
                 IntArray displayIds = new IntArray();
                 for (int i = 0; i < mDisplayUiState.size(); i++) {
                     displayIds.add(mDisplayUiState.keyAt(i));
@@ -1408,7 +1415,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         enforceStatusBar();
 
         synchronized (mLock) {
-            if (Flags.statusBarConnectedDisplays()) {
+            if (STATUS_BAR_CONNECTED_DISPLAYS.isTrue()) {
                 IntArray displayIds = new IntArray();
                 for (int i = 0; i < mDisplayUiState.size(); i++) {
                     displayIds.add(mDisplayUiState.keyAt(i));

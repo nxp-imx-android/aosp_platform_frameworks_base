@@ -480,3 +480,18 @@ flag {
      description: "Generate file for perfetto, so it can create a users table"
      bug: "391110239"
 }
+
+flag {
+    name: "backup_activated_for_all_users"
+    namespace: "multiuser"
+    description: "Activate backup for all users in headless system user mode (HSUM)."
+    bug: "374830726"
+    is_fixed_read_only: true
+}
+
+flag {
+     name: "create_initial_user"
+     namespace: "multiuser"
+     description: "Creates a non-main user on boot when device is HSUM and doesn't support main user"
+     bug: "409650316"
+}

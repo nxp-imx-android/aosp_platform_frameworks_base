@@ -74,6 +74,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
@@ -288,6 +289,7 @@ constructor(
         KeyguardBecameVisible,
         PrimaryBouncerBecameVisible,
         SecureCameraLaunched,
+        InGoneState,
     }
 
     /** Whether camera is launched over keyguard. */
@@ -302,6 +304,10 @@ constructor(
                 primaryBouncerShowing
                     .filter { it }
                     .map { SecureCameraRelatedEventType.PrimaryBouncerBecameVisible },
+                keyguardTransitionInteractor
+                    .transitionValue(GONE)
+                    .filter { it == 1f }
+                    .map { SecureCameraRelatedEventType.InGoneState },
             )
             .map {
                 when (it) {
@@ -310,10 +316,16 @@ constructor(
                     // have to show, so those events tell us that secure camera is no longer active.
                     SecureCameraRelatedEventType.KeyguardBecameVisible -> false
                     SecureCameraRelatedEventType.PrimaryBouncerBecameVisible -> false
+                    SecureCameraRelatedEventType.InGoneState -> false
                 }
             }
-            .onStart { emit(false) }
             .distinctUntilChanged()
+            .onEach { Log.v(TAG, "isSecureCameraActive: $it") }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
 
     /** The approximate location on the screen of the fingerprint sensor, if one is available. */
     val fingerprintSensorLocation: Flow<Point?> = repository.fingerprintSensorLocation
@@ -539,6 +551,13 @@ constructor(
                 tableLogBuffer = tableLogBuffer,
                 columnName = "isDozing",
                 initialValue = isDozing.value,
+            )
+            .collect()
+        isSecureCameraActive
+            .logDiffsForTable(
+                tableLogBuffer = tableLogBuffer,
+                columnName = "isSecureCameraActive",
+                initialValue = false,
             )
             .collect()
     }

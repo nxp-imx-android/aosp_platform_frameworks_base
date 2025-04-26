@@ -1811,7 +1811,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     /** Install/uninstall system packages for all users based on their user-type, as applicable. */
     private void installAllowlistedSystemPackages() {
-        if (mUserManager.installWhitelistedSystemPackages(isFirstBoot(), isDeviceUpgrading(),
+        if (mUserManager.installAllowlistedSystemPackages(isFirstBoot(), isDeviceUpgrading(),
                 mExistingPackages)) {
             scheduleWritePackageRestrictions(USER_ALL);
             scheduleWriteSettings();
@@ -4062,10 +4062,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         final ArrayMap<String, ArrayList<String>> sendNowBroadcasts = new ArrayMap<>(targetSize);
         final List<PackageMetrics.ComponentStateMetrics> componentStateMetricsList =
                 new ArrayList<PackageMetrics.ComponentStateMetrics>();
+        boolean scheduleBroadcastMessage = false;
+        boolean isSynchronous = false;
         synchronized (mLock) {
             Computer computer = snapshotComputer();
-            boolean scheduleBroadcastMessage = false;
-            boolean isSynchronous = false;
             boolean anyChanged = false;
 
             for (int i = 0; i < targetSize; i++) {
@@ -4116,26 +4116,27 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 // nothing changed, return immediately
                 return;
             }
-
-            if (isSynchronous) {
+        }
+        if (isSynchronous) {
+            synchronized (mLock) {
                 flushPackageRestrictionsAsUserInternalLocked(userId);
-            } else {
-                scheduleWritePackageRestrictions(userId);
             }
-            if (scheduleBroadcastMessage) {
-                if (!mHandler.hasMessages(SEND_PENDING_BROADCAST)) {
-                    // Schedule a message - if it has been a "reasonably long time" since the
-                    // service started, send the broadcast with a delay of one second to avoid
-                    // delayed reactions from the receiver, else keep the default ten second delay
-                    // to avoid extreme thrashing on service startup.
-                    final long broadcastDelay = SystemClock.uptimeMillis() > mServiceStartWithDelay
-                            ? BROADCAST_DELAY
-                            : BROADCAST_DELAY_DURING_STARTUP;
-                    mHandler.sendMessageDelayed(
-                            mHandler.obtainMessage(SEND_PENDING_BROADCAST, callingUid,
-                                    0 /* arg2 */, "component_state_changed" /* obj */),
-                            broadcastDelay);
-                }
+        } else {
+            scheduleWritePackageRestrictions(userId);
+        }
+        if (scheduleBroadcastMessage) {
+            if (!mHandler.hasMessages(SEND_PENDING_BROADCAST)) {
+                // Schedule a message - if it has been a "reasonably long time" since the
+                // service started, send the broadcast with a delay of one second to avoid
+                // delayed reactions from the receiver, else keep the default ten second delay
+                // to avoid extreme thrashing on service startup.
+                final long broadcastDelay = SystemClock.uptimeMillis() > mServiceStartWithDelay
+                        ? BROADCAST_DELAY
+                        : BROADCAST_DELAY_DURING_STARTUP;
+                mHandler.sendMessageDelayed(
+                        mHandler.obtainMessage(SEND_PENDING_BROADCAST, callingUid,
+                                0 /* arg2 */, "component_state_changed" /* obj */),
+                        broadcastDelay);
             }
         }
 

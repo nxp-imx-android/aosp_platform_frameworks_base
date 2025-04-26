@@ -1652,6 +1652,13 @@ public class UserManagerService extends IUserManager.Stub {
         return users;
     }
 
+    @GuardedBy("mUsersLock")
+    private IntArray getProfileIdsLU(@UserIdInt int userId, @Nullable String userType,
+            boolean enabledOnly, boolean excludeHidden) {
+        return getProfileIdsLU(userId, userType, enabledOnly, excludeHidden,
+                /* includeAlwaysVisible */ false);
+    }
+
     /**
      *  Assume permissions already checked and caller's identity cleared
      *  <p>If userType is {@code null}, returns all profiles for user; else, only returns
@@ -1659,7 +1666,7 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @GuardedBy("mUsersLock")
     private IntArray getProfileIdsLU(@UserIdInt int userId, @Nullable String userType,
-            boolean enabledOnly, boolean excludeHidden) {
+            boolean enabledOnly, boolean excludeHidden, boolean includeAlwaysVisible) {
         UserInfo user = getUserInfoLU(userId);
         IntArray result = new IntArray(mUsers.size());
         if (user == null) {
@@ -1669,7 +1676,10 @@ public class UserManagerService extends IUserManager.Stub {
         final int userSize = mUsers.size();
         for (int i = 0; i < userSize; i++) {
             UserInfo profile = mUsers.valueAt(i).info;
-            if (!isSameProfileGroup(user, profile)) {
+            if (!includeAlwaysVisible && !isSameProfileGroup(user, profile)) {
+                continue;
+            }
+            if (includeAlwaysVisible && !isSameProfileGroupOrIsAlwaysVisible(user, profile)) {
                 continue;
             }
             if (enabledOnly && !profile.isEnabled()) {
@@ -1739,6 +1749,22 @@ public class UserManagerService extends IUserManager.Stub {
         if (userId == otherUserId) return true;
         checkQueryUsersPermission("check if in the same profile group");
         return isSameProfileGroupNoChecks(userId, otherUserId);
+    }
+
+    /**
+     * Returns whether the users are in the same profile group, or if either the asker or the
+     * target is an always visible profile.
+     */
+    @GuardedBy("mUsersLock")
+    private boolean isSameProfileGroupOrIsAlwaysVisible(UserInfo asker, UserInfo target) {
+        if (asker.id == target.id) return true;
+        UserData askerData = getUserDataLU(asker.id);
+        if (askerData != null && askerData.userProperties.getAlwaysVisible()) {
+            return true;
+        }
+        UserData targetData = getUserDataLU(target.id);
+        return (targetData != null && targetData.userProperties.getAlwaysVisible())
+                || isSameProfileGroup(asker, target);
     }
 
     /** Returns whether users are in the same profile group. */
@@ -3052,15 +3078,12 @@ public class UserManagerService extends IUserManager.Stub {
 
         checkManageUsersPermission("getUserLogoutability");
 
-        if (userId == UserHandle.USER_SYSTEM) {
-            return UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER;
+        if (isHeadlessSystemUserMode() && !canSwitchToHeadlessSystemUser()) {
+            return UserManager.LOGOUTABILITY_STATUS_DEVICE_NOT_SUPPORTED;
         }
 
-        if (userId != getCurrentUserId()) {
-            // TODO(b/393656514): Decide what to do with non-current/background users.
-            // As of now, we are not going to logout a background user. A background user should
-            // simply be stopped instead.
-            return UserManager.LOGOUTABILITY_STATUS_CANNOT_SWITCH;
+        if (userId == UserHandle.USER_SYSTEM) {
+            return UserManager.LOGOUTABILITY_STATUS_CANNOT_LOGOUT_SYSTEM_USER;
         }
 
         if (getUserSwitchability(userId) != UserManager.SWITCHABILITY_STATUS_OK) {
@@ -5681,8 +5704,8 @@ public class UserManagerService extends IUserManager.Stub {
         checkCreateUsersPermission(flags);
 
         Preconditions.checkArgument(isUserTypeEligibleForPreCreation(userTypeDetails),
-                "cannot pre-create user of type " + userType);
-        Slog.i(LOG_TAG, "Pre-creating user of type " + userType);
+                "cannot pre-create user of type %s", userType);
+        Slogf.i(LOG_TAG, "Pre-creating user of type %s", userType);
 
         try {
             return createUserInternalUnchecked(/* name= */ null, userType, flags,
@@ -6193,9 +6216,9 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /** Install/uninstall system packages for all users based on their user-type, as applicable. */
-    boolean installWhitelistedSystemPackages(boolean isFirstBoot, boolean isUpgrade,
+    boolean installAllowlistedSystemPackages(boolean isFirstBoot, boolean isUpgrade,
             @Nullable ArraySet<String> existingPackages) {
-        return mSystemPackageInstaller.installWhitelistedSystemPackages(
+        return mSystemPackageInstaller.installAllowlistedSystemPackages(
                 isFirstBoot || mUpdatingSystemUserMode, isUpgrade, existingPackages);
     }
 
@@ -8049,9 +8072,15 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
+            return getProfileIds(userId, enabledOnly, /* includeAlwaysVisible */ false);
+        }
+
+        @Override
+        public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly,
+                boolean includeAlwaysVisible) {
             synchronized (mUsersLock) {
                 return getProfileIdsLU(userId, null /* userType */, enabledOnly, /* excludeHidden */
-                        false).toArray();
+                        false, includeAlwaysVisible).toArray();
             }
         }
 
@@ -8531,22 +8560,8 @@ public class UserManagerService extends IUserManager.Stub {
      * @deprecated
      */
     boolean hasProfile(@UserIdInt int userId) {
-        if (!android.content.pm.Flags.removeCrossUserPermissionHack()) {
-            synchronized (mUsersLock) {
-                UserInfo userInfo = getUserInfoLU(userId);
-                final int userSize = mUsers.size();
-                for (int i = 0; i < userSize; i++) {
-                    UserInfo profile = mUsers.valueAt(i).info;
-                    if (userId != profile.id && isSameProfileGroup(userInfo, profile)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        } else {
-            // TODO(b/332664521): Remove this method entirely. It is no longer used.
-            throw new UnsupportedOperationException();
-        }
+        // TODO(b/332664521): Remove this method entirely. It is no longer used.
+        throw new UnsupportedOperationException();
     }
 
     /**

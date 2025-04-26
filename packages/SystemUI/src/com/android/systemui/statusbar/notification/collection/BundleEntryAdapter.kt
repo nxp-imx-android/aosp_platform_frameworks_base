@@ -67,8 +67,7 @@ class BundleEntryAdapter(
     }
 
     override fun isClearable(): Boolean {
-        // TODO(b/394483200): check whether all of the children are clearable, when implemented
-        return true
+        return entry.isClearable
     }
 
     override fun getTargetSdk(): Int {
@@ -192,7 +191,7 @@ class BundleEntryAdapter(
 
     override fun getDismissState(): NotificationEntry.DismissState {
         // TODO(b/394483200): setDismissState is only called in NotifCollection so it does not
-        // work on bundles yet
+        //  work on bundles yet
         return NotificationEntry.DismissState.NOT_DISMISSED
     }
 

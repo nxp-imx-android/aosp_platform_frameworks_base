@@ -330,6 +330,49 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
+    public boolean isHandoffEnabled(IBinder token) {
+        final long origId = Binder.clearCallingIdentity();
+        boolean isHandoffEnabled = false;
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                isHandoffEnabled = r.isHandoffEnabled();
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+        return isHandoffEnabled;
+    }
+
+    @Override
+    public boolean isHandoffFullTaskRecreationAllowed(IBinder token) {
+        final long origId = Binder.clearCallingIdentity();
+        boolean isHandoffFullTaskRecreationAllowed = false;
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                isHandoffFullTaskRecreationAllowed = r.isHandoffFullTaskRecreationAllowed();
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+        return isHandoffFullTaskRecreationAllowed;
+    }
+
+    @Override
+    public void setHandoffEnabled(
+            IBinder token,
+            boolean handoffEnabled,
+            boolean allowFullTaskRecreation) {
+        final long origId = Binder.clearCallingIdentity();
+        synchronized (mGlobalLock) {
+            final ActivityRecord r = ActivityRecord.forTokenLocked(token);
+            if (r != null) {
+                r.setHandoffEnabled(handoffEnabled, allowFullTaskRecreation);
+            }
+        }
+        Binder.restoreCallingIdentity(origId);
+    }
+
+    @Override
     public void reportSizeConfigurations(IBinder token,
             SizeConfigurationBuckets sizeConfigurations) {
         ProtoLog.v(WM_DEBUG_CONFIGURATION, "Report configuration: %s %s",
@@ -1127,14 +1170,7 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
 
         final EnterPipRequestedItem item = new EnterPipRequestedItem(r.token);
-        try {
-            return mService.getLifecycleManager().scheduleTransactionItem(r.app.getThread(), item);
-        } catch (RemoteException e) {
-            // TODO(b/323801078): remove Exception when cleanup
-            Slog.w(TAG, "Failed to send enter pip requested item: "
-                    + r.intent.getComponent(), e);
-            return false;
-        }
+        return mService.getLifecycleManager().scheduleTransactionItem(r.app.getThread(), item);
     }
 
     /**
@@ -1143,13 +1179,7 @@ class ActivityClientController extends IActivityClientController.Stub {
     void onPictureInPictureUiStateChanged(@NonNull ActivityRecord r,
             PictureInPictureUiState pipState) {
         final PipStateTransactionItem item = new PipStateTransactionItem(r.token, pipState);
-        try {
-            mService.getLifecycleManager().scheduleTransactionItem(r.app.getThread(), item);
-        } catch (RemoteException e) {
-            // TODO(b/323801078): remove Exception when cleanup
-            Slog.w(TAG, "Failed to send pip state transaction item: "
-                    + r.intent.getComponent(), e);
-        }
+        mService.getLifecycleManager().scheduleTransactionItem(r.app.getThread(), item);
     }
 
     @Override

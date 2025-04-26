@@ -255,6 +255,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     /** Root task id of the front root task when user switched, indexed by userId. */
     SparseIntArray mUserRootTaskInFront = new SparseIntArray(2);
     SparseArray<IntArray> mUserVisibleRootTasks = new SparseArray<>();
+    @Nullable
+    DeviceStateAutoRotateSettingController mDeviceStateAutoRotateSettingController;
 
     /**
      * A list of tokens that cause the top activity to be put to sleep.
@@ -453,6 +455,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDisplayOffTokenAcquirer = mService.new SleepTokenAcquirer(DISPLAY_OFF_SLEEP_TOKEN_TAG);
         mDeviceStateController = new DeviceStateController(service.mContext, service.mGlobalLock);
         mDisplayRotationCoordinator = new DisplayRotationCoordinator();
+        mDeviceStateAutoRotateSettingController =
+                DisplayRotation.createDeviceStateAutoRotateDependencies(mService.mContext,
+                        mDeviceStateController, mService.mH);
     }
 
     /**
@@ -2496,7 +2501,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     // Kick off any lingering app transitions form the MoveTaskToFront operation,
                     // but only consider the top activity on that display.
                     rootTask.executeAppTransition(targetOptions);
-                } else {
+                } else if (topRunningActivity.attachedToProcess()) {
                     resumedOnDisplay[0] |= topRunningActivity.makeActiveIfNeeded(target);
                 }
             });

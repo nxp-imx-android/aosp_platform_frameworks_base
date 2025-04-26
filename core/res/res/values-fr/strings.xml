@@ -1806,6 +1806,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Luminosité ultra-réduite"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Appareils auditifs"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatique"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Déconnecté"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connecté"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Actif"</string>
@@ -2044,7 +2046,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promotions"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Réseaux sociaux"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Actualités"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Recommandations"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Vous définissez l\'importance de ces notifications."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ces notifications sont importantes en raison des participants."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notification d\'application personnalisée"</string>
@@ -2558,12 +2561,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Applications"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vos empreintes ne peuvent plus être reconnues. Reconfigurez le déverrouillage par empreinte digitale."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Appareil USB branché alors que l\'appareil Android est verrouillé"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"L\'appareil USB est branché alors que l\'appareil Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"L\'appareil USB est branché alors que l\'appareil Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android, puis brancher à nouveau l\'appareil USB."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"La capacité de charge peut être réduite ou inexistante lorsque l\'appareil est verrouillé."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activité USB suspecte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Le signal de données USB a été désactivé."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vous rencontrez des problèmes avec le déverrouillage par empreinte digitale ?"</string>

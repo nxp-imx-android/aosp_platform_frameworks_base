@@ -1829,7 +1829,8 @@ public final class LoadedApk {
                     if (DEBUG_STORE_ENABLED) {
                         debugStoreId =
                                 DebugStore.recordBroadcastReceiveReg(
-                                        intent, System.identityHashCode(this));
+                                    System.identityHashCode(this),
+                                    receiver.getClass().getName());
                     }
 
                     try {
@@ -1934,6 +1935,10 @@ public final class LoadedApk {
                     Slog.i(ActivityThread.TAG, "Enqueueing broadcast " + intent.getAction()
                             + " seq=" + seq + " to " + mReceiver);
                 }
+            }
+
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleBroadcastReceiveReg(System.identityHashCode(args), intent);
             }
             if (intent == null || !mActivityThread.post(args.getRunnable())) {
                 IActivityManager mgr = ActivityManager.getService();

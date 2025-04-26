@@ -60,6 +60,17 @@ public final class AuthenticationPolicyManager {
     @NonNull private final Context mContext;
 
     /**
+     * Success result code for {@link #enableSecureLockDevice} and {@link #disableSecureLockDevice}.
+     *
+     * Secure lock device request successful.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SECURE_LOCKDOWN)
+    public static final int SUCCESS = 0;
+
+    /**
      * Error result code for {@link #enableSecureLockDevice} and {@link
      * #disableSecureLockDevice}.
      *
@@ -69,18 +80,7 @@ public final class AuthenticationPolicyManager {
      */
     @SystemApi
     @FlaggedApi(FLAG_SECURE_LOCKDOWN)
-    public static final int ERROR_UNKNOWN = 0;
-
-    /**
-     * Success result code for {@link #enableSecureLockDevice} and {@link #disableSecureLockDevice}.
-     *
-     * Secure lock device request successful.
-     *
-     * @hide
-     */
-    @SystemApi
-    @FlaggedApi(FLAG_SECURE_LOCKDOWN)
-    public static final int SUCCESS = 1;
+    public static final int ERROR_UNKNOWN = 1;
 
     /**
      * Error result code for {@link #enableSecureLockDevice} and {@link #disableSecureLockDevice}.
@@ -147,8 +147,8 @@ public final class AuthenticationPolicyManager {
      * @hide
      */
     @IntDef(prefix = {"ENABLE_SECURE_LOCK_DEVICE_STATUS_"}, value = {
-            ERROR_UNKNOWN,
             SUCCESS,
+            ERROR_UNKNOWN,
             ERROR_UNSUPPORTED,
             ERROR_INVALID_PARAMS,
             ERROR_NO_BIOMETRICS_ENROLLED,
@@ -164,8 +164,8 @@ public final class AuthenticationPolicyManager {
      * @hide
      */
     @IntDef(prefix = {"DISABLE_SECURE_LOCK_DEVICE_STATUS_"}, value = {
-            ERROR_UNKNOWN,
             SUCCESS,
+            ERROR_UNKNOWN,
             ERROR_UNSUPPORTED,
             ERROR_INVALID_PARAMS,
     })

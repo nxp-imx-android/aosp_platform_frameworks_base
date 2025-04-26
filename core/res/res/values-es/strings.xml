@@ -1806,6 +1806,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuación extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Audífonos"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automático"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Activo"</string>
@@ -2044,7 +2046,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promociones"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Social"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Noticias"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Recomendaciones"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Tú determinas la importancia de estas notificaciones."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Esto es importante por los usuarios implicados."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notificación de aplicación personalizada"</string>
@@ -2558,12 +2561,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplicaciones"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Tus huellas digitales ya no pueden reconocerse. Vuelve a configurar Desbloqueo con huella digital."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Dispositivo USB conectado con el dispositivo bloqueado"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"El dispositivo USB está conectado cuando Android está bloqueado. Para usar el dispositivo, desbloquea Android primero."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"El dispositivo USB está conectado cuando Android está bloqueado. Para usar el dispositivo, desbloquea Android primero y, a continuación, vuelve a insertar el dispositivo USB para usarlo."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"La capacidad de carga puede reducirse o no estar disponible cuando el dispositivo está bloqueado."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Actividad USB sospechosa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"La señal de datos USB se ha inhabilitado."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con Desbloqueo con huella digital?"</string>

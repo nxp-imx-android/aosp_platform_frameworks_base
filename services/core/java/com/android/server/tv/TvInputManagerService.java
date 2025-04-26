@@ -837,8 +837,7 @@ public final class TvInputManagerService extends SystemService {
         UserState userState = getOrCreateUserStateLocked(userId);
         ServiceState serviceState = userState.serviceStateMap.get(component);
         if (serviceState == null) {
-            throw new IllegalStateException("Service state not found for " + component + " (userId="
-                    + userId + ")");
+            Slog.e(TAG, "Service state not found for " + component + " (userId=" + userId + ")");
         }
         return serviceState;
     }
@@ -1098,7 +1097,7 @@ public final class TvInputManagerService extends SystemService {
                         Process.SYSTEM_UID, userId);
             }
             ServiceState serviceState = getServiceStateLocked(sessionState.componentName, userId);
-            if (!serviceState.isHardware) {
+            if (serviceState == null || !serviceState.isHardware) {
                 return;
             }
             ITvInputSession session = getSessionLocked(sessionState);
@@ -3085,7 +3084,7 @@ public final class TvInputManagerService extends SystemService {
         }
 
         private void ensureTunerResourceAccessPermission() {
-            if (mContext.checkCallingPermission(
+            if (mContext.checkCallingOrSelfPermission(
                     android.Manifest.permission.TUNER_RESOURCE_ACCESS)
                     != PackageManager.PERMISSION_GRANTED) {
                 throw new SecurityException("Requires TUNER_RESOURCE_ACCESS permission");
@@ -3735,6 +3734,7 @@ public final class TvInputManagerService extends SystemService {
     private void addHardwareInputLocked(
             TvInputInfo inputInfo, ComponentName component, int userId) {
         ServiceState serviceState = getServiceStateLocked(component, userId);
+        if (serviceState == null) return;
         serviceState.hardwareInputMap.put(inputInfo.getId(), inputInfo);
         setPictureProfileLocked(inputInfo.getId());
         buildTvInputListLocked(userId, null);
@@ -3760,8 +3760,10 @@ public final class TvInputManagerService extends SystemService {
         }
         ComponentName component = mTvInputHardwareManager.getInputMap().get(inputId).getComponent();
         ServiceState serviceState = getServiceStateLocked(component, userId);
-        serviceState.hardwareInputMap.remove(inputId);
-        buildTvInputListLocked(userId, null);
+         if (serviceState != null) {
+            serviceState.hardwareInputMap.remove(inputId);
+            buildTvInputListLocked(userId, null);
+        }
         mTvInputHardwareManager.removeHardwareInput(inputId);
     }
 
@@ -3924,7 +3926,8 @@ public final class TvInputManagerService extends SystemService {
             try {
                 synchronized (mLock) {
                     ServiceState serviceState = getServiceStateLocked(mComponent, mUserId);
-                    if (serviceState.hardwareInputMap.containsKey(inputInfo.getId())) {
+                    if (serviceState != null && serviceState.hardwareInputMap.containsKey(
+                            inputInfo.getId())) {
                         return;
                     }
                     Slog.d(TAG, "ServiceCallback: addHardwareInput, deviceId: " + deviceId +
@@ -3945,7 +3948,8 @@ public final class TvInputManagerService extends SystemService {
             try {
                 synchronized (mLock) {
                     ServiceState serviceState = getServiceStateLocked(mComponent, mUserId);
-                    if (serviceState.hardwareInputMap.containsKey(inputInfo.getId())) {
+                    if (serviceState != null && serviceState.hardwareInputMap.containsKey(
+                            inputInfo.getId())) {
                         return;
                     }
                     Slog.d(TAG, "ServiceCallback: addHdmiInput, id: " + id +

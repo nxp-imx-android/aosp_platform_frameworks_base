@@ -18,7 +18,6 @@ package com.android.server.accessibility.magnification;
 
 import static android.accessibilityservice.MagnificationConfig.MAGNIFICATION_MODE_FULLSCREEN;
 
-import static com.android.server.accessibility.Flags.FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX;
 import static com.android.server.accessibility.magnification.FullScreenMagnificationController.MagnificationInfoChangedCallback;
 import static com.android.server.accessibility.magnification.MockMagnificationConnection.TEST_DISPLAY;
 
@@ -1688,7 +1687,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void persistScale_setValue_notifyInput() {
         register(TEST_DISPLAY);
 
@@ -1708,7 +1706,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void setScale_setNonTransientScale_notifyInput() {
         register(TEST_DISPLAY);
 
@@ -1720,7 +1717,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void setScaleAndCenter_setTransientScale_notNotifyInput() {
         register(TEST_DISPLAY);
 
@@ -1735,7 +1731,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void setScaleAndCenter_setNonTransientScale_notifyInput() {
         register(TEST_DISPLAY);
 
@@ -1747,7 +1742,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void setCenter_notNotifyInput() {
         register(TEST_DISPLAY);
 
@@ -1765,7 +1759,6 @@ public class FullScreenMagnificationControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_MAGNIFICATION_ENLARGE_POINTER_BUGFIX)
     public void offsetMagnifiedRegion_notNotifyInput() {
         register(TEST_DISPLAY);
 

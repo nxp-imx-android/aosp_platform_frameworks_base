@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ativar camadas de depuração de GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Permitir carregamento de camadas de depuração de GPU p/ apps de depuração"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Ativar registro detalhado de fornecedor"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluir mais registros de fornecedores específicos do dispositivo em relatórios de bugs. Isso pode aumentar o uso da bateria e/ou do armazenamento, e os relatórios podem conter informações particulares."</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluir mais registros de fornecedores específicos do dispositivo em relatórios de bugs. Isso pode aumentar o uso da bateria e/ou do armazenamento, e os relatórios podem conter informações particulares"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Desativar depois de 1 dia"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"O registro detalhado de fornecedor foi encerrado"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Ativado por 1 dia"</string>
@@ -579,7 +579,7 @@
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"Mais tempo."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"Menos tempo."</string>
     <string name="cancel" msgid="5665114069455378395">"Cancelar"</string>
-    <string name="next" msgid="2699398661093607009">"Próxima"</string>
+    <string name="next" msgid="2699398661093607009">"Avançar"</string>
     <string name="back" msgid="5554327870352703710">"Voltar"</string>
     <string name="save" msgid="3745809743277153149">"Salvar"</string>
     <string name="okay" msgid="949938843324579502">"Ok"</string>

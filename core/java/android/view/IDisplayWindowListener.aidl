@@ -69,4 +69,14 @@ oneway interface IDisplayWindowListener {
      * Called when the eligibility of the desktop mode for a display have changed.
      */
     void onDesktopModeEligibleChanged(int displayId);
+
+    /**
+     * Called when the system decorations should be added onto the display.
+     */
+    void onDisplayAddSystemDecorations(int displayId);
+
+    /**
+     * Called when the system decorations should be removed from the display.
+     */
+    void onDisplayRemoveSystemDecorations(int displayId);
 }

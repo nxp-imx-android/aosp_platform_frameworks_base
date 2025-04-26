@@ -138,9 +138,11 @@ public class Transitions implements RemoteCallable<Transitions>,
         ShellCommandHandler.ShellCommandActionHandler {
     static final String TAG = "ShellTransitions";
 
-    // If set, will print the stack trace for transition starts within the process
+    // If set, will print the stack trace for transition starts/finishes within the process
     static final boolean DEBUG_START_TRANSITION = Build.IS_DEBUGGABLE &&
             SystemProperties.getBoolean("persist.wm.debug.start_shell_transition", false);
+    static final boolean DEBUG_FINISH_TRANSITION = Build.IS_DEBUGGABLE &&
+            SystemProperties.getBoolean("persist.wm.debug.finish_shell_transition", false);
 
     /** Set to {@code true} to enable shell transitions. */
     public static final boolean ENABLE_SHELL_TRANSITIONS = true;
@@ -1150,6 +1152,12 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (active == null) {
             Log.e(TAG, "Trying to finish a non-existent transition: " + token);
             return;
+        }
+        if (DEBUG_FINISH_TRANSITION) {
+            final String name = active.mHandler != null
+                    ?  active.mHandler.getClass().getName() : "null";
+            Log.d(TAG, "finishTransition: type=" + transitTypeToString(active.mInfo.getType())
+                            + " wct=" + wct + " handler=" + name, new Throwable());
         }
 
         final Track track = mTracks.get(active.getTrack());

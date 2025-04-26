@@ -14019,40 +14019,43 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
-    public void publishService(IBinder token, Intent intent, IBinder service) {
-        // Refuse possible leaked file descriptors
-        if (intent != null && intent.hasFileDescriptors() == true) {
-            throw new IllegalArgumentException("File descriptors passed in Intent");
+    public void publishService(IBinder token, IBinder bindToken, IBinder service) {
+        if (!(token instanceof ServiceRecord)) {
+            throw new IllegalArgumentException("Invalid service token");
+        }
+
+        if (!(bindToken instanceof IntentBindRecord)) {
+            throw new IllegalArgumentException("Invalid intent bind record");
         }
 
         synchronized(this) {
-            if (!(token instanceof ServiceRecord)) {
-                throw new IllegalArgumentException("Invalid service token");
-            }
-            mServices.publishServiceLocked((ServiceRecord)token, intent, service);
+            mServices.publishServiceLocked((ServiceRecord) token, (IntentBindRecord) bindToken,
+                    service);
         }
     }
 
-    public void unbindFinished(IBinder token, Intent intent) {
-        // Refuse possible leaked file descriptors
-        if (intent != null && intent.hasFileDescriptors() == true) {
-            throw new IllegalArgumentException("File descriptors passed in Intent");
+    public void unbindFinished(IBinder token, IBinder bindToken) {
+        if (!(token instanceof ServiceRecord)) {
+            throw new IllegalArgumentException("Invalid service token");
+        }
+
+        if (!(bindToken instanceof IntentBindRecord)) {
+            throw new IllegalArgumentException("Invalid intent bind record");
         }
 
         synchronized(this) {
-            mServices.unbindFinishedLocked((ServiceRecord)token, intent);
+            mServices.unbindFinishedLocked((ServiceRecord) token, (IntentBindRecord) bindToken);
         }
     }
 
     @Override
-    public void serviceDoneExecuting(IBinder token, int type, int startId, int res, Intent intent) {
+    public void serviceDoneExecuting(IBinder token, int type, int startId, int res) {
         synchronized(this) {
             if (!(token instanceof ServiceRecord)) {
                 Slog.e(TAG, "serviceDoneExecuting: Invalid service token=" + token);
                 throw new IllegalArgumentException("Invalid service token");
             }
-            mServices.serviceDoneExecutingLocked((ServiceRecord) token, type, startId, res, false,
-                    intent);
+            mServices.serviceDoneExecutingLocked((ServiceRecord) token, type, startId, res, false);
         }
     }
 
@@ -16088,6 +16091,59 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * Dump the bitmaps for processes
+     *
+     * @param fd The FileDescriptor to dump it into
+     * @throws RemoteException
+     */
+    @Override
+    @NeverCompile // Avoid size overhead of debugging code.
+    public void dumpBitmapsProto(ParcelFileDescriptor fd, String[] processes, int userId,
+                            boolean allPkgs, String dumpFormat) {
+        ProtoOutputStream proto = new ProtoOutputStream(fd.getFileDescriptor());
+        final ArrayList<ProcessRecord> procs = collectProcesses(null, 0, allPkgs, processes);
+        if (procs == null) {
+            return;
+        }
+
+        try {
+            mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+
+            for (int i = procs.size() - 1; i >= 0; i--) {
+                ProcessRecord r = procs.get(i);
+                final int pid = r.getPid();
+                final IApplicationThread thread = r.getThread();
+                if (thread == null) {
+                    continue;
+                }
+                try {
+                    if (pid == Process.myPid()) {
+                        // Directly dump to target proto for local dump to avoid hang.
+                        final long token = proto.start(BitmapDumpProto.APP_BITMAPS);
+                        ActivityThread.dumpBitmapsProto(proto, pid, r.processName, dumpFormat);
+                        proto.end(token);
+                        continue;
+                    }
+                    ByteTransferPipe tp = new ByteTransferPipe();
+                    try {
+                        thread.dumpBitmapsProto(tp.getWriteFd(), dumpFormat);
+                        proto.write(BitmapDumpProto.APP_BITMAPS, tp.get());
+                    } finally {
+                        tp.kill();
+                    }
+                } catch (IOException e) {
+                    Slog.e(TAG, "Failed to dump bitmaps from app " + r + ": " + e);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to dump bitmaps from app " + r + ": " + e);
+                }
+            }
+        } finally {
+            mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+            proto.flush();
+        }
+    }
+
     @Override
     public void setDumpHeapDebugLimit(String processName, int uid, long maxMemSize,
             String reportPackage) {
@@ -17426,6 +17482,22 @@ public class ActivityManagerService extends IActivityManager.Stub
             msg.obj = (AppNotRespondingDialog.Data) data;
 
             mUiHandler.sendMessageDelayed(msg, InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS);
+        }
+
+        @Override
+        public void moveErrorDialogsToDefaultDisplay(int displayId) {
+            mUiHandler.post(() -> {
+                synchronized (mProcLock) {
+                    mProcessList.forEachLruProcessesLOSP(false, app -> {
+                        if (app.getThread() == null) {
+                            return;
+                        }
+
+                        ErrorDialogController controller = app.mErrorState.getDialogController();
+                        controller.moveAllErrorDialogsToDefaultDisplay(displayId);
+                    });
+                }
+            });
         }
 
         @Override

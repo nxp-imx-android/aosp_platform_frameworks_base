@@ -16,7 +16,7 @@
 
 package com.android.systemui.shade;
 
-import static com.android.systemui.Flags.shadeLaunchAccessibility;
+import static com.android.systemui.Flags.communalShadeTouchHandlingFixes;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
@@ -155,6 +155,10 @@ public class NotificationShadeWindowViewController implements Dumpable {
      * intercepted and all future touch events for the gesture should be processed by this view.
      */
     private boolean mExternalTouchIntercepted = false;
+    /**
+     * True if we are in the process of handling an external touch event.
+     */
+    private boolean mHandlingExternalTouch = false;
     private boolean mIsTrackingBarGesture = false;
     private boolean mIsOcclusionTransitionRunning = false;
     private DisableSubpixelTextTransitionListener mDisableSubpixelTextTransitionListener;
@@ -244,13 +248,11 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 Edge.create(LOCKSCREEN, DREAMING)),
                 mLockscreenToDreamingTransition);
         Flow<Boolean> isLaunchAnimationRunning =
-                shadeLaunchAccessibility()
-                        ? combineFlows(
-                                notificationLaunchAnimationInteractor.isLaunchAnimationRunning(),
-                                shadeAnimationInteractor.isLaunchingActivity(),
-                                (notificationLaunching, shadeLaunching) ->
-                                        notificationLaunching || shadeLaunching)
-                        : notificationLaunchAnimationInteractor.isLaunchAnimationRunning();
+                combineFlows(
+                        notificationLaunchAnimationInteractor.isLaunchAnimationRunning(),
+                        shadeAnimationInteractor.isLaunchingActivity(),
+                        (notificationLaunching, shadeLaunching) ->
+                                notificationLaunching || shadeLaunching);
         collectFlow(
                 mView,
                 isLaunchAnimationRunning,
@@ -345,18 +347,25 @@ public class NotificationShadeWindowViewController implements Dumpable {
      * @param event The event to forward.
      */
     public void handleExternalTouch(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mExternalTouchIntercepted = false;
-        }
+        try {
+            if (communalShadeTouchHandlingFixes()) {
+                mHandlingExternalTouch = true;
+            }
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mExternalTouchIntercepted = false;
+            }
 
-        if (!mView.dispatchTouchEvent(event)) {
-            return;
-        }
-        if (!mExternalTouchIntercepted) {
-            mExternalTouchIntercepted = mView.onInterceptTouchEvent(event);
-        }
-        if (mExternalTouchIntercepted) {
-            mView.onTouchEvent(event);
+            if (!mView.dispatchTouchEvent(event)) {
+                return;
+            }
+            if (!mExternalTouchIntercepted) {
+                mExternalTouchIntercepted = mView.onInterceptTouchEvent(event);
+            }
+            if (mExternalTouchIntercepted) {
+                mView.onTouchEvent(event);
+            }
+        } finally {
+            mHandlingExternalTouch = false;
         }
     }
 
@@ -431,6 +440,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 }
 
                 if (!SceneContainerFlag.isEnabled()
+                        // External touches are never intended to go the hub, only for opening the
+                        // shade.
+                        && !mHandlingExternalTouch
                         && mGlanceableHubContainerController.onTouchEvent(ev)) {
                     // GlanceableHubContainerController is only used pre-flexiglass.
                     return logDownDispatch(ev, "dispatched to glanceable hub container", true);
@@ -725,11 +737,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 mLaunchAnimationTimeout = mClock.uptimeMillis() + 5000;
             }
 
-            if (shadeLaunchAccessibility()) {
-                // The view needs to know when an animation is ongoing so it can intercept
-                // unnecessary accessibility events.
-                mView.setAnimatingContentLaunch(running);
-            }
+            // The view needs to know when an animation is ongoing so it can intercept
+            // unnecessary accessibility events.
+            mView.setAnimatingContentLaunch(running);
 
             mExpandAnimationRunning = running;
             mNotificationShadeWindowController.setLaunchingActivity(mExpandAnimationRunning);

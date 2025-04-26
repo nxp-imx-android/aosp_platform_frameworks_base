@@ -298,7 +298,7 @@
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"Neka kôd za pokretanje sustava bude otključan"</string>
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"Želite li dopustiti OEM otključavanje?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"UPOZORENJE: značajke za zaštitu uređaja neće funkcionirati na ovom uređaju dok je ta postavka uključena."</string>
-    <string name="mock_location_app" msgid="6269380172542248304">"Odaberi aplikaciju za lažnu lokaciju"</string>
+    <string name="mock_location_app" msgid="6269380172542248304">"Odaberite aplikaciju za lažnu lokaciju"</string>
     <string name="mock_location_app_not_set" msgid="6972032787262831155">"Aplikacija za lažnu lokaciju nije postavljena"</string>
     <string name="mock_location_app_set" msgid="4706722469342913843">"Aplikacija za lažnu lokaciju: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"Umrežavanje"</string>
@@ -334,10 +334,10 @@
     <string name="private_dns_mode_provider" msgid="3619040641762557028">"Naziv hosta davatelja usluge privatnog DNS-a"</string>
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Unesite naziv hosta davatelja usluge DNS-a"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Povezivanje nije moguće"</string>
-    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Prikaz opcija za certifikaciju bežičnog prikaza"</string>
+    <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Prikaži opcije za certifikaciju bežičnog prikaza"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Povećana razina prijave na Wi‑Fi, prikaz po SSID RSSI-ju u Biraču Wi‑Fi-ja"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Smanjuje potrošnju baterije i poboljšava rad mreže"</string>
-    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kada je omogućen ovaj način, MAC adresa ovog uređaja može se promijeniti svaki put kad se uređaj poveže s mrežom na kojoj je omogućen nasumični odabir MAC-a."</string>
+    <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kada je omogućen taj način, MAC adresa ovog uređaja može se promijeniti svaki put kad se uređaj poveže s mrežom na kojoj je omogućen nasumični odabir MAC-a"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"S ograničenim prometom"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Bez ograničenja prometa"</string>
     <string name="select_logd_size_title" msgid="1604578195914595173">"Veličine međuspremnika zapisnika"</string>
@@ -363,13 +363,13 @@
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Potvrdi aplikacije putem USB-a"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Provjerite uzrokuju li aplikacije instalirane putem ADB-a/ADT-a poteškoće"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Prikazivat će se Bluetooth uređaji bez naziva (samo MAC adrese)"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Onemogućuje Bluetoothovu značajku apsolutne glasnoće ako udaljeni uređaji imaju poteškoća sa zvukom, primjerice, zvuk je pretjerano glasan ili se ne može kontrolirati."</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Onemogućuje Bluetoothovu značajku apsolutne glasnoće ako udaljeni uređaji imaju poteškoća sa zvukom, primjerice ako je zvuk pretjerano glasan ili se ne može kontrolirati"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Omogućuje nizove značajke Bluetooth Gabeldorsche."</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"Omogućuje značajku Poboljšana povezivost."</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"Lokalni terminal"</string>
     <string name="enable_terminal_summary" msgid="2481074834856064500">"Omogući aplikaciju terminala koja nudi pristup lokalnoj ovojnici"</string>
     <string name="enable_linux_terminal_title" msgid="5076044866895670637">"Linuxovo razvojno okruženje"</string>
-    <string name="enable_linux_terminal_summary" msgid="2029479880888108902">"(Eksperimentalno) Pokreni Linux terminal na Androidu"</string>
+    <string name="enable_linux_terminal_summary" msgid="2029479880888108902">"(Eksperimentalno) Pokrenite Linux terminal na Androidu"</string>
     <string name="disable_linux_terminal_disclaimer" msgid="3054320531778388231">"Ako to onemogućite, podaci Linux terminala će se izbrisati"</string>
     <string name="hdcp_checking_title" msgid="3155692785074095986">"HDCP provjera"</string>
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Postavke HDCP provjere"</string>
@@ -394,8 +394,8 @@
     <string name="show_touches" msgid="8437666942161289025">"Prikaži dodire"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"Prikazuju se vizualne povratne informacije za dodire"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"Prikaži pritiske na tipke"</string>
-    <string name="show_key_presses_summary" msgid="725387457373015024">"Prikaži vizualne povratne informacije za pritiske na tipke"</string>
-    <string name="touchpad_visualizer" msgid="3707916068870825115">"Prikaz unosa na dodirnu podlogu"</string>
+    <string name="show_key_presses_summary" msgid="725387457373015024">"Prikazuje vizualne povratne informacije za pritiske na tipke"</string>
+    <string name="touchpad_visualizer" msgid="3707916068870825115">"Prikaži unos na dodirnu podlogu"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"Na preklapanju na zaslonu prikazuju se podaci uneseni na dodirnoj podlozi i prepoznati pokreti"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"Prikaži ažuriranja površine"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"Sve površine prozora bljeskaju pri ažuriranju"</string>
@@ -419,12 +419,12 @@
     <string name="window_blurs" msgid="6831008984828425106">"Dopusti zamućenja na razini prozora"</string>
     <string name="force_msaa" msgid="4081288296137775550">"Nametni 4x MSAA"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"Omogućuje 4x MSAA u aplikacijama OpenGL ES 2.0"</string>
-    <string name="show_non_rect_clip" msgid="7499758654867881817">"Otkloni pogreške operacija nepravokutnog isječka"</string>
+    <string name="show_non_rect_clip" msgid="7499758654867881817">"Otklanjanje pogrešaka za operacije nepravokutnog isječka"</string>
     <string name="track_frame_time" msgid="522674651937771106">"Profil HWUI generiranja"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Omogući slojeve za otklanjanje pogrešaka GPU-a"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Omogućuje učitavanje slojeva za otklanjanje pogrešaka GPU-a za aplikacije za otklanjanje pogrešaka"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Omogući opširni zapisnik"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Uključite dodatne zapisnike dobavljača pojedinog uređaja u izvješća o programskim pogreškama koja mogu sadržavati privatne podatke, trošiti više baterije i/ili zauzeti više prostora za pohranu."</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Uključite dodatne zapisnike dobavljača pojedinog uređaja u izvješća o programskim pogreškama koja mogu sadržavati privatne podatke, trošiti više baterije i/ili zauzeti više prostora za pohranu"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Onemogući nakon jednog dana"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Opširno bilježenje dobavljača je završilo"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Omogućeno na jedan dan"</string>
@@ -447,7 +447,7 @@
     <string name="force_allow_on_external" msgid="9187902444231637880">"Prisilno dopusti aplikacije u vanjskoj pohrani"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Aplikacije se mogu zapisivati u vanjsku pohranu neovisno o vrijednostima manifesta"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Nametni mogućnost promjene veličine za aktivnosti"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Omogući mijenjanje veličine svih aktivnosti za više prozora, neovisno o vrijednostima manifesta."</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Omogućuje mijenjanje veličine svih aktivnosti za više prozora, neovisno o vrijednostima manifesta"</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Omogući prozore slobodnog oblika"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"Zaporka sigurnosne kopije"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"Potpune sigurnosne kopije na stolnom računalu trenutačno nisu zaštićene"</string>
@@ -759,7 +759,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"Emitiranje aplikacije <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"Promjena izlaza"</string>
     <string name="back_navigation_animation" msgid="8105467568421689484">"Animacije za pokret povratka s pregledom"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Omogućuje animaciju kad korisnik napravi povratnu kretnju."</string>
+    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Omogućuje animaciju kad korisnik napravi povratnu kretnju"</string>
     <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"Ova postavka omogućuje animacije sustava za animaciju pokreta s predviđanjem. Zahtijeva postavljanje dopuštenja enableOnBackInvokedCallback po aplikaciji na True u datoteci manifesta."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="not_specified" msgid="5423502443185110328">"Nije navedeno"</string>

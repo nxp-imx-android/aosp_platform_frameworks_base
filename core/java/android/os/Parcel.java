@@ -53,6 +53,7 @@ import com.android.internal.util.ArrayUtils;
 
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
+import dalvik.annotation.optimization.NeverInline;
 
 import java.nio.BufferOverflowException;
 import java.nio.ReadOnlyBufferException;
@@ -639,6 +640,21 @@ public final class Parcel {
                 }
             }
         }
+    }
+
+    @NeverInline
+    private void errorUsedWhileRecycling() {
+        String error = "Parcel used while recycled. "
+                + Log.getStackTraceString(new Throwable())
+                + " Original recycle call (if DEBUG_RECYCLE): ", mStack;
+        Log.wtf(TAG, error);
+        // TODO(b/381155347): harder error
+    }
+
+    // TODO: call in more places, it costs a _lot_ to use this in many
+    // places, see b/390748425 for instance. Used as canary for now.
+    private void assertNotRecycled() {
+        if (mRecycled) errorUsedWhileRecycling();
     }
 
     /**
@@ -5203,6 +5219,7 @@ public final class Parcel {
     @SuppressWarnings("unchecked")
     @Nullable
     private <T> T readParcelableInternal(@Nullable ClassLoader loader, @Nullable Class<T> clazz) {
+        assertNotRecycled();
         Parcelable.Creator<?> creator = readParcelableCreatorInternal(loader, clazz);
         if (creator == null) {
             return null;

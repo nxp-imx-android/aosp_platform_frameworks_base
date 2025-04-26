@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Ukufiphaza okwengeziwe"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Amadivayizi okuzwa"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Chofoza ngokuzenzekelayo"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Inqamukile"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Ixhunyiwe"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Kuyasebenza"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Izindali"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Imithombo yezokuxhumana"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Izindaba"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Izincomo"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Usethe ukubaluleka kwalezi zaziso."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Lokhu kubalulekile ngenxa yabantu ababandakanyekayo."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Isaziso sohlelo lokusebenza olungokwezifiso"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Ama-application"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Isigxivizo somunwe wakho ngeke zisakwazi ukubonwa. Setha Ukuvula Ngesigxivizo Somunwe futhi."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Idivayisi ye-USB iyapulagwa uma i-Android ikhiyiwe."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Idivayisi ye-USB iyapulagwa uma i-Android ikhiyiwe. Ukuze usebenzise idivayisi, sicela uvule i-Android kuqala."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Idivayisi ye-USB iyapulagwa uma i-Android ikhiyiwe. Ukuze usebenzise idivayisi, sicela uvule i-Android kuqala bese uphinde ufake idivayisi ye-USB ukuze uyisebenzise."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Amandla wokushaja angase ehliswe noma angatholakali uma ikhiyiwe."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Umsebenzi we-USB osolisayo"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Isignali yedatha ye-USB ivaliwe."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Unenkinga Ngokuvula Ngesigxivizo Somunwe?"</string>

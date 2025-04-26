@@ -40,7 +40,6 @@ import android.view.DisplayCutout;
 import android.view.DisplayInfo;
 
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
-import com.android.window.flags.Flags;
 
 class TestDisplayContent extends DisplayContent {
 
@@ -81,12 +80,10 @@ class TestDisplayContent extends DisplayContent {
         WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getShowingPermanentControlTarget());
         WindowTestsBase.suppressInsetsAnimation(insetsPolicy.getShowingTransientControlTarget());
 
-        if (Flags.trackSystemUiContextBeforeWms()) {
-            final Context uiContext = getDisplayUiContext();
-            spyOn(uiContext);
-            doNothing().when(uiContext).registerComponentCallbacks(any());
-            doNothing().when(uiContext).unregisterComponentCallbacks(any());
-        }
+        final Context uiContext = getDisplayUiContext();
+        spyOn(uiContext);
+        doNothing().when(uiContext).registerComponentCallbacks(any());
+        doNothing().when(uiContext).unregisterComponentCallbacks(any());
 
         // For devices that set the sysprop ro.bootanim.set_orientation_<display_id>
         // See DisplayRotation#readDefaultDisplayRotation for context.

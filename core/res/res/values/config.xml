@@ -2401,7 +2401,14 @@
     <integer name="config_mediaOutputSwitchDialogVersion">1</integer>
 
     <!-- Flag indicating that an outbound call must have a call capable phone account
-         that has declared it can process the call's handle. -->
+         that has declared it can process the call's handle.
+         @deprecated This configuration is no longer used as having it false is actually a bug.
+         This controlled which phone accounts we would consider using when finding call capable
+         phone accounts for an outgoing call.  When false we will consider any call capable phone
+         account even if the URI scheme doesn't match the outgoing call address.  That is wrong as
+         dialing a sip: scheme call and trying to use a tel: scheme phone account is not going to
+         work.  As such we now ALWAYS require the URI scheme to match when choosing call capable
+         phone accounts. -->
     <bool name="config_requireCallCapableAccountForHandle">false</bool>
 
     <!-- Flag indicating if the user is notified when the mobile network access is restricted -->
@@ -3240,6 +3247,11 @@
          If false, only the MainUser is eligible to have profiles. -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
+    <!-- Whether the system should create the initial full user on boot.
+         Notice that if config_isMainUserPermanentAdmin is true, this config is
+         ignored (as the initial user is the main user). -->
+    <bool name="config_createInitialUser">false</bool>
+
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
@@ -3986,6 +3998,7 @@
     <bool name="config_allow_ussd_over_ims">false</bool>
 
     <!-- String array containing numbers that shouldn't be logged. Country-specific. -->
+    <!-- @deprecated this now resides in the Telecom framework (same name). -->
     <string-array name="unloggable_phone_numbers" />
 
     <bool name="config_networkSamplingWakesDevice">true</bool>
@@ -4162,6 +4175,9 @@
 
     <!-- Whether to keep fullscreen magnification zoom level when context changes. -->
     <bool name="config_magnification_keep_zoom_level_when_context_changed">false</bool>
+
+    <!-- The default value whether to magnify IME and keyboard with fullscreen magnification . -->
+    <bool name="config_magnification_magnify_keyboard_default">false</bool>
 
     <!-- If true, the display will be shifted around in ambient mode. -->
     <bool name="config_enableBurnInProtection">false</bool>
@@ -7388,6 +7404,9 @@
 
     <!-- Maximum number of active tasks on a given Desktop Windowing session. Set to 0 for unlimited. -->
     <integer name="config_maxDesktopWindowingActiveTasks">0</integer>
+
+    <!-- Maximum number desks on a device running Desktop Windowing. Set to 0 for unlimited. -->
+    <integer name="config_maxDesktopWindowingDesks">0</integer>
 
     <!-- Whether a display enters desktop mode by default when the windowing mode of the display's
          root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->

@@ -22,6 +22,7 @@ import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
+import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -31,7 +32,7 @@ import kotlinx.coroutines.flow.Flow
 @SysUISingleton
 class DozingToDreamingTransitionViewModel
 @Inject
-constructor(animationFlow: KeyguardTransitionAnimationFlow) {
+constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTransition {
     private val transitionAnimation =
         animationFlow.setup(
             duration = FromDozingTransitionInteractor.TO_DREAMING_DURATION,
@@ -39,4 +40,7 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) {
         )
 
     val lockscreenAlpha: Flow<Float> = transitionAnimation.immediatelyTransitionTo(0f)
+
+    override val deviceEntryParentViewAlpha: Flow<Float> =
+        transitionAnimation.immediatelyTransitionTo(0f)
 }

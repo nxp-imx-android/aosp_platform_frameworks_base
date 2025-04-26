@@ -403,4 +403,14 @@ interface IActivityTaskManager {
      * @hide
      */
     void unregisterScreenCaptureObserver(IBinder activityToken, IScreenCaptureObserver observer);
+
+    /**
+    * Move the task to the top/ bottom of the activity stack of specific display
+    *
+    * @param taskId Id of the task that has to be moved
+    * @param displayId Id of the display to which it has to be moved
+    * @param onTop defines the task has to be moved on top or bottom of the stack
+    * @hide
+    */
+    void moveRootTaskToDisplayOnTopOrBottom(int taskId, int displayId, boolean onTop);
 }

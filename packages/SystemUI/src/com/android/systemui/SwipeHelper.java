@@ -464,7 +464,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         };
 
         Animator anim = getViewTranslationAnimator(animView, newPos, updateListener);
-        mCallback.onMagneticInteractionEnd(animView, velocity);
+        mCallback.onMagneticInteractionEnd(animView, /* dismissing = */ true, velocity);
         if (anim == null) {
             onDismissChildWithAnimationFinished();
             return;
@@ -754,7 +754,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                         dismissChild(mTouchedView, velocity,
                                 !swipedFastEnough() /* useAccelerateInterpolator */);
                     } else {
-                        mCallback.onMagneticInteractionEnd(mTouchedView, velocity);
+                        mCallback.onMagneticInteractionEnd(mTouchedView, /* dismissing = */ false,
+                                velocity);
                         mCallback.onDragCancelled(mTouchedView);
                         snapChild(mTouchedView, 0 /* leftTarget */, velocity);
                     }
@@ -985,9 +986,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * This method should be called when a view will snap back or be dismissed.
          *
          * @param view The {@link  View} whose magnetic interaction ended.
+         * @param dismissing If the interaction ended with the view being dismissed.
          * @param velocity The velocity when the interaction ended.
          */
-        void onMagneticInteractionEnd(View view, float velocity);
+        void onMagneticInteractionEnd(View view, boolean dismissing, float velocity);
 
         /**
          * Determine if a view managed by magnetic interactions is dismissible when being swiped by

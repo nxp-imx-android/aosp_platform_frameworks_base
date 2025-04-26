@@ -37,7 +37,11 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.input.IInputManager;
+import android.hardware.input.InputManager;
+import android.hardware.input.InputManagerGlobal;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.platform.test.annotations.RequiresFlagsDisabled;
@@ -72,6 +76,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
@@ -113,6 +118,9 @@ public class AccessibilityInputFilterTest {
     @Mock private WindowManagerInternal.AccessibilityControllerInternal mMockA11yController;
     @Mock private WindowManagerInternal mMockWindowManagerService;
     @Mock private MagnificationProcessor mMockMagnificationProcessor;
+    @Mock
+    private IInputManager mMockInputManager;
+    private InputManagerGlobal.TestSession mInputManagerGlobalSession;
     private AccessibilityManagerService mAms;
     private AccessibilityInputFilter mA11yInputFilter;
     private EventCaptor mCaptor1;
@@ -154,13 +162,16 @@ public class AccessibilityInputFilterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        Context context = InstrumentationRegistry.getContext();
+        Context context = Mockito.spy(new ContextWrapper(InstrumentationRegistry.getContext()));
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(
                 WindowManagerInternal.class, mMockWindowManagerService);
         when(mMockWindowManagerService.getAccessibilityController()).thenReturn(
                 mMockA11yController);
         when(mMockA11yController.isAccessibilityTracingEnabled()).thenReturn(false);
+        mInputManagerGlobalSession = InputManagerGlobal.createTestSession(mMockInputManager);
+        InputManager inputManager = new InputManager(context);
+        when(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE))).thenReturn(inputManager);
 
         setDisplayCount(1);
         mAms = spy(new AccessibilityManagerService(context));
@@ -174,6 +185,7 @@ public class AccessibilityInputFilterTest {
     @After
     public void tearDown() {
         mA11yInputFilter.onUninstalled();
+        mInputManagerGlobalSession.close();
     }
 
     @Test

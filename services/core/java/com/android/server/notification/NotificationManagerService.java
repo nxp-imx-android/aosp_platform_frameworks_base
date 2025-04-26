@@ -117,6 +117,7 @@ import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.callstyleCallbackApi;
+import static android.service.notification.Flags.notificationBitmapOffloading;
 import static android.service.notification.Flags.notificationClassification;
 import static android.service.notification.Flags.notificationForceGrouping;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
@@ -174,6 +175,7 @@ import static com.android.internal.util.Preconditions.checkNotNull;
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
+import static com.android.server.bitmapoffload.BitmapOffload.BITMAP_SOURCE_NOTIFICATIONS;
 import static com.android.server.notification.Flags.expireBitmaps;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
@@ -265,6 +267,7 @@ import android.content.pm.UserInfo;
 import android.content.pm.VersionedPackage;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.drawable.Icon;
 import android.metrics.LogMaker;
 import android.net.Uri;
 import android.os.Binder;
@@ -376,6 +379,7 @@ import com.android.server.EventLogTags;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.bitmapoffload.BitmapOffloadInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
@@ -807,6 +811,8 @@ public class NotificationManagerService extends SystemService {
     private AppOpsManager.OnOpChangedListener mAppOpsListener;
 
     private ModuleInfo mAdservicesModuleInfo;
+
+    private BitmapOffloadInternal mBitmapOffloader;
 
     static class Archive {
         final SparseArray<Boolean> mEnabled;
@@ -2673,7 +2679,7 @@ public class NotificationManagerService extends SystemService {
             SystemUiSystemPropertiesFlags.FlagResolver flagResolver,
             PermissionManager permissionManager, PowerManager powerManager,
             PostNotificationTrackerFactory postNotificationTrackerFactory,
-            UiEventLogger uiEventLogger) {
+            UiEventLogger uiEventLogger, BitmapOffloadInternal bitmapOffloader) {
         mHandler = handler;
         if (Flags.nmBinderPerfThrottleEffectsSuppressorBroadcast()) {
             mBroadcastsHandler = broadcastsHandler;
@@ -2730,6 +2736,13 @@ public class NotificationManagerService extends SystemService {
             @Override
             public void onConfigChanged() {
                 handleSavePolicyFile();
+                if (android.app.Flags.modesUiDndSlice()) {
+                    getContext().sendBroadcastAsUser(
+                            new Intent(
+                                    NotificationManager.ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL)
+                                    .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT),
+                            UserHandle.ALL, android.Manifest.permission.MANAGE_NOTIFICATIONS);
+                }
             }
 
             @Override
@@ -2909,6 +2922,12 @@ public class NotificationManagerService extends SystemService {
         };
 
         mAppOps.startWatchingMode(AppOpsManager.OP_POST_NOTIFICATION, null, mAppOpsListener);
+
+        mBitmapOffloader = bitmapOffloader;
+        if (mBitmapOffloader != null) {
+            mBitmapOffloader.registerPermissionHandler(BITMAP_SOURCE_NOTIFICATIONS,
+                    new BitmapAccessHandler());
+        }
     }
 
     /**
@@ -2994,6 +3013,11 @@ public class NotificationManagerService extends SystemService {
         mDefaultUnsupportedAdjustments = getContext().getResources().getStringArray(
                 R.array.config_notificationDefaultUnsupportedAdjustments);
 
+        BitmapOffloadInternal bitmapOffloader = null;
+        if (notificationBitmapOffloading()) {
+            bitmapOffloader = LocalServices.getService(BitmapOffloadInternal.class);
+        }
+
         init(handler, new RankingHandlerWorker(mRankingThread.getLooper()), broadcastsHandler,
                 AppGlobals.getPackageManager(), getContext().getPackageManager(),
                 getLocalService(LightsManager.class),
@@ -3027,7 +3051,8 @@ public class NotificationManagerService extends SystemService {
                 new NotificationChannelLoggerImpl(), SystemUiSystemPropertiesFlags.getResolver(),
                 getContext().getSystemService(PermissionManager.class),
                 getContext().getSystemService(PowerManager.class),
-                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl());
+                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl(),
+                bitmapOffloader);
 
         publishBinderService(Context.NOTIFICATION_SERVICE, mService, /* allowIsolated= */ false,
                 DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL);
@@ -3067,6 +3092,31 @@ public class NotificationManagerService extends SystemService {
                 mPullAtomCallback
         );
     }
+
+    /**
+     * Implements access control for Notification bitmaps offloaded to disk
+     */
+    private class BitmapAccessHandler implements BitmapOffloadInternal.PermissionHandler {
+        @Override
+        public boolean isAllowedToOpen(Uri uri, int callingUid, int owningUid) {
+            if (callingUid == owningUid) {
+                return true;
+            }
+            int opMode = mAppOps.noteOpNoThrow(AppOpsManager.OP_ACCESS_NOTIFICATIONS, callingUid,
+                    null, null, null);
+            if (opMode == MODE_ALLOWED || opMode == MODE_DEFAULT) {
+                return true;
+            }
+            if (mListeners.isUidAllowed(callingUid)) {
+                return true;
+            }
+            if (getContext().checkCallingPermission(Manifest.permission.STATUS_BAR_SERVICE)
+                    == PERMISSION_GRANTED) {
+                return true;
+            }
+            return false;
+        }
+    };
 
     private class StatsPullAtomCallbackImpl implements StatsManager.StatsPullAtomCallback {
         @Override
@@ -8375,6 +8425,22 @@ public class NotificationManagerService extends SystemService {
     }
 
     /**
+     * @param notification The notification to consider
+     * @return True if we should try to offload bitmaps in the enclosed notification to disk
+     */
+    private boolean shouldOffloadBitmap(Notification notification) {
+        if (!notificationBitmapOffloading() || mBitmapOffloader == null) {
+            return false;
+        }
+        Icon icon = Notification.BigPictureStyle.getPictureIcon(notification.extras);
+        if (icon == null || icon.getType() != Icon.TYPE_BITMAP) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return True if we successfully processed the notification and handed off the task of
      * enqueueing it to a background thread; false otherwise.
      */
@@ -8814,6 +8880,18 @@ public class NotificationManagerService extends SystemService {
         if (notificationForceGrouping()) {
             notification.fixSilentGroup();
         }
+
+        if (shouldOffloadBitmap(notification)) {
+            Icon icon = Notification.BigPictureStyle.getPictureIcon(notification.extras);
+
+            Uri uri = mBitmapOffloader.offloadBitmap(BITMAP_SOURCE_NOTIFICATIONS, icon.getBitmap());
+            if (uri != null) {
+                icon = Icon.createWithContentUri(uri);
+                notification.extras.putParcelable(Notification.EXTRA_PICTURE, null);
+                notification.extras.putParcelable(Notification.EXTRA_PICTURE_ICON, icon);
+            }
+        }
+
     }
 
     /**

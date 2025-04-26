@@ -80,6 +80,8 @@ import android.util.ArraySet;
 import android.util.DebugUtils;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.android.internal.R;
@@ -230,6 +232,12 @@ public class BackgroundActivityStartController {
     static final int BAL_ALLOW_BOUND_BY_FOREGROUND =
             FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_BOUND_BY_FOREGROUND;
 
+    static final int BAL_ALLOW_NOTIFICATION_TOKEN =
+            FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_NOTIFICATION_TOKEN;
+
+    static final int BAL_ALLOW_WALLPAPER =
+            FrameworkStatsLog.BAL_ALLOWED__ALLOWED_REASON__BAL_ALLOW_WALLPAPER;
+
     static String balCodeToString(@BalCode int balCode) {
         return switch (balCode) {
             case BAL_ALLOW_ALLOWLISTED_COMPONENT -> "BAL_ALLOW_ALLOWLISTED_COMPONENT";
@@ -245,6 +253,8 @@ public class BackgroundActivityStartController {
             case BAL_ALLOW_SDK_SANDBOX -> "BAL_ALLOW_SDK_SANDBOX";
             case BAL_ALLOW_TOKEN -> "BAL_ALLOW_TOKEN";
             case BAL_ALLOW_VISIBLE_WINDOW -> "BAL_ALLOW_VISIBLE_WINDOW";
+            case BAL_ALLOW_NOTIFICATION_TOKEN -> "BAL_ALLOW_NOTIFICATION_TOKEN";
+            case BAL_ALLOW_WALLPAPER -> "BAL_ALLOW_WALLPAPER";
             case BAL_BLOCK -> "BAL_BLOCK";
             default -> throw new IllegalArgumentException("Unexpected value: " + balCode);
         };
@@ -307,6 +317,7 @@ public class BackgroundActivityStartController {
         private final int mCallingPid;
         private final @ActivityTaskManagerService.AppSwitchState int mAppSwitchState;
         private final boolean mCallingUidHasVisibleActivity;
+        private final boolean mCallingUidHasVisibleNotPinnedActivity;
         private final boolean mCallingUidHasNonAppVisibleWindow;
         private final @ActivityManager.ProcessState int mCallingUidProcState;
         private final boolean mIsCallingUidPersistentSystemProcess;
@@ -316,6 +327,7 @@ public class BackgroundActivityStartController {
         private final int mRealCallingUid;
         private final int mRealCallingPid;
         private final boolean mRealCallingUidHasVisibleActivity;
+        private final boolean mRealCallingUidHasVisibleNotPinnedActivity;
         private final boolean mRealCallingUidHasNonAppVisibleWindow;
         private final @ActivityManager.ProcessState int mRealCallingUidProcState;
         private final boolean mIsRealCallingUidPersistentSystemProcess;
@@ -406,6 +418,8 @@ public class BackgroundActivityStartController {
                     mCallingUidProcState <= ActivityManager.PROCESS_STATE_PERSISTENT_UI;
             mCallingUidHasVisibleActivity =
                     getService().mVisibleActivityProcessTracker.hasVisibleActivity(callingUid);
+            mCallingUidHasVisibleNotPinnedActivity = getService().mVisibleActivityProcessTracker
+                    .hasVisibleNotPinnedActivity(callingUid);
             mCallingUidHasNonAppVisibleWindow = getService().mActiveUids.hasNonAppVisibleWindow(
                     callingUid);
             if (realCallingUid == NO_PROCESS_UID) {
@@ -413,11 +427,13 @@ public class BackgroundActivityStartController {
                 mRealCallingUidProcState = PROCESS_STATE_NONEXISTENT;
                 mRealCallingUidHasVisibleActivity = false;
                 mRealCallingUidHasNonAppVisibleWindow = false;
+                mRealCallingUidHasVisibleNotPinnedActivity = false;
                 mRealCallerApp = null;
                 mIsRealCallingUidPersistentSystemProcess = false;
             } else if (callingUid == realCallingUid) {
                 mRealCallingUidProcState = mCallingUidProcState;
                 mRealCallingUidHasVisibleActivity = mCallingUidHasVisibleActivity;
+                mRealCallingUidHasVisibleNotPinnedActivity = mCallingUidHasVisibleNotPinnedActivity;
                 mRealCallingUidHasNonAppVisibleWindow = mCallingUidHasNonAppVisibleWindow;
                 // In the PendingIntent case callerApp is not passed in, so resolve it ourselves.
                 mRealCallerApp = callerApp == null
@@ -428,6 +444,9 @@ public class BackgroundActivityStartController {
                 mRealCallingUidProcState = getService().mActiveUids.getUidState(realCallingUid);
                 mRealCallingUidHasVisibleActivity =
                         getService().mVisibleActivityProcessTracker.hasVisibleActivity(
+                                realCallingUid);
+                mRealCallingUidHasVisibleNotPinnedActivity =
+                        getService().mVisibleActivityProcessTracker.hasVisibleNotPinnedActivity(
                                 realCallingUid);
                 mRealCallingUidHasNonAppVisibleWindow =
                         getService().mActiveUids.hasNonAppVisibleWindow(realCallingUid);
@@ -562,6 +581,8 @@ public class BackgroundActivityStartController {
             sb.append("; callingPid: ").append(mCallingPid);
             sb.append("; appSwitchState: ").append(mAppSwitchState);
             sb.append("; callingUidHasVisibleActivity: ").append(mCallingUidHasVisibleActivity);
+            sb.append("; callingUidHasVisibleNotPinnedActivity: ")
+                    .append(mCallingUidHasVisibleNotPinnedActivity);
             sb.append("; callingUidHasNonAppVisibleWindow: ").append(
                     mCallingUidHasNonAppVisibleWindow);
             sb.append("; callingUidProcState: ").append(DebugUtils.valueToString(
@@ -596,6 +617,8 @@ public class BackgroundActivityStartController {
                 sb.append("; realCallingPid: ").append(mRealCallingPid);
                 sb.append("; realCallingUidHasVisibleActivity: ")
                         .append(mRealCallingUidHasVisibleActivity);
+                sb.append("; realCallingUidHasVisibleNotPinnedActivity: ")
+                        .append(mRealCallingUidHasVisibleNotPinnedActivity);
                 sb.append("; realCallingUidHasNonAppVisibleWindow: ")
                         .append(mRealCallingUidHasNonAppVisibleWindow);
                 sb.append("; realCallingUidProcState: ").append(DebugUtils.valueToString(
@@ -1033,20 +1056,29 @@ public class BackgroundActivityStartController {
         final boolean appSwitchAllowedOrFg = state.mAppSwitchState == APP_SWITCH_ALLOW
                 || state.mAppSwitchState == APP_SWITCH_FG_ONLY
                 || isHomeApp(state.mCallingUid, state.mCallingPackage);
-        if (appSwitchAllowedOrFg && state.mCallingUidHasVisibleActivity) {
-            return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "callingUid has visible window");
+        if (appSwitchAllowedOrFg && state.mCallingUidHasVisibleNotPinnedActivity) {
+            return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
+                    "callingUid has visible non-pinned window");
         }
         return BalVerdict.BLOCK;
     };
 
-    private final BalExemptionCheck mCheckCallerNonAppVisible = state -> {
-        if (state.mCallingUidHasNonAppVisibleWindow) {
+    private BalVerdict checkNonAppVisibleWindow(int uid, boolean hasNonAppVisibleWindow) {
+        if (hasNonAppVisibleWindow) {
+            SparseIntArray nonAppVisibleWindowDetails =
+                    getService().mActiveUids.getNonAppVisibleWindowDetails(uid);
+            if (nonAppVisibleWindowDetails.size() == 1 && nonAppVisibleWindowDetails.get(
+                    WindowManager.LayoutParams.TYPE_WALLPAPER) > 0) {
+                return new BalVerdict(BAL_ALLOW_WALLPAPER, "uid has wallpaper window");
+            }
             return new BalVerdict(BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
-                    "callingUid has non-app visible window "
-                    + getService().mActiveUids.getNonAppVisibleWindowDetails(state.mCallingUid));
+                    "uid has non-app visible window " + nonAppVisibleWindowDetails);
         }
         return BalVerdict.BLOCK;
-    };
+    }
+
+    private final BalExemptionCheck mCheckCallerNonAppVisible = state ->
+            checkNonAppVisibleWindow(state.mCallingUid, state.mCallingUidHasNonAppVisibleWindow);
 
     private final BalExemptionCheck mCheckCallerIsAllowlistedUid = state -> {
         // don't abort for the most important UIDs
@@ -1162,21 +1194,16 @@ public class BackgroundActivityStartController {
         final boolean appSwitchAllowedOrFg = state.mAppSwitchState == APP_SWITCH_ALLOW
                 || state.mAppSwitchState == APP_SWITCH_FG_ONLY
                 || isHomeApp(state.mRealCallingUid, state.mRealCallingPackage);
-        if (appSwitchAllowedOrFg && state.mRealCallingUidHasVisibleActivity) {
-            return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW, "realCallingUid has visible window");
+        if (appSwitchAllowedOrFg && state.mRealCallingUidHasVisibleNotPinnedActivity) {
+            return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
+                    "realCallingUid has visible non-pinned window");
         }
         return BalVerdict.BLOCK;
     };
 
-    private final BalExemptionCheck mCheckRealCallerNonAppVisible = state -> {
-        if (state.mRealCallingUidHasNonAppVisibleWindow) {
-            return new BalVerdict(BAL_ALLOW_NON_APP_VISIBLE_WINDOW,
-                    "realCallingUid has non-app visible window "
-                            + getService().mActiveUids.getNonAppVisibleWindowDetails(
-                            state.mRealCallingUid));
-        }
-        return BalVerdict.BLOCK;
-    };
+    private final BalExemptionCheck mCheckRealCallerNonAppVisible =
+            state -> checkNonAppVisibleWindow(state.mRealCallingUid,
+                    state.mRealCallingUidHasNonAppVisibleWindow);
 
     // Don't abort if the realCallerApp or other processes of that uid are considered to be in
     // the foreground.
@@ -1936,7 +1963,8 @@ public class BackgroundActivityStartController {
             }
         }
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NON_APP_VISIBLE_WINDOW);
-        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_TOKEN);
+        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NOTIFICATION_TOKEN);
+        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_WALLPAPER);
 
         if (shouldLogStats(finalVerdict, state)) {
             String activityName;

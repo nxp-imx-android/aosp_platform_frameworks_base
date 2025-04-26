@@ -57,6 +57,12 @@ internal constructor(private val context: Context, metadata: PreferenceMetadata)
      */
     operator fun String.unaryPlus() = addPreferenceScreen(this, null)
 
+    /** Removes preference with given key from the hierarchy. */
+    operator fun String.unaryMinus() {
+        val (hierarchy, index) = findPreference(this) ?: return
+        hierarchy.children.removeAt(index)
+    }
+
     /**
      * Adds parameterized preference screen with given key (as a placeholder) to the hierarchy.
      *
@@ -83,31 +89,35 @@ internal constructor(private val context: Context, metadata: PreferenceMetadata)
 
     /** Adds a preference to the hierarchy before given key. */
     fun addBefore(key: String, metadata: PreferenceMetadata) {
-        val (list, index) = findPreference(key) ?: (children to children.size)
-        list.add(index, PreferenceHierarchyNode(metadata))
+        val (hierarchy, index) = findPreference(key) ?: (this to children.size)
+        hierarchy.children.add(index, PreferenceHierarchyNode(metadata))
     }
 
     /** Adds a preference group to the hierarchy before given key. */
     fun addGroupBefore(key: String, metadata: PreferenceMetadata): PreferenceHierarchy {
-        val (list, index) = findPreference(key) ?: (children to children.size)
-        return PreferenceHierarchy(context, metadata).also { list.add(index, it) }
+        val (hierarchy, index) = findPreference(key) ?: (this to children.size)
+        return PreferenceHierarchy(context, metadata).also { hierarchy.children.add(index, it) }
     }
 
     /** Adds a preference to the hierarchy after given key. */
     fun addAfter(key: String, metadata: PreferenceMetadata) {
-        val (list, index) = findPreference(key) ?: (children to children.size - 1)
-        list.add(index + 1, PreferenceHierarchyNode(metadata))
+        val (hierarchy, index) = findPreference(key) ?: (this to children.size - 1)
+        hierarchy.children.add(index + 1, PreferenceHierarchyNode(metadata))
     }
 
     /** Adds a preference group to the hierarchy after given key. */
     fun addGroupAfter(key: String, metadata: PreferenceMetadata): PreferenceHierarchy {
-        val (list, index) = findPreference(key) ?: (children to children.size - 1)
-        return PreferenceHierarchy(context, metadata).also { list.add(index + 1, it) }
+        val (hierarchy, index) = findPreference(key) ?: (this to children.size - 1)
+        return PreferenceHierarchy(context, metadata).also { hierarchy.children.add(index + 1, it) }
     }
 
-    private fun findPreference(key: String): Pair<MutableList<PreferenceHierarchyNode>, Int>? {
+    /** Manipulates hierarchy on a preference group with given key. */
+    fun onGroup(key: String, init: PreferenceHierarchy.() -> Unit) =
+        findPreference(key)!!.apply { init(first.children[second] as PreferenceHierarchy) }
+
+    private fun findPreference(key: String): Pair<PreferenceHierarchy, Int>? {
         children.forEachIndexed { index, node ->
-            if (node.metadata.key == key) return children to index
+            if (node.metadata.key == key) return this to index
             if (node is PreferenceHierarchy) {
                 val result = node.findPreference(key)
                 if (result != null) return result

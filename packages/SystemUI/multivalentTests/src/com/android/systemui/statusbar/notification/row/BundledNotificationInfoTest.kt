@@ -18,6 +18,9 @@ package com.android.systemui.statusbar.notification.row
 import android.app.INotificationManager
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationChannel.NEWS_ID
+import android.app.NotificationChannel.PROMOTIONS_ID
+import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.ComponentName
@@ -35,6 +38,7 @@ import android.telecom.TelecomManager
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
@@ -56,6 +60,7 @@ import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockNotificationIconStyleProvider
 import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -207,6 +212,50 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         testableLooper.processAllMessages()
         verify(mockINotificationManager)
             .setAdjustmentSupportedForPackage(anyString(), anyString(), eq(false))
+    }
+
+    @Test
+    fun testNews_summaryText() {
+        val channel = NotificationChannel(NEWS_ID, "news", 2)
+        entry = NotificationEntryBuilder(entry)
+            .updateRanking { it.setChannel(channel) }
+            .build()
+        bindNotification()
+        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
+            context.getString(R.string.notification_guts_news_summary))
+    }
+
+    @Test
+    fun testSocial_summaryText() {
+        val channel = NotificationChannel(SOCIAL_MEDIA_ID, "news", 2)
+        entry = NotificationEntryBuilder(entry)
+            .updateRanking { it.setChannel(channel) }
+            .build()
+        bindNotification()
+        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
+            context.getString(R.string.notification_guts_social_summary))
+    }
+
+    @Test
+    fun testPromotions_summaryText() {
+        val channel = NotificationChannel(PROMOTIONS_ID, "news", 2)
+        entry = NotificationEntryBuilder(entry)
+            .updateRanking { it.setChannel(channel) }
+            .build()
+        bindNotification()
+        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
+            context.getString(R.string.notification_guts_promotions_summary))
+    }
+
+    @Test
+    fun testRecs_summaryText() {
+        val channel = NotificationChannel(RECS_ID, "news", 2)
+        entry = NotificationEntryBuilder(entry)
+            .updateRanking { it.setChannel(channel) }
+            .build()
+        bindNotification()
+        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
+            context.getString(R.string.notification_guts_recs_summary))
     }
 
     private fun bindNotification(

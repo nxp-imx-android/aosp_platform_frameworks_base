@@ -47,6 +47,7 @@ import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
+import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.SensorPropertiesInternal;
@@ -235,6 +236,21 @@ public class AuthService extends SystemService {
             try {
                 return mInjector.getBiometricService()
                         .createTestSession(sensorId, callback, opPackageName);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.TEST_BIOMETRIC)
+        @Override
+        public void setIdentityCheckTestStatus(@NonNull IdentityCheckStatus identityCheckStatus)
+                throws RemoteException {
+            super.setIdentityCheckTestStatus_enforcePermission();
+
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                mInjector.getBiometricService()
+                        .setIdentityCheckTestStatus(identityCheckStatus);
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }

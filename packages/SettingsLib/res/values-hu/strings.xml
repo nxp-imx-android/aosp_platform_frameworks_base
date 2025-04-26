@@ -291,7 +291,7 @@
     <string name="bugreport_in_power" msgid="8664089072534638709">"Hibabejelentési gomb"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Gomb megjelenítése a bekapcsolási menüben hibajelentés készítéséhez"</string>
     <string name="keep_screen_on" msgid="1187161672348797558">"Ne kapcsoljon ki"</string>
-    <string name="keep_screen_on_summary" msgid="1510731514101925829">"A képernyő soha nem kapcsol ki töltés során"</string>
+    <string name="keep_screen_on_summary" msgid="1510731514101925829">"A képernyő soha nem kapcsol ki töltés során."</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Bluetooth HCI kémlelésnapló engedélyezése"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Bluetooth-csomagok rögzítése. (Bluetooth be-, illetve kikapcsolása a beállítás módosítása után)"</string>
     <string name="oem_unlock_enable" msgid="5334869171871566731">"OEM-feloldás"</string>
@@ -336,7 +336,7 @@
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Nem sikerült kapcsolódni"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Vezeték nélküli kijelző tanúsítványával kapcsolatos lehetőségek megjelenítése"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Wi‑Fi-naplózási szint növelése, RSSI/SSID megjelenítése a Wi‑Fi-választóban"</string>
-    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Csökkenti az akkumulátorhasználatot, és javítja a hálózat teljesítményét"</string>
+    <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Csökkenti az akkumulátorhasználatot, és javítja a hálózat teljesítményét."</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Ha ez a mód be van kapcsolva, akkor ennek az eszköznek a MAC-címe minden alkalommal módosulhat, amikor olyan hálózathoz csatlakozik, amelyen engedélyezve van a MAC-címek randomizálása."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Forgalomkorlátos"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Nem forgalomkorlátos"</string>
@@ -352,7 +352,7 @@
     <string name="allow_mock_location_summary" msgid="179780881081354579">"Helyutánzatok engedélyezése"</string>
     <string name="debug_view_attributes" msgid="3539609843984208216">"Nézetattribútum vizsgálatának engedélyezése"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"A mobiladat-kapcsolat mindig maradjon aktív, még akkor is, ha a Wi‑Fi aktív (a gyors hálózatváltás érdekében)."</string>
-    <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"Az internetmegosztás hardveres gyorsításának használata, amikor lehetséges"</string>
+    <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"Az internetmegosztás hardveres gyorsításának használata, amikor lehetséges."</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"Engedélyezi az USB hibakeresést?"</string>
     <string name="adb_warning_message" msgid="8145270656419669221">"Az USB hibakeresés fejlesztési célokat szolgál. Használhatja adatok másolására a számítógép és a készülék között, alkalmazások a készülékre való értesítés nélküli telepítésére és naplózási adatok olvasására."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Engedélyezi a vezeték nélküli hibakeresést?"</string>
@@ -362,7 +362,7 @@
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Ezek a beállítások csak fejlesztői használatra szolgálnak. Használatuk esetén eszköze vagy alkalmazásai meghibásodhatnak, illetve nem várt módon viselkedhetnek."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB-n keresztül telepített alkalmazások ellenőrzése"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Az ADB/ADT útján telepített alkalmazások ellenőrzése kártékony viselkedésre."</string>
-    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Név nélküli Bluetooth-eszközök jelennek meg (csak MAC-címekkel)"</string>
+    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Név nélküli Bluetooth-eszközök jelennek meg (csak MAC-címekkel)."</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Letiltja a Bluetooth abszolút hangerő funkcióját a távoli eszközökkel kapcsolatos hangerőproblémák – például elfogadhatatlanul magas vagy nem vezérelhető hangerő – esetén."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Engedélyezi a Bluetooth Gabeldorsche funkcióit."</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"Bekapcsolja az Enhanced Connectivity funkciót."</string>
@@ -402,7 +402,7 @@
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"Frissítések megjelenítése"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"Ablakos Flash-nézetek megjelenítéskor"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"Hardverréteg-frissítések"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Frissítéskor a hardverrétegek zölden villognak"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"Frissítéskor a hardverrétegek zölden villognak."</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU tartalom-felülírási hibakeresés"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"HW fedvények letiltása"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"Mindig a GPU használata képernyő-feldolgozáshoz"</string>
@@ -435,17 +435,17 @@
     <string name="transition_animation_scale_title" msgid="1278477690695439337">"Áttűnési animáció tempója"</string>
     <string name="animator_duration_scale_title" msgid="7082913931326085176">"Animáció tempója"</string>
     <string name="overlay_display_devices_title" msgid="5411894622334469607">"Másodlagos kijelzők szimulálása"</string>
-    <string name="shade_display_awareness_title" msgid="8000009404669495876">"Felület megjelenítési pozíciója"</string>
+    <string name="shade_display_awareness_title" msgid="8000009404669495876">"Árnyék megjelenítési pozíciója"</string>
     <string name="debug_applications_category" msgid="5394089406638954196">"Alkalmazások"</string>
     <string name="immediately_destroy_activities" msgid="1826287490705167403">"Tevékenységek törlése"</string>
     <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"Tevékenységek törlése, amint elhagyják azokat"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"Háttérfolyamat-korlátozás"</string>
     <string name="show_all_anrs" msgid="9160563836616468726">"Háttérben lévő ANR-ek"</string>
-    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Az Alkalmazás nem válaszol ablak megjelenítése a háttérben futó alkalmazásoknál"</string>
+    <string name="show_all_anrs_summary" msgid="8562788834431971392">"Az Alkalmazás nem válaszol ablak megjelenítése a háttérben futó alkalmazásoknál."</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"Értesítő csatorna figyelmeztetései"</string>
-    <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Figyelmeztet, ha egy alkalmazás érvényes csatorna nélkül küld értesítést"</string>
+    <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"Figyelmeztet, ha egy alkalmazás érvényes csatorna nélkül küld értesítést."</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"Külső tárhely alkalmazásainak engedélyezése"</string>
-    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Lehetővé teszi bármely alkalmazás külső tárhelyre való írását a jegyzékértékektől függetlenül"</string>
+    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"Lehetővé teszi bármely alkalmazás külső tárhelyre való írását a jegyzékértékektől függetlenül."</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"Tevékenységek átméretezésének kényszerítése"</string>
     <string name="force_resizable_activities_summary" msgid="2490382056981583062">"Legyen az összes tevékenység átméretezhető a többablakos megjelenítés érdekében a jegyzékértékektől függetlenül."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"Szabad formájú ablakok engedélyezése"</string>
@@ -520,7 +520,7 @@
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> – Töltés…"</string>
     <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> – <xliff:g id="STATUS">%2$s</xliff:g> – Teljes feltöltés eddig: <xliff:g id="TIME">%3$s</xliff:g>"</string>
     <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> – Teljes feltöltés eddig: <xliff:g id="TIME">%2$s</xliff:g>"</string>
-    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Teljes feltöltés eddig: <xliff:g id="TIME">%1$s</xliff:g>"</string>
+    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Teljesen feltöltve ekkorra: <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Teljes feltöltés eddig: <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Ismeretlen"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"Töltés"</string>
@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Az adminisztrátorok olyan speciális jogosultságokkal rendelkeznek, amelyekkel a többi felhasználó nem. Az adminisztrátorok kezelhetik az összes felhasználót, frissíthetik vagy visszaállíthatják az eszközt, módosíthatják a beállításokat, megnézhetik az összes telepített alkalmazást, valamint megadhatnak és visszavonhatnak adminisztrátori jogosultságokat más felhasználóknál."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Adminisztrátori jogosultság megadása"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"Beállít most egy felhasználót?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Győződjön meg arról, hogy a személy hozzá tud férni az eszközhöz, hogy beállíthassa a területét"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"Győződjön meg arról, hogy a személy hozzá tud férni az eszközhöz, hogy beállíthassa a területét."</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Létrehoz most egy profilt?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Beállítás most"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Most nem"</string>

@@ -69,7 +69,7 @@ object PreferenceScreenRegistry {
         val appContext = context.applicationContext
         if (factory is PreferenceScreenMetadataParameterizedFactory) {
             if (args != null) return factory.create(appContext, args)
-            // In case the parameterized screen was a normal scree, it is expected to accept
+            // In case the parameterized screen was a normal screen, it is expected to accept
             // Bundle.EMPTY arguments and take care of backward compatibility.
             if (factory.acceptEmptyArguments()) return factory.create(appContext)
             Log.e(TAG, "screen $screenKey is parameterized but args is not provided")

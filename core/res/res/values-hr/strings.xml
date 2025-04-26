@@ -1594,7 +1594,7 @@
     <string name="vpn_lockdown_config" msgid="8331697329868252169">"Promijenite mrežu ili postavke VPN-a"</string>
     <string name="upload_file" msgid="8651942222301634271">"Odaberite datoteku"</string>
     <string name="no_file_chosen" msgid="4146295695162318057">"Nema odabranih datoteka"</string>
-    <string name="reset" msgid="3865826612628171429">"Poništi"</string>
+    <string name="reset" msgid="3865826612628171429">"Vrati na zadano"</string>
     <string name="submit" msgid="862795280643405865">"Pošalji"</string>
     <string name="car_mode_disable_notification_title" msgid="8450693275833142896">"Pokrenuta je aplikacija za vožnju"</string>
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"Dodirnite za zatvaranje aplikacije za vožnju."</string>
@@ -1806,6 +1806,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Dodatno zatamnjenje"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Slušna pomagala"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatski klik"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Nije povezano"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Povezano"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktivno"</string>
@@ -2044,7 +2046,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocije"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Društvene mreže"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Vijesti"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Preporuke"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Postavili ste važnost tih obavijesti."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Važno je zbog uključenih osoba."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Prilagođena obavijest aplikacije"</string>
@@ -2558,12 +2561,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacije"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaši se otisci prstiju više ne prepoznaju. Ponovo postavite otključavanje otiskom prsta."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB uređaj priključen je kada je zaključan"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB uređaj priključen je kad je Android zaključan. Da biste upotrebljavali uređaj, najprije otključajte Android."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB uređaj priključen je kad je Android zaključan. Da biste upotrebljavali uređaj, najprije otključajte Android, a zatim ponovno umetnite USB uređaj da biste ga upotrebljavali."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Mogućnost punjenja može biti smanjena ili nedostupna kad je uređaj zaključan."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Sumnjiva aktivnost USB-a"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB podatkovni signal je onemogućen."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Imate li problema s otključavanjem otiskom prsta?"</string>

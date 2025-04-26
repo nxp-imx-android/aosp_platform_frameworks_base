@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ተጨማሪ ደብዛዛ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"የመስሚያ መሣሪያዎች"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ራስ-ሰር ጠቅ ማድረግ"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ግንኙነት ተቋርጧል"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ተገናኝቷል"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"ገቢር"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ማስተዋወቂያዎች"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ማህበራዊ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ዜና"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"ምክሮች"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"የእነዚህን ማሳወቂያዎች አስፈላጊነት አዘጋጅተዋል።"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ይሄ በሚሳተፉ ሰዎች ምክንያት አስፈላጊ ነው።"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ብጁ የመተግበሪያ ማሳወቂያ"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"መተግበሪያዎች"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ከእንግዲህ የጣት አሻራዎችዎ ሊለዩ አይችሉም። በጣት አሻራ መክፈቻን እንደገና ያዋቅሩ።"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"ሲቆለፍ የUSB መሣሪያ ተሰክቷል።"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Android ሲቆለፍ የUSB መሣሪያ ተሰክቷል። መሣሪያ ለመጠቀም እባክዎ መጀመሪያ Androidን ይክፈቱ።"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Android ሲቆለፍ የUSB መሣሪያ ተሰክቷል። መሣሪያ ለመጠቀም እባክዎ መጀመሪያ Androidን ይክፈቱ እና ከዚያም እሱን ለመጠቀም የUSB መሣሪያ እንደገና ያስገቡ።"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"ሲቆለፍ የመሙላት አቅም ሊቀንስ ወይም ላይገኝ ይችላል።"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"አጠራጣሪ የUSB እንቅስቃሴ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"የUSB የውሂብ ምልክት ተሰናክሏል።"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"በጣት አሻራ መክፈቻ ችግር እያጋጠመዎት ነው?"</string>

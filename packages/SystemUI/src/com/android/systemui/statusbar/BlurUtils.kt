@@ -19,8 +19,6 @@ package com.android.systemui.statusbar
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.res.Resources
-import android.gui.EarlyWakeupInfo
-import android.os.Binder
 import android.os.Build
 import android.os.SystemProperties
 import android.os.Trace
@@ -69,16 +67,11 @@ constructor(
 
     private var earlyWakeupEnabled = false
 
-    /** Token for early wakeup requests to SurfaceFlinger. */
-    private var earlyWakeupInfo = EarlyWakeupInfo()
-
     /** When this is true, early wakeup flag is not reset on surface flinger when blur drops to 0 */
     private var persistentEarlyWakeupRequired = false
 
     init {
         dumpManager.registerDumpable(this)
-        earlyWakeupInfo.token = Binder()
-        earlyWakeupInfo.trace = BlurUtils::class.java.getName()
     }
 
     /** Translates a ratio from 0 to 1 to a blur radius in pixels. */
@@ -131,8 +124,9 @@ constructor(
      * @param viewRootImpl The window root.
      * @param radius blur radius in pixels.
      * @param opaque if surface is opaque, regardless or having blurs or no.
+     * @param scale blur scale effect relative to 1.0
      */
-    fun applyBlur(viewRootImpl: ViewRootImpl?, radius: Int, opaque: Boolean) {
+    fun applyBlur(viewRootImpl: ViewRootImpl?, radius: Int, opaque: Boolean, scale: Float = 1.0f) {
         if (viewRootImpl == null || !viewRootImpl.surfaceControl.isValid) {
             return
         }
@@ -140,7 +134,10 @@ constructor(
         val builder =
             SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
         if (shouldBlur(radius)) {
-            builder.withBackgroundBlur(radius)
+            builder.withBackgroundBlurRadius(radius)
+            if (shouldScaleWithTransaction()) {
+                builder.withBackgroundBlurScale(scale)
+            }
             if (!earlyWakeupEnabled && lastAppliedBlur == 0 && radius != 0) {
                 earlyWakeupStart(builder, "eEarlyWakeup (applyBlur)")
             }
@@ -175,7 +172,7 @@ constructor(
     ) {
         v("earlyWakeupStart from $traceMethodName")
         Trace.asyncTraceForTrackBegin(TRACE_TAG_APP, TRACK_NAME, traceMethodName, 0)
-        builder.withEarlyWakeupStart(earlyWakeupInfo)
+        builder.withEarlyWakeupStart()
         earlyWakeupEnabled = true
     }
 
@@ -185,7 +182,7 @@ constructor(
         loggingContext: String,
     ) {
         v("earlyWakeupEnd from $loggingContext")
-        builder.withEarlyWakeupEnd(earlyWakeupInfo)
+        builder.withEarlyWakeupEnd()
         Trace.asyncTraceForTrackEnd(TRACE_TAG_APP, TRACK_NAME, 0)
         earlyWakeupEnabled = false
     }
@@ -196,6 +193,10 @@ constructor(
                 supportsBlursOnWindowsBase() &&
                 lastAppliedBlur > 0 &&
                 radius == 0)
+    }
+
+    private fun shouldScaleWithTransaction(): Boolean {
+        return Flags.spatialModelPushbackInShader() && Flags.spatialModelAppPushback()
     }
 
     /**

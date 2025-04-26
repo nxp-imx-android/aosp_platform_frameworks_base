@@ -55,6 +55,10 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.mechanics.spec.InputDirection;
+import com.android.mechanics.view.DistanceGestureContext;
+import com.android.mechanics.view.ViewMotionValue;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
@@ -88,6 +92,10 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     private int mLastDraggingPosition;
     private int mHandleRegionWidth;
     private int mHandleRegionHeight;
+
+    // Calculation classes for "magnetic snap" user-controlled movement
+    private DistanceGestureContext mDistanceGestureContext;
+    private ViewMotionValue mViewMotionValue;
 
     /**
      * This is not the visible bounds you see on screen, but the actual behind-the-scenes window
@@ -353,14 +361,33 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 break;
             case MotionEvent.ACTION_MOVE:
                 mVelocityTracker.addMovement(event);
-                if (!mMoving && Math.abs(touchPos - mStartPos) > mTouchSlop) {
+                int displacement = touchPos - mStartPos;
+                if (!mMoving && Math.abs(displacement) > mTouchSlop) {
                     mStartPos = touchPos;
                     mMoving = true;
+                    if (Flags.enableMagneticSplitDivider()) {
+                        // Move gesture is confirmed, create framework for magnetic snap
+                        InputDirection direction =
+                                displacement > 0 ? InputDirection.Max : InputDirection.Min;
+                        mDistanceGestureContext = DistanceGestureContext.create(mContext, mStartPos,
+                                direction);
+                        mViewMotionValue = new ViewMotionValue(mStartPos,
+                                mDistanceGestureContext,
+                                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
+                                "dividerView::pos" /* label */);
+                        mViewMotionValue.addUpdateCallback(viewMotionValue -> {
+                            placeDivider((int) viewMotionValue.getOutput());
+                        });
+                    }
                 }
                 if (mMoving) {
                     final int position = mSplitLayout.getDividerPosition() + touchPos - mStartPos;
                     mLastDraggingPosition = position;
-                    mSplitLayout.updateDividerBounds(position, true /* shouldUseParallaxEffect */);
+                    if (Flags.enableMagneticSplitDivider()) {
+                        updateMagneticSnapCalculation(position);
+                    } else {
+                        placeDivider(position);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -368,6 +395,9 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 releaseTouching();
                 if (!mMoving) {
                     mSplitLayout.onDraggingCancelled();
+                    if (Flags.enableMagneticSplitDivider()) {
+                        cleanUpMagneticSnapFramework();
+                    }
                     break;
                 }
 
@@ -381,10 +411,41 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                         mSplitLayout.findSnapTarget(position, velocity, false /* hardDismiss */);
                 mSplitLayout.snapToTarget(position, snapTarget);
                 mMoving = false;
+                if (Flags.enableMagneticSplitDivider()) {
+                    cleanUpMagneticSnapFramework();
+                }
                 break;
         }
 
         return true;
+    }
+
+    /** Updates the position of the divider. */
+    private void placeDivider(int position) {
+        mSplitLayout.updateDividerBounds(position, true /* shouldUseParallaxEffect */);
+    }
+
+    /**
+     * Sends a position update to the magnetic snap framework, allowing a calculation to occur. The
+     * position of the divider will be updated.
+     * @param position The current position of the user's finger.
+     */
+    private void updateMagneticSnapCalculation(int position) {
+        if (mDistanceGestureContext != null) {
+            mDistanceGestureContext.setDragOffset(position);
+        }
+        if (mViewMotionValue != null) {
+            mViewMotionValue.setInput(position);
+        }
+    }
+
+    /** Cleans up the magnetic snap framework after the drag gesture completes. */
+    private void cleanUpMagneticSnapFramework() {
+        if (mViewMotionValue != null) {
+            mViewMotionValue.dispose();
+        }
+        mDistanceGestureContext = null;
+        mViewMotionValue = null;
     }
 
     private void setTouching() {

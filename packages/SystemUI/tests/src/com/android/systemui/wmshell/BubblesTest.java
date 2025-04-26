@@ -212,6 +212,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -219,9 +222,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -536,7 +536,6 @@ public class BubblesTest extends SysuiTestCase {
                 mock(DragAndDropController.class),
                 syncExecutor,
                 mock(Handler.class),
-                mTaskViewRepository,
                 mTaskViewTransitions,
                 mTransitions,
                 mock(SyncTransactionQueue.class),
@@ -2398,6 +2397,7 @@ public class BubblesTest extends SysuiTestCase {
 
         assertStackMode();
 
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2416,6 +2416,7 @@ public class BubblesTest extends SysuiTestCase {
 
         assertStackMode();
 
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2438,17 +2439,20 @@ public class BubblesTest extends SysuiTestCase {
         assertBubbleIsInflatedForStack(mBubbleData.getBubbles().get(0));
         assertBubbleIsInflatedForStack(mBubbleData.getOverflow());
 
+        mBubbleController.setLauncherHasBubbleBar(true);
+        assertBarMode();
+
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        assertBarMode();
 
         assertThat(mBubbleData.getBubbles()).hasSize(1);
         assertBubbleIsInflatedForBar(mBubbleData.getBubbles().get(0));
         assertBubbleIsInflatedForBar(mBubbleData.getOverflow());
 
         mBubbleController.unregisterBubbleStateListener();
-
+        // Check that bubbles stay in bar mode until launcher switches back to stack
+        assertBarMode();
+        mBubbleController.setLauncherHasBubbleBar(false);
         assertStackMode();
 
         assertThat(mBubbleData.getBubbles()).hasSize(1);
@@ -2473,6 +2477,7 @@ public class BubblesTest extends SysuiTestCase {
         assertThat(stackView.isExpanded()).isTrue();
 
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
+        mBubbleController.setLauncherHasBubbleBar(true);
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
         BubbleBarLayerView layerView = mBubbleController.getLayerView();
@@ -2492,11 +2497,13 @@ public class BubblesTest extends SysuiTestCase {
         assertNoBubbleContainerViews();
 
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
+        mBubbleController.setLauncherHasBubbleBar(true);
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
         assertNoBubbleContainerViews();
 
         mBubbleController.unregisterBubbleStateListener();
+        mBubbleController.setLauncherHasBubbleBar(false);
 
         assertNoBubbleContainerViews();
     }
@@ -2508,6 +2515,7 @@ public class BubblesTest extends SysuiTestCase {
         mEntryListener.onEntryAdded(mEntry);
         mBubbleController.updateBubble(mBubbleEntry);
 
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
         mBubbleController.expandStackAndSelectBubbleFromLauncher(mBubbleEntry.getKey(), 1000);
@@ -2523,6 +2531,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void dragBubbleBarBubble_selectedBubble_expandedViewCollapsesDuringDrag() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2551,6 +2560,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void dragBubbleBarBubble_unselectedBubble_expandedViewCollapsesDuringDrag() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2579,6 +2589,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void dismissBubbleBarBubble_selected_selectsAndExpandsNext() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2602,6 +2613,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void dismissBubbleBarBubble_unselected_selectionDoesNotChange() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2653,6 +2665,7 @@ public class BubblesTest extends SysuiTestCase {
     public void setBubbleBarLocation_listenerNotified() {
         mPositioner.setIsLargeScreen(true);
 
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
         mBubbleController.setBubbleBarLocation(BubbleBarLocation.LEFT,
@@ -2667,6 +2680,7 @@ public class BubblesTest extends SysuiTestCase {
     public void setBubbleBarLocation_barDisabled_shouldBeIgnored() {
         mPositioner.setIsLargeScreen(true);
 
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
         mBubbleController.setBubbleBarLocation(BubbleBarLocation.LEFT,
@@ -2738,6 +2752,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_addBubble() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2751,6 +2766,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_updateBubble() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2767,6 +2783,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_dragSelectedBubbleToDismiss() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2793,6 +2810,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_dragOtherBubbleToDismiss() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2831,6 +2849,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_expandAndCollapse() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2850,6 +2869,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_autoExpandingBubble() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2865,6 +2885,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_switchBubble() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2890,6 +2911,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_openOverflow() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 
@@ -2905,6 +2927,7 @@ public class BubblesTest extends SysuiTestCase {
     @Test
     public void testEventLogging_bubbleBar_fromOverflowToBar() {
         mPositioner.setIsLargeScreen(true);
+        mBubbleController.setLauncherHasBubbleBar(true);
         FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
         mBubbleController.registerBubbleStateListener(bubbleStateListener);
 

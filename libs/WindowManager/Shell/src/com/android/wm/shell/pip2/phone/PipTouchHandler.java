@@ -894,12 +894,12 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                                     currentDisplayLayout, curPos.x, curPos.y);
 
                     // Create mirrors on connected displays to simulate dragging PiP across displays
-                    mPipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(mDisplayIdOnDown,
-                            globalDpPipBounds);
-                    // Set PiP bounds on the origin display in display topology-aware local px
+                    mPipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(globalDpPipBounds,
+                            touchState.getLastTouchDisplayId());
+                    // Set PiP bounds on the focused display in display topology-aware local px
                     mTmpBounds.set(
                             MultiDisplayDragMoveBoundsCalculator.convertGlobalDpToLocalPxForRect(
-                                    globalDpPipBounds, displayLayoutOnDown));
+                                    globalDpPipBounds, currentDisplayLayout));
                 } else {
                     // Move the pinned stack freely
                     final PointF lastDelta = touchState.getLastTouchDelta();
@@ -916,7 +916,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     mTmpBounds.offsetTo((int) left, (int) top);
                 }
 
-                mMotionHelper.movePip(mTmpBounds, true /* isDragging */);
+                mMotionHelper.movePip(mTmpBounds, true /* isDragging */,
+                        touchState.getLastTouchDisplayId());
 
                 if (mMovementWithinDismiss) {
                     // Track if movement remains near the bottom edge to identify swipe to dismiss

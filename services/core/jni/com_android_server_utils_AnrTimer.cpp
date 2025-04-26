@@ -700,10 +700,6 @@ class AnrTimerService::Timer {
         if (extend && pid != 0) {
             initial.fill(pid);
         }
-
-        // A zero-pid is odd but it means the upper layers will never ANR the process.  Freezing
-        // is always disabled.  (It won't work anyway, but disabling it avoids error messages.)
-        ALOGI_IF(DEBUG_ERROR && pid == 0, "error: zero-pid %s", toString().c_str());
     }
 
     // Start a timer.  This interface exists to generate log messages, if enabled.

@@ -35,7 +35,7 @@ class ZeroStatePreference @JvmOverloads constructor(
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
     private val iconTint: Int = context.getColor(
-        com.android.settingslib.widget.theme.R.color.settingslib_materialColorOnSecondaryContainer
+        com.android.settingslib.widget.theme.R.color.settingslib_materialColorOnSurface
     )
     private var tintedIcon: Drawable? = null
 
@@ -52,6 +52,8 @@ class ZeroStatePreference @JvmOverloads constructor(
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 
+        holder.isDividerAllowedBelow = false
+        holder.isDividerAllowedAbove = false
         holder.itemView.isFocusable = false
         holder.itemView.isClickable = false
 

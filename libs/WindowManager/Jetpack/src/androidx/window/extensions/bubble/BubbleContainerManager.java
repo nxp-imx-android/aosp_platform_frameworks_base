@@ -17,6 +17,7 @@
 package androidx.window.extensions.bubble;
 
 import android.Manifest;
+import android.annotation.CallbackExecutor;
 import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
 import android.content.Intent;
@@ -24,12 +25,16 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.window.IMultitaskingController;
+import android.window.IMultitaskingControllerCallback;
 import android.window.IMultitaskingDelegate;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * The interface that apps use to request control over Bubbles - special windowing feature that
@@ -41,13 +46,16 @@ public class BubbleContainerManager {
 
     private static BubbleContainerManager sInstance;
 
-    @NonNull
-    private final IMultitaskingDelegate mClientInterface;
+    // Interface used to communicate with the controller in the server
+    private IMultitaskingDelegate mControllerInterface;
 
-    private BubbleContainerManager(@NonNull IMultitaskingDelegate clientInterface) {
-        Objects.requireNonNull(clientInterface);
-        mClientInterface = clientInterface;
-    }
+    // Callback used to update the client about changes from the controller in the server
+    @NonNull
+    private final ControllerCallback mControllerCallback = new ControllerCallback();
+
+    // Callback into the application code
+    @NonNull
+    private final List<CallbackRecord> mAppCallbacks = new ArrayList<>();
 
     /**
      * Obtain an instance of the class to make requests related to Bubbles system multi-tasking
@@ -66,10 +74,14 @@ public class BubbleContainerManager {
             return sInstance;
         }
         try {
-            IMultitaskingController controller = ActivityTaskManager.getService()
+            final IMultitaskingController controller = ActivityTaskManager.getService()
                     .getWindowOrganizerController().getMultitaskingController();
-            IMultitaskingDelegate clientInterface = controller.getClientInterface();
-            sInstance = new BubbleContainerManager(clientInterface);
+            final BubbleContainerManager manager = new BubbleContainerManager();
+            final IMultitaskingDelegate controllerInterface = controller.getClientInterface(
+                    manager.mControllerCallback);
+            Objects.requireNonNull(controllerInterface);
+            sInstance = manager;
+            sInstance.mControllerInterface = controllerInterface;
             return sInstance;
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception getting an instance of BubbleContainerManager",
@@ -89,13 +101,12 @@ public class BubbleContainerManager {
      */
     public void createBubble(IBinder token, Intent intent, boolean collapsed) {
         try {
-            mClientInterface.createBubble(token, intent, collapsed);
+            mControllerInterface.createBubble(token, intent, collapsed);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception creating a Bubble", new RuntimeException(e));
         }
     }
 
-    // TODO(b/407149510): Handle the case when the user removes the Bubble after it was created.
     /**
      * Update the state of an existing Bubble to either collapse or expand it.
      * @param token a token uniquely identifying a bubble.
@@ -103,7 +114,7 @@ public class BubbleContainerManager {
      */
     public void updateBubbleState(IBinder token, boolean collapsed) {
         try {
-            mClientInterface.updateBubbleState(token, collapsed);
+            mControllerInterface.updateBubbleState(token, collapsed);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception updating Bubble state", new RuntimeException(e));
         }
@@ -116,7 +127,7 @@ public class BubbleContainerManager {
      */
     public void updateBubbleMessage(IBinder token, String message) {
         try {
-            mClientInterface.updateBubbleMessage(token, message);
+            mControllerInterface.updateBubbleMessage(token, message);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception updating Bubble message", new RuntimeException(e));
         }
@@ -128,9 +139,59 @@ public class BubbleContainerManager {
      */
     public void removeBubble(IBinder token) {
         try {
-            mClientInterface.removeBubble(token);
+            mControllerInterface.removeBubble(token);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception removing Bubble", new RuntimeException(e));
+        }
+    }
+
+    /**
+     * Registers a callback to get notified about changes to the managed bubbles.
+     */
+    public void registerBubbleContainerCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull BubbleContainerCallback callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        for (CallbackRecord record : mAppCallbacks) {
+            if (record.mCallback.equals(callback)) {
+                throw new IllegalArgumentException("Callback already registered");
+            }
+        }
+        mAppCallbacks.add(new CallbackRecord(executor, callback));
+    }
+
+    /**
+     * Unregisters a callback that was previously registered.
+     * @see #registerBubbleContainerCallback(Executor, BubbleContainerCallback)
+     */
+    public void unregisterBubbleContainerCallback(@NonNull BubbleContainerCallback callback) {
+        for (CallbackRecord record : mAppCallbacks) {
+            if (record.mCallback.equals(callback)) {
+                mAppCallbacks.remove(record);
+                return;
+            }
+        }
+        Log.e(TAG, "Didn't find a matching callback to remove");
+    }
+
+    private static class CallbackRecord {
+        final Executor mExecutor;
+        final BubbleContainerCallback mCallback;
+
+        CallbackRecord(@NonNull Executor executor, @NonNull BubbleContainerCallback callback) {
+            mExecutor = executor;
+            mCallback = callback;
+        }
+    }
+
+    private class ControllerCallback extends IMultitaskingControllerCallback.Stub {
+        @Override
+        public void onBubbleRemoved(IBinder token) {
+            for (CallbackRecord callbackRecord : mAppCallbacks) {
+                callbackRecord.mExecutor.execute(() -> {
+                    callbackRecord.mCallback.onBubbleRemoved(token);
+                });
+            }
         }
     }
 }

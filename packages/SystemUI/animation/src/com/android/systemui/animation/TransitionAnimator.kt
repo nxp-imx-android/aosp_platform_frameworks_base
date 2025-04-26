@@ -505,11 +505,11 @@ class TransitionAnimator(
      * layer with [windowBackgroundColor] will fade in then (optionally) fade out above the
      * expanding view, and should be the same background color as the opening (or closing) window.
      *
-     * If [fadeWindowBackgroundLayer] is true, then this intermediary layer will fade out during the
-     * second half of the animation (if [Controller.isLaunching] or fade in during the first half of
-     * the animation (if ![Controller.isLaunching]), and will have SRC blending mode (ultimately
-     * punching a hole in the [transition container][Controller.transitionContainer]) iff [drawHole]
-     * is true.
+     * If [shouldFadeWindowBackgroundLayer] returns true, then this intermediary layer will fade out
+     * during the second half of the animation (if [Controller.isLaunching] or fade in during the
+     * first half of the animation (if ![Controller.isLaunching]), and will have SRC blending mode
+     * (ultimately punching a hole in the [transition container][Controller.transitionContainer])
+     * iff [drawHole] is true.
      *
      * TODO(b/397646693): remove drawHole altogether.
      *
@@ -522,7 +522,7 @@ class TransitionAnimator(
         controller: Controller,
         endState: State,
         windowBackgroundColor: Int,
-        fadeWindowBackgroundLayer: Boolean = true,
+        shouldFadeWindowBackgroundLayer: () -> Boolean = { true },
         drawHole: Boolean = false,
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
@@ -545,7 +545,7 @@ class TransitionAnimator(
                 controller.createAnimatorState(),
                 endState,
                 windowBackgroundLayer,
-                fadeWindowBackgroundLayer,
+                shouldFadeWindowBackgroundLayer,
                 drawHole,
                 startVelocity,
                 startFrameTime,
@@ -559,7 +559,7 @@ class TransitionAnimator(
         startState: State,
         endState: State,
         windowBackgroundLayer: GradientDrawable,
-        fadeWindowBackgroundLayer: Boolean = true,
+        shouldFadeWindowBackgroundLayer: () -> Boolean = { true },
         drawHole: Boolean = false,
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
@@ -591,7 +591,7 @@ class TransitionAnimator(
                 transitionContainerOverlay,
                 openingWindowSyncView,
                 openingWindowSyncViewOverlay,
-                fadeWindowBackgroundLayer,
+                shouldFadeWindowBackgroundLayer,
                 drawHole,
                 moveBackgroundLayerWhenAppVisibilityChanges,
             )
@@ -605,7 +605,7 @@ class TransitionAnimator(
                 transitionContainerOverlay,
                 openingWindowSyncView,
                 openingWindowSyncViewOverlay,
-                fadeWindowBackgroundLayer,
+                shouldFadeWindowBackgroundLayer,
                 drawHole,
                 moveBackgroundLayerWhenAppVisibilityChanges,
             )
@@ -625,7 +625,7 @@ class TransitionAnimator(
         transitionContainerOverlay: ViewGroupOverlay,
         openingWindowSyncView: View? = null,
         openingWindowSyncViewOverlay: ViewOverlay? = null,
-        fadeWindowBackgroundLayer: Boolean = true,
+        shouldFadeWindowBackgroundLayer: () -> Boolean = { true },
         drawHole: Boolean = false,
         moveBackgroundLayerWhenAppVisibilityChanges: Boolean = false,
     ): Animation {
@@ -747,7 +747,7 @@ class TransitionAnimator(
                 state,
                 linearProgress,
                 container,
-                fadeWindowBackgroundLayer,
+                shouldFadeWindowBackgroundLayer,
                 drawHole,
                 controller.isLaunching,
                 useSpring = false,
@@ -777,7 +777,7 @@ class TransitionAnimator(
         transitionContainerOverlay: ViewGroupOverlay,
         openingWindowSyncView: View?,
         openingWindowSyncViewOverlay: ViewOverlay?,
-        fadeWindowBackgroundLayer: Boolean = true,
+        shouldFadeWindowBackgroundLayer: () -> Boolean = { true },
         drawHole: Boolean = false,
         moveBackgroundLayerWhenAppVisibilityChanges: Boolean = false,
     ): Animation {
@@ -869,7 +869,7 @@ class TransitionAnimator(
                 newState,
                 state.scale,
                 container,
-                fadeWindowBackgroundLayer,
+                shouldFadeWindowBackgroundLayer,
                 drawHole,
                 isLaunching = false,
                 useSpring = true,
@@ -1124,7 +1124,7 @@ class TransitionAnimator(
         state: State,
         linearProgress: Float,
         transitionContainer: View,
-        fadeWindowBackgroundLayer: Boolean,
+        shouldFadeWindowBackgroundLayer: () -> Boolean,
         drawHole: Boolean,
         isLaunching: Boolean,
         useSpring: Boolean,
@@ -1193,7 +1193,7 @@ class TransitionAnimator(
                 val alpha =
                     interpolators.contentBeforeFadeOutInterpolator.getInterpolation(fadeInProgress)
                 drawable.alpha = (alpha * 0xFF).roundToInt()
-            } else if (fadeWindowBackgroundLayer) {
+            } else if (shouldFadeWindowBackgroundLayer()) {
                 val alpha =
                     1 -
                         interpolators.contentAfterFadeInInterpolator.getInterpolation(
@@ -1212,7 +1212,7 @@ class TransitionAnimator(
                 drawable.alpha = 0xFF
             }
         } else {
-            if (fadeInProgress < 1 && fadeWindowBackgroundLayer) {
+            if (fadeInProgress < 1 && shouldFadeWindowBackgroundLayer()) {
                 val alpha =
                     interpolators.contentBeforeFadeOutInterpolator.getInterpolation(fadeInProgress)
                 drawable.alpha = (alpha * 0xFF).roundToInt()

@@ -39,8 +39,8 @@ import com.android.systemui.recordissue.IssueRecordingService.Companion.getStopI
 import com.android.systemui.recordissue.IssueRecordingState
 import com.android.systemui.recordissue.RecordIssueDialogDelegate
 import com.android.systemui.recordissue.RecordIssueModule.Companion.TILE_SPEC
-import com.android.systemui.screenrecord.RecordingController
 import com.android.systemui.screenrecord.RecordingService
+import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -59,7 +59,7 @@ constructor(
     private val panelInteractor: PanelInteractor,
     private val userContextProvider: UserContextProvider,
     private val delegateFactory: RecordIssueDialogDelegate.Factory,
-    private val recordingController: RecordingController,
+    private val screenRecordUxController: ScreenRecordUxController,
 ) : QSTileUserActionInteractor<IssueRecordingModel> {
 
     override suspend fun handleInput(input: QSTileInput<IssueRecordingModel>) {
@@ -102,7 +102,7 @@ constructor(
     }
 
     private fun startIssueRecordingService() =
-        recordingController.startCountdown(
+        screenRecordUxController.startCountdown(
             DELAY_MS,
             INTERVAL_MS,
             pendingServiceIntent(

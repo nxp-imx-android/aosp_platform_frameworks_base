@@ -37,9 +37,12 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.android.internal.jank.Cuj
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel.Companion.ZOOM_OUT_SCALE
@@ -58,10 +61,12 @@ fun SqueezeEffect(
     @DrawableRes topRoundedCornerResourceId: Int,
     @DrawableRes bottomRoundedCornerResourceId: Int,
     physicalPixelDisplaySizeRatio: Float,
-    onEffectFinished: () -> Unit,
+    onEffectFinished: suspend () -> Unit,
     appZoomOutOptional: Optional<AppZoomOut>,
+    interactionJankMonitor: InteractionJankMonitor,
 ) {
     val viewModel = rememberViewModel(traceName = "SqueezeEffect") { viewModelFactory.create() }
+    val view = LocalView.current
 
     val down = viewModel.isPowerButtonPressed
     val longPressed = viewModel.isPowerButtonLongPressed
@@ -97,9 +102,11 @@ fun SqueezeEffect(
 
     LaunchedEffect(isMainAnimationRunning) {
         if (isMainAnimationRunning) {
+            interactionJankMonitor.begin(view, Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
             squeezeProgress.animateTo(1f, animationSpec = tween(durationMillis = 800))
             squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
             if (squeezeProgress.value == 0f) {
+                interactionJankMonitor.end(Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
                 onEffectFinished()
             }
             isAnimationInterruptible = true
@@ -108,6 +115,7 @@ fun SqueezeEffect(
                 squeezeProgress.animateTo(0f, animationSpec = tween(durationMillis = 333))
             }
             if (squeezeProgress.value == 0f) {
+                interactionJankMonitor.cancel(Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT)
                 onEffectFinished()
             }
         }

@@ -7,10 +7,7 @@
     { "name": "hoststubgen-invoke-test" },
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
-
-    // Running ravenizer on device side tests is unsupported: b/411506416
-    // { "name": "RavenwoodBivalentTest_device_ravenizer" },
-
+    { "name": "RavenwoodBivalentTest_device_ravenizer" },
     { "name": "RavenwoodBivalentInstTest_nonself_inst" },
     { "name": "RavenwoodBivalentInstTest_self_inst_device" },
 

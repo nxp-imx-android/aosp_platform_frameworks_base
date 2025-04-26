@@ -55,4 +55,9 @@
 
     <!-- Size of storage allocated to battery history, in bytes -->
     <integer name="config_batteryHistoryStorageSize">4194304</integer>
+
+    <!-- Time span of battery history dump, in milliseconds, default value is 24 hours.
+    It only affects the `dumpsys batterystats -a` command -->
+    <integer name="config_batteryHistoryDumpWindowSize">86400000</integer>
+
 </resources>

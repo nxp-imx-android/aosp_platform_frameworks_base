@@ -455,7 +455,7 @@
     <issue
         id="CleanArchitectureDependencyViolation"
         message="The data layer may not depend on the domain layer."
-        errorLine1="import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor"
+        errorLine1="import com.android.systemui.display.domain.interactor.DisplayStateInteractor"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt"

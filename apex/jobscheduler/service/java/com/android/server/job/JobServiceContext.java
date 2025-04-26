@@ -73,6 +73,7 @@ import com.android.modules.expresslog.Histogram;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
 import com.android.server.job.controllers.JobStatus;
+import com.android.server.utils.AnrTimer;
 
 import java.util.Objects;
 
@@ -319,6 +320,40 @@ public final class JobServiceContext implements ServiceConnection {
         }
     }
 
+    // All instances of JobAnrTimer share the same arguments.
+    private static final AnrTimer.Args sAnrTimerArgs =
+            new AnrTimer.Args().enable(com.android.server.utils.Flags.anrTimerForJobService());
+
+    /**
+     * An AnrTimer for the JobServiceContext.  There is one instance for each JobServiceContext
+     * (these objects are not large).  For convenience, simple no-argument methods are provided
+     * which use 'this'.
+     */
+    private class JobAnrTimer extends AnrTimer<JobCallback> {
+        JobAnrTimer() {
+            super(mCallbackHandler, MSG_TIMEOUT, "JobScheduler", sAnrTimerArgs);
+        }
+
+        public void start(long timeout) {
+            start(mRunningCallback, /* pid */ 0, mRunningJob.getUid(), timeout);
+        }
+
+        public boolean cancel() {
+            return cancel(mRunningCallback);
+        }
+
+        public void accept(TimeoutRecord tr) {
+            accept(mRunningCallback, tr);
+        }
+
+        public boolean discard() {
+            return discard(mRunningCallback);
+        }
+    }
+
+    // The AnrTimer for this instance.
+    private final JobAnrTimer mAnrTimer;
+
     JobServiceContext(JobSchedulerService service, JobConcurrencyManager concurrencyManager,
             JobNotificationCoordinator notificationCoordinator,
             IBatteryStats batteryStats, JobPackageTracker tracker, Looper looper) {
@@ -337,6 +372,7 @@ public final class JobServiceContext implements ServiceConnection {
         mAvailable = true;
         mVerb = VERB_FINISHED;
         mPreferredUid = NO_PREFERRED_UID;
+        mAnrTimer = new JobAnrTimer();
     }
 
     /**
@@ -1177,6 +1213,7 @@ public final class JobServiceContext implements ServiceConnection {
                             handleOpTimeoutLocked();
                         } else {
                             JobCallback jc = (JobCallback)message.obj;
+                            mAnrTimer.discard(jc);
                             StringBuilder sb = new StringBuilder(128);
                             sb.append("Ignoring timeout of no longer active job");
                             if (jc.mStoppedReason != null) {
@@ -1433,6 +1470,8 @@ public final class JobServiceContext implements ServiceConnection {
                             mRunningJob.getUid()));
                 break;
             case VERB_EXECUTING:
+                // This is the tricky one.  Some of banches here accept the timeout and some
+                // discard it.
                 if (mPendingStopReason != JobParameters.STOP_REASON_UNDEFINED) {
                     if (mService.isReadyToBeExecutedLocked(mRunningJob, false)) {
                         // Job became ready again while we were waiting to stop it (for example,
@@ -1447,6 +1486,7 @@ public final class JobServiceContext implements ServiceConnection {
                         mParams.setStopReason(mPendingStopReason, mPendingInternalStopReason,
                                 mPendingDebugStopReason);
                         sendStopMessageLocked(mPendingDebugStopReason);
+                        mAnrTimer.discard();
                         break;
                     }
                 }
@@ -1481,6 +1521,7 @@ public final class JobServiceContext implements ServiceConnection {
                     mParams.setStopReason(stopReason,
                                     internalStopReason, debugStopReason.toString());
                     sendStopMessageLocked(stopMessage.toString());
+                    mAnrTimer.discard();
                 } else if (nowElapsed >= earliestStopTimeElapsed) {
                     // We've given the app the minimum execution time. See if we should stop it or
                     // let it continue running
@@ -1522,6 +1563,7 @@ public final class JobServiceContext implements ServiceConnection {
             default:
                 Slog.e(TAG, "Handling timeout for an invalid job state: "
                         + getRunningJobNameLocked() + ", dropping.");
+                mAnrTimer.discard();
                 closeAndCleanupJobLocked(false /* needsReschedule */, "invalid timeout");
         }
     }
@@ -1565,9 +1607,12 @@ public final class JobServiceContext implements ServiceConnection {
                     debugReason);
         }
         if (triggerAnr) {
+            final TimeoutRecord tr = TimeoutRecord.forJobService(anrMessage);
+            mAnrTimer.accept(tr);
             mActivityManagerInternal.appNotResponding(
-                    mRunningJob.serviceProcessName, mRunningJob.getUid(),
-                    TimeoutRecord.forJobService(anrMessage));
+                    mRunningJob.serviceProcessName, mRunningJob.getUid(), tr);
+        } else {
+            mAnrTimer.discard();
         }
         closeAndCleanupJobLocked(reschedule, debugReason);
     }
@@ -1763,8 +1808,6 @@ public final class JobServiceContext implements ServiceConnection {
      * on with life.
      */
     private void scheduleOpTimeOutLocked() {
-        removeOpTimeOutLocked();
-
         final long timeoutMillis;
         switch (mVerb) {
             case VERB_EXECUTING:
@@ -1799,13 +1842,12 @@ public final class JobServiceContext implements ServiceConnection {
                     mRunningJob.getServiceComponent().getShortClassName() + "' jId: " +
                     mParams.getJobId() + ", in " + (timeoutMillis / 1000) + " s");
         }
-        Message m = mCallbackHandler.obtainMessage(MSG_TIMEOUT, mRunningCallback);
-        mCallbackHandler.sendMessageDelayed(m, timeoutMillis);
+        mAnrTimer.start(timeoutMillis);
         mTimeoutElapsed = sElapsedRealtimeClock.millis() + timeoutMillis;
     }
 
     private void removeOpTimeOutLocked() {
-        mCallbackHandler.removeMessages(MSG_TIMEOUT);
+        mAnrTimer.cancel();
     }
 
     void dumpLocked(IndentingPrintWriter pw, final long nowElapsed) {

@@ -3726,6 +3726,7 @@ public final class QuotaController extends StateController {
                 case KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS:
                 case KEY_IN_QUOTA_BUFFER_MS:
                 case KEY_MAX_EXECUTION_TIME_MS:
+                case KEY_WINDOW_SIZE_EXEMPTED_MS:
                 case KEY_WINDOW_SIZE_ACTIVE_MS:
                 case KEY_WINDOW_SIZE_WORKING_MS:
                 case KEY_WINDOW_SIZE_FREQUENT_MS:

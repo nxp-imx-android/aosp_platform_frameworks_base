@@ -22,6 +22,7 @@
 #include <SkBlendMode.h>
 #include <SkCanvas.h>
 #include <SkColor.h>
+#include <android-base/logging.h>
 #include <android-base/stringprintf.h>
 #include <android-base/thread_annotations.h>
 #include <ftl/enum.h>
@@ -105,10 +106,10 @@ PointerController::PointerController(const sp<PointerControllerPolicyInterface>&
       : PointerController(
                 policy, looper, spriteController,
                 [](const sp<android::gui::WindowInfosListener>& listener) {
-                    gui::WindowInfosUpdate initialInfo;
-                    SurfaceComposerClient::getDefault()->addWindowInfosListener(listener,
-                                                                                &initialInfo);
-                    return initialInfo.displayInfos;
+                    android::base::Result<gui::WindowInfosUpdate> result =
+                            SurfaceComposerClient::getDefault()->addWindowInfosListener(listener);
+                    LOG_IF(FATAL, !result.ok()) << "Can't add window info listener";
+                    return result->displayInfos;
                 },
                 [](const sp<android::gui::WindowInfosListener>& listener) {
                     SurfaceComposerClient::getDefault()->removeWindowInfosListener(listener);

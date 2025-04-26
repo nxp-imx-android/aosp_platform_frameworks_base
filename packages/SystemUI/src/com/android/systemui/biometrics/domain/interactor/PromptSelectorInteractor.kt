@@ -30,6 +30,7 @@ import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

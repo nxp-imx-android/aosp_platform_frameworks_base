@@ -38,6 +38,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKT
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.CancelState
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
@@ -80,6 +81,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock private lateinit var desksOrganizer: DesksOrganizer
     @Mock private lateinit var splitScreenController: SplitScreenController
     @Mock private lateinit var dragAnimator: MoveToDesktopAnimator
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
@@ -114,6 +116,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     context,
                     transitions,
                     taskDisplayAreaOrganizer,
+                    desksOrganizer,
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
@@ -130,6 +133,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     context,
                     transitions,
                     taskDisplayAreaOrganizer,
+                    desksOrganizer,
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
@@ -564,6 +568,40 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         verify(mergedStartTransaction).setLayer(eq(draggedTaskLeash), anyInt())
         // Should merge animation
         verify(finishCallback).onTransitionFinished(null)
+    }
+
+    @Test
+    fun mergeAnimation_endTransition_hasDeskChange_doesNotMoveBehindDraggedTask() {
+        val playingFinishTransaction = mock<SurfaceControl.Transaction>()
+        val mergedStartTransaction = mock<SurfaceControl.Transaction>()
+        val mergedFinishTransaction = mock<SurfaceControl.Transaction>()
+        val finishCallback = mock<Transitions.TransitionFinishCallback>()
+        val deskChange = createDeskChange()
+        val task = createTask()
+        val startTransition =
+            startDrag(defaultHandler, task, finishTransaction = playingFinishTransaction)
+        defaultHandler.onTaskResizeAnimationListener = mock()
+        whenever(desksOrganizer.isDeskChange(deskChange)).thenReturn(true)
+
+        defaultHandler.mergeAnimation(
+            transition = mock<IBinder>(),
+            info =
+                createTransitionInfo(
+                    type = TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP,
+                    draggedTask = task,
+                    deskChange = deskChange,
+                ),
+            startT = mergedStartTransaction,
+            finishT = mergedFinishTransaction,
+            mergeTarget = startTransition,
+            finishCallback = finishCallback,
+        )
+
+        // Don't move the desk leash back, or it will take the dragged task with it.
+        verify(mergedStartTransaction, never())
+            .setRelativeLayer(eq(deskChange.leash), eq(draggedTaskLeash), anyInt())
+        verify(playingFinishTransaction, never())
+            .setRelativeLayer(eq(deskChange.leash), eq(draggedTaskLeash), anyInt())
     }
 
     @Test
@@ -1216,6 +1254,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         draggedTask: RunningTaskInfo,
         homeChange: TransitionInfo.Change? = createHomeChange(),
         rootLeash: SurfaceControl = mock(),
+        deskChange: TransitionInfo.Change? = null,
     ) =
         TransitionInfo(type, /* flags= */ 0).apply {
             homeChange?.let { addChange(it) }
@@ -1225,6 +1264,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     taskInfo = draggedTask
                 }
             )
+            deskChange?.let { addChange(it) }
             addChange( // Wallpaper.
                 TransitionInfo.Change(mock(), wallpaperLeash).apply {
                     parent = null
@@ -1240,6 +1280,12 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             parent = null
             taskInfo = TestRunningTaskInfoBuilder().setActivityType(ACTIVITY_TYPE_HOME).build()
             flags = flags or FLAG_IS_WALLPAPER
+        }
+
+    private fun createDeskChange() =
+        TransitionInfo.Change(mock(), mock()).apply {
+            parent = null
+            taskInfo = TestRunningTaskInfoBuilder().build()
         }
 
     private fun systemPropertiesKey(name: String) =

@@ -68,6 +68,9 @@ constructor(
             )
             .merge()
 
+    private val _blurScale =
+        blurInteractor.blurScaleRequestedByShade
+
     val blurRadius: Flow<Float> =
         blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
             if (blurSupported) {
@@ -75,6 +78,19 @@ constructor(
             } else {
                 flowOf(0f)
             }
+        }
+
+    val blurScale: Flow<Float> =
+        if (Flags.spatialModelPushbackInShader()) {
+            blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
+                if (blurSupported) {
+                    _blurScale
+                } else {
+                    flowOf(1f)
+                }
+            }
+        } else {
+            flowOf(1f)
         }
 
     val isPersistentEarlyWakeupRequired =

@@ -130,8 +130,10 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
         whenever(mockTransaction.setCornerRadius(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setCornerRadius(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.show(any())).thenReturn(mockTransaction)
+        whenever(mockTransaction.hide(any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setColor(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setLayer(any(), any())).thenReturn(mockTransaction)
+        whenever(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
 
         dragIndicatorSurface =
             MultiDisplayDragMoveIndicatorSurface(
@@ -191,6 +193,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             mockRootTaskDisplayAreaOrganizer,
             DEFAULT_DISPLAY,
             BOUNDS,
+            MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
         )
 
         verify(mockRootTaskDisplayAreaOrganizer)
@@ -205,7 +208,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
     }
 
     @Test
-    fun relayout_whenVisibleAndShouldBeVisible_setsCropAndPosition() {
+    fun relayout_whenVisibleAndDoesntChangeVisibility_setsCropAndPosition() {
         val expectedX = NEW_BOUNDS.left + NEW_BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
         val expectedY = NEW_BOUNDS.top + NEW_BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
 
@@ -215,10 +218,12 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             mockRootTaskDisplayAreaOrganizer,
             DEFAULT_DISPLAY,
             BOUNDS,
+            MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE
         )
         clearInvocations(mockTransaction)
 
-        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction, shouldBeVisible = true)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE)
 
         verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
         verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
@@ -235,9 +240,11 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             mockRootTaskDisplayAreaOrganizer,
             DEFAULT_DISPLAY,
             BOUNDS,
+            MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE
         )
         clearInvocations(mockTransaction)
-        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction, shouldBeVisible = false)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE)
 
         verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
         verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
@@ -248,7 +255,8 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
         val expectedX = NEW_BOUNDS.left + NEW_BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
         val expectedY = NEW_BOUNDS.top + NEW_BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
 
-        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction, shouldBeVisible = true)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE)
 
         verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
         verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
@@ -256,10 +264,47 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
 
     @Test
     fun relayout_whenInvisibleAndShouldBeInvisible_doesNotSetCropOrPosition() {
-        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction, shouldBeVisible = false)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE)
 
         verify(mockTransaction, never()).setCrop(any(), any())
         verify(mockTransaction, never()).setPosition(any(), any(), any())
+    }
+
+    @Test
+    fun relayout_whenVisibleAndShouldBeTranslucent_setAlpha() {
+        dragIndicatorSurface.show(
+            mockTransaction,
+            taskInfo,
+            mockRootTaskDisplayAreaOrganizer,
+            DEFAULT_DISPLAY,
+            BOUNDS,
+            MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE
+        )
+        clearInvocations(mockTransaction)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT)
+
+        verify(mockTransaction).setAlpha(eq(mockVeilSurface), eq(ALPHA_FOR_TRANSLUCENT))
+        verify(mockTransaction).setAlpha(eq(mockIconSurface), eq(ALPHA_FOR_TRANSLUCENT))
+    }
+
+    @Test
+    fun relayout_whenTranslucentAndShouldBeVisible_setAlpha() {
+        dragIndicatorSurface.show(
+            mockTransaction,
+            taskInfo,
+            mockRootTaskDisplayAreaOrganizer,
+            DEFAULT_DISPLAY,
+            BOUNDS,
+            MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT
+        )
+        clearInvocations(mockTransaction)
+        dragIndicatorSurface.relayout(NEW_BOUNDS, mockTransaction,
+                                      MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE)
+
+        verify(mockTransaction).setAlpha(eq(mockVeilSurface), eq(ALPHA_FOR_VISIBLE))
+        verify(mockTransaction).setAlpha(eq(mockIconSurface), eq(ALPHA_FOR_VISIBLE))
     }
 
     companion object {
@@ -267,5 +312,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
         private const val ICON_SIZE = 48
         private val BOUNDS = Rect(10, 20, 100, 200)
         private val NEW_BOUNDS = Rect(50, 50, 150, 250)
+        private val ALPHA_FOR_TRANSLUCENT = 0.8f
+        private val ALPHA_FOR_VISIBLE = 1.0f
     }
 }

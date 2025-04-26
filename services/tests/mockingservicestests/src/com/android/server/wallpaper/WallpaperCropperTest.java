@@ -759,6 +759,23 @@ public class WallpaperCropperTest {
                 displayId, wallpaperData)).isTrue();
     }
 
+    // Test isWallpaperCompatibleForDisplay always return false if the display info is null.
+    @Test
+    public void isWallpaperCompatibleForDisplay_nullDisplayInfo_returnFalse()
+            throws Exception {
+        final int displayId = 2;
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.logicalWidth = 2560;
+        displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
+        doReturn(null).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
+        WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
+                new Point(100, 100));
+
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isFalse();
+    }
+
     // Test isWallpaperCompatibleForDisplay wallpaper is suitable for the display and wallpaper
     // aspect ratio meets the hard-coded aspect ratio.
     @Test
@@ -807,7 +824,7 @@ public class WallpaperCropperTest {
         setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
-                new Point(2000, 800));
+                new Point(1500, 800));
 
         assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
                 displayId, wallpaperData)).isFalse();

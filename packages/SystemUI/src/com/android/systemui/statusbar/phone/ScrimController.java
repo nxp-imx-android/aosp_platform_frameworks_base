@@ -1030,7 +1030,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                     mBehindAlpha = 1;
                     mNotificationsAlpha = behindFraction * getDefaultScrimAlpha();
                 } else {
-                    if (Flags.notificationShadeBlur()) {
+                    if (Flags.notificationShadeBlur() && isBlurCurrentlySupported()) {
                         // TODO (b/390730594): match any spec for controlling alpha based on shade
                         //  expansion fraction.
                         mBehindAlpha = mState.getBehindAlpha() * mPanelExpansionFraction;
@@ -1647,7 +1647,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     private int getShadePanelColor() {
-        return ShadeColors.shadePanel(mContext, isBlurCurrentlySupported());
+        return ShadeColors.shadePanel(mContext, isBlurCurrentlySupported(), true);
     }
 
     private void onThemeChanged() {

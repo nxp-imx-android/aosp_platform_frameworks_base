@@ -42,16 +42,6 @@ flag {
 }
 
 flag {
-    name: "secure_array_zeroization"
-    namespace: "security"
-    description: "Enable secure array zeroization"
-    bug: "320392352"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"

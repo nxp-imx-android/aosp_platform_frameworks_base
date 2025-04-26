@@ -1534,14 +1534,14 @@ public class CommandQueue extends IStatusBar.Stub implements
     @Override
     public void moveFocusedTaskToFullscreen(int displayId) {
         SomeArgs args = SomeArgs.obtain();
-        args.arg1 = displayId;
+        args.argi1 = displayId;
         mHandler.obtainMessage(MSG_MOVE_FOCUSED_TASK_TO_FULLSCREEN, args).sendToTarget();
     }
 
     @Override
     public void moveFocusedTaskToDesktop(int displayId) {
         SomeArgs args = SomeArgs.obtain();
-        args.arg1 = displayId;
+        args.argi1 = displayId;
         mHandler.obtainMessage(MSG_ENTER_DESKTOP, args).sendToTarget();
     }
 

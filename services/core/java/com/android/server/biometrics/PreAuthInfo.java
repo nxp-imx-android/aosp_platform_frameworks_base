@@ -117,7 +117,6 @@ class PreAuthInfo {
 
         final boolean isOnlyMandatoryBiometricsRequested = promptInfo.getAuthenticators()
                 == BiometricManager.Authenticators.IDENTITY_CHECK;
-        boolean isMandatoryBiometricsAuthentication = false;
 
         final int effectiveUserId;
         if (Flags.effectiveUserBp()) {
@@ -126,15 +125,9 @@ class PreAuthInfo {
             effectiveUserId = userId;
         }
 
-        if (dropCredentialFallback(promptInfo.getAuthenticators(),
-                settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
-                        effectiveUserId), trustManager)) {
-            isMandatoryBiometricsAuthentication = true;
-            promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
-            if (promptInfo.getNegativeButtonText() == null) {
-                promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
-            }
-        }
+        final boolean isMandatoryBiometricsAuthentication =
+                updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
+                        trustManager, settingObserver, context);
 
         final boolean biometricRequested = Utils.isBiometricRequested(promptInfo);
         final int requestedStrength = Utils.getPublicBiometricStrength(promptInfo);
@@ -186,6 +179,30 @@ class PreAuthInfo {
                 eligibleSensors, ineligibleSensors, credentialAvailable, promptInfo,
                 effectiveUserId, userId, context, biometricCameraManager,
                 isOnlyMandatoryBiometricsRequested, isMandatoryBiometricsAuthentication);
+    }
+
+    private static boolean updateAuthenticatorsIfIdentityCheckIsActive(PromptInfo promptInfo,
+            int effectiveUserId, ITrustManager trustManager,
+            BiometricService.SettingObserver settingObserver, Context context) {
+        if (!Flags.identityCheckTestApi() && dropCredentialFallback(promptInfo.getAuthenticators(),
+                settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
+                        effectiveUserId), trustManager)) {
+            promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+            if (promptInfo.getNegativeButtonText() == null) {
+                promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
+            }
+            return true;
+        } else if (Flags.identityCheckTestApi()
+                && (promptInfo.getAuthenticators() & BiometricManager.Authenticators.IDENTITY_CHECK)
+                != 0 && settingObserver.isIdentityCheckActive(effectiveUserId)) {
+            promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+            if (promptInfo.getNegativeButtonText() == null) {
+                promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private static boolean dropCredentialFallback(int authenticators,

@@ -10020,17 +10020,25 @@ public class AudioService extends IAudioService.Stub
                             }
                         }
                     }
-                    // Mirror changes in SPEAKER ringtone volume on SCO when
-                    if (changed && mStreamType == AudioSystem.STREAM_RING
-                            && device == AudioSystem.DEVICE_OUT_SPEAKER) {
-                        for (int i = 0; i < mIndexMap.size(); i++) {
-                            int otherDevice = mIndexMap.keyAt(i);
-                            if (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)) {
-                                mIndexMap.put(otherDevice, index);
+
+                    if (changed) {
+                        // Mirror changes in SPEAKER ringtone volume on SCO
+                        if (mStreamType == AudioSystem.STREAM_RING
+                                && device == AudioSystem.DEVICE_OUT_SPEAKER) {
+                            for (int i = 0; i < mIndexMap.size(); i++) {
+                                int otherDevice = mIndexMap.keyAt(i);
+                                if (AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(otherDevice)) {
+                                    mIndexMap.put(otherDevice, index);
+                                }
                             }
                         }
-                    }
-                    if (changed) {
+                        // Mirror BLE unicast headset and broadcast volume changes
+                        if (device == AudioSystem.DEVICE_OUT_BLE_HEADSET) {
+                            mIndexMap.put(AudioSystem.DEVICE_OUT_BLE_BROADCAST, index);
+                        } else if (device == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                            mIndexMap.put(AudioSystem.DEVICE_OUT_BLE_HEADSET, index);
+                        }
+
                         // If associated to volume group, update group cache
                         updateVolumeGroupIndex(device, /* forceMuteState= */ false);
 
@@ -13225,8 +13233,10 @@ public class AudioService extends IAudioService.Stub
                 String action = intent.getAction();
                 String pkgName = intent.getData().getEncodedSchemeSpecificPart();
                 int uid = intent.getIntExtra(Intent.EXTRA_UID, Process.INVALID_UID);
-                if (intent.getBooleanExtra(EXTRA_REPLACING, false) ||
-                        intent.getBooleanExtra(EXTRA_ARCHIVAL, false)) return;
+                Slog.d(TAG, "received " + action + " replacing: " +
+                    intent.getBooleanExtra(EXTRA_REPLACING, false) + " archival: " +
+                    intent.getBooleanExtra(EXTRA_ARCHIVAL, false) + " for package " +
+                    pkgName + " with uid " + uid);
                 if (ACTION_PACKAGE_ADDED.equals(action)) {
                     audioserverExecutor.execute(() ->
                             provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));

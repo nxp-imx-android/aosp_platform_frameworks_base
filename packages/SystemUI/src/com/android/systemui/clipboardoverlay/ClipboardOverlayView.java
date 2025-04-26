@@ -223,6 +223,13 @@ public class ClipboardOverlayView extends DraggableConstraintLayout {
         mIndicationContainer.setVisibility(visibility);
     }
 
+    void announce(CharSequence text) {
+        View announce = findViewById(R.id.clipboard_announcement_live_region);
+        // clear the description to announce even if successive copies are the same type
+        announce.setContentDescription("");
+        announce.setContentDescription(text);
+    }
+
     void setMinimized(boolean minimized) {
         if (minimized) {
             mMinimizedPreview.setVisibility(View.VISIBLE);

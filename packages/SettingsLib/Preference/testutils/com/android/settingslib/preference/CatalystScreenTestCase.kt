@@ -128,7 +128,9 @@ abstract class CatalystScreenTestCase {
         builder.append(indent2).append("isCopyingEnabled: $isCopyingEnabled\n")
         builder.append(indent2).append("isEnabled: $isEnabled\n")
         builder.append(indent2).append("isIconSpaceReserved: $isIconSpaceReserved\n")
-        if (clazz != Preference::class.java && clazz != PreferenceScreen::class.java) {
+        if (
+            clazz != Preference::class.java && !PreferenceGroup::class.java.isAssignableFrom(clazz)
+        ) {
             builder.append(indent2).append("isPersistent: $isPersistent\n")
         }
         builder.append(indent2).append("isSelectable: $isSelectable\n")

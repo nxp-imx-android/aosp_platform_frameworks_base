@@ -38,9 +38,7 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.RemoteCallback;
-import android.os.ResultReceiver;
 import android.os.SharedMemory;
-import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.service.wearable.WearableSensingDataRequester;
@@ -54,7 +52,6 @@ import com.android.server.infra.AbstractMasterSystemService;
 import com.android.server.infra.FrameworkResourcesServiceNameResolver;
 import com.android.server.utils.quota.MultiRateLimiter;
 
-import java.io.FileDescriptor;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Objects;
@@ -668,15 +665,18 @@ public class WearableSensingManagerService
         }
 
         @Override
-        public void onShellCommand(
-                FileDescriptor in,
-                FileDescriptor out,
-                FileDescriptor err,
-                String[] args,
-                ShellCallback callback,
-                ResultReceiver resultReceiver) {
-            new WearableSensingShellCommand(WearableSensingManagerService.this)
-                    .exec(this, in, out, err, args, callback, resultReceiver);
+        public int handleShellCommand(
+                @NonNull ParcelFileDescriptor in,
+                @NonNull ParcelFileDescriptor out,
+                @NonNull ParcelFileDescriptor err,
+                @NonNull String[] args) {
+            return new WearableSensingShellCommand(WearableSensingManagerService.this)
+                    .exec(
+                            this,
+                            in.getFileDescriptor(),
+                            out.getFileDescriptor(),
+                            err.getFileDescriptor(),
+                            args);
         }
 
         @Nullable

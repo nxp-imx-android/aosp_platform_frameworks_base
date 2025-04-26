@@ -397,9 +397,9 @@
     <string name="show_key_presses_summary" msgid="725387457373015024">"\'طبعی کلید کو دبانا\' کیلئے ویژوئل تاثرات دکھائیں"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"ٹچ پیڈ ان پٹ دکھائیں"</string>
     <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"اسکرین اوورلے ٹچ پیڈ ان پٹ ڈیٹا اور تسلیم شدہ اشاروں کو ظاہر کرتا ہے"</string>
-    <string name="show_screen_updates" msgid="2078782895825535494">"سطح کے اپ ڈیٹس دکھائیں"</string>
+    <string name="show_screen_updates" msgid="2078782895825535494">"سطح کی اپ ڈیٹس دکھائیں"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"اپ ڈیٹ ہونے پر ونڈو کی پوری سطحیں جھلملائیں"</string>
-    <string name="show_hw_screen_updates" msgid="2021286231267747506">"منظر کے اپ ڈیٹس دکھائیں"</string>
+    <string name="show_hw_screen_updates" msgid="2021286231267747506">"منظر کی اپ ڈیٹس دکھائیں"</string>
     <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"تیار ہونے پر ملاحظات ونڈوز کے اندر جھلملائیں"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"ہارڈویئر پرتوں کی اپ ڈیٹس دکھائیں"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"ہارڈویئر پرتیں اپ ڈیٹ ہونے پر سبز رنگ میں جھلملائیں"</string>
@@ -441,7 +441,7 @@
     <string name="immediately_destroy_activities_summary" msgid="6289590341144557614">"صارف کی ہر سرگرمی صارف کے چھوڑنے پر حذف کر دیں"</string>
     <string name="app_process_limit_title" msgid="8361367869453043007">"پس منظر پروسیس کی حد"</string>
     <string name="show_all_anrs" msgid="9160563836616468726">"‏پس منظر ANRs دکھائیں"</string>
-    <string name="show_all_anrs_summary" msgid="8562788834431971392">"پس منظر کی ایپس کیلئے \'ایپ جواب نہیں دے رہی ہے\' ڈائلاگ ڈسپلے کریں"</string>
+    <string name="show_all_anrs_summary" msgid="8562788834431971392">"پس منظر کی ایپس کیلئے \'ایپ جواب نہیں دے رہی ہے\' ڈائیلاگ ڈسپلے کریں"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"چینل کی اطلاعی تنبیہات دکھائیں"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"کسی ایپ کی طرف سے درست چینل کے بغیر اطلاع پوسٹ ہونے پر آن اسکرین تنبیہ ڈسپلے کرتا ہے"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"بیرونی پر ایپس کو زبردستی اجازت دیں"</string>
@@ -520,7 +520,7 @@
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> - چارج ہو رہی ہے"</string>
     <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> - <xliff:g id="STATUS">%2$s</xliff:g> - <xliff:g id="TIME">%3$s</xliff:g> تک مکمل ہو جائے گی"</string>
     <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> - <xliff:g id="TIME">%2$s</xliff:g> تک مکمل چارج ہو جائے گی"</string>
-    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"<xliff:g id="TIME">%1$s</xliff:g> تک مکمل چارج ہو جائے گی"</string>
+    <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"‫<xliff:g id="TIME">%1$s</xliff:g> تک مکمل چارج ہو جائے گی"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"<xliff:g id="TIME">%1$s</xliff:g> تک مکمل ہو جائے گی"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"نامعلوم"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"چارج ہو رہا ہے"</string>

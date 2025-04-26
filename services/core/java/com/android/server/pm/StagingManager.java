@@ -629,11 +629,11 @@ public class StagingManager {
             StagedSession session = sessions.get(i);
             // Quick check that PackageInstallerService gave us sessions we expected.
             Preconditions.checkArgument(!session.hasParentSessionId(),
-                    session.sessionId() + " is a child session");
+                    "%d is a child session", session.sessionId());
             Preconditions.checkArgument(session.isCommitted(),
-                    session.sessionId() + " is not committed");
+                    "%d is not committed", session.sessionId());
             Preconditions.checkArgument(!session.isInTerminalState(),
-                    session.sessionId() + " is in terminal state");
+                    "%d is in terminal state", session.sessionId());
             // Store this parent session which will be used to check overlapping later
             createSession(session);
         }
@@ -814,9 +814,9 @@ public class StagingManager {
     List<ApexInfo> getStagedApexInfos(@NonNull StagedSession session) {
         Preconditions.checkArgument(session != null, "Session is null");
         Preconditions.checkArgument(!session.hasParentSessionId(),
-                session.sessionId() + " session has parent session");
+                "%d session has parent session", session.sessionId());
         Preconditions.checkArgument(session.containsApexSession(),
-                session.sessionId() + " session does not contain apex");
+                "%d session does not contain apex", session.sessionId());
 
         // Even if caller calls this method on ready session, the session could be abandoned
         // right after this method is called.

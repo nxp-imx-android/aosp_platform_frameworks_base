@@ -166,6 +166,7 @@ class LetterboxInputDetector(
 
                 windowSession.updateInputChannel(
                     inputChannel.token,
+                    null /* hostInputTransferToken */,
                     displayId,
                     inputSurface,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,

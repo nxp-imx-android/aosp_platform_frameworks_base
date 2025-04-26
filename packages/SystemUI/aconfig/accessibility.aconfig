@@ -18,27 +18,10 @@ flag {
 }
 
 flag {
-    name: "floating_menu_drag_to_edit"
-    namespace: "accessibility"
-    description: "adds a second drag button to allow the user edit the shortcut."
-    bug: "297583708"
-}
-
-flag {
     name: "floating_menu_ime_displacement_animation"
     namespace: "accessibility"
     description: "Adds an animation for when the FAB is displaced by an IME becoming visible."
     bug: "281150010"
-}
-
-flag {
-    name: "floating_menu_narrow_target_content_observer"
-    namespace: "accessibility"
-    description: "stops the FAB from monitoring enabled services to trigger target content changes."
-    bug: "331740049"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

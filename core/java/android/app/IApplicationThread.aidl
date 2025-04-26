@@ -102,10 +102,10 @@ oneway interface IApplicationThread {
     void updateTimeZone();
     void processInBackground();
     @UnsupportedAppUsage
-    void scheduleBindService(IBinder token,
+    void scheduleBindService(IBinder token, IBinder bindToken,
             in Intent intent, boolean rebind, int processState, long bindSeq);
     @UnsupportedAppUsage
-    void scheduleUnbindService(IBinder token,
+    void scheduleUnbindService(IBinder token, IBinder bindToken,
             in Intent intent);
     void dumpService(in ParcelFileDescriptor fd, IBinder servicetoken,
             in String[] args);
@@ -142,6 +142,7 @@ oneway interface IApplicationThread {
             boolean dumpInfo, boolean dumpDalvik, boolean dumpSummaryOnly, boolean dumpUnreachable,
             in String[] args);
     void dumpGfxInfo(in ParcelFileDescriptor fd, in String[] args);
+    void dumpBitmapsProto(in ParcelFileDescriptor fd, in String dumpFormat);
     void dumpCacheInfo(in ParcelFileDescriptor fd, in String[] args);
     void dumpProvider(in ParcelFileDescriptor fd, IBinder servicetoken,
             in String[] args);

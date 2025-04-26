@@ -1780,6 +1780,22 @@ public class ActivityStarterTests extends WindowTestsBase {
         assertNotEquals(inTask, target.getTask());
     }
 
+    @Test
+    public void testLaunchActivitySourceRemain() {
+        final ActivityStarter starter = prepareStarter(0, false);
+        final ActivityRecord baseActivity = new ActivityBuilder(mAtm)
+                .setCreateTask(true)
+                .build();
+        baseActivity.mLaunchSourceType = ActivityRecord.LAUNCH_SOURCE_TYPE_HOME;
+        final ActivityRecord targetRecord = new ActivityBuilder(mAtm).build();
+        targetRecord.mLaunchSourceType = ActivityRecord.LAUNCH_SOURCE_TYPE_APPLICATION;
+        starter.mLastStartActivityRecord = targetRecord;
+        startActivityInner(starter, targetRecord, baseActivity, null /* options */,
+                null /* inTask */, null /* inTaskFragment */);
+        assertEquals(baseActivity.getTask(), targetRecord.getTask());
+        assertEquals(ActivityRecord.LAUNCH_SOURCE_TYPE_HOME, baseActivity.mLaunchSourceType);
+    }
+
     @EnableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
     @Test
     public void launchActivity_reusesBubbledTask() {

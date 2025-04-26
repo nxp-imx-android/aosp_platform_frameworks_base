@@ -83,11 +83,11 @@ public class NetworkLogSource implements DataSource {
         }
         try {
             if (!mIpConnectivityMetrics.removeNetdEventCallback(
-                    INetdEventCallback.CALLBACK_CALLER_NETWORK_WATCHLIST)) {
+                    INetdEventCallback.CALLBACK_CALLER_DEVICE_POLICY)) {
 
                 mIsNetworkLoggingEnabled.set(false);
             } else {
-                Slog.e(TAG, "Failed to enable network logging; invalid callback");
+                Slog.e(TAG, "Failed to disable network logging; invalid callback");
             }
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to disable network logging; ", e);

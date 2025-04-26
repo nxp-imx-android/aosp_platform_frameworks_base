@@ -364,6 +364,7 @@
   <java-symbol type="bool" name="config_useFixedVolume" />
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
   <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
+  <java-symbol type="bool" name="config_createInitialUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
@@ -3816,6 +3817,7 @@
   <java-symbol type="string" name="color_inversion_feature_name" />
   <java-symbol type="string" name="color_correction_feature_name" />
   <java-symbol type="string" name="autoclick_feature_name"/>
+  <java-symbol type="string" name="mouse_keys_feature_name"/>
   <java-symbol type="string" name="reduce_bright_colors_feature_name" />
   <java-symbol type="string" name="config_defaultAccessibilityService" />
   <java-symbol type="string" name="config_defaultSelectToSpeakService" />
@@ -4232,6 +4234,7 @@
   <java-symbol type="id" name="snooze_button" />
   <java-symbol type="dimen" name="text_size_body_2_material" />
   <java-symbol type="dimen" name="notification_icon_circle_size" />
+  <java-symbol type="drawable" name="notification_2025_conversation_icon_background" />
   <java-symbol type="drawable" name="notification_icon_circle" />
   <java-symbol type="drawable" name="notification_progress_icon_background" />
   <java-symbol type="dimen" name="messaging_avatar_size" />
@@ -4959,6 +4962,7 @@
   <java-symbol type="bool" name="config_magnification_area" />
   <java-symbol type="bool" name="config_magnification_always_on_enabled" />
   <java-symbol type="bool" name="config_magnification_keep_zoom_level_when_context_changed" />
+  <java-symbol type="bool" name="config_magnification_magnify_keyboard_default" />
 
   <java-symbol type="bool" name="config_trackerAppNeedsPermissions"/>
   <!-- FullScreenMagnification thumbnail -->
@@ -5456,6 +5460,7 @@
   <java-symbol type="integer" name="config_aggregatedPowerStatsSpanDuration" />
   <java-symbol type="integer" name="config_accumulatedBatteryUsageStatsSpanSize" />
   <java-symbol type="integer" name="config_batteryHistoryStorageSize" />
+  <java-symbol type="integer" name="config_batteryHistoryDumpWindowSize" />
 
   <!--Dynamic Tokens-->
   <java-symbol name="system_accent1_0_light" type="color"/>
@@ -5837,6 +5842,7 @@
   <java-symbol type="string" name="accessibility_autoclick_scroll" />
   <java-symbol type="string" name="accessibility_autoclick_long_press" />
   <java-symbol type="string" name="accessibility_autoclick_pause" />
+  <java-symbol type="string" name="accessibility_autoclick_resume" />
   <java-symbol type="string" name="accessibility_autoclick_position" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_spacing" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_size" />
@@ -6004,6 +6010,9 @@
 
   <!-- Maximum number of active tasks on a given Desktop Windowing session. Set to 0 for unlimited. -->
   <java-symbol type="integer" name="config_maxDesktopWindowingActiveTasks"/>
+
+  <!-- Maximum number desks on a device running Desktop Windowing. Set to 0 for unlimited. -->
+  <java-symbol type="integer" name="config_maxDesktopWindowingDesks"/>
 
   <!-- Whether a display enters desktop mode by default when the windowing mode of the display's
        root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->

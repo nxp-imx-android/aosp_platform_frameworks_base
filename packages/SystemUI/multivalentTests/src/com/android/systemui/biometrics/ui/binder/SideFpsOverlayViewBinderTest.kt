@@ -30,12 +30,12 @@ import com.android.systemui.biometrics.data.repository.biometricStatusRepository
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.AuthenticationReason
 import com.android.systemui.biometrics.shared.model.AuthenticationReason.SettingsOperations
-import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.biometrics.updateSfpsIndicatorRequests
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displayStateRepository
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos

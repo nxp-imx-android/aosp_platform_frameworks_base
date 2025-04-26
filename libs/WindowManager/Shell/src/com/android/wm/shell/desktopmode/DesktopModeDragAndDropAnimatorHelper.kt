@@ -20,9 +20,19 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Rect
+import android.view.Choreographer
 import android.view.SurfaceControl.Transaction
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo.Change
 import androidx.core.util.Supplier
+import com.android.wm.shell.animation.FloatProperties
+import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler.Companion.POSITION_SPRING_DAMPING_RATIO
+import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler.Companion.POSITION_SPRING_STIFFNESS
+import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler.Companion.SIZE_SPRING_DAMPING_RATIO
+import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler.Companion.SIZE_SPRING_STIFFNESS
+import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler.Companion.getAnimationFraction
+import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import javax.inject.Inject
 
@@ -30,6 +40,9 @@ import javax.inject.Inject
  * Helper class for creating and managing animations related to drag and drop operations in Desktop
  * Mode. This class provides methods to create different types of animations, for example, covers
  * different animations for tab tearing.
+ *
+ * <p>It utilizes {@link PhysicsAnimator} for physics-based animations and {@link ValueAnimator} for
+ * simpler animations like fade-in.</p>
  */
 class DesktopModeDragAndDropAnimatorHelper
 @Inject
@@ -46,10 +59,14 @@ constructor(val context: Context, val transactionSupplier: Supplier<Transaction>
      *   information like the view that should be animated (leash) and the start/end values.
      * @param finishCallback A [TransitionFinishCallback] that will be invoked when the animation
      *   completes. It will inform the caller that the transition is finished.
-     * @return An [Animator] instance configured to perform the change described by the `change`
-     *   parameter.
+     * @return An [DesktopModeDragAndDropAnimator] instance configured to perform the change
+     *   described by the `change` parameter.
      */
-    fun createAnimator(change: Change, finishCallback: TransitionFinishCallback): Animator {
+    fun createAnimator(
+        change: Change,
+        draggedTaskBounds: Rect,
+        finishCallback: TransitionFinishCallback,
+    ): DesktopModeDragAndDropAnimator {
         val transaction = transactionSupplier.get()
 
         val animatorStartedCallback: () -> Unit = {
@@ -58,14 +75,72 @@ constructor(val context: Context, val transactionSupplier: Supplier<Transaction>
         }
         val animatorFinishedCallback: () -> Unit = { finishCallback.onTransitionFinished(null) }
 
-        return createAlphaAnimator(change, animatorStartedCallback, animatorFinishedCallback)
+        return if (DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue) {
+            createSpringAnimator(
+                change,
+                draggedTaskBounds,
+                animatorStartedCallback,
+                animatorFinishedCallback,
+            )
+        } else {
+            createAlphaAnimator(change, animatorStartedCallback, animatorFinishedCallback)
+        }
+    }
+
+    private fun createSpringAnimator(
+        change: Change,
+        draggedTaskBounds: Rect,
+        onStart: () -> Unit,
+        onFinish: () -> Unit,
+    ): DesktopModeDragAndDropAnimator {
+        val transaction = transactionSupplier.get()
+
+        val positionSpringConfig =
+            PhysicsAnimator.SpringConfig(POSITION_SPRING_STIFFNESS, POSITION_SPRING_DAMPING_RATIO)
+        val sizeSpringConfig =
+            PhysicsAnimator.SpringConfig(SIZE_SPRING_STIFFNESS, SIZE_SPRING_DAMPING_RATIO)
+        val endBounds = change.endAbsBounds
+
+        var hasCalledStart = false
+        return DesktopModeDragAndDropSpringAnimator(
+            PhysicsAnimator.getInstance(Rect(draggedTaskBounds))
+                // TODO(b/412571881): Add velocity to tab tearing animation
+                .spring(FloatProperties.RECT_X, endBounds.left.toFloat(), positionSpringConfig)
+                .spring(FloatProperties.RECT_Y, endBounds.top.toFloat(), positionSpringConfig)
+                .spring(FloatProperties.RECT_WIDTH, endBounds.width().toFloat(), sizeSpringConfig)
+                .spring(FloatProperties.RECT_HEIGHT, endBounds.height().toFloat(), sizeSpringConfig)
+                .addUpdateListener { animBounds, _ ->
+                    if (!hasCalledStart) {
+                        onStart.invoke()
+                        hasCalledStart = true
+                    }
+                    val animFraction =
+                        getAnimationFraction(
+                            startBounds = draggedTaskBounds,
+                            endBounds = endBounds,
+                            animBounds = animBounds,
+                        )
+                    transaction.apply {
+                        setAlpha(change.leash, animFraction)
+                        setScale(change.leash, animFraction, animFraction)
+                        setPosition(
+                            change.leash,
+                            animBounds.left.toFloat(),
+                            animBounds.top.toFloat(),
+                        )
+                        setFrameTimeline(Choreographer.getInstance().vsyncId)
+                        apply()
+                    }
+                }
+                .withEndActions({ onFinish.invoke() })
+        )
     }
 
     private fun createAlphaAnimator(
         change: Change,
         onStart: () -> Unit,
         onFinish: () -> Unit,
-    ): Animator {
+    ): DesktopModeDragAndDropAnimator {
         val transaction = transactionSupplier.get()
 
         val alphaAnimator = ValueAnimator()
@@ -88,10 +163,47 @@ constructor(val context: Context, val transactionSupplier: Supplier<Transaction>
             transaction.apply()
         }
 
-        return alphaAnimator
+        return DesktopModeDragAndDropAlphaAnimator(alphaAnimator)
     }
 
     companion object {
         const val FADE_IN_ANIMATION_DURATION = 300L
     }
+}
+
+/**
+ * Abstract base class defining the contract for animations related to drag-and-drop operations
+ * within a Desktop Mode feature.
+ *
+ * This abstract class serves as a necessary wrapper to provide compatibility between different
+ * types of animators used in specific drag-and-drop scenarios. Subclasses might use standard
+ * Android `Animator` instances or more specialized animators like `PhysicsAnimator`.
+ */
+abstract class DesktopModeDragAndDropAnimator {
+    /** Starts the specific drag-and-drop animation sequence. */
+    abstract fun start()
+}
+
+/**
+ * A concrete implementation of [DesktopModeDragAndDropAnimator] specifically designed for animating
+ * alpha of the window.
+ *
+ * @param animator The standard Android [Animator] instance that executes the launch animation.
+ */
+class DesktopModeDragAndDropAlphaAnimator(val animator: Animator) :
+    DesktopModeDragAndDropAnimator() {
+
+    override fun start() = animator.start()
+}
+
+/**
+ * A concrete implementation of [DesktopModeDragAndDropAnimator] specifically designed for spring
+ * animations of different properties of the window (position, size etc.)
+ *
+ * @param animator The `PhysicsAnimator<Rect>` instance responsible for the spring animation.
+ */
+class DesktopModeDragAndDropSpringAnimator(val animator: PhysicsAnimator<Rect>) :
+    DesktopModeDragAndDropAnimator() {
+
+    override fun start() = animator.start()
 }

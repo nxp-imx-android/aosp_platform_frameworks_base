@@ -697,6 +697,17 @@ public abstract class ActivityManagerInternal {
     public abstract void rescheduleAnrDialog(Object data);
 
     /**
+     * Move all the error dialogs (including {@code com.android.server.am.AppErrorDialog},
+     * {@code com.android.server.am.AppNotRespondingDialog},
+     * {@code com.android.server.am.StrictModeViolationDialog},
+     * and {@code com.android.server.am.AppWaitingForDebuggerDialog}) to the default display.
+     *
+     * @param displayId The display id of the display where the error dialogs are showing and need
+     *                  to be moved.
+     */
+    public abstract void moveErrorDialogsToDefaultDisplay(int displayId);
+
+    /**
      * Sends {@link android.content.Intent#ACTION_CONFIGURATION_CHANGED} with all the appropriate
      * flags.
      */

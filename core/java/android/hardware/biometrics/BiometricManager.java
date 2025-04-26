@@ -486,6 +486,24 @@ public class BiometricManager {
     }
 
     /**
+     * Sets Identity Check status for testing purpose.
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(TEST_BIOMETRIC)
+    @FlaggedApi(Flags.FLAG_IDENTITY_CHECK_TEST_API)
+    public void setIdentityCheckTestStatus(@NonNull IdentityCheckStatus identityCheckStatus) {
+        try {
+            Slog.d(TAG, "Identity Check status being set to "
+                    + identityCheckStatus.isIdentityCheckActive()
+                    + ". For test: " + identityCheckStatus.isIdentityCheckValueForTestAvailable());
+            mService.setIdentityCheckTestStatus(identityCheckStatus);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Retrieves the package where BiometricPrompt's UI is implemented.
      * @hide
      */

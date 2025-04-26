@@ -63,7 +63,6 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.taskview.TaskViewRepository
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
@@ -320,7 +319,51 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         }
     }
 
-    private fun createBubble(key: String): Bubble {
+    @Test
+    fun hasStableBubbleForTask_whenBubbleIsCollapsed_returnsTrue() {
+        val taskId = 777
+        val bubble = createBubble("key", taskId)
+        getInstrumentation().runOnMainSync {
+            bubbleData.notificationEntryUpdated(
+                bubble,
+                true /* suppressFlyout */,
+                true /* showInShade= */,
+            )
+        }
+
+        assertThat(bubbleController.hasStableBubbleForTask(taskId)).isTrue()
+    }
+
+    @Test
+    fun hasStableBubbleForTask_whenBubbleInTransition_returnsFalse() {
+        val taskId = 777
+        val bubble = createBubble("key", taskId).apply { preparingTransition = mock() }
+        getInstrumentation().runOnMainSync {
+            bubbleData.notificationEntryUpdated(
+                bubble,
+                true /* suppressFlyout */,
+                true /* showInShade= */,
+            )
+        }
+
+        assertThat(bubbleController.hasStableBubbleForTask(taskId)).isFalse()
+    }
+
+    @Test
+    fun hasStableBubbleForTask_noBubble_returnsFalse() {
+        val bubble = createBubble("key", taskId = 123)
+        getInstrumentation().runOnMainSync {
+            bubbleData.notificationEntryUpdated(
+                bubble,
+                true /* suppressFlyout */,
+                true /* showInShade= */,
+            )
+        }
+
+        assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
+    }
+
+    private fun createBubble(key: String, taskId: Int = 0): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
         val bubble =
@@ -330,7 +373,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 /* desiredHeight= */ 0,
                 Resources.ID_NULL,
                 "title",
-                /* taskId= */ 0,
+                taskId,
                 "locus",
                 /* isDismissable= */ true,
                 directExecutor(),
@@ -407,7 +450,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mainExecutor,
                 mock<Handler>(),
                 bgExecutor,
-                mock<TaskViewRepository>(),
                 mock<TaskViewTransitions>(),
                 mock<Transitions>(),
                 SyncTransactionQueue(TransactionPool(), mainExecutor),

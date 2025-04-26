@@ -179,7 +179,7 @@ public class DesktopModeStatus {
      */
     public static boolean enableMultipleDesktops(@NonNull Context context) {
         return DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
-                && Flags.enableMultipleDesktopsFrontend()
+                && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_FRONTEND.isTrue()
                 && canEnterDesktopMode(context);
     }
 

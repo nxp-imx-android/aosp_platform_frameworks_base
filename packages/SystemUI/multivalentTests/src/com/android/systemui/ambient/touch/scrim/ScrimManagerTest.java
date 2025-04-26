@@ -16,11 +16,18 @@
 
 package com.android.systemui.ambient.touch.scrim;
 
+import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+
+import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_DREAM;
+import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_HUB;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import android.platform.test.annotations.EnableFlags;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -66,7 +73,7 @@ public class ScrimManagerTest extends SysuiTestCase {
         ArgumentCaptor<KeyguardStateController.Callback> callbackCaptor =
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
         final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
-                mBouncerlessScrimController, mKeyguardStateController);
+                mBouncerlessScrimController, SURFACE_HUB, mKeyguardStateController);
         verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
 
         assertThat(manager.getCurrentController()).isEqualTo(mBouncerScrimController);
@@ -82,7 +89,7 @@ public class ScrimManagerTest extends SysuiTestCase {
         ArgumentCaptor<KeyguardStateController.Callback> callbackCaptor =
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
         final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
-                mBouncerlessScrimController, mKeyguardStateController);
+                mBouncerlessScrimController, SURFACE_HUB, mKeyguardStateController);
         verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
 
         manager.addCallback(mCallback);
@@ -90,5 +97,22 @@ public class ScrimManagerTest extends SysuiTestCase {
         callbackCaptor.getValue().onKeyguardShowingChanged();
         mExecutor.runAllReady();
         verify(mCallback).onScrimControllerChanged(eq(mBouncerlessScrimController));
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_V2)
+    public void testBouncerlessControllerAlwaysUsedOnDream() {
+        when(mKeyguardStateController.canDismissLockScreen()).thenReturn(false);
+        ArgumentCaptor<KeyguardStateController.Callback> callbackCaptor =
+                ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
+        final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
+                mBouncerlessScrimController, SURFACE_DREAM, mKeyguardStateController);
+        verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
+
+        assertThat(manager.getCurrentController()).isEqualTo(mBouncerlessScrimController);
+        when(mKeyguardStateController.canDismissLockScreen()).thenReturn(true);
+        callbackCaptor.getValue().onKeyguardShowingChanged();
+        mExecutor.runAllReady();
+        assertThat(manager.getCurrentController()).isEqualTo(mBouncerlessScrimController);
     }
 }

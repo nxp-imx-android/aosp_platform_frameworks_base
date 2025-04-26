@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ងងឹតខ្លាំង"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ចុចស្វ័យប្រវត្តិ"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"បាន​ផ្ដាច់"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"បានភ្ជាប់"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"សកម្ម"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ប្រូម៉ូសិន"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"សង្គម"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ព័ត៌មាន"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"ការណែនាំ"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"អ្នកបានកំណត់សារៈសំខាន់នៃការជូនដំណឹងទាំងនេះ"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"វាមានសារៈសំខាន់ដោយសារតែមនុស្សដែលពាក់ព័ន្ធ"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ការជូន​ដំណឹងកម្មវិធី​ផ្ទាល់ខ្លួន"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"កម្មវិធី"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"លែងអាចសម្គាល់ស្នាមម្រាមដៃរបស់អ្នកបានទៀតហើយ។ សូមរៀបចំការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃម្ដងទៀត។"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"បានដោតឧបករណ៍ USB នៅពេលជាប់សោ"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"ឧបករណ៍ USB ត្រូវបានដោត នៅពេល Android ត្រូវបានចាក់សោ។ ដើម្បីប្រើឧបករណ៍ សូមដោះសោ Android ជាមុនសិន។"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"ឧបករណ៍ USB ត្រូវបានដោត នៅពេល Android ត្រូវបានចាក់សោ។ ដើម្បីប្រើឧបករណ៍ សូមដោះសោ Android ជាមុនសិន បន្ទាប់មកដោតឧបករណ៍ USB ឡើងវិញ ដើម្បីប្រើប្រាស់វា។"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"សមត្ថភាពសាកថ្មអាចត្រូវបានកាត់បន្ថយ ឬមិនអាចប្រើបាននៅពេលចាក់សោ។"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"សកម្មភាព USB ដែលគួរឱ្យសង្ស័យ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"សញ្ញាទិន្នន័យ USB ត្រូវបានបិទ។"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"មានបញ្ហាពាក់ព័ន្ធនឹងការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃឬ?"</string>

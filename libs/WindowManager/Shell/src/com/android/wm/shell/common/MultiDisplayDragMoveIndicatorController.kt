@@ -36,16 +36,18 @@ class MultiDisplayDragMoveIndicatorController(
         mutableMapOf<Int, MutableMap<Int, MultiDisplayDragMoveIndicatorSurface>>()
 
     /**
-     * Called during drag move, which started at [startDisplayId]. Updates the position and
-     * visibility of the drag move indicators for the [taskInfo] based on [boundsDp] on the
-     * destination displays ([displayIds]) as the dragged window moves. [transactionSupplier]
-     * provides a [SurfaceControl.Transaction] for applying changes to the indicator surfaces.
+     * Called during drag move, which started at [startDisplayId] and currently
+     * at [currentDisplayid]. Updates the position and visibility of the drag move indicators
+     * for the [taskInfo] based on [boundsDp] on the destination displays ([displayIds])
+     * as the dragged window moves. [transactionSupplier] provides a [SurfaceControl.Transaction]
+     * for applying changes to the indicator surfaces.
      *
      * It is executed on the [desktopExecutor] to prevent blocking the main thread and avoid jank,
      * as creating and manipulating surfaces can be expensive.
      */
     fun onDragMove(
         boundsDp: RectF,
+        currentDisplayId: Int,
         startDisplayId: Int,
         taskInfo: RunningTaskInfo,
         displayIds: Set<Int>,
@@ -59,11 +61,19 @@ class MultiDisplayDragMoveIndicatorController(
                 }
                 val displayLayout = displayController.getDisplayLayout(displayId) ?: continue
                 val displayContext = displayController.getDisplayContext(displayId) ?: continue
-                val shouldBeVisible =
-                    RectF.intersects(RectF(boundsDp), displayLayout.globalBoundsDp())
+                val visibility =
+                    if (RectF.intersects(RectF(boundsDp), displayLayout.globalBoundsDp())) {
+                        if (displayId == currentDisplayId) {
+                            MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE
+                        } else {
+                            MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT
+                        }
+                    } else {
+                        MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE
+                    }
                 if (
                     dragIndicators[taskInfo.taskId]?.containsKey(displayId) != true &&
-                        !shouldBeVisible
+                        visibility == MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE
                 ) {
                     // Skip this display if:
                     // - It doesn't have an existing indicator that needs to be updated, AND
@@ -82,7 +92,7 @@ class MultiDisplayDragMoveIndicatorController(
                     dragIndicators.getOrPut(taskInfo.taskId) { mutableMapOf() }
                 dragIndicatorsForTask[displayId]?.also { existingIndicator ->
                     val transaction = transactionSupplier()
-                    existingIndicator.relayout(boundsPx, transaction, shouldBeVisible)
+                    existingIndicator.relayout(boundsPx, transaction, visibility)
                     transaction.apply()
                 } ?: run {
                     val newIndicator =
@@ -97,6 +107,7 @@ class MultiDisplayDragMoveIndicatorController(
                         rootTaskDisplayAreaOrganizer,
                         displayId,
                         boundsPx,
+                        visibility,
                     )
                     dragIndicatorsForTask[displayId] = newIndicator
                 }

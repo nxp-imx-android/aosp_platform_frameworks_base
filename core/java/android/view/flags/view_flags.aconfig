@@ -100,17 +100,6 @@ flag {
 }
 
 flag {
-  name: "calculate_bounds_in_parent_from_bounds_in_screen"
-  namespace: "accessibility"
-  description: "Calculate bounds in parent of each node in ViewStructure from its bounds set relative to screen and its parent's"
-  bug: "366131857"
-  is_fixed_read_only: true
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "surface_view_set_composition_order"
     namespace: "window_surfaces"
     description: "Add a SurfaceView composition order control API."
@@ -166,4 +155,14 @@ flag {
     description: "Implement listener pattern for WindowInspector#getGlobalWindowViews."
     bug: "394397033"
     is_fixed_read_only: false
+}
+
+flag {
+    name: "notify_gpu_load_up"
+    namespace: "systemui"
+    description: "Add an API to notify GPU load up."
+    bug: "413723751"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

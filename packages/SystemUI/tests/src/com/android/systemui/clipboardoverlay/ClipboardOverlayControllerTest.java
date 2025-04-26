@@ -48,6 +48,8 @@ import android.content.Intent;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -100,6 +102,8 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     @Mock
     private ClipboardTransitionExecutor mClipboardTransitionExecutor;
     @Mock
+    private ClipboardInputEventReceiver mClipboardInputEventReceiver;
+    @Mock
     private UiEventLogger mUiEventLogger;
     private FakeDisplayTracker mDisplayTracker = new FakeDisplayTracker(mContext);
 
@@ -120,6 +124,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     private ArgumentCaptor<AnimatorListenerAdapter> mAnimatorArgumentCaptor;
 
     private FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
+    private Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     private class FakeClipboardIndicationProvider implements ClipboardIndicationProvider {
         private ClipboardIndicationCallback mIndicationCallback;
@@ -196,6 +201,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
                 mExecutor,
                 mClipboardImageLoader,
                 mClipboardTransitionExecutor,
+                mClipboardInputEventReceiver,
                 mClipboardIndicationProvider,
                 mUiEventLogger,
                 fakeIntentCreator);
@@ -211,74 +217,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     @Test
     @DisableFlags(FLAG_CLIPBOARD_USE_DESCRIPTION_MIMETYPE)
     public void test_setClipData_invalidImageData_legacy() {
-        initController();
-
-        ClipData clipData = new ClipData("", new String[]{"image/png"},
-                new ClipData.Item(Uri.parse("")));
-
-        mOverlayController.setClipData(clipData, "");
-
-        verify(mClipboardOverlayView, times(1)).showDefaultTextPreview();
-        verify(mClipboardOverlayView, times(1)).showShareChip();
-        verify(mClipboardOverlayView, times(1)).getEnterAnimation();
-    }
-
-    @Test
-    public void test_setClipData_nonImageUri_legacy() {
-        initController();
-
-        ClipData clipData = new ClipData("", new String[]{"resource/png"},
-                new ClipData.Item(Uri.parse("")));
-
-        mOverlayController.setClipData(clipData, "");
-
-        verify(mClipboardOverlayView, times(1)).showDefaultTextPreview();
-        verify(mClipboardOverlayView, times(1)).showShareChip();
-        verify(mClipboardOverlayView, times(1)).getEnterAnimation();
-    }
-
-    @Test
-    public void test_setClipData_textData_legacy() {
-        initController();
-
-        mOverlayController.setClipData(mSampleClipData, "abc");
-
-        verify(mClipboardOverlayView, times(1)).showTextPreview("Test Item", false);
-        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SHOWN_EXPANDED, 0, "abc");
-        verify(mClipboardOverlayView, times(1)).showShareChip();
-        verify(mClipboardOverlayView, times(1)).getEnterAnimation();
-    }
-
-    @Test
-    public void test_setClipData_sensitiveTextData_legacy() {
-        initController();
-
-        ClipDescription description = mSampleClipData.getDescription();
-        PersistableBundle b = new PersistableBundle();
-        b.putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true);
-        description.setExtras(b);
-        ClipData data = new ClipData(description, mSampleClipData.getItemAt(0));
-        mOverlayController.setClipData(data, "");
-
-        verify(mClipboardOverlayView, times(1)).showTextPreview("••••••", true);
-        verify(mClipboardOverlayView, times(1)).showShareChip();
-        verify(mClipboardOverlayView, times(1)).getEnterAnimation();
-    }
-
-    @Test
-    public void test_setClipData_repeatedCalls_legacy() {
-        when(mAnimator.isRunning()).thenReturn(true);
-        initController();
-
-        mOverlayController.setClipData(mSampleClipData, "");
-        mOverlayController.setClipData(mSampleClipData, "");
-
-        verify(mClipboardOverlayView, times(1)).getEnterAnimation();
-    }
-
-    @Test
-    @DisableFlags(FLAG_CLIPBOARD_USE_DESCRIPTION_MIMETYPE)
-    public void test_setClipData_invalidImageData() {
         initController();
 
         ClipData clipData = new ClipData("", new String[]{"image/png"},

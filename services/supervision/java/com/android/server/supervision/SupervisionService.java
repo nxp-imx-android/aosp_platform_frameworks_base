@@ -21,6 +21,8 @@ import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.MANAGE_USERS;
 import static android.Manifest.permission.QUERY_USERS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED;
+import static android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED;
 
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
 
@@ -33,7 +35,6 @@ import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.supervision.ISupervisionAppService;
 import android.app.supervision.ISupervisionManager;
-import android.app.supervision.SupervisionAppService;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
@@ -50,6 +51,8 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 
@@ -125,6 +128,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
+        updateWebContentFilters(userId);
 
         if (Flags.enableSupervisionAppService()) {
             List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
@@ -132,9 +136,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 String targetPackage = conn.getFinder().getTargetPackage(userId);
                 ISupervisionAppService binder = (ISupervisionAppService) conn.getServiceBinder();
                 if (binder == null) {
-                    Slog.d(LOG_TAG, String.format(
-                            "Unable to toggle supervision for package %s. Binder is null.",
-                            targetPackage));
+                    Slog.d(
+                            LOG_TAG,
+                            TextUtils.formatSimple(
+                                    "Unable to toggle supervision for package %s. Binder is null.",
+                                    targetPackage));
                     continue;
                 }
                 try {
@@ -144,9 +150,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         binder.onDisabled();
                     }
                 } catch (RemoteException e) {
-                    Slog.d(LOG_TAG, String.format(
-                            "Unable to toggle supervision for package %s. e = %s",
-                            targetPackage, e));
+                    Slog.d(
+                            LOG_TAG,
+                            TextUtils.formatSimple(
+                                    "Unable to toggle supervision for package %s. e = %s",
+                                    targetPackage, e));
                 }
             }
         }
@@ -319,6 +327,32 @@ public class SupervisionService extends ISupervisionManager.Stub {
             SupervisionUserData data = getUserDataLocked(userId);
             data.supervisionEnabled = enabled;
             data.supervisionAppPackage = enabled ? supervisionAppPackage : null;
+        }
+    }
+
+    /** Updates Web Content Filters when supervision status is updated. */
+    private void updateWebContentFilters(@UserIdInt int userId) {
+        try {
+            int browserValue =
+                    Settings.Secure.getIntForUser(
+                            mContext.getContentResolver(), BROWSER_CONTENT_FILTERS_ENABLED, userId);
+            Settings.Secure.putInt(
+                    mContext.getContentResolver(),
+                    BROWSER_CONTENT_FILTERS_ENABLED,
+                    browserValue * -1);
+        } catch (Settings.SettingNotFoundException ignored) {
+            // Ignore the exception and do not change the value as no value has been set.
+        }
+        try {
+            int searchValue =
+                    Settings.Secure.getIntForUser(
+                            mContext.getContentResolver(), SEARCH_CONTENT_FILTERS_ENABLED, userId);
+            Settings.Secure.putInt(
+                    mContext.getContentResolver(),
+                    SEARCH_CONTENT_FILTERS_ENABLED,
+                    searchValue * -1);
+        } catch (Settings.SettingNotFoundException ignored) {
+            // Ignore the exception and do not change the value as no value has been set.
         }
     }
 

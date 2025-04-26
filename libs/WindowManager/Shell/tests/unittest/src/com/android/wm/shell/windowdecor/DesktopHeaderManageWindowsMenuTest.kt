@@ -37,6 +37,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
@@ -67,6 +68,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var desktopState: FakeDesktopState
+    private lateinit var desktopConfig: FakeDesktopConfig
 
     private var menu: DesktopHeaderManageWindowsMenu? = null
 
@@ -80,6 +82,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
         doReturn(DEFAULT_USER_ID).`when` { ActivityManager.getCurrentUser() }
         desktopState = FakeDesktopState()
         desktopState.canEnterDesktopMode = true
+        desktopConfig = FakeDesktopConfig()
 
         whenever(mockUserManager.getProfiles(DEFAULT_USER_ID)).thenReturn(
             listOf(UserInfo(DEFAULT_USER_ID, "User 10", /* flags= */ 0)))
@@ -91,6 +94,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
             mainCoroutineScope = mock(),
             userManager = mockUserManager,
             desktopState = desktopState,
+            desktopConfig = desktopConfig,
         )
         userRepositories.getProfile(DEFAULT_USER_ID).apply {
             addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)

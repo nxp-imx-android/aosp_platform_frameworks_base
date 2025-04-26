@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Keisti kalbą"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Palikti dabartinę kalbą"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Bendrinti „Wi‑Fi“"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"Pridėti tinklą"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Leisti belaidžio ryšio derinimą prisijungus prie šio tinklo?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Tinklo pavadinimas (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\n„Wi‑Fi“ adresas (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Visada leisti naudojant šį tinklą"</string>
@@ -246,6 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"„Bluetooth“ įrenginio piktograma"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Spustelėkite, jei norite konfigūruoti išsamią įrenginio informaciją"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"„<xliff:g id="DEVICE_NAME">%s</xliff:g>“. Konfigūruoti išsamią įrenginio informaciją"</string>
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Pradėti bendrinti garso įrašą su „<xliff:g id="DEVICE_NAME">%s</xliff:g>“"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Nebebendrinti garso įrašo su „<xliff:g id="DEVICE_NAME">%s</xliff:g>“"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Žr. visus įrenginius"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Susieti naują įrenginį"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akumuliatoriaus energija procentais nežinoma."</string>
@@ -479,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nenustatyta"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Tvarkyti skiltyje „Nustatymai“"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nėra aktyvių režimų}=1{Aktyvus režimas „{mode}“}one{# aktyvus režimas}few{# aktyvūs režimai}many{# aktyvaus režimo}other{# aktyvių režimų}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Jūsų netrikdys garsai ir vibravimas, išskyrus nurodytų signalų, priminimų, įvykių ir skambintojų garsus. Vis tiek girdėsite viską, ką pasirinksite leisti, įskaitant muziką, vaizdo įrašus ir žaidimus."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Jūsų netrikdys garsai ir vibravimas, išskyrus signalus. Vis tiek girdėsite viską, ką pasirinksite leisti, įskaitant muziką, vaizdo įrašus ir žaidimus."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Tinkinti"</string>
@@ -744,6 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibruoti"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Garsumo valdikliai: %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Skambučiai ir pranešimai skambės (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Svečio įrenginio garsumas"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Įveskite išvesties nustatymus"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Garsumo šliaužikliai išskleisti"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Garsumo šliaužikliai sutraukti"</string>
@@ -804,8 +812,16 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Kad galėtumėte prijungti klaviatūrą prie planšetinio kompiuterio, pirmiausia turite įjungti „Bluetooth“."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Įjungti"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Įjungta – pagal veidą"</string>
-    <string name="notification_guts_bundle_title" msgid="1345506995443305361">"Pranešimų tvarkyklės naudojimas"</string>
-    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Skirta „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
+    <skip />
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Atlikta"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Taikyti"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Išjungti"</string>
@@ -917,8 +933,8 @@
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Užrakinti ekraną"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Sukurti pastabą"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Kelių užduočių atlikimas"</string>
-    <string name="system_multitasking_rhs" msgid="8779289852395243004">"Naudokite išskaidyto ekrano režimą su programa dešinėje"</string>
-    <string name="system_multitasking_lhs" msgid="7348595296208696452">"Naudokite išskaidyto ekrano režimą su programa kairėje"</string>
+    <string name="system_multitasking_rhs" msgid="8779289852395243004">"Naudoti išskaidyto ekrano režimą su programa dešinėje"</string>
+    <string name="system_multitasking_lhs" msgid="7348595296208696452">"Naudoti išskaidyto ekrano režimą su programa kairėje"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Naudoti viso ekrano režimą"</string>
     <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Įjungti darbalaukio pateikimo lange režimą"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Perjunkite į programą dešinėje arba apačioje išskaidyto ekrano režimu"</string>
@@ -1583,7 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Pritaikomumas"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Paslaugų programos"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privatumas"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Teikia programos"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Iš sistemos programų"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Iš jūsų įdiegtų programų"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Ekranas"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nežinoma"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Iš naujo nustatyti visus išklotines elementus?"</string>

@@ -29,6 +29,7 @@ import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -46,6 +47,7 @@ class DesktopUserRepositories(
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
     private val userManager: UserManager,
     desktopState: DesktopState,
+    desktopConfig: DesktopConfig,
 ) : UserChangeListener {
     private var userId: Int
     private var userIdToProfileIdsMap: MutableMap<Int, List<Int>> = mutableMapOf()
@@ -59,9 +61,13 @@ class DesktopUserRepositories(
             /** Gets [DesktopRepository] for existing [userId] or creates a new one. */
             fun getOrCreate(userId: Int): DesktopRepository =
                 this[userId]
-                    ?: DesktopRepository(persistentRepository, mainCoroutineScope, userId).also {
-                        this[userId] = it
-                    }
+                    ?: DesktopRepository(
+                            persistentRepository,
+                            mainCoroutineScope,
+                            userId,
+                            desktopConfig,
+                        )
+                        .also { this[userId] = it }
         }
 
     init {

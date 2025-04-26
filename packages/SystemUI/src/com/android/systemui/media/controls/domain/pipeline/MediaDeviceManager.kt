@@ -30,7 +30,6 @@ import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
-import com.android.media.flags.Flags.enableSuggestedDeviceApi
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
@@ -40,6 +39,7 @@ import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
 import com.android.settingslib.media.flags.Flags
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.Flags.mediaControlsDeviceManagerBackgroundExecution
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -237,7 +237,6 @@ constructor(
             bgExecutor.execute {
                 if (!started) {
                     // Fetch in case a suggestion already exists before registering for suggestions
-                    onSuggestedDeviceUpdated(localMediaManager.getSuggestedDevice())
                     localMediaManager.registerCallback(this)
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
@@ -306,7 +305,7 @@ constructor(
         }
 
         override fun onSuggestedDeviceUpdated(state: SuggestedDeviceState?) {
-            if (!enableSuggestedDeviceApi()) {
+            if (!enableSuggestedDeviceUi()) {
                 return
             }
             bgExecutor.execute {

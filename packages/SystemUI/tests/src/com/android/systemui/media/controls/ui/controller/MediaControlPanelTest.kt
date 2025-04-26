@@ -36,7 +36,6 @@ import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Bundle
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -1198,7 +1197,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithDisconnectedSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1220,7 +1219,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithConnectingSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1242,7 +1241,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithErrorSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1264,7 +1263,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithConnectedSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1280,7 +1279,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun bindDeviceWithNoSuggestedDeviceData() {
         player.attachPlayer(viewHolder)
 
@@ -1663,7 +1662,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(logger).logSeek(anyInt(), eq(PACKAGE), eq(instanceId))
     }
 
-    @EnableFlags(Flags.FLAG_MEDIA_LOCKSCREEN_LAUNCH_ANIMATION)
     @Test
     fun tapContentView_showOverLockscreen_openActivity_withOriginAnimation() {
         // WHEN we are on lockscreen and this activity can show over lockscreen
@@ -1692,30 +1690,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
                 eq(null),
                 eq(null),
             )
-        verify(activityStarter, never()).postStartActivityDismissingKeyguard(eq(clickIntent), any())
-    }
-
-    @DisableFlags(Flags.FLAG_MEDIA_LOCKSCREEN_LAUNCH_ANIMATION)
-    @Test
-    fun tapContentView_showOverLockscreen_openActivity_withoutOriginAnimation() {
-        // WHEN we are on lockscreen and this activity can show over lockscreen
-        whenever(keyguardStateController.isShowing).thenReturn(true)
-        whenever(activityIntentHelper.wouldPendingShowOverLockscreen(any(), any())).thenReturn(true)
-
-        val clickIntent = mock(Intent::class.java)
-        val pendingIntent = mock(PendingIntent::class.java)
-        whenever(pendingIntent.intent).thenReturn(clickIntent)
-        val captor = ArgumentCaptor.forClass(View.OnClickListener::class.java)
-        val data = mediaData.copy(clickIntent = pendingIntent)
-        player.attachPlayer(viewHolder)
-        player.bindPlayer(data, KEY)
-        verify(viewHolder.player).setOnClickListener(captor.capture())
-
-        // THEN it sends the PendingIntent without dismissing keyguard first,
-        // and does not use the Intent directly (see b/271845008)
-        captor.value.onClick(viewHolder.player)
-        verify(pendingIntent).send(any<Bundle>())
-        verify(pendingIntent, never()).getIntent()
         verify(activityStarter, never()).postStartActivityDismissingKeyguard(eq(clickIntent), any())
     }
 

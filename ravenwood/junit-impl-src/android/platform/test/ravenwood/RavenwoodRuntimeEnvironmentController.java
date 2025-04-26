@@ -21,11 +21,9 @@ import static android.os.UserHandle.SYSTEM;
 import static android.platform.test.ravenwood.RavenwoodSystemServer.ANDROID_PACKAGE_NAME;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
-import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_VERSION_JAVA_SYSPROP;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_EMPTY_RESOURCES_APK;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_INST_RESOURCE_APK;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOURCE_APK;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.getRavenwoodRuntimePath;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.parseNullableInt;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.withDefault;
 
@@ -285,12 +283,8 @@ public class RavenwoodRuntimeEnvironmentController {
         dumpJavaProperties();
         dumpOtherInfo();
 
-        System.setProperty(RAVENWOOD_VERSION_JAVA_SYSPROP, "1");
-        var runtimePath = getRavenwoodRuntimePath();
-        System.setProperty(RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP, runtimePath);
-
         Log.i(TAG, "PWD=" + System.getProperty("user.dir"));
-        Log.i(TAG, "RuntimePath=" + runtimePath);
+        Log.i(TAG, "RuntimePath=" + System.getProperty(RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP));
 
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodCommonUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));

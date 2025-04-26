@@ -160,7 +160,7 @@ public class FocusTransitionObserver {
     }
 
     /**
-     * Sets the focus transition listener that receives any transitions resulting in focus switch.
+     * Unsets the focus transition listener that receives any transitions resulting in focus switch.
      * This is for calls from outside the Shell, within the host process.
      *
      */
@@ -188,8 +188,8 @@ public class FocusTransitionObserver {
         final boolean isFocusedOnDisplay = isFocusedOnDisplay(task);
         final boolean isFocusedGlobally = hasGlobalFocus(task);
         mLocalListeners.forEach((listener, executor) ->
-                executor.execute(() -> listener.onFocusedTaskChanged(task.taskId,
-                        isFocusedOnDisplay, isFocusedGlobally)));
+                executor.execute(() -> listener.onFocusedTaskChanged(task, isFocusedOnDisplay,
+                        isFocusedGlobally)));
     }
 
     private void notifyFocusedDisplayChanged() {

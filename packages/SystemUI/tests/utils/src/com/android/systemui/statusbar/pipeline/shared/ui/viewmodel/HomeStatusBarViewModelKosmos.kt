@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.content.testableContext
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -42,6 +43,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.unifiedBatte
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
+import java.util.Optional
 
 var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
     Kosmos.Fixture { homeStatusBarViewModelFactory.invoke(testableContext.displayId) }
@@ -75,6 +77,8 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 testDispatcher,
                 { shadeDisplaysInteractor },
                 uiEventLogger = statusBarChipsUiEventLogger,
+                Optional.empty(),
+                fakeExecutor,
             )
         }
     }

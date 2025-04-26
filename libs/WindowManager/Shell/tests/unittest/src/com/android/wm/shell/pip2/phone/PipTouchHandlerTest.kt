@@ -152,8 +152,8 @@ class PipTouchHandlerTest : ShellTestCase() {
             )
         }
         verify(mockPipDisplayTransferHandler).showDragMirrorOnConnectedDisplays(
-            eq(ORIGIN_DISPLAY_ID), eq(GLOBAL_BOUNDS))
-        verify(mockPipMotionHelper).movePip(eq(PIP_BOUNDS), eq(true))
+             eq(GLOBAL_BOUNDS), eq(ORIGIN_DISPLAY_ID))
+        verify(mockPipMotionHelper).movePip(eq(PIP_BOUNDS), eq(true), eq(ORIGIN_DISPLAY_ID))
     }
 
     @Test

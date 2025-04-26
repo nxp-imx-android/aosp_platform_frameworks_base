@@ -523,13 +523,30 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
+    @DisableSceneContainer
+    fun handleExternalTouch_hubDoesNotSeeTouches() {
+        underTest.setStatusBarViewController(phoneStatusBarViewController)
+        whenever(view.dispatchTouchEvent(any())).thenAnswer { invocation ->
+            interactionEventHandler.handleDispatchTouchEvent(
+                invocation.arguments.first() as MotionEvent?
+            )
+            true
+        }
+
+        underTest.handleExternalTouch(DOWN_EVENT)
+
+        // Glanceable hub never receives any external touches.
+        verify(mGlanceableHubContainerController, never()).onTouchEvent(any())
+    }
+
+    @Test
     fun testGetKeyguardMessageArea() =
         testScope.runTest {
             underTest.keyguardMessageArea
             verify(view).findViewById<ViewGroup>(R.id.keyguard_message_area)
         }
 
-    @EnableFlags(Flags.FLAG_SHADE_LAUNCH_ACCESSIBILITY)
     @Test
     fun notifiesTheViewWhenLaunchAnimationIsRunning() {
         testScope.runTest {

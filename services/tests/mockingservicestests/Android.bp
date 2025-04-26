@@ -64,6 +64,9 @@ android_test {
         "services.companion",
         "services.core",
         "services.devicepolicy",
+        // TODO(b/411222385): only needed by HsumBootUserInitializerTest, should be moved to 
+        // its own test target
+        "HsumBootUserInitializer",
         "services.net",
         "services.usage",
         "services.wallpapereffectsgeneration",
@@ -391,6 +394,16 @@ test_module_config {
         "device-tests",
     ],
     include_filters: ["com.android.server.StorageManagerServiceTest"],
+}
+
+test_module_config {
+    name: "FrameworksMockingServicesTests_server_bitmapoffloadservicetest",
+    base: "FrameworksMockingServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.bitmapoffload"],
 }
 
 test_module_config {

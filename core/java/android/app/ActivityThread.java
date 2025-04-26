@@ -253,6 +253,7 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.org.conscrypt.TrustedCertificateStore;
 import com.android.server.am.MemInfoDumpProto;
+import com.android.server.am.BitmapDumpProto;
 
 import dalvik.annotation.optimization.NeverCompile;
 import dalvik.system.AppSpecializationHooks;
@@ -939,11 +940,14 @@ public final class ActivityThread extends ClientTransactionHandler
         @UnsupportedAppUsage
         IBinder token;
         @UnsupportedAppUsage
+        IBinder bindToken;
+        @UnsupportedAppUsage
         Intent intent;
         boolean rebind;
         long bindSeq;
         public String toString() {
             return "BindServiceData{token=" + token + " intent=" + intent
+                    + " bindToken = " + bindToken
                     + " bindSeq=" + bindSeq + "}";
         }
     }
@@ -1154,19 +1158,15 @@ public final class ActivityThread extends ClientTransactionHandler
                 CompatibilityInfo compatInfo, int resultCode, String data, Bundle extras,
                 boolean ordered, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage) {
-            long debugStoreId = -1;
-            if (DEBUG_STORE_ENABLED) {
-                debugStoreId = DebugStore.recordScheduleReceiver();
-            }
             updateProcessState(processState, false);
             ReceiverData r = new ReceiverData(intent, resultCode, data, extras,
                     ordered, false, assumeDelivered, mAppThread.asBinder(), sendingUser,
                     sendingUid, sendingPackage);
             r.info = info;
-            sendMessage(H.RECEIVER, r);
             if (DEBUG_STORE_ENABLED) {
-                DebugStore.recordEventEnd(debugStoreId);
+                DebugStore.recordScheduleBroadcastReceive(System.identityHashCode(r), intent);
             }
+            sendMessage(H.RECEIVER, r);
         }
 
         public final void scheduleReceiverList(List<ReceiverInfo> info) throws RemoteException {
@@ -1216,32 +1216,41 @@ public final class ActivityThread extends ClientTransactionHandler
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleCreateService. token="
                         + token);
             }
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleServiceCreate(System.identityHashCode(s), info);
+            }
             sendMessage(H.CREATE_SERVICE, s);
         }
 
-        public final void scheduleBindService(IBinder token, Intent intent,
+        public final void scheduleBindService(IBinder token, IBinder bindToken, Intent intent,
                 boolean rebind, int processState, long bindSeq) {
             updateProcessState(processState, false);
             BindServiceData s = new BindServiceData();
             s.token = token;
+            s.bindToken = bindToken;
             s.intent = intent;
             s.rebind = rebind;
             s.bindSeq = bindSeq;
 
             if (DEBUG_SERVICE)
-                Slog.v(TAG, "scheduleBindService token=" + token + " intent=" + intent + " uid="
-                        + Binder.getCallingUid() + " pid=" + Binder.getCallingPid());
+                Slog.v(TAG, "scheduleBindService token=" + token + " bindToken=" + bindToken
+                        + " intent=" + intent + " uid=" + Binder.getCallingUid()
+                        + " pid=" + Binder.getCallingPid());
 
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleBindService. token="
                         + token + " bindSeq=" + bindSeq);
             }
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleServiceBind(System.identityHashCode(s), s.intent);
+            }
             sendMessage(H.BIND_SERVICE, s);
         }
 
-        public final void scheduleUnbindService(IBinder token, Intent intent) {
+        public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent) {
             BindServiceData s = new BindServiceData();
             s.token = token;
+            s.bindToken = bindToken;
             s.intent = intent;
             s.bindSeq = -1;
 
@@ -1267,6 +1276,9 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                     Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleServiceArgs. token="
                             + token + " startId=" + s.startId);
+                }
+                if (DEBUG_STORE_ENABLED) {
+                    DebugStore.recordScheduleServiceStart(System.identityHashCode(s), s.args);
                 }
                 sendMessage(H.SERVICE_ARGS, s);
             }
@@ -1335,6 +1347,9 @@ public final class ActivityThread extends ClientTransactionHandler
                 FileDescriptor applicationSharedMemoryFd,
                 long startRequestedElapsedTime,
                 long startRequestedUptime) {
+            if (DEBUG_STORE_ENABLED) {
+                DebugStore.recordScheduleBindApplication();
+            }
             if (services != null) {
                 if (false) {
                     // Test code to make sure the app could see the passed-in services.
@@ -1512,10 +1527,6 @@ public final class ActivityThread extends ClientTransactionHandler
                 boolean sticky, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage)
                 throws RemoteException {
-            long debugStoreId = -1;
-            if (DEBUG_STORE_ENABLED) {
-                debugStoreId = DebugStore.recordScheduleRegisteredReceiver();
-            }
             updateProcessState(processState, false);
 
             // We can't modify IIntentReceiver due to UnsupportedAppUsage, so
@@ -1539,9 +1550,6 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
                 receiver.performReceive(intent, resultCode, dataStr, extras, ordered, sticky,
                         sendingUser);
-            }
-            if (DEBUG_STORE_ENABLED) {
-                DebugStore.recordEventEnd(debugStoreId);
             }
         }
 
@@ -2002,6 +2010,21 @@ public final class ActivityThread extends ClientTransactionHandler
                 sendMessage(H.DUMP_GFXINFO, data, 0, 0, true /*async*/);
             } catch (IOException e) {
                 Slog.w(TAG, "dumpGfxInfo failed", e);
+            } finally {
+                IoUtils.closeQuietly(pfd);
+            }
+        }
+
+        @Override
+        @NeverCompile
+        public void dumpBitmapsProto(ParcelFileDescriptor pfd, String dumpFormat) {
+            try {
+                int pid = Process.myPid();
+                String processName = (mBoundApplication != null)
+                    ? mBoundApplication.processName
+                    : Process.myProcessName();
+                ActivityThread.dumpBitmapsProto(new ProtoOutputStream(pfd.getFileDescriptor()),
+                    pid, processName, dumpFormat);
             } finally {
                 IoUtils.closeQuietly(pfd);
             }
@@ -2542,7 +2565,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "bindApplication");
                     if (DEBUG_STORE_ENABLED) {
                         debugStoreId =
-                                DebugStore.recordHandleBindApplication();
+                                DebugStore.recordBindApplication();
                     }
                     AppBindData data = (AppBindData)msg.obj;
                     handleBindApplication(data);
@@ -2569,20 +2592,10 @@ public final class ActivityThread extends ClientTransactionHandler
                         }
                     }
                     ReceiverData receiverData = (ReceiverData) msg.obj;
-                    if (DEBUG_STORE_ENABLED) {
-                        debugStoreId =
-                            DebugStore.recordBroadcastReceive(
-                                receiverData.intent, System.identityHashCode(receiverData));
-                    }
-
                     try {
                         handleReceiver(receiverData);
                     } finally {
                         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-                        if (DEBUG_STORE_ENABLED) {
-                            DebugStore.recordEventEnd(debugStoreId);
-                            shouldLogLongMessage = false;
-                        }
                     }
                     break;
                 case CREATE_SERVICE:
@@ -2592,7 +2605,9 @@ public final class ActivityThread extends ClientTransactionHandler
                     }
                     CreateServiceData createServiceData = (CreateServiceData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
-                        debugStoreId = DebugStore.recordServiceCreate(createServiceData.info);
+                        debugStoreId =
+                                DebugStore.recordServiceCreate(
+                                        System.identityHashCode(msg.obj));
                     }
 
                     try {
@@ -2613,7 +2628,8 @@ public final class ActivityThread extends ClientTransactionHandler
                     BindServiceData bindData = (BindServiceData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
                         debugStoreId =
-                                DebugStore.recordServiceBind(bindData.rebind, bindData.intent);
+                                DebugStore.recordServiceBind(
+                                        System.identityHashCode(msg.obj));
                     }
                     try {
                         handleBindService(bindData);
@@ -2641,8 +2657,9 @@ public final class ActivityThread extends ClientTransactionHandler
                     }
                     ServiceArgsData serviceData = (ServiceArgsData) msg.obj;
                     if (DEBUG_STORE_ENABLED) {
-                        debugStoreId = DebugStore.recordServiceOnStart(serviceData.startId,
-                                serviceData.flags, serviceData.args);
+                        debugStoreId =
+                                DebugStore.recordServiceStart(
+                                        System.identityHashCode(msg.obj));
                     }
 
                     try {
@@ -3905,6 +3922,18 @@ public final class ActivityThread extends ClientTransactionHandler
         proto.end(asToken);
     }
 
+    @NeverCompile
+    public static void dumpBitmapsProto(ProtoOutputStream proto, int pid,
+                String processName, String dumpFormat) {
+        try {
+            proto.write(BitmapDumpProto.AppBitmapInfo.PID, pid);
+            proto.write(BitmapDumpProto.AppBitmapInfo.PROCESS_NAME, processName);
+            Bitmap.dumpAll(proto, dumpFormat);
+        } finally {
+            proto.flush();
+        }
+    }
+
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public void registerOnActivityPausedListener(Activity activity,
             OnActivityPausedListener listener) {
@@ -4379,13 +4408,11 @@ public final class ActivityThread extends ClientTransactionHandler
                     ActivityManager.getService().waitForNetworkStateUpdate(mNetworkBlockSeq);
                     mNetworkBlockSeq = INVALID_PROC_STATE_SEQ;
                 } catch (RemoteException ignored) {}
-                if (Flags.clearDnsCacheOnNetworkRulesUpdate()) {
-                    // InetAddress will cache UnknownHostException failures. If the rules got
-                    // updated and the app has network access now, we need to clear the negative
-                    // cache to ensure valid dns queries can work immediately.
-                    // TODO: b/329133769 - Clear only the negative cache once it is available.
-                    InetAddress.clearDnsCache();
-                }
+                // InetAddress will cache UnknownHostException failures. If the rules got
+                // updated and the app has network access now, we need to clear the negative
+                // cache to ensure valid dns queries can work immediately.
+                // TODO: b/329133769 - Clear only the negative cache once it is available.
+                InetAddress.clearDnsCache();
             }
         }
     }
@@ -5045,6 +5072,11 @@ public final class ActivityThread extends ClientTransactionHandler
                 + ": " + e.toString(), e);
         }
 
+        long debugStoreId = -1;
+        if(DEBUG_STORE_ENABLED) {
+            debugStoreId = DebugStore.recordBroadcastReceive(System.identityHashCode(data),
+                receiver.getClass().getSimpleName());
+        }
         try {
             if (localLOGV) Slog.v(
                 TAG, "Performing receive of " + data.intent
@@ -5069,6 +5101,9 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         } finally {
             sCurrentBroadcastIntent.set(null);
+            if(DEBUG_STORE_ENABLED) {
+                DebugStore.recordEventEnd(debugStoreId);
+            }
         }
 
         if (receiver.getPendingResult() != null) {
@@ -5314,7 +5349,7 @@ public final class ActivityThread extends ClientTransactionHandler
             mServices.put(data.token, service);
             try {
                 ActivityManager.getService().serviceDoneExecuting(
-                        data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0, null);
+                        data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -5341,11 +5376,11 @@ public final class ActivityThread extends ClientTransactionHandler
                     if (!data.rebind) {
                         IBinder binder = s.onBind(data.intent);
                         ActivityManager.getService().publishService(
-                                data.token, data.intent, binder);
+                                data.token, data.bindToken, binder);
                     } else {
                         s.onRebind(data.intent);
                         ActivityManager.getService().serviceDoneExecuting(
-                                data.token, SERVICE_DONE_EXECUTING_REBIND, 0, 0, data.intent);
+                                data.token, SERVICE_DONE_EXECUTING_REBIND, 0, 0);
                     }
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();
@@ -5372,10 +5407,10 @@ public final class ActivityThread extends ClientTransactionHandler
                 try {
                     if (doRebind) {
                         ActivityManager.getService().unbindFinished(
-                                data.token, data.intent);
+                                data.token, data.bindToken);
                     } else {
                         ActivityManager.getService().serviceDoneExecuting(
-                                data.token, SERVICE_DONE_EXECUTING_UNBIND, 0, 0, data.intent);
+                                data.token, SERVICE_DONE_EXECUTING_UNBIND, 0, 0);
                     }
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();
@@ -5489,8 +5524,8 @@ public final class ActivityThread extends ClientTransactionHandler
                 QueuedWork.waitToFinish();
 
                 try {
-                    ActivityManager.getService().serviceDoneExecuting(
-                            data.token, SERVICE_DONE_EXECUTING_START, data.startId, res, null);
+                    ActivityManager.getService().serviceDoneExecuting(data.token,
+                            SERVICE_DONE_EXECUTING_START, data.startId, res);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
@@ -5522,7 +5557,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
                 try {
                     ActivityManager.getService().serviceDoneExecuting(
-                            token, SERVICE_DONE_EXECUTING_STOP, 0, 0, null);
+                            token, SERVICE_DONE_EXECUTING_STOP, 0, 0);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }

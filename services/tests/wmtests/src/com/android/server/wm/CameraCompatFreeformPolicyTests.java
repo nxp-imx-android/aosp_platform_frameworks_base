@@ -782,14 +782,10 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
             final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
                     activity().top().token,
                     /* isForward */ false, /* shouldSendCompatFakeFocus */ false);
-            try {
-                verify(activity().top().mAtmService.getLifecycleManager(),
-                        times(refreshRequested ? 1 : 0))
-                        .scheduleTransactionItems(activity().top().app.getThread(),
-                                refreshCallbackItem, resumeActivityItem);
-            } catch (RemoteException e) {
-                fail(e.getMessage());
-            }
+            verify(activity().top().mAtmService.getLifecycleManager(),
+                    times(refreshRequested ? 1 : 0))
+                    .scheduleTransactionItems(activity().top().app.getThread(),
+                            refreshCallbackItem, resumeActivityItem);
         }
 
         private void callOnActivityConfigurationChanging() {

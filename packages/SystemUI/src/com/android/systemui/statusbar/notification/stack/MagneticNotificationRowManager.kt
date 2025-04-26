@@ -85,10 +85,16 @@ interface MagneticNotificationRowManager {
      * after calls to [setMagneticRowTranslation].
      *
      * @param[row] [ExpandableNotificationRow] that stopped whose interaction stopped.
+     * @param[dismissing] If the interaction ended because the row is dismissing. If false, it is
+     *   assumed that the row is snapping back instead.
      * @param[velocity] Optional velocity at the end of the interaction. Use this to trigger
      *   animations with a start velocity.
      */
-    fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float? = null)
+    fun onMagneticInteractionEnd(
+        row: ExpandableNotificationRow,
+        dismissing: Boolean,
+        velocity: Float? = null,
+    )
 
     /**
      * Determine if a magnetic row swiped is dismissible according to the end velocity of the swipe.
@@ -144,6 +150,7 @@ interface MagneticNotificationRowManager {
 
                     override fun onMagneticInteractionEnd(
                         row: ExpandableNotificationRow,
+                        dismissing: Boolean,
                         velocity: Float?,
                     ) {}
 

@@ -64,6 +64,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemConfig;
 import com.android.server.SystemService;
 import com.android.server.backup.utils.RandomAccessFileUtils;
+import com.android.server.pm.UserManagerInternal;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -129,7 +130,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     }
 
     private final Context mContext;
-    private final UserManager mUserManager;
+    private final UserManagerInternal mUserManagerInternal;
 
     private final Object mLock = new Object();
 
@@ -179,14 +180,14 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
                 new HandlerThread(BACKUP_THREAD, Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
         mHandler = new Handler(handlerThread.getLooper());
-        mUserManager = UserManager.get(context);
+        mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mUserServices = new SparseArray<>();
         Set<ComponentName> transportWhitelist =
                 SystemConfig.getInstance().getBackupTransportWhitelist();
         mTransportWhitelist = (transportWhitelist == null) ? emptySet() : transportWhitelist;
         mContext.registerReceiver(
                 mUserRemovedReceiver, new IntentFilter(Intent.ACTION_USER_REMOVED));
-        mDidMainUserExistAtBoot = getUserManager().getMainUser() != null;
+        mDidMainUserExistAtBoot = mUserManagerInternal.getMainUserId() != UserHandle.USER_NULL;
         if (!mDidMainUserExistAtBoot) {
             // This might happen on the first boot if BMS starts before the main user is created.
             Slog.d(TAG, "Main user does not exist yet");
@@ -348,35 +349,32 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         return getActivatedFileForUser(userId).exists();
     }
 
-    /** Returns whether the user's backup is initially set to active. */
+    /** Determines the default activation state for backup for the specified user ID. */
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private boolean isDefaultBackupActiveUser(@UserIdInt int userId) {
         // In non-HSUM, the system user is the primary user and handles backup.
         if (!UserManager.isHeadlessSystemUserMode()) {
             return userId == UserHandle.USER_SYSTEM;
         }
 
-        // In HSUM, the system user is not a real user and should not have backup activated.
+        // In HSUM, returns false for the system user, as it's a headless/non-interactive user.
         if (userId == UserHandle.USER_SYSTEM) {
             return false;
         }
 
-        UserHandle mainUser = getUserManager().getMainUser();
-        if (mainUser == null) {
+        // Returns false if the user is not a full user.
+        if (!mUserManagerInternal.getUserInfo(userId).isFull()) {
             return false;
         }
 
-        // In HSUM, the main user is the one whose backup should be active by default.
-        return userId == mainUser.getIdentifier();
-    }
+        // Returns true for the main user.
+        int mainUserId = mUserManagerInternal.getMainUserId();
+        if (mainUserId != UserHandle.USER_NULL && userId == mainUserId) {
+            return true;
+        }
 
-    @VisibleForTesting
-    protected Context getContext() {
-        return mContext;
-    }
-
-    @VisibleForTesting
-    protected UserManager getUserManager() {
-        return mUserManager;
+        // Returns true for any other full users if the flag is enabled.
+        return android.multiuser.Flags.backupActivatedForAllUsers();
     }
 
     @VisibleForTesting
@@ -479,7 +477,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     private void enforcePermissionsOnUser(@UserIdInt int userId) throws SecurityException {
         boolean isRestrictedUser =
                 userId == UserHandle.USER_SYSTEM
-                        || getUserManager().getUserInfo(userId).isManagedProfile();
+                        || mUserManagerInternal.getUserInfo(userId).isManagedProfile();
 
         if (isRestrictedUser) {
             int caller = binderGetCallingUid();
@@ -537,7 +535,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
 
                 // If the user is unlocked, we can start the backup service for it. Otherwise we
                 // will start the service when the user is unlocked as part of its unlock callback.
-                if (getUserManager().isUserUnlocked(userId)) {
+                if (mUserManagerInternal.isUserUnlocked(userId)) {
                     // Clear calling identity as initialization enforces the system identity but we
                     // can be coming from shell.
                     final long oldId = Binder.clearCallingIdentity();
@@ -1475,7 +1473,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         final int[] userIds;
         final long oldId = Binder.clearCallingIdentity();
         try {
-            userIds = getUserManager().getProfileIds(callingUserId, false);
+            userIds = mUserManagerInternal.getProfileIds(callingUserId, false);
         } finally {
             Binder.restoreCallingIdentity(oldId);
         }
@@ -1768,12 +1766,12 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
             return;
         }
 
-        UserHandle mainUser = getUserManager().getMainUser();
-        if (mainUser == null) {
+        int mainUserId = mUserManagerInternal.getMainUserId();
+        if (mainUserId == UserHandle.USER_NULL) {
             return;
         }
 
-        if (mainUser.getIdentifier() == UserHandle.USER_SYSTEM) {
+        if (mainUserId == UserHandle.USER_SYSTEM) {
             return;
         }
 

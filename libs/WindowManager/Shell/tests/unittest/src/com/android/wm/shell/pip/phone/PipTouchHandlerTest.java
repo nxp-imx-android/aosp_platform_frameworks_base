@@ -16,15 +16,11 @@
 
 package com.android.wm.shell.pip.phone;
 
-import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
-
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.util.Size;
@@ -149,12 +145,6 @@ public class PipTouchHandlerTest extends ShellTestCase {
         mFromShelfAdjustment = false;
         mDisplayRotation = 0;
         mImeHeight = 100;
-    }
-
-    @Test
-    @DisableFlags(FLAG_ENABLE_PIP2)
-    public void instantiate_addInitCallback() {
-        verify(mShellInit, times(1)).addInitCallback(any(), any());
     }
 
     @Test

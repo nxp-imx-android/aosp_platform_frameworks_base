@@ -16,12 +16,15 @@
 
 package android.window;
 
+import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY;
+import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+import static android.window.WindowProvider.KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -52,9 +55,13 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
+import android.media.ImageReader;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
@@ -550,6 +557,75 @@ public class WindowContextTest {
         } finally {
             appInfo.flags = origFlags;
         }
+    }
+
+    @EnableFlags({
+            Flags.FLAG_REPARENT_WINDOW_TOKEN_API,
+            Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL,
+    })
+    @Test
+    public void testDisplayRemovePolicyReparentToDefault_notAddWindow_reparent() {
+        testDisplayRemovePolicyReparentToDefault(false /* shouldVerifyAddingView */);
+    }
+
+    @EnableFlags({
+            Flags.FLAG_REPARENT_WINDOW_TOKEN_API,
+            Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL,
+    })
+    @Test
+    public void testDisplayRemovePolicyReparentToDefault_addWindow_reparent() {
+        testDisplayRemovePolicyReparentToDefault(true /* shouldVerifyAddingView */);
+    }
+
+    private void testDisplayRemovePolicyReparentToDefault(boolean shouldVerifyAddingView) {
+        final VirtualDisplay virtualDisplay = createVirtualDisplay();
+
+        // Attach the WindowContext to the virtual display
+        final Display display = virtualDisplay.getDisplay();
+        final Bundle options = new Bundle();
+        options.putBoolean(KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL, true);
+        final Context windowContext = mInstrumentation.getTargetContext().createWindowContext(
+                display, TYPE_APPLICATION_OVERLAY, options);
+
+        final int virtualDisplayId = display.getDisplayId();
+        assertWithMessage("WindowContext must be attached to display#" + virtualDisplayId)
+                .that(windowContext.getDisplay().getDisplayId()).isEqualTo(virtualDisplayId);
+
+        if (shouldVerifyAddingView) {
+            final View view = new View(windowContext);
+            final AttachStateListener listener = new AttachStateListener();
+            view.addOnAttachStateChangeListener(listener);
+
+            mInstrumentation.runOnMainSync(() ->
+                    windowContext.getSystemService(WindowManager.class)
+                            .addView(view,
+                                    new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY)));
+
+            // Checks that the view is attached.
+            try {
+                assertThat(listener.mLatch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)).isTrue();
+            } catch (InterruptedException e) {
+                fail("Failure due to " + e);
+            }
+
+        }
+        virtualDisplay.release();
+
+        PollingCheck.waitFor(() -> windowContext.getDisplayId() == DEFAULT_DISPLAY);
+    }
+
+    @NonNull
+    private VirtualDisplay createVirtualDisplay() {
+        final int width = 800;
+        final int height = 480;
+        final int density = 160;
+        ImageReader reader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888,
+                2 /* maxImages */);
+        final Context context = mInstrumentation.getTargetContext();
+        final DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+        return displayManager.createVirtualDisplay(
+                WindowContextTest.class.getName(), width, height, density, reader.getSurface(),
+                VIRTUAL_DISPLAY_FLAG_PUBLIC | VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY);
     }
 
     private WindowContext createWindowContext() {

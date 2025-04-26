@@ -16,6 +16,8 @@ package com.android.systemui.qs.tiles;
 
 import static com.android.systemui.flags.Flags.SIGNAL_CALLBACK_DEPRECATION;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 
@@ -542,6 +544,13 @@ public class CastTileTest extends SysuiTestCase {
 
         assertEquals(Tile.STATE_ACTIVE, mCastTile.getState().state);
         mCastTile.getDetailsViewModel(Assert::assertNotNull);
+    }
+
+    @Test
+    public void testStateInactive_emptyStateDescription() {
+        createAndStartTileOldImpl();
+        enableWifiAndProcessMessages();
+        assertThat(mCastTile.getState().stateDescription.isEmpty()).isTrue();
     }
 
     /**

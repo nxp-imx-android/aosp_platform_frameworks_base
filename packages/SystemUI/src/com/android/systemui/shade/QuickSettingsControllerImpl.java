@@ -75,7 +75,7 @@ import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.screenrecord.RecordingController;
+import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shared.system.QuickStepContract;
@@ -148,7 +148,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     private final MediaDataManager mMediaDataManager;
     private final MediaHierarchyManager mMediaHierarchyManager;
     private final AmbientState mAmbientState;
-    private final RecordingController mRecordingController;
+    private final ScreenRecordUxController mRecordingController;
     private final LockscreenGestureLogger mLockscreenGestureLogger;
     private final ShadeLogger mShadeLog;
     private final DeviceEntryFaceAuthInteractor mDeviceEntryFaceAuthInteractor;
@@ -297,6 +297,13 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     private FlingQsWithoutClickListener mFlingQsWithoutClickListener;
     private ExpansionHeightSetToMaxListener mExpansionHeightSetToMaxListener;
     private final QS.HeightListener mQsHeightListener = this::onHeightChanged;
+    private final QS.QqsHeightListener mQqsHeightListener = new QS.QqsHeightListener() {
+        @Override
+        public void onQqsHeightChanged() {
+            updateHeightsOnShadeLayoutChange();
+            mPanelViewControllerLazy.get().positionClockAndNotifications();
+        }
+    };
     private final Runnable mQsCollapseExpandAction = this::collapseOrExpandQs;
     private final QS.ScrollListener mQsScrollListener = this::onScroll;
 
@@ -323,7 +330,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             MediaDataManager mediaDataManager,
             MediaHierarchyManager mediaHierarchyManager,
             AmbientState ambientState,
-            RecordingController recordingController,
+            ScreenRecordUxController recordingController,
             FalsingManager falsingManager,
             AccessibilityManager accessibilityManager,
             LockscreenGestureLogger lockscreenGestureLogger,
@@ -2177,7 +2184,6 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
 
     /** */
     public final class QsFragmentListener implements FragmentHostManager.FragmentListener {
-        private boolean mPreviouslyVisibleMedia = false;
 
         /** */
         @Override
@@ -2189,6 +2195,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             mQs.setOverscrolling(mStackScrollerOverscrolling);
             mQs.setInSplitShade(mSplitShadeEnabled);
             mQs.setIsNotificationPanelFullWidth(mIsFullWidth);
+            if (QSComposeFragment.isEnabled()) {
+                mQs.setQqsHeightListener(mQqsHeightListener);
+            }
 
             // recompute internal state when qspanel height changes
             mQs.getView().addOnLayoutChangeListener(
@@ -2204,12 +2213,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
                     mNotificationStackScrollLayoutController.animateNextTopPaddingChange();
-                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia != visible) {
-                        updateHeightsOnShadeLayoutChange();
-                        mPanelViewControllerLazy.get().positionClockAndNotifications();
-                    }
                 }
-                mPreviouslyVisibleMedia = visible;
             });
             mLockscreenShadeTransitionController.setQS(mQs);
             if (QSComposeFragment.isEnabled()) {

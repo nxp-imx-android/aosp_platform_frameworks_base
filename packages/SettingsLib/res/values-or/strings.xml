@@ -292,7 +292,7 @@
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"ବଗ୍ ରିପୋର୍ଟ ଦେବା ପାଇଁ ପାୱାର୍‌ ମେନୁରେ ଏକ ବଟନ୍‌ ଦେଖାନ୍ତୁ"</string>
     <string name="keep_screen_on" msgid="1187161672348797558">"ସତର୍କ ରୁହନ୍ତୁ"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"ଚାର୍ଜ ହେବାବେଳେ ସ୍କ୍ରିନ କେବେ ବି ବନ୍ଦ ହେବନାହିଁ"</string>
-    <string name="bt_hci_snoop_log" msgid="7291287955649081448">"ବ୍ଲୁଟୂଥ୍‍‌ HCI ସ୍ନୁପ୍‌ ଲଗ୍‌ ସକ୍ଷମ କରନ୍ତୁ"</string>
+    <string name="bt_hci_snoop_log" msgid="7291287955649081448">"ବ୍ଲୁଟୁଥ HCI ସ୍ନୁପ ଲଗ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"ବ୍ଲୁଟୁଥ୍‌ ପ୍ୟାକେଟ୍ କ୍ୟାପଚର୍ କରନ୍ତୁ (ଏହି ସେଟିଂ ବଦଳାଇବା ପରେ ବ୍ଲୁଟୁଥ୍‍‌କୁ ଟୋଗଲ୍ କରନ୍ତୁ)"</string>
     <string name="oem_unlock_enable" msgid="5334869171871566731">"OEM ଅନଲକ୍‌ କରିବା"</string>
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"bootloaderକୁ ଅନ୍‌ଲକ୍‌ ହେବାର ଅନୁମତି ଦିଅନ୍ତୁ"</string>
@@ -301,14 +301,14 @@
     <string name="mock_location_app" msgid="6269380172542248304">"ମକ ଲୋକେସନ ଆପ ଚୟନ କରନ୍ତୁ"</string>
     <string name="mock_location_app_not_set" msgid="6972032787262831155">"କୌଣସି ମକ ଲୋକେସନ ଆପ ସେଟ କରାଯାଇନାହିଁ"</string>
     <string name="mock_location_app_set" msgid="4706722469342913843">"ମକ୍ ଲୋକେସନ୍‌ ଆପ୍‌: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="debug_networking_category" msgid="6829757985772659599">"ନେଟ୍‌ୱର୍କିଙ୍ଗ"</string>
+    <string name="debug_networking_category" msgid="6829757985772659599">"ନେଟୱାର୍କିଂ"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"ୱାୟରଲେସ୍‌ ଡିସ୍‌ପ୍ଲେ ସାର୍ଟିଫିକେସନ୍"</string>
     <string name="wifi_verbose_logging" msgid="1785910450009679371">"ୱାଇ-ଫାଇ ଭର୍ବୋସ୍‌ ଲଗିଙ୍ଗ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="wifi_scan_throttling" msgid="2985624788509913617">"ୱାଇ-ଫାଇ ସ୍କାନ ନିୟନ୍ତ୍ରଣ"</string>
     <string name="wifi_non_persistent_mac_randomization" msgid="7482769677894247316">"ୱାଇ-ଫାଇ ଅଣ-ଅବିରତ MAC ରେଣ୍ଡମାଇଜେସନ"</string>
     <string name="mobile_data_always_on" msgid="8275958101875563572">"ମୋବାଇଲ ଡାଟା ସର୍ବଦା ସକ୍ରିୟ"</string>
     <string name="tethering_hardware_offload" msgid="4116053719006939161">"ଟିଥରିଙ୍ଗ ହାର୍ଡୱେର ଆକ୍ସିଲିରେସନ"</string>
-    <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"ବ୍ଲୁଟୂଥ ଡିଭାଇସଗୁଡ଼ିକୁ ନାମ ବିନା ଦେଖାନ୍ତୁ"</string>
+    <string name="bluetooth_show_devices_without_names" msgid="923584526471885819">"ବ୍ଲୁଟୁଥ ଡିଭାଇସଗୁଡ଼ିକୁ ନାମ ବିନା ଦେଖାନ୍ତୁ"</string>
     <string name="bluetooth_disable_absolute_volume" msgid="1452342324349203434">"ପୂର୍ଣ୍ଣ ଭଲ୍ୟୁମ୍‌ ଅକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="bluetooth_enable_gabeldorsche" msgid="9131730396242883416">"ଗାବେଲ୍‌ଡୋର୍ସ ସକ୍ରିୟ କରନ୍ତୁ"</string>
     <string name="bluetooth_select_avrcp_version_string" msgid="1710571610177659127">"ବ୍ଲୁଟୂଥ୍‌ AVRCP ସଂସ୍କରଣ"</string>
@@ -317,10 +317,10 @@
     <string name="bluetooth_select_map_version_dialog_title" msgid="7085934373987428460">"ବ୍ଲୁଟୁଥ୍ MAP ସଂସ୍କରଣ ଚୟନ କରନ୍ତୁ"</string>
     <string name="bluetooth_select_a2dp_codec_type" msgid="952001408455456494">"ବ୍ଲୁଟୁଥ୍‌ ଅଡିଓ କୋଡେକ୍‌"</string>
     <string name="bluetooth_select_a2dp_codec_type_dialog_title" msgid="7510542404227225545">"ବ୍ଲୁଟୂଥ୍‍ ଅଡିଓ କୋଡେକ୍\nସିଲେକ୍ସନ୍‌କୁ ଗତିଶୀଳ କରନ୍ତୁ"</string>
-    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"ବ୍ଲୁଟୂଥ୍‌ ଅଡିଓ ସାମ୍ପଲ୍‌ ରେଟ୍‌"</string>
+    <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"ବ୍ଲୁଟୁଥ ଅଡିଓ ସାମ୍ପଲ ରେଟ"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate_dialog_title" msgid="5876305103137067798">"ବ୍ଲୁଟୂଥ୍‍ ଅଡିଓ କୋଡେକ୍\nସିଲେକ୍ସନ୍‌କୁ ଗତିଶୀଳ କରନ୍ତୁ: ସାମ୍ପଲ୍ ରେଟ୍"</string>
     <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"ଗ୍ରେ-ଆଉଟ୍ ଅର୍ଥ ଫୋନ୍ କିମ୍ବା ହେଡ୍‌ସେଟ୍‌ରେ ସମର୍ଥନ କରୁନାହିଁ"</string>
-    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"ନମୁନା ପିଛା ବ୍ଲୁଟୂଥ୍‍‌ ଅଡିଓ ବିଟ୍ସ"</string>
+    <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"ସାମ୍ପଲ ପ୍ରତି ବ୍ଲୁଟୁଥ ଅଡିଓ ବିଟ୍ସ"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample_dialog_title" msgid="4898693684282596143">"ବ୍ଲୁଟୂଥ୍‍ ଅଡିଓ କୋଡେକ୍\nସିଲେକ୍ସନ୍‌କୁ ଗତିଶୀଳ କରନ୍ତୁ: ନମୁନା ପିଛା ବିଟ୍ସ"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode" msgid="364277285688014427">"ବ୍ଲୁଟୁଥ ଅଡିଓ ଚେନେଲ ମୋଡ"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode_dialog_title" msgid="2076949781460359589">"ବ୍ଲୁଟୂଥ୍‍ ଅଡିଓ କୋଡେକ୍\nସିଲେକ୍ସନ୍‌କୁ ଗତିଶୀଳ କରନ୍ତୁ: ଚ୍ୟାନେଲ୍ ମୋଡ୍"</string>
@@ -362,8 +362,8 @@
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ଏହି ସେଟିଂସ କେବଳ ବିକାଶର ବ୍ୟବହାର ପାଇଁ ଉଦ୍ଦିଷ୍ଟ। ସେଗୁଡ଼ିକ କାରଣରୁ ଆପଣଙ୍କ ଡିଭାଇସ ଓ ଆପ୍ଲିକେସନଗୁଡ଼ିକ ଖରାପ ହୋଇଯାଇପାରେ କିମ୍ବା ଠିକ୍‌ ଭାବେ କାମ ନକରିପାରେ।"</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ଜରିଆରେ ଆପ୍‌ଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରନ୍ତୁ"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"ADB/ADT ମାଧ୍ୟମରେ ଇନଷ୍ଟଲ ହୋଇଥିବା ଆପ୍‌ଗୁଡ଼ିକ କ୍ଷତିକାରକ କି ନୁହେଁ ଯାଞ୍ଚ କରନ୍ତୁ।"</string>
-    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"(କେବଳ MAC ଠିକଣା ଥାଇ) ନାମ ବିନା ବ୍ଲୁଟୂଥ ଡିଭାଇସଗୁଡ଼ିକ ପ୍ରଦର୍ଶିତ ହେବ"</string>
-    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"ରିମୋଟ୍‌ ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ଯଦି ଅସ୍ୱୀକାର୍ଯ୍ୟ ଭାବେ ଉଚ୍ଚ ଭଲ୍ୟୁମ୍ କିମ୍ବା ନିୟନ୍ତ୍ରଣର ଅଭାବ ପରି ଭଲ୍ୟୁମ୍ ସମସ୍ୟା ଥାଏ, ବ୍ଲୁଟୂଥ୍‌ ପୂର୍ଣ୍ଣ ଭଲ୍ୟୁମ୍ ଫିଚର୍ ଅକ୍ଷମ କରିଥାଏ।"</string>
+    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"ନାମ ବିନା (କେବଳ MAC ଠିକଣା ଥାଇ) ବ୍ଲୁଟୁଥ ଡିଭାଇସଗୁଡ଼ିକ ଡିସପ୍ଲେ ହେବ"</string>
+    <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"ରିମୋଟ ଡିଭାଇସଗୁଡ଼ିକରେ ଯଦି ଅଗ୍ରହଣୀୟ ଉଚ୍ଚ ଭଲ୍ୟୁମ କିମ୍ବା ନିୟନ୍ତ୍ରଣର ଅଭାବ ପରି ଭଲ୍ୟୁମ ସମସ୍ୟା ଥାଏ, ତେବେ ବ୍ଲୁଟୁଥ ପୂର୍ଣ୍ଣ ଭଲ୍ୟୁମ ଫିଚର ଅକ୍ଷମ କରିଥାଏ।"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"ବ୍ଲୁଟୁଥ୍ ଗାବେଲଡୋର୍ସ ଫିଚର୍ ଷ୍ଟକ୍ ସକ୍ଷମ କରେ।"</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"ଏନହାନ୍ସଡ୍ କନେକ୍ଟିଭିଟି ଫିଚର୍ ସକ୍ଷମ କରିଥାଏ।"</string>
     <string name="enable_terminal_title" msgid="3834790541986303654">"ସ୍ଥାନୀୟ ଟର୍ମିନାଲ୍‌"</string>
@@ -383,14 +383,14 @@
     <string name="wait_for_debugger_summary" msgid="6846330006113363286">"ଡିବଗ୍‌ ହୋଇଥିବା ଆପ୍ଲିକେସନ୍‍, ନିଷ୍ପାଦନ ପୂର୍ବରୁ ଆଟାଚ୍‌ କରିବା ପାଇଁ ଡିବଗର୍‌କୁ ଅପେକ୍ଷା କରେ"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"ଇନପୁଟ୍"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"ଡ୍ରଇଂ"</string>
-    <string name="debug_hw_drawing_category" msgid="5830815169336975162">"ହାର୍ଡୱେର୍‌ ଆକ୍ସଲରେଟେଡ୍ ରେଣ୍ଡରିଙ୍ଗ"</string>
+    <string name="debug_hw_drawing_category" msgid="5830815169336975162">"ହାର୍ଡୱେର ଆକ୍ସିଲିରେଟେଡ ରେଣ୍ଡରିଂ"</string>
     <string name="media_category" msgid="8122076702526144053">"ମିଡିଆ"</string>
     <string name="debug_monitoring_category" msgid="1597387133765424994">"ମନିଟରିଙ୍ଗ"</string>
     <string name="window_management_category" msgid="2015535427098365170">"ୱିଣ୍ଡୋ ପରିଚାଳନା"</string>
-    <string name="strict_mode" msgid="889864762140862437">"କଡ଼ା ମୋଡ୍ ସକ୍ଷମ କରାଯାଇଛି"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"ମୁଖ୍ୟ ଥ୍ରେଡ୍‌ରେ ଆପ୍‌ ଦୀର୍ଘ ସମୟ କାର୍ଯ୍ୟ କଲେ ସ୍କ୍ରୀନ୍‌ ଫ୍ଲାଶ୍ କରନ୍ତୁ"</string>
+    <string name="strict_mode" msgid="889864762140862437">"ଷ୍ଟ୍ରିକ୍ଟ ମୋଡ ସକ୍ଷମ କରାଯାଇଛି"</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"ମୁଖ୍ୟ ଥ୍ରେଡରେ ଆପ୍ସ ଦୀର୍ଘ ସମୟ କାର୍ଯ୍ୟ କଲେ ସ୍କ୍ରିନ ଫ୍ଲାସ କରନ୍ତୁ"</string>
     <string name="pointer_location" msgid="7516929526199520173">"ପଏଣ୍ଟର୍‌ ଲୋକେସନ୍‌"</string>
-    <string name="pointer_location_summary" msgid="957120116989798464">"ଏବେର ଟଚ୍‌ ଡାଟା ଦେଖାଉଥିବା ସ୍କ୍ରୀନ୍‌ ଓଭର୍‌ଲେ"</string>
+    <string name="pointer_location_summary" msgid="957120116989798464">"ବର୍ତ୍ତମାନର ଟଚ ଡାଟା ଦେଖାଉଥିବା ସ୍କ୍ରିନ ଓଭରଲେ"</string>
     <string name="show_touches" msgid="8437666942161289025">"ଟାପ୍‌ ଦେଖାନ୍ତୁ"</string>
     <string name="show_touches_summary" msgid="3692861665994502193">"ଟାପ୍ ପାଇଁ ଭିଜୁଆଲ୍ ମତାମତ ଦେଖାନ୍ତୁ"</string>
     <string name="show_key_presses" msgid="6360141722735900214">"ଦବାଯାଇଥିବା କୀ ଦେଖାନ୍ତୁ"</string>
@@ -400,24 +400,24 @@
     <string name="show_screen_updates" msgid="2078782895825535494">"ସର୍ଫେସ୍‌ ଅପଡେଟ୍‌ ଦେଖାନ୍ତୁ"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"ସମଗ୍ର ୱିଣ୍ଡୋ ପୃଷ୍ଠ ଅପଡେଟ୍‌ ହେବା ବେଳେ ସେଗୁଡ଼ିକ ଫ୍ଲାସ୍‌ କରନ୍ତୁ"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"ଭ୍ୟୁ ଅପଡେଟ୍‌ଗୁଡ଼ିକୁ ଦେଖାନ୍ତୁ"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"ଡ୍ର କରାଯିବା ବେଳେ ୱିଣ୍ଡୋସ୍ ଭିତରେ ଫ୍ଲାଶ୍ ଭ୍ୟୁ"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"ଭ୍ୟୁ ଡ୍ର କରାଯିବା ବେଳେ ୱିଣ୍ଡୋ ଭିତରେ ଫ୍ଲାସ କରନ୍ତୁ"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"ହାର୍ଡୱେର୍‌ ଲେୟର୍‌ର ଅପଡେଟ୍ ଦେଖାନ୍ତୁ"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"ହାର୍ଡୱେର୍ ଲେୟାର୍ ଅପଡେଟ୍‌ ହେବାବେଳେ ସେଗୁଡ଼ିକୁ ସବୁଜ ରଙ୍ଗରେ ଦେଖାନ୍ତୁ"</string>
-    <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU ଓଭର୍‌ଡ୍ର\' ଡିବଗ୍‌ କରନ୍ତୁ"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"ହାର୍ଡୱେର ଲେୟର ଅପଡେଟ ହେଲେ ସବୁଜ ରଙ୍ଗରେ ଫ୍ଲାସ କରନ୍ତୁ"</string>
+    <string name="debug_hw_overdraw" msgid="8944851091008756796">"GPU ଓଭରଡ୍ର ଡିବଗ କରନ୍ତୁ"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"HW ଓଭର୍‌ଲେ\' ଅକ୍ଷମ କରନ୍ତୁ"</string>
-    <string name="disable_overlays_summary" msgid="1954852414363338166">"ସ୍କ୍ରୀନ୍‌ କମ୍ପୋଜିଟିଙ୍ଗ ପାଇଁ ସର୍ବଦା GPU ବ୍ୟବହାର କରନ୍ତୁ"</string>
+    <string name="disable_overlays_summary" msgid="1954852414363338166">"ସ୍କ୍ରିନ କମ୍ପୋଜିଟିଂ ପାଇଁ ସର୍ବଦା GPU ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="simulate_color_space" msgid="1206503300335835151">"ରଙ୍ଗ ସ୍ଥାନ ସିମୁଲେଟ୍ କରନ୍ତୁ"</string>
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"OpenGL ଟ୍ରେସ୍‌ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"USB ଅଡିଓ ରାଉଟିଙ୍ଗ ଅକ୍ଷମ କରନ୍ତୁ"</string>
-    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"USB ଅଡିଓ ଉପକରଣଗୁଡ଼ିକ ପ୍ରତି ସ୍ୱଚାଳିତ ରାଉଟିଙ୍ଗ ଅକ୍ଷମ କରନ୍ତୁ"</string>
+    <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"USB ଅଡିଓ ପେରିଫେରାଲ ପାଇଁ ସ୍ୱତଃ ରାଉଟିଂ ଅକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="debug_layout" msgid="1659216803043339741">"ଲେଆଉଟ୍‌ ବାଉଣ୍ଡ ଦେଖାଅ"</string>
-    <string name="debug_layout_summary" msgid="8825829038287321978">"କ୍ଲିପ୍‌ ବାଉଣ୍ଡ, ମାର୍ଜିନ୍‌ ଆଦି ଦେଖନ୍ତୁ"</string>
-    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"RTL ଲେଆଉଟ୍ ଦିଗ ବାଧ୍ୟ କରନ୍ତୁ"</string>
-    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"ସମସ୍ତ ଲୋକେଲ୍‌ ସକାଶେ ସ୍କ୍ରୀନ୍‌ ଲେଆଉଟ୍‌ ଦିଗ RTL ପାଇଁ ବାଧ୍ୟ କରନ୍ତୁ"</string>
+    <string name="debug_layout_summary" msgid="8825829038287321978">"କ୍ଲିପ ବାଉଣ୍ଡ, ମାର୍ଜିନ ଆଦି ଦେଖାନ୍ତୁ"</string>
+    <string name="force_rtl_layout_all_locales" msgid="8690762598501599796">"RTL ଲେଆଉଟ ଦିଗନିର୍ଦ୍ଦେଶ ଫୋର୍ସ କରନ୍ତୁ"</string>
+    <string name="force_rtl_layout_all_locales_summary" msgid="6663016859517239880">"ସମସ୍ତ ଲୋକେଲ ପାଇଁ ସ୍କ୍ରିନ ଲେଆଉଟ ଦିଗନିର୍ଦ୍ଦେଶ RTLକୁ ଫୋର୍ସ କରନ୍ତୁ"</string>
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"ଟ୍ରାନ୍ସପରେଣ୍ଟ ନାଭିଗେସନ ବାର"</string>
-    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"ଡିଫଲ୍ଟ ଭାବେ ନାଭିଗେସନ ବାର ପୃଷ୍ଠପଟ ରଙ୍ଗକୁ ଟ୍ରାନ୍ସପରେଣ୍ଟ କରନ୍ତୁ"</string>
+    <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"ଡିଫଲ୍ଟ ଭାବେ ନାଭିଗେସନ ବାର ବେକଗ୍ରାଉଣ୍ଡ ରଙ୍ଗକୁ ଟ୍ରାନ୍ସପରେଣ୍ଟ କରନ୍ତୁ"</string>
     <string name="window_blurs" msgid="6831008984828425106">"ୱିଣ୍ଡୋ-ଲେଭେଲରେ ବ୍ଲରକୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
-    <string name="force_msaa" msgid="4081288296137775550">"4x MSAA ବାଧ୍ୟ କରନ୍ତୁ"</string>
+    <string name="force_msaa" msgid="4081288296137775550">"4x MSAA ଫୋର୍ସ କରନ୍ତୁ"</string>
     <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 ଆପ୍‌ରେ 4x MSAA ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"ଅଣ-ଆୟତାକାର କ୍ଲିପ୍‌ କାର୍ଯ୍ୟକୁ ଡିବଗ୍‌ କରନ୍ତୁ"</string>
     <string name="track_frame_time" msgid="522674651937771106">"ପ୍ରୋଫାଇଲ୍ HWUI ରେଣ୍ଡର୍ ହେଉଛି"</string>
@@ -443,7 +443,7 @@
     <string name="show_all_anrs" msgid="9160563836616468726">"ବ୍ୟାକଗ୍ରାଉଣ୍ଡରେ ଥିବା ANRଗୁଡ଼ିକୁ ଦେଖାନ୍ତୁ"</string>
     <string name="show_all_anrs_summary" msgid="8562788834431971392">"ବ୍ୟାକ୍‌ଗ୍ରାଉଣ୍ଡ ଆପ୍‌ଗୁଡ଼ିକ ପାଇଁ \"ଆପ୍‌ ଉତ୍ତର ଦେଉନାହିଁ\" ଡାୟଲଗ୍‌ ଦେଖାନ୍ତୁ"</string>
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"ବିଜ୍ଞପ୍ତି ଚ୍ୟାନେଲ୍ ଚେତାବନୀ ଦେଖାନ୍ତୁ"</string>
-    <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"ବୈଧ ଚ୍ୟାନେଲ୍‌ ବିନା ଗୋଟିଏ ଆପ୍‌ ଏକ ବିଜ୍ଞପ୍ତି ପୋଷ୍ଟ କରିବାବେଳେ ଅନ୍‌-ସ୍କ୍ରୀନ୍‌ ସତର୍କତା ଦେଖାଏ"</string>
+    <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"ବୈଧ ଚେନେଲ ବିନା ଗୋଟିଏ ଆପ ଏକ ବିଜ୍ଞପ୍ତି ପୋଷ୍ଟ କଲେ ଅନ-ସ୍କ୍ରିନ ଚେତାବନୀ ଦେଖାଏ"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"ଆପ୍‌କୁ ଏକ୍ସଟର୍ନଲ୍ ମେମୋରୀରେ ଫୋର୍ସ୍ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"ଯେକୌଣସି ଆପ୍‌କୁ ଏକ୍ସଟର୍ନଲ୍ ଷ୍ଟୋରେଜ୍‌ରେ ଲେଖାଯୋଗ୍ୟ କରନ୍ତୁ, ମେନିଫେଷ୍ଟ ମୂଲ୍ୟ ଯାହା ହୋଇଥାଉ ନା କାହିଁକି"</string>
     <string name="force_resizable_activities" msgid="7143612144399959606">"ୱିଣ୍ଡୋ ହିସାବରେ କାର୍ଯ୍ୟକଳାପର ଆକାର ବଦଳାନ୍ତୁ"</string>

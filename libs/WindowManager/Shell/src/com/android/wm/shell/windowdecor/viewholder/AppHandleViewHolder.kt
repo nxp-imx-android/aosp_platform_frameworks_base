@@ -260,7 +260,9 @@ class AppHandleViewHolder(
         ) {
             return
         }
-        animator.animateVisibilityChange(v)
+        // TODO(b/405251465): animate app handle visibility change after creation and animation are
+        //  moved to a background thread.
+        captionHandle.visibility = v
     }
 
     private fun getCaptionHandleBarColor(taskInfo: RunningTaskInfo): Int {

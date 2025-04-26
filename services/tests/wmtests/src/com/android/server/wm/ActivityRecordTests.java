@@ -917,10 +917,30 @@ public class ActivityRecordTests extends WindowTestsBase {
     public void testSetHandoffEnabled() {
         final ActivityRecord activity = createActivityWithTask();
         assertFalse(activity.isHandoffEnabled());
-        assertFalse(activity.allowFullTaskRecreation());
+        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
         activity.setHandoffEnabled(true, true);
         assertTrue(activity.isHandoffEnabled());
-        assertTrue(activity.allowFullTaskRecreation());
+        assertTrue(activity.isHandoffFullTaskRecreationAllowed());
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testClientControllerCanModifyHandoffStatus() {
+        final ActivityRecord activity = createActivityWithTask();
+        assertFalse(mAtm
+                        .mActivityClientController
+                        .isHandoffEnabled(activity.token));
+        assertFalse(mAtm.mActivityClientController
+                        .isHandoffFullTaskRecreationAllowed(activity.token));
+        mAtm
+            .mActivityClientController
+            .setHandoffEnabled(activity.token, true, true);
+        assertTrue(mAtm
+                       .mActivityClientController
+                       .isHandoffEnabled(activity.token));
+        assertTrue(mAtm
+                       .mActivityClientController
+                       .isHandoffFullTaskRecreationAllowed(activity.token));
     }
 
     @Test
@@ -1869,11 +1889,8 @@ public class ActivityRecordTests extends WindowTestsBase {
             setup.accept(activity);
             clearInvocations(mClientLifecycleManager);
             activity.getTask().removeImmediately("test");
-            try {
-                verify(mClientLifecycleManager).scheduleTransactionItem(any(),
-                        isA(DestroyActivityItem.class));
-            } catch (RemoteException ignored) {
-            }
+            verify(mClientLifecycleManager).scheduleTransactionItem(any(),
+                    isA(DestroyActivityItem.class));
             assertNull(activity.app);
             assertEquals(DESTROYED, activity.getState());
             assertFalse(wpc.hasActivities());

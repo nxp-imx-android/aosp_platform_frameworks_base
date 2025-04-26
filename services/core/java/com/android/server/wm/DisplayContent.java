@@ -85,6 +85,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
+import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 import static android.window.DisplayAreaOrganizer.FEATURE_IME;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
 
@@ -154,7 +155,6 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELD
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
-import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -1203,7 +1203,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDeviceStateListener =
                 (@NonNull DeviceStateController.DeviceStateEnum deviceStateEnum,
                         @NonNull DeviceState deviceState) -> mDisplayRotation.foldStateChanged(
-                        deviceStateEnum, deviceState);
+                        deviceStateEnum);
         mDeviceStateController.registerDeviceStateCallback(mDeviceStateListener,
                 new HandlerExecutor(mWmService.mH));
 
@@ -1627,7 +1627,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (displayConfig != null) {
             mTransitionController.waitFor(displayConfig);
         } else if (mTransitionController.isShellTransitionsEnabled() && mLastHasContent) {
-            Slog.e(TAG, "Display reconfigured outside of a transition: " + this);
+            Slog.d(TAG, "Direct invocation of sendNewConfiguration: " + this);
         }
         final boolean configUpdated = updateDisplayOverrideConfigurationLocked();
         if (displayConfig != null) {
@@ -2798,9 +2798,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final int lastOrientation = getConfiguration().orientation;
         final int lastWindowingMode = getWindowingMode();
         super.onConfigurationChanged(newParentConfig);
-        if (!Flags.trackSystemUiContextBeforeWms()) {
-            mSysUiContextConfigCallback.onConfigurationChanged(newParentConfig);
-        }
         mPinnedTaskController.onPostDisplayConfigurationChanged();
         // Update IME parent if needed.
         updateImeParent();
@@ -2837,7 +2834,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // If the transition finished callback cannot match the token for some reason, make sure the
         // rotated state is cleared if it is already invisible.
         if (mFixedRotationLaunchingApp != null && !mFixedRotationLaunchingApp.isVisibleRequested()
-                && !mFixedRotationLaunchingApp.isVisible()) {
+                && !mFixedRotationLaunchingApp.isVisible()
+                // In case the next transition still needs the existing transform.
+                && !mTransitionController.isCollecting()) {
             clearFixedRotationLaunchingApp();
         }
         // If there won't be a transition to notify the launch is done, then it should be ready to
@@ -3259,6 +3258,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
+
+            // Move the app error dialogs (such as app crash dialog, anr dialog, etc) to the default
+            // display.
+            mWmService.mAmInternal.moveErrorDialogsToDefaultDisplay(mDisplayId);
         }
 
         // If the display is allowed to show content, then it belongs to the display topology;
@@ -3437,9 +3440,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     .getKeyguardController().onDisplayRemoved(mDisplayId);
             mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
-            if (Flags.trackSystemUiContextBeforeWms()) {
-                getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
-            }
+            getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
         } finally {
             mDisplayReady = false;
         }
@@ -3867,7 +3868,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     WindowState findFocusedWindowIfNeeded(int topFocusedDisplayId) {
         return (hasOwnFocus() || topFocusedDisplayId == INVALID_DISPLAY
-                || (enablePresentationForConnectedDisplays()
+                || (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mWmService.mPresentationController.isPresentationVisible(mDisplayId)))
                     ? findFocusedWindow() : null;
     }
@@ -5541,10 +5542,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 systemUiContext.getIApplicationThread());
         mWmService.mWindowContextListenerController.registerWindowContainerListener(
                 wpc, systemUiContext.getWindowContextToken(), this,
-                INVALID_WINDOW_TYPE, null /* options */);
-        if (Flags.trackSystemUiContextBeforeWms()) {
-            systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
-        }
+                INVALID_WINDOW_TYPE, true /* callerCanManageAppTokens */, null /* options */);
+        systemUiContext.registerComponentCallbacks(mSysUiContextConfigCallback);
     }
 
     @Override
@@ -6466,6 +6465,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mContentRecorder.stopRecording();
             }
         }, true /* isRemovingDisplay */);
+        mWmService.mWindowContextListenerController.dispatchDisplayRemoval(mDisplayId);
 
         releaseSelfIfNeeded();
         mDisplayPolicy.release();

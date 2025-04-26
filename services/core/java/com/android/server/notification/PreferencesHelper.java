@@ -354,10 +354,8 @@ public class PreferencesHelper implements RankingConfig {
             // when data is loaded from disk it's loaded as USER_ALL, but restored data that
             // is pending app install needs the user id that the data was restored to
             int fixedUserId = userId;
-            if (Flags.persistIncompleteRestoreData()) {
-                if (!forRestore && uid == UNKNOWN_UID) {
-                    fixedUserId = parser.getAttributeInt(null, ATT_USERID, USER_SYSTEM);
-                }
+            if (!forRestore && uid == UNKNOWN_UID) {
+                fixedUserId = parser.getAttributeInt(null, ATT_USERID, USER_SYSTEM);
             }
             PackagePreferences r = getOrCreatePackagePreferencesLocked(
                     name, fixedUserId, uid,
@@ -550,10 +548,8 @@ public class PreferencesHelper implements RankingConfig {
             r.visibility = visibility;
             r.showBadge = showBadge;
             r.bubblePreference = bubblePreference;
-            if (Flags.persistIncompleteRestoreData()) {
-                if (r.uid == UNKNOWN_UID) {
-                    r.creationTime = creationTime;
-                }
+            if (r.uid == UNKNOWN_UID) {
+                r.creationTime = creationTime;
             }
 
             try {
@@ -563,17 +559,14 @@ public class PreferencesHelper implements RankingConfig {
             }
 
             if (r.uid == UNKNOWN_UID) {
-                if (Flags.persistIncompleteRestoreData()) {
-                    r.userIdWhenUidUnknown = userId;
-                }
+                r.userIdWhenUidUnknown = userId;
                 mRestoredWithoutUids.put(unrestoredPackageKey(pkg, userId), r);
             } else {
                 mPackagePreferences.put(key, r);
             }
         }
         if (r.uid == UNKNOWN_UID) {
-            if (Flags.persistIncompleteRestoreData()
-                    && PREF_GRACE_PERIOD_MS < (mClock.millis() - r.creationTime)) {
+            if (PREF_GRACE_PERIOD_MS < (mClock.millis() - r.creationTime)) {
                 mRestoredWithoutUids.remove(unrestoredPackageKey(pkg, userId));
             }
         }
@@ -702,7 +695,7 @@ public class PreferencesHelper implements RankingConfig {
                 writePackageXml(r, out, notifPermissions, forBackup);
             }
 
-            if (Flags.persistIncompleteRestoreData() && !forBackup) {
+            if (!forBackup) {
                 final int M = mRestoredWithoutUids.size();
                 for (int i = 0; i < M; i++) {
                     final PackagePreferences r = mRestoredWithoutUids.valueAt(i);
@@ -766,7 +759,7 @@ public class PreferencesHelper implements RankingConfig {
             }
         }
 
-        if (Flags.persistIncompleteRestoreData() && r.uid == UNKNOWN_UID) {
+        if (r.uid == UNKNOWN_UID) {
             out.attributeLong(null, ATT_CREATION_TIME, r.creationTime);
             out.attributeInt(null, ATT_USERID, r.userIdWhenUidUnknown);
         }

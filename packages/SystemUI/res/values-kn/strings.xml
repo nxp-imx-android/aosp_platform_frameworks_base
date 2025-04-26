@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"ಪ್ರಸ್ತುತ ಭಾಷೆಯನ್ನೇ ಇರಿಸಿ"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"ವೈ-ಫೈ ಹಂಚಿಕೊಳ್ಳಿ"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"ನೆಟ್‌ವರ್ಕ್ ಸೇರಿಸಿ"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"ಈ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ವೈರ್‌ಲೆಸ್ ಡೀಬಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"ನೆಟ್‌ವರ್ಕ್ ಹೆಸರು (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nವೈ-ಫೈ ವಿಳಾಸ (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"ಈ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಅನುಮತಿಸಿ"</string>
@@ -246,6 +247,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ಬ್ಲೂಟೂತ್ ಸಾಧನ ಐಕಾನ್"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ಸಾಧನದ ವಿವರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ಸಾಧನದ ವಿವರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿ"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ಎಲ್ಲಾ ಸಾಧನಗಳನ್ನು ನೋಡಿ"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ಹೊಸ ಸಾಧನವನ್ನು ಪೇರ್ ಮಾಡಿ"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ಬ್ಯಾಟರಿ ಶೇಕಡಾವಾರು ತಿಳಿದಿಲ್ಲ."</string>
@@ -479,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ಸೆಟ್ ಮಾಡಿಲ್ಲ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿರ್ವಹಿಸಿ"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ಯಾವುದೇ ಸಕ್ರಿಯ ಮೋಡ್‌ಗಳಿಲ್ಲ}=1{{mode} ಸಕ್ರಿಯವಾಗಿದೆ}one{# ಮೋಡ್‌ಗಳು ಸಕ್ರಿಯವಾಗಿವೆ}other{# ಮೋಡ್‌ಗಳು ಸಕ್ರಿಯವಾಗಿವೆ}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"ಅಲಾರಾಂಗಳು, ಜ್ಞಾಪನೆಗಳು, ಈವೆಂಟ್‌ಗಳು ಹಾಗೂ ನೀವು ಸೂಚಿಸಿರುವ ಕರೆದಾರರನ್ನು ಹೊರತುಪಡಿಸಿ ಬೇರಾವುದೇ ಸದ್ದುಗಳು ಅಥವಾ ವೈಬ್ರೇಶನ್‌ಗಳು ನಿಮಗೆ ತೊಂದರೆ ನೀಡುವುದಿಲ್ಲ. ಹಾಗಿದ್ದರೂ, ನೀವು ಪ್ಲೇ ಮಾಡುವ ಸಂಗೀತ, ವೀಡಿಯೊಗಳು ಮತ್ತು ಆಟಗಳ ಆಡಿಯೊವನ್ನು ನೀವು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತೀರಿ."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"ಅಲಾರಾಂಗಳನ್ನು ಹೊರತುಪಡಿಸಿ, ಬೇರಾವುದೇ ಸದ್ದುಗಳು ಅಥವಾ ವೈಬ್ರೇಶನ್‌ಗಳು ನಿಮಗೆ ತೊಂದರೆ ನೀಡುವುದಿಲ್ಲ. ಹಾಗಿದ್ದರೂ, ನೀವು ಪ್ಲೇ ಮಾಡುವ ಸಂಗೀತ, ವೀಡಿಯೊಗಳು ಮತ್ತು ಆಟಗಳ ಆಡಿಯೊವನ್ನು ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತೀರಿ."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"ಕಸ್ಟಮೈಸ್ ಮಾಡು"</string>
@@ -710,7 +719,7 @@
     <string name="screen_pinning_exit" msgid="4553787518387346893">"ಆ್ಯಪ್ ಅನ್‌ಪಿನ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="stream_voice_call" msgid="7468348170702375660">"ಕರೆ ಮಾಡಿ"</string>
     <string name="stream_system" msgid="7663148785370565134">"ಸಿಸ್ಟಂ"</string>
-    <string name="stream_ring" msgid="7550670036738697526">"ರಿಂಗ್ ಮಾಡಿ"</string>
+    <string name="stream_ring" msgid="7550670036738697526">"ರಿಂಗ್"</string>
     <string name="stream_music" msgid="2188224742361847580">"ಮಾಧ್ಯಮ"</string>
     <string name="stream_alarm" msgid="16058075093011694">"ಅಲಾರಮ್"</string>
     <string name="stream_notification" msgid="7930294049046243939">"ನೋಟಿಫಿಕೇಶನ್"</string>
@@ -744,6 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"ವೈಬ್ರೇಟ್‌"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s ವಾಲ್ಯೂಮ್ ನಿಯಂತ್ರಕಗಳು"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"(<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>) ನಲ್ಲಿ ಕರೆಗಳು ಮತ್ತು ಅಧಿಸೂಚನೆಗಳು ರಿಂಗ್ ಆಗುತ್ತವೆ"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"ಅತಿಥಿ ಸಾಧನದ ವಾಲ್ಯೂಮ್"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"ಔಟ್‌ಪುಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"ವಾಲ್ಯೂಮ್ ಸ್ಲೈಡರ್‌ಗಳನ್ನು ವಿಸ್ತೃತಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"ವಾಲ್ಯೂಮ್ ಸ್ಲೈಡರ್‌ಗಳನ್ನು ಕುಗ್ಗಿಸಲಾಗಿದೆ"</string>
@@ -804,9 +814,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಅನ್ನು ಟ್ಯಾಬ್ಲೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು, ನೀವು ಮೊದಲು ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ಆನ್‌ ಮಾಡಿ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ಆನ್ ಆಗಿದೆ - ಮುಖ-ಆಧಾರಿತ"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
@@ -815,7 +831,7 @@
     <string name="notification_alert_title" msgid="3656229781017543655">"ಡೀಫಾಲ್ಟ್"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ಸ್ವಯಂಚಾಲಿತ"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"ಯಾವುದೇ ಧ್ವನಿ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಆಗುವುದಿಲ್ಲ"</string>
-    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ಯಾವುದೇ ಸೌಂಡ್ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಇಲ್ಲ, ಆದರೆ ಇದು ಇನ್ನೂ ಸಂಭಾಷಣೆಗಳ ವಿಭಾಗದಲ್ಲಿ ತೋರಿಸುತ್ತದೆ"</string>
+    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ಯಾವುದೇ ಸೌಂಡ್ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಇಲ್ಲ, ಆದರೆ ಇದು ಇನ್ನೂ ಸಂಭಾಷಣೆಗಳ ವಿಭಾಗದಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಧರಿಸಿ ಸಾಧನ ರಿಂಗ್ ಅಥವಾ ವೈಬ್ರೇಟ್ ಆಗುತ್ತದೆ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಧರಿಸಿ ಫೋನ್ ರಿಂಗ್ ಅಥವಾ ವೈಬ್ರೇಟ್ ಆಗುತ್ತದೆ. ಡಿಫಾಲ್ಟ್ ಆಗಿ, <xliff:g id="APP_NAME">%1$s</xliff:g> ಬಬಲ್ ಸಂಭಾಷಣೆಗಳು."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ಈ ಅಧಿಸೂಚನೆಯು ಶಬ್ದ ಮಾಡಬೇಕೇ ಅಥವಾ ವೈಬ್ರೇಟ್ ಮಾಡಬೇಕೇ ಎಂಬುದನ್ನು ನಿರ್ಧರಿಸುವ ಅವಕಾಶವನ್ನು ಸಿಸ್ಟಂಗೆ ನೀಡಿ"</string>
@@ -1103,8 +1119,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"ಬ್ಯಾಟರಿ ಖಾಲಿಯಾಗುವ ಸಾಧ್ಯತೆ ಇದ್ದಾಗ ಆನ್ ಮಾಡಿ"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"ಬೇಡ"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"ಬಳಕೆಯಲ್ಲಿದೆ"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> ಬಳಕೆಯಲ್ಲಿವೆ."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" ಮತ್ತು "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> ಇದನ್ನು ಬಳಸುತ್ತಿದೆ"</string>
@@ -1319,7 +1334,7 @@
     <string name="status_before_loading" msgid="1500477307859631381">"ಕಂಟೆಂಟ್‌ ಶೀಘ್ರದಲ್ಲೇ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ"</string>
     <string name="missed_call" msgid="4228016077700161689">"ಮಿಸ್ಡ್ ಕಾಲ್"</string>
     <string name="messages_count_overflow_indicator" msgid="7850934067082006043">"<xliff:g id="NUMBER">%d</xliff:g>+"</string>
-    <string name="people_tile_description" msgid="8154966188085545556">"ಇತ್ತೀಚಿನ ಸಂದೇಶಗಳು, ಮಿಸ್ಡ್ ಕಾಲ್‌ಗಳು ಮತ್ತು ಸ್ಥಿತಿ ಅಪ್‌ಡೇಟ್‌ಗಳು"</string>
+    <string name="people_tile_description" msgid="8154966188085545556">"ಇತ್ತೀಚಿನ ಸಂದೇಶಗಳು, ಮಿಸ್ಡ್ ಕಾಲ್‌ಗಳು ಮತ್ತು ಸ್ಥಿತಿ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನೋಡಿ"</string>
     <string name="people_tile_title" msgid="6589377493334871272">"ಸಂಭಾಷಣೆ"</string>
     <string name="paused_by_dnd" msgid="7856941866433556428">"\'ಅಡಚಣೆ ಮಾಡಬೇಡಿ\' ನಿಂದ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="new_notification_text_content_description" msgid="2915029960094389291">"<xliff:g id="NAME">%1$s</xliff:g> ಅವರು ಸಂದೇಶವನ್ನು ಕಳುಹಿಸಿದ್ದಾರೆ: <xliff:g id="NOTIFICATION">%2$s</xliff:g>"</string>
@@ -1586,7 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"ಯುಟಿಲಿಟಿಗಳು"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"ಗೌಪ್ಯತೆ"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"ಆ್ಯಪ್‌ಗಳಿಂದ ಒದಗಿಸಲಾಗಿದೆ"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"ಸಿಸ್ಟಂ ಆ್ಯಪ್‌ಗಳಿಂದ"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"ನೀವು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿರುವ ಆ್ಯಪ್‌ಗಳಿಂದ"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ಡಿಸ್‌ಪ್ಲೇ"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ಅಪರಿಚಿತ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ಎಲ್ಲಾ ಟೈಲ್‌ಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಬೇಕೆ?"</string>

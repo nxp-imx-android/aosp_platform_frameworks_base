@@ -60,6 +60,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.eq
+import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
@@ -144,6 +145,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         `when`(mockTransactionFactory.get()).thenReturn(mockTransaction)
         `when`(mockDesktopWindowDecoration.leash).thenReturn(mockSurfaceControl)
         `when`(mockTransaction.setPosition(any(), any(), any())).thenReturn(mockTransaction)
+        `when`(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
         mockDesktopWindowDecoration.mTaskInfo =
             ActivityManager.RunningTaskInfo().apply {
                 taskId = TASK_ID
@@ -165,7 +167,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mockShellTaskOrganizer,
                 mockDesktopWindowDecoration,
                 mockDisplayController,
-                mockDragEventListener,
                 { mockTransaction },
                 mockTransitions,
                 mockInteractionJankMonitor,
@@ -223,10 +224,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             STARTING_BOUNDS.top.toFloat() + 100,
         )
         val rectAfterMove = Rect(STARTING_BOUNDS)
-        rectAfterMove.left += 60
-        rectAfterMove.right += 60
-        rectAfterMove.top += 100
-        rectAfterMove.bottom += 100
+        rectAfterMove.offset(60, 100)
         verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
 
@@ -237,10 +235,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 STARTING_BOUNDS.top.toFloat() + 20,
             )
         val rectAfterEnd = Rect(STARTING_BOUNDS)
-        rectAfterEnd.left += 70
-        rectAfterEnd.right += 70
-        rectAfterEnd.top += 20
-        rectAfterEnd.bottom += 20
+        rectAfterEnd.offset(70, 20)
 
         verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
@@ -282,6 +277,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         val rectAfterMove = Rect(200, -50, 300, 50)
         verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
+        verify(mockTransaction)
+            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
 
         val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_1, 300f, 450f)
         val rectAfterEnd = Rect(300, 450, 500, 650)
@@ -290,6 +287,43 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
+    }
+
+    @Test
+    fun testDragResize_movesTaskToNewDisplayThenBackToOriginalDisplay() = runOnUiThread {
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        val inOrder = inOrder(mockTransaction)
+
+        // Move to the display 1
+        taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 800f)
+        val rectAfterMove = Rect(200, -600, 300, -400)
+        inOrder.verify(mockTransaction)
+            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
+        inOrder.verify(mockTransaction)
+            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
+
+        // Moving back to the original display
+        taskPositioner.onDragPositioningMove(DISPLAY_ID_0, 100f, 1500f)
+        rectAfterMove.set(100, 1500, 200, 1700)
+        inOrder.verify(mockTransaction)
+            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
+        inOrder.verify(mockTransaction)
+            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_VISIBLE_WINDOW))
+
+        // Finish the drag move on the original display
+        val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_0, 50f, 50f)
+        rectAfterMove.set(50, 50, 150, 150)
+
+        verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
+        verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
+        Assert.assertEquals(rectAfterMove, endBounds)
     }
 
     @Test
@@ -571,6 +605,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testIsResizingOrAnimatingResizeSet() = runOnUiThread {
+        taskPositioner.addDragEventListener(mockDragEventListener)
         Assert.assertFalse(taskPositioner.isResizingOrAnimating)
 
         taskPositioner.onDragPositioningStart(
@@ -623,16 +658,24 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    fun testStartAnimation_useEndRelOffset() = runOnUiThread {
+    fun testStartAnimation_updatesLeash() = runOnUiThread {
         val changeMock = mock(TransitionInfo.Change::class.java)
+        val nonTaskChangeMock = mock(TransitionInfo.Change::class.java)
+        val taskLeash = mock(SurfaceControl::class.java)
+        val nonTaskLeash = mock(SurfaceControl::class.java)
         val startTransaction = mock(Transaction::class.java)
         val finishTransaction = mock(Transaction::class.java)
         val point = Point(10, 20)
         val bounds = Rect(1, 2, 3, 4)
-        `when`(changeMock.leash).thenReturn(mock(SurfaceControl::class.java))
+        `when`(changeMock.leash).thenReturn(taskLeash)
         `when`(changeMock.endRelOffset).thenReturn(point)
         `when`(changeMock.endAbsBounds).thenReturn(bounds)
-        `when`(mockTransitionInfo.changes).thenReturn(listOf(changeMock))
+        `when`(changeMock.taskInfo).thenReturn(ActivityManager.RunningTaskInfo())
+        `when`(nonTaskChangeMock.leash).thenReturn(nonTaskLeash)
+        `when`(nonTaskChangeMock.endRelOffset).thenReturn(point)
+        `when`(nonTaskChangeMock.endAbsBounds).thenReturn(bounds)
+        `when`(nonTaskChangeMock.taskInfo).thenReturn(null)
+        `when`(mockTransitionInfo.changes).thenReturn(listOf(changeMock, nonTaskChangeMock))
         `when`(startTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
             .thenReturn(startTransaction)
         `when`(finishTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
@@ -646,8 +689,18 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             mockFinishCallback,
         )
 
-        verify(startTransaction).setPosition(any(), eq(point.x.toFloat()), eq(point.y.toFloat()))
-        verify(finishTransaction).setPosition(any(), eq(point.x.toFloat()), eq(point.y.toFloat()))
+        verify(startTransaction).setPosition(
+            eq(taskLeash),
+            eq(point.x.toFloat()),
+            eq(point.y.toFloat())
+        )
+        verify(finishTransaction).setPosition(
+            eq(taskLeash),
+            eq(point.x.toFloat()),
+            eq(point.y.toFloat())
+        )
+        verify(startTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
+        verify(finishTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
         verify(changeMock).endRelOffset
     }
 
@@ -669,6 +722,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         private const val NAVBAR_HEIGHT = 50
         private const val CAPTION_HEIGHT = 50
         private const val DISALLOWED_AREA_FOR_END_BOUNDS_HEIGHT = 10
+        private const val ALPHA_FOR_TRANSLUCENT_WINDOW = 0.8f
+        private const val ALPHA_FOR_VISIBLE_WINDOW = 1.0f
         private val DISPLAY_BOUNDS = Rect(0, 0, 2400, 1600)
         private val STARTING_BOUNDS = Rect(100, 100, 200, 200)
         private val STABLE_BOUNDS_LANDSCAPE =

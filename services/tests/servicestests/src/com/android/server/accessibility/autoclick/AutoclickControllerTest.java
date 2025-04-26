@@ -1089,6 +1089,10 @@ public class AutoclickControllerTest {
         injectFakeMouseMoveEvent(/* x= */ 30f, /* y= */ 100f, MotionEvent.ACTION_HOVER_MOVE);
         mTestableLooper.processAllMessages();
 
+        // When all messages (with delays) are processed.
+        mTestableLooper.moveTimeForward(2 * mController.LONG_PRESS_TIMEOUT);
+        mTestableLooper.processAllMessages();
+
         // Verify left click sent.
         assertThat(mMotionEventCaptor.downEvent).isNotNull();
         assertThat(mMotionEventCaptor.downEvent.getButtonState()).isEqualTo(
@@ -1210,6 +1214,38 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void exitScrollMode_revertToLeftClickEnabled_resetsClickType() {
+        initializeAutoclick();
+
+        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to true.
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                AccessibilityUtils.State.ON,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
+
+        // Set click type to scroll.
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Show the scroll panel.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        when(mockScrollPanel.isVisible()).thenReturn(true);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Exit scroll mode.
+        mController.exitScrollMode();
+
+        // Verify click type is reset when exiting scroll mode.
+        verify(mockAutoclickTypePanel).resetSelectedClickType();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void sendClick_clickType_longPress_triggerPressAndHold() {
         MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
         mController.setNext(motionEventCaptor);
@@ -1274,6 +1310,46 @@ public class AutoclickControllerTest {
         mTestableLooper.processAllMessages();
         assertThat(motionEventCaptor.cancelEvent).isNotNull();
         assertThat(mController.hasOngoingLongPressForTesting()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_clickType_longPress_revertsToLeftClick() {
+        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
+        mController.setNext(motionEventCaptor);
+
+        // Move mouse to initialize autoclick panel.
+        injectFakeMouseActionHoverMoveEvent();
+
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_LONG_PRESS);
+
+        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to false.
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                AccessibilityUtils.State.OFF,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(false);
+        assertThat(mController.mClickScheduler.getRevertToLeftClickForTesting()).isFalse();
+        assertThat(mController.getActiveClickTypeForTest()).isEqualTo(
+                AutoclickTypePanel.AUTOCLICK_TYPE_LONG_PRESS);
+
+        // Send hover move event to trigger long press.
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(false);
+        mController.mClickScheduler.run();
+        mTestableLooper.moveTimeForward(mController.LONG_PRESS_TIMEOUT);
+        mTestableLooper.processAllMessages();
+
+        motionEventCaptor.assertCapturedEvents(
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_BUTTON_PRESS,
+                MotionEvent.ACTION_BUTTON_RELEASE, MotionEvent.ACTION_UP);
+
+        verify(mockAutoclickTypePanel).resetSelectedClickType();
     }
 
     @Test

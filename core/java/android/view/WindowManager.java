@@ -5154,7 +5154,6 @@ public interface WindowManager extends ViewManager {
          * @param desiredHeadroom Desired amount of HDR headroom. Must be in the range of 1.0 (SDR)
          *                        to 10,000.0, or 0.0 to reset to default.
          */
-        @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_LIMITED_HDR)
         public void setDesiredHdrHeadroom(
                 @FloatRange(from = 0.0f, to = 10000.0f) float desiredHeadroom) {
             if (!Float.isFinite(desiredHeadroom)) {
@@ -5173,7 +5172,6 @@ public interface WindowManager extends ViewManager {
          * Get the desired amount of HDR headroom as set by {@link #setDesiredHdrHeadroom(float)}
          * @return The amount of HDR headroom set, or 0 for automatic/default behavior.
          */
-        @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_LIMITED_HDR)
         public float getDesiredHdrHeadroom() {
             return mDesiredHdrHeadroom;
         }

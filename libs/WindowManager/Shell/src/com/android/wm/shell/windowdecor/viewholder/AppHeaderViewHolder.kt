@@ -36,6 +36,7 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -51,8 +52,8 @@ import com.android.internal.R.color.materialColorSecondaryContainer
 import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
-import com.android.window.flags.Flags
 import com.android.wm.shell.R
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_MAXIMIZE_RESTORE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_RESIZE_LEFT
@@ -61,6 +62,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
 import com.android.wm.shell.windowdecor.MaximizeButtonView
+import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.OPACITY_100
@@ -78,16 +80,14 @@ import kotlin.math.roundToInt
  * controls.
  */
 class AppHeaderViewHolder(
-        rootView: View,
-        onCaptionTouchListener: View.OnTouchListener,
-        onCaptionButtonClickListener: View.OnClickListener,
-        private val onLongClickListener: OnLongClickListener,
-        onCaptionGenericMotionListener: View.OnGenericMotionListener,
-        mOnLeftSnapClickListener: () -> Unit,
-        mOnRightSnapClickListener: () -> Unit,
-        mOnMaximizeOrRestoreClickListener: () -> Unit,
-        onMaximizeHoverAnimationFinishedListener: () -> Unit,
-        private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    rootView: View,
+    windowDecorationActions: WindowDecorationActions,
+    onCaptionTouchListener: View.OnTouchListener,
+    onCaptionButtonClickListener: View.OnClickListener,
+    private val onLongClickListener: OnLongClickListener,
+    onCaptionGenericMotionListener: View.OnGenericMotionListener,
+    onMaximizeHoverAnimationFinishedListener: () -> Unit,
+    private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>(rootView) {
 
     data class HeaderData(
@@ -241,15 +241,24 @@ class AppHeaderViewHolder(
                 when (action) {
                     R.id.action_snap_left -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_LEFT)
-                        mOnLeftSnapClickListener.invoke()
+                        windowDecorationActions.onLeftSnap(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                     R.id.action_snap_right -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_RIGHT)
-                        mOnRightSnapClickListener.invoke()
+                        windowDecorationActions.onRightSnap(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                     R.id.action_maximize_restore -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_MAXIMIZE_RESTORE)
-                        mOnMaximizeOrRestoreClickListener.invoke()
+                        windowDecorationActions.onMaximizeOrRestore(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                 }
 
@@ -283,15 +292,24 @@ class AppHeaderViewHolder(
                     }
                     R.id.action_snap_left -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_LEFT)
-                        mOnLeftSnapClickListener.invoke()
+                        windowDecorationActions.onLeftSnap(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                     R.id.action_snap_right -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_RIGHT)
-                        mOnRightSnapClickListener.invoke()
+                        windowDecorationActions.onRightSnap(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                     R.id.action_maximize_restore -> {
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_MAXIMIZE_RESTORE)
-                        mOnMaximizeOrRestoreClickListener.invoke()
+                        windowDecorationActions.onMaximizeOrRestore(
+                            currentTaskInfo.taskId,
+                            InputMethod.ACCESSIBILITY
+                        )
                     }
                 }
 
@@ -385,7 +403,7 @@ class AppHeaderViewHolder(
     }
 
     private fun updateAppNameLayoutAndEffect() {
-        if (!Flags.enableRestartMenuForConnectedDisplays()) return
+        if (!DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()) return
         appNameTextView.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
@@ -910,24 +928,20 @@ class AppHeaderViewHolder(
     class Factory {
         fun create(
             rootView: View,
+            windowDecorationActions: WindowDecorationActions,
             onCaptionTouchListener: View.OnTouchListener,
             onCaptionButtonClickListener: View.OnClickListener,
             onLongClickListener: OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
-            mOnLeftSnapClickListener: () -> Unit,
-            mOnRightSnapClickListener: () -> Unit,
-            mOnMaximizeOrRestoreClickListener: () -> Unit,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger
         ): AppHeaderViewHolder = AppHeaderViewHolder(
             rootView,
+            windowDecorationActions,
             onCaptionTouchListener,
             onCaptionButtonClickListener,
             onLongClickListener,
             onCaptionGenericMotionListener,
-            mOnLeftSnapClickListener,
-            mOnRightSnapClickListener,
-            mOnMaximizeOrRestoreClickListener,
             onMaximizeHoverAnimationFinishedListener,
             desktopModeUiEventLogger,
         )

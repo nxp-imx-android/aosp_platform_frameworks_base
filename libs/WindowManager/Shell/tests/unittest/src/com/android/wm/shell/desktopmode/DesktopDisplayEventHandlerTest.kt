@@ -150,7 +150,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController)
-                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any())
+                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any(), any())
         }
 
     @Test
@@ -184,6 +184,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     displayId = eq(SECOND_DISPLAY),
                     userId = eq(PRIMARY_USER_ID),
+                    enforceDeskLimit = eq(false),
                     activateDesk = eq(true),
                     onResult = any(),
                 )
@@ -199,7 +200,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any(), any())
         }
 
     @Test
@@ -214,7 +215,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, times(1))
-                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any())
+                .createDesk(eq(SECOND_DISPLAY), eq(PRIMARY_USER_ID), any(), any(), any())
         }
 
     @Test
@@ -244,7 +245,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any(), any())
             verify(mockDesksOrganizer, never())
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
@@ -260,7 +261,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             verify(mockDesktopTasksController, never())
-                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any(), any())
             verify(mockDesksOrganizer, never())
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
@@ -280,6 +281,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     eq(SECOND_DISPLAY),
                     eq(PRIMARY_USER_ID),
+                    enforceDeskLimit = eq(false),
                     activateDesk = any(),
                     onResult = any(),
                 )
@@ -318,6 +320,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     displayId = eq(SECOND_DISPLAY),
                     userId = eq(PRIMARY_USER_ID),
+                    enforceDeskLimit = eq(false),
                     activateDesk = eq(true),
                     onResult = any(),
                 )
@@ -374,6 +377,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     displayId = eq(2),
                     userId = eq(userId),
+                    enforceDeskLimit = eq(false),
                     activateDesk = any(),
                     onResult = any(),
                 )
@@ -381,6 +385,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     displayId = eq(3),
                     userId = eq(userId),
+                    enforceDeskLimit = eq(false),
                     activateDesk = any(),
                     onResult = any(),
                 )
@@ -388,6 +393,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 .createDesk(
                     displayId = eq(4),
                     userId = any(),
+                    enforceDeskLimit = any(),
                     activateDesk = any(),
                     onResult = any(),
                 )

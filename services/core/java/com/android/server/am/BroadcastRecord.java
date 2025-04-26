@@ -181,7 +181,7 @@ final class BroadcastRecord extends Binder {
      * treat {@link BroadcastOptions#DEFERRAL_POLICY_DEFAULT} as
      * {@link BroadcastOptions#DEFERRAL_POLICY_UNTIL_ACTIVE}.
      */
-    static boolean CORE_DEFER_UNTIL_ACTIVE = false;
+    static boolean CORE_DEFER_UNTIL_ACTIVE = true;
 
     /** Empty immutable list of receivers */
     static final List<Object> EMPTY_RECEIVERS = List.of();

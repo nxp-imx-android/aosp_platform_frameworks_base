@@ -25,7 +25,6 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Trace
-import android.util.IndentingPrintWriter
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -58,9 +57,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -95,6 +95,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -117,11 +118,13 @@ import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
 import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelperIndication
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
+import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
@@ -136,6 +139,7 @@ import com.android.systemui.qs.composefragment.ui.toEditMode
 import com.android.systemui.qs.composefragment.viewmodel.QSFragmentComposeViewModel
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.qs.footer.ui.compose.FooterActions
+import com.android.systemui.qs.panels.shared.model.QSFragmentComposeClippingTableLog
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
@@ -148,12 +152,14 @@ import com.android.systemui.util.LifecycleFragment
 import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.children
+import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.printSection
 import com.android.systemui.util.println
 import java.io.PrintWriter
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -168,13 +174,16 @@ class QSFragmentCompose
 @Inject
 constructor(
     private val qsFragmentComposeViewModelFactory: QSFragmentComposeViewModel.Factory,
+    @QSFragmentComposeClippingTableLog private val qsClippingTableLogBuffer: TableLogBuffer,
     private val dumpManager: DumpManager,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : LifecycleFragment(), QS, Dumpable {
 
     private val scrollListener = MutableStateFlow<QS.ScrollListener?>(null)
     private val collapsedMediaVisibilityChangedListener =
         MutableStateFlow<(Consumer<Boolean>)?>(null)
     private val heightListener = MutableStateFlow<QS.HeightListener?>(null)
+    private val qqsHeightListener = MutableStateFlow<QS.QqsHeightListener?>(null)
     private val qsContainerController = MutableStateFlow<QSContainerController?>(null)
 
     private lateinit var viewModel: QSFragmentComposeViewModel
@@ -184,20 +193,8 @@ constructor(
     private val composeViewPositionOnScreen = Rect()
     private val scrollState = ScrollState(0)
     private val locationTemp = IntArray(2)
-
-    // Inside object for namespacing
-    private val notificationScrimClippingParams =
-        object {
-            var isEnabled by mutableStateOf(false)
-            var params by mutableStateOf(NotificationScrimClipParams())
-
-            fun dump(pw: IndentingPrintWriter) {
-                pw.printSection("NotificationScrimClippingParams") {
-                    pw.println("isEnabled", isEnabled)
-                    pw.println("params", params)
-                }
-            }
-        }
+    private val containerView: FrameLayoutTouchPassthrough?
+        get() = view as? FrameLayoutTouchPassthrough
 
     override fun onStart() {
         super.onStart()
@@ -261,12 +258,12 @@ constructor(
         val frame =
             FrameLayoutTouchPassthrough(
                 context,
-                { notificationScrimClippingParams.isEnabled },
-                snapshotFlow { notificationScrimClippingParams.params },
                 // Only allow scrolling when we are fully expanded. That way, we don't intercept
                 // swipes in lockscreen (when somehow QS is receiving touches).
                 canScrollQs,
                 viewModel::emitMotionEventForFalsingSwipeNested,
+                qsClippingTableLogBuffer,
+                backgroundDispatcher,
             )
         frame.addView(
             composeView,
@@ -406,6 +403,10 @@ constructor(
         heightListener.value = notificationPanelView
     }
 
+    override fun setQqsHeightListener(listener: QS.QqsHeightListener?) {
+        qqsHeightListener.value = listener
+    }
+
     override fun hideImmediately() {
         //        view?.animate()?.cancel()
         //        view?.y = -qsMinExpansionHeight.toFloat()
@@ -478,6 +479,7 @@ constructor(
     }
 
     override fun setQsVisible(qsVisible: Boolean) {
+        containerView?.qsVisible = qsVisible
         viewModel.isQsVisible = qsVisible
     }
 
@@ -559,15 +561,15 @@ constructor(
         visible: Boolean,
         fullWidth: Boolean,
     ) {
-        notificationScrimClippingParams.isEnabled = visible
-        notificationScrimClippingParams.params =
-            NotificationScrimClipParams(
-                top,
-                bottom,
-                if (fullWidth) 0 else leftInset,
-                if (fullWidth) 0 else rightInset,
-                cornerRadius,
-            )
+        containerView?.clipData =
+            visible to
+                NotificationScrimClipParams(
+                    top,
+                    bottom,
+                    if (fullWidth) 0 else leftInset,
+                    if (fullWidth) 0 else rightInset,
+                    cornerRadius,
+                )
     }
 
     override fun isFullyCollapsed(): Boolean {
@@ -616,9 +618,14 @@ constructor(
     private fun setListenerCollections() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                var lastQqsHeight = -1
                 this@QSFragmentCompose.view?.setSnapshotBinding {
                     scrollListener.value?.onQsPanelScrollChanged(scrollState.value)
                     collapsedMediaVisibilityChangedListener.value?.accept(viewModel.qqsMediaVisible)
+                    if (lastQqsHeight != viewModel.qqsHeight) {
+                        lastQqsHeight = viewModel.qqsHeight
+                        qqsHeightListener.value?.onQqsHeightChanged()
+                    }
                 }
                 launch {
                     setListenerJob(
@@ -683,20 +690,26 @@ constructor(
             ) {
                 val Tiles =
                     @Composable {
+                        // When always compose is false, this will always be true, and we'll be
+                        // listening whenever this is composed. When always compose is true, we
+                        // listen if we are visible and not fully expanded
+                        val isListening: () -> Boolean =
+                            if (alwaysCompose) {
+                                remember(viewModel) {
+                                        derivedStateOf {
+                                            viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                                viewModel.expansionState.progress < 1f &&
+                                                !viewModel.isEditing
+                                        }
+                                    }
+                                    .let { state -> { state.value } }
+                            } else {
+                                { true }
+                            }
+
                         QuickQuickSettings(
                             viewModel = viewModel.quickQuickSettingsViewModel,
-                            listening = {
-                                /*
-                                 *  When always compose is false, this will always be true, and we'll be
-                                 *  listening whenever this is composed.
-                                 *  When always compose is true, we listen if we are visible and not
-                                 *  fully expanded
-                                 */
-                                !alwaysCompose ||
-                                    (viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                        viewModel.expansionState.progress < 1f &&
-                                        !viewModel.isEditing)
-                            },
+                            listening = isListening,
                         )
                     }
                 val Media =
@@ -787,6 +800,7 @@ constructor(
                                 }
                                 .onSizeChanged { viewModel.qsScrollHeight = it.height }
                                 .verticalScroll(scrollState)
+                                .padding(bottom = 8.dp)
                                 .sysuiResTag(ResIdTags.qsScroll)
                     ) {
                         val containerViewModel = viewModel.containerViewModel
@@ -829,22 +843,30 @@ constructor(
                             @Composable {
                                 Box {
                                     GridAnchor()
+
+                                    // When always compose is false, this will always be true, and
+                                    // we'll be listening whenever this is composed. When always
+                                    // compose is true, we look a the second condition and we'll
+                                    // listen if QS is visible AND we are not fully collapsed.
+                                    val isListening: () -> Boolean =
+                                        if (alwaysCompose) {
+                                            remember(viewModel) {
+                                                    derivedStateOf {
+                                                        viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                                            viewModel.expansionState.progress >
+                                                                0f &&
+                                                            !viewModel.isEditing
+                                                    }
+                                                }
+                                                .let { state -> { state.value } }
+                                        } else {
+                                            { true }
+                                        }
+
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
                                         modifier = Modifier.fillMaxWidth(),
-                                        listening = {
-                                            /*
-                                             *  When always compose is false, this will always be true,
-                                             *  and we'll be listening whenever this is composed.
-                                             *  When always compose is true, we look a the second
-                                             *  condition and we'll listen if QS is visible AND we are
-                                             *  not fully collapsed.
-                                             */
-                                            !alwaysCompose ||
-                                                (viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                                    viewModel.expansionState.progress > 0f &&
-                                                    !viewModel.isEditing)
-                                        },
+                                        listening = isListening,
                                     )
                                 }
                             }
@@ -937,9 +959,15 @@ constructor(
         }
     }
 
+    private val clipData
+        get() = containerView?.clipData
+
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.asIndenting().run {
-            notificationScrimClippingParams.dump(this)
+            printSection("NotificationScrimClippingParams") {
+                println("isEnabled", clipData?.first)
+                println("params", clipData?.second)
+            }
             printSection("QQS positioning") {
                 println("qqsHeight", "${headerHeight}px")
                 println("qqsTop", "${headerTop}px")
@@ -1108,67 +1136,105 @@ private const val EDIT_MODE_TIME_MILLIS = 500
  */
 private class FrameLayoutTouchPassthrough(
     context: Context,
-    private val clippingEnabledProvider: () -> Boolean,
-    private val clippingParams: Flow<NotificationScrimClipParams>,
     private val canScrollQs: CanScrollQs,
     private val emitMotionEventForFalsing: () -> Unit,
+    private val logBuffer: TableLogBuffer,
+    private val backgroundDispatcher: CoroutineDispatcher,
 ) : FrameLayout(context) {
 
     init {
         repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                clippingParams.collect { currentClipParams = it }
+                launchTraced("FrameLayoutTouchPassthrough.logs", backgroundDispatcher) {
+                    _clipData
+                        .pairwise(initialValue = false to NotificationScrimClipParams())
+                        .collect { (prev, new) ->
+                            logBuffer.logDiffs(
+                                columnPrefix = PREFIX_PARAMS,
+                                prevVal = prev.second,
+                                newVal = new.second,
+                            )
+                            if (prev.first != new.first) {
+                                logBuffer.logChange(
+                                    columnName = COL_CLIP_ENABLED,
+                                    value = new.first,
+                                    isInitial = false,
+                                )
+                            }
+                        }
+                }
             }
         }
     }
 
     private val currentClippingPath = Path()
-    private var lastWidth = -1
+
+    private val _clipData = MutableStateFlow(false to NotificationScrimClipParams())
+
+    // [first] is enabled and [second] is the clipping params
+    var clipData
+        get() = _clipData.value
         set(value) {
-            if (field != value) {
-                field = value
-                updateClippingPath()
+            if (_clipData.value != value) {
+                _clipData.value = value
+                dirtyClipData = true
+                invalidate()
             }
         }
 
-    private var currentClipParams = NotificationScrimClipParams()
+    var qsVisible: Boolean = false
         set(value) {
-            if (field != value) {
+            if (value != field) {
                 field = value
-                updateClippingPath()
+                invalidate()
             }
         }
+
+    private var dirtyClipData = false
+
+    private val clipEnabled
+        get() = clipData.first
+
+    private val clipParams
+        get() = clipData.second
 
     private fun updateClippingPath() {
         currentClippingPath.rewind()
-        if (clippingEnabledProvider()) {
-            val right = width + currentClipParams.rightInset
-            val left = -currentClipParams.leftInset
-            val top = currentClipParams.top
-            val bottom = currentClipParams.bottom
+        val (clipEnabled, clipParams) = clipData
+        if (clipEnabled) {
+            val right = width + clipParams.rightInset
+            val left = -clipParams.leftInset
+            val top = clipParams.top
+            val bottom = clipParams.bottom
             currentClippingPath.addRoundRect(
                 left.toFloat(),
                 top.toFloat(),
                 right.toFloat(),
                 bottom.toFloat(),
-                currentClipParams.radius.toFloat(),
-                currentClipParams.radius.toFloat(),
+                clipParams.radius.toFloat(),
+                clipParams.radius.toFloat(),
                 Path.Direction.CW,
             )
         }
-        invalidate()
-    }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        lastWidth = right - left
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        if (!currentClippingPath.isEmpty) {
-            canvas.clipOutPath(currentClippingPath)
+        if (dirtyClipData) {
+            dirtyClipData = false
+            updateClippingPath()
         }
-        super.dispatchDraw(canvas)
+        if (!currentClippingPath.isEmpty) {
+            canvas.translate(0f, -translationY)
+            canvas.clipOutPath(currentClippingPath)
+            canvas.translate(0f, translationY)
+        }
+        if (qsVisible) {
+            // If QS should not be visible, there's no need to draw this tree at all. We do this
+            // in the view (instead of in compose) so it's completely synchronized with the clip.
+            // As this FrameLayout doesn't have any content, and the ComposeView is the only child,
+            // this is equivalent to blocking the draw in `drawChild`.
+            super.dispatchDraw(canvas)
+        }
     }
 
     override fun isTransformedTouchPointInView(
@@ -1177,7 +1243,7 @@ private class FrameLayoutTouchPassthrough(
         child: View?,
         outLocalPoint: PointF?,
     ): Boolean {
-        return if (clippingEnabledProvider() && y + translationY > currentClipParams.top) {
+        return if (clipEnabled && y + translationY > clipParams.top) {
             false
         } else {
             super.isTransformedTouchPointInView(x, y, child, outLocalPoint)
@@ -1243,6 +1309,11 @@ private class FrameLayoutTouchPassthrough(
             }
         }
         return super.onInterceptTouchEvent(ev)
+    }
+
+    private companion object {
+        const val COL_CLIP_ENABLED = "enabled"
+        const val PREFIX_PARAMS = "params"
     }
 }
 

@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"​ប្ដូរ​ភាសា"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"រក្សាភាសាបច្ចុប្បន្ន"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"ចែករំលែក Wi‑Fi"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"បញ្ចូលបណ្ដាញ"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"អនុញ្ញាត​ការជួសជុល​ដោយឥតខ្សែ​នៅលើ​បណ្ដាញ​នេះ​ឬ?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"ឈ្មោះបណ្ដាញ (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nអាសយដ្ឋាន Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"អនុញ្ញាត​នៅលើ​បណ្ដាញ​នេះ​ជានិច្ច"</string>
@@ -246,6 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"រូបឧបករណ៍​ប៊្លូធូស"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ចុចដើម្បីកំណត់រចនាសម្ព័ន្ធព័ត៌មានលម្អិតអំពីឧបករណ៍"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. កំណត់រចនាសម្ព័ន្ធព័ត៌មានលម្អិតឧបករណ៍"</string>
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"ចាប់ផ្ដើមចែករំលែកសំឡេងជាមួយ <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"ឈប់ចែករំលែកសំឡេងជាមួយ <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"មើលឧបករណ៍ទាំងអស់"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ផ្គូផ្គង​ឧបករណ៍ថ្មី"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"មិនដឹងអំពី​ភាគរយថ្មទេ។"</string>
@@ -479,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"មិនបានកំណត់"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"គ្រប់គ្រង​នៅ​ក្នុង​ការកំណត់"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{គ្មានមុខងារ​ដែលកំពុងដំណើរការទេ}=1{{mode} កំពុង​ដំណើរការ}other{មុខងារ # កំពុងដំណើរការ}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"សំឡេង និងរំញ័រនឹងមិន​រំខានដល់អ្នកឡើយ លើកលែងតែម៉ោងរោទ៍ ការរំលឹក ព្រឹត្តិការណ៍ និងអ្នកហៅទូរសព្ទដែលអ្នកបញ្ជាក់ប៉ុណ្ណោះ។ អ្នកនឹងនៅតែឮសំឡេងសកម្មភាពគ្រប់យ៉ាងដែលអ្នកលេងដដែល រួមទាំងតន្រ្តី វីដេអូ និងហ្គេម។"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"សំឡេង និងរំញ័រនឹងមិន​រំខានដល់អ្នកឡើយ លើកលែងតែម៉ោងរោទ៍ប៉ុណ្ណោះ។ អ្នកនឹងនៅតែឮសំឡេងសកម្មភាពគ្រប់យ៉ាងដែលអ្នកលេងដដែល រួមទាំងតន្រ្តី វីដេអូ និងហ្គេម។"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"ប្ដូរតាមបំណង"</string>
@@ -744,6 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"ញ័រ"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s របារ​បញ្ជា​កម្រិត​សំឡេង"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"ការ​ហៅ​ទូរសព្ទ និង​ការជូន​ដំណឹង​នឹង​រោទ៍ (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"កម្រិតសំឡេងឧបករណ៍ភ្ញៀវ"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"ចូលការកំណត់ឧបករណ៍មេឌៀ"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"បានពង្រីកគ្រាប់រំកិលកម្រិតសំឡេង"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"បានបង្រួមគ្រាប់រំកិលកម្រិតសំឡេង"</string>
@@ -804,9 +812,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ដើម្បីភ្ជាប់ក្តារចុចរបស់អ្នកជាមួយនឹងថេប្លេតរបស់អ្នក អ្នកត្រូវតែបើកប៊្លូធូសជាមុនសិន។"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"បើក"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"បើក - ផ្អែកលើមុខ"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
@@ -1103,8 +1117,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"បើក​នៅពេល​ថ្ម​ទំនងជា​អស់"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"ទេ អរគុណ"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"កំពុង​ប្រើ"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"កំពុង​ប្រើ<xliff:g id="TYPES_LIST">%s</xliff:g>។"</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" និង "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"កំពុងប្រើដោយ <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1181,7 +1194,7 @@
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{បានបញ្ចូល​ការគ្រប់គ្រង #។}other{បានបញ្ចូល​ការគ្រប់គ្រង #។}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"បានដកចេញ"</string>
     <string name="controls_panel_authorization_title" msgid="267429338785864842">"បញ្ចូល <xliff:g id="APPNAME">%s</xliff:g> ឬ?"</string>
-    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> អាចជ្រើសរើសឱ្យ​ការគ្រប់គ្រង និងខ្លឹមសារណាខ្លះ​បង្ហាញនៅទីនេះ។"</string>
+    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> អាចជ្រើសរើស​ការគ្រប់គ្រង និងខ្លឹមសារដែល​បង្ហាញនៅទីនេះ។"</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"ដកការគ្រប់គ្រងសម្រាប់ <xliff:g id="APPNAME">%s</xliff:g> ចេញឬ?"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"បានដាក់ជា​សំណព្វ"</string>
     <string name="accessibility_control_favorite_position" msgid="54220258048929221">"បានដាក់ជា​សំណព្វ ទីតាំង​ទី <xliff:g id="NUMBER">%d</xliff:g>"</string>
@@ -1586,7 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"ភាពងាយស្រួល"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"កម្មវិធី​សម្រួលដំណើរការ"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"ឯកជនភាព"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"ផ្ដល់ជូនដោយកម្មវិធី"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"ពីកម្មវិធីប្រព័ន្ធ"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"ពីកម្មវិធីដែលអ្នកបានដំឡើង"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ផ្ទាំងបង្ហាញ"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"មិនស្គាល់"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"កំណត់ប្រអប់ទាំងអស់​ឡើងវិញឬ?"</string>

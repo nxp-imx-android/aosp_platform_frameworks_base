@@ -59,7 +59,9 @@ class HostStubGenClassProcessor(
         // Connect to the base visitor
         var outVisitor: ClassVisitor = base
 
-        outVisitor = JdkPatchVisitor(outVisitor)
+        if (!options.disableJdkPatch.get) {
+            outVisitor = JdkPatchVisitor(outVisitor)
+        }
 
         if (options.enableClassChecker.get) {
             outVisitor = CheckClassAdapter(outVisitor)

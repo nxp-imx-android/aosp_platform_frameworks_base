@@ -58,13 +58,3 @@ flag {
     }
 }
 
-flag {
-    name: "disable_idle_check"
-    namespace: "backstage_power"
-    description: "disable idle check for USER_SYSTEM during boot up"
-    is_fixed_read_only: true
-    bug: "337864590"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}

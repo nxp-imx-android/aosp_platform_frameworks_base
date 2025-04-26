@@ -4547,6 +4547,8 @@ package android.app {
     method @Deprecated public final boolean isChild();
     method public boolean isDestroyed();
     method public boolean isFinishing();
+    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffEnabled();
+    method @FlaggedApi("android.companion.enable_task_continuity") public final boolean isHandoffFullTaskRecreationAllowed();
     method public boolean isImmersive();
     method public boolean isInMultiWindowMode();
     method public boolean isInPictureInPictureMode();
@@ -4590,6 +4592,7 @@ package android.app {
     method public void onEnterAnimationComplete();
     method public boolean onGenericMotionEvent(android.view.MotionEvent);
     method public void onGetDirectActions(@NonNull android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.List<android.app.DirectAction>>);
+    method @FlaggedApi("android.companion.enable_task_continuity") @Nullable public android.app.HandoffActivityData onHandoffActivityDataRequested(@NonNull android.app.HandoffActivityDataRequestInfo);
     method public boolean onKeyDown(int, android.view.KeyEvent);
     method public boolean onKeyLongPress(int, android.view.KeyEvent);
     method public boolean onKeyMultiple(int, int, android.view.KeyEvent);
@@ -4691,6 +4694,7 @@ package android.app {
     method public final void setFeatureDrawableResource(int, @DrawableRes int);
     method public final void setFeatureDrawableUri(int, android.net.Uri);
     method public void setFinishOnTouchOutside(boolean);
+    method @FlaggedApi("android.companion.enable_task_continuity") public final void setHandoffEnabled(boolean, boolean);
     method public void setImmersive(boolean);
     method public void setInheritShowWhenLocked(boolean);
     method public void setIntent(android.content.Intent);
@@ -6179,6 +6183,27 @@ package android.app {
     method public int getApplicationGrammaticalGender();
     method @FlaggedApi("android.app.system_terms_of_address_enabled") @RequiresPermission("android.permission.READ_SYSTEM_GRAMMATICAL_GENDER") public int getSystemGrammaticalGender();
     method public void setRequestedApplicationGrammaticalGender(int);
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.content.ComponentName getComponentName();
+    method @NonNull public android.os.PersistableBundle getExtras();
+    method @Nullable public android.net.Uri getFallbackUri();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.HandoffActivityData> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public static final class HandoffActivityData.Builder {
+    ctor public HandoffActivityData.Builder(@NonNull android.content.ComponentName);
+    method @NonNull public android.app.HandoffActivityData build();
+    method @NonNull public android.app.HandoffActivityData.Builder setExtras(@NonNull android.os.PersistableBundle);
+    method @NonNull public android.app.HandoffActivityData.Builder setFallbackUri(@Nullable android.net.Uri);
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityDataRequestInfo {
+    ctor public HandoffActivityDataRequestInfo(boolean);
+    method public boolean isActiveRequest();
   }
 
   public class Instrumentation {
@@ -16475,7 +16500,7 @@ package android.graphics {
 
   public final class Gainmap implements android.os.Parcelable {
     ctor public Gainmap(@NonNull android.graphics.Bitmap);
-    ctor @FlaggedApi("com.android.graphics.hwui.flags.gainmap_constructor_with_metadata") public Gainmap(@NonNull android.graphics.Gainmap, @NonNull android.graphics.Bitmap);
+    ctor public Gainmap(@NonNull android.graphics.Gainmap, @NonNull android.graphics.Bitmap);
     method public int describeContents();
     method @FlaggedApi("com.android.graphics.hwui.flags.iso_gainmap_apis") @Nullable public android.graphics.ColorSpace getAlternativeImagePrimaries();
     method @NonNull public float getDisplayRatioForFullHdr();
@@ -19779,12 +19804,12 @@ package android.hardware.camera2 {
     field public static final int TEMPLATE_ZERO_SHUTTER_LAG = 5; // 0x5
   }
 
-  @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public abstract static class CameraDevice.CameraDeviceSetup {
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @NonNull public abstract android.hardware.camera2.CaptureRequest.Builder createCaptureRequest(int) throws android.hardware.camera2.CameraAccessException;
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @NonNull public abstract String getId();
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @NonNull public abstract android.hardware.camera2.CameraCharacteristics getSessionCharacteristics(@NonNull android.hardware.camera2.params.SessionConfiguration) throws android.hardware.camera2.CameraAccessException;
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public abstract boolean isSessionConfigurationSupported(@NonNull android.hardware.camera2.params.SessionConfiguration) throws android.hardware.camera2.CameraAccessException;
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @RequiresPermission(android.Manifest.permission.CAMERA) public abstract void openCamera(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
+  public abstract static class CameraDevice.CameraDeviceSetup {
+    method @NonNull public abstract android.hardware.camera2.CaptureRequest.Builder createCaptureRequest(int) throws android.hardware.camera2.CameraAccessException;
+    method @NonNull public abstract String getId();
+    method @NonNull public abstract android.hardware.camera2.CameraCharacteristics getSessionCharacteristics(@NonNull android.hardware.camera2.params.SessionConfiguration) throws android.hardware.camera2.CameraAccessException;
+    method public abstract boolean isSessionConfigurationSupported(@NonNull android.hardware.camera2.params.SessionConfiguration) throws android.hardware.camera2.CameraAccessException;
+    method @RequiresPermission(android.Manifest.permission.CAMERA) public abstract void openCamera(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
   }
 
   public abstract static class CameraDevice.StateCallback {
@@ -19856,12 +19881,12 @@ package android.hardware.camera2 {
 
   public final class CameraManager {
     method @NonNull public android.hardware.camera2.CameraCharacteristics getCameraCharacteristics(@NonNull String) throws android.hardware.camera2.CameraAccessException;
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @NonNull public android.hardware.camera2.CameraDevice.CameraDeviceSetup getCameraDeviceSetup(@NonNull String) throws android.hardware.camera2.CameraAccessException;
+    method @NonNull public android.hardware.camera2.CameraDevice.CameraDeviceSetup getCameraDeviceSetup(@NonNull String) throws android.hardware.camera2.CameraAccessException;
     method @NonNull public android.hardware.camera2.CameraExtensionCharacteristics getCameraExtensionCharacteristics(@NonNull String) throws android.hardware.camera2.CameraAccessException;
     method @NonNull public String[] getCameraIdList() throws android.hardware.camera2.CameraAccessException;
     method @NonNull public java.util.Set<java.util.Set<java.lang.String>> getConcurrentCameraIds() throws android.hardware.camera2.CameraAccessException;
     method public int getTorchStrengthLevel(@NonNull String) throws android.hardware.camera2.CameraAccessException;
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public boolean isCameraDeviceSetupSupported(@NonNull String) throws android.hardware.camera2.CameraAccessException;
+    method public boolean isCameraDeviceSetupSupported(@NonNull String) throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(android.Manifest.permission.CAMERA) public boolean isConcurrentSessionConfigurationSupported(@NonNull java.util.Map<java.lang.String,android.hardware.camera2.params.SessionConfiguration>) throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(android.Manifest.permission.CAMERA) public void openCamera(@NonNull String, @NonNull android.hardware.camera2.CameraDevice.StateCallback, @Nullable android.os.Handler) throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(android.Manifest.permission.CAMERA) public void openCamera(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
@@ -20638,14 +20663,14 @@ package android.hardware.camera2.params {
     ctor public OutputConfiguration(@NonNull android.view.Surface);
     ctor public OutputConfiguration(int, @NonNull android.view.Surface);
     ctor public <T> OutputConfiguration(@NonNull android.util.Size, @NonNull Class<T>);
-    ctor @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public OutputConfiguration(int, @NonNull android.util.Size);
-    ctor @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public OutputConfiguration(int, int, @NonNull android.util.Size);
-    ctor @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public OutputConfiguration(int, @NonNull android.util.Size, long);
-    ctor @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public OutputConfiguration(int, int, @NonNull android.util.Size, long);
+    ctor public OutputConfiguration(int, @NonNull android.util.Size);
+    ctor public OutputConfiguration(int, int, @NonNull android.util.Size);
+    ctor public OutputConfiguration(int, @NonNull android.util.Size, long);
+    ctor public OutputConfiguration(int, int, @NonNull android.util.Size, long);
     method public void addSensorPixelModeUsed(int);
     method public void addSurface(@NonNull android.view.Surface);
     method @NonNull public static java.util.Collection<android.hardware.camera2.params.OutputConfiguration> createInstancesForMultiResolutionOutput(@NonNull android.hardware.camera2.MultiResolutionImageReader);
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") @NonNull public static java.util.List<android.hardware.camera2.params.OutputConfiguration> createInstancesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int);
+    method @NonNull public static java.util.List<android.hardware.camera2.params.OutputConfiguration> createInstancesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int);
     method public int describeContents();
     method public void enableSurfaceSharing();
     method public long getDynamicRangeProfile();
@@ -20666,7 +20691,7 @@ package android.hardware.camera2.params {
     method public void setPhysicalCameraId(@Nullable String);
     method public void setReadoutTimestampEnabled(boolean);
     method public void setStreamUseCase(long);
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public static void setSurfacesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.OutputConfiguration>, @NonNull android.hardware.camera2.MultiResolutionImageReader);
+    method public static void setSurfacesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.OutputConfiguration>, @NonNull android.hardware.camera2.MultiResolutionImageReader);
     method public void setTimestampBase(int);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.camera2.params.OutputConfiguration> CREATOR;
@@ -20728,7 +20753,7 @@ package android.hardware.camera2.params {
 
   public final class SessionConfiguration implements android.os.Parcelable {
     ctor public SessionConfiguration(int, @NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraCaptureSession.StateCallback);
-    ctor @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public SessionConfiguration(int, @NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>);
+    ctor public SessionConfiguration(int, @NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>);
     method public void clearColorSpace();
     method public int describeContents();
     method @Nullable public android.graphics.ColorSpace getColorSpace();
@@ -20741,7 +20766,7 @@ package android.hardware.camera2.params {
     method public void setColorSpace(@NonNull android.graphics.ColorSpace.Named);
     method public void setInputConfiguration(@NonNull android.hardware.camera2.params.InputConfiguration);
     method public void setSessionParameters(android.hardware.camera2.CaptureRequest);
-    method @FlaggedApi("com.android.internal.camera.flags.camera_device_setup") public void setStateCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraCaptureSession.StateCallback);
+    method public void setStateCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraCaptureSession.StateCallback);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.camera2.params.SessionConfiguration> CREATOR;
     field public static final int SESSION_HIGH_SPEED = 1; // 0x1
@@ -42206,7 +42231,7 @@ package android.service.media {
     method public abstract void onLoadChildren(@NonNull String, @NonNull android.service.media.MediaBrowserService.Result<java.util.List<android.media.browse.MediaBrowser.MediaItem>>);
     method public void onLoadChildren(@NonNull String, @NonNull android.service.media.MediaBrowserService.Result<java.util.List<android.media.browse.MediaBrowser.MediaItem>>, @NonNull android.os.Bundle);
     method public void onLoadItem(String, android.service.media.MediaBrowserService.Result<android.media.browse.MediaBrowser.MediaItem>);
-    method public void setSessionToken(android.media.session.MediaSession.Token);
+    method public void setSessionToken(@Nullable android.media.session.MediaSession.Token);
     field public static final String SERVICE_INTERFACE = "android.media.browse.MediaBrowserService";
   }
 
@@ -53754,7 +53779,7 @@ package android.view {
     method @NonNull public android.view.SurfaceControl.Transaction setCrop(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Rect);
     method @NonNull public android.view.SurfaceControl.Transaction setDamageRegion(@NonNull android.view.SurfaceControl, @Nullable android.graphics.Region);
     method @NonNull public android.view.SurfaceControl.Transaction setDataSpace(@NonNull android.view.SurfaceControl, int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") @NonNull public android.view.SurfaceControl.Transaction setDesiredHdrHeadroom(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0f) float);
+    method @NonNull public android.view.SurfaceControl.Transaction setDesiredHdrHeadroom(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0f) float);
     method @FlaggedApi("com.android.window.flags.sdk_desired_present_time") @NonNull public android.view.SurfaceControl.Transaction setDesiredPresentTimeNanos(long);
     method @NonNull public android.view.SurfaceControl.Transaction setExtendedRangeBrightness(@NonNull android.view.SurfaceControl, float, float);
     method @NonNull public android.view.SurfaceControl.Transaction setFrameRate(@NonNull android.view.SurfaceControl, @FloatRange(from=0.0) float, int);
@@ -53864,7 +53889,7 @@ package android.view {
     method public android.view.SurfaceControl getSurfaceControl();
     method public void setChildSurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public void setCompositionOrder(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setSecure(boolean);
     method public void setSurfaceLifecycle(int);
     method @Deprecated @FlaggedApi("android.view.flags.deprecate_surface_view_z_order_apis") public void setZOrderMediaOverlay(boolean);
@@ -55571,7 +55596,7 @@ package android.view {
     method @Nullable public abstract android.view.View getCurrentFocus();
     method @NonNull public abstract android.view.View getDecorView();
     method public static int getDefaultFeatures(android.content.Context);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public float getDesiredHdrHeadroom();
+    method public float getDesiredHdrHeadroom();
     method public android.transition.Transition getEnterTransition();
     method public android.transition.Transition getExitTransition();
     method protected final int getFeatures();
@@ -55643,7 +55668,7 @@ package android.view {
     method public abstract void setDecorCaptionShade(int);
     method @Deprecated public void setDecorFitsSystemWindows(boolean);
     method protected void setDefaultWindowFormat(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setDimAmount(float);
     method public void setElevation(float);
     method public void setEnterTransition(android.transition.Transition);
@@ -56021,7 +56046,7 @@ package android.view {
     method public int describeContents();
     method public int getBlurBehindRadius();
     method public int getColorMode();
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public float getDesiredHdrHeadroom();
+    method public float getDesiredHdrHeadroom();
     method public int getFitInsetsSides();
     method public int getFitInsetsTypes();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean getFrameRateBoostOnTouchEnabled();
@@ -56033,7 +56058,7 @@ package android.view {
     method public void setBlurBehindRadius(@IntRange(from=0) int);
     method public void setCanPlayMoveAnimation(boolean);
     method public void setColorMode(int);
-    method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0f) float);
+    method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0f) float);
     method public void setFitInsetsIgnoringVisibility(boolean);
     method public void setFitInsetsSides(int);
     method public void setFitInsetsTypes(int);

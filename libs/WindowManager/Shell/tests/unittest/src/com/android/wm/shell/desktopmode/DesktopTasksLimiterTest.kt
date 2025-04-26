@@ -26,6 +26,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
@@ -35,6 +36,7 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_R
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+import com.android.window.flags.Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
@@ -44,6 +46,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -74,6 +77,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 
 /**
@@ -102,6 +106,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     private lateinit var shellInit: ShellInit
     private lateinit var testScope: CoroutineScope
     private val desktopState = FakeDesktopState()
+    private val desktopConfig = FakeDesktopConfig()
 
     @Before
     fun setUp() {
@@ -119,6 +124,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 testScope,
                 userManager,
                 desktopState,
+                desktopConfig,
             )
         desktopTaskRepo = userRepositories.current
         desktopTasksLimiter =
@@ -704,7 +710,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
             taskId = launchTask.taskId,
         )
         val transitionInfo =
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, launchTask).build()
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, launchTask).build()
         whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
             .thenReturn(minimizeTransition)
 
@@ -726,7 +732,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
         val launchTask = setUpFreeformTask()
         val transitionInfo =
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, launchTask).build()
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, launchTask).build()
         whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
             .thenReturn(Binder())
 
@@ -749,7 +755,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
             taskId = task.taskId,
         )
         val transitionInfo =
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_TO_BACK, task).build()
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, task).build()
         whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
             .thenReturn(Binder())
 
@@ -760,6 +766,83 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         onIdleArgumentCaptor.value.run()
         verify(desktopMixedTransitionHandler, never())
             .startTaskLimitMinimizeTransition(any(), any())
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS)
+    fun onTransitionReady_taskLimitTransition_taskTrampoline_doesntStartMinimizeTransition() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition1 = Binder()
+        val transition2 = Binder()
+        (2..MAX_TASK_LIMIT).map { setUpFreeformTask() }
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition1,
+            deskId = 0,
+            taskId = task1.taskId,
+        )
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition2,
+            deskId = 0,
+            taskId = task2.taskId,
+        )
+        val transitionInfo1 =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, task1).build()
+        val transitionInfo2 =
+            TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, task2)
+                .addChange(TRANSIT_CLOSE, task1)
+                .build()
+
+        // Start the initial task launch transition - launching a trampoline task
+        callOnTransitionReady(transition1, transitionInfo1)
+        // Start the second task launch transition - launching the final task and closing the
+        // trampoline task
+        callOnTransitionReady(transition2, transitionInfo2)
+
+        val onIdleArgumentCaptor = argumentCaptor<Runnable>()
+        verify(transitions, times(2)).runOnIdle(onIdleArgumentCaptor.capture())
+        onIdleArgumentCaptor.allValues.forEach { runnable -> runnable.run() }
+        verify(desktopMixedTransitionHandler, never())
+            .startTaskLimitMinimizeTransition(any(), any())
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS)
+    fun onTransitionReady_taskLimitTransition_taskTrampoline_marksTramplineAsClosed() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition1 = Binder()
+        val transition2 = Binder()
+        val task1 = setUpFreeformTask()
+        val task2 = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition1,
+            deskId = 0,
+            taskId = task1.taskId,
+        )
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition2,
+            deskId = 0,
+            taskId = task2.taskId,
+        )
+        val transitionInfo1 =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, task1).build()
+        val transitionInfo2 =
+            TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, task2)
+                .addChange(TRANSIT_CLOSE, task1)
+                .build()
+
+        // Start the initial task launch transition - launching a trampoline task
+        callOnTransitionReady(transition1, transitionInfo1)
+        // Start the second task launch transition - launching the final task and closing the
+        // trampoline task
+        callOnTransitionReady(transition2, transitionInfo2)
+
+        assertThat(desktopTaskRepo.isClosingTask(task1.taskId)).isTrue()
     }
 
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {

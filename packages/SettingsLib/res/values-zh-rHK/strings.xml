@@ -335,7 +335,7 @@
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"輸入 DNS 供應商主機名稱"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"無法連線"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"顯示無線螢幕分享認證的選項"</string>
-    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"讓 Wi‑Fi 記錄功能升級，在 Wi‑Fi 選擇器中依每個 SSID RSSI 顯示 Wi‑Fi 詳細紀錄"</string>
+    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"將 Wi‑Fi 記錄功能升級，在 Wi‑Fi 選擇器中按每個 SSID RSSI 顯示 Wi‑Fi 詳細紀錄"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"減低耗電量並改善網絡表現"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"啟用此模式後，每次連接至已啟用 MAC 隨機處理的網絡時，此裝置的 MAC 位址都可能會變更。"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"按用量收費"</string>
@@ -396,7 +396,7 @@
     <string name="show_key_presses" msgid="6360141722735900214">"顯示按鍵操作"</string>
     <string name="show_key_presses_summary" msgid="725387457373015024">"顯示實際按鍵操作的視覺回應"</string>
     <string name="touchpad_visualizer" msgid="3707916068870825115">"顯示觸控板輸入內容"</string>
-    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"重疊式畫面正在顯示觸控板輸入的資料和已辨識的手勢"</string>
+    <string name="touchpad_visualizer_summary" msgid="4056080018119847449">"在重疊式畫面上顯示觸控板輸入的資料和已辨識的手勢"</string>
     <string name="show_screen_updates" msgid="2078782895825535494">"顯示表層更新"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"更新表層時閃動整個視窗表層"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"顯示畫面更新"</string>
@@ -658,7 +658,7 @@
     <string name="user_grant_admin_title" msgid="5157031020083343984">"要指定此使用者為管理員嗎？"</string>
     <string name="user_grant_admin_message" msgid="1673791931033486709">"管理員擁有其他使用者沒有的特殊權限。管理員可管理所有使用者、更新或重設此裝置、修改設定、查看所有已安裝的應用程式，以及對其他使用者授予或撤銷管理員權限。"</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"指定為管理員"</string>
-    <string name="user_setup_dialog_title" msgid="8037342066381939995">"立即設定使用者？"</string>
+    <string name="user_setup_dialog_title" msgid="8037342066381939995">"要立即設定使用者嗎？"</string>
     <string name="user_setup_dialog_message" msgid="269931619868102841">"請確保對方現在可以在裝置上設定自己的空間"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"立即設定個人檔案？"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"立即設定"</string>

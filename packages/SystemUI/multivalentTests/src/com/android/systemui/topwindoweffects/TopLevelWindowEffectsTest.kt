@@ -21,6 +21,7 @@ import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
 import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -40,6 +41,7 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import java.util.Optional
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -69,8 +71,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         Kosmos.Fixture {
             TopLevelWindowEffects(
                 context = mContext,
-                applicationScope = testScope.backgroundScope,
-                bgContext = testScope.testScheduler,
+                mainDispatcher = StandardTestDispatcher(testScope.testScheduler),
+                topLevelWindowEffectsScope = testScope.backgroundScope,
                 windowManager = windowManager,
                 keyEventInteractor = keyEventInteractor,
                 viewModelFactory = viewModelFactory,
@@ -78,6 +80,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                     SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
                 appZoomOutOptional = Optional.empty(),
                 notificationShadeWindowController = notificationShadeWindowController,
+                interactionJankMonitor = kosmos.interactionJankMonitor,
             )
         }
 

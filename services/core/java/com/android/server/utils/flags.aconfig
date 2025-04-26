@@ -8,3 +8,10 @@ flag {
      description: "When true, start a trace if an ANR timer reaches 50%"
      bug: "352085328"
 }
+
+flag {
+     name: "anr_timer_for_job_service"
+     namespace: "system_performance"
+     description: "Use AnrTimer to signal ANRs in JobScheduler"
+     bug: "408440679"
+}

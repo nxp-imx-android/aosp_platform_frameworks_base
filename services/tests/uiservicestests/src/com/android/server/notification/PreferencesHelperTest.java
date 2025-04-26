@@ -63,7 +63,6 @@ import static com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.No
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__DENIED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__GRANTED;
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__NOT_REQUESTED;
-import static com.android.server.notification.Flags.FLAG_PERSIST_INCOMPLETE_RESTORE_DATA;
 import static com.android.server.notification.NotificationChannelLogger.NotificationChannelEvent.NOTIFICATION_CHANNEL_UPDATED_BY_USER;
 import static com.android.server.notification.PreferencesHelper.DEFAULT_BUBBLE_PREFERENCE;
 import static com.android.server.notification.PreferencesHelper.LockableAppFields.USER_LOCKED_PROMOTABLE;
@@ -202,7 +201,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
-@EnableFlags(FLAG_PERSIST_INCOMPLETE_RESTORE_DATA)
 public class PreferencesHelperTest extends UiServiceTestCase {
     private static final int UID_HEADLESS = 1000000;
     private static final UserHandle USER = UserHandle.of(0);
@@ -1573,7 +1571,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PERSIST_INCOMPLETE_RESTORE_DATA)
     public void testRestoreXml_delayedRestore() throws Exception {
         // simulate package not installed
         when(mPm.getPackageUidAsUser(PKG_R, USER_SYSTEM)).thenReturn(UNKNOWN_UID);
@@ -1614,7 +1611,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PERSIST_INCOMPLETE_RESTORE_DATA)
     public void testRestoreXml_delayedRestore_afterReboot() throws Exception {
         // load restore data
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
@@ -1666,7 +1662,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PERSIST_INCOMPLETE_RESTORE_DATA)
     public void testRestoreXml_delayedRestore_packageMissingAfterTwoDays() throws Exception {
         // load restore data
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();

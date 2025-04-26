@@ -1320,6 +1320,7 @@ public class TransitionTests extends WindowTestsBase {
         mDisplayContent.setLastHasContent();
         mDisplayContent.requestChangeTransition(1 /* changes */, null /* displayChange */,
                 ActionChain.test());
+        assertTrue(mDisplayContent.mTransitionController.isCollecting());
         assertNotNull(mDisplayContent.getAsyncRotationController());
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(null);
         assertNull("Clear rotation controller if rotation is not changed",
@@ -1331,6 +1332,15 @@ public class TransitionTests extends WindowTestsBase {
                 mDisplayContent.getWindowConfiguration().getRotation() + 1);
         mDisplayContent.setFixedRotationLaunchingAppUnchecked(null);
         assertNotNull("Keep rotation controller if rotation will be changed",
+                mDisplayContent.getAsyncRotationController());
+
+        mDisplayContent.getDisplayRotation().setRotation(
+                mDisplayContent.getWindowConfiguration().getRotation());
+        app.setVisibleRequested(false);
+        app.setVisible(false);
+        mDisplayContent.setFixedRotationLaunchingAppUnchecked(app);
+        mDisplayContent.onTransitionFinished();
+        assertNotNull("Keep rotation controller if a transition is collecting",
                 mDisplayContent.getAsyncRotationController());
     }
 
@@ -1615,6 +1625,32 @@ public class TransitionTests extends WindowTestsBase {
 
         verify(taskSnapshotController, times(1)).recordSnapshot(eq(task1));
         assertTrue(enteringAnimReports.contains(activity2));
+    }
+
+    @Test
+    public void testTransientLaunchWithTranslucentTask() {
+        final ActivityRecord recent = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        final ActivityRecord translucentApp = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setActivityTheme(android.R.style.Theme_Translucent).build();
+        final Task taskRecent = recent.getTask();
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_OPEN, player.mController);
+        player.mController.moveToCollecting(transition);
+        player.mController.requestStartTransition(transition, taskRecent,
+                null /* remoteTransition */, null /* displayChange */);
+        transition.setTransientLaunch(recent, taskRecent);
+        taskRecent.moveToFront("move-recent-to-front");
+        // Assume that the recents activity is not collected because it keeps visible when the
+        // translucent app was on top.
+        assertFalse(transition.mParticipants.contains(recent));
+
+        player.start();
+        clearInvocations(mDisplayContent);
+        doCallRealMethod().when(mWm.mRoot).ensureActivitiesVisible(any(), anyBoolean());
+        player.finish();
+        // Transition#finishTransition -> updateImeForVisibleTransientLaunch.
+        verify(mDisplayContent).computeImeLayeringTarget(true /* update */);
+        assertFalse(translucentApp.isVisible());
     }
 
     @Test

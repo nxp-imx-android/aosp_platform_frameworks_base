@@ -237,8 +237,9 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
 
       // Add the package name -> build time ID mappings.
       for (const DynamicPackageEntry& entry : package->GetDynamicPackageMap()) {
-        package_group->dynamic_ref_table->mEntries[entry.package_name] =
-            static_cast<uint8_t>(entry.package_id);
+        String16 package_name(entry.package_name.c_str(), entry.package_name.size());
+        package_group->dynamic_ref_table->mEntries.replaceValueFor(
+            package_name, static_cast<uint8_t>(entry.package_id));
       }
 
       if (auto apk_assets_path = apk_assets->GetPath()) {
@@ -252,8 +253,9 @@ void AssetManager2::BuildDynamicRefTable(ApkAssetsList apk_assets) {
   DynamicRefTable::AliasMap aliases;
   for (const auto& group : package_groups_) {
     const std::string& package_name = group.packages_[0].loaded_package_->GetPackageName();
+    const auto name_16 = String16(package_name.c_str(), package_name.size());
     for (auto&& inner_group : package_groups_) {
-      inner_group.dynamic_ref_table->addMapping(package_name,
+      inner_group.dynamic_ref_table->addMapping(name_16,
                                                 group.dynamic_ref_table->mAssignedPackageId);
     }
 

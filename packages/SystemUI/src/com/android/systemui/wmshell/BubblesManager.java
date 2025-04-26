@@ -669,7 +669,7 @@ public class BubblesManager {
 
         // Change the settings
         channel = NotificationChannelHelper.createConversationChannelIfNeeded(mContext,
-                mNotificationManager, entry, channel);
+                mNotificationManager, entry.getRanking(), entry.getSbn(), channel);
         channel.setAllowBubbles(shouldBubble);
         try {
             int currentPref = mNotificationManager.getBubblePreferenceForPackage(appPkg, appUid);

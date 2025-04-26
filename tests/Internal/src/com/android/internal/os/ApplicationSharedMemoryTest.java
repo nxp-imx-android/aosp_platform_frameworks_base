@@ -169,4 +169,19 @@ public class ApplicationSharedMemoryTest {
         } catch (IllegalStateException expected) {
         }
     }
+
+    @Test
+    public void currentAnimatorScaleSharedMemory() throws IOException {
+        ApplicationSharedMemory instance1 = ApplicationSharedMemory.create();
+
+        final float kAnimatorScaleFirst = 1.5f;
+
+        instance1.setCurrentAnimatorScale(kAnimatorScaleFirst);
+        assertThat(instance1.getCurrentAnimatorScale()).isEqualTo(kAnimatorScaleFirst);
+
+        ApplicationSharedMemory instance2 =
+                ApplicationSharedMemory.fromFileDescriptor(
+                        instance1.getReadOnlyFileDescriptor(), /* mutable= */ false);
+        assertThat(instance2.getCurrentAnimatorScale()).isEqualTo(kAnimatorScaleFirst);
+    }
 }

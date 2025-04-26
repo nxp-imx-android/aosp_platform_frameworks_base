@@ -33,7 +33,6 @@ import android.view.View
 import android.view.WindowManager
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.ActivityIntentHelper
-import com.android.systemui.Flags.mediaLockscreenLaunchAnimation
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.animation.TransitionAnimator
@@ -682,8 +681,7 @@ constructor(
         showOverLockscreen: Boolean,
     ): Boolean {
         // TODO(b/294418322): always support launch animations when occluded.
-        val ignoreOcclusion =
-            (showOverLockscreen && mediaLockscreenLaunchAnimation()) || isCommunalWidgetLaunch()
+        val ignoreOcclusion = showOverLockscreen || isCommunalWidgetLaunch()
         if (keyguardStateController.isOccluded && !ignoreOcclusion) {
             return false
         }

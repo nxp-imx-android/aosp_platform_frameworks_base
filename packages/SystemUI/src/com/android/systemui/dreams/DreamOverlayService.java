@@ -21,6 +21,7 @@ import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.systemui.Flags.glanceableHubAllowKeyguardWhenDreaming;
 import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_DREAM;
+import static com.android.systemui.ambient.touch.scrim.dagger.ScrimModule.BOUNCER_SCRIM_CONTROLLER;
 import static com.android.systemui.dreams.dagger.DreamModule.DREAM_OVERLAY_WINDOW_TITLE;
 import static com.android.systemui.dreams.dagger.DreamModule.DREAM_TOUCH_INSET_MANAGER;
 import static com.android.systemui.dreams.dagger.DreamModule.HOME_CONTROL_PANEL_DREAM_COMPONENT;
@@ -58,7 +59,7 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.ambient.touch.TouchHandler;
 import com.android.systemui.ambient.touch.TouchMonitor;
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent;
-import com.android.systemui.ambient.touch.scrim.ScrimManager;
+import com.android.systemui.ambient.touch.scrim.ScrimController;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor;
 import com.android.systemui.communal.shared.log.CommunalUiEvent;
@@ -117,7 +118,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private DreamOverlayContainerViewController mDreamOverlayContainerViewController;
     private final DreamOverlayCallbackController mDreamOverlayCallbackController;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
-    private final ScrimManager mScrimManager;
+    private final ScrimController mBouncerScrimController;
     @Nullable
     private final ComponentName mLowLightDreamComponent;
     @Nullable
@@ -400,7 +401,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             AmbientTouchComponent.Factory ambientTouchComponentFactory,
             DreamOverlayStateController stateController,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
-            ScrimManager scrimManager,
+            @Named(BOUNCER_SCRIM_CONTROLLER) ScrimController bouncerScrimController,
             CommunalInteractor communalInteractor,
             CommunalSettingsInteractor communalSettingsInteractor,
             SceneInteractor sceneInteractor,
@@ -422,7 +423,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mExecutor = executor;
         mWindowManager = windowManager;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
-        mScrimManager = scrimManager;
+        mBouncerScrimController = bouncerScrimController;
         mLowLightDreamComponent = lowLightDreamComponent;
         mHomeControlPanelDreamComponent = homeControlPanelDreamComponent;
         mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
@@ -664,7 +665,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         // an equal amount.
         if (mDreamOverlayContainerViewController != null
                 && mDreamOverlayContainerViewController.isBouncerShowing()) {
-            mScrimManager.getCurrentController().expand(
+            mBouncerScrimController.expand(
                     new ShadeExpansionChangeEvent(
                             /* fraction= */ 1.f,
                             /* expanded= */ false,

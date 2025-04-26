@@ -21,6 +21,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
@@ -66,6 +67,12 @@ class PreferenceScreenBindingHelper(
             override val lifecycleScope: LifecycleCoroutineScope
                 get() = fragment.lifecycleScope
 
+            override val fragmentManager: FragmentManager
+                get() = fragment.parentFragmentManager
+
+            override val childFragmentManager: FragmentManager
+                get() = fragment.childFragmentManager
+
             override fun <T> findPreference(key: String) =
                 preferenceScreen.findPreference(key) as T?
 
@@ -86,7 +93,7 @@ class PreferenceScreenBindingHelper(
 
             override fun <I, O> registerForActivityResult(
                 contract: ActivityResultContract<I, O>,
-                callback: ActivityResultCallback<O>
+                callback: ActivityResultCallback<O>,
             ) = fragment.registerForActivityResult(contract, callback)
         }
 
@@ -258,8 +265,6 @@ class PreferenceScreenBindingHelper(
             preferenceHierarchy: PreferenceHierarchy,
         ) {
             val preferenceScreenMetadata = preferenceHierarchy.metadata as PreferenceScreenMetadata
-            val preferences = mutableMapOf<String, PreferenceHierarchyNode>()
-            preferenceHierarchy.forEachRecursively { preferences[it.metadata.key] = it }
             val storages = mutableMapOf<KeyValueStore, PreferenceDataStore>()
 
             fun Preference.setPreferenceDataStore(metadata: PreferenceMetadata) {
@@ -271,32 +276,32 @@ class PreferenceScreenBindingHelper(
                 }
             }
 
-            fun PreferenceGroup.bindRecursively() {
-                preferences.remove(key)?.let { preferenceBindingFactory.bind(this, it) }
-                val count = preferenceCount
-                for (index in 0 until count) {
-                    val preference = getPreference(index)
-                    if (preference is PreferenceGroup) {
-                        preference.bindRecursively()
+            fun PreferenceHierarchy.bindRecursively(preferenceGroup: PreferenceGroup) {
+                preferenceBindingFactory.bind(preferenceGroup, this)
+                val preferences = mutableMapOf<String, PreferenceHierarchyNode>()
+                forEach { preferences[it.metadata.key] = it }
+                for (index in 0 until preferenceGroup.preferenceCount) {
+                    val preference = preferenceGroup.getPreference(index)
+                    val node = preferences.remove(preference.key) ?: continue
+                    if (node is PreferenceHierarchy) {
+                        node.bindRecursively(preference as PreferenceGroup)
                     } else {
-                        preferences.remove(preference.key)?.let {
-                            preference.setPreferenceDataStore(it.metadata)
-                            preferenceBindingFactory.bind(preference, it)
-                        }
+                        preference.setPreferenceDataStore(node.metadata)
+                        preferenceBindingFactory.bind(preference, node)
                     }
+                }
+                for (node in preferences.values) {
+                    val metadata = node.metadata
+                    val binding = preferenceBindingFactory.getPreferenceBinding(metadata)
+                    if (binding !is PreferenceBindingPlaceholder) continue
+                    val preference = binding.createWidget(preferenceGroup.context)
+                    preference.setPreferenceDataStore(metadata)
+                    preferenceBindingFactory.bind(preference, node, binding)
+                    preferenceGroup.addPreference(preference)
                 }
             }
 
-            preferenceScreen.bindRecursively()
-            for (node in preferences.values) {
-                val metadata = node.metadata
-                val binding = preferenceBindingFactory.getPreferenceBinding(metadata)
-                if (binding !is PreferenceBindingPlaceholder) continue
-                val preference = binding.createWidget(preferenceScreen.context)
-                preference.setPreferenceDataStore(metadata)
-                preferenceBindingFactory.bind(preference, node, binding)
-                preferenceScreen.addPreference(preference)
-            }
+            preferenceHierarchy.bindRecursively(preferenceScreen)
         }
     }
 }

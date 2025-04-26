@@ -70,7 +70,12 @@ class MultiDisplayDragMoveIndicatorSurface(
     surfaceControlViewHostFactory: WindowDecoration.SurfaceControlViewHostFactory =
         object : WindowDecoration.SurfaceControlViewHostFactory {},
 ) {
-    private var isVisible = false
+    public enum class Visibility {
+        INVISIBLE,
+        TRANSLUCENT,
+        VISIBLE,
+    }
+    private var visibility = Visibility.INVISIBLE
 
     // A container surface to host the veil background
     private var veilSurface: SurfaceControl? = null
@@ -182,6 +187,7 @@ class MultiDisplayDragMoveIndicatorSurface(
         rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
         displayId: Int,
         bounds: Rect,
+        visibility: Visibility,
     ) {
         val background = backgroundSurface
         val icon = iconSurface
@@ -204,10 +210,9 @@ class MultiDisplayDragMoveIndicatorSurface(
         }
 
         val backgroundColor = decorThemeUtil.getColorScheme(taskInfo).surfaceContainer
-        isVisible = true
 
         rootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, veil, transaction)
-        relayout(bounds, transaction, shouldBeVisible = true)
+        relayout(bounds, transaction, visibility)
         transaction
             .show(veil)
             .show(background)
@@ -221,14 +226,15 @@ class MultiDisplayDragMoveIndicatorSurface(
 
     /**
      * Repositions and resizes the indicator surface based on [bounds] using [transaction]. The
-     * [shouldBeVisible] flag indicates whether the indicator is within the display after relayout.
+     * [newVisibility] flag indicates whether the indicator is within the display after relayout.
      */
-    fun relayout(bounds: Rect, transaction: SurfaceControl.Transaction, shouldBeVisible: Boolean) {
-        if (!isVisible && !shouldBeVisible) {
+    fun relayout(bounds: Rect, transaction: SurfaceControl.Transaction, newVisibility: Visibility) {
+        if (visibility == Visibility.INVISIBLE && newVisibility == Visibility.INVISIBLE) {
             // No need to relayout if the surface is already invisible and should not be visible.
             return
         }
-        isVisible = shouldBeVisible
+
+        visibility = newVisibility
         val veil = veilSurface ?: return
         val icon = iconSurface ?: return
         val iconPosition = calculateAppIconPosition(bounds)
@@ -236,6 +242,20 @@ class MultiDisplayDragMoveIndicatorSurface(
             .setCrop(veil, bounds)
             .setCornerRadius(veil, cornerRadius)
             .setPosition(icon, iconPosition.x, iconPosition.y)
+        when (visibility) {
+            Visibility.VISIBLE ->
+                transaction
+                    .setAlpha(veil, ALPHA_FOR_MOVE_INDICATOR_ON_DISPLAY_WITH_CURSOR)
+                    .setAlpha(icon, ALPHA_FOR_MOVE_INDICATOR_ON_DISPLAY_WITH_CURSOR)
+            Visibility.TRANSLUCENT ->
+                transaction
+                    .setAlpha(veil, ALPHA_FOR_MOVE_INDICATOR_ON_NON_CURSOR_DISPLAY)
+                    .setAlpha(icon, ALPHA_FOR_MOVE_INDICATOR_ON_NON_CURSOR_DISPLAY)
+            Visibility.INVISIBLE -> {
+                // Do nothing intentionally. Falling into this means the bounds is outside
+                // of the display, so no need to hide the surface explicitly.
+            }
+        }
     }
 
     private fun calculateAppIconPosition(surfaceBounds: Rect): PointF {
@@ -291,5 +311,8 @@ class MultiDisplayDragMoveIndicatorSurface(
         private const val MOVE_INDICATOR_BACKGROUND_LAYER = 0
         /** Icon layer (drawn second/top, above the background). */
         private const val MOVE_INDICATOR_ICON_LAYER = 1
+
+        private const val ALPHA_FOR_MOVE_INDICATOR_ON_DISPLAY_WITH_CURSOR = 1.0f
+        private const val ALPHA_FOR_MOVE_INDICATOR_ON_NON_CURSOR_DISPLAY = 0.8f
     }
 }

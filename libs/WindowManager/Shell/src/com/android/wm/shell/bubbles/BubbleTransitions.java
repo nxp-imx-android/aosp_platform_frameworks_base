@@ -137,6 +137,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether there is an existing bubble with the given task id.
+     */
+    public boolean hasBubbleWithTaskId(int taskId) {
+        return mBubbleData.getBubbleInStackWithTaskId(taskId) != null;
+    }
+
+    /**
      * Returns whether there is a pending transition for the given request.
      */
     public boolean hasPendingEnterTransition(@NonNull TransitionRequestInfo info) {
@@ -145,8 +152,7 @@ public class BubbleTransitions {
         }
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             if (mPendingEnterTransitions.containsKey(cookie)) {
-                if (mBubbleData.hasAnyBubbleWithKey(Bubble.getAppBubbleKeyForTask(
-                        info.getTriggerTask()))) {
+                if (hasBubbleWithTaskId(info.getTriggerTask().taskId)) {
                     // We'll let this transition fall through and let the normal TaskViewTransitions
                     // play it
                     mPendingEnterTransitions.remove(cookie);
@@ -169,7 +175,7 @@ public class BubbleTransitions {
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             final TransitionHandler handler = mPendingEnterTransitions.remove(cookie);
             if (handler != null) {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transfering pending to playing transition for"
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transferring pending to playing transition for"
                                 + "cookie=%s", cookie);
                 mPendingEnterTransitions.remove(cookie);
                 mEnterTransitions.put(transition, handler);
@@ -557,9 +563,9 @@ public class BubbleTransitions {
             mPlayConvertTaskAnimation = false;
             for (int i = info.getChanges().size() - 1; i >= 0; i--) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
-                final boolean isTaskToConvertToBubble = (chg.getTaskInfo() != null)
+                final boolean isLaunchedTask = (chg.getTaskInfo() != null)
                         && (chg.getMode() == TRANSIT_CHANGE || isOpeningMode(chg.getMode()));
-                if (isTaskToConvertToBubble) {
+                if (isLaunchedTask) {
                     mStartBounds.set(chg.getStartAbsBounds());
                     // Converting a task into taskview, so treat as "new"
                     mFinishWct = new WindowContainerTransaction();
@@ -802,6 +808,11 @@ public class BubbleTransitions {
                     }
                 }
 
+                // Add the task view task listener manually since we aren't going through
+                // TaskViewTransitions (which normally sets up the listener via a pending launch cookie
+                mTaskOrganizer.setPendingLaunchCookieListener(mLaunchCookie.binder,
+                        mBubble.getTaskView().getController());
+
                 // We use a stub transition here since we don't know what is incoming, but it
                 // won't actually match any transition when queried in TaskViewTransitions,
                 // which is Ok since we don't want TaskViewTransitions to handle this anyways.
@@ -865,10 +876,10 @@ public class BubbleTransitions {
             mPlayConvertTaskAnimation = false;
             for (int i = info.getChanges().size() - 1; i >= 0; i--) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
-                final boolean isTaskToConvertToBubble = (chg.getTaskInfo() != null)
+                final boolean isLaunchedTask = (chg.getTaskInfo() != null)
                         && (chg.getMode() == TRANSIT_CHANGE || isOpeningMode(chg.getMode()))
                         && (chg.getTaskInfo().launchCookies.contains(mLaunchCookie.binder));
-                if (isTaskToConvertToBubble) {
+                if (isLaunchedTask) {
                     mStartBounds.set(chg.getStartAbsBounds());
                     // Converting a task into taskview, so treat as "new"
                     mFinishWct = new WindowContainerTransaction();
@@ -975,9 +986,6 @@ public class BubbleTransitions {
             }
             mTaskViewTransitions.prepareOpenAnimation(tv, true /* new */, startT, mFinishT,
                     (ActivityManager.RunningTaskInfo) mTaskInfo, mTaskLeash, mFinishWct);
-            // Add the task view task listener manually since we aren't going through
-            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie
-            mTaskOrganizer.addListenerForTaskId(tv, mTaskInfo.taskId);
 
             if (mFinishWct.isEmpty()) {
                 mFinishWct = null;

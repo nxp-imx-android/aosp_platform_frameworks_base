@@ -28,7 +28,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.NetworkStats;
 import android.os.BatteryConsumer;
-import android.os.BatteryStats;
 import android.os.BatteryUsageStats;
 import android.os.BatteryUsageStatsQuery;
 import android.os.ConditionVariable;
@@ -423,45 +422,6 @@ public class BatteryUsageStatsRule implements TestRule {
 
     public void setCurrentTime(long currentTimeMs) {
         mMockClock.currentTime = currentTimeMs;
-    }
-
-    BatteryUsageStats apply(PowerCalculator... calculators) {
-        return apply(new BatteryUsageStatsQuery.Builder().includePowerModels().build(),
-                calculators);
-    }
-
-    BatteryUsageStats apply(BatteryUsageStatsQuery query, PowerCalculator... calculators) {
-        if (mBatteryUsageStats != null) {
-            try {
-                mBatteryUsageStats.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            mBatteryUsageStats = null;
-        }
-        final String[] customPowerComponentNames = mBatteryStats.getCustomEnergyConsumerNames();
-        final boolean includeProcessStateData = (query.getFlags()
-                & BatteryUsageStatsQuery.FLAG_BATTERY_USAGE_STATS_INCLUDE_PROCESS_STATE_DATA) != 0;
-        final boolean includeScreenStateData = (query.getFlags()
-                & BatteryUsageStatsQuery.FLAG_BATTERY_USAGE_STATS_INCLUDE_SCREEN_STATE) != 0;
-        final boolean includePowerStateData = (query.getFlags()
-                & BatteryUsageStatsQuery.FLAG_BATTERY_USAGE_STATS_INCLUDE_POWER_STATE) != 0;
-        final double minConsumedPowerThreshold = query.getMinConsumedPowerThreshold();
-        BatteryUsageStats.Builder builder = new BatteryUsageStats.Builder(
-                customPowerComponentNames, includeProcessStateData,
-                includeScreenStateData, includePowerStateData, minConsumedPowerThreshold);
-        SparseArray<? extends BatteryStats.Uid> uidStats = mBatteryStats.getUidStats();
-        for (int i = 0; i < uidStats.size(); i++) {
-            builder.getOrCreateUidBatteryConsumerBuilder(uidStats.valueAt(i));
-        }
-
-        for (PowerCalculator calculator : calculators) {
-            calculator.calculate(builder, mBatteryStats, mMockClock.realtime * 1000,
-                    mMockClock.uptime * 1000, query);
-        }
-
-        mBatteryUsageStats = builder.build();
-        return mBatteryUsageStats;
     }
 
     public BatteryConsumer getDeviceBatteryConsumer() {

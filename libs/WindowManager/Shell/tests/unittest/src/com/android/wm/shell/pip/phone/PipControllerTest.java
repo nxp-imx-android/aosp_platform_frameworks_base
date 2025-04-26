@@ -133,7 +133,7 @@ public class PipControllerTest extends ShellTestCase {
             ((Runnable) invocation.getArgument(0)).run();
             return null;
         }).when(mMockExecutor).execute(any());
-        mShellInit = spy(new ShellInit(mMockExecutor));
+        mShellInit = new ShellInit(mMockExecutor);
         mShellController = spy(new ShellController(mContext, mShellInit, mMockShellCommandHandler,
                 mMockDisplayInsetsController, mMockUserManager, mMockExecutor));
         mPipController = new PipController(mContext, mShellInit, mMockShellCommandHandler,
@@ -146,14 +146,10 @@ public class PipControllerTest extends ShellTestCase {
                 mMockTaskStackListener, mMockPipParamsChangedForwarder,
                 mMockDisplayInsetsController, mMockTabletopModeController,
                 mMockOneHandedController, mMockExecutor, mMockHandler);
-        mShellInit.init();
         when(mMockPipBoundsAlgorithm.getSnapAlgorithm()).thenReturn(mMockPipSnapAlgorithm);
         when(mMockPipTouchHandler.getMotionHelper()).thenReturn(mMockPipMotionHelper);
-    }
-
-    @Test
-    public void instantiatePipController_addInitCallback() {
-        verify(mShellInit, times(1)).addInitCallback(any(), eq(mPipController));
+        // Directly init mPipController instead of using ShellInit
+        mPipController.onInit();
     }
 
     @Test

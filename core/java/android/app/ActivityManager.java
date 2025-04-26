@@ -257,7 +257,7 @@ public class ActivityManager {
 
     /**
      * Query handler for mGetCurrentUserIdCache - returns a cached value of the current foreground
-     * user id if the backstage_power/android.app.cache_get_current_user_id flag is enabled.
+     * user id.
      */
     private static final IpcDataCache.QueryHandler<Void, Integer> mGetCurrentUserIdQuery =
             new IpcDataCache.QueryHandler<>() {
@@ -268,12 +268,6 @@ public class ActivityManager {
                     } catch (RemoteException e) {
                         throw e.rethrowFromSystemServer();
                     }
-                }
-
-                @Override
-                public boolean shouldBypassCache(Void query) {
-                    // If the flag to enable the new caching behavior is off, bypass the cache.
-                    return !Flags.cacheGetCurrentUserId();
                 }
             };
 
@@ -3520,16 +3514,12 @@ public class ActivityManager {
      * manage its memory.
      */
     public void getMemoryInfo(MemoryInfo outInfo) {
-        if (Flags.rateLimitGetMemoryInfo()) {
-            synchronized (mMemoryInfoCache) {
-                mMemoryInfoCache.get(() -> {
-                    getMemoryInfoInternal(mRateLimitedMemInfo);
-                    return mRateLimitedMemInfo;
-                });
-                mRateLimitedMemInfo.copyTo(outInfo);
-            }
-        } else {
-            getMemoryInfoInternal(outInfo);
+        synchronized (mMemoryInfoCache) {
+            mMemoryInfoCache.get(() -> {
+                getMemoryInfoInternal(mRateLimitedMemInfo);
+                return mRateLimitedMemInfo;
+            });
+            mRateLimitedMemInfo.copyTo(outInfo);
         }
     }
 
@@ -3726,21 +3716,13 @@ public class ActivityManager {
      * specified.
      */
     public List<ProcessErrorStateInfo> getProcessesInErrorState() {
-        if (Flags.rateLimitGetProcessesInErrorState()) {
-            return mErrorProcessesCache.get(() -> {
-                return getProcessesInErrorStateInternal();
-            });
-        } else {
-            return getProcessesInErrorStateInternal();
-        }
-    }
-
-    private List<ProcessErrorStateInfo> getProcessesInErrorStateInternal() {
-        try {
-            return getService().getProcessesInErrorState();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mErrorProcessesCache.get(() -> {
+            try {
+                return getService().getProcessesInErrorState();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        });
     }
 
     /**
@@ -4277,21 +4259,13 @@ public class ActivityManager {
      * specified.
      */
     public List<RunningAppProcessInfo> getRunningAppProcesses() {
-        if (!Flags.rateLimitGetRunningAppProcesses()) {
-            return getRunningAppProcessesInternal();
-        } else {
-            return mRunningProcessesCache.get(() -> {
-                return getRunningAppProcessesInternal();
-            });
-        }
-    }
-
-    private List<RunningAppProcessInfo> getRunningAppProcessesInternal() {
-        try {
-            return getService().getRunningAppProcesses();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return mRunningProcessesCache.get(() -> {
+            try {
+                return getService().getRunningAppProcesses();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        });
     }
 
     /**
@@ -4825,16 +4799,12 @@ public class ActivityManager {
      * {@link RunningAppProcessInfo#importanceReasonCode}.
      */
     public static void getMyMemoryState(RunningAppProcessInfo outState) {
-        if (Flags.rateLimitGetMyMemoryState()) {
-            synchronized (mMyMemoryStateCache) {
-                mMyMemoryStateCache.get(() -> {
-                    getMyMemoryStateInternal(mRateLimitedMemState);
-                    return mRateLimitedMemState;
-                });
-                mRateLimitedMemState.copyTo(outState);
-            }
-        } else {
-            getMyMemoryStateInternal(outState);
+        synchronized (mMyMemoryStateCache) {
+            mMyMemoryStateCache.get(() -> {
+                getMyMemoryStateInternal(mRateLimitedMemState);
+                return mRateLimitedMemState;
+            });
+            mRateLimitedMemState.copyTo(outState);
         }
     }
 

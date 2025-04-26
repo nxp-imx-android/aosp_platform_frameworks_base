@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Cambiar idioma"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Mantener el idioma actual"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Compartir Wi‑Fi"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"Agregar red"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"¿Quieres permitir la depuración inalámbrica en esta red?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Nombre de red (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nDirección Wi‑Fi (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Permitir siempre en esta red"</string>
@@ -246,6 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ícono de dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Haz clic para configurar los detalles del dispositivo"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>; configura los detalles del dispositivo"</string>
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Comenzar a compartir audio con <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Dejar de compartir audio con <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Ver todos los dispositivos"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Vincular dispositivo nuevo"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Se desconoce el porcentaje de la batería."</string>
@@ -355,8 +358,8 @@
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"No hay dispositivos disponibles"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"No hay conexión Ethernet ni Wi-Fi"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brillo"</string>
-    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Invertir colores"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Corregir colores"</string>
+    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversión de colores"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Corrección de colores"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Tamaño de fuente"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Administrar usuarios"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Listo"</string>
@@ -479,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Sin establecer"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Administrar en configuración"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{No hay modos activos}=1{{mode} activo}many{# de modos activos}other{# modos activos}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"No te molestarán los sonidos ni las vibraciones, excepto las alarmas, los recordatorios, los eventos y las llamadas de los emisores que especifiques. Podrás escuchar el contenido que reproduzcas, como música, videos y juegos."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"No te molestarán los sonidos ni las vibraciones, excepto las alarmas. Podrás escuchar el contenido que reproduzcas, como música, videos y juegos."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Personalizar"</string>
@@ -744,6 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrar"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"Controles de volumen %s"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Sonarán las llamadas y notificaciones (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Volumen del dispositivo de invitado"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Ingresar configuración de salida"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Controles deslizantes del volumen expandidos"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Controles deslizantes del volumen colapsados"</string>
@@ -804,9 +812,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Para conectar el teclado con la tablet, primero debes activar Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activa - En función del rostro"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Listo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
@@ -824,9 +838,9 @@
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Estado:&lt;/b&gt; Se clasificó en una posición superior"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Estado:&lt;/b&gt; Se clasificó en una posición inferior"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Aparece como foto de perfil en la parte superior de las notificaciones de conversación, en la pantalla de bloqueo"</string>
-    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Aparece en forma de burbuja y como foto de perfil en la parte superior de las notificaciones de conversación, en la pantalla de bloqueo"</string>
+    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Aparece en la parte superior de las notificaciones de conversación y como foto de perfil en la pantalla de bloqueo, aparece en forma de burbuja"</string>
     <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Aparece como foto de perfil en la parte superior de las notificaciones de conversación, en la pantalla de bloqueo, y detiene el modo No interrumpir"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece en forma de burbuja y como foto de perfil en la parte superior de las notificaciones de conversación, en la pantalla de bloqueo, y detiene el modo No interrumpir"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece en la parte superior de las notificaciones de conversación y como foto de perfil en la pantalla de bloqueo, aparece en forma de burbuja, ignora el modo No interrumpir"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioritaria"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> no admite funciones de conversación"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Comentarios"</string>
@@ -998,7 +1012,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrastra aquí para quitar"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necesitas al menos <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tarjetas"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar mosaicos"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar tarjetas"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos y segundos"</item>
@@ -1103,8 +1117,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Actívalo cuando la batería se esté por acabar"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"No, gracias"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"En uso"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"En uso: <xliff:g id="TYPES_LIST">%s</xliff:g>."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" y "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"En uso en <xliff:g id="APPLICATION_NAME">%1$s</xliff:g>"</string>
@@ -1586,7 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accesibilidad"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilidades"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privacidad"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Proporcionado por apps"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"De apps del sistema"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"De las apps que instalaste"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Pantalla"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconocido"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"¿Quieres restablecer todas las tarjetas?"</string>

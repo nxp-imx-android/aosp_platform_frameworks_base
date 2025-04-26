@@ -250,9 +250,6 @@ public class NotificationConversationInfo extends LinearLayout implements
             throw new IllegalArgumentException("Does not have required information");
         }
 
-        mNotificationChannel = NotificationChannelHelper.createConversationChannelIfNeeded(
-                getContext(), mINotificationManager, entry, mNotificationChannel);
-
         try {
             mAppBubble = mINotificationManager.getBubblePreferenceForPackage(mPackageName, mAppUid);
         } catch (RemoteException e) {
@@ -276,19 +273,6 @@ public class NotificationConversationInfo extends LinearLayout implements
     }
 
     private void bindActions() {
-
-        // TODO: b/152050825
-        /*
-        Button home = findViewById(R.id.home);
-        home.setOnClickListener(mOnHomeClick);
-        home.setVisibility(mShortcutInfo != null
-                && mShortcutManager.isRequestPinShortcutSupported()
-                ? VISIBLE : GONE);
-
-        Button snooze = findViewById(R.id.snooze);
-        snooze.setOnClickListener(mOnSnoozeClick);
-        */
-
         TextView defaultSummaryTextView = findViewById(R.id.default_summary);
         if (mAppBubble == BUBBLE_PREFERENCE_ALL
                 && BubblesManager.areBubblesEnabled(mContext, mSbn.getUser())) {
@@ -351,11 +335,9 @@ public class NotificationConversationInfo extends LinearLayout implements
 
     private void bindConversationDetails() {
         final TextView channelName = findViewById(R.id.parent_channel_name);
-        channelName.setText(mNotificationChannel.getName());
+        channelName.setText(NotificationChannelHelper.getName(mRanking, mSbn));
 
         bindGroup();
-        // TODO: bring back when channel name does not include name
-        // bindName();
         bindPackage();
         bindIcon(mNotificationChannel.isImportantConversation());
 
@@ -670,6 +652,14 @@ public class NotificationConversationInfo extends LinearLayout implements
         @Override
         public void run() {
             try {
+                if (!mChannelToUpdate.isConversation()) {
+                    // first, create the channel just for this conversation
+                    mChannelToUpdate =
+                            NotificationChannelHelper.createConversationChannelIfNeeded(
+                                    getContext(), mINotificationManager, mRanking, mSbn,
+                                    mChannelToUpdate);
+                }
+
                 switch (mAction) {
                     case ACTION_FAVORITE:
                         mChannelToUpdate.setImportantConversation(true);

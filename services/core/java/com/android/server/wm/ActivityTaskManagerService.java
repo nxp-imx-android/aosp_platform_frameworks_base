@@ -70,6 +70,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG_TO_LAUNCHER_CLEAR_SNAPSHOT;
+import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
@@ -3178,6 +3179,22 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    @Override
+    public void moveRootTaskToDisplayOnTopOrBottom(int taskId, int displayId, boolean onTop) {
+        mAmInternal.enforceCallingPermission(INTERNAL_SYSTEM_WINDOW,
+                "moveRootTaskToDisplayOnTopOrBottom()");
+        synchronized (mGlobalLock) {
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                ProtoLog.d(WM_DEBUG_TASKS, "moveRootTaskToDisplayOnTopOrBottom: " +
+                        "moving taskId=%d to displayId=%d, onTop=%b", taskId, displayId, onTop);
+                mRootWindowContainer.moveRootTaskToDisplay(taskId, displayId, onTop);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+    }
+
     /** Sets the task stack listener that gets callbacks when a task stack changes. */
     @Override
     public void registerTaskStackListener(ITaskStackListener listener) {
@@ -4108,8 +4125,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // be retrieved by recents. While if updateCache is false, the real snapshot will
                 // always be taken and the snapshot won't be put into SnapshotPersister.
                 if (updateCache) {
-                    supplier = mWindowManager.mTaskSnapshotController
-                            .getRecordSnapshotSupplier(task);
+                    supplier = mWindowManager.mTaskSnapshotController.getRecordSnapshotSupplier(
+                            task, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                 } else {
                     return mWindowManager.mTaskSnapshotController.snapshot(task);
                 }
@@ -4353,7 +4370,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             final ActivityRecord topActivity = task != null
                     ? task.getTopMostActivity()
                     : null;
-            if (topActivity != null && !topActivity.isState(FINISHING, DESTROYING, DESTROYED)) {
+            if (topActivity != null
+                    && !topActivity.isState(FINISHING, DESTROYING, DESTROYED)
+                    && topActivity.attachedToProcess()) {
                 mWindowManager.mAtmService.mActivityClientController
                         .onPictureInPictureUiStateChanged(topActivity, pipState);
             }
@@ -7605,6 +7624,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      * @return {@code true} if PiP2 implementation should be used. Besides the trunk stable flag,
      * system property can be used to override this read only flag during development.
      * It's currently limited to phone form factor, i.e., not enabled on ARC / TV.
+     *
+     * Special note: if PiP on Desktop Windowing is enabled, override the PiP2 gantry flag to be ON.
      */
     static boolean isPip2ExperimentEnabled() {
         if (sIsPip2ExperimentEnabled == null) {
@@ -7614,7 +7635,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     FEATURE_LEANBACK);
             final boolean isArc = arcFeature != null && arcFeature.version >= 0;
             final boolean isTv = tvFeature != null && tvFeature.version >= 0;
-            sIsPip2ExperimentEnabled = Flags.enablePip2() && !isArc && !isTv;
+            final boolean shouldOverridePip2Flag = ENABLE_DESKTOP_WINDOWING_PIP.isTrue();
+            sIsPip2ExperimentEnabled = (Flags.enablePip2() || shouldOverridePip2Flag)
+                    && !isArc && !isTv;
         }
         return sIsPip2ExperimentEnabled;
     }

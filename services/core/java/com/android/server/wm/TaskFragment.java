@@ -87,7 +87,6 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
@@ -1672,14 +1671,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                         Slog.v(TAG_RESULTS, "Delivering results to " + next + ": " + a);
                     }
                     final ActivityResultItem item = new ActivityResultItem(next.token, a);
-                    boolean isSuccessful;
-                    try {
-                        isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
-                                appThread, item);
-                    } catch (RemoteException e) {
-                        // TODO(b/323801078): remove Exception when cleanup
-                        isSuccessful = false;
-                    }
+                    final boolean isSuccessful = mAtmService.getLifecycleManager()
+                            .scheduleTransactionItem(appThread, item);
                     if (!isSuccessful) {
                         onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
                                 lastFocusedRootTask);
@@ -1691,14 +1684,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             if (next.newIntents != null) {
                 final NewIntentItem item =
                         new NewIntentItem(next.token, next.newIntents, true /* resume */);
-                boolean isSuccessful;
-                try {
-                    isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
-                            appThread, item);
-                } catch (RemoteException e) {
-                    // TODO(b/323801078): remove Exception when cleanup
-                    isSuccessful = false;
-                }
+                final boolean isSuccessful = mAtmService.getLifecycleManager()
+                        .scheduleTransactionItem(appThread, item);
                 if (!isSuccessful) {
                     onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
                             lastFocusedRootTask);
@@ -1720,14 +1707,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
                     next.token, topProcessState, dc.isNextTransitionForward(),
                     next.shouldSendCompatFakeFocus());
-            boolean isSuccessful;
-            try {
-                isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
-                        appThread, resumeActivityItem);
-            } catch (RemoteException e) {
-                // TODO(b/323801078): remove Exception when cleanup
-                isSuccessful = false;
-            }
+            final boolean isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                    appThread, resumeActivityItem);
             if (!isSuccessful) {
                 onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
                         lastFocusedRootTask);
@@ -1987,16 +1968,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         final PauseActivityItem item = new PauseActivityItem(prev.token, prev.finishing,
                 userLeaving, pauseImmediately, autoEnteringPip);
-        boolean isSuccessful;
-        try {
-            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
-                    prev.app.getThread(), item);
-        } catch (RemoteException e) {
-            // TODO(b/323801078): remove Exception when cleanup
-            // Ignore exception, if process died other code will cleanup.
-            Slog.w(TAG, "Exception thrown during pause", e);
-            isSuccessful = false;
-        }
+        final boolean isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                prev.app.getThread(), item);
         if (!isSuccessful) {
             mPausingActivity = null;
             mLastPausedActivity = null;

@@ -311,14 +311,6 @@ flag {
 }
 
 flag {
-    name: "message_queue_tail_tracking"
-    namespace: "system_performance"
-    description: "track tail of message queue."
-    bug: "305311707"
-    is_fixed_read_only: true
-}
-
-flag {
      name: "message_queue_testability"
      namespace: "system_performance"
      is_exported: true
@@ -431,6 +423,13 @@ flag {
      description: "Control framework initialization APIs of telemetry APIs feature."
      is_fixed_read_only: true
      bug: "324241334"
+}
+
+flag {
+    namespace: "wear_services"
+    name: "bugreport_deferred_consent_screenshot_fix"
+    description: "Stops always taking a screenshot when consent is deferred."
+    bug: "385709501"
 }
 
 # keep-sorted end

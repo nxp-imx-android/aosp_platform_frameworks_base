@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.PowerManager;
 import android.util.IndentingPrintWriter;
+import android.util.MathUtils;
 import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
@@ -62,7 +63,7 @@ public final class DisplayBrightnessController {
     // A runnable to update the clients registered via DisplayManagerGlobal
     // .EVENT_DISPLAY_BRIGHTNESS_CHANGED about the brightness change. Called when
     // mCurrentScreenBrightness is updated.
-    private Runnable mOnBrightnessChangeRunnable;
+    private final Runnable mOnBrightnessChangeRunnable;
 
     // The screen brightness that has changed but not taken effect yet. If this is different
     // from the current screen brightness then this is coming from something other than us
@@ -74,6 +75,15 @@ public final class DisplayBrightnessController {
     // behalf of the user.
     @GuardedBy("mLock")
     private float mCurrentScreenBrightness;
+
+    @GuardedBy("mLock")
+    private float mCurrentMaxBrightness;
+
+    @GuardedBy("mLock")
+    private float mCurrentMinBrightness;
+
+    @GuardedBy("mLock")
+    private float mCurrentUnthrottledBrightness;
 
     // The last brightness that was set by the user and not temporary. Set to
     // PowerManager.BRIGHTNESS_INVALID_FLOAT when a brightness has yet to be recorded.
@@ -90,7 +100,7 @@ public final class DisplayBrightnessController {
 
     // Selects an appropriate strategy based on the request provided by the clients.
     @GuardedBy("mLock")
-    private DisplayBrightnessStrategySelector mDisplayBrightnessStrategySelector;
+    private final DisplayBrightnessStrategySelector mDisplayBrightnessStrategySelector;
 
     // Currently selected DisplayBrightnessStrategy.
     @GuardedBy("mLock")
@@ -116,19 +126,28 @@ public final class DisplayBrightnessController {
     /**
      * The constructor of DisplayBrightnessController.
      */
-    public DisplayBrightnessController(Context context, Injector injector, int displayId,
+    public DisplayBrightnessController(Context context, int displayId,
             float defaultScreenBrightness, BrightnessSetting brightnessSetting,
             Runnable onBrightnessChangeRunnable, HandlerExecutor brightnessChangeExecutor,
             DisplayManagerFlags flags, DisplayDeviceConfig config) {
-        if (injector == null) {
-            injector = new Injector();
-        }
+        this(context, new Injector(), displayId, defaultScreenBrightness, brightnessSetting,
+                onBrightnessChangeRunnable, brightnessChangeExecutor, flags, config);
+    }
+
+    @VisibleForTesting
+    DisplayBrightnessController(Context context, Injector injector, int displayId,
+            float defaultScreenBrightness, BrightnessSetting brightnessSetting,
+            Runnable onBrightnessChangeRunnable, HandlerExecutor brightnessChangeExecutor,
+            DisplayManagerFlags flags, DisplayDeviceConfig config) {
         mDisplayId = displayId;
         // TODO: b/186428377 update brightness setting when display changes
         mBrightnessSetting = brightnessSetting;
         mPendingScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mScreenBrightnessDefault = BrightnessUtils.clampAbsoluteBrightness(defaultScreenBrightness);
         mCurrentScreenBrightness = getScreenBrightnessSetting();
+        mCurrentUnthrottledBrightness = mCurrentScreenBrightness;
+        mCurrentMaxBrightness = PowerManager.BRIGHTNESS_MAX;
+        mCurrentMinBrightness = PowerManager.BRIGHTNESS_MIN;
         mOnBrightnessChangeRunnable = onBrightnessChangeRunnable;
         mDisplayBrightnessStrategySelector = injector.getDisplayBrightnessStrategySelector(context,
                 displayId, flags, config);
@@ -158,8 +177,8 @@ public final class DisplayBrightnessController {
                     constructStrategySelectionRequest(displayPowerRequest, targetDisplayState,
                             displayOffloadSession, isBedtimeModeWearEnabled));
             state = mDisplayBrightnessStrategy
-                        .updateBrightness(constructStrategyExecutionRequest(displayPowerRequest,
-                                displayOffloadSession));
+                        .updateBrightness(constructStrategyExecutionRequestLocked(
+                                displayPowerRequest, displayOffloadSession));
         }
 
         // This is a temporary measure until AutomaticBrightnessStrategy works as a traditional
@@ -248,8 +267,11 @@ public final class DisplayBrightnessController {
     public void setAndNotifyCurrentScreenBrightness(float brightnessValue) {
         final boolean hasBrightnessChanged;
         synchronized (mLock) {
-            hasBrightnessChanged = (brightnessValue != mCurrentScreenBrightness);
-            setCurrentScreenBrightnessLocked(brightnessValue);
+            float brightnessAdjusted = MathUtils
+                    .constrain(brightnessValue, mCurrentMinBrightness, mCurrentMaxBrightness);
+            hasBrightnessChanged = (brightnessAdjusted != mCurrentScreenBrightness);
+            setCurrentScreenBrightnessLocked(brightnessAdjusted);
+            mCurrentUnthrottledBrightness = brightnessValue;
         }
         if (hasBrightnessChanged) {
             notifyCurrentScreenBrightness();
@@ -275,13 +297,11 @@ public final class DisplayBrightnessController {
     }
 
     /**
-     * Sets the pending screen brightness setting, representing a value which is requested, but not
-     * yet processed.
-     * @param brightnessValue The value to which the pending screen brightness is to be set.
+     * Updates pending brightness with value from settings
      */
-    public void setPendingScreenBrightness(float brightnessValue) {
+    public void handleSettingsChange() {
         synchronized (mLock) {
-            mPendingScreenBrightness = brightnessValue;
+            mPendingScreenBrightness = getScreenBrightnessSettingConstrained();
         }
     }
 
@@ -319,20 +339,31 @@ public final class DisplayBrightnessController {
      * Returns the current screen brightnessSetting which is responsible for saving the brightness
      * in the persistent store
      */
-    public float getScreenBrightnessSetting() {
+    private float getScreenBrightnessSetting() {
         float brightness = mBrightnessSetting.getBrightness();
-        synchronized (mLock) {
-            if (Float.isNaN(brightness)) {
-                brightness = mScreenBrightnessDefault;
-            }
-            return BrightnessUtils.clampAbsoluteBrightness(brightness);
+        if (Float.isNaN(brightness)) {
+            brightness = mScreenBrightnessDefault;
         }
+        return BrightnessUtils.clampAbsoluteBrightness(brightness);
+    }
+
+    /**
+     * Returns the current screen brightnessSetting constrained by current min and max values
+     */
+    public float getScreenBrightnessSettingConstrained() {
+        float brightness = getScreenBrightnessSetting();
+        float maxBrightness, minBrightness;
+        synchronized (mLock) {
+            maxBrightness = mCurrentMaxBrightness;
+            minBrightness = mCurrentMinBrightness;
+        }
+        return MathUtils.constrain(brightness, minBrightness, maxBrightness);
     }
 
     /**
      * Notifies the brightnessSetting to persist the supplied brightness value.
      */
-    public void setBrightness(float brightnessValue, float maxBrightness) {
+    private void setBrightnessInternal(float brightnessValue, float maxBrightness) {
         // Update the setting, which will eventually call back into DPC to have us actually
         // update the display with the new value.
         mBrightnessSetting.setBrightness(brightnessValue);
@@ -343,7 +374,7 @@ public final class DisplayBrightnessController {
             // stored value is greater. On multi-screen device, when switching between a
             // screen with a wider brightness range and one with a narrower brightness range,
             // the stored value shouldn't change.
-            if (nits >= 0 && !(brightnessValue == maxBrightness && currentlyStoredNits > nits)) {
+            if (nits >= 0 && !(brightnessValue >= maxBrightness && currentlyStoredNits > nits)) {
                 mBrightnessSetting.setBrightnessNitsForDefaultDisplay(nits);
             }
         }
@@ -352,9 +383,21 @@ public final class DisplayBrightnessController {
     /**
      * Notifies the brightnessSetting to persist the supplied brightness value for a user.
      */
-    public void setBrightness(float brightnessValue, int userSerial, float maxBrightness) {
+    public void setBrightness(float brightnessValue, int userSerial) {
         mBrightnessSetting.setUserSerial(userSerial);
-        setBrightness(brightnessValue, maxBrightness);
+        setBrightness(brightnessValue);
+    }
+
+    /**
+     * Notifies the brightnessSetting to persist the supplied brightness value.
+     */
+    public void setBrightness(float brightnessValue) {
+        float maxBrightness;
+        synchronized (mLock) {
+            maxBrightness = mCurrentMaxBrightness;
+            mCurrentUnthrottledBrightness = brightnessValue;
+        }
+        setBrightnessInternal(brightnessValue, maxBrightness);
     }
 
     /**
@@ -367,16 +410,22 @@ public final class DisplayBrightnessController {
     /**
      * Sets the current screen brightness, and notifies the BrightnessSetting about the change.
      */
-    public void updateScreenBrightnessSetting(float brightnessValue, float maxBrightness) {
+    public void updateScreenBrightnessSetting(float brightnessValue,
+            float minBrightness, float maxBrightness) {
+        float adjustedBrightness = MathUtils
+                .constrain(brightnessValue, minBrightness, maxBrightness);
         synchronized (mLock) {
-            if (!BrightnessUtils.isValidBrightnessValue(brightnessValue)
-                    || brightnessValue == mCurrentScreenBrightness) {
+            mCurrentMaxBrightness = maxBrightness;
+            mCurrentMinBrightness = minBrightness;
+            if (!BrightnessUtils.isValidBrightnessValue(adjustedBrightness)
+                    || adjustedBrightness == mCurrentScreenBrightness) {
                 return;
             }
-            setCurrentScreenBrightnessLocked(brightnessValue);
+            mCurrentUnthrottledBrightness = brightnessValue;
+            setCurrentScreenBrightnessLocked(adjustedBrightness);
         }
         notifyCurrentScreenBrightness();
-        setBrightness(brightnessValue, maxBrightness);
+        setBrightnessInternal(brightnessValue, maxBrightness);
     }
 
     /**
@@ -502,8 +551,11 @@ public final class DisplayBrightnessController {
         writer.println("  mIsStylusBeingUsed="
                 + mIsStylusBeingUsed);
         synchronized (mLock) {
+            writer.println("  mCurrentMinBrightness=" + mCurrentMinBrightness);
+            writer.println("  mCurrentMaxBrightness=" + mCurrentMaxBrightness);
             writer.println("  mPendingScreenBrightness=" + mPendingScreenBrightness);
             writer.println("  mCurrentScreenBrightness=" + mCurrentScreenBrightness);
+            writer.println("  mCurrentUnthrottledBrightness=" + mCurrentUnthrottledBrightness);
             writer.println("  mLastUserSetScreenBrightness="
                     + mLastUserSetScreenBrightness);
             if (mDisplayBrightnessStrategy != null) {
@@ -677,11 +729,11 @@ public final class DisplayBrightnessController {
                 mIsStylusBeingUsed, isBedtimeModeEnabled);
     }
 
-    private StrategyExecutionRequest constructStrategyExecutionRequest(
+    @GuardedBy("mLock")
+    private StrategyExecutionRequest constructStrategyExecutionRequestLocked(
             DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
             DisplayManagerInternal.DisplayOffloadSession offloadSession) {
-        float currentScreenBrightness = getCurrentBrightness();
-        return new StrategyExecutionRequest(displayPowerRequest, currentScreenBrightness,
+        return new StrategyExecutionRequest(displayPowerRequest, mCurrentUnthrottledBrightness,
                 mUserSetScreenBrightnessUpdated, mIsStylusBeingUsed, offloadSession);
     }
 }

@@ -24,7 +24,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.RippleDrawable
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
-import com.android.media.flags.Flags.enableSuggestedDeviceApi
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.surfaceeffects.loadingeffect.LoadingEffect
@@ -141,7 +141,7 @@ internal constructor(
                 it.effectColor = primaryColorList
             }
             mediaViewHolder.seekBar.progressBackgroundTintList = primaryColorList
-            if (enableSuggestedDeviceApi()) {
+            if (enableSuggestedDeviceUi()) {
                 mediaViewHolder.deviceSuggestionText.setTextColor(primaryColor)
                 mediaViewHolder.deviceSuggestionIcon.imageTintList = primaryColorList
                 mediaViewHolder.deviceSuggestionConnectingIcon.indeterminateTintList =

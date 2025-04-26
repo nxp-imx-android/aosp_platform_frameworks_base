@@ -342,8 +342,14 @@ public class Cuj {
      */
     public static final int CUJ_NOTIFICATIONS_ANIMATED_ACTION = 131;
 
+    /**
+     * Track the animation of the assistant invocation by long pressing the power button.
+     */
+    public static final int CUJ_LPP_ASSIST_INVOCATION_EFFECT = 132;
+
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_NOTIFICATIONS_ANIMATED_ACTION;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_LPP_ASSIST_INVOCATION_EFFECT;
 
     /** @hide */
     @IntDef({
@@ -466,7 +472,8 @@ public class Cuj {
             CUJ_DEFAULT_TASK_TO_TASK_ANIMATION,
             CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY,
             CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP,
-            CUJ_NOTIFICATIONS_ANIMATED_ACTION
+            CUJ_NOTIFICATIONS_ANIMATED_ACTION,
+            CUJ_LPP_ASSIST_INVOCATION_EFFECT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -600,6 +607,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_NOTIFICATIONS_ANIMATED_ACTION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__NOTIFICATIONS_ANIMATED_ACTION;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LPP_ASSIST_INVOCATION_EFFECT] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LPP_ASSIST_INVOCATION_EFFECT;
     }
 
     private Cuj() {
@@ -858,6 +866,8 @@ public class Cuj {
                 return "STATUS_BAR_APP_RETURN_TO_CALL_CHIP";
             case CUJ_NOTIFICATIONS_ANIMATED_ACTION:
                 return "NOTIFICATIONS_ANIMATED_ACTION";
+            case CUJ_LPP_ASSIST_INVOCATION_EFFECT:
+                return "LPP_ASSIST_INVOCATION_EFFECT";
         }
         return "UNKNOWN";
     }

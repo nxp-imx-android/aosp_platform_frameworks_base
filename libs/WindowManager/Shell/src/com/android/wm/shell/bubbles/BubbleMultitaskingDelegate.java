@@ -32,6 +32,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Slog;
+import android.window.IMultitaskingControllerCallback;
 import android.window.IMultitaskingDelegate;
 
 import com.android.wm.shell.common.ShellExecutor;
@@ -53,6 +54,7 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
     private final ShellExecutor mBgExecutor;
     private final BubbleData mBubbleData;
     private int mCurrentUserId;
+    private IMultitaskingControllerCallback mControllerCallback;
 
     @SuppressLint("MissingPermission")
     BubbleMultitaskingDelegate(BubbleController controller, BubbleData bubbleData,
@@ -62,6 +64,10 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
         mBgExecutor = controller.getBackgroundExecutor();
         mBubbleData = bubbleData;
         mCurrentUserId = currentUserId;
+    }
+
+    void setControllerCallback(IMultitaskingControllerCallback callback) {
+        mControllerCallback = callback;
     }
 
     @BinderThread
@@ -187,6 +193,21 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                         Slog.d(TAG, "Removed the bubble");
                     }
                 });
+    }
+
+    void onBubbleRemoved(IBinder clientToken, int reason) {
+        if (DEBUG) {
+            Slog.d(TAG, "Notifying controller about bubble removal, reason: " + reason);
+        }
+        mBgExecutor.execute(() -> {
+            if (mControllerCallback != null) {
+                try {
+                    mControllerCallback.onBubbleRemoved(clientToken);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error reporting bubble removal, reason: " + reason, e);
+                }
+            }
+        });
     }
 
     void setCurrentUserId(int uid) {

@@ -1227,7 +1227,7 @@
     <string name="delete" msgid="1514113991712129054">"حذف"</string>
     <string name="copyUrl" msgid="6229645005987260230">"‏کپی URL"</string>
     <string name="selectTextMode" msgid="3225108910999318778">"انتخاب متن"</string>
-    <string name="undo" msgid="3175318090002654673">"لغو"</string>
+    <string name="undo" msgid="3175318090002654673">"واگرد"</string>
     <string name="redo" msgid="7231448494008532233">"ازنو انجام دادن"</string>
     <string name="autofill" msgid="511224882647795296">"تکمیل خودکار"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"انتخاب متن"</string>
@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"بسیار کم‌نور"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"دستگاه‌های کمک‌شنوایی"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"کلیک خودکار"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"متصل نیست"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"وصل شد"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"فعال"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"تبلیغات ویژه"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"اجتماعی"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"اخبار"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"توصیه‌ها"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"شما اهمیت این اعلان‌ها را تنظیم می‌کنید."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"به دلیل افراد درگیر مهم است."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"اعلان برنامه سفارشی"</string>
@@ -2273,7 +2276,7 @@
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"کشیدن"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"پیمایش"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"فشار طولانی"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"توقف موقت"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"مکث"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"موقعیت"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"پیمایش به بالا"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"پیمایش به پایین"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"برنامه‌ها"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"اثر انگشتانتان دیگر قابل‌شناسایی نیست. «قفل‌گشایی با اثر انگشت» را دوباره راه‌اندازی کنید."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏دستگاه USB هنگام قفل بودن وصل شده است"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید و سپس دستگاه USB را دوباره وارد کنید."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"قابلیت شارژ شدن ممکن است هنگام قفل بودن کاهش یابد یا دردسترس نباشد."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>

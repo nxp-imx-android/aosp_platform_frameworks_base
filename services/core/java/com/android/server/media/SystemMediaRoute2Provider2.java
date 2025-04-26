@@ -223,6 +223,7 @@ import java.util.stream.Stream;
             if (overridingSession != null) {
                 var builder =
                         new RoutingSessionInfo.Builder(overridingSession.mTranslatedSessionInfo)
+                                .setClientPackageName(packageName)
                                 .setProviderId(mUniqueId)
                                 .setSystemSession(true);
                 for (var systemRoute : mLastSystemProviderInfo.getRoutes()) {

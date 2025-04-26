@@ -26,6 +26,16 @@ flag {
 }
 
 flag {
+    name: "remove_aod_car_mode"
+    namespace: "systemui"
+    description: "Remove functionality of car mode disabling AOD."
+    bug: "297462331"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+ }
+
+flag {
    name: "fingerprint_cancel_race_mitigation"
    namespace: "systemui"
    description: "Mitigate the race condition between KeyguardUpdateMonitor cancelling a fingerprint listening state and FingerprintManager sending the cancellation."
@@ -704,20 +714,20 @@ flag {
 }
 
 flag {
-    name: "use_volume_controller"
-    namespace: "systemui"
-    description: "Adds Volume Controller signals to the AudioRepository to update volume"
-    bug: "349348461"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "volume_redesign"
     namespace: "systemui"
     description: "Enables Volume visuals update"
     bug: "368308908"
+}
+
+flag {
+    name: "clipboard_announce_live_region"
+    namespace: "systemui"
+    description: "Use live region for clipboard status announcement"
+    bug: "378856296"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -748,20 +758,20 @@ flag {
 }
 
 flag {
-    name: "clipboard_image_timeout"
+    name: "clipboard_use_description_mimetype"
     namespace: "systemui"
-    description: "Wait for clipboard image to load before showing UI"
-    bug: "359864629"
+    description: "Read item mimetype from description rather than checking URI"
+    bug: "357197236"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
 }
 
 flag {
-    name: "clipboard_use_description_mimetype"
+    name: "screenshot_announce_live_region"
     namespace: "systemui"
-    description: "Read item mimetype from description rather than checking URI"
-    bug: "357197236"
+    description: "Use live region for screenshot saving announcement"
+    bug: "383642111"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -941,17 +951,6 @@ flag {
     namespace: "systemui"
     description: "Show a dialog when clicking on hearing aids quick settings tile."
     bug: "291423171"
-}
-
-flag {
-    name: "notification_row_user_context"
-    namespace: "systemui"
-    description: "Create a user-specific Context for the ImageResolver in ExpandableNotificationRow"
-        " (based on the NotificationEntry's user)."
-    bug: "317503801"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1146,16 +1145,6 @@ flag {
 }
 
 flag {
-    name: "slice_broadcast_relay_in_background"
-    namespace: "systemui"
-    description: "Move handling of slice broadcast relay broadcasts to background threads"
-    bug: "334767208"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "register_battery_controller_receivers_in_corestartable"
     namespace: "systemui"
     description: "Decide whether to register the receivers in battery controller impl in the BatteryControllerStartable corestartable."
@@ -1306,6 +1295,16 @@ flag {
 }
 
 flag {
+  name: "communal_shade_touch_handling_fixes"
+  namespace: "systemui"
+  description: "Flags some minor bug fixes for opening the shade on the hub"
+  bug: "409682586"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "dream_overlay_updated_ui"
     namespace: "systemui"
     description: "Flag to enable updated UI for dream overlay"
@@ -1318,16 +1317,6 @@ flag {
   namespace: "systemui"
   description: "Enables Backlinks improvement feature in App Clips"
   bug: "300307759"
-}
-
-flag {
-  name: "qs_custom_tile_click_guaranteed_bug_fix"
-  namespace: "systemui"
-  description: "Guarantee that clicks on a tile always happen by postponing onStopListening until after the click."
-  bug: "339290820"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1403,16 +1392,6 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
-}
-
-flag {
-    name: "media_lockscreen_launch_animation"
-    namespace : "systemui"
-    description : "Enable the origin launch animation for UMO when opening on top of lockscreen."
-    bug : "346865769"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1595,16 +1574,6 @@ flag {
    namespace: "systemui"
    description: "Ensure MediaProjection Dialog appears behind the lockscreen"
    bug: "351409536"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
-   name: "check_lockscreen_gone_transition"
-   namespace: "systemui"
-   description: "Run notification pipeline when the lockscreen is not in gone transition for avoiding janky frames during unlocking animation"
-   bug: "358301118"
    metadata {
        purpose: PURPOSE_BUGFIX
    }
@@ -1909,16 +1878,6 @@ flag {
 }
 
 flag {
-   name: "shade_launch_accessibility"
-   namespace: "systemui"
-   description: "Intercept accessibility focus events for the Shade during launch animations to avoid stray TalkBack events."
-   bug: "379222226"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "expand_collapse_privacy_dialog"
   namespace: "systemui"
   description: "Add expand and collapse actions to accessibility, to allow announcement in TalkBack when state changes."
@@ -2112,4 +2071,11 @@ flag {
     namespace: "systemui"
     description: "Overall changes on Sytem UI when current user is the Headless System User"
     bug: "408066623"
+}
+
+flag {
+    name: "enable_suggested_device_ui"
+    namespace: "systemui"
+    description: "Enables the UI for the suggested devices feature."
+    bug: "411452237"
 }

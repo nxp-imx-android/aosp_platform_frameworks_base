@@ -560,7 +560,7 @@ public final class MessageQueue {
             msg.when = when;
             msg.arg1 = token;
 
-            if (Flags.messageQueueTailTracking() && mLast != null && mLast.when <= when) {
+            if (mLast != null && mLast.when <= when) {
                 /* Message goes to tail of list */
                 mLast.next = msg;
                 mLast = msg;
@@ -679,36 +679,13 @@ public final class MessageQueue {
                 // the message is the earliest asynchronous message in the queue.
                 needWake = mBlocked && p.target == null && msg.isAsynchronous();
 
-                // For readability, we split this portion of the function into two blocks based on
-                // whether tail tracking is enabled. This has a minor implication for the case
-                // where tail tracking is disabled. See the comment below.
-                if (Flags.messageQueueTailTracking()) {
-                    if (when >= mLast.when) {
-                        needWake = needWake && mAsyncMessageCount == 0;
-                        msg.next = null;
-                        mLast.next = msg;
-                        mLast = msg;
-                    } else {
-                        // Inserted within the middle of the queue.
-                        Message prev;
-                        for (;;) {
-                            prev = p;
-                            p = p.next;
-                            if (p == null || when < p.when) {
-                                break;
-                            }
-                            if (needWake && p.isAsynchronous()) {
-                                needWake = false;
-                            }
-                        }
-                        if (p == null) {
-                            /* Inserting at tail of queue */
-                            mLast = msg;
-                        }
-                        msg.next = p; // invariant: p == prev.next
-                        prev.next = msg;
-                    }
+                if (when >= mLast.when) {
+                    needWake = needWake && mAsyncMessageCount == 0;
+                    msg.next = null;
+                    mLast.next = msg;
+                    mLast = msg;
                 } else {
+                    // Inserted within the middle of the queue.
                     Message prev;
                     for (;;) {
                         prev = p;
@@ -720,24 +697,12 @@ public final class MessageQueue {
                             needWake = false;
                         }
                     }
+                    if (p == null) {
+                        /* Inserting at tail of queue */
+                        mLast = msg;
+                    }
                     msg.next = p; // invariant: p == prev.next
                     prev.next = msg;
-
-                    /*
-                     * If this block is executing then we have a build without tail tracking -
-                     * specifically: Flags.messageQueueTailTracking() == false. This is determined
-                     * at build time so the flag won't change on us during runtime.
-                     *
-                     * Since we don't want to pepper the code with extra checks, we only check
-                     * for tail tracking when we might use mLast. Otherwise, we continue to update
-                     * mLast as the tail of the list.
-                     *
-                     * In this case however we are not maintaining mLast correctly. Since we never
-                     * use it, this is fine. However, we run the risk of leaking a reference.
-                     * So set mLast to null in this case to avoid any Message leaks. The other
-                     * sites will never use the value so we are safe against null pointer derefs.
-                     */
-                    mLast = null;
                 }
             }
 

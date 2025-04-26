@@ -36,11 +36,13 @@ import com.android.systemui.LauncherProxyService;
 import com.android.systemui.assist.domain.interactor.AssistInteractor;
 import com.android.systemui.assist.ui.DefaultUiController;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shared.Flags;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
@@ -154,6 +156,7 @@ public class AssistManager {
     private final SelectedUserInteractor mSelectedUserInteractor;
     private final ActivityManager mActivityManager;
     private final AssistInteractor mInteractor;
+    private final Handler mBgHandler;
 
     private final DeviceProvisionedController mDeviceProvisionedController;
 
@@ -193,6 +196,7 @@ public class AssistManager {
             DefaultUiController defaultUiController,
             AssistLogger assistLogger,
             @Main Handler uiHandler,
+            @Background Handler bgHandler,
             UserTracker userTracker,
             DisplayTracker displayTracker,
             SecureSettings secureSettings,
@@ -214,6 +218,7 @@ public class AssistManager {
         mSelectedUserInteractor = selectedUserInteractor;
         mActivityManager = activityManager;
         mInteractor = interactor;
+        mBgHandler = bgHandler;
 
         registerVoiceInteractionSessionListener();
         registerVisualQueryRecognitionStatusListener();
@@ -442,9 +447,16 @@ public class AssistManager {
     }
 
     private void startVoiceInteractor(Bundle args) {
-        mAssistUtils.showSessionForActiveService(args,
-                VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE, mContext.getAttributionTag(),
-                null, null);
+        if (Flags.enableLppAssistInvocationEffect()) {
+            // Use background thread to prevent the binder call from blocking the UI thread
+            mBgHandler.post(() -> mAssistUtils.showSessionForActiveService(args,
+                    VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
+                    mContext.getAttributionTag(), null, null));
+        } else {
+            mAssistUtils.showSessionForActiveService(args,
+                    VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,
+                    mContext.getAttributionTag(), null, null);
+        }
     }
 
     private void registerVisualQueryRecognitionStatusListener() {

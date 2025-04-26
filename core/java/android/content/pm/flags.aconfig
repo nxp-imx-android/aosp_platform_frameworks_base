@@ -211,14 +211,6 @@ flag {
 }
 
 flag {
-    name: "component_state_changed_metrics"
-    namespace: "package_manager_service"
-    description: "Feature flag to log the metrics when the component state is changed."
-    bug: "316916801"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "get_package_info_with_fd"
     is_exported: true
     namespace: "package_manager_service"
@@ -232,14 +224,6 @@ flag {
     namespace: "package_manager_service"
     description: "Feature flag to enable the feature to retrieve info about audio playback capture allowance at manifest level."
     bug: "362425551"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "remove_cross_user_permission_hack"
-    namespace: "package_manager_service"
-    description: "Feature flag to remove hack code of using PackageManager.MATCH_ANY_USER flag without cross user permission."
-    bug: "332664521"
     is_fixed_read_only: true
 }
 
@@ -353,4 +337,12 @@ flag {
     namespace: "supervision"
     description: "Feature flag to enable protecting Supervision packages."
     bug: "404779514"
+}
+
+flag {
+    name: "merge_package_changed_broadcast"
+    namespace: "package_manager_service"
+    description: "Feature flag to add delivery group policy for PACKAGE_CHANGED broadcast to allow merging broadcasts."
+    bug: "381949725"
+    is_fixed_read_only: true
 }

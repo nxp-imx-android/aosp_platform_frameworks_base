@@ -74,7 +74,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -287,56 +286,6 @@ public class LockPatternUtils {
             return mTimeoutMs;
         }
 
-    }
-
-    /**
-     * This exists temporarily due to trunk-stable policies.
-     * Please use ArrayUtils directly if you can.
-     */
-    public static byte[] newNonMovableByteArray(int length) {
-        if (!android.security.Flags.secureArrayZeroization()) {
-            return new byte[length];
-        }
-        return ArrayUtils.newNonMovableByteArray(length);
-    }
-
-    /**
-     * This exists temporarily due to trunk-stable policies.
-     * Please use ArrayUtils directly if you can.
-     */
-    public static char[] newNonMovableCharArray(int length) {
-        if (!android.security.Flags.secureArrayZeroization()) {
-            return new char[length];
-        }
-        return ArrayUtils.newNonMovableCharArray(length);
-    }
-
-    /**
-     * This exists temporarily due to trunk-stable policies.
-     * Please use ArrayUtils directly if you can.
-     */
-    public static void zeroize(byte[] array) {
-        if (!android.security.Flags.secureArrayZeroization()) {
-            if (array != null) {
-                Arrays.fill(array, (byte) 0);
-            }
-            return;
-        }
-        ArrayUtils.zeroize(array);
-    }
-
-    /**
-     * This exists temporarily due to trunk-stable policies.
-     * Please use ArrayUtils directly if you can.
-     */
-    public static void zeroize(char[] array) {
-        if (!android.security.Flags.secureArrayZeroization()) {
-            if (array != null) {
-                Arrays.fill(array, (char) 0);
-            }
-            return;
-        }
-        ArrayUtils.zeroize(array);
     }
 
     @UnsupportedAppUsage
@@ -1039,7 +988,7 @@ public class LockPatternUtils {
         }
         final int patternSize = pattern.size();
 
-        byte[] res = newNonMovableByteArray(patternSize);
+        byte[] res = ArrayUtils.newNonMovableByteArray(patternSize);
         for (int i = 0; i < patternSize; i++) {
             LockPatternView.Cell cell = pattern.get(i);
             res[i] = (byte) (cell.getRow() * 3 + cell.getColumn() + '1');

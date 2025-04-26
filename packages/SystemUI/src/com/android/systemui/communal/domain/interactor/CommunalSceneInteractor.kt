@@ -181,7 +181,7 @@ constructor(
                 isInstant = true,
             )
             notifyListeners(newScene, keyguardState)
-            repository.snapToScene(newScene)
+            repository.instantlyTransitionTo(newScene)
         }
     }
 

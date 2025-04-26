@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"भाषा परिवर्तन गर्नुहोस्"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"अहिलेको भाषा राख्नुहोस्"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi सेयर गर्नुहोस्"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"नेटवर्क हाल्नुहोस्"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"यस नेटवर्कमा वायरलेस डिबगिङ सेवा प्रयोग गर्न दिने हो?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"नेटवर्कको नाम (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi ठेगाना (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"यस नेटवर्कमा सधैँ अनुमति दिनुहोस्"</string>
@@ -246,6 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ब्लुटुथ डिभाइस जनाउने आइकन"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"डिभाइसको विवरण कन्फिगर गर्न क्लिक गर्नुहोस्"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>। डिभाइसको विवरण कन्फिगर गर्नुहोस्"</string>
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> मार्फत अडियो सेयर गर्न थाल्नुहोस्"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> मार्फत अडियो सेयर गर्न छाड्नुहोस्"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"सबै डिभाइस हेर्नुहोस्"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"नयाँ डिभाइस कनेक्ट गर्नुहोस्"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ब्याट्रीमा कति प्रतिशत चार्ज छ भन्ने कुराको जानाकरी छैन।"</string>
@@ -479,6 +482,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट गरिएको छैन"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिङमा गई व्यवस्थापन गर्नुहोस्"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कुनै पनि सक्रिय छैन}=1{{mode} सक्रिय छ}other{# मोड सक्रिय छन्}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"तपाईंलाई अलार्म, रिमाइन्डर, कार्यक्रम र तपाईंले निर्दिष्ट गर्नुभएका कलरहरू बाहेकका ध्वनि र कम्पनहरूले बाधा पुऱ्याउने छैनन्। तपाईंले अझै सङ्गीत, भिडियो र खेलहरू लगायत आफूले प्ले गर्न छनौट गरेका जुनसुकै कुरा सुन्न सक्नुहुनेछ।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"तपाईंलाई अलार्महरू बाहेकका ध्वनि र कम्पनहरूले बाधा पुऱ्याउने छैनन्। तपाईंले अझै सङ्गीत, भिडियो र खेलहरू लगायत आफूले प्ले गर्न छनौट गरेका जुनसुकै कुरा सुन्न सक्नुहुनेछ।"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">" कस्टम बनाउनुहोस्"</string>
@@ -744,6 +751,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"कम्पन गर्नुहोस्"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s भोल्युमका नियन्त्रणहरू"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"कल तथा सूचनाहरू आउँदा घन्टी बज्ने छ (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"अतिथिको डिभाइसको भोल्युम"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"आउटपुटसम्बन्धी सेटिङमा जानुहोस्"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"भोल्युम स्लाइडरहरू एक्स्पान्ड गरिएका छन्"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"भोल्युम स्लाइडरहरू कोल्याप्स गरिएका छन्"</string>
@@ -804,9 +812,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"आफ्नो ट्याब्लेटसँग किबोर्ड जोड्न, पहिले तपाईँले ब्लुटुथ सक्रिय गर्नुपर्छ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सक्रिय पार्नुहोस्"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"अन छ - अनुहारमा आधारित"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"सम्पन्न भयो"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू गर्नुहोस्"</string>
@@ -826,7 +840,7 @@
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"यो वार्तालापका सूचनाहरूको सिरानमा र लक स्क्रिनमा प्रोफाइल फोटोका रूपमा देखिन्छ"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"यो वार्तालापका सूचनाहरूको सिरानमा, बबलका रूपमा र लक स्क्रिनमा प्रोफाइल फोटोका रूपमा देखिन्छ"</string>
     <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"यो वार्तालापका सूचनाहरूको सिरानमा र लक स्क्रिनमा प्रोफाइल फोटोका रूपमा देखिन्छ। साथै, यसले गर्दा \'बाधा नपुऱ्याउनुहोस्\' नामक सुविधामा अवरोध आउँछ"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"यो वार्तालापका सूचनाहरूको सिरानमा, बबलका रूपमा र लक स्क्रिनमा प्रोफाइल फोटोका रूपमा देखिन्छ। साथै, यसले गर्दा \'बाधा नपुऱ्याउनुहोस्\' नामक सुविधामा अवरोध आउँछ"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"यो वार्तालापसम्बन्धी नोटिफिकेसनको सूचीमा सबैभन्दा माथि, लक स्क्रिनमा प्रोफाइल फोटोका रूपमा र बबलका रूपमा देखिनुका साथै यसमा Do Not Disturb मोड लागू हुँदैन"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"प्राथमिकता"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> मा वार्तालापसम्बन्धी सुविधा प्रयोग गर्न मिल्दैन"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"प्रतिक्रिया"</string>
@@ -1103,8 +1117,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"ब्याट्री सकिने सम्भावना भएमा अन गर्नुहोस्"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"पर्दैन, धन्यवाद"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"प्रयोगमा छ"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> प्रयोग भइरहेको छ।"</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" र "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g>ले प्रयोग गरिरहेको छ"</string>
@@ -1586,7 +1599,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"सर्वसुलभता"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"युटिलिटी"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"गोपनीयता"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"एपले उपलब्ध गराएका"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"सिस्टमका एपबाट"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"आफूले इन्स्टल गरेका एपबाट"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"डिस्प्ले"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सबै टाइलहरू रिसेट गर्ने हो?"</string>

@@ -39,6 +39,7 @@ import com.android.systemui.util.kotlin.combine
 import com.android.systemui.volume.domain.interactor.AudioSharingInteractor
 import com.android.systemui.volume.panel.shared.VolumePanelLogger
 import com.android.systemui.volume.panel.ui.VolumePanelUiEvent
+import com.google.common.annotations.VisibleForTesting
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -363,4 +364,20 @@ constructor(
     private companion object {
         const val TAG = "AudioStreamSliderViewModel"
     }
+}
+
+object AudioStreamSliderTestTags {
+
+    @VisibleForTesting
+    val testTagsByStream =
+        mapOf(
+            AudioStream(AudioManager.STREAM_MUSIC) to "Media",
+            AudioStream(AudioManager.STREAM_VOICE_CALL) to "Call",
+            AudioStream(AudioManager.STREAM_RING) to "Ring",
+            AudioStream(AudioManager.STREAM_NOTIFICATION) to "Notification",
+            AudioStream(AudioManager.STREAM_ALARM) to "Alarm",
+        )
+
+    fun testTag(audioStream: AudioStream): String =
+        testTagsByStream.getOrDefault(audioStream, "Volume slider")
 }

@@ -37,7 +37,6 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
-import com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
@@ -47,6 +46,7 @@ import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
 import com.android.settingslib.media.flags.Flags.FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS
+import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
 import com.android.systemui.media.controls.shared.model.MediaData
@@ -324,7 +324,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(data.icon).isEqualTo(icon)
     }
 
-    @RequiresFlagsEnabled(FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @RequiresFlagsEnabled(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     @Test
     fun suggestedDeviceUpdate() {
         val suggestedDeviceName = "suggested_device_name"

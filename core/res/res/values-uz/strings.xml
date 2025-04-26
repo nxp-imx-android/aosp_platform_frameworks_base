@@ -693,7 +693,7 @@
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"Juda yorqin"</string>
     <string name="fingerprint_acquired_power_press" msgid="3107864151278434961">"Quvvat tugmasi bosildi"</string>
     <string name="fingerprint_acquired_try_adjusting" msgid="3667006071003809364">"Moslashga urining"</string>
-    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"Barmoqni har safar biroz surib joylang"</string>
+    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"Barmoqni har safar biroz suring"</string>
   <string-array name="fingerprint_acquired_vendor">
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"Barmoq izi aniqlanmadi"</string>
@@ -1119,7 +1119,7 @@
     <string name="factorytest_failed" msgid="3190979160945298006">"Ishlab chiqarish sinovi amalga oshmadi"</string>
     <string name="factorytest_not_system" msgid="5658160199925519869">"The FACTORY_TEST amali faqatgina /system/app ichiga o‘rnatilgan paketlar bilan ishlay oladi."</string>
     <string name="factorytest_no_action" msgid="339252838115675515">"FACTORY_TEST amalini bajarish uchun birorta ham paket topilmadi."</string>
-    <string name="factorytest_reboot" msgid="2050147445567257365">"Qayta ishga tushirish"</string>
+    <string name="factorytest_reboot" msgid="2050147445567257365">"Qayta yoqish"</string>
     <string name="js_dialog_title" msgid="7464775045615023241">"\"<xliff:g id="TITLE">%s</xliff:g>\"dagi sahifa buni xabar qilmoqda:"</string>
     <string name="js_dialog_title_default" msgid="3769524569903332476">"JavaScript"</string>
     <string name="js_dialog_before_unload_title" msgid="7012587995876771246">"Tasdiqlash"</string>
@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Juda xira"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Eshitish qurilmalari"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Avtoklik"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Uzildi"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Ulandi"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Faol"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promoaksiyalar"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Ijtimoiy"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Yangiliklar"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Tavsiyalar"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Siz ushbu bildirishnomalarning muhimligini belgilagansiz."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Bu odamlar siz uchun muhim."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Maxsus ilova bildirishnomasi"</string>

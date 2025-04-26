@@ -313,8 +313,9 @@ interface IWindowSession {
     /**
      * Update the flags on an input channel associated with a particular surface.
      */
-    oneway void updateInputChannel(in IBinder channelToken, int displayId,
-            in SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
+    oneway void updateInputChannel(in IBinder channelToken,
+            in @nullable InputTransferToken hostInputTransferToken,
+            int displayId, in SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
             in Region region);
 
     /**

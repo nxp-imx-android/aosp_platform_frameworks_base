@@ -425,8 +425,6 @@ class DesktopTilingWindowDecoration(
         return null
     }
 
-    override fun onDragStart(taskId: Int) {}
-
     override fun onDragMove(taskId: Int) {
         removeTaskIfTiled(taskId)
     }
@@ -588,12 +586,12 @@ class DesktopTilingWindowDecoration(
 
     // Overriding FocusTransitionListener
     override fun onFocusedTaskChanged(
-        taskId: Int,
+        runningTaskInfo: RunningTaskInfo,
         isFocusedOnDisplay: Boolean,
         isFocusedGlobally: Boolean,
     ) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) return
-        moveTiledPairToFront(taskId, isFocusedOnDisplay)
+        moveTiledPairToFront(runningTaskInfo.taskId, isFocusedOnDisplay)
     }
 
     // Only called if [taskInfo] relates to a focused task

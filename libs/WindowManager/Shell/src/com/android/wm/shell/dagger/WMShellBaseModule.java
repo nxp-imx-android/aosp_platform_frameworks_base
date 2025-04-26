@@ -144,6 +144,8 @@ import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 import com.android.wm.shell.unfold.UnfoldAnimationController;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
+import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
+import com.android.wm.shell.windowdecor.viewholder.AppHandles;
 
 import dagger.BindsOptionalOf;
 import dagger.Lazy;
@@ -943,9 +945,11 @@ public abstract class WMShellBaseModule {
             ShellTaskOrganizer shellTaskOrganizer,
             @ShellSplashscreenThread ShellExecutor splashScreenExecutor,
             StartingWindowTypeAlgorithm startingWindowTypeAlgorithm, IconProvider iconProvider,
-            TransactionPool pool) {
+            TransactionPool pool, @ShellMainThread ShellExecutor mainExecutor,
+            Transitions transitions) {
         return new StartingWindowController(context, shellInit, shellController, shellTaskOrganizer,
-                splashScreenExecutor, startingWindowTypeAlgorithm, iconProvider, pool);
+                splashScreenExecutor, startingWindowTypeAlgorithm, iconProvider, pool, mainExecutor,
+                transitions);
     }
 
     // Workaround for dynamic overriding with a default implementation, see {@link DynamicOverride}
@@ -1112,6 +1116,19 @@ public abstract class WMShellBaseModule {
     }
 
     //
+    // AppHandle
+    //
+
+    @WMSingleton
+    @Provides
+    static Optional<AppHandles> provideAppHandles(Optional<AppHandleNotifier> appHandleNotifier) {
+        return appHandleNotifier.map(AppHandleNotifier::asAppHandleImpl);
+    }
+
+    @BindsOptionalOf
+    abstract AppHandleNotifier getAppHandleNotifier();
+
+    //
     // Misc
     //
 
@@ -1140,6 +1157,7 @@ public abstract class WMShellBaseModule {
             Optional<RecentsTransitionHandler> recentsTransitionHandlerOptional,
             Optional<OneHandedController> oneHandedControllerOptional,
             Optional<AppZoomOutController> appZoomOutControllerOptional,
+            Optional<AppHandles> appHandlesOptional,
             Optional<HideDisplayCutoutController> hideDisplayCutoutControllerOptional,
             Optional<ActivityEmbeddingController> activityEmbeddingOptional,
             Optional<MixedTransitionHandler> mixedTransitionHandler,

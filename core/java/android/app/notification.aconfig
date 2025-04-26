@@ -91,6 +91,16 @@ flag {
 }
 
 flag {
+  name: "modes_ui_dnd_slice"
+  namespace: "systemui"
+  description: "Restores a (tweaked) DND slice in Settings; dependent on modes_ui"
+  bug: "406238205"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "modes_cleanup_implicit"
   namespace: "systemui"
   description: "Deletes implicit modes if never customized and not used for some time. Depends on MODES_UI"
@@ -170,16 +180,6 @@ flag {
   namespace: "systemui"
   description: "Evenly divides horizontal space for action buttons in CallStyle notifications."
   bug: "268733030"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "secure_allowlist_token"
-  namespace: "systemui"
-  description: "Prevents allowlist_token from leaking out and foreign tokens from being accepted"
-  bug: "328254922"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -340,4 +340,25 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "restrict_audio_attributes_call"
+  namespace: "systemui"
+  description: "Only CallStyle notifs can use USAGE_NOTIFICATION_RINGTONE"
+  bug: "331793339"
+}
+
+flag {
+  name: "restrict_audio_attributes_alarm"
+  namespace: "systemui"
+  description: "Only alarm category notifs can use USAGE_ALARM"
+  bug: "331793339"
+}
+
+flag {
+  name: "restrict_audio_attributes_media"
+  namespace: "systemui"
+  description: "No notifs can use USAGE_UNKNOWN or USAGE_MEDIA"
+  bug: "331793339"
 }

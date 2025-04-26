@@ -18,6 +18,7 @@
 
 package com.android.systemui.kairos.internal.util
 
+import com.android.app.tracing.traceSection
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -38,43 +39,72 @@ import kotlinx.coroutines.newCoroutineContext
 
 private const val LogEnabled = false
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun logLn(indent: Int = 0, message: Any?) {
+internal inline fun logLn(indent: Int = 0, getMessage: () -> Any?) {
     if (!LogEnabled) return
-    log(indent, message)
+    log(indent, getMessage)
     println()
 }
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun log(indent: Int = 0, message: Any?) {
+internal inline fun log(indent: Int = 0, getMessage: () -> Any?) {
     if (!LogEnabled) return
     printIndent(indent)
-    print(message)
+    print(getMessage())
 }
 
 @JvmInline
 internal value class LogIndent(val currentLogIndent: Int) {
     @OptIn(ExperimentalContracts::class)
-    inline fun <R> logDuration(prefix: String, start: Boolean = true, block: LogIndent.() -> R): R {
+    inline fun <R> logDuration(
+        getPrefix: () -> String,
+        start: Boolean = true,
+        trace: Boolean = false,
+        block: LogIndent.() -> R,
+    ): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        return logDuration(currentLogIndent, prefix, start, block)
+        return logDuration(currentLogIndent, getPrefix, start, trace, block)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun logLn(message: Any?) = logLn(currentLogIndent, message)
+    inline fun logLn(getMessage: () -> Any?) = logLn(currentLogIndent, getMessage)
 }
 
 @OptIn(ExperimentalContracts::class)
 internal inline fun <R> logDuration(
     indent: Int,
-    prefix: String,
+    getPrefix: () -> String,
     start: Boolean = true,
+    trace: Boolean = false,
+    block: LogIndent.() -> R,
+): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(getPrefix, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (!LogEnabled) {
+        if (trace) {
+            traceSection(getPrefix) { LogIndent(0).block() }
+        } else {
+            LogIndent(0).block()
+        }
+    } else {
+        val prefix = getPrefix()
+        if (trace) {
+            traceSection(prefix) { logDurationInternal(start, indent, prefix, block) }
+        } else {
+            logDurationInternal(start, indent, prefix, block)
+        }
+    }
+}
+
+@OptIn(ExperimentalContracts::class)
+private inline fun <R> logDurationInternal(
+    start: Boolean,
+    indent: Int,
+    prefix: String,
     block: LogIndent.() -> R,
 ): R {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    if (!LogEnabled) return LogIndent(0).block()
     if (start) {
-        logLn(indent, prefix)
+        logLn(indent) { prefix }
     }
     val (result, duration) = measureTimedValue { LogIndent(indent + 1).block() }
 

@@ -293,7 +293,8 @@ class ActivityStarter {
     private IVoiceInteractor mVoiceInteractor;
 
     // Last activity record we attempted to start
-    private ActivityRecord mLastStartActivityRecord;
+    @VisibleForTesting
+    ActivityRecord mLastStartActivityRecord;
     // The result of the last activity we attempted to start.
     private int mLastStartActivityResult;
     // Time in milli seconds we attempted to start the last activity.
@@ -1508,22 +1509,36 @@ class ActivityStarter {
             mService.resumeAppSwitches();
         }
 
-        final ActionChain chain = mService.mChainTracker.startTransit("startAct");
         // Because startActivity must run immediately, it can get combined with another
         // transition meaning it is no-longer independent. This is NOT desirable, but is the
         // only option for the time being.
         boolean isIndependent = false;
+        final ActionChain chain;
+        final Transition sourceTransit = r.mTransitionController.getCollectingTransition();
+        final String actionType = r.isActivityTypeHomeOrRecents() ? "startHomeAct" : "startAct";
+        if (sourceRecord != null && sourceTransit != null
+                && sourceTransit.isInTransition(sourceRecord)) {
+            // TODO(b/294925498): Until we have accurate ready tracking, assume that
+            //                    sourceRecord membership means this is expected.
+            chain = mService.mChainTracker.start(actionType, sourceTransit);
+        } else {
+            chain = mService.mChainTracker.startTransit(actionType);
+        }
         if (!chain.isCollecting()) {
             // Only do the create here since startActivityInner can abort. If it doesn't abort,
             // the requestStart will be sent in handleStartRequest.
             chain.attachTransition(r.mTransitionController.createAndStartCollecting(TRANSIT_OPEN));
             isIndependent = chain.getTransition() != null;
         }
+        final Transition transition = chain.getTransition();
+        if (transition != null && sourceRecord != null) {
+            transition.addSourceActivity(sourceRecord);
+        }
 
         mLastStartActivityResult = startActivityUnchecked(r, sourceRecord, voiceSession,
                 request.voiceInteractor, startFlags, checkedOptions,
                 inTask, inTaskFragment, balVerdict, intentGrants, realCallingUid,
-                chain.getTransition(), isIndependent);
+                transition, isIndependent);
 
         // Because the pending-intent usage in the waitAsyncStart hack "exits" ATMS into
         // AMS and re-enters, this can be nested.
@@ -1996,9 +2011,6 @@ class ActivityStarter {
                     activity.destroyIfPossible("Removes redundant singleInstance");
                 }
             }
-            if (mLastStartActivityRecord != null) {
-                targetTaskTop.mLaunchSourceType = mLastStartActivityRecord.mLaunchSourceType;
-            }
             recordTransientLaunchIfNeeded(targetTaskTop);
             // Recycle the target task for this launch.
             startResult =
@@ -2437,6 +2449,11 @@ class ActivityStarter {
                 ? targetTask.getTopNonFinishingActivity()
                 : targetTaskTop;
 
+        // The mLastStartActivityRecord isn't added to task, update latest launch source to top
+        // activity before creating starting window.
+        if (mLastStartActivityRecord != null && targetTaskTop != mLastStartActivityRecord) {
+            targetTaskTop.mLaunchSourceType = mLastStartActivityRecord.mLaunchSourceType;
+        }
         if (mMovedToFront) {
             // We moved the task to front, use starting window to hide initial drawn delay.
             targetTaskTop.showStartingWindow(true /* taskSwitch */);

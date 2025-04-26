@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -102,7 +101,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private boolean mPipelineRunAllowed;
     private boolean mReorderingAllowed;
     private boolean mIsSuppressingPipelineRun = false;
-    private boolean mIsSuppressingGroupChange = false;
+    private boolean mIsSuppressingParentChange = false;
     private final Set<String> mEntriesWithSuppressedSectionChange = new HashSet<>();
     private boolean mIsSuppressingEntryReorder = false;
 
@@ -113,8 +112,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
 
     @VisibleForTesting
     protected static final long ALLOW_SECTION_CHANGE_TIMEOUT = 500;
-
-    private final boolean mCheckLockScreenTransitionEnabled = Flags.checkLockscreenGoneTransition();
 
     @Inject
     public VisualStabilityCoordinator(
@@ -185,14 +182,12 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                     this::onTrackingHeadsUpModeChanged);
         }
 
-        if (mCheckLockScreenTransitionEnabled) {
-            if (SceneContainerFlag.isEnabled()) {
-                mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.isInTransition(
-                                Edge.create(KeyguardState.LOCKSCREEN, Scenes.Gone), null),
-                        this::onLockscreenInGoneTransitionChanged);
-            } else {
-                mKeyguardStateController.addCallback(mKeyguardFadeAwayAnimationCallback);
-            }
+        if (SceneContainerFlag.isEnabled()) {
+            mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.isInTransition(
+                            Edge.create(KeyguardState.LOCKSCREEN, Scenes.Gone), null),
+                    this::onLockscreenInGoneTransitionChanged);
+        } else {
+            mKeyguardStateController.addCallback(mKeyguardFadeAwayAnimationCallback);
         }
         pipeline.setVisualStabilityManager(mNotifStabilityManager);
     }
@@ -311,7 +306,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                 @Override
                 public void onBeginRun() {
                     mIsSuppressingPipelineRun = false;
-                    mIsSuppressingGroupChange = false;
+                    mIsSuppressingParentChange = false;
                     mEntriesWithSuppressedSectionChange.clear();
                     mIsSuppressingEntryReorder = false;
                 }
@@ -323,7 +318,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                 }
 
                 @Override
-                public boolean isGroupChangeAllowed(@NonNull NotificationEntry entry) {
+                public boolean isParentChangeAllowed(@NonNull NotificationEntry entry) {
                     final boolean isGroupChangeAllowedForEntry;
                     if (StabilizeHeadsUpGroup.isEnabled()) {
                         isGroupChangeAllowedForEntry =
@@ -334,8 +329,15 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         isGroupChangeAllowedForEntry = mReorderingAllowed
                                 || canMoveForHeadsUp(entry);
                     }
-                    mIsSuppressingGroupChange |= !isGroupChangeAllowedForEntry;
+                    mIsSuppressingParentChange |= !isGroupChangeAllowedForEntry;
                     return isGroupChangeAllowedForEntry;
+                }
+
+                @Override
+                public boolean isParentChangeAllowed(@NonNull GroupEntry entry) {
+                    final boolean isBundleChangeAllowedForGroup = isEveryChangeAllowed();
+                    mIsSuppressingParentChange |= !isBundleChangeAllowedForGroup;
+                    return isBundleChangeAllowedForGroup;
                 }
 
                 @Override
@@ -348,7 +350,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         isGroupPruneAllowedForEntry = mReorderingAllowed;
                     }
 
-                    mIsSuppressingGroupChange |= !isGroupPruneAllowedForEntry;
+                    mIsSuppressingParentChange |= !isGroupPruneAllowedForEntry;
                     return isGroupPruneAllowedForEntry;
                 }
 
@@ -384,7 +386,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                             return true;
                         }
 
-                        // TODO(b/395698521): Handle BundleEntry
                         return canReorderNotificationEntry(notificationEntry)
                                 || canMoveForHeadsUp(notificationEntry);
                     } else {
@@ -442,7 +443,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         boolean wasReorderingAllowed = mReorderingAllowed;
         // No need to run notification pipeline when the lockscreen is in fading animation.
         mPipelineRunAllowed = !(isPanelCollapsingOrLaunchingActivity()
-                || (mCheckLockScreenTransitionEnabled && mLockscreenInGoneTransition));
+                || mLockscreenInGoneTransition);
         mReorderingAllowed = isReorderingAllowed();
         if (wasPipelineRunAllowed != mPipelineRunAllowed
                 || wasReorderingAllowed != mReorderingAllowed) {
@@ -462,11 +463,11 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private void maybeInvalidateList() {
         if (mPipelineRunAllowed && mIsSuppressingPipelineRun) {
             mNotifStabilityManager.invalidateList("pipeline run suppression ended");
-        } else if (mReorderingAllowed && (mIsSuppressingGroupChange
+        } else if (mReorderingAllowed && (mIsSuppressingParentChange
                 || isSuppressingSectionChange()
                 || mIsSuppressingEntryReorder)) {
             final String reason = "reorder suppression ended for"
-                    + " group=" + mIsSuppressingGroupChange
+                    + " group=" + mIsSuppressingParentChange
                     + " section=" + isSuppressingSectionChange()
                     + " sort=" + mIsSuppressingEntryReorder;
             mNotifStabilityManager.invalidateList(reason);
@@ -571,9 +572,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("pipelineRunAllowed: " + mPipelineRunAllowed);
         pw.println("  notifPanelCollapsing: " + mNotifPanelCollapsing);
         pw.println("  launchingNotifActivity: " + mNotifPanelLaunchingActivity);
-        if (mCheckLockScreenTransitionEnabled) {
-            pw.println("  lockscreenInGoneTransition: " + mLockscreenInGoneTransition);
-        }
+        pw.println("  lockscreenInGoneTransition: " + mLockscreenInGoneTransition);
         pw.println("reorderingAllowed: " + mReorderingAllowed);
         pw.println("  sleepy: " + mSleepy);
         pw.println("  fullyDozed: " + mFullyDozed);
@@ -581,7 +580,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("  pulsing: " + mPulsing);
         pw.println("  communalShowing: " + mCommunalShowing);
         pw.println("isSuppressingPipelineRun: " + mIsSuppressingPipelineRun);
-        pw.println("isSuppressingGroupChange: " + mIsSuppressingGroupChange);
+        pw.println("isSuppressingGroupChange: " + mIsSuppressingParentChange);
         pw.println("isSuppressingEntryReorder: " + mIsSuppressingEntryReorder);
         if (StabilizeHeadsUpGroup.isEnabled()) {
             pw.println("headsUpGroupKeys: " + mHeadsUpGroupKeys.size());
@@ -632,9 +631,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     }
 
     private void onLockscreenInGoneTransitionChanged(boolean inGoneTransition) {
-        if (!mCheckLockScreenTransitionEnabled) {
-            return;
-        }
         if (inGoneTransition == mLockscreenInGoneTransition) {
             return;
         }

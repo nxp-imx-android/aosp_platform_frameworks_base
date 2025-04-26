@@ -134,4 +134,8 @@ interface ILauncherApps {
 
     /** Saves view capture data to the wm trace directory. */
     void saveViewCaptureData();
+
+    ParceledListSlice getAvailableShortcuts(String callingPackage, in UserHandle user);
+
+    ParceledListSlice getActivityLaunchIntentForAllApps(String callingPackage, in UserHandle user);
 }

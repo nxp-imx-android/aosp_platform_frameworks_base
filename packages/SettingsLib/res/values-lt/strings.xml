@@ -290,7 +290,7 @@
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"ADB, derinti, kūrėjas"</string>
     <string name="bugreport_in_power" msgid="8664089072534638709">"Pranešimo apie riktą spartusis klavišas"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Rodyti pranešimo apie riktą mygtuką maitinimo meniu"</string>
-    <string name="keep_screen_on" msgid="1187161672348797558">"Veikti"</string>
+    <string name="keep_screen_on" msgid="1187161672348797558">"Ekrano neišjungti"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"Kraunant ekranas niekada neveiks miego režimu"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Įgalinti „Bluetooth“ HCI šnipinėjimo žurnalą"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"Fiksuoti „Bluetooth“ paketus. (Perjungti „Bluetooth“ pakeitus šį nustatymą)"</string>

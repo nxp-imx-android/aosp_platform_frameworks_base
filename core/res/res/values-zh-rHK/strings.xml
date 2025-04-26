@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"超暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助聽器"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"自動點擊"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已中斷連線"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已連線"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"運作中"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"宣傳"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"新聞"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"建議"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"你可以設定這些通知的重要性。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"列為重要的原因：涉及的人。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自訂應用程式通知"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"應用程式"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"無法再辨識你的指紋。請重新設定「指紋解鎖」功能。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB 裝置插入時已鎖定"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB 裝置插入時，Android 已鎖定。如要使用裝置，請先解鎖 Android。"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB 裝置插入時，Android 已鎖定。如要使用，請先解鎖 Android 再重新插入 USB 裝置。"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"鎖定時充電效能可能會降低，或無法使用此功能。"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活動"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料訊號已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用「指紋解鎖」時遇到問題嗎？"</string>

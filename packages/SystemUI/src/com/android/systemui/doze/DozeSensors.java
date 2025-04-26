@@ -223,7 +223,7 @@ public class DozeSensors {
                         true /* touchscreen */,
                         false /* ignoresSetting */,
                         dozeParameters.singleTapUsesProx(mDevicePosture) /* requiresProx */,
-                        true /* immediatelyReRegister */,
+                        false /* immediatelyReRegister */,
                         mDevicePosture,
                         false
                 ),
@@ -250,7 +250,7 @@ public class DozeSensors {
                         true /* touchscreen */,
                         false /* ignoresSetting */,
                         dozeParameters.longPressUsesProx(),
-                        screenOffUnlockUdfps() /* immediatelyReRegister */,
+                        false /* immediatelyReRegister */,
                         !screenOffUnlockUdfps() /* requiresAod */
                 ),
                 new PluginSensor(

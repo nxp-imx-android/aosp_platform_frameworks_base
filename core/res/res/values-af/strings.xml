@@ -1805,6 +1805,8 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Ekstra donker"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Gehoortoestelle"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Outoklik"</string>
+    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
+    <skip />
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Ontkoppel"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Gekoppel"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktief"</string>
@@ -2043,7 +2045,8 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promosies"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Sosiaal"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Nuus"</string>
-    <string name="recs_notification_channel_label" msgid="4945985121418684297">"Aanbevelings"</string>
+    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
+    <skip />
     <string name="importance_from_user" msgid="2782756722448800447">"Jy stel die belangrikheid van hierdie kennisgewings."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Dit is belangrik as gevolg van die mense wat betrokke is."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Gepasmaakte appkennisgewing"</string>
@@ -2244,7 +2247,7 @@
     <string name="car_loading_profile" msgid="8219978381196748070">"Laai tans"</string>
     <string name="file_count" msgid="3220018595056126969">"{count,plural, =1{{file_name} + # lêer}other{{file_name} + # lêers}}"</string>
     <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"Geen mense om mee te deel is aanbeveel nie"</string>
-    <string name="chooser_all_apps_button_label" msgid="3230427756238666328">"Programmelys"</string>
+    <string name="chooser_all_apps_button_label" msgid="3230427756238666328">"Applys"</string>
     <string name="usb_device_resolve_prompt_warn" msgid="325871329788064199">"Opneemtoestemming is nie aan hierdie app verleen nie, maar dit kan oudio deur hierdie USB-toestel opneem."</string>
     <string name="accessibility_system_action_home_label" msgid="3234748160850301870">"Tuis"</string>
     <string name="accessibility_system_action_back_label" msgid="4205361367345537608">"Terug"</string>
@@ -2557,12 +2560,9 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Jou vingerafdrukke kan nie meer herken word nie. Stel Vingerafdrukslot weer op."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"USB-toestel is ingeprop wanneer dit gesluit is"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (5561957202444135984) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_no_replug_notification_text (3844834116914726455) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1264294871764444170) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"USB-toestel is ingeprop wanneer Android gesluit is. Ontsluit eers Android om toestel te gebruik."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"USB-toestel is ingeprop wanneer Android gesluit is. Om toestel te gebruik, moet jy eers Android ontsluit en dan weer die USB-toestel insit om dit te gebruik."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Laaivermoë kan verminder of onbeskikbaar wees wanneer dit gesluit is."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Verdagte USB-aktiwiteit"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-datasein is gedeaktiveer."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Sukkel jy met Vingerafdrukslot?"</string>

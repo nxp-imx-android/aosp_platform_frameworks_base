@@ -47,6 +47,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.Button
 import android.service.notification.StatusBarNotification
+import androidx.appcompat.content.res.AppCompatResources
 import com.android.systemui.Flags
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
@@ -426,8 +427,11 @@ constructor(
                 // We received the Icon from the application - so use the Context of the application
                 // to
                 // reference icon resources.
-                val newIconSize =
+                val newIconSize = if (isAnimatedAction) {
+                    context.resources.getDimensionPixelSize(R.dimen.animated_action_button_icon_size)
+                } else {
                     context.resources.getDimensionPixelSize(R.dimen.smart_action_button_icon_size)
+                }
                 val iconDrawable =
                     loadIconDrawableWithTimeout(action.getIcon(), packageContext, newIconSize)
                         ?: GradientDrawable()
@@ -531,6 +535,15 @@ constructor(
                     // attributionText with different color to choice text
                     val fullTextWithAttribution = formatChoiceWithAttribution(choice)
                     text = fullTextWithAttribution
+                    // Add the icon to the Animated Reply button
+                    val animatedReplyIconSize =
+                        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_icon_size)
+                    val iconDrawable =
+                        AppCompatResources.getDrawable(context, R.drawable.ic_content_paste_spark)
+                    if (iconDrawable != null) {
+                        iconDrawable.setBounds(0, 0, animatedReplyIconSize, animatedReplyIconSize)
+                        setCompoundDrawablesRelative(iconDrawable, null, null, null)
+                    }
                 } else {
                     choiceToDeliver = choice
                     text = choice

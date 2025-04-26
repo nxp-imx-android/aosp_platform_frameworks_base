@@ -68,6 +68,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IInterface;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -150,6 +151,12 @@ public class ManagedServicesTest extends UiServiceTestCase {
     private UserHandle mUser;
     private String mPkg;
 
+    private static final String PKG1 = "pkg1";
+    private static final int PKG1_UID = 10001;
+    private static final String PKG2 = "pkg2";
+    private static final int PKG2_UID = 10002;
+    private static final int PKG3_UID = 10003;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -179,6 +186,8 @@ public class ManagedServicesTest extends UiServiceTestCase {
         profileIds.add(13);
         when(mUserProfiles.getCurrentProfileIds()).thenReturn(profileIds);
 
+        when(mContext.getPackageManager().getPackageUidAsUser(PKG1, 0)).thenReturn(PKG1_UID);
+        when(mContext.getPackageManager().getPackageUidAsUser(PKG2, 0)).thenReturn(PKG2_UID);
         mVersionString = "4";
         mExpectedPrimary = new ArrayMap<>();
         mExpectedSecondary = new ArrayMap<>();
@@ -2532,6 +2541,66 @@ public class ManagedServicesTest extends UiServiceTestCase {
         doReturn(true).when(listener).isEnabledForUser();
 
         assertThat(listener.enabledAndUserMatches(visibleBackgroundUserId)).isFalse();
+    }
+
+    @Test
+    public void isUidAllowed_noApprovedUids_returnsFalse() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_PACKAGE);
+        assertThat(service.isUidAllowed(PKG1_UID)).isFalse();
+        assertThat(service.isUidAllowed(PKG2_UID)).isFalse();
+
+        service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_COMPONENT);
+        assertThat(service.isUidAllowed(PKG1_UID)).isFalse();
+        assertThat(service.isUidAllowed(PKG2_UID)).isFalse();
+    }
+
+    @Test
+    public void isUidAllowed_approvedUid_returnsTrue() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_PACKAGE);
+        service.addApprovedList(PKG1, 0, true); // Add an approved package
+        assertThat(service.isUidAllowed(PKG1_UID)).isTrue();
+    }
+
+    @Test
+    public void isUidAllowed_differentUserId_returnsFalse() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_PACKAGE);
+        service.addApprovedList(PKG1, 0, true); // Add an approved package for user 0
+        assertThat(service.isUidAllowed(UserHandle.getUid(1, PKG1_UID))).isFalse();
+    }
+
+    @Test
+    public void isUidAllowed_approvedUidDifferentApprovalType_returnsTrue() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_COMPONENT);
+        service.addApprovedList(PKG1 + "/cmp", 0, true); // Add an approved component for user 0
+        assertThat(service.isUidAllowed(PKG1_UID)).isTrue();
+
+        ManagedServices service2 = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_PACKAGE);
+        service2.addApprovedList(PKG1, 0, true); // Add an approved package for user 0
+        assertThat(service2.isUidAllowed(PKG1_UID)).isTrue();
+    }
+
+    @Test
+    public void isUidAllowed_invalidUid_returnsFalse() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_COMPONENT);
+        assertThat(service.isUidAllowed(Process.INVALID_UID)).isFalse();
+    }
+
+    @Test
+    public void isUidAllowed_multipleApprovedUids_returnsTrueForBoth() {
+        ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_PACKAGE);
+        service.addApprovedList(PKG1, 0, true);
+        service.addApprovedList(PKG2, 0, true);
+        assertThat(service.isUidAllowed(PKG1_UID)).isTrue();
+        assertThat(service.isUidAllowed(PKG2_UID)).isTrue();
+        assertThat(service.isUidAllowed(PKG3_UID)).isFalse();
     }
 
     private void mockServiceInfoWithMetaData(List<ComponentName> componentNames,

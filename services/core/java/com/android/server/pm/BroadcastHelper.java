@@ -362,17 +362,35 @@ public final class BroadcastHelper {
         final boolean isForWholeApp = componentNames.contains(packageName);
         final String callingPackageNameForTrace = mContext.getPackageManager().getNameForUid(
                 callingUidForTrace);
-        if (isForWholeApp || !android.content.pm.Flags.reduceBroadcastsForComponentStateChanges()) {
-            tracePackageChangedBroadcastEvent(
-                    android.content.pm.Flags.reduceBroadcastsForComponentStateChanges(),
-                    reasonForTrace, packageName, "<implicit>" /* targetPackageName */,
-                    "whole" /* targetComponent */, componentNames.size(),
-                    callingPackageNameForTrace);
+        if (!android.content.pm.Flags.reduceBroadcastsForComponentStateChanges()) {
+            tracePackageChangedBroadcastEvent(false /* applyFlag */, reasonForTrace, packageName,
+                    "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
+                    componentNames.size(), callingPackageNameForTrace);
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp, componentNames,
                     packageUid, reason, userIds, instantUserIds, broadcastAllowList,
-                    null /* targetPackageName */, null /* requiredPermissions */);
+                    null /* targetPackageName */, null /* requiredPermissions */,
+                    null /* bOptions */);
             return;
         }
+
+        if (isForWholeApp) {
+            tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
+                    "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
+                    componentNames.size(), callingPackageNameForTrace);
+            Bundle bOptions = null;
+            if (android.content.pm.Flags.mergePackageChangedBroadcast()) {
+                bOptions = new BroadcastOptions()
+                        .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
+                        .setDeliveryGroupMatchingKey(Intent.ACTION_PACKAGE_CHANGED,
+                                packageName + "-" + packageUid)
+                        .toBundle();
+            }
+            sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp, componentNames,
+                    packageUid, reason, userIds, instantUserIds, broadcastAllowList,
+                    null /* targetPackageName */, null /* requiredPermissions */, bOptions);
+            return;
+        }
+
         // Currently only these four components of activity, receiver, provider and service are
         // considered to send only the broadcast to the system and the application itself when the
         // component is not exported. In order to avoid losing to send the broadcast for other
@@ -395,7 +413,7 @@ public final class BroadcastHelper {
                 sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                         notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
                         broadcastAllowList, "android" /* targetPackageName */,
-                        null /* requiredPermissions */);
+                        null /* requiredPermissions */, null /* bOptions */);
             }
 
             // Second, send the PACKAGE_CHANGED broadcast to the application itself.
@@ -405,7 +423,7 @@ public final class BroadcastHelper {
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                     notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
                     broadcastAllowList, packageName /* targetPackageName */,
-                    null /* requiredPermissions */);
+                    null /* requiredPermissions */, null /* bOptions */);
 
             // Third, send the PACKAGE_CHANGED broadcast to the applications with the same UID.
             for (int i = 0; i < sharedUidPackages.length; i++) {
@@ -419,7 +437,7 @@ public final class BroadcastHelper {
                 sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                         notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
                         broadcastAllowList, sharedPackage /* targetPackageName */,
-                        null /* requiredPermissions */);
+                        null /* requiredPermissions */, null /* bOptions */);
             }
 
         }
@@ -431,7 +449,7 @@ public final class BroadcastHelper {
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                     exportedComponentNames, packageUid, reason, userIds, instantUserIds,
                     broadcastAllowList, null /* targetPackageName */,
-                    null /* requiredPermissions */);
+                    null /* requiredPermissions */, null /* bOptions */);
         }
     }
 
@@ -444,7 +462,8 @@ public final class BroadcastHelper {
             @Nullable int[] instantUserIds,
             @Nullable SparseArray<int[]> broadcastAllowList,
             @Nullable String targetPackageName,
-            @Nullable String[] requiredPermissions) {
+            @Nullable String[] requiredPermissions,
+            @Nullable Bundle bOptions) {
         if (DEBUG_INSTALL) {
             Log.v(TAG, "Sending package changed: package=" + packageName + " components="
                     + componentNames);
@@ -466,7 +485,7 @@ public final class BroadcastHelper {
                 ? Intent.FLAG_RECEIVER_REGISTERED_ONLY : 0;
         sendPackageBroadcast(Intent.ACTION_PACKAGE_CHANGED, packageName, extras, flags,
                 targetPackageName, null /* finishedReceiver */, userIds, instantUserIds,
-                broadcastAllowList, null /* filterExtrasForReceiver */, null /* bOptions */,
+                broadcastAllowList, null /* filterExtrasForReceiver */, bOptions,
                 requiredPermissions);
     }
 

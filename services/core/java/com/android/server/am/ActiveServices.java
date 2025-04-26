@@ -4467,15 +4467,12 @@ public final class ActiveServices {
                 .write();
     }
 
-    void publishServiceLocked(ServiceRecord r, Intent intent, IBinder service) {
+    void publishServiceLocked(ServiceRecord r, IntentBindRecord b, IBinder service) {
         final long origId = mAm.mInjector.clearCallingIdentity();
         try {
             if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "PUBLISHING " + r
-                    + " " + intent + ": " + service);
+                    + " " + b.intent.getIntent() + ": " + service);
             if (r != null) {
-                Intent.FilterComparison filter
-                        = new Intent.FilterComparison(intent);
-                IntentBindRecord b = r.bindings.get(filter);
                 if (b != null && !b.received) {
                     b.binder = service;
                     b.requested = true;
@@ -4485,13 +4482,13 @@ public final class ActiveServices {
                         ArrayList<ConnectionRecord> clist = connections.valueAt(conni);
                         for (int i=0; i<clist.size(); i++) {
                             ConnectionRecord c = clist.get(i);
-                            if (!filter.equals(c.binding.intent.intent)) {
+                            if (!b.intent.equals(c.binding.intent.intent)) {
                                 if (DEBUG_SERVICE) Slog.v(
                                         TAG_SERVICE, "Not publishing to: " + c);
                                 if (DEBUG_SERVICE) Slog.v(
                                         TAG_SERVICE, "Bound intent: " + c.binding.intent.intent);
                                 if (DEBUG_SERVICE) Slog.v(
-                                        TAG_SERVICE, "Published intent: " + intent);
+                                        TAG_SERVICE, "Published intent: " + b.intent.getIntent());
                                 continue;
                             }
                             if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "Publishing to: " + c);
@@ -4622,13 +4619,10 @@ public final class ActiveServices {
         return true;
     }
 
-    void unbindFinishedLocked(ServiceRecord r, Intent intent) {
+    void unbindFinishedLocked(ServiceRecord r, IntentBindRecord b) {
         final long origId = mAm.mInjector.clearCallingIdentity();
         try {
             if (r != null) {
-                Intent.FilterComparison filter
-                        = new Intent.FilterComparison(intent);
-                IntentBindRecord b = r.bindings.get(filter);
                 if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "unbindFinished in " + r
                         + " at " + b + ": apps="
                         + (b != null ? b.apps.size() : 0));
@@ -5230,7 +5224,7 @@ public final class ActiveServices {
         r.executingStart = SystemClock.uptimeMillis();
     }
 
-    private final boolean requestServiceBindingLocked(ServiceRecord r, IntentBindRecord i,
+    private final boolean requestServiceBindingLocked(ServiceRecord r, IntentBindRecord b,
             boolean execInFg, boolean rebind,
             @ServiceBindingOomAdjPolicy int serviceBindingOomAdjPolicy)
             throws TransactionTooLargeException {
@@ -5238,26 +5232,26 @@ public final class ActiveServices {
             // If service is not currently running, can't yet bind.
             return false;
         }
-        if (DEBUG_SERVICE) Slog.d(TAG_SERVICE, "requestBind " + i + ": requested=" + i.requested
+        if (DEBUG_SERVICE) Slog.d(TAG_SERVICE, "requestBind " + b + ": requested=" + b.requested
                 + " rebind=" + rebind);
         final boolean skipOomAdj = (serviceBindingOomAdjPolicy
                 & SERVICE_BIND_OOMADJ_POLICY_SKIP_OOM_UPDATE_ON_BIND) != 0;
-        if ((!i.requested || rebind) && i.apps.size() > 0) {
+        if ((!b.requested || rebind) && b.apps.size() > 0) {
             try {
                 bumpServiceExecutingLocked(r, execInFg, "bind",
                         skipOomAdj ? OOM_ADJ_REASON_NONE : OOM_ADJ_REASON_BIND_SERVICE,
                         skipOomAdj /* skipTimeoutIfPossible */);
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                     Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "requestServiceBinding="
-                            + i.intent.getIntent() + ". bindSeq=" + mBindServiceSeqCounter);
+                            + b.intent.getIntent() + ". bindSeq=" + mBindServiceSeqCounter);
                 }
-                r.app.getThread().scheduleBindService(r, i.intent.getIntent(), rebind,
+                r.app.getThread().scheduleBindService(r, b, b.intent.getIntent(), rebind,
                         r.app.mState.getReportedProcState(), mBindServiceSeqCounter++);
                 if (!rebind) {
-                    i.requested = true;
+                    b.requested = true;
                 }
-                i.hasBound = true;
-                i.doRebind = false;
+                b.hasBound = true;
+                b.doRebind = false;
             } catch (TransactionTooLargeException e) {
                 // Keep the executeNesting count accurate.
                 if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "Crashed while binding " + r, e);
@@ -6357,7 +6351,7 @@ public final class ActiveServices {
                         oomAdjusted |= r.wasOomAdjUpdated();
                         ibr.hasBound = false;
                         ibr.requested = false;
-                        r.app.getThread().scheduleUnbindService(r,
+                        r.app.getThread().scheduleUnbindService(r, ibr,
                                 ibr.intent.getIntent());
                     } catch (Exception e) {
                         Slog.w(TAG, "Exception when unbinding service "
@@ -6682,7 +6676,8 @@ public final class ActiveServices {
                     // Assume the client doesn't want to know about a rebind;
                     // we will deal with that later if it asks for one.
                     b.intent.doRebind = false;
-                    s.app.getThread().scheduleUnbindService(s, b.intent.intent.getIntent());
+                    s.app.getThread().scheduleUnbindService(s, b.intent,
+                            b.intent.intent.getIntent());
                 } catch (Exception e) {
                     Slog.w(TAG, "Exception when unbinding service " + s.shortInstanceName, e);
                     serviceProcessGoneLocked(s, enqueueOomAdj);
@@ -6715,7 +6710,7 @@ public final class ActiveServices {
     }
 
     void serviceDoneExecutingLocked(ServiceRecord r, int type, int startId, int res,
-            boolean enqueueOomAdj, Intent intent) {
+            boolean enqueueOomAdj) {
         boolean inDestroying = mDestroyingServices.contains(r);
         if (r != null) {
             boolean skipOomAdj = false;

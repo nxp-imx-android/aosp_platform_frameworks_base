@@ -18,11 +18,13 @@ package com.android.systemui.shade
 
 import android.content.Context
 import android.content.res.Resources
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams
 import android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE
 import android.window.WindowContext
+import android.window.WindowProvider.KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.ConfigurationState
@@ -53,7 +55,7 @@ import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.utils.windowmanager.WindowManagerProvider
-import com.android.systemui.utils.windowmanager.WindowManagerUtils
+import com.android.window.flags.Flags
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -80,15 +82,36 @@ object ShadeDisplayAwareModule {
     @Provides
     @ShadeDisplayAware
     @SysUISingleton
-    fun provideShadeDisplayAwareContext(context: Context): Context {
+    fun provideShadeDisplayAwareContext(
+        context: Context,
+        @ShadeDisplayAware shadeContextBuildOptions: Bundle?,
+    ): Context {
         return if (ShadeWindowGoesAround.isEnabled) {
             context
-                .createWindowContext(context.display, TYPE_NOTIFICATION_SHADE, /* options= */ null)
+                .createWindowContext(
+                    context.display,
+                    TYPE_NOTIFICATION_SHADE,
+                    shadeContextBuildOptions,
+                )
                 .apply { setTheme(R.style.Theme_SystemUI) }
         } else {
             context
         }
     }
+
+    @Provides
+    @ShadeDisplayAware
+    @SysUISingleton
+    fun provideShadeContextBuildOptions(): Bundle? =
+        if (Flags.reparentToDefaultWithDisplayRemoval()) {
+            // Enables to reparent this WindowContext to the default display if the currently
+            // attached display is removed.
+            Bundle().apply {
+                putBoolean(KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL, true)
+            }
+        } else {
+            null
+        }
 
     @Provides
     @ShadeDisplayAware
@@ -116,7 +139,7 @@ object ShadeDisplayAwareModule {
     fun provideShadeWindowManager(
         defaultWindowManager: WindowManager,
         @ShadeDisplayAware context: Context,
-        windowManagerProvider: WindowManagerProvider
+        windowManagerProvider: WindowManagerProvider,
     ): WindowManager {
         return if (ShadeWindowGoesAround.isEnabled) {
             windowManagerProvider.getWindowManager(context)

@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"ဘာသာစကားပြောင်းရန်"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"လက်ရှိဘာသာစကားဆက်သုံးရန်"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi မျှဝေရန်"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"ကွန်ရက်ထည့်ရန်"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"ဤကွန်ရက်တွင် ကြိုးမဲ့ အမှားရှာပြင်ခြင်းကို ခွင့်ပြုမလား။"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"ကွန်ရက်အမည် (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi လိပ်စာ (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"ဤကွန်ရက်ကို အမြဲခွင့်ပြုပါ"</string>
@@ -246,6 +247,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ဘလူးတုသ်သုံးစက် သင်္ကေတ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"စက်အသေးစိတ်ကို စီစဉ်သတ်မှတ်ရန် နှိပ်ပါ"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>။ စက်အသေးစိတ်ကို စီစဉ်သတ်မှတ်နိုင်သည်"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"စက်အားလုံးကြည့်ရန်"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"စက်အသစ် တွဲချိတ်ရန်"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ဘက်ထရီရာခိုင်နှုန်းကို မသိပါ။"</string>
@@ -479,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"သတ်မှတ်မထားပါ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ဆက်တင်များတွင် စီမံရန်"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{မုဒ် သုံးမနေပါ}=1{{mode} ကို သုံးနေသည်}other{မုဒ် # ခု သုံးနေသည်}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"နှိုးစက်သံ၊ သတိပေးချက်အသံများ၊ ပွဲစဉ်သတိပေးသံများနှင့် သင်ခွင့်ပြုထားသူများထံမှ ဖုန်းခေါ်မှုများမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"နှိုးစက်သံမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"စိတ်ကြိုက် ပြုလုပ်ရန်"</string>
@@ -744,6 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"တုန်ခါမှု"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s အသံအတိုးအလျှော့ ခလုတ်များ"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"ခေါ်ဆိုမှုများနှင့် အကြောင်းကြားချက်များအတွက် အသံမြည်နှုန်း (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>) ဖြစ်သည်"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"ဧည့်သည်စက်ပစ္စည်း အသံအတိုးအကျယ်"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"အထွက် ဆက်တင်များ ထည့်ရန်"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"အသံအတိုးအကျယ် ရွှေ့တုံးများ ပိုပြထားသည်"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"အသံအတိုးအကျယ် ရွှေ့တုံးများ လျှော့ပြထားသည်"</string>
@@ -804,9 +814,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ကီးဘုတ်ကို တပ်ဘလက်နှင့် ချိတ်ဆက်ရန်၊ ပမထဦးစွာ ဘလူးတုသ်ကို ဖွင့်ပါ။"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ဖွင့်ပါ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ဖွင့် - မျက်နှာအခြေခံ"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ပြီးပြီ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"အသုံးပြုရန်"</string>
@@ -953,7 +969,7 @@
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"အသံဖြင့်ထိန်းချုပ်ခြင်း ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Talkback ခလုတ်"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"ချဲ့ခြင်း ခလုတ်"</string>
-    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"စကားပြော ရွေးခြင်းကို စတင်ရန်"</string>
+    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"စကားပြောရွေးခြင်း စတင်ရန်"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"မနှောင့်ယှက်ရ"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"အသံထိန်းချုပ်သည့်ခလုတ် ဖြတ်လမ်း"</string>
     <string name="battery" msgid="769686279459897127">"ဘက်ထရီ"</string>
@@ -993,7 +1009,7 @@
     <string name="right_icon" msgid="1103955040645237425">"လက်ယာသင်္ကေတ"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"အကွက်များထည့်ရန် ဖိဆွဲပါ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"အကွက်ငယ်များ ပြန်စီစဉ်ရန် ဖိပြီးဆွဲပါ"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ပြန်စီပြီး အရွယ်ပြန်ရန် အကွက်ငယ်များကို ရွေးပါ"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ပြန်စီရန်၊ အရွယ်ပြောင်းရန် အကွက်ငယ်များ ရွေးပါ"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"အကွက်ငယ်နေရာချရန် တို့ပါ"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ဖယ်ရှားရန် ဤနေရာသို့ဖိဆွဲပါ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
@@ -1013,12 +1029,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"အရေးမကြီးသော အကြောင်းကြားချက် သင်္ကေတများ ပြရန်"</string>
     <string name="other" msgid="429768510980739978">"အခြား"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"အကွက်ငယ်၏ အရွယ်အစားကို ပြောင်းရန်"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"အကွက်ငယ်ကို ဖယ်ရှားရန်"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"နေရာချထားမှုမုဒ် ဖွင့်ရန်"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ရွေးချယ်မှု ပြောင်းရန်"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"နောက်ဆုံးနေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"အကွက်ငယ်ကို ရွှေ့ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ဆန္ဒရှိရာ နေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> သို့ ရွှေ့ရန်"</string>
@@ -1105,8 +1119,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"ဘက်ထရီကုန်ခါနီးတွင် ဖွင့်ပါ"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"မလိုပါ"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"အသုံးပြုနေသည်"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> သုံးနေသည်။"</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">"၊ "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" နှင့် "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> က အသုံးပြုနေသည်"</string>
@@ -1317,7 +1330,7 @@
     <string name="audio_status" msgid="4237055636967709208">"နားထောင်နေသည်"</string>
     <string name="game_status" msgid="1340694320630973259">"ကစားနေသည်"</string>
     <string name="empty_user_name" msgid="3389155775773578300">"မိတ်ဆွေများ"</string>
-    <string name="empty_status" msgid="5938893404951307749">"ယနေ့ညချတ်လုပ်ကြစို့။"</string>
+    <string name="empty_status" msgid="5938893404951307749">"ဒီညချတ်လုပ်ရအောင်။"</string>
     <string name="status_before_loading" msgid="1500477307859631381">"အကြောင်းအရာ မကြာမီ ပေါ်လာပါမည်"</string>
     <string name="missed_call" msgid="4228016077700161689">"လွတ်သွားသောခေါ်ဆိုမှု"</string>
     <string name="messages_count_overflow_indicator" msgid="7850934067082006043">"<xliff:g id="NUMBER">%d</xliff:g>+"</string>
@@ -1588,7 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"အများသုံးနိုင်မှု"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"အထောက်အကူပြု ဆော့ဖ်ဝဲလ်များ"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"ကိုယ်ရေးအချက်အလက် လုံခြုံမှု"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"အက်ပ်များက ပံ့ပိုးထားသည်"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"စနစ်အက်ပ်များမှ"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"သင်ထည့်သွင်းထားသော အက်ပ်များမှ"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"ဖန်သားပြင်"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"အမျိုးအမည်မသိ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"အကွက်ငယ်အားလုံးကို ပြင်ဆင်သတ်မှတ်မလား။"</string>

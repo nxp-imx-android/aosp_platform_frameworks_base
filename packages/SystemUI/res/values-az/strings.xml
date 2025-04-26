@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Dili dəyişin"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Cari dili saxlayın"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Wi‑Fi-ı paylaşın"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"Şəbəkə əlavə edin"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Bu şəbəkədə WiFi sazlamasına icazə verilsin?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Şəbəkə Adı (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi Ünvanı (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Bu şəbəkədə həmişə icazə verilsin"</string>
@@ -246,6 +247,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth cihazı ikonası"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Cihaz təfərrüatlarını konfiqurasiya etmək üçün klikləyin"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Cihaz detallarını konfiqurasiya edin"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Bütün cihazlara baxın"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Yeni cihaz birləşdirin"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Batareyanın faizi naməlumdur."</string>
@@ -479,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ayarlanmayıb"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Ayarlarda idarə edin"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Aktiv rejim yoxdur}=1{{mode} aktivdir}other{# rejim aktivdir}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Seçdiyiniz siqnal, xatırladıcı, tədbir və zənglər istisna olmaqla səslər və vibrasiyalar Sizi narahat etməyəcək. Musiqi, video və oyunlar da daxil olmaqla oxutmaq istədiyiniz hər şeyi eşidəcəksiniz."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Siqnallar istisna olmaqla səslər və vibrasiyalar Sizi narahat etməyəcək. Musiqi, video və oyunlar da daxil olmaqla oxutmaq istədiyiniz hər şeyi eşidəcəksiniz."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Fərdiləşdirin"</string>
@@ -744,6 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"vibrasiya"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s səs nəzarətləri"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"Çağrı və bildirişlər zəng çalacaq (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"Qonaq cihazının səs səviyyəsi"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"Çıxış ayarlarını daxil edin"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"Səs slayderləri genişləndirildi"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"Səs slayderləri yığcamlaşdırıldı"</string>
@@ -804,9 +814,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Tabletinizlə klaviaturaya bağlanmaq üçün ilk olaraq Bluetooth\'u aktivləşdirməlisiniz."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktivləşdirin"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aktiv - Üz əsaslı"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Hazırdır"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tətbiq edin"</string>
@@ -1013,12 +1029,10 @@
     <string name="tuner_low_priority" msgid="8412666814123009820">"Aşağı prioritet bildiriş işarələrini göstərin"</string>
     <string name="other" msgid="429768510980739978">"Digər"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"mozaik ölçüsünü aktiv/deaktiv edin"</string>
-    <!-- no translation found for accessibility_qs_edit_remove_tile_action (4811778796933958616) -->
-    <skip />
+    <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Mozaiki silin"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"yerləşdirmə rejimini aktiv/deaktiv edin"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"seçimi aktiv/deaktiv edin"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_add_action (7188303979684400620) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Son mövqeyə mozaik əlavə edin"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Lövhəni köçürün"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"İstənilən mövqeyə mozaik əlavə edin"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> mövqeyinə köçürün"</string>
@@ -1105,8 +1119,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"Batareya bitmək üzrə olduqda aktiv edin"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"Xeyr, təşəkkür"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"İstifadə olunur"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g> istifadə olunur."</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" və "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"<xliff:g id="APPLICATION_NAME">%1$s</xliff:g> tərəfindən istifadə edilir"</string>
@@ -1521,13 +1534,11 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Qısayol əlavə edin"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Qısayolu silin"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Klaviaturadan istifadə edərək hərəkət edin"</string>
-    <!-- no translation found for launch_keyboard_tutorial_notification_content (2131074100205028210) -->
-    <skip />
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Klaviatura qısayolları haqqında öyrənin"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Taçpeddən istifadə edərək hərəkət edin"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"Taçped jestlərini öyrənin"</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"Klaviatura və taçpeddən istifadə edərək hərəkət edin"</string>
-    <!-- no translation found for launch_keyboard_touchpad_tutorial_notification_content (8557098239919786046) -->
-    <skip />
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"Taçped jestləri, klaviatura qısayolları və s. haqqında öyrənin"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Geri qayıdın"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Əsas səhifəyə keçin"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Son tətbiqlərə baxın"</string>
@@ -1590,7 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Xüsusi imkanlar"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Kommunal xidmətlər"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Məxfilik"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"Tətbiqlər tərəfindən təmin edilir"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"Sistem tətbiqlərindən"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"Quraşdırdığınız tətbiqlərdən"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Displey"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Naməlum"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Bütün mozaiklər sıfırlansın?"</string>

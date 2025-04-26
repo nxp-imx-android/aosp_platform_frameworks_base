@@ -17,15 +17,18 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
+import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
 import android.view.Display
 import android.view.View
+import android.util.Log
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -79,6 +82,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
+import com.android.wm.shell.windowdecor.viewholder.AppHandles
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -99,6 +103,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.util.Optional
+import java.util.concurrent.Executor
 
 /**
  * A view model that manages the visibility of the [CollapsedStatusBarFragment] based on the device
@@ -243,6 +249,8 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
+    appHandles: Optional<AppHandles>,
+    @Main sysuiMainExecutor: Executor,
 ) : HomeStatusBarViewModel, ExclusiveActivatable() {
 
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
@@ -283,7 +291,15 @@ constructor(
         // Keep the status bar visible while the shade is just starting to open, but otherwise
         // hide it so that the status bar doesn't draw while it can't be seen.
         // See b/394257529#comment24.
-        shadeInteractor.anyExpansion.map { it >= 0.2 }.distinctUntilChanged()
+        shadeInteractor.anyExpansion
+            .map { it >= 0.2 }
+            .distinctUntilChanged()
+            .logDiffsForTable(
+                tableLogBuffer = tableLogger,
+                columnName = COL_SHADE_EXPANDED_ENOUGH,
+                initialValue = false,
+            )
+            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     /**
      * Whether the display of this statusbar has the shade window (that is hosting shade container
@@ -387,12 +403,18 @@ constructor(
      */
     private val isHomeScreenStatusBarAllowedLegacy: Flow<Boolean> =
         combine(keyguardTransitionInteractor.currentKeyguardState, isShadeVisibleOnThisDisplay) {
-            currentKeyguardState,
-            isShadeVisibleOnThisDisplay ->
-            (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
-                !isShadeVisibleOnThisDisplay
-            // TODO(b/364360986): Add edge cases, like secure camera launch.
-        }
+                currentKeyguardState,
+                isShadeVisibleOnThisDisplay ->
+                (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
+                    !isShadeVisibleOnThisDisplay
+            }
+            .distinctUntilChanged()
+            .logDiffsForTable(
+                tableLogBuffer = tableLogger,
+                columnName = COL_ALLOWED_LEGACY,
+                initialValue = false,
+            )
+            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     // "Compat" to cover both legacy and Scene container case in one flow.
     private val isHomeStatusBarAllowedCompat =
@@ -436,7 +458,7 @@ constructor(
                 columnName = COL_VISIBLE,
                 initialValue = false,
             )
-            .flowOn(bgDispatcher)
+            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     /**
      * True if we need to hide the usual start side content in order to show the heads up
@@ -632,7 +654,9 @@ constructor(
 
     companion object {
         private const val COL_LOCK_TO_OCCLUDED = "Lock->Occluded"
+        private const val COL_ALLOWED_LEGACY = "allowedLegacy"
         private const val COL_ALLOWED_BY_SCENE = "allowedByScene"
+        private const val COL_SHADE_EXPANDED_ENOUGH = "shadeExpandedEnough"
         private const val COL_NOTIF_LIGHTS_OUT = "notifLightsOut"
         private const val COL_SHOW_OPERATOR_NAME = "showOperatorName"
         private const val COL_VISIBLE = "visible"

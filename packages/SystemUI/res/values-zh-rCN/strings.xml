@@ -60,6 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"更改语言"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"保持当前语言"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"分享 WLAN"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"添加网络"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"要允许通过此网络进行无线调试吗？"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"网络名称 (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWLAN 地址 (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"始终允许通过此网络进行调试"</string>
@@ -147,7 +148,7 @@
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"您目前正在与应用进行分享"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"停止共享"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"正在投屏"</string>
-    <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"停止投屏吗？"</string>
+    <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"要停止投屏吗？"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen_with_device" msgid="1474703115926205251">"您正在将整个屏幕投放到“<xliff:g id="DEVICE_NAME">%1$s</xliff:g>”上"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen" msgid="8419219169553867625">"您正在将整个屏幕投放到附近的设备上"</string>
     <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"目前正在将“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”投放到“<xliff:g id="DEVICE_NAME">%2$s</xliff:g>”"</string>
@@ -246,6 +247,10 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"蓝牙设备图标"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"点击以配置设备详情"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>。请配置设备详情"</string>
+    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
+    <skip />
+    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
+    <skip />
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"查看所有设备"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"与新设备配对"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"电池电量百分比未知。"</string>
@@ -479,6 +484,10 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未设置"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"在设置中管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{未启用任何模式}=1{已启用“{mode}”模式}other{已启用 # 个模式}}"</string>
+    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <skip />
+    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
+    <skip />
     <string name="zen_priority_introduction" msgid="3159291973383796646">"您将不会受到声音和振动的打扰（闹钟、提醒、活动和所指定来电者的相关提示音除外）。您依然可以听到您选择播放的任何内容（包括音乐、视频和游戏）的相关音效。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"您将不会受到声音和振动的打扰（闹钟提示音除外）。您依然可以听到您选择播放的任何内容（包括音乐、视频和游戏）的相关音效。"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"自定义"</string>
@@ -744,6 +753,7 @@
     <string name="volume_ringer_hint_vibrate" msgid="6211609047099337509">"振动"</string>
     <string name="volume_dialog_title" msgid="6502703403483577940">"%s音量控件"</string>
     <string name="volume_dialog_ringer_guidance_ring" msgid="9143194270463146858">"有来电和通知时会响铃 (<xliff:g id="VOLUME_LEVEL">%1$s</xliff:g>)"</string>
+    <string name="volume_dialog_guest_device_volume_description" msgid="9147246287155716705">"访客设备音量"</string>
     <string name="volume_panel_enter_media_output_settings" msgid="8824244246272552669">"进入输出设置"</string>
     <string name="volume_panel_expanded_sliders" msgid="1885750987768506271">"音量滑块已展开"</string>
     <string name="volume_panel_collapsed_sliders" msgid="1413383759434791450">"音量滑块已收起"</string>
@@ -804,9 +814,15 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"要将您的键盘连接到平板电脑，您必须先开启蓝牙。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"开启"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"已开启 - 基于人脸"</string>
-    <!-- no translation found for notification_guts_bundle_title (1345506995443305361) -->
+    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
     <skip />
-    <!-- no translation found for notification_guts_bundle_summary (3971530802237393600) -->
+    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
+    <skip />
+    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
+    <skip />
+    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
+    <skip />
+    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
     <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
@@ -815,18 +831,18 @@
     <string name="notification_alert_title" msgid="3656229781017543655">"默认"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"自动"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"不发出提示音，也不振动"</string>
-    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"不发出提示音或振动，但依然出现在对话部分"</string>
-    <string name="notification_channel_summary_default" msgid="777294388712200605">"可能会响铃或振动，取决于设备设置"</string>
+    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"不发出提示音，也不振动，但仍在对话部分显示"</string>
+    <string name="notification_channel_summary_default" msgid="777294388712200605">"根据设备的设置响铃或振动"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"可能会响铃或振动，取决于设备设置。默认情况下，来自<xliff:g id="APP_NAME">%1$s</xliff:g>的对话会以消息气泡的形式显示。"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"让系统决定是否应让设备在收到此通知时发出提示音或振动"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;状态&lt;/b&gt;：已提升为“默认”"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;状态&lt;/b&gt;：已降低为“静音”"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;状态&lt;/b&gt;：已调高顺序"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;状态&lt;/b&gt;：已调低顺序"</string>
-    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"显示在对话通知顶部（屏幕锁定时显示为个人资料照片）"</string>
-    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"以气泡形式显示在对话通知顶部（屏幕锁定时显示为个人资料照片）"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"显示在对话通知顶部（屏幕锁定时显示为个人资料照片），并且会中断勿扰模式"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"以气泡形式显示在对话通知顶部（屏幕锁定时显示为个人资料照片），并且会中断勿扰模式"</string>
+    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"显示在对话通知顶部（锁屏状态下显示为个人资料照片）"</string>
+    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"以气泡形式显示在对话通知顶部（锁屏状态下显示为个人资料照片）"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"显示在对话通知顶部（锁屏状态下显示为个人资料照片），并且会中断勿扰模式"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"以气泡形式显示在对话通知顶部（锁屏状态下显示为个人资料照片），并且会中断勿扰模式"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"优先"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g>不支持对话功能"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"反馈"</string>
@@ -1103,8 +1119,7 @@
     <string name="auto_saver_text" msgid="3214960308353838764">"在电池电量可能会耗尽时，系统会开启此模式"</string>
     <string name="no_auto_saver_action" msgid="7467924389609773835">"不用了"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"正在使用"</string>
-    <!-- no translation found for ongoing_privacy_chip_content_multiple_apps (4994455315457996796) -->
-    <skip />
+    <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"使用中：<xliff:g id="TYPES_LIST">%s</xliff:g>。"</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">"、 "</string>
     <string name="ongoing_privacy_dialog_last_separator" msgid="5615876114268009767">" 和 "</string>
     <string name="ongoing_privacy_dialog_using_op" msgid="426635338010011796">"“<xliff:g id="APPLICATION_NAME">%1$s</xliff:g>”正在使用"</string>
@@ -1180,7 +1195,7 @@
     <string name="controls_providers_title" msgid="6879775889857085056">"选择用于添加控件的应用"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{已添加 # 个控件。}other{已添加 # 个控件。}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"已移除"</string>
-    <string name="controls_panel_authorization_title" msgid="267429338785864842">"添加“<xliff:g id="APPNAME">%s</xliff:g>”？"</string>
+    <string name="controls_panel_authorization_title" msgid="267429338785864842">"要添加“<xliff:g id="APPNAME">%s</xliff:g>”吗？"</string>
     <string name="controls_panel_authorization" msgid="7045551688535104194">"添加后，“<xliff:g id="APPNAME">%s</xliff:g>”可以选择在此处显示哪些控件和内容。"</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"要移除<xliff:g id="APPNAME">%s</xliff:g>的控制器吗？"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"已收藏"</string>
@@ -1586,7 +1601,8 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"无障碍功能"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"实用程序"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"隐私设置"</string>
-    <string name="qs_edit_mode_category_providedByApps" msgid="8346112074897919019">"由应用提供"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"来自系统应用"</string>
+    <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"来自您安装的应用"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"显示"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"未知"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"要重置所有功能块吗？"</string>

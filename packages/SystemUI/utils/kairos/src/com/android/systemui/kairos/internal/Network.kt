@@ -19,13 +19,12 @@ package com.android.systemui.kairos.internal
 import com.android.systemui.kairos.CoalescingPolicy
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.internal.util.HeteroMap
+import com.android.systemui.kairos.internal.util.LogIndent
 import com.android.systemui.kairos.internal.util.logDuration
-import com.android.systemui.kairos.internal.util.logLn
 import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.Maybe.Present
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.ContinuationInterceptor
-import kotlin.time.measureTime
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -41,8 +40,10 @@ import kotlinx.coroutines.yield
 
 private val nextNetworkId = AtomicLong()
 
-internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy: CoalescingPolicy) :
-    NetworkScope {
+internal class Network(
+    val coroutineScope: CoroutineScope,
+    private val coalescingPolicy: CoalescingPolicy,
+) : NetworkScope {
 
     override val networkId: Any = nextNetworkId.getAndIncrement()
 
@@ -69,6 +70,7 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
     }
     override val transactionStore = TransactionStore()
 
+    private val deferScopeImpl = DeferScopeImpl()
     private val stateWrites = ArrayDeque<StateSource<*>>()
     private val fastOutputs = ArrayDeque<Output<*>>()
     private val outputsByDispatcher =
@@ -122,6 +124,7 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
                         actions.add(func)
                     }
                 }
+
                 CoalescingPolicy.Eager -> {
                     while (true) {
                         yield()
@@ -132,19 +135,20 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
             }
             transactionMutex.withLock {
                 val e = epoch
-                val duration = measureTime {
-                    logLn(0, "===starting transaction $e===")
+                logDuration(indent = 0, { "Kairos Transaction epoch=$e" }, trace = true) {
+                    val evalScope =
+                        EvalScopeImpl(networkScope = this@Network, deferScope = deferScopeImpl)
                     try {
-                        logDuration(1, "init actions") {
+                        logDuration(getPrefix = { "process inputs" }, trace = true) {
                             // Run all actions
-                            evalScope {
+                            runThenDrainDeferrals {
                                 for (action in actions) {
-                                    action.started(evalScope = this@evalScope)
+                                    action.started(evalScope)
                                 }
                             }
                         }
                         // Step through the network
-                        doTransaction(1)
+                        doTransaction(evalScope)
                     } catch (e: Exception) {
                         // Signal failure
                         while (actions.isNotEmpty()) {
@@ -153,7 +157,7 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
                         // re-throw, cancelling this coroutine
                         throw e
                     } finally {
-                        logDuration(1, "signal completions") {
+                        logDuration(getPrefix = { "signal completions" }, trace = true) {
                             // Signal completion
                             while (actions.isNotEmpty()) {
                                 actions.removeLast().completed()
@@ -161,13 +165,12 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
                         }
                     }
                 }
-                logLn(0, "===transaction $e took $duration===")
             }
         }
     }
 
     /** Evaluates [block] inside of a new transaction when the network is ready. */
-    fun <R> transaction(reason: String, block: suspend EvalScope.() -> R): Deferred<R> =
+    fun <R> transaction(reason: String, block: EvalScope.() -> R): Deferred<R> =
         CompletableDeferred<R>(parent = coroutineScope.coroutineContext.job).also { onResult ->
             if (!coroutineScope.isActive) {
                 onResult.cancel()
@@ -182,40 +185,46 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
             onResult.invokeOnCompletion { job.cancel() }
         }
 
-    inline fun <R> evalScope(block: EvalScope.() -> R): R = deferScope {
-        block(EvalScopeImpl(this@Network, this))
-    }
+    inline fun <R> runThenDrainDeferrals(block: () -> R): R =
+        block().also { deferScopeImpl.drainDeferrals() }
 
     /** Performs a transactional update of the Kairos network. */
-    private fun doTransaction(logIndent: Int) {
+    private fun LogIndent.doTransaction(evalScope: EvalScope) {
         // Traverse network, then run outputs
-        logDuration(logIndent, "traverse network") {
+        logDuration({ "traverse network" }, trace = true) {
             do {
-                val numNodes =
-                    logDuration("drainEval") { scheduler.drainEval(currentLogIndent, this@Network) }
-                logLn("drained $numNodes nodes")
-            } while (logDuration("evalOutputs") { evalScope { evalFastOutputs(this) } })
+                val numNodes: Int =
+                    logDuration({ "drain scheduler" }, trace = true) {
+                        scheduler.drainEval(currentLogIndent, this@Network, evalScope)
+                    }
+                logLn { "drained $numNodes nodes" }
+            } while (
+                logDuration({ "drain outputs" }, trace = true) {
+                    runThenDrainDeferrals { evalFastOutputs(evalScope) }
+                }
+            )
         }
         coroutineScope.launch { evalLaunchedOutputs() }
         // Update states
-        logDuration(logIndent, "update states") {
-            evalScope { evalStateWriters(currentLogIndent, this) }
+        logDuration({ "write states" }, trace = true) {
+            runThenDrainDeferrals { evalStateWriters(currentLogIndent, evalScope) }
         }
         // Invalidate caches
         // Note: this needs to occur before deferred switches
-        logDuration(logIndent, "clear store") { transactionStore.clear() }
+        logDuration({ "clear store" }) { transactionStore.clear() }
         epoch++
         // Perform deferred switches
-        logDuration(logIndent, "evalMuxMovers") {
-            evalScope { evalMuxMovers(currentLogIndent, this) }
+        logDuration({ "deferred moves" }, trace = true) {
+            runThenDrainDeferrals { evalMuxMovers(currentLogIndent, evalScope) }
         }
         // Compact depths
-        logDuration(logIndent, "compact") {
+        logDuration({ "compact depths" }, trace = true) {
             scheduler.drainCompact(currentLogIndent)
             compactor.drainCompact(currentLogIndent)
         }
+
         // Deactivate nodes with no downstream
-        logDuration(logIndent, "deactivations") { evalDeactivations() }
+        logDuration({ "deactivations" }, trace = true) { evalDeactivations() }
     }
 
     private fun evalFastOutputs(evalScope: EvalScope): Boolean {
@@ -290,11 +299,11 @@ internal class Network(val coroutineScope: CoroutineScope, val coalescingPolicy:
 internal class ScheduledAction<T>(
     val reason: String,
     private val onResult: CompletableDeferred<T>? = null,
-    private val onStartTransaction: suspend EvalScope.() -> T,
+    private val onStartTransaction: EvalScope.() -> T,
 ) {
     private var result: Maybe<T> = Maybe.absent
 
-    suspend fun started(evalScope: EvalScope) {
+    fun started(evalScope: EvalScope) {
         result = Maybe.present(onStartTransaction(evalScope))
     }
 

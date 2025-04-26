@@ -19,10 +19,15 @@ package com.android.wm.shell.pip2;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.gui.BorderSettings;
+import android.gui.BoxShadowSettings;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.common.BoxShadowHelper;
+import com.android.wm.shell.common.pip.PipUtils;
 
 /**
  * Abstracts the common operations on {@link SurfaceControl.Transaction} for PiP transition.
@@ -34,11 +39,44 @@ public class PipSurfaceTransactionHelper {
 
     private final int mCornerRadius;
     private final int mShadowRadius;
+    private final float mMirrorOpacity;
+
+    private BoxShadowSettings mBoxShadowSettings;
+    private BorderSettings mBorderSettings;
 
     public PipSurfaceTransactionHelper(Context context) {
         mCornerRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
         mShadowRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
+        mMirrorOpacity = context.getResources().getFloat(
+                R.dimen.config_pipDraggingAcrossDisplaysOpacity);
+        onThemeChanged(context);
     }
+
+    /**
+     * Called when theme changes.
+     *
+     * @param context the current context
+     */
+    public void onThemeChanged(Context context) {
+        if (Flags.enablePipBoxShadows()) {
+            if (PipUtils.isDarkSystemTheme(context)) {
+                mBoxShadowSettings = BoxShadowHelper.getBoxShadowSettings(context,
+                        new int[]{R.style.BoxShadowParamsPIPDark1,
+                                R.style.BoxShadowParamsPIPDark2});
+                mBorderSettings = BoxShadowHelper.getBorderSettings(context,
+                        R.style.BorderSettingsPIPDark);
+            } else {
+                mBoxShadowSettings = BoxShadowHelper.getBoxShadowSettings(context,
+                        new int[]{R.style.BoxShadowParamsPIPLight1,
+                                R.style.BoxShadowParamsPIPLight2});
+
+                mBorderSettings = BoxShadowHelper.getBorderSettings(context,
+                        R.style.BorderSettingsPIPLight);
+            }
+        }
+    }
+
+
 
     /**
      * Gets corner radius which is loaded from resources.
@@ -159,10 +197,30 @@ public class PipSurfaceTransactionHelper {
      */
     public PipSurfaceTransactionHelper shadow(SurfaceControl.Transaction tx, SurfaceControl leash,
             boolean applyShadowRadius) {
-        tx.setShadowRadius(leash, applyShadowRadius ? mShadowRadius : 0);
+        if (Flags.enablePipBoxShadows()) {
+            if (applyShadowRadius) {
+                tx.setBoxShadowSettings(leash, mBoxShadowSettings);
+                tx.setBorderSettings(leash, mBorderSettings);
+            } else {
+                tx.setBoxShadowSettings(leash, new BoxShadowSettings());
+                tx.setBorderSettings(leash, new BorderSettings());
+            }
+        } else {
+            tx.setShadowRadius(leash, applyShadowRadius ? mShadowRadius : 0);
+        }
         return this;
     }
 
+    /**
+     * Sets default transformations for mirrors a given mirror root of a PiP {@param leash}.
+     */
+    public PipSurfaceTransactionHelper setMirrorTransformations(SurfaceControl.Transaction tx,
+            SurfaceControl leash) {
+        tx.setAlpha(leash, mMirrorOpacity);
+        tx.setLayer(leash, Integer.MAX_VALUE);
+        tx.show(leash);
+        return this;
+    }
 
     /**
      * Sets PiP translational, scaling and rotational transformations on a given transaction.

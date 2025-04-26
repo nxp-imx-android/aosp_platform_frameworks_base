@@ -33,7 +33,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.DataLoaderType;
-import android.content.pm.Flags;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -472,9 +471,6 @@ final class PackageMetrics {
 
     public static void reportComponentStateChanged(@NonNull Computer computer,
             List<ComponentStateMetrics> componentStateMetricsList, @UserIdInt int userId) {
-        if (!Flags.componentStateChangedMetrics()) {
-            return;
-        }
         if (componentStateMetricsList == null || componentStateMetricsList.isEmpty()) {
             Slog.d(TAG, "Fail to report component state due to metrics is empty");
             return;

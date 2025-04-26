@@ -457,15 +457,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             }
             // Schedule immediately to make sure the app component (e.g. receiver, service) can get
             // the latest configuration in their lifecycle callbacks (e.g. onReceive, onCreate).
-            try {
-                // No WM lock here.
-                mAtm.getLifecycleManager().scheduleTransactionItemNow(
-                        thread, configurationChangeItem);
-            } catch (Exception e) {
-                // TODO(b/323801078): remove Exception when cleanup
-                Slog.e(TAG_CONFIGURATION, "Failed to schedule ConfigurationChangeItem="
-                        + configurationChangeItem + " owner=" + mOwner, e);
-            }
+            // No WM lock here.
+            mAtm.getLifecycleManager().scheduleTransactionItemNow(thread, configurationChangeItem);
         }
     }
 
@@ -731,7 +724,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             int appSwitchState, BalCheckConfiguration checkConfiguration) {
         return mBgLaunchController.areBackgroundActivityStartsAllowed(mPid, mUid,
                 mInfo.packageName, appSwitchState, checkConfiguration,
-                hasActivityInVisibleTask(), mInstrumentingWithBackgroundActivityStartPrivileges,
+                hasActivityInVisibleTask(), inPinnedWindowingMode(),
+                mInstrumentingWithBackgroundActivityStartPrivileges,
                 mAtm.getLastStopAppSwitchesTime(),
                 mLastActivityLaunchTime, mLastActivityFinishTime);
     }
@@ -1799,18 +1793,11 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     private void scheduleClientTransactionItem(@NonNull IApplicationThread thread,
             @NonNull ClientTransactionItem transactionItem) {
-        try {
-            if (mWindowSession != null && mWindowSession.hasWindow()) {
-                mAtm.getLifecycleManager().scheduleTransactionItem(thread, transactionItem);
-            } else {
-                // Non-UI process can handle the change directly.
-                mAtm.getLifecycleManager().scheduleTransactionItemNow(thread, transactionItem);
-            }
-        } catch (RemoteException e) {
-            // TODO(b/323801078): remove Exception when cleanup
-            // Expected if the process has been killed.
-            Slog.w(TAG_CONFIGURATION, "Failed for dead process. ClientTransactionItem="
-                    + transactionItem + " owner=" + mOwner);
+        if (mWindowSession != null && mWindowSession.hasWindow()) {
+            mAtm.getLifecycleManager().scheduleTransactionItem(thread, transactionItem);
+        } else {
+            // Non-UI process can handle the change directly.
+            mAtm.getLifecycleManager().scheduleTransactionItemNow(thread, transactionItem);
         }
     }
 

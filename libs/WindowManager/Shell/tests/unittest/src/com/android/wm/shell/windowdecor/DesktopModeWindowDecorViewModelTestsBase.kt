@@ -48,6 +48,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
 import com.android.wm.shell.apptoweb.AssistContentRequester
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayChangeController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayInsetsController
@@ -88,6 +89,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
+import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import java.util.Optional
@@ -98,6 +100,7 @@ import org.junit.After
 import org.junit.Before
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
+import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
@@ -162,10 +165,12 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val mockTilingWindowDecoration = mock<DesktopTilingDecorViewModel>()
+    protected val mockAppHandleNotifier = mock<AppHandleNotifier>()
     protected val motionEvent = mock<MotionEvent>()
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
     private val packageManager = mock<PackageManager>()
+    protected val mockBubbleController = mock<BubbleController>()
     protected val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
@@ -208,9 +213,12 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDesktopUserRepositories.getProfile(anyInt()))
             .thenReturn(mockDesktopRepository)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
-        appHandleAndHeaderVisibilityHelper =
-            AppHandleAndHeaderVisibilityHelper(mockDisplayController,
-                desktopModeCompatPolicy, desktopState)
+        appHandleAndHeaderVisibilityHelper = AppHandleAndHeaderVisibilityHelper(
+            displayController = mockDisplayController,
+            desktopModeCompatPolicy = desktopModeCompatPolicy,
+            desktopState = desktopState,
+            bubbleController = Optional.of(mockBubbleController),
+        )
         desktopModeWindowDecorViewModel = DesktopModeWindowDecorViewModel(
             spyContext,
             testShellExecutor,
@@ -262,6 +270,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockDesksOrganizer,
             desktopState,
             desktopConfig,
+            mockAppHandleNotifier,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
@@ -269,7 +278,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockInputMonitorFactory.create(any(), any())).thenReturn(mockInputMonitor)
         whenever(
             mockTaskPositionerFactory.create(
-                any(),
                 any(),
                 any(),
                 any(),
@@ -349,13 +357,18 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             }
     }
 
-    protected fun setUpMockDecorationForTask(task: RunningTaskInfo): DesktopModeWindowDecoration {
+    protected fun setUpMockDecorationForTask(
+        task: RunningTaskInfo,
+        windowDecorationActions: KArgumentCaptor<WindowDecorationActions> =
+            argumentCaptor<WindowDecorationActions>()
+    ): DesktopModeWindowDecoration {
         val decoration = Mockito.mock(DesktopModeWindowDecoration::class.java)
         whenever(
             mockDesktopModeWindowDecorFactory.create(
                 any(), any(), any(), any(), any(), any(), any(), eq(task), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(), any(), any(), any())
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                windowDecorationActions.capture())
         ).thenReturn(decoration)
         decoration.mTaskInfo = task
         whenever(decoration.user).thenReturn(mockUserHandle)

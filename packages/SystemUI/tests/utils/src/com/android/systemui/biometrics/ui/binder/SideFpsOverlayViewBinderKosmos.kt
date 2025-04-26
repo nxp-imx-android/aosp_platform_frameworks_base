@@ -20,8 +20,8 @@ import android.content.applicationContext
 import android.view.layoutInflater
 import android.view.windowManager
 import com.android.systemui.biometrics.domain.interactor.biometricStatusInteractor
-import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
 import com.android.systemui.biometrics.domain.interactor.sideFpsSensorInteractor
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.keyguard.domain.interactor.deviceEntrySideFpsOverlayInteractor
 import com.android.systemui.keyguard.ui.viewmodel.sideFpsProgressBarViewModel
 import com.android.systemui.kosmos.Kosmos
@@ -38,6 +38,6 @@ val Kosmos.sideFpsOverlayViewBinder by Fixture {
         { layoutInflater },
         { sideFpsProgressBarViewModel },
         { sideFpsSensorInteractor },
-        { windowManager }
+        { windowManager },
     )
 }

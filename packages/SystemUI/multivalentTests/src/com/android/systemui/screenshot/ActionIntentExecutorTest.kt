@@ -16,10 +16,10 @@
 
 package com.android.systemui.screenshot
 
+import android.content.Context
 import android.content.Intent
 import android.os.Process.myUserHandle
 import android.platform.test.annotations.EnableFlags
-import android.testing.TestableContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
@@ -42,7 +42,7 @@ class ActionIntentExecutorTest : SysuiTestCase() {
     private val scheduler = TestCoroutineScheduler()
     private val mainDispatcher = StandardTestDispatcher(scheduler)
     private val testScope = TestScope(mainDispatcher)
-    private val testableContext = TestableContext(mContext)
+    private val testableContext = mock<Context>()
 
     private val activityManagerWrapper = mock<ActivityManagerWrapper>()
     private val screenshotProxy = mock<ScreenshotProxy>()

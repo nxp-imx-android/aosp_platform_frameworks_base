@@ -20,7 +20,6 @@ import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import static com.android.settingslib.flags.Flags.legacyLeAudioSharing;
 import static com.android.systemui.Flags.communalHub;
-import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
@@ -240,7 +239,6 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
-    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -532,25 +530,14 @@ public class MediaControlPanel {
                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(clickIntent,
                         mLockscreenUserManager.getCurrentUserId());
                 if (showOverLockscreen) {
-                    if (mediaLockscreenLaunchAnimation()) {
-                        mActivityStarter.startPendingIntentMaybeDismissingKeyguard(
-                                clickIntent,
-                                /* dismissShade = */ true,
-                                /* intentSentUiThreadCallback = */ null,
-                                buildLaunchAnimatorController(mMediaViewHolder.getPlayer()),
-                                /* fillIntent = */ null,
-                                /* extraOptions = */ null,
-                                /* customMessage */ null);
-                    } else {
-                        try {
-                            ActivityOptions opts = ActivityOptions.makeBasic();
-                            opts.setPendingIntentBackgroundActivityStartMode(
-                                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-                            clickIntent.send(opts.toBundle());
-                        } catch (PendingIntent.CanceledException e) {
-                            Log.e(TAG, "Pending intent for " + key + " was cancelled");
-                        }
-                    }
+                    mActivityStarter.startPendingIntentMaybeDismissingKeyguard(
+                            clickIntent,
+                            /* dismissShade = */ true,
+                            /* intentSentUiThreadCallback = */ null,
+                            buildLaunchAnimatorController(mMediaViewHolder.getPlayer()),
+                            /* fillIntent = */ null,
+                            /* extraOptions = */ null,
+                            /* customMessage */ null);
                 } else {
                     mActivityStarter.postStartActivityDismissingKeyguard(clickIntent,
                             buildLaunchAnimatorController(mMediaViewHolder.getPlayer()));
@@ -630,25 +617,14 @@ public class MediaControlPanel {
         Trace.endSection();
     }
 
-    /**
-     * Should be called when the space that holds device suggestions becomes visible to the user.
-     */
-    public void onSuggestionSpaceVisible() {
-        @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
-        if (onSuggestionVisibleRunnable != null) {
-            onSuggestionVisibleRunnable.run();
-        }
-    }
-
     private void bindDeviceSuggestion(@NonNull MediaData data) {
-        if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
+        if (!Flags.enableSuggestedDeviceUi()) {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
         TextView deviceText = mMediaViewHolder.getSeamlessText();
         @Nullable SuggestionData suggestionData = data.getSuggestionData();
         if (suggestionData != null) {
-            mOnSuggestionSpaceVisibleRunnable = suggestionData.getOnSuggestionSpaceVisible();
             @Nullable
             SuggestedMediaDeviceData suggestionDeviceData =
                     suggestionData.getSuggestedMediaDeviceData();

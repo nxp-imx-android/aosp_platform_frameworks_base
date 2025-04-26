@@ -825,8 +825,13 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
         }
         HdmiDeviceInfo avr = getAvrDeviceInfo();
         if (avr == null) {
-            setSystemAudioMode(false);
-            invokeCallback(callback, HdmiControlManager.RESULT_TARGET_NOT_AVAILABLE);
+          if(mService.earcBlocksArcConnection()) {
+                setSystemAudioMode(enabled);
+                invokeCallback(callback, HdmiControlManager.RESULT_SUCCESS);
+            } else {
+                setSystemAudioMode(false);
+                invokeCallback(callback, HdmiControlManager.RESULT_TARGET_NOT_AVAILABLE);
+            }
             return;
         }
 

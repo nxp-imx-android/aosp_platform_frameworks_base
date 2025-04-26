@@ -183,3 +183,20 @@ elif [ $CMD == "off" ]; then
 fi
 ```
 
+## See also: Tuner
+
+SysUI also has a `TunerActivity` that can customize other behaviors of the
+status bar, like showing seconds in the clock. It is not officially supported as
+of Android P, but we do still have some support in code for it.
+
+See go/enable-sysui-tuner for directions on enabling and launching the Tuner
+activity. Copied here for reference:
+
+```shell
+adb root &&
+adb shell pm enable com.android.systemui/.tuner.TunerActivity &&
+adb shell am start -n com.android.systemui/.tuner.TunerActivity
+```
+
+After running the above, you can also find the Tuner activity in the Settings
+app: Android Settings > System > System UI Tuner

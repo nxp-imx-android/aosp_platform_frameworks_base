@@ -46,6 +46,7 @@ import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.plugins.clocks.ClockAnimations
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListeners
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceController
@@ -138,6 +139,7 @@ class ClockEventControllerTest : SysuiTestCase() {
     fun setUp() {
         whenever(clock.smallClock).thenReturn(smallClockController)
         whenever(clock.largeClock).thenReturn(largeClockController)
+        whenever(clock.eventListeners).thenReturn(ClockEventListeners())
         whenever(smallClockController.view).thenReturn(smallClockView)
         whenever(smallClockView.parent).thenReturn(smallClockFrame)
         whenever(smallClockView.viewTreeObserver).thenReturn(smallClockViewTreeObserver)
@@ -193,7 +195,7 @@ class ClockEventControllerTest : SysuiTestCase() {
 
     @Test
     fun clockSet_validateInitialization() {
-        verify(clock).initialize(any(), anyFloat(), anyFloat(), any())
+        verify(clock).initialize(any(), anyFloat(), anyFloat())
     }
 
     @Test

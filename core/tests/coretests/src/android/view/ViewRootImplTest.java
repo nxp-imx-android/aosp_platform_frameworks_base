@@ -43,13 +43,9 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR;
 import static android.view.flags.Flags.FLAG_ADD_SCHANDLE_TO_VRI_SURFACE;
 import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY;
-import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY;
-import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateDefaultNormalReadOnly;
-import static android.view.flags.Flags.toolkitFrameRateVelocityMappingReadOnly;
 
 import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.withKeyCode;
 
@@ -529,8 +525,7 @@ public class ViewRootImplTest {
      */
     @UiThreadTest
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_getDefaultValues() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -550,8 +545,7 @@ public class ViewRootImplTest {
      */
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY})
     public void votePreferredFrameRate_voteFrameRateCategory_visibility_bySize() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -590,8 +584,7 @@ public class ViewRootImplTest {
      */
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY})
     public void votePreferredFrameRate_voteFrameRateCategory_smallSize_bySize() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -625,8 +618,7 @@ public class ViewRootImplTest {
      */
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+            FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY})
     public void votePreferredFrameRate_voteFrameRateCategory_normalSize_bySize() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -663,9 +655,7 @@ public class ViewRootImplTest {
      * Also, mIsFrameRateBoosting should be true when the visibility becomes visible
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateCategory_visibility_defaultHigh()
             throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -713,8 +703,7 @@ public class ViewRootImplTest {
         sInstrumentation.runOnMainSync(() -> {
             mView.setVisibility(View.VISIBLE);
             mView.invalidate();
-            int expected = toolkitFrameRateDefaultNormalReadOnly()
-                    ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
+            int expected = FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
@@ -727,9 +716,7 @@ public class ViewRootImplTest {
      * <7%: FRAME_RATE_CATEGORY_NORMAL
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateCategory_smallSize_defaultHigh()
             throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -765,9 +752,7 @@ public class ViewRootImplTest {
      * >=7% : FRAME_RATE_CATEGORY_HIGH
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateCategory_normalSize_defaultHigh()
             throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -792,8 +777,7 @@ public class ViewRootImplTest {
         waitForFrameRateCategoryToSettle(mView);
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            int expected = toolkitFrameRateDefaultNormalReadOnly()
-                    ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
+            int expected = FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
@@ -805,8 +789,7 @@ public class ViewRootImplTest {
      * It should take the max value among all of the voted categories per frame.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateCategory_aggregate() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -854,8 +837,7 @@ public class ViewRootImplTest {
      * prioritize 60Hz..
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRate_aggregate() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -869,25 +851,20 @@ public class ViewRootImplTest {
                     FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
             assertFalse(mViewRootImpl.isFrameRateConflicted());
             mViewRootImpl.votePreferredFrameRate(24, FRAME_RATE_COMPATIBILITY_AT_LEAST);
-            if (toolkitFrameRateVelocityMappingReadOnly()) {
-                assertEquals(24, mViewRootImpl.getPreferredFrameRate(), 0.1);
-                assertEquals(FRAME_RATE_COMPATIBILITY_AT_LEAST,
-                        mViewRootImpl.getFrameRateCompatibility());
-                assertFalse(mViewRootImpl.isFrameRateConflicted());
-            } else {
-                assertEquals(FRAME_RATE_CATEGORY_HIGH,
-                        mViewRootImpl.getPreferredFrameRateCategory());
-            }
+            assertEquals(24, mViewRootImpl.getPreferredFrameRate(), 0.1);
+            assertEquals(FRAME_RATE_COMPATIBILITY_AT_LEAST,
+                    mViewRootImpl.getFrameRateCompatibility());
+            assertFalse(mViewRootImpl.isFrameRateConflicted());
+
             mViewRootImpl.votePreferredFrameRate(30, FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
             assertEquals(30, mViewRootImpl.getPreferredFrameRate(), 0.1);
             // If there is a conflict, then set compatibility to
             // FRAME_RATE_COMPATIBILITY_FIXED_SOURCE
             assertEquals(FRAME_RATE_COMPATIBILITY_FIXED_SOURCE,
                     mViewRootImpl.getFrameRateCompatibility());
-            if (toolkitFrameRateVelocityMappingReadOnly()) {
-                // Should be true since there is a conflict between 24 and 30.
-                assertTrue(mViewRootImpl.isFrameRateConflicted());
-            }
+
+            // Should be true since there is a conflict between 24 and 30.
+            assertTrue(mViewRootImpl.isFrameRateConflicted());
 
             mView.invalidate();
         });
@@ -896,14 +873,10 @@ public class ViewRootImplTest {
         sInstrumentation.runOnMainSync(() -> {
             assertFalse(mViewRootImpl.isFrameRateConflicted());
             mViewRootImpl.votePreferredFrameRate(60, FRAME_RATE_COMPATIBILITY_AT_LEAST);
-            if (toolkitFrameRateVelocityMappingReadOnly()) {
-                assertEquals(60, mViewRootImpl.getPreferredFrameRate(), 0.1);
-                assertEquals(FRAME_RATE_COMPATIBILITY_AT_LEAST,
-                        mViewRootImpl.getFrameRateCompatibility());
-            } else {
-                assertEquals(FRAME_RATE_CATEGORY_HIGH,
-                        mViewRootImpl.getPreferredFrameRateCategory());
-            }
+            assertEquals(60, mViewRootImpl.getPreferredFrameRate(), 0.1);
+            assertEquals(FRAME_RATE_COMPATIBILITY_AT_LEAST,
+                    mViewRootImpl.getFrameRateCompatibility());
+
             assertFalse(mViewRootImpl.isFrameRateConflicted());
             mViewRootImpl.votePreferredFrameRate(120, FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
             assertEquals(120, mViewRootImpl.getPreferredFrameRate(), 0.1);
@@ -928,9 +901,7 @@ public class ViewRootImplTest {
      * submit your preferred choice to the ViewRootImpl.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRate_category() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -985,9 +956,7 @@ public class ViewRootImplTest {
      */
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_VIEW_VELOCITY_API,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+            FLAG_VIEW_VELOCITY_API})
     public void votePreferredFrameRate_voteFrameRateCategory_velocityToHigh() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1012,16 +981,10 @@ public class ViewRootImplTest {
             mView.setFrameContentVelocity(100);
             mView.invalidate();
             runAfterDraw(() -> {
-                if (toolkitFrameRateVelocityMappingReadOnly()) {
-                    int expected = toolkitFrameRateBySizeReadOnly()
-                            ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
-                    assertEquals(expected, mViewRootImpl.getLastPreferredFrameRateCategory());
-                    assertTrue(mViewRootImpl.getLastPreferredFrameRate() >= 60f);
-                } else {
-                    assertEquals(FRAME_RATE_CATEGORY_HIGH,
-                            mViewRootImpl.getLastPreferredFrameRateCategory());
-                    assertEquals(0, mViewRootImpl.getLastPreferredFrameRate(), 0.1);
-                }
+                int expected = toolkitFrameRateBySizeReadOnly()
+                        ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+                assertEquals(expected, mViewRootImpl.getLastPreferredFrameRateCategory());
+                assertTrue(mViewRootImpl.getLastPreferredFrameRate() >= 60f);
             });
         });
         waitForAfterDraw();
@@ -1032,8 +995,7 @@ public class ViewRootImplTest {
      * We should boost the frame rate if the value of mInsetsAnimationRunning is true.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_insetsAnimation() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1072,8 +1034,7 @@ public class ViewRootImplTest {
      * Test FrameRateBoostOnTouchEnabled API
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_frameRateBoostOnTouch() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1108,8 +1069,7 @@ public class ViewRootImplTest {
      * mPreferredFrameRate should be set to 0.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateTimeOut() throws InterruptedException {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1149,9 +1109,7 @@ public class ViewRootImplTest {
      * A View should either vote a frame rate or a frame rate category instead of both.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_voteFrameRateOnly() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1170,8 +1128,7 @@ public class ViewRootImplTest {
             mView.setRequestedFrameRate(frameRate);
             mView.invalidate();
             runAfterDraw(() -> {
-                int expected = toolkitFrameRateDefaultNormalReadOnly()
-                        ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
+                int expected = FRAME_RATE_CATEGORY_NORMAL;
                 assertEquals(expected, mViewRootImpl.getLastPreferredFrameRateCategory());
                 assertEquals(frameRate, mViewRootImpl.getLastPreferredFrameRate(), 0.1);
             });
@@ -1203,9 +1160,7 @@ public class ViewRootImplTest {
      * - otherwise, use the previous category value.
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_infrequentLayer_defaultHigh() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1215,8 +1170,7 @@ public class ViewRootImplTest {
         mView = new View(sContext);
         WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
         wmlp.token = new Binder(); // Set a fake token to bypass 'is your activity running' check
-        int expected = toolkitFrameRateDefaultNormalReadOnly()
-                    ? FRAME_RATE_CATEGORY_NORMAL : FRAME_RATE_CATEGORY_HIGH;
+        int expected = FRAME_RATE_CATEGORY_NORMAL;
 
         sInstrumentation.runOnMainSync(() -> {
             WindowManager wm = sContext.getSystemService(WindowManager.class);
@@ -1280,8 +1234,6 @@ public class ViewRootImplTest {
 
     @Test
     @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY,
             FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY})
     public void votePreferredFrameRate_infrequentLayer_smallView_voteForLow() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -1357,8 +1309,7 @@ public class ViewRootImplTest {
      * Test the IsFrameRatePowerSavingsBalanced values are properly set
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_isFrameRatePowerSavingsBalanced() {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1393,9 +1344,7 @@ public class ViewRootImplTest {
      * 2. If FT2-FT1 > 15ms && FT3-FT2 > 15ms -> vote for NORMAL category
      */
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_applyTextureViewHeuristic() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;
@@ -1442,9 +1391,7 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_FUNCTION_ENABLING_READ_ONLY,
-            FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY})
+    @RequiresFlagsEnabled(FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY)
     public void votePreferredFrameRate_resetWhenDestroyingSurface()
             throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
@@ -1481,7 +1428,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_TOOLKIT_FRAME_RATE_VIEW_ENABLING_READ_ONLY)
     public void votePreferredFrameRate_reset() throws Throwable {
         if (!ViewProperties.vrr_enabled().orElse(true)) {
             return;

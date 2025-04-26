@@ -676,10 +676,10 @@ private suspend fun settleAppBar(
 // Medium or Large app bar.
 private val TopTitleAlphaEasing = CubicBezierEasing(.8f, 0f, .8f, .15f)
 
-internal val MaxHeightWithoutTitle = if (isSpaExpressiveEnabled) 84.dp else 124.dp
+internal val MaxHeightWithoutTitle = 124.dp
 internal val DefaultTitleHeight = 52.dp
 internal val ContainerHeight = 56.dp
-private val titleBaselineHeight = if (isSpaExpressiveEnabled) 8.dp else 0.dp
+private val titleBaselineHeight = 0.dp
 private val LargeTitleBottomPadding = 28.dp
 private val TopAppBarHorizontalPadding = 4.dp
 
