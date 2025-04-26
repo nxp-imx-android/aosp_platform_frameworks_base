@@ -101,7 +101,7 @@ oneway interface ILauncherProxy {
     /**
      * Sent when split keyboard shortcut is triggered to enter stage split.
      */
-    void enterStageSplitFromRunningApp(boolean leftOrTop) = 25;
+    void enterStageSplitFromRunningApp(int displayId, boolean leftOrTop) = 25;
 
     /**
      * Sent when the task bar stash state is toggled.
