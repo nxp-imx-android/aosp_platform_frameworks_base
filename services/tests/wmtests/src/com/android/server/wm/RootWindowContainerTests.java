@@ -1248,8 +1248,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
     public void testGetLaunchRootTaskOnSecondaryTaskDisplayArea() {
         // Adding another TaskDisplayArea to the default display.
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
-        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(display,
-                mWm, "TDA", FEATURE_VENDOR_FIRST);
+        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(mWm, "TDA",
+                FEATURE_VENDOR_FIRST, false /* createdByOrganizer */, true /* canHostHomeTask */);
         display.addChild(taskDisplayArea, POSITION_BOTTOM);
 
         // Making sure getting the root task from the preferred TDA and the preferred windowing mode

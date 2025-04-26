@@ -319,8 +319,9 @@ public class DisplayAreaOrganizerController extends IDisplayAreaOrganizerControl
      */
     private TaskDisplayArea createTaskDisplayArea(RootDisplayArea root, String name,
             int taskDisplayAreaFeatureId) {
-        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(root.mDisplayContent,
-                root.mWmService, name, taskDisplayAreaFeatureId, true /* createdByOrganizer */);
+        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(root.mWmService, name,
+                taskDisplayAreaFeatureId, true /* createdByOrganizer */,
+                true /* canHostHomeTask */);
 
         // Find the top most DA that can contain Task (either a TDA or a DisplayAreaGroup).
         final DisplayArea topTaskContainer = root.getItemFromDisplayAreas(da -> {
@@ -352,9 +353,9 @@ public class DisplayAreaOrganizerController extends IDisplayAreaOrganizerControl
      */
     private TaskDisplayArea createTaskDisplayArea(TaskDisplayArea parentTda, String name,
             int taskDisplayAreaFeatureId) {
-        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(parentTda.mDisplayContent,
-                parentTda.mWmService, name, taskDisplayAreaFeatureId,
-                true /* createdByOrganizer */);
+        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(parentTda.mWmService, name,
+                taskDisplayAreaFeatureId, true /* createdByOrganizer */,
+                true /* canHostHomeTask */);
 
         // Insert the TaskDisplayArea on the top.
         parentTda.addChild(taskDisplayArea, WindowContainer.POSITION_TOP);

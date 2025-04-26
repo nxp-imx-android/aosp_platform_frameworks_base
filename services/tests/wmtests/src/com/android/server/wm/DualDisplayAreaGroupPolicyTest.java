@@ -710,8 +710,9 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
             // First
             final RootDisplayArea firstRoot = new DisplayAreaGroup(wmService, "FirstRoot",
                     FEATURE_FIRST_ROOT);
-            final TaskDisplayArea firstTaskDisplayArea = new TaskDisplayArea(content, wmService,
-                    "FirstTaskDisplayArea", FEATURE_FIRST_TASK_CONTAINER);
+            final TaskDisplayArea firstTaskDisplayArea = new TaskDisplayArea(wmService,
+                    "FirstTaskDisplayArea", FEATURE_FIRST_TASK_CONTAINER,
+                    false /* createdByOrganizer */, true /* canHostHomeTask */);
             final List<TaskDisplayArea> firstTdaList = new ArrayList<>();
             firstTdaList.add(firstTaskDisplayArea);
             DisplayAreaPolicyBuilder.HierarchyBuilder firstHierarchy =
@@ -724,8 +725,9 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
             // Second
             final RootDisplayArea secondRoot = new DisplayAreaGroup(wmService, "SecondRoot",
                     FEATURE_SECOND_ROOT);
-            final TaskDisplayArea secondTaskDisplayArea = new TaskDisplayArea(content, wmService,
-                    "SecondTaskDisplayArea", FEATURE_SECOND_TASK_CONTAINER);
+            final TaskDisplayArea secondTaskDisplayArea = new TaskDisplayArea(wmService,
+                    "SecondTaskDisplayArea", FEATURE_SECOND_TASK_CONTAINER,
+                    false /* createdByOrganizer */, true /* canHostHomeTask */);
             final List<TaskDisplayArea> secondTdaList = new ArrayList<>();
             secondTdaList.add(secondTaskDisplayArea);
             DisplayAreaPolicyBuilder.HierarchyBuilder secondHierarchy =
@@ -735,8 +737,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
                 secondHierarchy.addFeature(feature);
             }
 
-            return new DisplayAreaPolicyBuilder()
-                    .setRootHierarchy(rootHierarchy)
+            return new DisplayAreaPolicyBuilder(content.getDisplayId(), rootHierarchy)
                     .addDisplayAreaGroupHierarchy(firstHierarchy)
                     .addDisplayAreaGroupHierarchy(secondHierarchy)
                     .build(wmService);
