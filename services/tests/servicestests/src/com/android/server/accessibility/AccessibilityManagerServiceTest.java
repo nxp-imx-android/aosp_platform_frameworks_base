@@ -2262,6 +2262,36 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
+    public void handleKeyGestureEvent_activateVoiceAccess_trustedService() {
+        setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+
+        final AccessibilityServiceInfo trustedService = mockAccessibilityServiceInfo(
+                new ComponentName("package_a", "class_a"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
+        AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        userState.mInstalledServices.add(trustedService);
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                R.string.config_defaultVoiceAccessService,
+                trustedService.getComponentName().flattenToString());
+        mTestableContext.getOrCreateTestableResources().addOverride(
+                R.array.config_trustedAccessibilityServices,
+                new String[]{trustedService.getComponentName().flattenToString()});
+
+        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
+                mA11yms.getCurrentUserIdLocked())).isEmpty();
+
+        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS).setAction(
+                KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
+
+        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
+                mA11yms.getCurrentUserIdLocked())).containsExactly(
+                trustedService.getComponentName().flattenToString());
+    }
+
+    @Test
     public void displayListReturnsDisplays() {
         mTestDisplayManagerWrapper.mDisplays = createFakeDisplayList(
                         Display.TYPE_INTERNAL,

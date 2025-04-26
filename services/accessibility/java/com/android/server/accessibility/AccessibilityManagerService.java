@@ -46,6 +46,7 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
 
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
+import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yMouseKeys;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
@@ -653,10 +654,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         registerBroadcastReceivers();
         new AccessibilityContentObserver(mMainHandler).register(
                 mContext.getContentResolver());
+        List<Integer> supportedGestures = new ArrayList<>();
         if (enableTalkbackAndMagnifierKeyGestures()) {
-            List<Integer> supportedGestures = List.of(
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                    KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
+        }
+        if (enableVoiceAccessKeyGestures()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
+        }
+        if (!supportedGestures.isEmpty()) {
             mInputManager.registerKeyGestureEventHandler(supportedGestures,
                     mKeyGestureEventHandler);
         }
@@ -706,6 +712,16 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         return mIsAccessibilityButtonShown;
     }
 
+    private String getTargetNameFromKeyGestureType(int gestureType) {
+        return switch (gestureType) {
+            case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK -> mContext.getString(
+                    R.string.config_defaultSelectToSpeakService);
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> mContext.getString(
+                    R.string.config_defaultVoiceAccessService);
+            default -> "";
+        };
+    }
+
     @VisibleForTesting
     void handleKeyGestureEvent(KeyGestureEvent event) {
         final boolean complete =
@@ -722,7 +738,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 targetName = MAGNIFICATION_CONTROLLER_NAME;
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK:
-                targetName = mContext.getString(R.string.config_defaultSelectToSpeakService);
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
+                targetName = getTargetNameFromKeyGestureType(gestureType);
                 if (targetName.isEmpty()) {
                     return;
                 }
@@ -4353,11 +4370,23 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         + "userId: %s",
                 enable, shortcutType, shortcutTargets, userId));
 
-        if (shortcutType == UserShortcutType.KEY_GESTURE
-                && !enableTalkbackAndMagnifierKeyGestures()) {
-            Slog.w(LOG_TAG,
-                    "KEY_GESTURE type shortcuts are disabled by feature flag");
-            return;
+        if (shortcutType == UserShortcutType.KEY_GESTURE) {
+            if(!enableTalkbackAndMagnifierKeyGestures() &&
+                    (shortcutTargets.contains(MAGNIFICATION_CONTROLLER_NAME) ||
+                            shortcutTargets.contains(mContext.getString(
+                                    R.string.config_defaultSelectToSpeakService)))) {
+                Slog.w(LOG_TAG,
+                        "KEY_GESTURE type magnification and select to speak shortcuts are "
+                                + "disabled by feature flag");
+                return;
+            }
+            if (!enableVoiceAccessKeyGestures() && shortcutTargets.contains(mContext.getString(
+                    R.string.config_defaultVoiceAccessService))) {
+                Slog.w(LOG_TAG,
+                        "KEY_GESTURE type voice access shortcuts are "
+                                + "disabled by feature flag");
+                return;
+            }
         }
 
         final String shortcutTypeSettingKey = ShortcutUtils.convertToKey(shortcutType);
