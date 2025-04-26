@@ -265,18 +265,13 @@ public abstract class InfoMediaManager {
             userHandle = android.os.Process.myUserHandle();
         }
 
-        if (Flags.useMediaRouter2ForInfoMediaManager()) {
-            try {
-                return new RouterInfoMediaManager(
-                        context, packageName, userHandle, localBluetoothManager, mediaController);
-            } catch (PackageNotAvailableException ex) {
-                // TODO: b/293578081 - Propagate this exception to callers for proper handling.
-                Log.w(TAG, "Returning a no-op InfoMediaManager for package " + packageName);
-                return new NoOpInfoMediaManager(
-                        context, packageName, userHandle, localBluetoothManager, mediaController);
-            }
-        } else {
-            return new ManagerInfoMediaManager(
+        try {
+            return new RouterInfoMediaManager(
+                    context, packageName, userHandle, localBluetoothManager, mediaController);
+        } catch (PackageNotAvailableException ex) {
+            // TODO: b/293578081 - Propagate this exception to callers for proper handling.
+            Log.w(TAG, "Returning a no-op InfoMediaManager for package " + packageName);
+            return new NoOpInfoMediaManager(
                     context, packageName, userHandle, localBluetoothManager, mediaController);
         }
     }
