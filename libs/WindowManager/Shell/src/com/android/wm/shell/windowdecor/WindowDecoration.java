@@ -23,6 +23,7 @@ import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -39,6 +40,7 @@ import android.graphics.Region;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.Trace;
 import android.view.Display;
 import android.view.InsetsSource;
@@ -61,6 +63,8 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.BoxShadowHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams.OccludingCaptionElement;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -123,6 +127,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      * System-wide context. Only used to create context with overridden configurations.
      */
     final Context mContext;
+    private final @NonNull @ShellMainThread Handler mHandler;
+    private final @NonNull Transitions mTransitions;
     final @NonNull Context mUserContext;
     final @NonNull DisplayController mDisplayController;
     final @NonNull DesktopModeEventLogger mDesktopModeEventLogger;
@@ -174,13 +180,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
     WindowDecoration(
             Context context,
+            @NonNull @ShellMainThread Handler handler,
+            @NonNull Transitions transitions,
             @NonNull Context userContext,
             DisplayController displayController,
             ShellTaskOrganizer taskOrganizer,
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier) {
-        this(context, userContext, displayController, taskOrganizer, taskInfo,
+        this(context, handler, transitions, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
                 WindowContainerTransaction::new, SurfaceControl::new,
                 new SurfaceControlViewHostFactory() {}, windowDecorViewHostSupplier,
@@ -189,6 +197,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
     WindowDecoration(
             Context context,
+            @NonNull @ShellMainThread Handler handler,
+            @NonNull Transitions transitions,
             @NonNull Context userContext,
             @NonNull DisplayController displayController,
             ShellTaskOrganizer taskOrganizer,
@@ -203,6 +213,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             @NonNull DesktopModeEventLogger desktopModeEventLogger
     ) {
         mContext = context;
+        mHandler = handler;
+        mTransitions = transitions;
         mUserContext = userContext;
         mDisplayController = displayController;
         mTaskOrganizer = taskOrganizer;
@@ -757,7 +769,12 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         }
         final WindowContainerTransaction wct = mWindowContainerTransactionSupplier.get();
         releaseViews(wct);
-        mTaskOrganizer.applyTransaction(wct);
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue() && !wct.isEmpty()) {
+            mHandler.post(() -> mTransitions.startTransition(TRANSIT_CHANGE, wct,
+                    /* handler= */ null));
+        } else {
+            mTaskOrganizer.applyTransaction(wct);
+        }
         mTaskSurface.release();
         Trace.endSection();
     }
