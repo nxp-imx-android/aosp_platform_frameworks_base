@@ -71,6 +71,7 @@ import org.w3c.dom.Node
 object SystemFeaturesGenerator {
     private const val FEATURE_ARG = "--feature="
     private const val FEATURE_XML_FILES_ARG = "--feature-xml-files="
+    private const val UNAVAILABLE_FEATURE_XML_FILES_ARG = "--unavailable-feature-xml-files="
     private const val FEATURE_APIS_ARG = "--feature-apis="
     private const val READONLY_ARG = "--readonly="
     private const val METADATA_ONLY_ARG = "--metadata-only="
@@ -103,7 +104,13 @@ object SystemFeaturesGenerator {
         println("  --feature-xml-files=\$XML_FILE_1,\$XML_FILE_2")
         println("                           A comma-separated list of XML permission feature files")
         println("                           to parse and add to the generated query APIs. The file")
-        println("                           format matches that used by SystemConfig parsing.")
+        println("                           format matches that used by SystemConfig parsing. This")
+        println("                           parses <feature /> and <unavailable-feature /> defs.")
+        println("  --unavailable-feature-xml-files=\$XML_FILE_1,\$XML_FILE_2")
+        println("                           A comma-separated list of XML permission feature files")
+        println("                           to parse and add to the generated query APIs. The file")
+        println("                           format matches that used by SystemConfig parsing. This")
+        println("                           parses *only* <unavailable-feature /> defs.")
         println("  --metadata-only=true|false Whether to simply output metadata about the")
         println("                             generated API surface.")
     }
@@ -153,6 +160,14 @@ object SystemFeaturesGenerator {
                 arg.startsWith(FEATURE_XML_FILES_ARG) -> {
                     featureArgs.addAll(
                         parseFeatureXmlFiles(arg.substring(FEATURE_XML_FILES_ARG.length).split(","))
+                    )
+                }
+                arg.startsWith(UNAVAILABLE_FEATURE_XML_FILES_ARG) -> {
+                    featureArgs.addAll(
+                        parseFeatureXmlFiles(
+                            arg.substring(UNAVAILABLE_FEATURE_XML_FILES_ARG.length).split(","),
+                            parseOnlyUnavailableFeatures = true,
+                        )
                     )
                 }
                 else -> outputClassName = ClassName.bestGuess(arg)
@@ -259,10 +274,13 @@ object SystemFeaturesGenerator {
     /**
      * Parses a list of feature permission XML file paths into a list of FeatureInfo definitions.
      */
-    private fun parseFeatureXmlFiles(filePaths: Collection<String>): Collection<FeatureInfo> =
+    private fun parseFeatureXmlFiles(
+        filePaths: Collection<String>,
+        parseOnlyUnavailableFeatures: Boolean = false,
+    ): Collection<FeatureInfo> =
         filePaths.flatMap {
             try {
-                parseFeatureXmlFile(File(it))
+                parseFeatureXmlFile(File(it), parseOnlyUnavailableFeatures)
             } catch (e: Exception) {
                 throw IllegalArgumentException("Error parsing feature XML file: $it", e)
             }
@@ -271,7 +289,10 @@ object SystemFeaturesGenerator {
     /**
      * Parses a feature permission XML file into a (possibly empty) list of FeatureInfo definitions.
      */
-    private fun parseFeatureXmlFile(file: File): Collection<FeatureInfo> {
+    private fun parseFeatureXmlFile(
+        file: File,
+        parseOnlyUnavailableFeatures: Boolean = false,
+    ): Collection<FeatureInfo> {
         val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
         doc.documentElement.normalize()
 
@@ -291,9 +312,11 @@ object SystemFeaturesGenerator {
                 .filter { it.nodeType == Node.ELEMENT_NODE }
                 .map { it as Element }
                 .mapNotNull { element ->
-                    when (element.tagName) {
-                        "feature" -> parseFeatureElement(element)
-                        "unavailable-feature" -> parseUnavailableFeatureElement(element)
+                    when {
+                        element.tagName == "unavailable-feature" ->
+                            parseUnavailableFeatureElement(element)
+                        !parseOnlyUnavailableFeatures && element.tagName == "feature" ->
+                            parseFeatureElement(element)
                         else -> null
                     }
                 }
