@@ -16,11 +16,11 @@
 
 package com.android.wm.shell.dagger;
 
+import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
-import static android.window.DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
 
@@ -192,17 +192,18 @@ import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationToolt
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
+
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible

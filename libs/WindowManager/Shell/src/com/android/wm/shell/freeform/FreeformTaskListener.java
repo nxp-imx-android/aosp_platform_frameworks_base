@@ -106,8 +106,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         state.mLeash = leash;
         mTasks.put(taskInfo.taskId, state);
 
-        if (!DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue() &&
-                mDesktopState.canEnterDesktopMode()) {
+        if (!DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
+                && mDesktopState.canEnterDesktopMode()) {
             mDesktopUserRepositories.ifPresent(userRepositories -> {
                 DesktopRepository currentRepo = userRepositories.getProfile(taskInfo.userId);
                 currentRepo.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible);
@@ -122,8 +122,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 taskInfo.taskId);
         mTasks.remove(taskInfo.taskId);
 
-        if (!DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue() &&
-                mDesktopState.canEnterDesktopMode()
+        if (!DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
+                && mDesktopState.canEnterDesktopMode()
                 && mDesktopUserRepositories.isPresent()) {
             DesktopRepository repository =
                     mDesktopUserRepositories.get().getProfile(taskInfo.userId);
@@ -159,7 +159,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         mWindowDecorationViewModel.onTaskInfoChanged(taskInfo);
         state.mTaskInfo = taskInfo;
         if (mDesktopState.canEnterDesktopMode()) {
-            if (DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()) {
                 // Pass task info changes to the [TaskChangeListener] since [TransitionsObserver]
                 // does not propagate all task info changes.
                 mTaskChangeListener.ifPresent(listener ->
@@ -192,7 +192,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
     @Override
     public void onFocusTaskChanged(RunningTaskInfo taskInfo) {
         if (taskInfo.getWindowingMode() != WINDOWING_MODE_FREEFORM
-                || DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()) {
+                || DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()) {
             return;
         }
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TASK_ORG,
