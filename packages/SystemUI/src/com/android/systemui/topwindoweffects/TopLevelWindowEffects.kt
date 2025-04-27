@@ -29,7 +29,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
@@ -56,7 +55,6 @@ constructor(
     @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
-    private val keyEventInteractor: KeyEventInteractor,
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
     // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
@@ -71,7 +69,8 @@ constructor(
         topLevelWindowEffectsScope.launch {
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 if (enabled) {
-                    keyEventInteractor.isPowerButtonDown.collectLatest { down ->
+                    squeezeEffectInteractor.isPowerButtonDownAsSingleKeyGesture.collectLatest { down
+                        ->
                         if (down) {
                             val roundedCornerInfo =
                                 squeezeEffectInteractor.getRoundedCornersResourceId()
@@ -126,9 +125,7 @@ constructor(
         if (TopUiControllerRefactor.isEnabled) {
             topUiController.setRequestTopUi(false, TAG)
         } else {
-            runOnMainThread {
-                notificationShadeWindowController.setRequestTopUi(false, TAG)
-            }
+            runOnMainThread { notificationShadeWindowController.setRequestTopUi(false, TAG) }
         }
     }
 

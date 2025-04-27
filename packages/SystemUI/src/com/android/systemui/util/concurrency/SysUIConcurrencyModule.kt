@@ -34,8 +34,6 @@ import dagger.Provides
 import java.util.concurrent.Executor
 import javax.inject.Named
 import javax.inject.Qualifier
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
 
 @Qualifier
 @MustBeDocumented
@@ -158,7 +156,7 @@ object SysUIConcurrencyModule {
     @Provides
     @SysUISingleton
     @TopLevelWindowEffectsThread
-    fun provideTopLevelWindowEffectLooper(): Looper {
+    fun provideTopLevelWindowEffectsLooper(): Looper {
         val thread = HandlerThread("TopLevelWindowEffectsThread", Process.THREAD_PRIORITY_DISPLAY)
         thread.start()
         thread.looper.setSlowLogThresholdMs(
@@ -171,9 +169,9 @@ object SysUIConcurrencyModule {
     @Provides
     @SysUISingleton
     @TopLevelWindowEffectsThread
-    fun provideTopLevelWindowEffectsScope(
+    fun provideTopLevelWindowEffectsExecutor(
         @TopLevelWindowEffectsThread looper: Looper
-    ): CoroutineScope = CoroutineScope(ExecutorImpl(looper).asCoroutineDispatcher())
+    ): Executor = ExecutorImpl(looper)
 
     /**
      * Background Handler.

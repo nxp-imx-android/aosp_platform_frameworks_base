@@ -16,33 +16,63 @@
 
 package com.android.systemui.topwindoweffects.dagger
 
+import android.os.Handler
+import android.os.Looper
 import com.android.systemui.CoreStartable
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shared.Flags.enableLppAssistInvocationEffect
 import com.android.systemui.topwindoweffects.TopLevelWindowEffects
-import dagger.Binds
+import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import java.util.concurrent.Executor
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 
 @Module
-interface TopLevelWindowEffectsModule {
+object TopLevelWindowEffectsModule {
 
-    @Binds fun bindTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable
-
-    companion object {
-
-        @Provides
-        @IntoMap
-        @ClassKey(TopLevelWindowEffects::class)
-        fun provideTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable {
-            return if (enableLppAssistInvocationEffect()) {
-                impl
-            } else {
-                CoreStartable {
-                    // empty, no-op
-                }
+    @Provides
+    @IntoMap
+    @ClassKey(TopLevelWindowEffects::class)
+    fun provideTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable {
+        return if (enableLppAssistInvocationEffect()) {
+            impl
+        } else {
+            CoreStartable {
+                // empty, no-op
             }
         }
     }
+
+    @Provides
+    @SysUISingleton
+    @TopLevelWindowEffectsThread
+    fun provideTopLevelWindowEffectsHandler(@TopLevelWindowEffectsThread looper: Looper): Handler =
+        Handler(looper)
+
+    @Provides
+    @SysUISingleton
+    @TopLevelWindowEffectsThread
+    fun provideTopLevelWindowEffectsScope(
+        @TopLevelWindowEffectsThread dispatcher: CoroutineDispatcher
+    ): CoroutineScope = CoroutineScope(dispatcher)
+
+    @Provides
+    @SysUISingleton
+    @TopLevelWindowEffectsThread
+    fun provideTopLevelWindowEffectsDispatcher(
+        @TopLevelWindowEffectsThread executor: Executor
+    ): CoroutineDispatcher = executor.asCoroutineDispatcher()
+
+    @Provides
+    @SysUISingleton
+    @TopLevelWindowEffectsThread
+    fun provideTopLevelWindowEffectsContext(
+        @TopLevelWindowEffectsThread dispatcher: CoroutineDispatcher
+    ): CoroutineContext = dispatcher
 }
