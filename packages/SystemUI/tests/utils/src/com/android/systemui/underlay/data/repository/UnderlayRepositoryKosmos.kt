@@ -16,14 +16,6 @@
 
 package com.android.systemui.underlay.data.repository
 
-import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
 
-val Kosmos.underlayRepository by
-    Kosmos.Fixture {
-        UnderlayRepository(
-            backgroundScope = backgroundScope,
-            broadcastDispatcher = broadcastDispatcher,
-        )
-    }
+val Kosmos.underlayRepository: UnderlayRepository by Kosmos.Fixture { FakeUnderlayRepository() }
