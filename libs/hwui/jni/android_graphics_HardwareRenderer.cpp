@@ -848,6 +848,8 @@ static void android_view_ThreadedRenderer_allocateBuffers(JNIEnv* env, jobject c
 
 static void android_view_ThreadedRenderer_setForceDark(JNIEnv* env, jobject clazz, jlong proxyPtr,
                                                        jint type) {
+    Properties::setIsForceInvertEnabled(static_cast<ForceDarkType>(type) ==
+                                        ForceDarkType::FORCE_INVERT_COLOR_DARK);
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
     proxy->setForceDark(static_cast<ForceDarkType>(type));
 }

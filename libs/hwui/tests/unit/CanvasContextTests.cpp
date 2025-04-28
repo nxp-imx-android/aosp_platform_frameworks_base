@@ -84,7 +84,7 @@ RENDERTHREAD_TEST(CanvasContext, forceInvertColorArea_detectsLightTheme) {
     if (!view_accessibility_flags::force_invert_color()) {
         GTEST_SKIP() << "Test only applies when force_invert_colorarea_detector flag is enabled";
     }
-
+    Properties::setIsForceInvertEnabled(true);
     auto buttonNode =
             TestUtils::createNode(0, 0, 50, 100, [](RenderProperties& props, Canvas& canvas) {
                 Paint paint;
@@ -123,6 +123,7 @@ RENDERTHREAD_TEST(CanvasContext, forceInvertColorArea_detectsLightTheme) {
 
     EXPECT_EQ(canvasContext->getColorArea().getPolarity(), Light);
 
+    Properties::setIsForceInvertEnabled(false);
     renderThread.destroyRenderingContext();
 }
 
@@ -130,7 +131,7 @@ RENDERTHREAD_TEST(CanvasContext, forceInvertColorArea_detectsDarkTheme) {
     if (!view_accessibility_flags::force_invert_color()) {
         GTEST_SKIP() << "Test only applies when force_invert_colorarea_detector flag is enabled";
     }
-
+    Properties::setIsForceInvertEnabled(true);
     auto buttonNode =
             TestUtils::createNode(0, 0, 50, 100, [](RenderProperties& props, Canvas& canvas) {
                 Paint paint;
@@ -169,5 +170,6 @@ RENDERTHREAD_TEST(CanvasContext, forceInvertColorArea_detectsDarkTheme) {
 
     EXPECT_EQ(canvasContext->getColorArea().getPolarity(), Dark);
 
+    Properties::setIsForceInvertEnabled(false);
     renderThread.destroyRenderingContext();
 }

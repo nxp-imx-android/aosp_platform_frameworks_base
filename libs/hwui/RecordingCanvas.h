@@ -34,6 +34,7 @@
 #include "CanvasTransform.h"
 #include "ColorArea.h"
 #include "Gainmap.h"
+#include "Properties.h"
 #include "hwui/Bitmap.h"
 #include "pipeline/skia/AnimatedDrawables.h"
 #include "utils/AutoMalloc.h"

@@ -850,7 +850,7 @@ template <class T>
 constexpr bool has_palette = std::experimental::is_detected_v<has_palette_helper, T>;
 
 inline bool DisplayListData::shouldCountColorAreas() const {
-    return view_accessibility_flags::force_invert_color();
+    return view_accessibility_flags::force_invert_color() && Properties::isForceInvertEnabled;
 }
 
 typedef void (*color_area_fn)(const void*, ColorArea*);
@@ -969,7 +969,7 @@ void* DisplayListData::push(size_t pod, Args&&... args) {
         }
     }
 
-    if (shouldCountColorAreas()) {
+    if (CC_UNLIKELY(shouldCountColorAreas())) {
         if (auto fn = color_area_fns[op->type]) {
             fn(op, &mColorArea);
         }
