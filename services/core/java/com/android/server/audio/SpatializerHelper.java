@@ -21,8 +21,6 @@ import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_UNKNOWN;
 import static android.media.AudioSystem.isBluetoothDevice;
 import static android.media.AudioSystem.isBluetoothLeDevice;
 
-import static com.android.media.audio.Flags.dsaOverBtLeAudio;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -1685,56 +1683,37 @@ public class SpatializerHelper {
         for (String address : deviceAddresses) {
             UUID routingDeviceUuid = UuidUtils.uuidFromAudioDeviceAttributes(
                     new AudioDeviceAttributes(currentDevice.getInternalType(), address));
-            if (dsaOverBtLeAudio()) {
-                for (Sensor sensor : sensors) {
-                    final UUID uuid = sensor.getUuid();
-                    if (uuid.equals(routingDeviceUuid)) {
-                        htSensor = sensor;
-                        HeadtrackerInfo info = new HeadtrackerInfo(sensor);
-                        if (isBluetoothLeDevice(currentDevice.getInternalType())) {
-                            if (info.getMajorVersion() == 2) {
-                                // Version 2 is used only by LE Audio profile
-                                break;
-                            }
-                            // we do not break, as this could be a match on the A2DP sensor
-                            // for a dual mode headset.
-                        } else if (info.getMajorVersion() == 1) {
-                            // Version 1 is used only by A2DP profile
+
+            for (Sensor sensor : sensors) {
+                final UUID uuid = sensor.getUuid();
+                if (uuid.equals(routingDeviceUuid)) {
+                    htSensor = sensor;
+                    HeadtrackerInfo info = new HeadtrackerInfo(sensor);
+                    if (isBluetoothLeDevice(currentDevice.getInternalType())) {
+                        if (info.getMajorVersion() == 2) {
+                            // Version 2 is used only by LE Audio profile
                             break;
                         }
-                    }
-                    if (htSensor == null && uuid.equals(UuidUtils.STANDALONE_UUID)) {
-                        htSensor = sensor;
-                        // we do not break, perhaps we find a head tracker on device.
-                    }
-                }
-                if (htSensor != null) {
-                    if (htSensor.getUuid().equals(UuidUtils.STANDALONE_UUID)) {
+                        // we do not break, as this could be a match on the A2DP sensor
+                        // for a dual mode headset.
+                    } else if (info.getMajorVersion() == 1) {
+                        // Version 1 is used only by A2DP profile
                         break;
                     }
-                    if (setHasHeadTracker(currentDevice)) {
-                        break;
-                    } else {
-                        htSensor = null;
-                    }
                 }
-            } else {
-                for (Sensor sensor : sensors) {
-                    final UUID uuid = sensor.getUuid();
-                    if (uuid.equals(routingDeviceUuid)) {
-                        htSensor = sensor;
-                        if (!setHasHeadTracker(currentDevice)) {
-                            htSensor = null;
-                        }
-                        break;
-                    }
-                    if (uuid.equals(UuidUtils.STANDALONE_UUID)) {
-                        htSensor = sensor;
-                        // we do not break, perhaps we find a head tracker on device.
-                    }
+                if (htSensor == null && uuid.equals(UuidUtils.STANDALONE_UUID)) {
+                    htSensor = sensor;
+                    // we do not break, perhaps we find a head tracker on device.
                 }
-                if (htSensor != null) {
+            }
+            if (htSensor != null) {
+                if (htSensor.getUuid().equals(UuidUtils.STANDALONE_UUID)) {
                     break;
+                }
+                if (setHasHeadTracker(currentDevice)) {
+                    break;
+                } else {
+                    htSensor = null;
                 }
             }
         }
