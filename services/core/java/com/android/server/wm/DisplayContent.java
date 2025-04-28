@@ -3558,6 +3558,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mAsyncRotationController.updateRotation();
         }
         if (mFixedRotationLaunchingApp != null) {
+            startAsyncRotationIfNeeded();
             // A fixed-rotation transition is done, then continue to start a seamless display
             // transition.
             setSeamlessTransitionForFixedRotation(t);
