@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.row
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
@@ -37,21 +39,41 @@ import androidx.core.graphics.ColorUtils
 import com.android.systemui.res.R
 import com.android.wm.shell.shared.animation.Interpolators
 
-class AnimatedActionBackgroundDrawable(context: Context) :
+class AnimatedActionBackgroundDrawable(
+    context: Context,
+    onAnimationStarted: () -> Unit,
+    onAnimationEnded: () -> Unit,
+    onAnimationCancelled: () -> Unit,
+) :
     RippleDrawable(
         ContextCompat.getColorStateList(context, R.color.notification_ripple_untinted_color)
             ?: ColorStateList.valueOf(Color.TRANSPARENT),
-        createBaseDrawable(context),
+        createBaseDrawable(context, onAnimationStarted, onAnimationEnded, onAnimationCancelled),
         null,
     ) {
     companion object {
-        private fun createBaseDrawable(context: Context): Drawable {
-            return BaseBackgroundDrawable(context)
+        private fun createBaseDrawable(
+            context: Context,
+            onAnimationStarted: () -> Unit,
+            onAnimationEnded: () -> Unit,
+            onAnimationCancelled: () -> Unit,
+        ): Drawable {
+            return BaseBackgroundDrawable(
+                context,
+                onAnimationStarted,
+                onAnimationEnded,
+                onAnimationCancelled,
+            )
         }
     }
 }
 
-class BaseBackgroundDrawable(context: Context) : Drawable() {
+class BaseBackgroundDrawable(
+    context: Context,
+    onAnimationStarted: () -> Unit,
+    onAnimationEnded: () -> Unit,
+    onAnimationCancelled: () -> Unit,
+) : Drawable() {
 
     private val cornerRadius =
         context.resources
@@ -113,6 +135,17 @@ class BaseBackgroundDrawable(context: Context) : Drawable() {
                 startDelay = 1000
                 interpolator = Interpolators.LINEAR
                 repeatCount = 0
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationEnded()
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            onAnimationCancelled()
+                        }
+                    }
+                )
                 addUpdateListener { animator ->
                     val animatedValue = animator.animatedValue as Float
                     rotationAngle = 20f + animatedValue * 360f // Rotate in a spiral
@@ -130,6 +163,13 @@ class BaseBackgroundDrawable(context: Context) : Drawable() {
                     solidAlpha = (progress * 255).toInt() // Fade in color
                     invalidateSelf()
                 }
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            onAnimationStarted()
+                        }
+                    }
+                )
                 start()
             }
     }
