@@ -136,6 +136,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, false,
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
+    ENABLE_REJECT_HOME_TRANSITION(
+            Flags::enableRejectHomeTransition, false,
+            Flags.FLAG_ENABLE_REJECT_HOME_TRANSITION),
     ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS(Flags::enableRestartMenuForConnectedDisplays, false,
             Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
