@@ -33,5 +33,7 @@ android_library {
         "com.android.devicelock",
         "com.android.healthfitness",
         "com.android.mediaprovider",
+        "com.android.adservices",
+        "com.android.extservices",
     ],
 }
