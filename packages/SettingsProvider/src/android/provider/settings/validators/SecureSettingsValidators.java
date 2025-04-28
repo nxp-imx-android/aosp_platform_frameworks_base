@@ -467,6 +467,8 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.ON_DEVICE_INTELLIGENCE_UNBIND_TIMEOUT_MS, ANY_LONG_VALIDATOR);
         VALIDATORS.put(Secure.ON_DEVICE_INTELLIGENCE_IDLE_TIMEOUT_MS, NONE_NEGATIVE_LONG_VALIDATOR);
         VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION,
+                new InclusiveIntegerRangeValidator(0, 10));
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS, new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED,
                 new InclusiveIntegerRangeValidator(0, 1));

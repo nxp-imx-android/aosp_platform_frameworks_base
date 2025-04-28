@@ -12961,6 +12961,14 @@ public final class Settings {
                 "accessibility_mouse_keys_enabled";
 
         /**
+         * The current acceleration for mouse keys movement.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MOUSE_KEYS_ACCELERATION =
+                "accessibility_mouse_keys_acceleration";
+
+        /**
          * Whether the Adaptive connectivity option is enabled.
          *
          * @hide
