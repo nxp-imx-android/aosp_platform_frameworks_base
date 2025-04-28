@@ -1546,8 +1546,7 @@ public final class SystemServer implements Dumpable {
         boolean isArc = context.getPackageManager().hasSystemFeature(
                 "org.chromium.arc");
 
-        boolean isTv = context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_LEANBACK);
+        boolean isTv = RoSystemFeatures.hasFeatureLeanback(context);
 
         boolean isAutomotive = RoSystemFeatures.hasFeatureAutomotive(context);
 
@@ -2651,15 +2650,13 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV)
-                    || mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV) || isTv) {
                 t.traceBegin("StartTvInteractiveAppManager");
                 mSystemServiceManager.startService(TvInteractiveAppManagerService.class);
                 t.traceEnd();
             }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV)
-                    || mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV) || isTv) {
                 t.traceBegin("StartTvInputManager");
                 mSystemServiceManager.startService(TvInputManagerService.class);
                 t.traceEnd();
@@ -2683,7 +2680,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            if (isTv) {
                 t.traceBegin("StartTvRemoteService");
                 mSystemServiceManager.startService(TvRemoteService.class);
                 t.traceEnd();
