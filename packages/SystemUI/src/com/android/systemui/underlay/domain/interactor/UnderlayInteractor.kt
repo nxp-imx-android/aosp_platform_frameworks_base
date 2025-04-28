@@ -17,9 +17,21 @@
 package com.android.systemui.underlay.domain.interactor
 
 import com.android.systemui.underlay.data.repository.UnderlayRepository
+import com.android.systemui.underlay.shared.model.ActionModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 class UnderlayInteractor @Inject constructor(private val repository: UnderlayRepository) {
     val isUnderlayAttached: StateFlow<Boolean> = repository.isUnderlayAttached
+    val isOverlayVisible: StateFlow<Boolean> = repository.isOverlayVisible
+    val actions: StateFlow<List<ActionModel>> = repository.actions
+
+    fun setIsOverlayVisible(visible: Boolean) {
+        repository.isOverlayVisible.update { visible }
+    }
+
+    fun setActions(actions: List<ActionModel>) {
+        repository.actions.update { actions }
+    }
 }

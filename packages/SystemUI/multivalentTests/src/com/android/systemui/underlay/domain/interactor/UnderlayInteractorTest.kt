@@ -17,6 +17,7 @@
 package com.android.systemui.underlay.domain.interactor
 
 import android.content.Intent
+import android.content.applicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -24,8 +25,10 @@ import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.underlay.data.repository.UnderlayRepository
+import com.android.systemui.underlay.shared.model.ActionModel
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,5 +64,47 @@ class UnderlayInteractorTest : SysuiTestCase() {
             )
 
             assertThat(isUnderlayAttached).isFalse()
+        }
+
+    @Test
+    fun isOverlayVisible_setTrue_true() =
+        kosmos.runTest {
+            val isOverlayVisible by collectLastValue(underlayInteractor.isOverlayVisible)
+
+            underlayInteractor.setIsOverlayVisible(true)
+
+            assertThat(isOverlayVisible).isTrue()
+        }
+
+    @Test
+    fun isOverlayVisible_setFalse_False() =
+        kosmos.runTest {
+            val isOverlayVisible by collectLastValue(underlayInteractor.isOverlayVisible)
+
+            underlayInteractor.setIsOverlayVisible(false)
+
+            assertThat(isOverlayVisible).isFalse()
+        }
+
+    @Test
+    fun actions_setActions_actionsUpdated() =
+        kosmos.runTest {
+            val actions by collectLastValue(underlayInteractor.actions)
+            val testActions =
+                listOf(
+                    ActionModel(
+                        icon =
+                            applicationContext.resources.getDrawable(
+                                R.drawable.clipboard,
+                                applicationContext.theme,
+                            ),
+                        label = "Sunday Morning",
+                        attribution = null,
+                    )
+                )
+
+            underlayInteractor.setActions(testActions)
+
+            assertThat(actions).isEqualTo(testActions)
         }
 }

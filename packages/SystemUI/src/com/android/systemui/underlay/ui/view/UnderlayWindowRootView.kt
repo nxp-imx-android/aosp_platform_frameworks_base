@@ -27,15 +27,17 @@ import androidx.compose.ui.platform.ComposeView
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.underlay.ui.compose.UnderlayComposableProvider
-import com.android.systemui.underlay.ui.compose.UnderlayContainer
+import com.android.systemui.underlay.ui.compose.OverlayContainer
+import com.android.systemui.underlay.ui.viewmodel.OverlayViewModel
 import javax.inject.Inject
 
 /** A root view of the Underlay SysUI window. */
 class UnderlayWindowRootView
 @Inject
-constructor(@Application applicationContext: Context, content: UnderlayComposableProvider) :
-    FrameLayout(applicationContext) {
+constructor(
+    @Application applicationContext: Context,
+    overlayViewModelFactory: OverlayViewModel.Factory,
+) : FrameLayout(applicationContext) {
     init {
         layoutParams =
             ViewGroup.LayoutParams(
@@ -56,9 +58,9 @@ constructor(@Application applicationContext: Context, content: UnderlayComposabl
                     }
                 setContent {
                     PlatformTheme {
-                        UnderlayContainer(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                            content = content,
+                        OverlayContainer(
+                            Modifier.fillMaxWidth().wrapContentHeight(),
+                            overlayViewModelFactory,
                         )
                     }
                 }

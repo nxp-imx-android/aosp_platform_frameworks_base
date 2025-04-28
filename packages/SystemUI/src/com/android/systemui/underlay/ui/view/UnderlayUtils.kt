@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.systemui.underlay
+package com.android.systemui.underlay.ui.view
 
 import android.graphics.PixelFormat
 import android.view.Gravity
@@ -34,7 +34,7 @@ object UnderlayUtils {
         return LayoutParams(
                 width,
                 height,
-                LayoutParams.TYPE_STATUS_BAR_ADDITIONAL,
+                LayoutParams.TYPE_DRAG,
                 LayoutParams.FLAG_NOT_FOCUSABLE or touchFlag,
                 PixelFormat.TRANSLUCENT,
             )
