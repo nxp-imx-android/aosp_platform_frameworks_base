@@ -25,7 +25,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -33,15 +32,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -62,6 +65,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.LayoutDirection
@@ -91,10 +95,8 @@ import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.onScrimDim
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingVertical
-import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.CollapsedHeight
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHighlight
@@ -126,15 +128,18 @@ object ShadeHeader {
     }
 
     object Dimensions {
-        val CollapsedHeight = 48.dp
+        @Deprecated(
+            "Approximation of the collapsed shade header height, used in legacy shade transitions.",
+            replaceWith = ReplaceWith("StatusBarHeight"),
+        )
+        val CollapsedHeightForTransitions = 48.dp
         val ExpandedHeight = 120.dp
         val ChipPaddingHorizontal = 6.dp
         val ChipPaddingVertical = 4.dp
-    }
 
-    object Colors {
-        val ColorScheme.onScrimDim: Color
-            get() = Color.DarkGray
+        val StatusBarHeight: Dp
+            @Composable
+            get() = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     }
 
     object TestTags {
@@ -165,7 +170,7 @@ fun ContentScope.CollapsedShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
-        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
+        modifier = modifier,
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -183,12 +188,7 @@ fun ContentScope.CollapsedShadeHeader(
         },
         endContent = {
             if (isPrivacyChipVisible) {
-                Box(
-                    modifier =
-                        Modifier.height(CollapsedHeight)
-                            .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding)
-                ) {
+                Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                     PrivacyChip(
                         viewModel = viewModel,
                         modifier = Modifier.align(Alignment.CenterEnd),
@@ -244,7 +244,7 @@ fun ContentScope.ExpandedShadeHeader(
 
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
         if (isPrivacyChipVisible) {
-            Box(modifier = Modifier.height(CollapsedHeight).fillMaxWidth()) {
+            Box(modifier = Modifier.height(ShadeHeader.Dimensions.StatusBarHeight).fillMaxWidth()) {
                 PrivacyChip(viewModel = viewModel, modifier = Modifier.align(Alignment.CenterEnd))
             }
         }
@@ -273,7 +273,7 @@ fun ContentScope.ExpandedShadeHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent),
+                modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent).fillMaxWidth(),
             ) {
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
@@ -319,7 +319,7 @@ fun ContentScope.OverlayShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
-        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
+        modifier = modifier,
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -393,12 +393,7 @@ fun ContentScope.OverlayShadeHeader(
                     )
                 }
                 if (isPrivacyChipVisible) {
-                    Box(
-                        modifier =
-                            Modifier.height(CollapsedHeight)
-                                .fillMaxWidth()
-                                .padding(horizontal = horizontalPadding)
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                         PrivacyChip(
                             viewModel = viewModel,
                             modifier = Modifier.align(Alignment.CenterEnd),
@@ -440,6 +435,7 @@ private fun CutoutAwareShadeHeader(
     val cutoutHeight = LocalDisplayCutout.current.height()
     val cutoutTop = LocalDisplayCutout.current.top
     val cutoutLocation = LocalDisplayCutout.current.location
+    val statusBarHeight = ShadeHeader.Dimensions.StatusBarHeight
 
     Layout(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
@@ -452,7 +448,7 @@ private fun CutoutAwareShadeHeader(
 
         val screenWidth = constraints.maxWidth
         val cutoutWidthPx = cutoutWidth.roundToPx()
-        val height = max(cutoutHeight + (cutoutTop * 2), CollapsedHeight).roundToPx()
+        val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight).roundToPx()
         val childConstraints = Constraints.fixed((screenWidth - cutoutWidthPx) / 2, height)
 
         val startMeasurable = measurables[0][0]
@@ -756,29 +752,16 @@ private fun SystemIconChip(
     onClick: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val hoverModifier =
-        with(MaterialTheme.colorScheme) {
-            Modifier.background(onScrimDim, RoundedCornerShape(CollapsedHeight / 4))
-        }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
+                .clip(RoundedCornerShape(25.dp))
+                .thenIf(onClick != null) { Modifier.clickable(onClick = { onClick?.invoke() }) }
                 .thenIf(backgroundColor != Color.Unspecified) {
-                    Modifier.background(backgroundColor, RoundedCornerShape(25.dp))
+                    Modifier.background(backgroundColor)
                         .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
-                }
-                .thenIf(onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { onClick?.invoke() },
-                    )
-                }
-                .thenIf(isHovered) { hoverModifier },
+                },
         content = content,
     )
 }
