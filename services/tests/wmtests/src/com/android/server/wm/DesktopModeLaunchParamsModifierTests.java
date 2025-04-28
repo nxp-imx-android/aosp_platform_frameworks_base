@@ -1596,6 +1596,32 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testInMultiDesk_requestFullscreen_returnDone() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setCreatedByOrganizer(true).build();
+        final Task sourceTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FULLSCREEN).build();
+
+        assertNotNull(task.getCreatedByOrganizerTask());
+        task.getCreatedByOrganizerTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
+        final ActivityRecord sourceActivity = new ActivityBuilder(task.mAtmService)
+                .setTask(sourceTask).build();
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task)
+                .setSource(sourceActivity).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+        final Rect emptyRect = new Rect();
+        assertEquals(emptyRect, mResult.mBounds);
+        assertEquals(emptyRect, mResult.mAppBounds);
+    }
+
     private Task createTask(DisplayContent display, boolean isResizeable) {
         final int resizeMode = isResizeable ? RESIZE_MODE_RESIZEABLE
                 : RESIZE_MODE_UNRESIZEABLE;
