@@ -1965,8 +1965,14 @@ package android.media {
 
   public final class AudioAttributes implements android.os.Parcelable {
     method public static int[] getSdkUsages();
+    method public long getTestId();
     method @NonNull public static String usageToXsdString(int);
     method public static int xsdStringToUsage(@NonNull String);
+    field public static final long VALUE_TEST_ID_NONE = -9223372036854775808L; // 0x8000000000000000L
+  }
+
+  public static class AudioAttributes.Builder {
+    method @NonNull public android.media.AudioAttributes.Builder setTestId(long);
   }
 
   public final class AudioDeviceInfo {

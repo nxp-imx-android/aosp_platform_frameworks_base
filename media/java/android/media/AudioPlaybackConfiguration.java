@@ -444,6 +444,11 @@ public final class AudioPlaybackConfiguration implements Parcelable {
         } else {
             builder.setUsage(in.mPlayerAttr.getUsage());
         }
+        // only copy the test ID if present, not the whole Bundle
+        final long testId = in.mPlayerAttr.getTestId();
+        if (testId != AudioAttributes.VALUE_TEST_ID_NONE) {
+            builder.setTestId(testId);
+        }
         anonymCopy.mPlayerAttr = builder.build();
         // anonymized data
         anonymCopy.mPlayerType = PLAYER_TYPE_UNKNOWN;
