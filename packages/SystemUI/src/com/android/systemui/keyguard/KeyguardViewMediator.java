@@ -1352,7 +1352,6 @@ public class KeyguardViewMediator implements CoreStartable,
                             && apps[0].taskInfo.topActivityType
                             == WindowConfiguration.ACTIVITY_TYPE_DREAM);
 
-
                     final View localView = mKeyguardViewControllerLazy.get()
                             .getViewRootImpl().getView();
                     final SyncRtSurfaceTransactionApplier applier =
@@ -1364,6 +1363,7 @@ public class KeyguardViewMediator implements CoreStartable,
                         }
 
                         if (isDream || mShowCommunalWhenUnoccluding) {
+                            Log.d(TAG, "Start unocclude animation for dream.");
                             initAlphaForAnimationTargets(wallpapers);
                             if (isDream) {
                                 mDreamViewModel.get().startTransitionFromDream();
@@ -1371,6 +1371,11 @@ public class KeyguardViewMediator implements CoreStartable,
                                 mCommunalTransitionViewModel.get().snapToCommunal();
                             }
                             mUnoccludeFinishedCallback = finishedCallback;
+                            if (!mIsKeyguardStateRelevantToDream) {
+                                // If this is triggered later than the dream-exit transition is
+                                // complete, make sure to finish.
+                                finishUnoccludeAnimation();
+                            }
                             return;
                         }
 
@@ -1453,17 +1458,24 @@ public class KeyguardViewMediator implements CoreStartable,
         };
     }
 
+    private Consumer<TransitionStep> getFinishedCallbackConsumerForDream() {
+        mIsKeyguardStateRelevantToDream = false;
+        return getFinishedCallbackConsumer();
+    }
+
     private Consumer<TransitionStep> getFinishedCallbackConsumer() {
-        return (TransitionStep step) -> {
-            if (mUnoccludeFinishedCallback == null) return;
-            try {
-                mUnoccludeFinishedCallback.onAnimationFinished();
-                mUnoccludeFinishedCallback = null;
-            } catch (RemoteException e) {
-                Log.e(TAG, "Wasn't able to callback", e);
-            }
-            mInteractionJankMonitor.end(CUJ_LOCKSCREEN_OCCLUSION);
-        };
+        return (TransitionStep step) -> finishUnoccludeAnimation();
+    }
+
+    private void finishUnoccludeAnimation() {
+        if (mUnoccludeFinishedCallback == null) return;
+        try {
+            mUnoccludeFinishedCallback.onAnimationFinished();
+            mUnoccludeFinishedCallback = null;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Wasn't able to callback", e);
+        }
+        mInteractionJankMonitor.end(CUJ_LOCKSCREEN_OCCLUSION);
     }
 
     private DeviceConfigProxy mDeviceConfig;
@@ -1507,7 +1519,11 @@ public class KeyguardViewMediator implements CoreStartable,
      */
     private RemoteAnimationTarget mOccludingRemoteAnimationTarget;
     private boolean mShowCommunalWhenUnoccluding = false;
-
+    /**
+     * Either transitioning to dreaming, from dreaming, or currently in the dreaming state. If the
+     * transition away from dreaming ended, it's no longer relevant.
+     */
+    private boolean mIsKeyguardStateRelevantToDream = false;
     private final Lazy<WindowManagerLockscreenVisibilityManager> mWmLockscreenVisibilityManager;
 
     private WindowManagerOcclusionManager mWmOcclusionManager;
@@ -1780,7 +1796,9 @@ public class KeyguardViewMediator implements CoreStartable,
             mJavaAdapter.alwaysCollectFlow(dreamViewModel.getDreamAlpha(),
                     getRemoteSurfaceAlphaApplier());
             mJavaAdapter.alwaysCollectFlow(dreamViewModel.getTransitionEnded(),
-                    getFinishedCallbackConsumer());
+                    getFinishedCallbackConsumerForDream());
+            mJavaAdapter.alwaysCollectFlow(dreamViewModel.getTransitioningFromOrToDream(),
+                    (relevantToDream) -> mIsKeyguardStateRelevantToDream = relevantToDream);
             mJavaAdapter.alwaysCollectFlow(communalViewModel.getShowCommunalFromOccluded(),
                     (showCommunalFromOccluded) -> {
                         mShowCommunalWhenUnoccluding = showCommunalFromOccluded;

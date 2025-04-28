@@ -251,6 +251,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 .thenReturn(mock(Flow.class));
         when(mDreamViewModel.getTransitionEnded())
                 .thenReturn(mock(Flow.class));
+        when(mDreamViewModel.getTransitioningFromOrToDream())
+                .thenReturn(mock(Flow.class));
         when(mCommunalTransitionViewModel.getShowCommunalFromOccluded())
                 .thenReturn(mock(Flow.class));
         when(mCommunalTransitionViewModel.getTransitionFromOccludedEnded())

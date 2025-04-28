@@ -16,14 +16,25 @@
 
 package com.android.systemui.keyguard
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.IActivityTaskManager
+import android.app.WindowConfiguration
+import android.graphics.Point
+import android.graphics.Rect
 import android.internal.statusbar.statusBarService
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.powerManager
+import android.platform.test.annotations.DisableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
+import android.view.IRemoteAnimationFinishedCallback
+import android.view.RemoteAnimationTarget
+import android.view.SurfaceControl
+import android.view.View
+import android.view.ViewRootImpl
+import android.view.WindowManager
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLogger
 import com.android.internal.widget.lockPatternUtils
@@ -31,6 +42,7 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.keyguardUnlockAnimationController
 import com.android.keyguard.mediator.ScreenOnCoordinator
 import com.android.keyguard.trustManager
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -53,8 +65,10 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.flags.systemPropertiesHelper
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionBootInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
@@ -92,6 +106,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /** Kotlin version of KeyguardViewMediatorTest to allow for coroutine testing. */
 @SmallTest
@@ -170,6 +185,9 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
     @Before
     fun setUp() {
         testableLooper = TestableLooper.get(this)
+        val testViewRoot = mock<ViewRootImpl>()
+        whenever(testViewRoot.view).thenReturn(mock<View>())
+        whenever(kosmos.statusBarKeyguardViewManager.getViewRootImpl()).thenReturn(testViewRoot)
     }
 
     @Test
@@ -229,6 +247,59 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
 
             // Hub scene is not changed.
             assertThat(communalSceneRepository.currentScene.value).isEqualTo(CommunalScenes.Blank)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun unoccludeAnimation_callsFinishedCallback_whenStartedAfterFromDreamingTransitionFinished() =
+        kosmos.runTest {
+            underTest.onSystemReady()
+            testableLooper.processAllMessages()
+
+            // Keyguard transition finished from dreaming to AOD
+            underTest.onDreamingStopped()
+            underTest.setShowingLocked(true, "")
+            underTest.setDozing(true)
+            fakeKeyguardTransitionRepository.transitionTo(KeyguardState.DREAMING, KeyguardState.AOD)
+
+            // Start an unocclude animation afterwards
+            val taskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            val apps =
+                arrayOf(
+                    RemoteAnimationTarget(
+                        0,
+                        RemoteAnimationTarget.MODE_CLOSING,
+                        mock<SurfaceControl>(),
+                        false,
+                        Rect(),
+                        Rect(),
+                        0,
+                        Point(),
+                        Rect(),
+                        Rect(),
+                        WindowConfiguration(),
+                        false,
+                        mock<SurfaceControl>(),
+                        Rect(),
+                        taskInfo,
+                        false,
+                    )
+                )
+            val finishedCallback = mock<IRemoteAnimationFinishedCallback>()
+            underTest.unoccludeAnimationRunner.onAnimationStart(
+                WindowManager.TRANSIT_OLD_KEYGUARD_UNOCCLUDE,
+                apps,
+                arrayOf(),
+                null,
+                finishedCallback,
+            )
+            testableLooper.processAllMessages()
+
+            verify(finishedCallback).onAnimationFinished()
+            assertThat(underTest.isShowingAndNotOccluded).isTrue()
         }
 
     private fun Kosmos.enableHubOnCharging() {
