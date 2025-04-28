@@ -1204,8 +1204,6 @@ public class AdbDebuggingManager {
                     synchronized (mAdbConnectionInfo) {
                         mAdbConnectionInfo.setPort(port);
                     }
-                    Settings.Global.putInt(mContentResolver,
-                            Settings.Global.ADB_WIFI_ENABLED, 1);
                     break;
                 }
                 case MSG_SERVER_DISCONNECTED: {
@@ -1214,8 +1212,6 @@ public class AdbDebuggingManager {
                     }
                     int port = (int) msg.obj;
                     onAdbdWifiServerDisconnected(port);
-                    Settings.Global.putInt(mContentResolver,
-                            Settings.Global.ADB_WIFI_ENABLED, 0);
                     stopAdbDebuggingThread();
                     break;
                 }
