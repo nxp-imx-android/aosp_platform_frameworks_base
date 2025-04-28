@@ -50,6 +50,7 @@ import android.graphics.Region;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
 import android.gui.DropInputMode;
+import android.gui.EarlyWakeupInfo;
 import android.gui.StalledTransactionInfo;
 import android.gui.TrustedOverlay;
 import android.hardware.DataSpace;
@@ -69,6 +70,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.Trace;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
@@ -129,8 +131,8 @@ public final class SurfaceControl implements Parcelable {
             long otherTransactionObj);
     private static native void nativeClearTransaction(long transactionObj);
     private static native void nativeSetAnimationTransaction(long transactionObj);
-    private static native void nativeSetEarlyWakeupStart(long transactionObj);
-    private static native void nativeSetEarlyWakeupEnd(long transactionObj);
+    private static native void nativeSetEarlyWakeupStart(long transactionObj, Parcel request);
+    private static native void nativeSetEarlyWakeupEnd(long transactionObj, Parcel request);
     private static native long nativeGetTransactionId(long transactionObj);
 
     private static native void nativeSetLayer(long transactionObj, long nativeObject, int zorder);
@@ -4125,8 +4127,13 @@ public final class SurfaceControl implements Parcelable {
           * @hide
           */
         @RequiresPermission(Manifest.permission.WAKEUP_SURFACE_FLINGER)
-        public Transaction setEarlyWakeupStart() {
-            nativeSetEarlyWakeupStart(mNativeObject);
+        public Transaction setEarlyWakeupStart(@NonNull EarlyWakeupInfo info) {
+            Parcel infoParcel = Parcel.obtain();
+            info.writeToParcel(infoParcel, 0);
+            infoParcel.setDataPosition(0);
+            nativeSetEarlyWakeupStart(mNativeObject, infoParcel);
+            Trace.instantForTrack(Trace.TRACE_TAG_APP, "EarlyWakeup",
+                    "setEarlyWakeupStart: called by " + info.trace + " with " + info.token);
             return this;
         }
 
@@ -4136,8 +4143,13 @@ public final class SurfaceControl implements Parcelable {
          * @hide
          */
         @RequiresPermission(Manifest.permission.WAKEUP_SURFACE_FLINGER)
-        public Transaction setEarlyWakeupEnd() {
-            nativeSetEarlyWakeupEnd(mNativeObject);
+        public Transaction setEarlyWakeupEnd(@NonNull EarlyWakeupInfo info) {
+            Parcel infoParcel = Parcel.obtain();
+            info.writeToParcel(infoParcel, 0);
+            infoParcel.setDataPosition(0);
+            nativeSetEarlyWakeupEnd(mNativeObject, infoParcel);
+            Trace.instantForTrack(Trace.TRACE_TAG_APP, "EarlyWakeup",
+                    "setEarlyWakeupEnd: called by " + info.trace + " with " + info.token);
             return this;
         }
 

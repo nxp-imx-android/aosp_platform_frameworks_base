@@ -579,14 +579,42 @@ static void nativeSetAnimationTransaction(JNIEnv* env, jclass clazz, jlong trans
     transaction->setAnimationTransaction();
 }
 
-static void nativeSetEarlyWakeupStart(JNIEnv* env, jclass clazz, jlong transactionObj) {
+static void nativeSetEarlyWakeupStart(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                      jobject infoObj) {
+    Parcel* infoParcel = parcelForJavaObject(env, infoObj);
+    if (infoParcel == NULL) {
+        doThrowNPE(env);
+        return;
+    }
+    gui::EarlyWakeupInfo earlyWakeupInfo;
+    status_t err = earlyWakeupInfo.readFromParcel(infoParcel);
+    if (err != NO_ERROR) {
+        jniThrowException(env, "java/lang/IllegalArgumentException",
+                          "EarlyWakeupInfo parcel has wrong format");
+        return;
+    }
+
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    transaction->setEarlyWakeupStart();
+    transaction->setEarlyWakeupStart(earlyWakeupInfo);
 }
 
-static void nativeSetEarlyWakeupEnd(JNIEnv* env, jclass clazz, jlong transactionObj) {
+static void nativeSetEarlyWakeupEnd(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                    jobject infoObj) {
+    Parcel* infoParcel = parcelForJavaObject(env, infoObj);
+    if (infoParcel == NULL) {
+        doThrowNPE(env);
+        return;
+    }
+    gui::EarlyWakeupInfo earlyWakeupInfo;
+    status_t err = earlyWakeupInfo.readFromParcel(infoParcel);
+    if (err != NO_ERROR) {
+        jniThrowException(env, "java/lang/IllegalArgumentException",
+                          "EarlyWakeupInfo parcel has wrong format");
+        return;
+    }
+
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    transaction->setEarlyWakeupEnd();
+    transaction->setEarlyWakeupEnd(earlyWakeupInfo);
 }
 
 static jlong nativeGetTransactionId(JNIEnv* env, jclass clazz, jlong transactionObj) {
@@ -2571,10 +2599,10 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeMergeTransaction },
     {"nativeSetAnimationTransaction", "(J)V",
             (void*)nativeSetAnimationTransaction },
-    {"nativeSetEarlyWakeupStart", "(J)V",
-            (void*)nativeSetEarlyWakeupStart },
-    {"nativeSetEarlyWakeupEnd", "(J)V",
-            (void*)nativeSetEarlyWakeupEnd },
+    {"nativeSetEarlyWakeupStart", "(JLandroid/os/Parcel;)V",
+                (void*)nativeSetEarlyWakeupStart },
+    {"nativeSetEarlyWakeupEnd", "(JLandroid/os/Parcel;)V",
+                (void*)nativeSetEarlyWakeupEnd },
     {"nativeGetTransactionId", "(J)J",
                 (void*)nativeGetTransactionId },
     {"nativeSetLayer", "(JJI)V",
