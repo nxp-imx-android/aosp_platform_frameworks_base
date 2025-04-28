@@ -19,6 +19,7 @@ package com.android.settingslib.preference
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.FragmentManager
@@ -241,6 +242,8 @@ class PreferenceScreenBindingHelper(
     }
 
     companion object {
+        private const val TAG = "MetadataBindingHelper"
+
         /** Updates preference screen that has incomplete hierarchy. */
         @JvmStatic
         fun bind(preferenceScreen: PreferenceScreen) {
@@ -290,14 +293,20 @@ class PreferenceScreenBindingHelper(
                         preferenceBindingFactory.bind(preference, node)
                     }
                 }
-                for (node in preferences.values) {
+                val iterator = preferences.iterator()
+                while (iterator.hasNext()) {
+                    val node = iterator.next().value
                     val metadata = node.metadata
                     val binding = preferenceBindingFactory.getPreferenceBinding(metadata)
                     if (binding !is PreferenceBindingPlaceholder) continue
+                    iterator.remove()
                     val preference = binding.createWidget(preferenceGroup.context)
                     preference.setPreferenceDataStore(metadata)
                     preferenceBindingFactory.bind(preference, node, binding)
                     preferenceGroup.addPreference(preference)
+                }
+                if (preferences.isNotEmpty()) {
+                    Log.w(TAG, "Metadata not bound: ${preferences.keys}")
                 }
             }
 
