@@ -1685,6 +1685,36 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun addMoveToDeskTaskChanges_inSizeCompatMode_originalAspectRatioMaintained() {
+        setUpLandscapeDisplay()
+        val task =
+            setUpFullscreenTask(
+                isResizable = false,
+                screenOrientation = SCREEN_ORIENTATION_PORTRAIT,
+                deviceOrientation = ORIENTATION_PORTRAIT,
+            )
+        // Simulate floating size compat mode bounds (same aspect ratio as display without insets).
+        task.appCompatTaskInfo.topActivityAppBounds.set(
+            0,
+            0,
+            DISPLAY_DIMENSION_LONG / 2,
+            DISPLAY_DIMENSION_SHORT / 2,
+        )
+        val originalAspectRatio = 1.5f
+        task.appCompatTaskInfo.topNonResizableActivityAspectRatio = originalAspectRatio
+
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
+
+        val finalBounds = findBoundsChange(wct, task)
+        assertNotNull(finalBounds, "finalBounds should be resolved")
+        val finalAspectRatio =
+            maxOf(finalBounds.height(), finalBounds.width()) /
+                minOf(finalBounds.height(), finalBounds.width()).toFloat()
+        assertThat(finalAspectRatio).isWithin(FLOAT_TOLERANCE).of(originalAspectRatio)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToDesktop_displayNotSupported_withOverButtonOrAdb_movesToDesk() {

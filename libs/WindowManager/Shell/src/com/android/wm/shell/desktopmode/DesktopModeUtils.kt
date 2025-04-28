@@ -232,6 +232,9 @@ fun maximizeSizeGivenAspectRatio(
 
 /** Calculates the aspect ratio of an activity from its fullscreen bounds. */
 fun calculateAspectRatio(taskInfo: RunningTaskInfo): Float {
+    if (taskInfo.appCompatTaskInfo.topNonResizableActivityAspectRatio > 0) {
+        return taskInfo.appCompatTaskInfo.topNonResizableActivityAspectRatio
+    }
     val appBounds =
         if (taskInfo.appCompatTaskInfo.topActivityAppBounds.isEmpty) {
             taskInfo.configuration.windowConfiguration.appBounds
