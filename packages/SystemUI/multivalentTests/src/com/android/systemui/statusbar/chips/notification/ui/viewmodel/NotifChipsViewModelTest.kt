@@ -1331,6 +1331,113 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latestChipTapKey).isEqualTo(key)
         }
 
+    @Test
+    fun chips_noHun_clickBehaviorIsShowHun() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            headsUpNotificationRepository.setNotifications(emptyList())
+
+            assertThat(latest!![0].clickBehavior)
+                .isInstanceOf(
+                    OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification::class.java
+                )
+        }
+
+    @Test
+    fun chip_hun_pinnedBySystem_clickBehaviorIsShowHun() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "systemNotif",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest!![0].clickBehavior)
+                .isInstanceOf(
+                    OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification::class.java
+                )
+        }
+
+    @Test
+    fun chip_hun_pinnedByUser_forDifferentChip_clickBehaviorIsShowHun() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "otherNotifPinnedByUser",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!![0].clickBehavior)
+                .isInstanceOf(
+                    OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification::class.java
+                )
+        }
+
+    @Test
+    fun chip_hun_pinnedByUser_forThisChip_clickBehaviorIsHideHun() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "notif",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!![0].clickBehavior)
+                .isInstanceOf(
+                    OngoingActivityChipModel.ClickBehavior.HideHeadsUpNotification::class.java
+                )
+        }
+
     private fun setNotifs(notifs: List<ActiveNotificationModel>) {
         activeNotificationListRepository.activeNotifications.value =
             ActiveNotificationsStore.Builder()

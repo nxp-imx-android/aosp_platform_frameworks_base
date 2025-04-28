@@ -3507,6 +3507,10 @@
     <string name="ongoing_call_content_description">Ongoing call</string>
     <!-- Content description for a chip in the status bar showing that the user currently has an ongoing activity. [CHAR LIMIT=NONE]-->
     <string name="ongoing_notification_extra_content_description">Ongoing</string>
+    <!-- Custom accessibility action text to tell that user that tapping on the status bar chip will show/expand the notification associated with that chip. [CHAR LIMIT=NONE]-->
+    <string name="status_bar_chip_custom_a11y_action_expand_notification">expand notification</string>
+    <!-- Custom accessibility action text to tell that user that tapping on the status bar chip will hide/collapse the notification associated with that chip. [CHAR LIMIT=NONE]-->
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification">collapse notification</string>
 
     <!-- Provider Model: Default title of the mobile network in the mobile layout. [CHAR LIMIT=50] -->
     <string name="mobile_data_settings_title">Mobile data</string>
