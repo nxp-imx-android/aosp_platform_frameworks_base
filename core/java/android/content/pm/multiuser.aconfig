@@ -53,12 +53,23 @@ flag {
     bug: "298008926"
 }
 
+# Begin Multiuser Widget flags #
+
 flag {
     name: "multiuser_widget"
     namespace: "multiuser"
     description: "Implement the Multiuser Widget"
     bug: "365748524"
 }
+
+flag {
+    name: "widget_current_user_view"
+    namespace: "multiuser"
+    description: "When flag is enabled, widget shows the current user only"
+    bug: "409327566"
+}
+
+# End Multiuser Widget flags #
 
 flag {
     name: "enable_biometrics_to_unlock_private_space"
