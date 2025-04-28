@@ -76,7 +76,18 @@ val Kosmos.displayWithDecorationsRepository by Fixture {
         displayRepositoryFromDisplayLib,
     )
 }
+val Kosmos.displaysWithDecorationsRepositoryFromDisplayLib by Fixture {
+    com.android.app.displaylib.DisplaysWithDecorationsRepositoryImpl(
+        mockIWindowManager,
+        testScope.backgroundScope,
+        displayRepositoryFromDisplayLib,
+    )
+}
 
 val Kosmos.realDisplayRepository by Fixture {
-    DisplayRepositoryImpl(displayRepositoryFromDisplayLib, displayWithDecorationsRepository)
+    DisplayRepositoryImpl(
+        displayRepositoryFromDisplayLib,
+        displayWithDecorationsRepository,
+        displaysWithDecorationsRepositoryFromDisplayLib,
+    )
 }

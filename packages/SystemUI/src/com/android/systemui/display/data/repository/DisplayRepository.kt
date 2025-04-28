@@ -17,7 +17,10 @@
 package com.android.systemui.display.data.repository
 
 import com.android.app.displaylib.DisplayRepository as DisplayRepositoryFromLib
+import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
+import com.android.window.flags.Flags.enableSysDecorsCallbacksViaWm
 import javax.inject.Inject
 
 /**
@@ -34,7 +37,13 @@ class DisplayRepositoryImpl
 constructor(
     private val displayRepositoryFromLib: com.android.app.displaylib.DisplayRepository,
     private val displaysWithDecorationsRepositoryImpl: DisplaysWithDecorationsRepository,
+    @DisplayLib
+    private val displaysWithDecorationsRepositoryImplFromLib: DisplaysWithDecorationsRepository,
 ) :
     DisplayRepositoryFromLib by displayRepositoryFromLib,
-    DisplaysWithDecorationsRepository by displaysWithDecorationsRepositoryImpl,
+    DisplaysWithDecorationsRepository by (if (enableSysDecorsCallbacksViaWm()) {
+        displaysWithDecorationsRepositoryImplFromLib
+    } else {
+        displaysWithDecorationsRepositoryImpl
+    }),
     DisplayRepository

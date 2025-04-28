@@ -18,20 +18,22 @@ package com.android.systemui.display
 
 import android.hardware.display.DisplayManager
 import android.os.Handler
+import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
+import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepositoryImpl
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayRepositoryImpl
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepositoryImpl
-import com.android.systemui.display.data.repository.DisplaysWithDecorationsRepository
 import com.android.systemui.display.data.repository.DisplaysWithDecorationsRepositoryImpl
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
@@ -123,12 +125,14 @@ object DisplayLibModule {
     @SysUISingleton
     fun displayLibComponent(
         displayManager: DisplayManager,
+        windowManager: IWindowManager,
         @Background backgroundHandler: Handler,
         @Background bgApplicationScope: CoroutineScope,
         @Background backgroundCoroutineDispatcher: CoroutineDispatcher,
     ): DisplayLibComponent {
         return createDisplayLibComponent(
             displayManager,
+            windowManager,
             backgroundHandler,
             bgApplicationScope,
             backgroundCoroutineDispatcher,
@@ -141,5 +145,14 @@ object DisplayLibModule {
         displayLibComponent: DisplayLibComponent
     ): com.android.app.displaylib.DisplayRepository {
         return displayLibComponent.displayRepository
+    }
+
+    @Provides
+    @SysUISingleton
+    @DisplayLib
+    fun providesDisplaysWithDecorationsRepositoryFromLib(
+        displayLibComponent: DisplayLibComponent
+    ): DisplaysWithDecorationsRepository {
+        return displayLibComponent.displaysWithDecorationsRepository
     }
 }
