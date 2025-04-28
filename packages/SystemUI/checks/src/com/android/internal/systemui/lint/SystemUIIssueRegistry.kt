@@ -46,7 +46,6 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 RunBlockingDetector.ISSUE,
                 RunTestShouldUseKosmosDetector.ISSUE,
                 ShadeDisplayAwareDetector.ISSUE,
-                ShadeDisplayAwareDialogDetector.ISSUE,
                 SingletonAndroidComponentDetector.ISSUE,
                 SlowUserQueryDetector.ISSUE_SLOW_USER_ID_QUERY,
                 SlowUserQueryDetector.ISSUE_SLOW_USER_INFO_QUERY,
