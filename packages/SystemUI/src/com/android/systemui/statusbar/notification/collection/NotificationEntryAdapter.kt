@@ -22,6 +22,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
+import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
@@ -269,6 +270,21 @@ class NotificationEntryAdapter(
     }
 
     override fun isBundled(): Boolean {
-        return entry.isBundled
+        return entry.isBundled || (BundleCoordinator.Companion.debugBundleUi && hasBundleParent())
+    }
+
+    private fun hasBundleParent(): Boolean {
+        var parent: PipelineEntry? = entry.parent
+        while (parent != null) {
+            if (parent is BundleEntry) {
+                return true
+            }
+            parent = parent.parent
+        }
+        return false
+    }
+
+    override fun isBundle(): Boolean {
+        return false
     }
 }

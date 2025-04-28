@@ -43,6 +43,9 @@ data class BundleSpec(val key: String, @StringRes val titleTextResId: Int) {
                 titleTextResId = R.string.recs_notification_channel_label,
             )
         val DEBUG =
-            BundleSpec(key = "notify", titleTextResId = R.string.notification_channel_developer)
+            BundleSpec(
+                key = "debug_bundle",
+                titleTextResId = R.string.notification_channel_developer,
+            )
     }
 }

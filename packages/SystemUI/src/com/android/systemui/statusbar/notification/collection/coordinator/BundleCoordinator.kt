@@ -120,7 +120,7 @@ constructor(
              */
             override fun getBundleIdOrNull(entry: ListEntry): String? {
                 if (debugBundleUi && entry?.key?.contains("notify") == true) {
-                    return "notify"
+                    return BundleSpec.DEBUG.key
                 }
                 if (entry is GroupEntry) {
                     if (entry.children.isEmpty()) return null
@@ -179,7 +179,6 @@ constructor(
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
         @JvmField var debugBundleUi: Boolean = false
-
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
             if (debugBundleUi) {

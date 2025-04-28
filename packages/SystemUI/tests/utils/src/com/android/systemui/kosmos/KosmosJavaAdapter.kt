@@ -92,6 +92,7 @@ import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleT
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
 import com.android.systemui.statusbar.notification.collection.provider.mockNotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
+import com.android.systemui.statusbar.notification.collection.render.groupExpansionManager
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.seenNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
@@ -245,6 +246,7 @@ class KosmosJavaAdapter() {
     val expandableNotificationRowLogger by lazy { kosmos.expandableNotificationRowLogger }
     val mockHeadsUpManager by lazy { kosmos.mockHeadsUpManager }
     val mockNotificationActionClickManager by lazy { kosmos.mockNotificationActionClickManager }
+    val groupExpansionManager by lazy { kosmos.groupExpansionManager }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

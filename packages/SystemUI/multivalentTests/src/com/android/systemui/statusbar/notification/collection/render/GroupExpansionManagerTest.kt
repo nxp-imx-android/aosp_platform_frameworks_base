@@ -70,6 +70,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     private val factory: EntryAdapterFactoryImpl = kosmos.entryAdapterFactory
     private lateinit var summary1: NotificationEntry
+    private lateinit var summaryOfSummary1: NotificationEntry
     private lateinit var summary2: NotificationEntry
     private lateinit var entries: List<ListEntry>
 
@@ -80,17 +81,26 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        summary1 = kosmos.buildNotificationEntry() {
-            modifyNotification(kosmos.applicationContext)
-                .setGroup("groupId")
-                .setGroupSummary(true)
-        }
+        summary1 =
+            kosmos.buildNotificationEntry() {
+                modifyNotification(kosmos.applicationContext)
+                    .setGroup("groupId1")
+                    .setGroupSummary(true)
+            }
         summary1.row = kosmos.createRowWithEntry(summary1)
-        summary2 = kosmos.buildNotificationEntry() {
-            modifyNotification(kosmos.applicationContext)
-                .setGroup("groupId2")
-                .setGroupSummary(true)
-        }
+        summaryOfSummary1 =
+            kosmos.buildNotificationEntry() {
+                modifyNotification(kosmos.applicationContext)
+                    .setGroup("groupId1.1")
+                    .setGroupSummary(true)
+            }
+        summaryOfSummary1.row = kosmos.createRowWithEntry(summaryOfSummary1)
+        summary2 =
+            kosmos.buildNotificationEntry() {
+                modifyNotification(kosmos.applicationContext)
+                    .setGroup("groupId2")
+                    .setGroupSummary(true)
+            }
         summary2.row = kosmos.createRowWithEntry(summary2)
         entries =
             listOf<ListEntry>(
@@ -101,6 +111,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
                             notificationEntry("foo", 2, summary1.row),
                             notificationEntry("foo", 3, summary1.row),
                             notificationEntry("foo", 4, summary1.row),
+                            summaryOfSummary1,
                         )
                     )
                     .build(),
@@ -118,6 +129,8 @@ class GroupExpansionManagerTest : SysuiTestCase() {
             )
 
         whenever(groupMembershipManager.getGroupSummary(summary1)).thenReturn(summary1)
+        whenever(groupMembershipManager.getGroupSummary(summaryOfSummary1))
+            .thenReturn(summaryOfSummary1)
         whenever(groupMembershipManager.getGroupSummary(summary2)).thenReturn(summary2)
 
         underTest = GroupExpansionManagerImpl(dumpManager, groupMembershipManager)
@@ -243,16 +256,42 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun isGroupExpanded() {
+    fun isGroupExpanded_groupIsExpanded() {
         val entryAdapter = summary1.row.entryAdapter
         underTest.setGroupExpanded(entryAdapter, true)
 
         assertThat(underTest.isGroupExpanded(entryAdapter)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupExpanded_parentIsExpanded() {
+        val entryAdapter = summary1.row.entryAdapter
+        underTest.setGroupExpanded(entryAdapter, true)
+
         assertThat(
                 underTest.isGroupExpanded(
                     (entries[0] as? GroupEntry)?.getChildren()?.get(0)?.row?.entryAdapter
                 )
             )
             .isTrue()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupExpanded_parentIsExpanded_selfIsExpanded() {
+        underTest.setGroupExpanded(summary1.row.entryAdapter, true)
+        underTest.setGroupExpanded(summaryOfSummary1.row.entryAdapter, true)
+
+        assertThat(underTest.isGroupExpanded(summaryOfSummary1.row.entryAdapter)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isGroupExpanded_parentIsExpanded_returnsFalseWhenItselfIsAGroup() {
+        val entryAdapter = summary1.row.entryAdapter
+        underTest.setGroupExpanded(entryAdapter, true)
+
+        assertThat(underTest.isGroupExpanded(summaryOfSummary1.row.entryAdapter)).isFalse()
     }
 }
