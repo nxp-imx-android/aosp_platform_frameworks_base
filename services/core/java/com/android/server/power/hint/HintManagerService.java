@@ -33,7 +33,6 @@ import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED_
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
 import static com.android.server.power.hint.Flags.adpfSessionTag;
-import static com.android.server.power.hint.Flags.powerhintThreadCleanup;
 import static com.android.server.power.hint.Flags.resetOnForkEnabled;
 
 import android.Manifest;
@@ -316,13 +315,8 @@ public final class HintManagerService extends SystemService {
     HintManagerService(Context context, Injector injector) {
         super(context);
         mContext = context;
-        if (powerhintThreadCleanup()) {
-            mCleanUpHandler = new CleanUpHandler(createCleanUpThread().getLooper());
-            mNonIsolatedTids = new HashMap<>();
-        } else {
-            mCleanUpHandler = null;
-            mNonIsolatedTids = null;
-        }
+        mCleanUpHandler = new CleanUpHandler(createCleanUpThread().getLooper());
+        mNonIsolatedTids = new HashMap<>();
         if (adpfSessionTag()) {
             mPackageManager = mContext.getPackageManager();
         } else {
@@ -992,7 +986,7 @@ public final class HintManagerService extends SystemService {
             FgThread.getHandler().post(() -> {
                 synchronized (mLock) {
                     boolean shouldCleanup = false;
-                    if (mPowerHalVersion >= 4 && powerhintThreadCleanup()) {
+                    if (mPowerHalVersion >= 4) {
                         int prevProcState = mProcStatesCache.get(uid, Integer.MAX_VALUE);
                         shouldCleanup =
                                 prevProcState <= ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND
@@ -1005,7 +999,7 @@ public final class HintManagerService extends SystemService {
                     if (tokenMap == null) {
                         return;
                     }
-                    if (shouldCleanup && powerhintThreadCleanup()) {
+                    if (shouldCleanup) {
                         final Message msg = mCleanUpHandler.obtainMessage(EVENT_CLEAN_UP_UID,
                                 uid);
                         mCleanUpHandler.sendMessageDelayed(msg, CLEAN_UP_UID_DELAY_MILLIS);
@@ -1431,8 +1425,7 @@ public final class HintManagerService extends SystemService {
             }
 
             try {
-                final IntArray nonIsolated = powerhintThreadCleanup() ? new IntArray(tids.length)
-                        : null;
+                final IntArray nonIsolated = new IntArray(tids.length);
                 final Integer invalidTid = checkTidValid(callingUid, callingTgid, tids,
                         nonIsolated);
                 if (invalidTid != null) {
@@ -1503,13 +1496,10 @@ public final class HintManagerService extends SystemService {
                             "createHintSession failed: " + e.getMessage());
                     }
                 }
-
-                if (powerhintThreadCleanup()) {
-                    synchronized (mNonIsolatedTidsLock) {
-                        for (int i = nonIsolated.size() - 1; i >= 0; i--) {
-                            mNonIsolatedTids.putIfAbsent(nonIsolated.get(i), new ArraySet<>());
-                            mNonIsolatedTids.get(nonIsolated.get(i)).add(halSessionPtr);
-                        }
+                synchronized (mNonIsolatedTidsLock) {
+                    for (int i = nonIsolated.size() - 1; i >= 0; i--) {
+                        mNonIsolatedTids.putIfAbsent(nonIsolated.get(i), new ArraySet<>());
+                        mNonIsolatedTids.get(nonIsolated.get(i)).add(halSessionPtr);
                     }
                 }
                 AppHintSession hs = null;
@@ -2336,15 +2326,13 @@ public final class HintManagerService extends SystemService {
                     }
                 }
             }
-            if (powerhintThreadCleanup()) {
-                synchronized (mNonIsolatedTidsLock) {
-                    final int[] tids = getTidsInternal();
-                    for (int tid : tids) {
-                        if (mNonIsolatedTids.containsKey(tid)) {
-                            mNonIsolatedTids.get(tid).remove(mHalSessionPtr);
-                            if (mNonIsolatedTids.get(tid).isEmpty()) {
-                                mNonIsolatedTids.remove(tid);
-                            }
+            synchronized (mNonIsolatedTidsLock) {
+                final int[] tids = getTidsInternal();
+                for (int tid : tids) {
+                    if (mNonIsolatedTids.containsKey(tid)) {
+                        mNonIsolatedTids.get(tid).remove(mHalSessionPtr);
+                        if (mNonIsolatedTids.get(tid).isEmpty()) {
+                            mNonIsolatedTids.remove(tid);
                         }
                     }
                 }
@@ -2409,7 +2397,7 @@ public final class HintManagerService extends SystemService {
                 }
                 if (checkTid) {
                     final int callingTgid = Process.getThreadGroupLeader(Binder.getCallingPid());
-                    final IntArray nonIsolated = powerhintThreadCleanup() ? new IntArray() : null;
+                    final IntArray nonIsolated = new IntArray();
                     final long identity = Binder.clearCallingIdentity();
                     try {
                         final Integer invalidTid = checkTidValid(callingUid, callingTgid, tids,
@@ -2439,13 +2427,11 @@ public final class HintManagerService extends SystemService {
                                         + Arrays.toString(tids), e);
                             }
                         }
-                        if (powerhintThreadCleanup()) {
-                            synchronized (mNonIsolatedTidsLock) {
-                                for (int i = nonIsolated.size() - 1; i >= 0; i--) {
-                                    mNonIsolatedTids.putIfAbsent(nonIsolated.get(i),
-                                            new ArraySet<>());
-                                    mNonIsolatedTids.get(nonIsolated.get(i)).add(mHalSessionPtr);
-                                }
+                        synchronized (mNonIsolatedTidsLock) {
+                            for (int i = nonIsolated.size() - 1; i >= 0; i--) {
+                                mNonIsolatedTids.putIfAbsent(nonIsolated.get(i),
+                                        new ArraySet<>());
+                                mNonIsolatedTids.get(nonIsolated.get(i)).add(mHalSessionPtr);
                             }
                         }
                     } finally {
