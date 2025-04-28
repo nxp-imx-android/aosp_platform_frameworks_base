@@ -38,6 +38,7 @@ import static android.server.inputmethod.InputMethodManagerServiceProto.IME_WIND
 import static android.server.inputmethod.InputMethodManagerServiceProto.IN_FULLSCREEN_MODE;
 import static android.server.inputmethod.InputMethodManagerServiceProto.IS_INTERACTIVE;
 import static android.server.inputmethod.InputMethodManagerServiceProto.LAST_IME_TARGET_WINDOW_NAME;
+import static android.server.inputmethod.InputMethodManagerServiceProto.PREVENT_IME_STARTUP_UNLESS_TEXT_EDITOR;
 import static android.server.inputmethod.InputMethodManagerServiceProto.SHOW_IME_WITH_HARD_KEYBOARD;
 import static android.server.inputmethod.InputMethodManagerServiceProto.SYSTEM_READY;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -4730,6 +4731,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         mMenuController.getShowImeWithHardKeyboard());
             }
             proto.write(CONCURRENT_MULTI_USER_MODE_ENABLED, mConcurrentMultiUserModeEnabled);
+            proto.write(PREVENT_IME_STARTUP_UNLESS_TEXT_EDITOR, mPreventImeStartupUnlessTextEditor);
             proto.end(token);
         }
     }
@@ -6108,6 +6110,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         p.println("  mSystemReady=" + mSystemReady);
         p.println("  mInteractive=" + mIsInteractive);
         p.println("  mConcurrentMultiUserModeEnabled=" + mConcurrentMultiUserModeEnabled);
+        p.println("  mPreventImeStartupUnlessTextEditor=" + mPreventImeStartupUnlessTextEditor);
         final int currentImeUserId;
         synchronized (ImfLock.class) {
             currentImeUserId = mCurrentImeUserId;
