@@ -383,10 +383,8 @@ public class DozeTriggers implements DozeMachine.Part {
         final boolean collecting = mDozeHost.isCollectingUsUdfpsScreenOffPulseEvents();
         final boolean screenOffUdfpsEnabled = mConfig.screenOffUdfpsEnabled(mContext.getUserId());
         final boolean immediate = !flagEnabled || fpLockout || !fpAllowed || !collecting;
-        mDozeLog.traceShouldRequestUdfpsLongPressPulseImmediately("immediate pulse="
-                + immediate + ", flag=" + flagEnabled + ", lockout=" + fpLockout
-                + ", allowed=" + fpAllowed + ", collecting=" + collecting
-                + ", screenOffUdfpsEnabled=" + screenOffUdfpsEnabled);
+        mDozeLog.traceShouldRequestUdfpsLongPressPulseImmediately(immediate, flagEnabled, fpLockout,
+                fpAllowed, collecting, screenOffUdfpsEnabled);
         return immediate;
     }
 
@@ -730,8 +728,7 @@ public class DozeTriggers implements DozeMachine.Part {
         @Override
         public void onUltrasonicUdfpsPulseWhileScreenOff(FingerprintAuthenticationStatus state) {
             if (!udfpsScreenOffUnlockFlicker()) return;
-            mDozeLog.traceShouldRequestUdfpsLongPressPulseImmediately(
-                    "onUltrasonicUdfpsPulseWhileScreenOff invoked: state=" + state);
+            mDozeLog.traceUltrasonicScreenOffPulseEvent(state);
             requestPulse(DozeLog.REASON_USUDFPS_PULSE, true, null);
         }
     };
