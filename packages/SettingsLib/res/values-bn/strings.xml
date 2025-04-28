@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"অ্যাডমিনদের কাছে বিশেষ সুবিধা থাকে যা অন্যান্য ব্যবহারকারীর কাছে থাকে না। কোনও অ্যাডমিন সব ব্যবহারকারীদের ম্যানেজ, এই ডিভাইস আপডেট বা রিসেট, সেটিংস পরিবর্তন করতে, ইনস্টল করা সব অ্যাপ দেখতে এবং অন্যান্যদের জন্য অ্যাডমিনের বিশেষ সুবিধার অনুমোদন করতে বা তুলে নিতে পারবেন।"</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"নতুন অ্যাডমিন বেছে নিন"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"এখন ব্যবহারকারী সেট-আপ করবেন?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"নিশ্চিত করুন, যে ব্যক্তিটি ডিভাইসটি নেওয়ার জন্য এবং তার জায়গা সেট-আপ করার জন্য উপলব্ধ আছেন"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"নিশ্চিত করুন যে, সেই ব্যক্তি ডিভাইসটি নেওয়া এবং তার জায়গা সেট-আপ করার জন্য উপলভ্য আছেন"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"এখনই প্রোফাইল সেট-আপ করবেন?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"এখনই সেট-আপ করুন"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"এখনই নয়"</string>

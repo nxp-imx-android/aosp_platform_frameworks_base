@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Administradores têm privilégios especiais que outros usuários não têm. Um administrador pode gerenciar todos os usuários, atualizar ou redefinir este dispositivo, modificar configurações, conferir todos os apps instalados e conceder ou revogar privilégios de administrador para outras pessoas."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Transformar o usuário em administrador"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"Configurar o usuário agora?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Certifique-se de que a pessoa está disponível para acessar o dispositivo e fazer as próprias configurações"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"A pessoa precisar estar disponível para acessar o dispositivo e fazer as próprias configurações"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Configurar perfil agora?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Configurar agora"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Agora não"</string>
