@@ -117,6 +117,7 @@ import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
 import static android.view.flags.Flags.addSchandleToVriSurface;
 import static android.view.flags.Flags.disableDrawWakeLock;
+import static android.view.flags.Flags.notifyGpuLoadUp;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
 import static android.view.flags.Flags.toolkitFrameRateDebug;
@@ -3009,6 +3010,21 @@ public final class ViewRootImpl implements ViewParent,
     public void notifyRendererOfExpensiveFrame(String reason) {
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.notifyExpensiveFrameWithRateLimit(reason);
+        }
+    }
+
+    /**
+     * Notifies the HardwareRenderer that upcoming frames need to increase the
+     * GPU work load for speedup the rendering.
+     *
+     * @hide
+     */
+    public void notifyRendererForGpuLoadUp(String reason) {
+        if (!notifyGpuLoadUp()) {
+            return;
+        }
+        if (mAttachInfo.mThreadedRenderer != null) {
+            mAttachInfo.mThreadedRenderer.notifyRendererForGpuLoadUp(reason);
         }
     }
 
