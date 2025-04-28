@@ -1243,7 +1243,9 @@ public class NotificationChildrenContainer extends ViewGroup
         final int count = mAttachedChildren.size();
         for (int childIdx = 0; childIdx < count; childIdx++) {
             ExpandableNotificationRow child = mAttachedChildren.get(childIdx);
-            child.setChildrenExpanded(childrenExpanded);
+            if (!child.isSummaryWithChildren()) {
+                child.setChildrenExpanded(childrenExpanded);
+            }
         }
         updateHeaderTouchability();
     }
