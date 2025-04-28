@@ -17,7 +17,6 @@
 package com.android.wm.shell.shared.desktopmode;
 
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
-import static android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE;
 
 import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enableBubbleToFullscreen;
@@ -121,7 +120,7 @@ public class DesktopModeStatus {
      */
     public static boolean canShowDesktopExperienceDevOption(@NonNull Context context) {
         return Flags.showDesktopExperienceDevOption()
-            && isDeviceEligibleForDesktopMode(context);
+                && isDeviceEligibleForDesktopMode(context);
     }
 
     /** Returns if desktop mode dev option should be enabled if there is no user override. */
@@ -207,15 +206,10 @@ public class DesktopModeStatus {
         if (!enforceDeviceRestrictions()) {
             return true;
         }
-        // If projected display is enabled, #canInternalDisplayHostDesktops is no longer a
-        // requirement.
-        final boolean desktopModeSupported = ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue()
-                ? isDesktopModeSupported(context) : (isDesktopModeSupported(context)
-                && canInternalDisplayHostDesktops(context));
         final boolean desktopModeSupportedByDevOptions =
                 Flags.enableDesktopModeThroughDevOption()
                     && isDesktopModeDevOptionSupported(context);
-        return desktopModeSupported || desktopModeSupportedByDevOptions;
+        return isDesktopModeSupported(context) || desktopModeSupportedByDevOptions;
     }
 
     /**
