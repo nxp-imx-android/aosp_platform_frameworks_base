@@ -30,12 +30,12 @@ import android.view.KeyEvent.KEYCODE_RIGHT_BRACKET
 import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.KeyboardShortcutGroup
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyboard.shortcut.data.model.shortcutInfo
 import com.android.systemui.res.R
-import com.android.window.flags.Flags.enableMoveToNextDisplayShortcut
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import javax.inject.Inject
 
@@ -83,7 +83,7 @@ constructor(@Main private val resources: Resources, @Application private val con
                 }
             )
         }
-        if (enableMoveToNextDisplayShortcut()) {
+        if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
             // Move a window to the next display:
             //  - Meta + Ctrl + D
             add(
