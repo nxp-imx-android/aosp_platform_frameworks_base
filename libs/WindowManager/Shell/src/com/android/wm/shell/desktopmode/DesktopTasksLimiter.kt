@@ -178,7 +178,7 @@ class DesktopTasksLimiter(
             // markClosingTasks() is a workaround while
             // ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS is ramping up, so don't run this
             // logic when that flag has been enabled.
-            if (DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
+            if (DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
                 return
             }
             info.changes.forEach { change ->
