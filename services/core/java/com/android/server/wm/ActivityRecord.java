@@ -7218,6 +7218,12 @@ final class ActivityRecord extends WindowToken {
                 return belowCandidate.getRequestedConfigurationOrientation(forDisplay);
             }
         }
+        // Although isRestrictedFixedOrientation excludes "locked" orientation, the configuration
+        // orientation should not be restricted to portrait or landscape.
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                && isUniversalResizeable()) {
+            return ORIENTATION_UNDEFINED;
+        }
         return super.getRequestedConfigurationOrientation(forDisplay, requestedOrientation);
     }
 

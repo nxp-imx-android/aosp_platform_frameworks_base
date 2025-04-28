@@ -5443,6 +5443,19 @@ public class SizeCompatTests extends WindowTestsBase {
         makeDisplayLargeScreen(mDisplayContent);
         assertTrue(mActivity.isUniversalResizeable());
         assertFitted();
+
+        // Though "locked" orientation is respected to keep current display orientation, it should
+        // not be treated as fixed in portrait or landscape.
+        setUpApp(mDisplayContent, new ActivityBuilder(mAtm)
+                .setResizeMode(RESIZE_MODE_UNRESIZEABLE)
+                .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED));
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_LOCKED, mActivity.getOverrideOrientation());
+        assertEquals("Must not be a specific orientation", Configuration.ORIENTATION_UNDEFINED,
+                mActivity.getRequestedConfigurationOrientation());
+        final Rect resizeBounds = new Rect(mActivity.getTask().getBounds());
+        resizeBounds.scale(0.8f);
+        mActivity.getTask().setBounds(resizeBounds);
+        assertFitted();
     }
 
     @Test
