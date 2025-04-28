@@ -46,7 +46,7 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 @SmallTest
 class TakeScreenshotExecutorTest : SysuiTestCase() {
 
-    private val controller = mock<LegacyScreenshotController>()
+    private val controller = mock<ScreenshotController>()
     private val notificationsController0 = mock<ScreenshotNotificationsController>()
     private val notificationsController1 = mock<ScreenshotNotificationsController>()
     private val controllerFactory = mock<InteractiveScreenshotHandler.Factory>()
