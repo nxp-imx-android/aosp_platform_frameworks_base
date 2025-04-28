@@ -1608,15 +1608,13 @@ public class BiometricServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testCanAuthenticate_whenMandatoryBiometricsRequested()
             throws Exception {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
-        when(mBiometricService.mSettingObserver
-                .getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
@@ -1624,22 +1622,21 @@ public class BiometricServiceTest {
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK));
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+                .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK));
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testCanAuthenticate_whenMandatoryBiometricsAndStrongAuthenticatorsRequested()
             throws Exception {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
-        when(mBiometricService.mSettingObserver
-                .getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
@@ -1648,7 +1645,8 @@ public class BiometricServiceTest {
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK
                         | Authenticators.BIOMETRIC_STRONG));
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+                .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK
@@ -1656,15 +1654,13 @@ public class BiometricServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testCanAuthenticate_whenMandatoryBiometricsRequestedAndDeviceCredentialAvailable()
             throws Exception {
         mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
         mBiometricService.onStart();
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
-        when(mBiometricService.mSettingObserver
-                .getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(anyInt()))
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
                 .thenReturn(true);
 
         setupAuthForOnly(TYPE_CREDENTIAL, Authenticators.DEVICE_CREDENTIAL);
@@ -1672,7 +1668,8 @@ public class BiometricServiceTest {
         assertEquals(BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK));
 
-        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt()))
+                .thenReturn(false);
 
         assertEquals(BiometricManager.BIOMETRIC_SUCCESS,
                 invokeCanAuthenticate(mBiometricService, Authenticators.IDENTITY_CHECK
