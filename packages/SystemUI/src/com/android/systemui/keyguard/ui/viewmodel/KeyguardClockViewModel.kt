@@ -207,7 +207,9 @@ constructor(
                     configurationInteractor.configurationValues,
                 ) { hasCustomWeatherDataDisplay, isShadeLayoutWide, configurationValues ->
                     var fallBelow = false
-                    if (hasCustomWeatherDataDisplay) return@combine true
+                    if (hasCustomWeatherDataDisplay) {
+                        return@combine true
+                    }
 
                     val screenWidthDp = configurationValues.screenWidthDp
 

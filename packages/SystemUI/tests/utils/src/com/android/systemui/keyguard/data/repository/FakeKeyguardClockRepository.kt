@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeKeyguardClockRepository() : KeyguardClockRepository {
+
     private val _clockSize = MutableStateFlow(ClockSize.LARGE)
     override val clockSize: StateFlow<ClockSize> = _clockSize
 
@@ -42,8 +43,7 @@ class FakeKeyguardClockRepository() : KeyguardClockRepository {
     private val _currentClock: MutableStateFlow<ClockController?> = MutableStateFlow(null)
     override val currentClock = _currentClock
 
-    override val clockEventController: ClockEventController
-        get() = mock()
+    override val clockEventController: ClockEventController = mock()
 
     override val shouldForceSmallClock: Boolean
         get() = _shouldForceSmallClock
