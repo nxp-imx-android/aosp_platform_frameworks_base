@@ -300,8 +300,10 @@ public final class DisplayBrightnessController {
      * Updates pending brightness with value from settings
      */
     public void handleSettingsChange() {
+        float brightness = getScreenBrightnessSetting();
         synchronized (mLock) {
-            mPendingScreenBrightness = getScreenBrightnessSettingConstrained();
+            mPendingScreenBrightness = MathUtils.constrain(
+                    brightness, mCurrentMinBrightness, mCurrentMaxBrightness);
         }
     }
 
