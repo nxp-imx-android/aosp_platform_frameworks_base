@@ -442,7 +442,7 @@ public class TaskFragmentTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS)
-    public void testVisibility_behindAtLeastOneNonFillingAdjacentTaskFragments_visible() {
+    public void testVisibility_behindAtLeastOneNonFillingAdjacentTaskFragments_invisible() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
@@ -464,7 +464,8 @@ public class TaskFragmentTest extends WindowTestsBase {
         topAdjacentTaskFragment2.setAdjacentTaskFragments(
                 new TaskFragment.AdjacentSet(topAdjacentTaskFragment2, topAdjacentTaskFragment1));
 
-        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE,
+        // Bottom task should be invisible since an activity is always filling.
+        assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
                 bottomTask.getVisibility(null /* starting */));
     }
 
