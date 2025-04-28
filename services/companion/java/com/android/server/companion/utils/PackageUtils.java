@@ -36,6 +36,7 @@ import android.companion.CompanionDeviceService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -64,6 +65,7 @@ import java.util.Set;
  */
 public final class PackageUtils {
 
+    public static final int PACKAGE_NOT_FOUND = -1;
     private static final String TAG = "CDM_PackageUtils";
 
     private static final Intent COMPANION_SERVICE_INTENT =
@@ -262,6 +264,20 @@ public final class PackageUtils {
                     AppOpsManager.OP_ACCESS_RESTRICTED_SETTINGS, uid,
                     packageName, /* attributionTag= */ null, /* message= */ null);
             return mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_DEFAULT;
+        }
+    }
+
+    /**
+     * Get UID from a packageName. Return -1 if the package is not found.
+     */
+    public static int getUidFromPackageName(Context context, String packageName) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, 0);
+            return applicationInfo.uid;
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.w(TAG, packageName + " is not found");
+            return PACKAGE_NOT_FOUND;
         }
     }
 }
