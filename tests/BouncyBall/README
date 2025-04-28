@@ -1,7 +1,9 @@
 This is a simple graphics app which draws a ball bouncing around a screen.
 
 This app is intended for use in automated testing (for example, to make sure
-no frames are dropped while running).
+no frames are dropped while running).  It can also be run manually, but there's
+a fundamental assumption that this is the only foreground app running on the
+device while testing.
 
 
 From the top of tree, in a shell that has been set up for building, this app
