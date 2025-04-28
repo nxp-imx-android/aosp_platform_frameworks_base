@@ -5619,11 +5619,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     @Nullable
     ActivityRecord.WindowStyle getWindowStyle(String packageName, int theme, int userId) {
-        if (!com.android.window.flags.Flags.cacheWindowStyle()) {
-            final AttributeCache.Entry ent = AttributeCache.instance().get(packageName,
-                    theme, com.android.internal.R.styleable.Window, userId);
-            return ent != null ? new ActivityRecord.WindowStyle(ent.array) : null;
-        }
         return mWindowStyleCache.get(packageName, theme, userId);
     }
 
@@ -7435,12 +7430,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         @Override
         public boolean isNoDisplay(String packageName, int theme, int userId) {
-            if (!com.android.window.flags.Flags.cacheWindowStyle()) {
-                final AttributeCache.Entry ent = AttributeCache.instance()
-                        .get(packageName, theme, R.styleable.Window, userId);
-                return ent != null
-                        && ent.array.getBoolean(R.styleable.Window_windowNoDisplay, false);
-            }
             final ActivityRecord.WindowStyle style = getWindowStyle(packageName, theme, userId);
             return style != null && style.noDisplay();
         }
