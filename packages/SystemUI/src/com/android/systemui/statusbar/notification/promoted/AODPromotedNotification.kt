@@ -302,7 +302,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             if (!skeletonLargeIcon.isNullOrEmpty()) {
                 imageEndMarginPx
             } else {
-                0
+                endMarginPx
             }
 
     private data class SmallIconSavedState(val background: Drawable?, val padding: Rect)
@@ -326,10 +326,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
 
-        (rightIcon?.layoutParams as? MarginLayoutParams)?.let {
-            it.marginEnd = endMarginPx
-            rightIcon.layoutParams = it
-        }
+        rightIcon?.setRightIconState(
+            width = largeIconSizePx,
+            height = largeIconSizePx,
+            marginEnd = endMarginPx,
+        )
+
         bigText?.setImageEndMargin(largeIconSizePx + endMarginPx)
         text?.setImageEndMargin(largeIconSizePx + endMarginPx)
 
@@ -704,6 +706,22 @@ private fun Notification.ProgressStyle.Point.toSkeleton(): Notification.Progress
 
 private fun TextView.appendFontFeatureSetting(newSetting: String) {
     fontFeatureSettings = (fontFeatureSettings?.let { "$it," } ?: "") + newSetting
+}
+
+private fun ImageView.setRightIconState(width: Int, height: Int, marginEnd: Int) {
+
+    val lp = (layoutParams as? MarginLayoutParams) ?: return
+    lp.width = width
+    lp.height = height
+    lp.marginEnd = marginEnd
+
+    layoutParams = lp
+}
+
+private fun NotificationTopLineView.setEndMargin(marginEnd: Int) {
+    val lp = (layoutParams as? MarginLayoutParams) ?: return
+    lp.marginEnd = marginEnd
+    layoutParams = lp
 }
 
 private enum class AodPromotedNotificationColor(val colorInt: Int) {
