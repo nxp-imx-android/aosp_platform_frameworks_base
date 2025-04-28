@@ -248,6 +248,14 @@ flag {
 }
 
 flag {
+  name: "opt_in_rich_ongoing"
+  namespace: "systemui"
+  is_exported: true
+  description: "[RONs] v0.2 promotion logic: explicit opt-in and no colorization"
+  bug: "410621769"
+}
+
+flag {
   name: "ui_rich_ongoing"
   is_exported: true
   namespace: "systemui"
