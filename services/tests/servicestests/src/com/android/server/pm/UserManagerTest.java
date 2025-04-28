@@ -1230,6 +1230,13 @@ public final class UserManagerTest {
 
     @MediumTest
     @Test
+    public void testRevokeUserAdminFailsForSystemUser() throws Exception {
+        mUserManager.revokeUserAdmin(UserHandle.USER_SYSTEM);
+        assertThat(getUser(UserHandle.USER_SYSTEM).isAdmin()).isTrue();
+    }
+
+    @MediumTest
+    @Test
     public void testGetProfileParent() throws Exception {
         assumeManagedUsersSupported();
         int mainUserId = mUserManager.getMainUser().getIdentifier();
