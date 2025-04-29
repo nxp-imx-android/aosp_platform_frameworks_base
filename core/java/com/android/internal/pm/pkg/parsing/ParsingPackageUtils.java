@@ -2070,15 +2070,16 @@ public class ParsingPackageUtils {
                     }
 
                     pkg.setBackupAgentName(backupAgentName)
-                            .setKillAfterRestoreAllowed(bool(true,
-                                    R.styleable.AndroidManifestApplication_killAfterRestore, sa))
-                            .setRestoreAnyVersion(bool(false,
-                                    R.styleable.AndroidManifestApplication_restoreAnyVersion, sa))
                             .setFullBackupOnly(bool(false,
                                     R.styleable.AndroidManifestApplication_fullBackupOnly, sa))
                             .setBackupInForeground(bool(false,
                                     R.styleable.AndroidManifestApplication_backupInForeground, sa));
                 }
+
+                pkg.setKillAfterRestoreAllowed(bool(true,
+                                R.styleable.AndroidManifestApplication_killAfterRestore, sa))
+                        .setRestoreAnyVersion(bool(false,
+                                R.styleable.AndroidManifestApplication_restoreAnyVersion, sa));
 
                 TypedValue v = sa.peekValue(
                         R.styleable.AndroidManifestApplication_fullBackupContent);
