@@ -2008,7 +2008,7 @@ class DesktopTasksController(
             displayController,
         )
 
-        if (DesktopModeFlags.ENABLE_TILE_RESIZING.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()) {
             val isTiled = snapEventHandler.snapToHalfScreen(taskInfo, currentDragBounds, position)
             if (isTiled) {
                 taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(true)
