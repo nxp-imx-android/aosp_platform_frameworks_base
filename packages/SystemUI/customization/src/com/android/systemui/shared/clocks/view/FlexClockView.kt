@@ -423,7 +423,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
     }
 
     companion object {
-        val AOD_TRANSITION_DURATION = 750L
+        val AOD_TRANSITION_DURATION = 800L
         val CHARGING_TRANSITION_DURATION = 300L
 
         val AOD_HORIZONTAL_TRANSLATE_RATIO = -0.15F
