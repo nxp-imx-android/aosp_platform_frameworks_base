@@ -19,7 +19,6 @@ package com.android.systemui.clipboardoverlay;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import static com.android.systemui.Flags.FLAG_CLIPBOARD_SHARED_TRANSITIONS;
-import static com.android.systemui.Flags.FLAG_CLIPBOARD_USE_DESCRIPTION_MIMETYPE;
 import static com.android.systemui.Flags.FLAG_SHOW_CLIPBOARD_INDICATION;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
@@ -215,11 +214,10 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_CLIPBOARD_USE_DESCRIPTION_MIMETYPE)
-    public void test_setClipData_invalidImageData_legacy() {
+    public void test_setClipData_nonImageUri_legacy() {
         initController();
 
-        ClipData clipData = new ClipData("", new String[]{"image/png"},
+        ClipData clipData = new ClipData("", new String[]{"resource/png"},
                 new ClipData.Item(Uri.parse("")));
 
         mOverlayController.setClipData(clipData, "");
