@@ -10317,12 +10317,6 @@ public class NotificationManagerService extends SystemService {
         }
         if (isSummary) {
             mSummaryByGroupKey.put(group, r);
-
-            if (notificationForceGrouping()) {
-                // If any formerly-ungrouped notifications will be grouped by this summary, update
-                // accordingly.
-                mGroupHelper.onGroupSummaryAdded(r, mNotificationList);
-            }
         }
 
         FlagChecker childrenFlagChecker = (flags) -> {

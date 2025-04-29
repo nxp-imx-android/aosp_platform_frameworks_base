@@ -4176,7 +4176,6 @@ public class GroupHelperTest extends UiServiceTestCase {
                 mUser, "specialGroup", true, IMPORTANCE_DEFAULT);
         notifList.add(groupSummary);
         summaryByGroupKey.put(groupSummary.getSbn().getGroupKey(), groupSummary);
-        mGroupHelper.onGroupSummaryAdded(groupSummary, notifList);
         mGroupHelper.onNotificationPostedWithDelay(groupSummary, notifList, summaryByGroupKey);
 
         // One more notification posted to the group; because its summary already exists, it should
@@ -4222,7 +4221,6 @@ public class GroupHelperTest extends UiServiceTestCase {
                 "summaryGroup", true, IMPORTANCE_DEFAULT);
         notifList.add(summary);
         summaryByGroupKey.put(summary.getSbn().getKey(), summary);
-        mGroupHelper.onGroupSummaryAdded(summary, notifList);
         mGroupHelper.onNotificationPostedWithDelay(summary, notifList, summaryByGroupKey);
 
         // all of the above posted notifications should be autogrouped
@@ -4233,5 +4231,188 @@ public class GroupHelperTest extends UiServiceTestCase {
                 anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
         verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(),
                 eq(expectedGroupKey), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testGroupSummaryAdded_unAggregatesAutogroupedNotifications() {
+        // Scenario:
+        //  * child notifications posted before summary and force-grouped
+        //  * summary posted => remove child notifications from autogroup and regroup into app group
+
+        List<NotificationRecord> notifList = new ArrayList<>();
+        Map<String, NotificationRecord> summaryByGroupKey = new HashMap<>();
+
+        final String groupName = "testGrp";
+        final int numChildNotif = AUTOGROUP_AT_COUNT;
+        for (int i = 0; i < numChildNotif; i++) {
+            NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, groupName, false,
+                    IMPORTANCE_DEFAULT);
+            notifList.add(child);
+            mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
+        }
+
+        // Check that notifications were autogrouped
+        final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(mPkg,
+                AGGREGATE_GROUP_KEY + "AlertingSection", mUser.getIdentifier());
+        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(mPkg), anyString(),
+                eq(expectedGroupKey_alerting), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
+        verify(mCallback, times(numChildNotif)).addAutoGroup(anyString(),
+                eq(expectedGroupKey_alerting), eq(true));
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
+                any());
+
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                record.setOverrideGroupKey(expectedGroupKey_alerting);
+            }
+        }
+
+        // Post group summary
+        Mockito.reset(mCallback);
+        NotificationRecord groupSummary = getNotificationRecord(mPkg, 4242, "",
+                mUser, groupName, true, IMPORTANCE_DEFAULT);
+        notifList.add(groupSummary);
+        summaryByGroupKey.put(groupSummary.getSbn().getGroupKey(), groupSummary);
+        mGroupHelper.onNotificationPostedWithDelay(groupSummary, notifList, summaryByGroupKey);
+
+        // Check that the updated notification was removed from the autogroup
+        verify(mCallback, times(numChildNotif)).removeAutoGroup(anyString());
+        verify(mCallback, times(numChildNotif - 1)).updateAutogroupSummary(anyInt(), anyString(),
+                eq(expectedGroupKey_alerting), any());
+        verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), eq(mPkg),
+                eq(expectedGroupKey_alerting));
+
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                assertThat(record.getGroupKey()).isEqualTo(groupSummary.getGroupKey());
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testGroupSummaryAddedDifferentChannel_unAggregatesAutogroupedNotifications() {
+        // Scenario:
+        //  * child notifications posted before summary and force-grouped
+        //  * summary posted in different channel/section
+        //  => remove child notifications from autogroup and regroup into app group
+
+        List<NotificationRecord> notifList = new ArrayList<>();
+        Map<String, NotificationRecord> summaryByGroupKey = new HashMap<>();
+
+        final String groupName = "testGrp";
+        final int numChildNotif = AUTOGROUP_AT_COUNT;
+        for (int i = 0; i < numChildNotif; i++) {
+            NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, groupName, false,
+                    IMPORTANCE_DEFAULT);
+            notifList.add(child);
+            mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
+        }
+
+        // Check that notifications were autogrouped
+        final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(mPkg,
+                AGGREGATE_GROUP_KEY + "AlertingSection", mUser.getIdentifier());
+        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(mPkg), anyString(),
+                eq(expectedGroupKey_alerting), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
+        verify(mCallback, times(numChildNotif)).addAutoGroup(anyString(),
+                eq(expectedGroupKey_alerting), eq(true));
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
+                any());
+
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                record.setOverrideGroupKey(expectedGroupKey_alerting);
+            }
+        }
+
+        // Post group summary
+        Mockito.reset(mCallback);
+        NotificationRecord groupSummary = getNotificationRecord(mPkg, 4242, "",
+                mUser, groupName, true, IMPORTANCE_LOW);
+        notifList.add(groupSummary);
+        summaryByGroupKey.put(groupSummary.getSbn().getGroupKey(), groupSummary);
+        mGroupHelper.onNotificationPostedWithDelay(groupSummary, notifList, summaryByGroupKey);
+
+        // Check that the updated notification was removed from the autogroup
+        verify(mCallback, times(numChildNotif)).removeAutoGroup(anyString());
+        verify(mCallback, times(numChildNotif - 1)).updateAutogroupSummary(anyInt(), anyString(),
+                eq(expectedGroupKey_alerting), any());
+        verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), eq(mPkg),
+                eq(expectedGroupKey_alerting));
+
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                assertThat(record.getGroupKey()).isEqualTo(groupSummary.getGroupKey());
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    public void testGroupSummaryAdded_doesnNotUnAggregateBundledNotifications() {
+        // Scenario:
+        //  * child notifications posted before summary and classified (bundled) and force-grouped
+        //  * summary posted => child notifications are not removed from bundle autogroup
+
+        List<NotificationRecord> notifList = new ArrayList<>();
+        Map<String, NotificationRecord> summaryByGroupKey = new HashMap<>();
+
+        final String groupName = "testGrp";
+        final int numChildNotif = AUTOGROUP_AT_COUNT;
+        final NotificationChannel socialChannel = new NotificationChannel(
+                NotificationChannel.SOCIAL_MEDIA_ID, NotificationChannel.SOCIAL_MEDIA_ID,
+                IMPORTANCE_LOW);
+        for (int i = 0; i < numChildNotif; i++) {
+            NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, groupName, false,
+                    IMPORTANCE_DEFAULT);
+            notifList.add(child);
+            child.updateNotificationChannel(socialChannel);
+            mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
+        }
+
+        // Check that notifications were autogrouped in the social section
+        final String expectedGroupKey_social = GroupHelper.getFullAggregateGroupKey(mPkg,
+                AGGREGATE_GROUP_KEY + "SocialSection", mUser.getIdentifier());
+        final NotificationAttributes expectedSummaryAttr_social = new NotificationAttributes(
+                BASE_FLAGS, mSmallIcon, COLOR_DEFAULT, DEFAULT_VISIBILITY, DEFAULT_GROUP_ALERT,
+                NotificationChannel.SOCIAL_MEDIA_ID);
+        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(mPkg), anyString(),
+                eq(expectedGroupKey_social), anyInt(), eq(expectedSummaryAttr_social));
+        verify(mCallback, times(numChildNotif)).addAutoGroup(anyString(),
+                eq(expectedGroupKey_social), eq(true));
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        verify(mCallback, times(numChildNotif - AUTOGROUP_BUNDLES_AT_COUNT))
+                .updateAutogroupSummary(anyInt(), anyString(), anyString(), any());
+
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                record.setOverrideGroupKey(expectedGroupKey_social);
+            }
+        }
+
+        // Post group summary
+        Mockito.reset(mCallback);
+        NotificationRecord groupSummary = getNotificationRecord(mPkg, 4242, "",
+                mUser, groupName, true, IMPORTANCE_DEFAULT);
+        notifList.add(groupSummary);
+        summaryByGroupKey.put(groupSummary.getSbn().getGroupKey(), groupSummary);
+        mGroupHelper.onNotificationPostedWithDelay(groupSummary, notifList, summaryByGroupKey);
+
+        // Check that the updated notification were not removed from the autogroup
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(),
+                anyString(), any());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        for (NotificationRecord record: notifList) {
+            if (record.getNotification().isGroupChild()) {
+                assertThat(record.getGroupKey()).isEqualTo(expectedGroupKey_social);
+            }
+        }
     }
 }
