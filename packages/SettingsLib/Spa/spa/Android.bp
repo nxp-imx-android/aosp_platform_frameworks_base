@@ -45,10 +45,3 @@ android_library {
     sdk_version: "current",
     min_sdk_version: "31",
 }
-
-// Expose the srcs to tests, so the tests can access the internal classes.
-filegroup {
-    name: "SpaLib_srcs",
-    visibility: ["//frameworks/base/packages/SettingsLib/Spa/tests"],
-    srcs: ["src/**/*.kt"],
-}
