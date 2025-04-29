@@ -598,10 +598,19 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
 
 
     /** Wait for transition to full screen to finish. */
-    private fun waitForTransitionToFullscreen(wmHelper: WindowManagerStateHelper) {
+    fun waitForTransitionToFullscreen(wmHelper: WindowManagerStateHelper) {
         wmHelper
             .StateSyncBuilder()
             .withFullScreenApp(innerHelper)
+            .withAppTransitionIdle()
+            .waitForAndVerify()
+    }
+
+    /** Wait for transition to freeform to finish. */
+    fun waitForTransitionToFreeform(wmHelper: WindowManagerStateHelper) {
+        wmHelper
+            .StateSyncBuilder()
+            .withFreeformApp(innerHelper)
             .withAppTransitionIdle()
             .waitForAndVerify()
     }
