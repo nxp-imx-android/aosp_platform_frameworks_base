@@ -2070,3 +2070,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+   name: "hub_edit_mode_transition"
+   namespace: "systemui"
+   description: "Fix hub to edit mode transition issues"
+   bug: "411422599"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}

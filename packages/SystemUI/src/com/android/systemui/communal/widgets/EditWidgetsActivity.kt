@@ -36,6 +36,7 @@ import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.Flags.communalEditWidgetsActivityFinishFix
 import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -53,6 +54,7 @@ import com.android.systemui.log.dagger.CommunalLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.settings.UserTracker
 import javax.inject.Inject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 
 /** An Activity for editing the widgets that appear in hub mode. */
@@ -176,6 +178,9 @@ constructor(
         if (communalEditWidgetsActivityFinishFix()) ActivityControllerImpl(this)
         else NopActivityController()
 
+    // Completes when the activity UI is rendered and ready for the hub to edit mode transition.
+    private val readyDeferred = CompletableDeferred<Unit>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -212,33 +217,44 @@ constructor(
     // Handle scene change to show the activity and animate in its content
     private fun listenForTransitionAndChangeScene() {
         lifecycleScope.launch {
-            communalViewModel.canShowEditMode.collect {
-                if (!SceneContainerFlag.isEnabled) {
-                    communalViewModel.changeScene(
-                        scene = CommunalScenes.Blank,
-                        loggingReason = "edit mode opening",
-                        transitionKey = CommunalTransitionKeys.ToEditMode,
-                        keyguardState = KeyguardState.GONE,
-                    )
-                    // wait till transitioned to Blank scene, then animate in communal content in
-                    // edit mode
-                    communalViewModel.currentScene.first { it == CommunalScenes.Blank }
-                }
+            if (Flags.hubEditModeTransition()) {
+                // Wait for the edit mode activity to be ready underneath the hub before starting
+                // the hub to edit mode transition.
+                readyDeferred.await()
+            } else {
+                communalViewModel.canShowEditMode.first { it }
+            }
 
-                // Wait for dream to exit, if we were previously dreaming.
-                keyguardInteractor.isDreaming.first { !it }
+            if (!SceneContainerFlag.isEnabled) {
+                communalViewModel.changeScene(
+                    scene = CommunalScenes.Blank,
+                    loggingReason = "edit mode opening",
+                    transitionKey = CommunalTransitionKeys.ToEditMode,
+                    keyguardState = KeyguardState.GONE,
+                )
 
-                communalViewModel.setEditModeState(EditModeState.SHOWING)
+                // Wait for scene change to BLANK.
+                communalViewModel.currentScene.first { it == CommunalScenes.Blank }
+            }
 
-                // Inform the ActivityController that we are now fully visible.
-                activityController.setActivityFullyVisible(true)
+            if (Flags.hubEditModeTransition()) {
+                // Wait for hub to fully transition out.
+                communalViewModel.hubTransitionOut.first { it }
+            }
 
-                // Show the widget picker, if necessary, after the edit activity has animated in.
-                // Waiting until after the activity has appeared avoids transitions issues.
-                if (shouldOpenWidgetPickerOnStart) {
-                    onOpenWidgetPicker()
-                    shouldOpenWidgetPickerOnStart = false
-                }
+            // Wait for dream to exit, if we were previously dreaming.
+            keyguardInteractor.isDreaming.first { !it }
+
+            communalViewModel.setEditModeState(EditModeState.SHOWING)
+
+            // Inform the ActivityController that we are now fully visible.
+            activityController.setActivityFullyVisible(true)
+
+            // Show the widget picker, if necessary, after the edit activity has animated in.
+            // Waiting until after the activity has appeared avoids transitions issues.
+            if (shouldOpenWidgetPickerOnStart) {
+                onOpenWidgetPicker()
+                shouldOpenWidgetPickerOnStart = false
             }
         }
     }
@@ -346,6 +362,12 @@ constructor(
 
         logger.i("Starting the communal widget editor activity")
         uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_EDIT_MODE_SHOWN)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        readyDeferred.complete(Unit)
     }
 
     override fun onStop() {
