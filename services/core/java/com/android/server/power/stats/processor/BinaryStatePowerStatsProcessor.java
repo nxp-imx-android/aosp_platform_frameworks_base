@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.List;
 
 abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
+    private static final long POWER_DATA_UNAVAILABLE = -1;
+
     static final int STATE_OFF = 0;
     static final int STATE_ON = 1;
 
@@ -184,7 +186,7 @@ abstract class BinaryStatePowerStatsProcessor extends PowerStatsProcessor {
         }
 
         long consumedEnergy = mStatsLayout.getConsumedEnergy(powerStats.stats, 0);
-        if (consumedEnergy != BatteryStats.POWER_DATA_UNAVAILABLE) {
+        if (consumedEnergy != POWER_DATA_UNAVAILABLE) {
             mEnergyConsumerSupported = true;
             mStatsLayout.setConsumedEnergy(mPowerStats.stats, 0, consumedEnergy);
         }

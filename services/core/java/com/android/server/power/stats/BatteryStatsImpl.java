@@ -104,7 +104,6 @@ import android.util.Printer;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
-import android.util.SparseDoubleArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 import android.util.TimeUtils;
@@ -1209,11 +1208,6 @@ public class BatteryStatsImpl extends BatteryStats {
          */
         public StopwatchTimer[] screenBrightnessTimers =
                 new StopwatchTimer[NUM_SCREEN_BRIGHTNESS_BINS];
-        /**
-         * Per display screen state the last time {@link #updateDisplayEnergyConsumerStatsLocked}
-         * was called.
-         */
-        public int screenStateAtLastEnergyMeasurement = Display.STATE_UNKNOWN;
 
         DisplayBatteryStats(Clock clock, TimeBase timeBase) {
             screenOnTimer = new StopwatchTimer(clock, null, -1, null,
@@ -1712,23 +1706,10 @@ public class BatteryStatsImpl extends BatteryStats {
 
     int mWifiRadioPowerState = DataConnectionRealTimeInfo.DC_POWER_STATE_LOW;
 
+    // TODO
     @GuardedBy("this")
     @VisibleForTesting
     protected @Nullable EnergyConsumerStats.Config mEnergyConsumerStatsConfig;
-
-    /**
-     * Accumulated global (generally, device-wide total) charge consumption of various consumers
-     * while on battery.
-     * Its '<b>custom</b> power buckets' correspond to the
-     * {@link android.hardware.power.stats.EnergyConsumer.ordinal}s of (custom) energy consumer
-     * type {@link android.hardware.power.stats.EnergyConsumerType#OTHER}).
-     *
-     * If energy consumer data is completely unavailable this will be null.
-     */
-    @GuardedBy("this")
-    @VisibleForTesting
-    @Nullable
-    protected EnergyConsumerStats mGlobalEnergyConsumerStats;
 
     /**
      * These provide time bases that discount the time the device is plugged
@@ -5551,7 +5532,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
         int state;
         int overallBin = mScreenBrightnessBin;
-        int externalUpdateFlag = 0;
+        int externalUpdateFlag = ExternalStatsSync.UPDATE_DISPLAY;
         boolean shouldScheduleSync = false;
         final int numDisplay = mPerDisplayBatteryStats.length;
         if (display < 0 || display >= numDisplay) {
@@ -5637,15 +5618,6 @@ public class BatteryStatsImpl extends BatteryStats {
                     Slog.wtf(TAG,
                             "Attempted to start timer for unexpected display state " + displayState
                                     + " for display " + display);
-            }
-
-            if (shouldScheduleSync
-                    && mGlobalEnergyConsumerStats != null
-                    && mGlobalEnergyConsumerStats.isStandardBucketSupported(
-                    EnergyConsumerStats.POWER_BUCKET_SCREEN_ON)) {
-                // Display energy consumption stats is available. Prepare to schedule an
-                // external sync.
-                externalUpdateFlag |= ExternalStatsSync.UPDATE_DISPLAY;
             }
 
             // Reevaluate most important display screen state.
@@ -7783,84 +7755,6 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    @GuardedBy("this")
-    @Override
-    public long getBluetoothEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_BLUETOOTH);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getCpuEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_CPU);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getGnssEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_GNSS);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getMobileRadioEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getPhoneEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_PHONE);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getScreenOnEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_SCREEN_ON);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getScreenDozeEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_SCREEN_DOZE);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getWifiEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_WIFI);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public long getCameraEnergyConsumptionUC() {
-        return getPowerBucketConsumptionUC(EnergyConsumerStats.POWER_BUCKET_CAMERA);
-    }
-
-    /**
-     * Returns the consumption (in microcoulombs) that the given standard power bucket consumed.
-     * Will return {@link #POWER_DATA_UNAVAILABLE} if data is unavailable
-     *
-     * @param bucket standard power bucket of interest
-     * @return charge (in microcoulombs) used for this power bucket
-     */
-    @GuardedBy("this")
-    private long getPowerBucketConsumptionUC(@StandardPowerBucket int bucket) {
-        if (mGlobalEnergyConsumerStats == null) {
-            return POWER_DATA_UNAVAILABLE;
-        }
-        return mGlobalEnergyConsumerStats.getAccumulatedStandardBucketCharge(bucket);
-    }
-
-    @GuardedBy("this")
-    @Override
-    public @Nullable long[] getCustomEnergyConsumerBatteryConsumptionUC() {
-        if (mGlobalEnergyConsumerStats == null) {
-            return null;
-        }
-        return mGlobalEnergyConsumerStats.getAccumulatedCustomBucketCharges();
-    }
-
     /**
      * Returns the names of custom power components.
      */
@@ -8178,28 +8072,6 @@ public class BatteryStatsImpl extends BatteryStats {
          */
         final SparseArray<Pid> mPids = new SparseArray<>();
 
-        /**
-         * EnergyConsumer consumption by this uid while on battery.
-         * Its '<b>custom</b> power buckets' correspond to the
-         * {@link android.hardware.power.stats.EnergyConsumer.ordinal}s of (custom) energy consumer
-         * type {@link android.hardware.power.stats.EnergyConsumerType#OTHER}).
-         *
-         * Will be null if energy consumer data is completely unavailable (in which case
-         * {@link #mGlobalEnergyConsumerStats} will also be null) or if the power usage by this uid
-         * is 0 for every bucket.
-         */
-        private EnergyConsumerStats mUidEnergyConsumerStats;
-
-        /**
-         * Estimated total time spent by the system server handling requests from this uid.
-         */
-        private long mSystemServiceTimeUs;
-
-        /**
-         * Estimated proportion of system server binder call CPU cost for this uid.
-         */
-        private double mProportionalSystemServiceUsage;
-
         public Uid(BatteryStatsImpl bsi, int uid, long elapsedRealtimeMs, long uptimeMs) {
             mBsi = bsi;
             mUid = uid;
@@ -8268,11 +8140,6 @@ public class BatteryStatsImpl extends BatteryStats {
                     getBluetoothControllerActivity();
             if (bluetoothControllerActivity != null) {
                 bluetoothControllerActivity.setState(batteryConsumerProcessState, elapsedTimeMs);
-            }
-            final EnergyConsumerStats energyStats =
-                    getOrCreateEnergyConsumerStatsIfSupportedLocked();
-            if (energyStats != null) {
-                energyStats.setState(batteryConsumerProcessState, elapsedTimeMs);
             }
         }
 
@@ -8639,158 +8506,6 @@ public class BatteryStatsImpl extends BatteryStats {
                         mBsi.mOnBatteryTimeBase, mBsi.MODEM_TX_POWER_LEVEL_COUNT);
             }
             return mModemControllerActivity;
-        }
-
-        @GuardedBy("mBsi")
-        private EnergyConsumerStats getOrCreateEnergyConsumerStatsLocked() {
-            if (mUidEnergyConsumerStats == null) {
-                mUidEnergyConsumerStats = new EnergyConsumerStats(mBsi.mEnergyConsumerStatsConfig);
-            }
-            return mUidEnergyConsumerStats;
-        }
-
-        @GuardedBy("mBsi")
-        private EnergyConsumerStats getOrCreateEnergyConsumerStatsIfSupportedLocked() {
-            if (mUidEnergyConsumerStats == null && mBsi.mEnergyConsumerStatsConfig != null) {
-                mUidEnergyConsumerStats = new EnergyConsumerStats(mBsi.mEnergyConsumerStatsConfig);
-            }
-            return mUidEnergyConsumerStats;
-        }
-
-        /** Adds the given charge to the given standard power bucket for this uid. */
-        @GuardedBy("mBsi")
-        private void addChargeToStandardBucketLocked(long chargeDeltaUC,
-                @StandardPowerBucket int powerBucket, long timestampMs) {
-            final EnergyConsumerStats energyConsumerStats =
-                    getOrCreateEnergyConsumerStatsLocked();
-            energyConsumerStats.updateStandardBucket(powerBucket, chargeDeltaUC, timestampMs);
-        }
-
-        /** Adds the given charge to the given custom power bucket for this uid. */
-        @GuardedBy("mBsi")
-        private void addChargeToCustomBucketLocked(long chargeDeltaUC, int powerBucket) {
-            getOrCreateEnergyConsumerStatsLocked().updateCustomBucket(powerBucket, chargeDeltaUC,
-                    mBsi.mClock.elapsedRealtime());
-        }
-
-        /**
-         * Returns the battery consumption (in microcoulomb) of this uid for a standard power bucket
-         * of interest.
-         * @param bucket standard power bucket of interest
-         * @return consumption (in microcolombs) used by this uid for this power bucket
-         */
-        @GuardedBy("mBsi")
-        public long getEnergyConsumptionUC(@StandardPowerBucket int bucket) {
-            if (mBsi.mGlobalEnergyConsumerStats == null
-                    || !mBsi.mGlobalEnergyConsumerStats.isStandardBucketSupported(bucket)) {
-                return POWER_DATA_UNAVAILABLE;
-            }
-            if (mUidEnergyConsumerStats == null) {
-                return 0L; // It is supported, but was never filled, so it must be 0
-            }
-            return mUidEnergyConsumerStats.getAccumulatedStandardBucketCharge(bucket);
-        }
-
-        /**
-         * Returns the battery consumption (in microcoulombs) of this uid for a standard power
-         * bucket and a process state, such as Uid.PROCESS_STATE_TOP.
-         */
-        @GuardedBy("mBsi")
-        public long getEnergyConsumptionUC(@StandardPowerBucket int bucket,
-                int processState) {
-            if (mBsi.mGlobalEnergyConsumerStats == null
-                    || !mBsi.mGlobalEnergyConsumerStats.isStandardBucketSupported(bucket)) {
-                return POWER_DATA_UNAVAILABLE;
-            }
-            if (mUidEnergyConsumerStats == null) {
-                return 0L; // It is supported, but was never filled, so it must be 0
-            }
-            return mUidEnergyConsumerStats.getAccumulatedStandardBucketCharge(bucket, processState);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long[] getCustomEnergyConsumerBatteryConsumptionUC() {
-            if (mBsi.mGlobalEnergyConsumerStats == null) {
-                return null;
-            }
-            if (mUidEnergyConsumerStats == null) {
-                // Custom buckets may exist. But all values for this uid are 0 so we report all 0s.
-                return new long[mBsi.mGlobalEnergyConsumerStats.getNumberCustomPowerBuckets()];
-            }
-            return mUidEnergyConsumerStats.getAccumulatedCustomBucketCharges();
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getBluetoothEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_BLUETOOTH);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getBluetoothEnergyConsumptionUC(
-                @BatteryConsumer.ProcessState int processState) {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_BLUETOOTH,
-                    processState);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getCpuEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_CPU);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getCpuEnergyConsumptionUC(
-                @BatteryConsumer.ProcessState int processState) {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_CPU,
-                    processState);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getGnssEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_GNSS);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getMobileRadioEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getMobileRadioEnergyConsumptionUC(int processState) {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO,
-                    processState);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getScreenOnEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_SCREEN_ON);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getWifiEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_WIFI);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getWifiEnergyConsumptionUC(int processState) {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_WIFI,
-                    processState);
-        }
-
-        @GuardedBy("mBsi")
-        @Override
-        public long getCameraEnergyConsumptionUC() {
-            return getEnergyConsumptionUC(EnergyConsumerStats.POWER_BUCKET_CAMERA);
         }
 
         /**
@@ -9602,12 +9317,6 @@ public class BatteryStatsImpl extends BatteryStats {
             resetIfNotNull(mBluetoothControllerActivity, false, realtimeUs);
             resetIfNotNull(mModemControllerActivity, false, realtimeUs);
 
-            if (resetReason == RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE) {
-                mUidEnergyConsumerStats = null;
-            } else {
-                EnergyConsumerStats.resetIfNotNull(mUidEnergyConsumerStats);
-            }
-
             resetIfNotNull(mUserCpuTime, false, realtimeUs);
             resetIfNotNull(mSystemCpuTime, false, realtimeUs);
 
@@ -9700,11 +9409,8 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             mPackageStats.clear();
 
-            mProportionalSystemServiceUsage = 0;
-
             mLastStepUserTimeMs = mLastStepSystemTimeMs = 0;
             mCurStepUserTimeMs = mCurStepSystemTimeMs = 0;
-
 
             return !active;
         }
@@ -10709,11 +10415,11 @@ public class BatteryStatsImpl extends BatteryStats {
                             elapsedRealtimeMs);
                 }
 
-                final EnergyConsumerStats energyStats =
-                        getOrCreateEnergyConsumerStatsIfSupportedLocked();
-                if (energyStats != null) {
-                    energyStats.setState(batteryConsumerProcessState, elapsedRealtimeMs);
-                }
+//                final EnergyConsumerStats energyStats =
+//                        getOrCreateEnergyConsumerStatsIfSupportedLocked();
+//                if (energyStats != null) {
+//                    energyStats.setState(batteryConsumerProcessState, elapsedRealtimeMs);
+//                }
                 maybeScheduleExternalStatsSync(prevBatteryConsumerProcessState,
                         batteryConsumerProcessState);
             }
@@ -11886,8 +11592,6 @@ public class BatteryStatsImpl extends BatteryStats {
             mTmpRailStats.reset();
         }
 
-        EnergyConsumerStats.resetIfNotNull(mGlobalEnergyConsumerStats);
-
         mNumAllUidCpuTimeReads = 0;
         mNumUidsRemoved = 0;
 
@@ -12059,7 +11763,7 @@ public class BatteryStatsImpl extends BatteryStats {
      */
     @GuardedBy("this")
     public void updateWifiState(@Nullable final WifiActivityEnergyInfo info,
-            final long consumedChargeUC, long elapsedRealtimeMs, long uptimeMs,
+            long elapsedRealtimeMs, long uptimeMs,
             @NonNull NetworkStatsManager networkStatsManager) {
         if (DEBUG_ENERGY) {
             synchronized (mWifiNetworkLock) {
@@ -12078,19 +11782,19 @@ public class BatteryStatsImpl extends BatteryStats {
                 delta = null;
             }
         }
-        updateWifiBatteryStats(info, delta, consumedChargeUC, elapsedRealtimeMs, uptimeMs);
+        updateWifiBatteryStats(info, delta, elapsedRealtimeMs, uptimeMs);
     }
 
     private void onWifiPowerStatsRetrieved(WifiActivityEnergyInfo wifiActivityEnergyInfo,
             NetworkStats networkStatsDelta, long elapsedRealtimeMs, long uptimeMs) {
         // Do not populate consumed energy, because energy attribution is done by
         // WifiPowerStatsProcessor.
-        updateWifiBatteryStats(wifiActivityEnergyInfo, networkStatsDelta, POWER_DATA_UNAVAILABLE,
+        updateWifiBatteryStats(wifiActivityEnergyInfo, networkStatsDelta,
                 elapsedRealtimeMs, uptimeMs);
     }
 
     private void updateWifiBatteryStats(WifiActivityEnergyInfo info,
-            NetworkStats delta, long consumedChargeUC, long elapsedRealtimeMs,
+            NetworkStats delta, long elapsedRealtimeMs,
             long uptimeMs) {
         synchronized (this) {
             if (!mOnBatteryInternal || mIgnoreNextExternalStats) {
@@ -12375,7 +12079,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * Distribute Cell radio energy info and network traffic to apps.
      */
     public void noteModemControllerActivity(@Nullable final ModemActivityInfo activityInfo,
-            final long consumedChargeUC, long elapsedRealtimeMs, long uptimeMs,
+            long elapsedRealtimeMs, long uptimeMs,
             @NonNull NetworkStatsManager networkStatsManager) {
         if (DEBUG_ENERGY) {
             Slog.d(TAG, "Updating mobile radio stats with " + activityInfo);
@@ -12395,19 +12099,19 @@ public class BatteryStatsImpl extends BatteryStats {
             }
         }
 
-        updateCellularBatteryStats(deltaInfo, delta, consumedChargeUC, elapsedRealtimeMs, uptimeMs);
+        updateCellularBatteryStats(deltaInfo, delta, elapsedRealtimeMs, uptimeMs);
     }
 
     private void onMobileRadioPowerStatsRetrieved(ModemActivityInfo modemActivityInfo,
             NetworkStats networkStatsDelta, long elapsedRealtimeMs, long uptimeMs) {
         // Do not populate consumed energy, because energy attribution is done by
         // MobileRadioPowerStatsProcessor.
-        updateCellularBatteryStats(modemActivityInfo, networkStatsDelta, POWER_DATA_UNAVAILABLE,
+        updateCellularBatteryStats(modemActivityInfo, networkStatsDelta,
                 elapsedRealtimeMs, uptimeMs);
     }
 
     private void updateCellularBatteryStats(@Nullable ModemActivityInfo deltaInfo,
-            @Nullable NetworkStats delta, long consumedChargeUC, long elapsedRealtimeMs,
+            @Nullable NetworkStats delta, long elapsedRealtimeMs,
             long uptimeMs) {
         // Add modem tx power to history.
         addModemTxPowerToHistory(deltaInfo, elapsedRealtimeMs, uptimeMs);
@@ -12423,24 +12127,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
             if (!mOnBatteryInternal || mIgnoreNextExternalStats) {
                 return;
-            }
-
-            if (consumedChargeUC > 0 && isMobileRadioEnergyConsumerSupportedLocked()) {
-                final long phoneConsumedChargeUC;
-                if (totalRadioDurationMs == 0) {
-                    phoneConsumedChargeUC = 0;
-                } else {
-                    // Crudely attribute power consumption. Added (totalRadioDurationMs / 2) to the
-                    // numerator for long rounding.
-                    phoneConsumedChargeUC =
-                            (consumedChargeUC * phoneOnDurationMs + totalRadioDurationMs / 2)
-                                    / totalRadioDurationMs;
-                }
-                mGlobalEnergyConsumerStats.updateStandardBucket(
-                        EnergyConsumerStats.POWER_BUCKET_PHONE, phoneConsumedChargeUC);
-                mGlobalEnergyConsumerStats.updateStandardBucket(
-                        EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO,
-                        consumedChargeUC - phoneConsumedChargeUC);
             }
 
             if (deltaInfo != null) {
@@ -12746,19 +12432,17 @@ public class BatteryStatsImpl extends BatteryStats {
 
     private void onBluetoothPowerStatsRetrieved(BluetoothActivityEnergyInfo info,
             long elapsedRealtimeMs, long uptimeMs) {
-        // Do not populate consumed energy, because energy attribution is done by
-        // BluetoothPowerStatsProcessor.
-        updateBluetoothStateLocked(info, POWER_DATA_UNAVAILABLE, elapsedRealtimeMs, uptimeMs);
+        updateBluetoothStateLocked(info, elapsedRealtimeMs, uptimeMs);
     }
 
     /**
-     * Distribute Bluetooth energy info and network traffic to apps.
+     * Distribute Bluetooth network traffic to apps.
      *
      * @param info The accumulated energy information from the bluetooth controller.
      */
     @GuardedBy("this")
     public void updateBluetoothStateLocked(@Nullable final BluetoothActivityEnergyInfo info,
-            final long consumedChargeUC, long elapsedRealtimeMs, long uptimeMs) {
+            long elapsedRealtimeMs, long uptimeMs) {
         if (DEBUG_ENERGY) {
             Slog.d(TAG, "Updating bluetooth stats: " + info);
         }
@@ -13036,285 +12720,6 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     /**
-     * Accumulate Display charge consumption and distribute it to the correct state and the apps.
-     *
-     * NOTE: The algorithm used makes the strong assumption that app foreground activity time
-     * is always 0 when the screen is not "ON" and whenever the rail energy is 0 (if supported).
-     * To the extent that those assumptions are violated, the algorithm will err.
-     *
-     * @param chargesUC amount of charge (microcoulombs) used by each Display since this was last
-     *                 called.
-     * @param screenStates each screen state at the time this data collection was scheduled
-     */
-    @GuardedBy("this")
-    public void updateDisplayEnergyConsumerStatsLocked(long[] chargesUC, int[] screenStates,
-            long elapsedRealtimeMs) {
-        if (DEBUG_ENERGY) Slog.d(TAG, "Updating display stats: " + Arrays.toString(chargesUC));
-        if (mGlobalEnergyConsumerStats == null) {
-            return;
-        }
-
-        final int numDisplays;
-        if (mPerDisplayBatteryStats.length == screenStates.length) {
-            numDisplays = screenStates.length;
-        } else {
-            // if this point is reached, it will be reached every display state change.
-            // Rate limit the wtf logging to once every 100 display updates.
-            if (mDisplayMismatchWtfCount++ % 100 == 0) {
-                Slog.wtf(TAG, "Mismatch between PowerProfile reported display count ("
-                        + mPerDisplayBatteryStats.length
-                        + ") and PowerStatsHal reported display count (" + screenStates.length
-                        + ")");
-            }
-            // Keep the show going, use the shorter of the two.
-            numDisplays = mPerDisplayBatteryStats.length < screenStates.length
-                    ? mPerDisplayBatteryStats.length : screenStates.length;
-        }
-
-        final int[] oldScreenStates = new int[numDisplays];
-        for (int i = 0; i < numDisplays; i++) {
-            final int screenState = screenStates[i];
-            oldScreenStates[i] = mPerDisplayBatteryStats[i].screenStateAtLastEnergyMeasurement;
-            mPerDisplayBatteryStats[i].screenStateAtLastEnergyMeasurement = screenState;
-        }
-
-        if (!mOnBatteryInternal) {
-            // There's nothing further to update.
-            return;
-        }
-        if (mIgnoreNextExternalStats) {
-            // Although under ordinary resets we won't get here, and typically a new sync will
-            // happen right after the reset, strictly speaking we need to set all mark times to now.
-            final int uidStatsSize = mUidStats.size();
-            for (int i = 0; i < uidStatsSize; i++) {
-                final Uid uid = mUidStats.valueAt(i);
-                uid.markProcessForegroundTimeUs(elapsedRealtimeMs, false);
-            }
-            return;
-        }
-
-        long totalScreenOnChargeUC = 0;
-        for (int i = 0; i < numDisplays; i++) {
-            final long chargeUC = chargesUC[i];
-            if (chargeUC <= 0) {
-                // There's nothing further to update.
-                continue;
-            }
-
-            final @StandardPowerBucket int powerBucket =
-                    EnergyConsumerStats.getDisplayPowerBucket(oldScreenStates[i]);
-            mGlobalEnergyConsumerStats.updateStandardBucket(powerBucket, chargeUC);
-            if (powerBucket == EnergyConsumerStats.POWER_BUCKET_SCREEN_ON) {
-                totalScreenOnChargeUC += chargeUC;
-            }
-        }
-
-        // Now we blame individual apps, but only if the display was ON.
-        if (totalScreenOnChargeUC <= 0) {
-            return;
-        }
-        // TODO(b/175726779): Consider unifying the code with the non-rail display power blaming.
-
-        // NOTE: fg time is NOT pooled. If two uids are both somehow in fg, then that time is
-        // 'double counted' and will simply exceed the realtime that elapsed.
-        // TODO(b/175726779): collect per display uid visibility for display power attribution.
-
-        // Collect total time since mark so that we can normalize power.
-        final SparseDoubleArray fgTimeUsArray = new SparseDoubleArray();
-        final long elapsedRealtimeUs = elapsedRealtimeMs * 1000;
-        // TODO(b/175726779): Update and optimize the algorithm (e.g. avoid iterating over ALL uids)
-        final int uidStatsSize = mUidStats.size();
-        for (int i = 0; i < uidStatsSize; i++) {
-            final Uid uid = mUidStats.valueAt(i);
-            final long fgTimeUs = uid.markProcessForegroundTimeUs(elapsedRealtimeMs, true);
-            if (fgTimeUs == 0) continue;
-            fgTimeUsArray.put(uid.getUid(), (double) fgTimeUs);
-        }
-        distributeEnergyToUidsLocked(EnergyConsumerStats.POWER_BUCKET_SCREEN_ON,
-                totalScreenOnChargeUC, fgTimeUsArray, 0, elapsedRealtimeMs);
-    }
-
-    /**
-     * Accumulate GNSS charge consumption and distribute it to the correct state and the apps.
-     *
-     * @param chargeUC amount of charge (microcoulombs) used by GNSS since this was last called.
-     */
-    @GuardedBy("this")
-    public void updateGnssEnergyConsumerStatsLocked(long chargeUC, long elapsedRealtimeMs) {
-        if (DEBUG_ENERGY) Slog.d(TAG, "Updating gnss stats: " + chargeUC);
-        if (mGlobalEnergyConsumerStats == null) {
-            return;
-        }
-
-        if (!mOnBatteryInternal || chargeUC <= 0) {
-            // There's nothing further to update.
-            return;
-        }
-        if (mIgnoreNextExternalStats) {
-            // Although under ordinary resets we won't get here, and typically a new sync will
-            // happen right after the reset, strictly speaking we need to set all mark times to now.
-            final int uidStatsSize = mUidStats.size();
-            for (int i = 0; i < uidStatsSize; i++) {
-                final Uid uid = mUidStats.valueAt(i);
-                uid.markGnssTimeUs(elapsedRealtimeMs);
-            }
-            return;
-        }
-
-        mGlobalEnergyConsumerStats.updateStandardBucket(EnergyConsumerStats.POWER_BUCKET_GNSS,
-                chargeUC);
-
-        // Collect the per uid time since mark so that we can normalize power.
-        final SparseDoubleArray gnssTimeUsArray = new SparseDoubleArray();
-        // TODO(b/175726779): Update and optimize the algorithm (e.g. avoid iterating over ALL uids)
-        final int uidStatsSize = mUidStats.size();
-        for (int i = 0; i < uidStatsSize; i++) {
-            final Uid uid = mUidStats.valueAt(i);
-            final long gnssTimeUs = uid.markGnssTimeUs(elapsedRealtimeMs);
-            if (gnssTimeUs == 0) continue;
-            gnssTimeUsArray.put(uid.getUid(), (double) gnssTimeUs);
-        }
-        distributeEnergyToUidsLocked(EnergyConsumerStats.POWER_BUCKET_GNSS, chargeUC,
-                gnssTimeUsArray, 0, elapsedRealtimeMs);
-    }
-
-    /**
-     * Accumulate camera charge consumption and distribute it to the correct state and the apps.
-     *
-     * @param chargeUC amount of charge (microcoulombs) used by the camera since this was last
-     *         called.
-     */
-    @GuardedBy("this")
-    public void updateCameraEnergyConsumerStatsLocked(long chargeUC, long elapsedRealtimeMs) {
-        if (DEBUG_ENERGY) Slog.d(TAG, "Updating camera stats: " + chargeUC);
-        if (mGlobalEnergyConsumerStats == null) {
-            return;
-        }
-
-        if (!mOnBatteryInternal || chargeUC <= 0) {
-            // There's nothing further to update.
-            return;
-        }
-
-        if (mIgnoreNextExternalStats) {
-            // Although under ordinary resets we won't get here, and typically a new sync will
-            // happen right after the reset, strictly speaking we need to set all mark times to now.
-            final int uidStatsSize = mUidStats.size();
-            for (int i = 0; i < uidStatsSize; i++) {
-                final Uid uid = mUidStats.valueAt(i);
-                uid.markCameraTimeUs(elapsedRealtimeMs);
-            }
-            return;
-        }
-
-        mGlobalEnergyConsumerStats.updateStandardBucket(
-                EnergyConsumerStats.POWER_BUCKET_CAMERA, chargeUC);
-
-        // Collect the per uid time since mark so that we can normalize power.
-        final SparseDoubleArray cameraTimeUsArray = new SparseDoubleArray();
-
-        // Note: Iterating over all UIDs may be suboptimal.
-        final int uidStatsSize = mUidStats.size();
-        for (int i = 0; i < uidStatsSize; i++) {
-            final Uid uid = mUidStats.valueAt(i);
-            final long cameraTimeUs = uid.markCameraTimeUs(elapsedRealtimeMs);
-            if (cameraTimeUs == 0) continue;
-            cameraTimeUsArray.put(uid.getUid(), (double) cameraTimeUs);
-        }
-        distributeEnergyToUidsLocked(EnergyConsumerStats.POWER_BUCKET_CAMERA, chargeUC,
-                cameraTimeUsArray, 0, elapsedRealtimeMs);
-    }
-
-    /**
-     * Accumulate Custom power bucket charge, globally and for each app.
-     *
-     * @param totalChargeUC charge (microcoulombs) used for this bucket since this was last called.
-     * @param uidCharges map of uid->charge (microcoulombs) for this bucket since last called.
-     *                    Data inside uidCharges will not be modified (treated immutable).
-     *                    Uids not already known to BatteryStats will be ignored.
-     */
-    @GuardedBy("this")
-    @SuppressWarnings("GuardedBy") // errorprone false positive on u.addChargeToCustomBucketLocked
-    public void updateCustomEnergyConsumerStatsLocked(int customPowerBucket,
-            long totalChargeUC, @Nullable SparseLongArray uidCharges) {
-        if (DEBUG_ENERGY) {
-            Slog.d(TAG, "Updating attributed EnergyConsumer stats for custom bucket "
-                    + customPowerBucket
-                    + " with total charge " + totalChargeUC
-                    + " and uid charges " + uidCharges);
-        }
-        if (mGlobalEnergyConsumerStats == null) return;
-        if (!mOnBatteryInternal || mIgnoreNextExternalStats || totalChargeUC <= 0) return;
-
-        mGlobalEnergyConsumerStats.updateCustomBucket(customPowerBucket, totalChargeUC,
-                mClock.elapsedRealtime());
-
-        if (uidCharges == null) return;
-        final int numUids = uidCharges.size();
-        for (int i = 0; i < numUids; i++) {
-            final int uidInt = mapUid(uidCharges.keyAt(i));
-            final long uidChargeUC = uidCharges.valueAt(i);
-            if (uidChargeUC == 0) continue;
-
-            final Uid uidObj = getAvailableUidStatsLocked(uidInt);
-            if (uidObj != null) {
-                uidObj.addChargeToCustomBucketLocked(uidChargeUC, customPowerBucket);
-            } else {
-                // Ignore any uid not already known to BatteryStats, rather than creating a new Uid.
-                // Otherwise we could end up reviving dead Uids. Note that the CPU data is updated
-                // first, so any uid that has used any CPU should already be known to BatteryStats.
-                // Recently removed uids (especially common for isolated uids) can reach this path
-                // and are ignored.
-                if (!Process.isIsolated(uidInt)) {
-                    Slog.w(TAG, "Received EnergyConsumer charge " + totalChargeUC
-                            + " for custom bucket " + customPowerBucket + " for non-existent uid "
-                            + uidInt);
-                }
-            }
-        }
-    }
-
-    /**
-     * Attributes energy (for the given bucket) to each uid according to the following formula:
-     *     blamedEnergy[uid] = totalEnergy * ratioNumerators[uid] / ratioDenominator;
-     * <p>Does nothing if ratioDenominator is 0.
-     *
-     * <p>Here, ratioDenominator = max(sumOfAllRatioNumerators, minRatioDenominator),
-     * so if given minRatioDenominator <= 0, then sumOfAllRatioNumerators will be used implicitly.
-     *
-     * <p>Note that ratioNumerators and minRatioDenominator must use the same units, but need not
-     * use the same units as totalConsumedChargeUC (which must be in microcoulombs).
-     *
-     * <p>A consequence of minRatioDenominator is that the sum over all uids might be less than
-     * totalConsumedChargeUC. This is intentional; the remainder is purposefully unnaccounted rather
-     * than incorrectly blamed on uids, and implies unknown (non-uid) sources of drain.
-     *
-     * <p>All uids in ratioNumerators must exist in mUidStats already.
-     */
-    @GuardedBy("this")
-    @SuppressWarnings("GuardedBy") // errorprone false positive on u.addChargeToStandardBucketLocked
-    private void distributeEnergyToUidsLocked(@StandardPowerBucket int bucket,
-            long totalConsumedChargeUC, SparseDoubleArray ratioNumerators,
-            double minRatioDenominator, long timestampMs) {
-
-        // If the sum of all app usage was greater than the total, use that instead:
-        double sumRatioNumerators = 0;
-        for (int i = ratioNumerators.size() - 1; i >= 0; i--) {
-            sumRatioNumerators += ratioNumerators.valueAt(i);
-        }
-        final double ratioDenominator = Math.max(sumRatioNumerators, minRatioDenominator);
-        if (ratioDenominator <= 0) return;
-
-        for (int i = ratioNumerators.size() - 1; i >= 0; i--) {
-            final Uid uid = getAvailableUidStatsLocked(ratioNumerators.keyAt(i));
-            final double ratioNumerator = ratioNumerators.valueAt(i);
-            final long uidActualUC
-                    = (long) (totalConsumedChargeUC * ratioNumerator / ratioDenominator + 0.5);
-            uid.addChargeToStandardBucketLocked(uidActualUC, bucket, timestampMs);
-        }
-    }
-
-    /**
      * Read and record Rail Energy data.
      */
     public void updateRailStatsLocked() {
@@ -13443,8 +12848,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * buckets.
      */
     @GuardedBy("this")
-    public void updateCpuTimeLocked(boolean onBattery, boolean onBatteryScreenOff,
-            long[] cpuClusterChargeUC) {
+    public void updateCpuTimeLocked(boolean onBattery, boolean onBatteryScreenOff) {
         if (DEBUG_ENERGY_CPU) {
             Slog.d(TAG, "!Cpu updating!");
         }
@@ -15058,12 +14462,6 @@ public class BatteryStatsImpl extends BatteryStats {
     @GuardedBy("this")
     public void initEnergyConsumerStatsLocked(@Nullable boolean[] supportedStandardBuckets,
             String[] customBucketNames) {
-        final int numDisplays = mPerDisplayBatteryStats.length;
-        for (int i = 0; i < numDisplays; i++) {
-            final int screenState = mPerDisplayBatteryStats[i].screenState;
-            mPerDisplayBatteryStats[i].screenStateAtLastEnergyMeasurement = screenState;
-        }
-
         if (supportedStandardBuckets != null) {
             final EnergyConsumerStats.Config config = new EnergyConsumerStats.Config(
                     supportedStandardBuckets, customBucketNames,
@@ -15081,7 +14479,6 @@ public class BatteryStatsImpl extends BatteryStats {
             }
 
             mEnergyConsumerStatsConfig = config;
-            mGlobalEnergyConsumerStats = new EnergyConsumerStats(config);
         } else {
             if (mEnergyConsumerStatsConfig != null) {
                 // EnergyConsumer no longer supported
@@ -15092,15 +14489,7 @@ public class BatteryStatsImpl extends BatteryStats {
                         RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
             }
             mEnergyConsumerStatsConfig = null;
-            mGlobalEnergyConsumerStats = null;
         }
-    }
-
-    @GuardedBy("this")
-    private boolean isMobileRadioEnergyConsumerSupportedLocked() {
-        if (mGlobalEnergyConsumerStats == null) return false;
-        return mGlobalEnergyConsumerStats.isStandardBucketSupported(
-                EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO);
     }
 
     @NonNull
@@ -15465,41 +14854,6 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     /**
-     * Dump EnergyConsumer stats
-     */
-    @GuardedBy("this")
-    public void dumpEnergyConsumerStatsLocked(PrintWriter pw) {
-        pw.printf("On-battery energy consumer stats (microcoulombs) \n");
-        if (mGlobalEnergyConsumerStats == null) {
-            pw.printf("    Not supported on this device.\n");
-            return;
-        }
-
-        dumpEnergyConsumerStatsLocked(pw, "global usage", mGlobalEnergyConsumerStats);
-
-        int size = mUidStats.size();
-        for (int i = 0; i < size; i++) {
-            final int u = mUidStats.keyAt(i);
-            final Uid uid = mUidStats.get(u);
-            final String name = "uid " + uid.mUid;
-            dumpEnergyConsumerStatsLocked(pw, name, uid.mUidEnergyConsumerStats);
-        }
-    }
-
-    /** Dump EnergyConsumer stats for the given uid */
-    @GuardedBy("this")
-    private void dumpEnergyConsumerStatsLocked(PrintWriter pw, String name,
-            EnergyConsumerStats stats) {
-        if (stats == null) return;
-        final IndentingPrintWriter iPw = new IndentingPrintWriter(pw, "    ");
-        iPw.increaseIndent();
-        iPw.printf("%s:\n", name);
-        iPw.increaseIndent();
-        stats.dump(iPw);
-        iPw.decreaseIndent();
-    }
-
-    /**
      * Dump Power Profile
      */
     @GuardedBy("this")
@@ -15747,8 +15101,10 @@ public class BatteryStatsImpl extends BatteryStats {
         mBatteryTimeToFullSeconds = in.readLong();
 
         final EnergyConsumerStats.Config config = EnergyConsumerStats.Config.createFromParcel(in);
-        final EnergyConsumerStats energyConsumerStats =
-                EnergyConsumerStats.createAndReadSummaryFromParcel(mEnergyConsumerStatsConfig, in);
+
+        // Read and ignore
+        EnergyConsumerStats.createAndReadSummaryFromParcel(mEnergyConsumerStatsConfig, in);
+
         if (config != null && Arrays.equals(config.getStateNames(),
                 getBatteryConsumerProcessStateNames())) {
             /**
@@ -15756,7 +15112,6 @@ public class BatteryStatsImpl extends BatteryStats {
              *          later when {@link #initEnergyConsumerStatsLocked} is called.
              */
             mEnergyConsumerStatsConfig = config;
-            mGlobalEnergyConsumerStats = energyConsumerStats;
         }
 
         mStartCount++;
@@ -16090,8 +15445,8 @@ public class BatteryStatsImpl extends BatteryStats {
                 u.mWifiRadioApWakeupCount = null;
             }
 
-            u.mUidEnergyConsumerStats = EnergyConsumerStats.createAndReadSummaryFromParcel(
-                    mEnergyConsumerStatsConfig, in);
+            // Read and ignore.
+            EnergyConsumerStats.createAndReadSummaryFromParcel(mEnergyConsumerStatsConfig, in);
 
             int NW = in.readInt();
             if (NW > (MAX_WAKELOCKS_PER_UID+1)) {
@@ -16265,7 +15620,7 @@ public class BatteryStatsImpl extends BatteryStats {
         out.writeLong(mBatteryTimeToFullSeconds);
 
         EnergyConsumerStats.Config.writeToParcel(mEnergyConsumerStatsConfig, out);
-        EnergyConsumerStats.writeSummaryToParcel(mGlobalEnergyConsumerStats, out);
+        out.writeInt(0);        // RESERVED
 
         mScreenOnTimer.writeSummaryFromParcelLocked(out, nowRealtime);
         mScreenDozeTimer.writeSummaryFromParcelLocked(out, nowRealtime);
@@ -16616,7 +15971,7 @@ public class BatteryStatsImpl extends BatteryStats {
                 out.writeInt(0);
             }
 
-            EnergyConsumerStats.writeSummaryToParcel(u.mUidEnergyConsumerStats, out);
+            out.writeInt(0);        // RESERVED
 
             final ArrayMap<String, Uid.Wakelock> wakeStats = u.mWakelockStats.getMap();
             int NW = wakeStats.size();
@@ -16849,9 +16204,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
             pw.println();
             mCpuPowerStatsCollector.dumpCpuPowerBracketsLocked(pw);
-
-            pw.println();
-            dumpEnergyConsumerStatsLocked(pw);
         }
     }
 }

@@ -16,9 +16,6 @@
 
 package com.android.internal.power;
 
-
-import static android.os.BatteryStats.POWER_DATA_UNAVAILABLE;
-
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -47,6 +44,8 @@ import java.util.Arrays;
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class EnergyConsumerStats {
     private static final String TAG = "MeasuredEnergyStats";
+
+    private static final long POWER_DATA_UNAVAILABLE = -1;
 
     // Note: {@link BatteryStats#VERSION} MUST be updated if standard
     // power bucket integers are modified/added/removed.
@@ -464,7 +463,7 @@ public class EnergyConsumerStats {
 
     /**
      * Return accumulated charge (in microcouloumb) for a standard power bucket since last reset.
-     * Returns {@link android.os.BatteryStats#POWER_DATA_UNAVAILABLE} if this data is unavailable.
+     * Returns {@link POWER_DATA_UNAVAILABLE} if this data is unavailable.
      * @throws IllegalArgumentException if no such {@link StandardPowerBucket}.
      */
     public long getAccumulatedStandardBucketCharge(@StandardPowerBucket int bucket) {
@@ -476,7 +475,7 @@ public class EnergyConsumerStats {
      * Returns the accumulated charge (in microcouloumb) for the standard power bucket and
      * the specified state since last reset.
      *
-     * Returns {@link android.os.BatteryStats#POWER_DATA_UNAVAILABLE} if this data is unavailable.
+     * Returns {@link POWER_DATA_UNAVAILABLE} if this data is unavailable.
      */
     public long getAccumulatedStandardBucketCharge(@StandardPowerBucket int bucket, int state) {
         if (!mConfig.isSupportedMultiStateBucket(bucket)) {

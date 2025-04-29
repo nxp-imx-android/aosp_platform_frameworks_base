@@ -128,7 +128,7 @@ public class BatteryStatsCpuTimesTest {
 
         // RUN
         synchronized (mBatteryStatsImpl) {
-            mBatteryStatsImpl.updateCpuTimeLocked(false, false, null);
+            mBatteryStatsImpl.updateCpuTimeLocked(false, false);
         }
 
         // VERIFY
@@ -149,7 +149,7 @@ public class BatteryStatsCpuTimesTest {
 
         // RUN
         synchronized (mBatteryStatsImpl) {
-            mBatteryStatsImpl.updateCpuTimeLocked(true, false, null);
+            mBatteryStatsImpl.updateCpuTimeLocked(true, false);
         }
 
         // VERIFY

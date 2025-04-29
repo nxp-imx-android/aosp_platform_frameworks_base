@@ -26,7 +26,6 @@ import static android.net.NetworkCapabilities.TRANSPORT_CELLULAR;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 import static android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK;
 import static android.os.BatteryConsumer.POWER_COMPONENT_BASE;
-import static android.os.BatteryStats.POWER_DATA_UNAVAILABLE;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 
@@ -2753,8 +2752,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             final NetworkStatsManager networkStatsManager = mContext.getSystemService(
                     NetworkStatsManager.class);
             mHandler.post(() -> {
-                mStats.updateWifiState(info, POWER_DATA_UNAVAILABLE, elapsedRealtime, uptime,
-                        networkStatsManager);
+                mStats.updateWifiState(info, elapsedRealtime, uptime, networkStatsManager);
             });
         }
     }
@@ -2774,8 +2772,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             final long uptime = SystemClock.uptimeMillis();
             mHandler.post(() -> {
                 synchronized (mStats) {
-                    mStats.updateBluetoothStateLocked(
-                            info, POWER_DATA_UNAVAILABLE, elapsedRealtime, uptime);
+                    mStats.updateBluetoothStateLocked(info, elapsedRealtime, uptime);
                 }
             });
         }
@@ -2797,8 +2794,8 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             final NetworkStatsManager networkStatsManager = mContext.getSystemService(
                     NetworkStatsManager.class);
             mHandler.post(() -> {
-                mStats.noteModemControllerActivity(info, POWER_DATA_UNAVAILABLE, elapsedRealtime,
-                        uptime, networkStatsManager);
+                mStats.noteModemControllerActivity(info, elapsedRealtime, uptime,
+                        networkStatsManager);
             });
         }
     }
@@ -2996,15 +2993,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
 
     private void dumpPowerStatsStoreTableOfContents(PrintWriter pw) {
         mPowerStatsStore.dumpTableOfContents(new IndentingPrintWriter(pw, "  "));
-    }
-
-    private void dumpMeasuredEnergyStats(PrintWriter pw) {
-        // Wait for the completion of pending works if there is any
-        awaitCompletion();
-        syncStats("dump", BatteryExternalStatsWorker.UPDATE_ALL);
-        synchronized (mStats) {
-            mStats.dumpEnergyConsumerStatsLocked(pw);
-        }
     }
 
     private void dumpPowerProfile(PrintWriter pw) {
@@ -3210,9 +3198,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     return;
                 } else if ("--cpu".equals(arg)) {
                     dumpCpuStats(pw);
-                    return;
-                } else  if ("--measured-energy".equals(arg)) {
-                    dumpMeasuredEnergyStats(pw);
                     return;
                 } else if ("--power-profile".equals(arg)) {
                     dumpPowerProfile(pw);
