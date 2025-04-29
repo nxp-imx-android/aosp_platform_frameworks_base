@@ -14,8 +14,11 @@
 package com.android.systemui.plugins.clocks
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Rect
+import com.android.systemui.monet.ColorScheme
 import com.android.systemui.plugins.annotations.ProtectedInterface
+import com.android.systemui.shared.Flags.ambientAod
 
 /** Events that have specific data about the related face */
 @ProtectedInterface
@@ -68,6 +71,21 @@ data class ThemeConfig(
             seedColor != null -> seedColor!!
             isDarkTheme -> context.resources.getColor(android.R.color.system_accent1_100)
             else -> context.resources.getColor(android.R.color.system_accent2_600)
+        }
+    }
+
+    fun getAodColor(context: Context): Int {
+        return if (!ambientAod()) {
+            Color.WHITE
+        } else {
+            seedColor?.let {
+                val colorScheme =
+                    ColorScheme(
+                        it,
+                        false, // darkTheme is not used for palette generation
+                    )
+                colorScheme.accent1.s100
+            } ?: context.resources.getColor(android.R.color.system_accent1_100)
         }
     }
 }
