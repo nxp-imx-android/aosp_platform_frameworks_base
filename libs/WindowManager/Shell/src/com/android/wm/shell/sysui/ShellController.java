@@ -68,7 +68,7 @@ public class ShellController {
     private static final String TAG = ShellController.class.getSimpleName();
 
     public static final DesktopExperienceFlag FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG =
-            new DesktopExperienceFlag(Flags::fixMissingUserChangeCallbacks, false,
+            new DesktopExperienceFlag(Flags::fixMissingUserChangeCallbacks, true,
                     Flags.FLAG_FIX_MISSING_USER_CHANGE_CALLBACKS);
 
     private final Context mContext;
