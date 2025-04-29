@@ -284,7 +284,7 @@ constructor(
             shadeRadius = 0f
         }
 
-        if (spatialModelAppPushback()) {
+        if (spatialModelAppPushback() || spatialModelPushbackInShader()) {
             // Brightness slider removes blur
             shadeRadius *= (1 - brightnessMirrorSpring.ratio)
         }
@@ -312,7 +312,7 @@ constructor(
             blur = 0
         }
 
-        if (!spatialModelAppPushback()) {
+        if (!spatialModelAppPushback() && !spatialModelPushbackInShader()) {
             // Brightness slider removes blur, but doesn't affect zooms. This is the legacy behavior
             // that zoom out is only applied to the wallpaper (no homescreen, app or all apps
             // zoom out). The new behavior is under the same flag when it's on a few lines above.
@@ -339,7 +339,8 @@ constructor(
             if (Flags.notificationShadeBlur()) false
             else scrimsVisible && !areBlursDisabledForAppLaunch
 
-    private fun zoomOutAsScale(zoomOutProgress: Float): Float =
+    @VisibleForTesting
+    fun zoomOutAsScale(zoomOutProgress: Float): Float =
         if (!spatialModelPushbackInShader()) 1.0f
         else 1.0f - zoomOutProgress * getPushbackScale(isHomeFocused)
 
@@ -482,7 +483,7 @@ constructor(
         }
         shadeAnimation.setStiffness(SpringForce.STIFFNESS_LOW)
         shadeAnimation.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-        if (spatialModelAppPushback()) {
+        if (spatialModelAppPushback() || spatialModelPushbackInShader()) {
             brightnessMirrorSpring.setStiffness(SpringForce.STIFFNESS_LOW)
             brightnessMirrorSpring.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
         }
