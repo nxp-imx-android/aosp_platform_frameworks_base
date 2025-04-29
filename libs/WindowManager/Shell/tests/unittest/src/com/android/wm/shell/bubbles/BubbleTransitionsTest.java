@@ -182,6 +182,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Test
     public void testConvertToBubble() {
         // Basic walk-through of convert-to-bubble transition stages
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
@@ -319,6 +320,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     public void testConvertFromBubble() {
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
                 mBubble, taskInfo);
@@ -433,6 +435,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(bev.getViewRootImpl()).thenReturn(vri);
         when(mBubble.getBubbleBarExpandedView()).thenReturn(null);
         when(mBubble.getExpandedView()).thenReturn(bev);
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
 
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(

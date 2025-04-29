@@ -653,6 +653,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
         if (pending.mExternalTransition != null) {
             pending.mClaimed = pending.mExternalTransition.start();
+            if (pending.mClaimed == null) {
+                ProtoLog.w(WM_SHELL_BUBBLES_NOISY, "TaskViewTransitions.startNextTransition(): "
+                        + "taskView=%d starting the external transition returned a null claim "
+                        + "token. it may have already finished. removing it so that it does not "
+                        + "block other transitions.", pending.mTaskView.hashCode());
+                mPending.remove(pending);
+                startNextTransition();
+                return;
+            }
         } else {
             pending.mClaimed = mTransitions.startTransition(pending.mType, pending.mWct, this);
         }
