@@ -15,7 +15,9 @@
  */
 package com.android.server;
 
+import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.os.UserHandle.USER_NULL;
+import static android.os.UserHandle.USER_SYSTEM;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -28,7 +30,11 @@ import android.annotation.SpecialUsers.CanBeNULL;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.content.pm.UserInfo;
+import android.content.pm.UserInfo.UserInfoFlag;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
 import com.android.server.am.ActivityManagerService;
@@ -39,11 +45,14 @@ import com.android.server.utils.TimingsTraceAndSlog;
 import com.google.common.truth.Expect;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.util.Arrays;
 
 public final class HsumBootUserInitializerTest {
 
@@ -59,6 +68,10 @@ public final class HsumBootUserInitializerTest {
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
 
+    @Rule
+    public final SetFlagsRule setFlagsRule =
+            new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
+
     @Mock
     private UserManagerInternal mMockUmi;
     @Mock
@@ -70,6 +83,13 @@ public final class HsumBootUserInitializerTest {
 
     @Nullable // Must be created in the same thread that it's used
     private TimingsTraceAndSlog mTracer;
+
+    @Before
+    public void setDefaultExpectations() throws Exception {
+        mockGetMainUserId(USER_NULL);
+        mockGetUserIds(USER_SYSTEM);
+        mockCreateNewUser(NON_SYSTEM_USER_ID);
+    }
 
     @After
     public void expectAllTracingCallsAreFinished() {
@@ -84,9 +104,56 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testInit_shouldAlwaysHaveMainUserTrue_noMainUser() throws Exception {
-        mockGetMainUserId(USER_NULL);
-        var initializer = createHsumBootUserInitializer(true);
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserFalse_noUsers_dontCreateUser() {
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ false);
+
+        initializer.init(mTracer);
+
+        expectNoUserCreated();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserFalse_hasUser_dontCreateUser() {
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ false);
+
+        initializer.init(mTracer);
+
+        expectNoUserCreated();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserTrue_noUser_createsUser() {
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ true);
+
+        initializer.init(mTracer);
+
+        expectAdminUserCreated();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserTrue_hasUser_dontCreateUser() {
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ true);
+
+        initializer.init(mTracer);
+
+        expectNoUserCreated();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserFalse_noMainUser_createsMainUser() {
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ false);
 
         initializer.init(mTracer);
 
@@ -94,9 +161,24 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testInit_shouldAlwaysHaveMainUserTrue_hasMainUser() throws Exception {
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserFalse_hasNonMainUser_createsMainUser() {
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ false);
+
+        initializer.init(mTracer);
+
+        expectMainUserCreated();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserFalse_hasMainUser_dontCreateUser() {
         mockGetMainUserId(NON_SYSTEM_USER_ID);
-        var initializer = createHsumBootUserInitializer(true);
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ false);
 
         initializer.init(mTracer);
 
@@ -104,9 +186,36 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testInit_shouldAlwaysHaveMainUserFalse_noMainUser() throws Exception {
-        mockGetMainUserId(USER_NULL);
-        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false);
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserTrue_hasNonMainUser_createsMainUser() {
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ true);
+
+        initializer.init(mTracer);
+
+        expectMainUserCreated();
+    }
+
+    // TODO(b/409650316): remove tests below after flag's completely pushed
+
+    @Test
+    @DisableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_flagDisabled_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserTrue_noUser_createsMainUser() {
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ true);
+
+        initializer.init(mTracer);
+
+        expectMainUserCreated();
+    }
+
+    @Test
+    @DisableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_flagDisabled_shouldAlwaysHaveMainUserTrue_shouldCreateInitialUserTrue_hasMainUser_dontCreateUser() {
+        mockGetMainUserId(NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ true,
+                /* shouldCreateInitialUser= */ true);
 
         initializer.init(mTracer);
 
@@ -114,9 +223,23 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testInit_shouldAlwaysHaveMainUserFalse_hasMainUser() {
-        mockGetMainUserId(NON_SYSTEM_USER_ID);
-        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false);
+    @DisableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_flagDisabled_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserTrue_noUser_createsAdminUser()
+            throws Exception {
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ true);
+
+        initializer.init(mTracer);
+
+        expectNoUserCreated();
+    }
+
+    @Test
+    @DisableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testInit_flagDisabled_shouldAlwaysHaveMainUserFalse_shouldCreateInitialUserTrue_hasUser_dontCreateUser() {
+        mockGetUserIds(USER_SYSTEM, NON_SYSTEM_USER_ID);
+        var initializer = createHsumBootUserInitializer(/* shouldAlwaysHaveMainUser= */ false,
+                /* shouldCreateInitialUser= */ true);
 
         initializer.init(mTracer);
 
@@ -125,19 +248,31 @@ public final class HsumBootUserInitializerTest {
 
     private HsumBootUserInitializer createHsumBootUserInitializer(
             boolean shouldAlwaysHaveMainUser) {
-        mTracer = new TimingsTraceAndSlog(TAG);
+        return createHsumBootUserInitializer(shouldAlwaysHaveMainUser,
+                /* shouldCreateInitialUser= */ false);
+    }
 
+    private HsumBootUserInitializer createHsumBootUserInitializer(
+            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
+        mTracer = new TimingsTraceAndSlog(TAG);
         return new HsumBootUserInitializer(mMockUmi, mMockAms, mMockPms, mMockContentResolver,
-                shouldAlwaysHaveMainUser);
+                shouldAlwaysHaveMainUser, shouldCreateInitialUser);
     }
 
     private void expectMainUserCreated() {
+        expectUserCreated(UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN);
+    }
+
+    private void expectAdminUserCreated() {
+        expectUserCreated(UserInfo.FLAG_ADMIN);
+    }
+
+    private void expectUserCreated(@UserInfoFlag int flags) {
         try {
             verify(mMockUmi).createUserEvenWhenDisallowed(null,
-                    UserManager.USER_TYPE_FULL_SECONDARY, UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN,
-                    null, null);
+                    UserManager.USER_TYPE_FULL_SECONDARY, flags, null, null);
         } catch (Exception e) {
-            String msg = "didn't create main user";
+            String msg = "didn't create user with flags " + flags;
             Log.e(TAG, msg, e);
             expect.withMessage(msg).fail();
         }
@@ -152,10 +287,48 @@ public final class HsumBootUserInitializerTest {
             Log.e(TAG, msg, e);
             expect.withMessage(msg).fail();
         }
+
+        // Since the user was not created, we can automatically infer that the boot user should not
+        // have been set as well
+        expectSetBootUserIdNeverCalled();
+    }
+
+    private void expectSetBootUserId(@UserIdInt int userId) {
+        try {
+            verify(mMockUmi).setBootUserId(userId);
+        } catch (Exception e) {
+            String msg = "didn't call setBootUserId(" +  userId + ")";
+            Log.e(TAG, msg, e);
+            expect.withMessage(msg).fail();
+        }
+    }
+
+    private void expectSetBootUserIdNeverCalled() {
+        try {
+            verify(mMockUmi, never()).setBootUserId(anyInt());
+        } catch (Exception e) {
+            String msg = "setBootUserId() should never be called";
+            Log.e(TAG, msg, e);
+            expect.withMessage(msg).fail();
+        }
+    }
+
+    private void mockCreateNewUser(@UserIdInt int userId) throws Exception {
+        @SuppressWarnings("deprecation")
+        UserInfo userInfo = new UserInfo();
+        userInfo.id = userId;
+        Log.d(TAG, "createUserEvenWhenDisallowed() will return " + userInfo);
+        when(mMockUmi.createUserEvenWhenDisallowed(any(), any(), anyInt(), any(), any()))
+                .thenReturn(userInfo);
     }
 
     private void mockGetMainUserId(@CanBeNULL @UserIdInt int userId) {
         Log.d(TAG, "mockGetMainUserId(): " + userId);
         when(mMockUmi.getMainUserId()).thenReturn(userId);
+    }
+
+    private void mockGetUserIds(@UserIdInt int... userIds) {
+        Log.d(TAG, "mockGetUserIds(): " + Arrays.toString(userIds));
+        when(mMockUmi.getUserIds()).thenReturn(userIds);
     }
 }
