@@ -23,7 +23,6 @@ import android.telecom.Log;
 import android.text.TextUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.telecom.flags.Flags;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -263,7 +262,6 @@ public class Session {
     // Builds full session ID, which incliudes the optional external indicators (E),
     // base session ID, and the optional sub-session IDs (_X): @[E-]...[ID][_X][_Y]...
     private String getFullSessionId() {
-        if (!Flags.endSessionImprovements()) return getFullSessionIdRecursive(0);
         int currParentCount = 0;
         StringBuilder id = new StringBuilder();
         Session currSession = this;
@@ -288,36 +286,6 @@ public class Session {
         }
         return id.toString();
     }
-
-    // keep track of calls and bail if we hit the recursion limit
-    private String getFullSessionIdRecursive(int parentCount) {
-        if (parentCount >= SESSION_RECURSION_LIMIT) {
-            // Don't use Telecom's Log.w here or it will cause infinite recursion because it will
-            // try to add session information to this logging statement, which will cause it to hit
-            // this condition again and so on...
-            android.util.Slog.w(LOG_TAG, "getFullSessionId: Hit recursion limit!");
-            return TRUNCATE_STRING + mSessionId;
-        }
-        // Cache mParentSession locally to prevent a concurrency problem where
-        // Log.endParentSessions() is called while a logging statement is running (Log.i, for
-        // example) and setting mParentSession to null in a different thread after the null check
-        // occurred.
-        Session parentSession = mParentSession;
-        if (parentSession == null) {
-            return mSessionId;
-        } else {
-            if (Log.VERBOSE) {
-                return parentSession.getFullSessionIdRecursive(parentCount + 1)
-                        // Append "_X" to subsession to show subsession designation.
-                        + SESSION_SEPARATION_CHAR_CHILD + mSessionId;
-            } else {
-                // Only worry about the base ID at the top of the tree.
-                return parentSession.getFullSessionIdRecursive(parentCount + 1);
-            }
-
-        }
-    }
-
     private Session getRootSession(String callingMethod) {
         int currParentCount = 0;
         Session topNode = this;
@@ -345,10 +313,6 @@ public class Session {
 
     private String printSessionTree() {
         StringBuilder sb = new StringBuilder();
-        if (!Flags.endSessionImprovements()) {
-            printSessionTreeRecursive(0, sb, 0);
-            return sb.toString();
-        }
         int depth = 0;
         ArrayDeque<Session> deque = new ArrayDeque<>();
         deque.add(this);
@@ -375,29 +339,6 @@ public class Session {
         return sb.toString();
     }
 
-    // Recursively move down session tree using DFS, but print out each node when it is reached.
-    private void printSessionTreeRecursive(int tabI, StringBuilder sb, int currChildCount) {
-        // Prevent infinite recursion.
-        if (currChildCount >= SESSION_RECURSION_LIMIT) {
-            // Don't use Telecom's Log.w here or it will cause infinite recursion because it will
-            // try to add session information to this logging statement, which will cause it to hit
-            // this condition again and so on...
-            android.util.Slog.w(LOG_TAG, "printSessionTree: Hit recursion limit!");
-            sb.append(TRUNCATE_STRING);
-            return;
-        }
-        sb.append(toString());
-        for (Session child : mChildSessions) {
-            sb.append("\n");
-            for (int i = 0; i <= tabI; i++) {
-                sb.append("\t");
-            }
-            child.printSessionTreeRecursive(tabI + 1, sb, currChildCount + 1);
-        }
-    }
-
-    //
-
     /**
      * Concatenate the short method name with the parent Sessions to create full method path.
      * @param truncatePath if truncatePath is set to true, all other external sessions (except for
@@ -407,10 +348,6 @@ public class Session {
     @VisibleForTesting
     public String getFullMethodPath(boolean truncatePath) {
         StringBuilder sb = new StringBuilder();
-        if (!Flags.endSessionImprovements()) {
-            getFullMethodPathRecursive(sb, truncatePath, 0);
-            return sb.toString();
-        }
         // Check to see if the session has been renamed yet. If it has not, then the session
         // has not been continued.
         Session parentSession = getParentSession();
@@ -462,52 +399,6 @@ public class Session {
             mFullMethodPathCache = sb.toString();
         }
         return sb.toString();
-    }
-
-    private synchronized void getFullMethodPathRecursive(StringBuilder sb, boolean truncatePath,
-            int parentCount) {
-        if (parentCount >= SESSION_RECURSION_LIMIT) {
-            // Don't use Telecom's Log.w here or it will cause infinite recursion because it will
-            // try to add session information to this logging statement, which will cause it to hit
-            // this condition again and so on...
-            android.util.Slog.w(LOG_TAG, "getFullMethodPathRecursive: Hit recursion limit!");
-            sb.append(TRUNCATE_STRING);
-            return;
-        }
-        // Return cached value for method path. When returning the truncated path, recalculate the
-        // full path without using the cached value.
-        if (!TextUtils.isEmpty(mFullMethodPathCache) && !truncatePath) {
-            sb.append(mFullMethodPathCache);
-            return;
-        }
-        Session parentSession = getParentSession();
-        boolean isSessionStarted = false;
-        if (parentSession != null) {
-            // Check to see if the session has been renamed yet. If it has not, then the session
-            // has not been continued.
-            isSessionStarted = !mShortMethodName.equals(parentSession.mShortMethodName);
-            parentSession.getFullMethodPathRecursive(sb, truncatePath, parentCount + 1);
-            sb.append(SUBSESSION_SEPARATION_CHAR);
-        }
-        // Encapsulate the external session's method name so it is obvious what part of the session
-        // is external or truncate it if we do not want the entire history.
-        if (isExternal()) {
-            if (truncatePath) {
-                sb.append(TRUNCATE_STRING);
-            } else {
-                sb.append("(");
-                sb.append(mShortMethodName);
-                sb.append(")");
-            }
-        } else {
-            sb.append(mShortMethodName);
-        }
-        // If we are returning the truncated path, do not save that path as the full path.
-        if (isSessionStarted && !truncatePath) {
-            // Cache this value so that we do not have to do this work next time!
-            // We do not cache the value if the session being evaluated hasn't been continued yet.
-            mFullMethodPathCache = sb.toString();
-        }
     }
 
     // Recursively move to the top of the tree to see if the parent session is external.
