@@ -1340,6 +1340,12 @@ public class KeyguardViewMediator implements CoreStartable,
                                     .setTag("UNOCCLUDE"));
                     setOccluded(false /* isOccluded */, true /* animate */);
 
+                    // This is a noop if we are not currently in the dream state. However, its
+                    // important to trigger this here as there may be cases where WM doesn't provide
+                    // the apps targets, causing us to early exit below and get stuck in a dreaming
+                    // state.
+                    mDreamViewModel.get().startTransitionFromDream();
+
                     if (apps == null || apps.length == 0 || apps[0] == null) {
                         Log.d(TAG, "No apps provided to unocclude runner; "
                                 + "skipping animation and unoccluding.");
@@ -1365,9 +1371,7 @@ public class KeyguardViewMediator implements CoreStartable,
                         if (isDream || mShowCommunalWhenUnoccluding) {
                             Log.d(TAG, "Start unocclude animation for dream.");
                             initAlphaForAnimationTargets(wallpapers);
-                            if (isDream) {
-                                mDreamViewModel.get().startTransitionFromDream();
-                            } else {
+                            if (!isDream) {
                                 mCommunalTransitionViewModel.get().snapToCommunal();
                             }
                             mUnoccludeFinishedCallback = finishedCallback;

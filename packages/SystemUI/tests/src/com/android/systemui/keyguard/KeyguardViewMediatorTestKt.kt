@@ -42,7 +42,7 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.keyguardUnlockAnimationController
 import com.android.keyguard.mediator.ScreenOnCoordinator
 import com.android.keyguard.trustManager
-import com.android.systemui.Flags
+import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -66,21 +66,27 @@ import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.flags.systemPropertiesHelper
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
+import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionBootInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.sessionTracker
 import com.android.systemui.navigationbar.navigationModeController
 import com.android.systemui.plugins.statusbar.statusBarStateController
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.process.processWrapper
 import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.shadeController
 import com.android.systemui.statusbar.notificationShadeDepthController
 import com.android.systemui.statusbar.notificationShadeWindowController
+import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.phone.dozeParameters
 import com.android.systemui.statusbar.phone.screenOffAnimationController
 import com.android.systemui.statusbar.phone.scrimController
@@ -105,6 +111,8 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -115,12 +123,19 @@ import org.mockito.kotlin.whenever
 @DisableSceneContainer // Class is deprecated in flexi.
 class KeyguardViewMediatorTestKt : SysuiTestCase() {
     private val kosmos =
-        testKosmos().useUnconfinedTestDispatcher().also {
-            it.powerManager =
+        testKosmos().useUnconfinedTestDispatcher().apply {
+            powerManager =
                 mock<PowerManager> {
                     on { newWakeLock(anyInt(), any()) } doReturn mock<PowerManager.WakeLock>()
                 }
+            keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
+
+            val mockViewRootImpl = mock<ViewRootImpl> { on { getView() } doReturn mock<View>() }
+            statusBarKeyguardViewManager =
+                mock<StatusBarKeyguardViewManager> { on { viewRootImpl } doReturn mockViewRootImpl }
         }
+
+    private val Kosmos.dreamViewModelSpy by Kosmos.Fixture { spy(dreamViewModel) }
 
     private lateinit var testableLooper: TestableLooper
 
@@ -169,7 +184,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 systemClock,
                 processWrapper,
                 testDispatcher,
-                { dreamViewModel },
+                { dreamViewModelSpy },
                 { communalTransitionViewModel },
                 systemPropertiesHelper,
                 { mock<WindowManagerLockscreenVisibilityManager>() },
@@ -250,7 +265,41 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun unoccludeAnimationRunner_transitionsAwayFromDreamEvenWithEmptyApps() =
+        kosmos.runTest {
+            setCommunalV2Enabled(false)
+            disableHubShowingAutomatically()
+            powerInteractor.setAwakeForTest()
+
+            // Given that we are in a dream state.
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.OFF,
+                to = KeyguardState.DREAMING,
+                testScope = testScope,
+            )
+
+            val apps = emptyArray<RemoteAnimationTarget>()
+            val wallpapers = emptyArray<RemoteAnimationTarget>()
+            val nonApps = emptyArray<RemoteAnimationTarget>()
+            val finishedCallback = mock<IRemoteAnimationFinishedCallback>()
+
+            verify(dreamViewModelSpy, never()).startTransitionFromDream()
+
+            underTest.unoccludeAnimationRunner.onAnimationStart(
+                WindowManager.TRANSIT_KEYGUARD_UNOCCLUDE,
+                apps,
+                wallpapers,
+                nonApps,
+                finishedCallback,
+            )
+
+            verify(finishedCallback).onAnimationFinished()
+            verify(dreamViewModelSpy).startTransitionFromDream()
+      }
+
+    @Test
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun unoccludeAnimation_callsFinishedCallback_whenStartedAfterFromDreamingTransitionFinished() =
         kosmos.runTest {
             underTest.onSystemReady()
