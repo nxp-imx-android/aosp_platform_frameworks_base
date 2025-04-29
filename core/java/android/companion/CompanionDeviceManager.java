@@ -80,9 +80,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -426,6 +428,10 @@ public final class CompanionDeviceManager {
     @GuardedBy("mTransportsChangedListeners")
     private final ArrayList<OnTransportsChangedListenerProxy> mTransportsChangedListeners =
             new ArrayList<>();
+
+    @GuardedBy("mMessageReceivedListeners")
+    private final SparseArray<Set<OnMessageReceivedListenerProxy>> mMessageReceivedListeners =
+            new SparseArray<>();
 
     @GuardedBy("mTransports")
     private final SparseArray<Transport> mTransports = new SparseArray<>();
@@ -1141,12 +1147,19 @@ public final class CompanionDeviceManager {
             return;
         }
 
-        final OnMessageReceivedListenerProxy proxy = new OnMessageReceivedListenerProxy(
-                executor, listener);
-        try {
-            mService.addOnMessageReceivedListener(messageType, proxy);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        synchronized (mMessageReceivedListeners) {
+            final OnMessageReceivedListenerProxy proxy = new OnMessageReceivedListenerProxy(
+                    executor, listener);
+            try {
+                mService.addOnMessageReceivedListener(messageType, proxy);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+
+            if (!mMessageReceivedListeners.contains(messageType)) {
+                mMessageReceivedListeners.put(messageType, new HashSet<>());
+            }
+            mMessageReceivedListeners.get(messageType).add(proxy);
         }
     }
 
@@ -1163,12 +1176,26 @@ public final class CompanionDeviceManager {
             return;
         }
 
-        final OnMessageReceivedListenerProxy proxy = new OnMessageReceivedListenerProxy(
-                null, listener);
-        try {
-            mService.removeOnMessageReceivedListener(messageType, proxy);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        synchronized (mMessageReceivedListeners) {
+            if (!mMessageReceivedListeners.contains(messageType)) {
+                Log.w(TAG, "Can't remove OnMessageReceivedListener. messageType " + messageType
+                        + " is not being listened.");
+                return;
+            }
+
+            final Iterator<OnMessageReceivedListenerProxy> iterator =
+                    mMessageReceivedListeners.get(messageType).iterator();
+            while (iterator.hasNext()) {
+                final OnMessageReceivedListenerProxy proxy = iterator.next();
+                if (proxy.mListener == listener) {
+                    try {
+                        mService.removeOnMessageReceivedListener(messageType, proxy);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                    iterator.remove();
+                }
+            }
         }
     }
 
