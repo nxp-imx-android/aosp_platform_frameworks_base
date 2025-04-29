@@ -18,18 +18,13 @@ package {
     default_applicable_licenses: ["frameworks_base_license"],
 }
 
-filegroup {
-    name: "SettingsLibPreference-srcs",
-    srcs: ["src/**/*.kt"],
-}
-
 android_library {
     name: "SettingsLibPreference",
     defaults: [
         "SettingsLintDefaults",
     ],
     min_sdk_version: "21",
-    srcs: [":SettingsLibPreference-srcs"],
+    srcs: ["src/**/*.kt"],
     static_libs: [
         "SettingsLibDataStore",
         "SettingsLibMetadata",
