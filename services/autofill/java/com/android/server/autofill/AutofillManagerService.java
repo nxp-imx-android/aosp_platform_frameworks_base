@@ -2170,6 +2170,25 @@ public final class AutofillManagerService
         }
 
         @Override
+        public void autofillRemoteApp(
+                @NonNull IBinder shareableActivityToken,
+                int taskId,
+                @NonNull AutofillId autofillId,
+                @NonNull AutofillValue autofillValue,
+                int userId) {
+            synchronized (mLock) {
+                final AutofillManagerServiceImpl service =
+                        peekServiceForUserWithLocalBinderIdentityLocked(userId);
+                if (service != null) {
+                    service.autofillRemoteAppLocked(
+                            shareableActivityToken, taskId, autofillId, autofillValue);
+                } else if (sVerbose) {
+                    Slog.v(TAG, "autofillRemoteApp(): no service for " + userId);
+                }
+            }
+        }
+
+        @Override
         public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpPermission(getContext(), TAG, pw)) return;
 
