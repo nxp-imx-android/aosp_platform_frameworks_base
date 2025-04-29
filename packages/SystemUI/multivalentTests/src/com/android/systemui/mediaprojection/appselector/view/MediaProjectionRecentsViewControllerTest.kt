@@ -24,7 +24,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_PSS_APP_SELECTOR_RECENTS_SPLIT_SCREEN
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorResultHandler
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
@@ -106,7 +105,6 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
 
     @Test
     fun onRecentAppClicked_splitScreenTaskWithSameIdIsStartedFromRecents() {
-        mSetFlagsRule.enableFlags(FLAG_PSS_APP_SELECTOR_RECENTS_SPLIT_SCREEN)
         controller.onRecentAppClicked(splitScreenTask, taskView)
 
         verify(splitScreen.get())
@@ -145,8 +143,7 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun onRecentAppClicked_splitScreenTaskInForeground_flagOn_usesDefaultAnimation() {
-        mSetFlagsRule.enableFlags(FLAG_PSS_APP_SELECTOR_RECENTS_SPLIT_SCREEN)
+    fun onRecentAppClicked_splitScreenTaskInForeground_usesDefaultAnimation() {
         assertForegroundTaskUsesDefaultCloseAnimation(splitScreenTask)
     }
 
