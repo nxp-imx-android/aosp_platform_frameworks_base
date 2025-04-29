@@ -112,7 +112,6 @@ import android.view.WindowLayout;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.WindowRelayoutResult;
-import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 import android.window.ScreenCapture;
 
@@ -312,7 +311,7 @@ public abstract class WallpaperService extends Service {
 
         SurfaceControl mSurfaceControl = new SurfaceControl();
         WindowRelayoutResult mRelayoutResult = new WindowRelayoutResult(
-                mWinFrames, mMergedConfiguration, mSurfaceControl, mInsetsState, mTempControls);
+                mWinFrames, mMergedConfiguration, mInsetsState, mTempControls);
 
         private final Point mSurfaceSize = new Point();
         private final Point mLastSurfaceSize = new Point();
@@ -484,14 +483,11 @@ public abstract class WallpaperService extends Service {
 
         final BaseIWindow mWindow = new BaseIWindow() {
             @Override
-            public void resized(ClientWindowFrames frames, boolean reportDraw,
-                    MergedConfiguration mergedConfiguration, InsetsState insetsState,
-                    boolean forceLayout, boolean alwaysConsumeSystemBars, int displayId,
-                    int syncSeqId, boolean dragResizing,
-                    @Nullable ActivityWindowInfo activityWindowInfo) {
+            public void resized(WindowRelayoutResult layout, boolean reportDraw,
+                    boolean forceLayout, int displayId, boolean dragResizing) {
                 Message msg = mCaller.obtainMessageIO(MSG_WINDOW_RESIZED,
                         reportDraw ? 1 : 0,
-                        mergedConfiguration);
+                        layout.mergedConfiguration);
                 mIWallpaperEngine.mPendingResizeCount.incrementAndGet();
                 mCaller.sendMessage(msg);
             }
@@ -1291,10 +1287,12 @@ public abstract class WallpaperService extends Service {
                                 com.android.internal.R.style.Animation_Wallpaper;
                         InputChannel inputChannel = new InputChannel();
 
+                        final WindowRelayoutResult addRes = new WindowRelayoutResult(
+                                new ClientWindowFrames(), new MergedConfiguration(), mInsetsState,
+                                mTempControls);
                         if (mSession.addToDisplay(mWindow, mLayout, View.VISIBLE,
                                 mDisplay.getDisplayId(), WindowInsets.Type.defaultVisible(),
-                                inputChannel, mInsetsState, mTempControls, new Rect(),
-                                new float[1]) < 0) {
+                                inputChannel, addRes) < 0) {
                             Log.w(TAG, "Failed to add window while updating wallpaper surface.");
                             return;
                         }
@@ -1314,7 +1312,7 @@ public abstract class WallpaperService extends Service {
                         mLayout.surfaceInsets.set(0, 0, 0, 0);
                     }
                     final int relayoutResult = mSession.relayout(mWindow, mLayout, mWidth, mHeight,
-                            View.VISIBLE, 0, 0, 0, mRelayoutResult);
+                            View.VISIBLE, 0, 0, 0, mRelayoutResult, mSurfaceControl);
                     final Rect outMaxBounds = mMergedConfiguration.getMergedConfiguration()
                             .windowConfiguration.getMaxBounds();
                     if (!outMaxBounds.equals(maxBounds)) {

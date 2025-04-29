@@ -52,17 +52,12 @@ interface IWindowSession {
 
     int addToDisplay(IWindow window, in WindowManager.LayoutParams attrs,
             in int viewVisibility, in int layerStackId, int requestedVisibleTypes,
-            out InputChannel outInputChannel, out InsetsState insetsState,
-            out InsetsSourceControl.Array activeControls, out Rect attachedFrame,
-            out float[] sizeCompatScale);
+            out InputChannel outInputChannel, out WindowRelayoutResult result);
     int addToDisplayAsUser(IWindow window, in WindowManager.LayoutParams attrs,
             in int viewVisibility, in int layerStackId, in int userId, int requestedVisibleTypes,
-            out InputChannel outInputChannel, out InsetsState insetsState,
-            out InsetsSourceControl.Array activeControls, out Rect attachedFrame,
-            out float[] sizeCompatScale);
+            out InputChannel outInputChannel, out WindowRelayoutResult result);
     int addToDisplayWithoutInputChannel(IWindow window, in WindowManager.LayoutParams attrs,
-            in int viewVisibility, in int layerStackId, out InsetsState insetsState,
-            out Rect attachedFrame, out float[] sizeCompatScale);
+            in int viewVisibility, in int layerStackId, out WindowRelayoutResult result);
 
     /**
      * Removes a clientToken from WMS, which includes unlinking the input channel.
@@ -89,11 +84,12 @@ interface IWindowSession {
      * @param seq The calling sequence of {@link #relayout} and {@link #relayoutAsync}.
      * @param lastSyncSeqId The last SyncSeqId that the client applied.
      * @param outRelayoutResult Data object contains the info to be returned from server side.
+     * @param outSurface Object in which is placed the new display surface.
      * @return int Result flags, defined in {@link WindowManagerGlobal}.
      */
     int relayout(IWindow window, in WindowManager.LayoutParams attrs, int requestedWidth,
             int requestedHeight, int viewVisibility, int flags, int seq, int lastSyncSeqId,
-            out @nullable WindowRelayoutResult outRelayoutResult);
+            out @nullable WindowRelayoutResult outRelayoutResult, out SurfaceControl outSurface);
 
     /**
      * Similar to {@link #relayout} but this is an oneway method which doesn't return anything.
