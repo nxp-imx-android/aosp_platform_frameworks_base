@@ -16507,13 +16507,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return getEnforcingAdminInternal(userId, identifier);
     }
 
-    @Override
-    public List<android.app.admin.EnforcingAdmin> getEnforcingAdminsForRestriction(
-            int userId, String restriction) {
-        Preconditions.checkCallAuthorization(isSystemUid(getCallerIdentity()));
-        return new ArrayList<>(getEnforcingAdminsForRestrictionInternal(userId, restriction));
-    }
-
     /**
      * @param restriction The restriction enforced by admin. It could be any user restriction or
      *                    policy like {@link DevicePolicyManager#POLICY_DISABLE_CAMERA} and
