@@ -255,7 +255,7 @@ class CollapsableTextView @JvmOverloads constructor(
     )
 
     companion object {
-        private const val DEFAULT_MAX_LINES = 10
+        private const val DEFAULT_MAX_LINES = 50
         private const val DEFAULT_MIN_LINES = 2
         private const val DEFAULT_COLLAPSABLE = true
 
