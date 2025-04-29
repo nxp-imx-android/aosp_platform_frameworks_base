@@ -16,8 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.app.ActivityManager
-import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.ActivityManager.RunningTaskInfo
 import android.os.IBinder
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -27,6 +26,7 @@ import android.window.TransitionInfo
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isExitDesktopModeTransition
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -41,6 +41,7 @@ class DesktopBackNavTransitionObserver(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val backAnimationController: BackAnimationController,
+    private val desksOrganizer: DesksOrganizer,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) {
@@ -51,7 +52,7 @@ class DesktopBackNavTransitionObserver(
     }
 
     fun onInit() {
-        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "DesktopBackNavigationTransitionObserver: onInit")
+        logD("onInit")
     }
 
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) {
@@ -73,10 +74,7 @@ class DesktopBackNavTransitionObserver(
             if (taskInfo == null || taskInfo.taskId == -1) continue
 
             val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-            if (
-                desktopRepository.isActiveTask(taskInfo.taskId) &&
-                    taskInfo.windowingMode != WINDOWING_MODE_FREEFORM
-            ) {
+            if (desktopRepository.isExitingDesktopTask(change)) {
                 desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             }
         }
@@ -96,7 +94,7 @@ class DesktopBackNavTransitionObserver(
                 if (
                     isInDesktop &&
                         change.mode == TRANSIT_TO_BACK &&
-                        taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
+                        desktopRepository.isDesktopTask(taskInfo)
                 ) {
                     val isLastTask =
                         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -104,6 +102,10 @@ class DesktopBackNavTransitionObserver(
                         } else {
                             desktopRepository.isOnlyVisibleTask(taskInfo.taskId, taskInfo.displayId)
                         }
+                    logD(
+                        "handleBackNavigation marking to-back taskId=%d as minimized",
+                        taskInfo.taskId,
+                    )
                     desktopRepository.minimizeTask(taskInfo.displayId, taskInfo.taskId)
                     desktopMixedTransitionHandler.addPendingMixedTransition(
                         DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
@@ -137,6 +139,7 @@ class DesktopBackNavTransitionObserver(
 
             if (minimizingTask == null) return
             // If the transition has wallpaper closing, it means we are moving out of desktop.
+            logD("handleBackNavigation marking close taskId=%d as minimized", minimizingTask)
             desktopMixedTransitionHandler.addPendingMixedTransition(
                 DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
                     transition,
@@ -151,7 +154,7 @@ class DesktopBackNavTransitionObserver(
      * Given this a closing task in a closing transition, a task is assumed to be closed by back
      * navigation if:
      * 1) Desktop mode is visible.
-     * 2) Task is in freeform.
+     * 2) It is a desktop task.
      * 3) Task is the latest task that the back gesture is triggered on.
      * 4) It's not marked as a closing task as a result of closing it by the app header.
      *
@@ -159,14 +162,12 @@ class DesktopBackNavTransitionObserver(
      * will be rare. E.g. triggering back navigation on an app that pops up a close dialog, and
      * closing it will minimize it here.
      */
-    private fun getMinimizingTaskForClosingTransition(
-        taskInfo: ActivityManager.RunningTaskInfo
-    ): Int? {
+    private fun getMinimizingTaskForClosingTransition(taskInfo: RunningTaskInfo): Int? {
         val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
         val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
         if (
             isInDesktop &&
-                taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
+                desktopRepository.isDesktopTask(taskInfo) &&
                 backAnimationController.latestTriggerBackTask == taskInfo.taskId &&
                 !desktopRepository.isClosingTask(taskInfo.taskId)
         ) {
@@ -174,5 +175,29 @@ class DesktopBackNavTransitionObserver(
             return taskInfo.taskId
         }
         return null
+    }
+
+    private fun DesktopRepository.isDesktopTask(task: RunningTaskInfo): Boolean =
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            isActiveTask(task.taskId)
+        } else {
+            task.isFreeform
+        }
+
+    private fun DesktopRepository.isExitingDesktopTask(change: TransitionInfo.Change): Boolean {
+        val task = change.taskInfo ?: return false
+        return if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            isActiveTask(task.taskId) && desksOrganizer.getDeskAtEnd(change) == null
+        } else {
+            isActiveTask(task.taskId) && !task.isFreeform
+        }
+    }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    companion object {
+        private const val TAG = "DesktopBackNavTransitionObserver"
     }
 }
