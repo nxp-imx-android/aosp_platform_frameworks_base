@@ -140,13 +140,7 @@ public class FaceServiceTest {
                     if (NAME_DEFAULT.equals(filteredSensorProps.first)) return mFaceProviderDefault;
                     if (NAME_VIRTUAL.equals(filteredSensorProps.first)) return mFaceProviderVirtual;
                     return null;
-                }, () -> mIBiometricService,
-                (name) -> {
-                    if (NAME_DEFAULT.equals(name)) return mFaceProviderDefault;
-                    if (NAME_VIRTUAL.equals(name)) return mFaceProviderVirtual;
-                    return null;
-                },
-                () -> new String[]{NAME_DEFAULT, NAME_VIRTUAL});
+                }, () -> mIBiometricService);
     }
 
     @Test
