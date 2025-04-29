@@ -117,6 +117,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.ActivityTaskManager.RootTaskInfo;
 import android.app.AppOpsManager;
+import android.app.BroadcastOptions;
 import android.app.IActivityManager;
 import android.app.IUiModeManager;
 import android.app.NotificationManager;
@@ -3612,7 +3613,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                 if (complete) {
-                    mContext.closeSystemDialogs();
+                    closeSystemDialogsAsUser(UserHandle.CURRENT_OR_SELF);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
@@ -4065,6 +4066,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             Slog.w(TAG, "Not launching app because "
                     + "the activity to launch intent: " + intent + " was not found");
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void closeSystemDialogsAsUser(UserHandle handle) {
+        final Intent intent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        final Bundle options = BroadcastOptions.makeBasic()
+                .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
+                .setDeferralPolicy(BroadcastOptions.DEFERRAL_POLICY_UNTIL_ACTIVE)
+                .toBundle();
+        mContext.sendBroadcastAsUser(
+                intent,
+                handle,
+                null /* receiverPermission */,
+                options);
     }
 
     private void preloadRecentApps() {
