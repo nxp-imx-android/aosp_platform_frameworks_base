@@ -649,14 +649,13 @@ class Task extends TaskFragment {
             int nextTaskId, int callingUid, String callingPackage,
             @Nullable String callingFeatureId, int resizeMode, boolean supportsPictureInPicture,
             boolean _realActivitySuspended, boolean userSetupComplete, int minWidth, int minHeight,
-            ActivityInfo info, IVoiceInteractionSession _voiceSession,
+            @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
             boolean _deferTaskAppear, boolean _removeWithTaskOrganizer) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
         mUserId = _userId;
-        mResizeMode = resizeMode;
         mSupportsPictureInPicture = supportsPictureInPicture;
         mTaskDescription = _lastTaskDescription != null
                 ? _lastTaskDescription
@@ -6473,7 +6472,7 @@ class Task extends TaskFragment {
         private int mCallingUid;
         private String mCallingPackage;
         private String mCallingFeatureId;
-        private int mResizeMode;
+        private int mResizeMode = RESIZE_MODE_RESIZEABLE;
         private boolean mSupportsPictureInPicture;
         private boolean mRealActivitySuspended;
         private boolean mUserSetupComplete;
@@ -6799,19 +6798,16 @@ class Task extends TaskFragment {
                 validateRootTask((TaskDisplayArea) mParent);
             }
 
-            if (mActivityInfo == null) {
-                mActivityInfo = new ActivityInfo();
-                mActivityInfo.applicationInfo = new ApplicationInfo();
-            }
-
-            mUserId = UserHandle.getUserId(mActivityInfo.applicationInfo.uid);
             mTaskAffiliation = mTaskId;
             mLastTimeMoved = System.currentTimeMillis();
             mNeverRelinquishIdentity = true;
-            mCallingUid = mActivityInfo.applicationInfo.uid;
-            mCallingPackage = mActivityInfo.packageName;
-            mResizeMode = mActivityInfo.resizeMode;
-            mSupportsPictureInPicture = mActivityInfo.supportsPictureInPicture();
+            if (mActivityInfo != null) {
+                mUserId = UserHandle.getUserId(mActivityInfo.applicationInfo.uid);
+                mCallingUid = mActivityInfo.applicationInfo.uid;
+                mCallingPackage = mActivityInfo.packageName;
+                mResizeMode = mActivityInfo.resizeMode;
+                mSupportsPictureInPicture = mActivityInfo.supportsPictureInPicture();
+            }
             if (!mRemoveWithTaskOrganizer && mActivityOptions != null) {
                 mRemoveWithTaskOrganizer = mActivityOptions.getRemoveWithTaskOranizer();
             }
@@ -6827,9 +6823,10 @@ class Task extends TaskFragment {
 
             if (mParent != null) {
                 if (mParent instanceof Task) {
+                    final boolean moveParents = mActivityInfo != null
+                            && (mActivityInfo.flags & FLAG_SHOW_FOR_ALL_USERS) != 0;
                     final Task parentTask = (Task) mParent;
-                    parentTask.addChild(task, mOnTop ? POSITION_TOP : POSITION_BOTTOM,
-                            (mActivityInfo.flags & FLAG_SHOW_FOR_ALL_USERS) != 0);
+                    parentTask.addChild(task, mOnTop ? POSITION_TOP : POSITION_BOTTOM, moveParents);
                 } else {
                     mParent.addChild(task, mOnTop ? POSITION_TOP : POSITION_BOTTOM);
                 }
