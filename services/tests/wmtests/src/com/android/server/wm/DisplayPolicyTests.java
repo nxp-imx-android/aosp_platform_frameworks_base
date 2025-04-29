@@ -23,6 +23,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
 import static android.view.WindowInsets.Type.navigationBars;
+import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
@@ -53,6 +54,7 @@ import static org.mockito.Mockito.when;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.os.Binder;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
 import android.view.InsetsFrameProvider;
@@ -577,5 +579,78 @@ public class DisplayPolicyTests extends WindowTestsBase {
         displayPolicy.requestTransientBars(mNavBarWindow, true);
 
         assertFalse(mDisplayContent.getInsetsPolicy().isTransient(navigationBars()));
+    }
+
+    @SetupWindows(addWindows = { W_ACTIVITY })
+    @Test
+    public void testSetSystemBarVisibilityOverride() {
+        final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
+        final InsetsPolicy insetsPolicy = mDisplayContent.getInsetsPolicy();
+        final Binder caller1 = new Binder();
+        final Binder caller2 = new Binder();
+
+        displayPolicy.applyPostLayoutPolicyLw(mAppWindow, mAppWindow.mAttrs, null, null);
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller1, statusBars(), 0);
+
+        assertTrue(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller2, navigationBars(), 0);
+
+        assertTrue(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertTrue(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller1, 0, 0);
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertTrue(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller2, 0, 0);
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller1, 0, statusBars());
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertTrue(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller2, 0, navigationBars());
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertTrue(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertTrue(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller1, 0, 0);
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertTrue(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
+        displayPolicy.setSystemBarVisibilityOverride(caller2, 0, 0);
+
+        assertFalse(insetsPolicy.areTypesForciblyShown(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyShown(navigationBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
+        assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
+
     }
 }

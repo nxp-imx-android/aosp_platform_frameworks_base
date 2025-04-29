@@ -95,10 +95,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -287,6 +289,10 @@ public class DisplayPolicy {
      * received by clients windows. They might need to update their layout when this changes.
      */
     private @InsetsType int mHidingPermanentInsetsTypes;
+
+    /** Mapping from a caller to a SystemBarVisibilityOverride. */
+    private final ArrayMap<IBinder, SystemBarVisibilityOverride> mSystemBarVisibilityOverrideMap =
+            new ArrayMap<>();
 
     private boolean mImeInsetsConsumed;
 
@@ -2509,14 +2515,90 @@ public class DisplayPolicy {
         }
     }
 
-    void setSystemBarVisibilityOverride(
-            @InsetsType int forciblyShowingInsetsTypes, @InsetsType int forciblyHidingInsetsTypes) {
-        if (mShowingPermanentInsetsTypes != forciblyShowingInsetsTypes
-                || mHidingPermanentInsetsTypes != forciblyHidingInsetsTypes) {
-            mShowingPermanentInsetsTypes = forciblyShowingInsetsTypes;
-            mHidingPermanentInsetsTypes = forciblyHidingInsetsTypes;
-            updateSystemBarAttributes();
+    private class SystemBarVisibilityOverride implements IBinder.DeathRecipient {
+
+        private final IBinder mCaller;
+        private @InsetsType int mForciblyShowingInsetsTypes;
+        private @InsetsType int mForciblyHidingInsetsTypes;
+
+        SystemBarVisibilityOverride(@NonNull IBinder caller) throws RemoteException {
+            mCaller = caller;
         }
+
+        boolean set(
+                @InsetsType int forciblyShowingInsetsTypes,
+                @InsetsType int forciblyHidingInsetsTypes) {
+            if (mForciblyShowingInsetsTypes != forciblyShowingInsetsTypes
+                    || mForciblyHidingInsetsTypes != forciblyHidingInsetsTypes) {
+                mForciblyShowingInsetsTypes = forciblyShowingInsetsTypes;
+                mForciblyHidingInsetsTypes = forciblyHidingInsetsTypes;
+                return true;
+            }
+            return false;
+        }
+
+        @InsetsType int getForciblyShowingInsetsTypes() {
+            return mForciblyShowingInsetsTypes;
+        }
+
+        @InsetsType int getForciblyHidingInsetsTypes() {
+            return mForciblyHidingInsetsTypes;
+        }
+
+        @Override
+        public void binderDied() {
+            synchronized (mService.mGlobalLock) {
+                setSystemBarVisibilityOverride(
+                        mCaller,
+                        0 /* forciblyShowingInsetsTypes */,
+                        0 /* forciblyHidingInsetsTypes */);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "SystemBarVisibilityOverride{@" + Integer.toHexString(mCaller.hashCode())
+                    + " show:[" + Type.toString(mForciblyShowingInsetsTypes)
+                    + "] hide: [" + Type.toString(mForciblyHidingInsetsTypes) + "]}";
+        }
+    }
+
+    void setSystemBarVisibilityOverride(
+            @NonNull IBinder caller,
+            @InsetsType int forciblyShowingInsetsTypes,
+            @InsetsType int forciblyHidingInsetsTypes) {
+        SystemBarVisibilityOverride override = mSystemBarVisibilityOverrideMap.get(caller);
+        try {
+            if (forciblyShowingInsetsTypes != 0 || forciblyHidingInsetsTypes != 0) {
+                if (override == null) {
+                    override = new SystemBarVisibilityOverride(caller);
+                    caller.linkToDeath(override, 0 /* flags */);
+                    mSystemBarVisibilityOverrideMap.put(caller, override);
+                }
+                if (override.set(forciblyShowingInsetsTypes, forciblyHidingInsetsTypes)) {
+                    updateSystemBarVisibilityOverride();
+                }
+            } else {
+                if (override != null) {
+                    caller.unlinkToDeath(override, 0 /* flags */);
+                    mSystemBarVisibilityOverrideMap.remove(caller);
+                    updateSystemBarVisibilityOverride();
+                }
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Unable to set " + override + " due to RemoteException.", e);
+        }
+    }
+
+    private void updateSystemBarVisibilityOverride() {
+        mShowingPermanentInsetsTypes = 0;
+        mHidingPermanentInsetsTypes = 0;
+        for (int i = mSystemBarVisibilityOverrideMap.size() - 1; i >= 0; i--) {
+            final SystemBarVisibilityOverride override = mSystemBarVisibilityOverrideMap.valueAt(i);
+            mShowingPermanentInsetsTypes |= override.getForciblyShowingInsetsTypes();
+            mHidingPermanentInsetsTypes |= override.getForciblyHidingInsetsTypes();
+        }
+        updateSystemBarAttributes();
     }
 
     void resetSystemBarAttributes() {
@@ -3084,6 +3166,30 @@ public class DisplayPolicy {
             for (int i = mStatusBarBackgroundWindows.size() - 1; i >= 0; i--) {
                 final WindowState win = mStatusBarBackgroundWindows.get(i);
                 pw.print(prefixInner);  pw.println(win);
+            }
+        }
+        if (mShowingTransientInsetsTypes != 0) {
+            pw.print(prefix);
+            pw.print("mShowingTransientInsetsTypes=");
+            pw.println(WindowInsets.Type.toString(mShowingTransientInsetsTypes));
+        }
+        if (mShowingPermanentInsetsTypes != 0) {
+            pw.print(prefix);
+            pw.print("mShowingPermanentInsetsTypes=");
+            pw.println(WindowInsets.Type.toString(mShowingPermanentInsetsTypes));
+        }
+        if (mHidingPermanentInsetsTypes != 0) {
+            pw.print(prefix);
+            pw.print("mHidingPermanentInsetsTypes=");
+            pw.println(WindowInsets.Type.toString(mHidingPermanentInsetsTypes));
+        }
+        if (!mSystemBarVisibilityOverrideMap.isEmpty()) {
+            pw.print(prefix);
+            pw.println("mSystemBarVisibilityOverrideMap:");
+            for (int i = mSystemBarVisibilityOverrideMap.size() - 1; i >= 0; i--) {
+                pw.print(prefix);
+                pw.print("  ");
+                pw.println(mSystemBarVisibilityOverrideMap.valueAt(i));
             }
         }
         pw.print(prefix); pw.print("mTopIsFullscreen="); pw.println(mTopIsFullscreen);
