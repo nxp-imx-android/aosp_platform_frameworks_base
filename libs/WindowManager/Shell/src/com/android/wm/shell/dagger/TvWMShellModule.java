@@ -47,6 +47,8 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import dagger.Module;
 import dagger.Provides;
 
@@ -99,12 +101,13 @@ public class TvWMShellModule {
             SystemWindows systemWindows,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            IActivityTaskManager activityTaskManager,
+            MSDLPlayer msdlPlayer) {
         return new TvSplitScreenController(context, shellInit, shellCommandHandler, shellController,
                 shellTaskOrganizer, syncQueue, rootTDAOrganizer, displayController,
                 displayImeController, displayInsetsController, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, multiInstanceHelper,
                 splitState, mainExecutor, mainHandler, systemWindows, rootDisplayAreaOrganizer,
-                desktopState, activityTaskManager);
+                desktopState, activityTaskManager, msdlPlayer);
     }
 }

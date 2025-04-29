@@ -44,6 +44,8 @@ import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,6 +64,7 @@ public class DividerViewTest extends ShellTestCase {
     private @Mock SplitState mSplitState;
     private @Mock Handler mHandler;
     private @Mock SplitStatusBarHider mStatusBarHider;
+    private @Mock MSDLPlayer mMSDLPlayer;
     private FakeDesktopState mDesktopState;
     private SplitLayout mSplitLayout;
     private DividerView mDividerView;
@@ -75,7 +78,7 @@ public class DividerViewTest extends ShellTestCase {
         mSplitLayout = spy(new SplitLayout("TestSplitLayout", mContext, configuration,
                 mSplitLayoutHandler, mCallbacks, mDisplayController, mDisplayImeController,
                 mTaskOrganizer, SplitLayout.PARALLAX_NONE, mSplitState, mHandler, mStatusBarHider,
-                mDesktopState));
+                mDesktopState, mMSDLPlayer));
         SplitWindowManager splitWindowManager = new SplitWindowManager("TestSplitWindowManager",
                 mContext, configuration, mCallbacks);
         splitWindowManager.init(mSplitLayout, new InsetsState(), false /* isRestoring */,

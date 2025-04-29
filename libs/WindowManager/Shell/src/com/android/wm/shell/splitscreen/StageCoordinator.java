@@ -171,6 +171,8 @@ import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
 import dalvik.annotation.optimization.NeverCompile;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,6 +246,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final SplitState mSplitState;
     private final SplitStatusBarHider mStatusBarHider;
     private final DesktopState mDesktopState;
+    /** A haptics controller that plays haptic effects. */
+    private final MSDLPlayer mMSDLPlayer;
 
     private final Rect mTempRect1 = new Rect();
     private final Rect mTempRect2 = new Rect();
@@ -384,9 +388,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
+            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -402,6 +405,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mDesktopTasksController = desktopTasksController;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
+        mMSDLPlayer = msdlPlayer;
 
         DisplayManager displayManager = context.getSystemService(DisplayManager.class);
 
@@ -481,9 +485,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
-            RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
+            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -509,6 +512,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mDesktopTasksController = desktopTasksController;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
+        mMSDLPlayer = msdlPlayer;
 
         mDisplayController.addDisplayWindowListener(this);
         transitions.addHandler(this);
@@ -2211,7 +2215,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             mSplitLayout = new SplitLayout(TAG + "SplitDivider", mContext,
                     taskInfo.configuration, this, mParentContainerCallbacks,
                     mDisplayController, mDisplayImeController, mTaskOrganizer, parallaxType,
-                    mSplitState, mMainHandler, mStatusBarHider, mDesktopState);
+                    mSplitState, mMainHandler, mStatusBarHider, mDesktopState, mMSDLPlayer);
             mDisplayInsetsController.addInsetsChangedListener(mDisplayId, mSplitLayout);
         }
 

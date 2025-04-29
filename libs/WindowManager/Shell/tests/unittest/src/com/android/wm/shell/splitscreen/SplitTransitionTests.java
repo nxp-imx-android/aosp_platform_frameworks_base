@@ -99,6 +99,8 @@ import com.android.wm.shell.transition.TransitionInfoBuilder;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -134,6 +136,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private SplitScreen.SplitInvocationListener mInvocationListener;
     private FakeDesktopState mDesktopState;
     @Mock private IActivityTaskManager mActivityTaskManager;
+    @Mock private MSDLPlayer mMSDLPlayer;
     private final TestShellExecutor mTestShellExecutor = new TestShellExecutor();
     private SplitLayout mSplitLayout;
     private StageTaskListener mMainStage;
@@ -171,7 +174,8 @@ public class SplitTransitionTests extends ShellTestCase {
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
                 mTransactionPool, mMainExecutor, mMainHandler, Optional.empty(),
                 mLaunchAdjacentController, Optional.empty(), mSplitState, Optional.empty(),
-                mRootTDAOrganizer, mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager);
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager,
+                mMSDLPlayer);
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
 
         mStageCoordinator.setMixedHandler(mMixedHandler);
