@@ -65,6 +65,9 @@ constructor(
 
     private var root: EffectsWindowRoot? = null
 
+    // TODO(b/414267753): Make cleanup of window logic more robust
+    private var isInvocationEffectHappening = false
+
     override fun start() {
         topLevelWindowEffectsScope.launch {
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
@@ -80,6 +83,8 @@ constructor(
                                 roundedCornerInfo.bottomResourceId,
                                 roundedCornerInfo.physicalPixelDisplaySizeRatio,
                             )
+                        } else if (root != null && !isInvocationEffectHappening) {
+                            removeWindow()
                         }
                     }
                 }
@@ -92,36 +97,43 @@ constructor(
         @DrawableRes bottomRoundedCornerId: Int,
         physicalPixelDisplaySizeRatio: Float,
     ) {
-        if (root == null) {
-            root =
-                EffectsWindowRoot(
-                        context = context,
-                        viewModelFactory = viewModelFactory,
-                        topRoundedCornerResourceId = topRoundedCornerId,
-                        bottomRoundedCornerResourceId = bottomRoundedCornerId,
-                        physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
-                        onEffectFinished = ::removeWindow,
-                        appZoomOutOptional = appZoomOutOptional,
-                        interactionJankMonitor = interactionJankMonitor,
-                    )
-                    .apply { visibility = View.GONE }
-            root?.let { rootView ->
-                if (TopUiControllerRefactor.isEnabled) {
-                    topUiController.setRequestTopUi(true, TAG)
-                } else {
-                    runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
-                }
-                windowManager.addView(rootView, getWindowManagerLayoutParams())
-                rootView.post { rootView.visibility = View.VISIBLE }
-            }
+        if (isInvocationEffectHappening) {
+            return
+        }
+
+        if (root != null) {
+            removeWindow()
+        }
+
+        root =
+            EffectsWindowRoot(
+                    context = context,
+                    viewModelFactory = viewModelFactory,
+                    topRoundedCornerResourceId = topRoundedCornerId,
+                    bottomRoundedCornerResourceId = bottomRoundedCornerId,
+                    physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
+                    onEffectFinished = ::removeWindow,
+                    appZoomOutOptional = appZoomOutOptional,
+                    interactionJankMonitor = interactionJankMonitor,
+                    onEffectStarted = { isInvocationEffectHappening = true },
+                )
+                .apply { visibility = View.GONE }
+
+        root?.let { rootView ->
+            runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
+            windowManager.addView(rootView, getWindowManagerLayoutParams())
+            rootView.post { rootView.visibility = View.VISIBLE }
         }
     }
 
     private suspend fun removeWindow() {
         if (root?.isAttachedToWindow == true) {
             windowManager.removeView(root)
-            root = null
         }
+
+        root = null
+        isInvocationEffectHappening = false
+
         if (TopUiControllerRefactor.isEnabled) {
             topUiController.setRequestTopUi(false, TAG)
         } else {
@@ -155,7 +167,7 @@ constructor(
         lp.layoutInDisplayCutoutMode =
             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
 
-        lp.title = "TopLevelWindowEffects"
+        lp.title = TAG
         lp.fitInsetsTypes = WindowInsets.Type.systemOverlays()
         lp.gravity = Gravity.TOP
 
