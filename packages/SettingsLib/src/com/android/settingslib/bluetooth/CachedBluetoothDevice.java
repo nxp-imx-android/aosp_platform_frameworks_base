@@ -93,11 +93,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             ParcelUuid.fromString("4de17a00-52cb-11e6-bdf4-0800200c9a66");
 
     // See mConnectAttempted
-    private static final long MAX_UUID_DELAY_FOR_AUTO_CONNECT = 5000;
+    private static final long MAX_UUID_DELAY_FOR_AUTO_CONNECT = 35000;
     // Some Hearing Aids (especially the 2nd device) needs more time to do service discovery
-    private static final long MAX_HEARING_AIDS_DELAY_FOR_AUTO_CONNECT = 15000;
-    private static final long MAX_HOGP_DELAY_FOR_AUTO_CONNECT = 30000;
-    private static final long MAX_LEAUDIO_DELAY_FOR_AUTO_CONNECT = 30000;
+    private static final long MAX_HEARING_AIDS_DELAY_FOR_AUTO_CONNECT = 45000;
+    private static final long MAX_HOGP_DELAY_FOR_AUTO_CONNECT = 60000;
+    private static final long MAX_LEAUDIO_DELAY_FOR_AUTO_CONNECT = 60000;
     private static final long MAX_MEDIA_PROFILE_CONNECT_DELAY = 60000;
 
     private static final int DEFAULT_LOW_BATTERY_THRESHOLD = 20;
