@@ -17,6 +17,8 @@
 package com.android.server.notification;
 
 import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
+import static android.app.Flags.nmSummarization;
+import static android.app.Flags.nmSummarizationUi;
 import static android.app.Flags.notificationClassificationUi;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.app.NotificationChannel.NEWS_ID;
@@ -99,6 +101,7 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.notification.NotificationRecordLogger.NotificationPullStatsEvent;
 import com.android.server.notification.PermissionHelper.PackagePermission;
 
 import org.json.JSONArray;
@@ -114,6 +117,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -2566,7 +2570,7 @@ public class PreferencesHelper implements RankingConfig {
      */
     public void pullPackagePreferencesStats(List<StatsEvent> events,
             ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> pkgPermissions) {
-        pullPackagePreferencesStats(events, pkgPermissions, new ArrayMap<String, Set<Integer>>());
+        pullPackagePreferencesStats(events, pkgPermissions, new ArrayMap<>());
     }
 
 
@@ -2577,14 +2581,12 @@ public class PreferencesHelper implements RankingConfig {
      *                       where the first represents whether the notification permission was
      *                       granted to that package, and the second represents whether the
      *                       permission was user-set.
-     * @param pkgAdjustmentKeyTypes A map of package names that are not allowed to have their
-     *                                 notifications classified into differently typed notification
-     *                                 channels, and the channels that they're allowed to be
-     *                                 classified into.
+     * @param adjustmentDeniedPackages A map of user id -> package name -> the set of adjustments
+     *                                 that are not allowed for that package/user.
      */
     public void pullPackagePreferencesStats(List<StatsEvent> events,
             ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> pkgPermissions,
-            @NonNull Map<String, Set<Integer>> pkgAdjustmentKeyTypes) {
+            @NonNull Map<Integer, Map<String, List<String>>> adjustmentDeniedPackages) {
         Set<Pair<Integer, String>> pkgsWithPermissionsToHandle = null;
         if (pkgPermissions != null) {
             pkgsWithPermissionsToHandle = pkgPermissions.keySet();
@@ -2630,13 +2632,14 @@ public class PreferencesHelper implements RankingConfig {
                         isFsiPermissionUserSet(r.pkg, r.uid, fsiState,
                                 currentPermissionFlags);
 
-                if (!notificationClassificationUi()
-                        && pkgAdjustmentKeyTypes.keySet().size() > 0) {
+                if (!(notificationClassificationUi() || nmSummarization() || nmSummarizationUi())
+                        && adjustmentDeniedPackages.keySet().size() > 0) {
                     Slog.w(TAG, "Pkg adjustment types improperly allowed without flag set");
                 }
 
-                int[] allowedBundleTypes =
-                        getAllowedTypesForPackage(pkgAdjustmentKeyTypes, r.pkg);
+                int[] deniedAdjustmentsForPackage =
+                        getDeniedAdjustmentsForPackage(adjustmentDeniedPackages,
+                                UserHandle.getUserId(r.uid), r.pkg);
 
                 events.add(FrameworkStatsLog.buildStatsEvent(
                         PACKAGE_NOTIFICATION_PREFERENCES,
@@ -2647,8 +2650,9 @@ public class PreferencesHelper implements RankingConfig {
                         /* optional bool user_set_importance = 5 */ importanceIsUserSet,
                         /* optional FsiState fsi_state = 6 */ fsiState,
                         /* optional bool is_fsi_permission_user_set = 7 */ fsiIsUserSet,
-                        /* repeated int32 allowed_bundle_types = 8 */ allowedBundleTypes
-                ));
+                        /* repeated int32 allowed_bundle_types = 8 */ new int[]{},
+                        /* repeated AdjustmentKey denied_adjustments = 9 */
+                        deniedAdjustmentsForPackage));
             }
         }
 
@@ -2659,9 +2663,6 @@ public class PreferencesHelper implements RankingConfig {
                     break;
                 }
                 pulledEvents++;
-
-                int[] allowedBundleTypes =
-                        getAllowedTypesForPackage(pkgAdjustmentKeyTypes, p.second);
 
                 // Because all fields are required in FrameworkStatsLog.buildStatsEvent, we have
                 // to fill in default values for all the unspecified fields.
@@ -2675,28 +2676,27 @@ public class PreferencesHelper implements RankingConfig {
                         /* optional bool user_set_importance = 5 */ pkgPermissions.get(p).second,
                         /* optional FsiState fsi_state = 6 */ 0,
                         /* optional bool is_fsi_permission_user_set = 7 */ false,
-                        /* repeated BundleTypes allowed_bundle_types = 8 */ allowedBundleTypes));
+                        /* repeated BundleTypes allowed_bundle_types = 8 */ new int[]{},
+                        /* repeated AdjustmentKey denied_adjustments = 9 */ new int[]{}));
             }
         }
     }
 
-    private int[] getAllowedTypesForPackage(@NonNull
-                                            Map<String, Set<Integer>> pkgAdjustmentKeyTypes,
-                                            String pkg) {
-        int[] allowedBundleTypes = new int[]{};
+    private int[] getDeniedAdjustmentsForPackage(
+            @NonNull Map<Integer, Map<String, List<String>>> adjustmentDeniedPackages,
+            @UserIdInt int userId, String pkg) {
         if (notificationClassificationUi()) {
-            if (pkgAdjustmentKeyTypes.containsKey(pkg)) {
-                // Convert from set to int[]
-                Set<Integer> types = pkgAdjustmentKeyTypes.get(pkg);
-                allowedBundleTypes = new int[types.size()];
-                int i = 0;
-                for (int val : types) {
-                    allowedBundleTypes[i] = val;
-                    i++;
+            if (adjustmentDeniedPackages.containsKey(userId)) {
+                List<String> deniedKeys = adjustmentDeniedPackages.get(userId).getOrDefault(pkg,
+                        Collections.EMPTY_LIST);
+                int[] out = new int[deniedKeys.size()];
+                for (int i = 0; i < deniedKeys.size(); i++) {
+                    out[i] = NotificationPullStatsEvent.adjustmentKeyEnum(deniedKeys.get(i));
                 }
+                return out;
             }
         }
-        return allowedBundleTypes;
+        return new int[]{};
     }
 
     /**
