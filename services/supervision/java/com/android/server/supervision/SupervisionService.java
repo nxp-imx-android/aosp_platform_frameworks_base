@@ -128,36 +128,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
-        updateWebContentFilters(userId);
-
-        if (Flags.enableSupervisionAppService()) {
-            List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
-            for (AppServiceConnection conn : connections) {
-                String targetPackage = conn.getFinder().getTargetPackage(userId);
-                ISupervisionAppService binder = (ISupervisionAppService) conn.getServiceBinder();
-                if (binder == null) {
-                    Slog.d(
-                            LOG_TAG,
-                            TextUtils.formatSimple(
-                                    "Unable to toggle supervision for package %s. Binder is null.",
-                                    targetPackage));
-                    continue;
-                }
-                try {
-                    if (enabled) {
-                        binder.onEnabled();
-                    } else {
-                        binder.onDisabled();
-                    }
-                } catch (RemoteException e) {
-                    Slog.d(
-                            LOG_TAG,
-                            TextUtils.formatSimple(
-                                    "Unable to toggle supervision for package %s. e = %s",
-                                    targetPackage, e));
-                }
-            }
-        }
     }
 
     private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
@@ -334,6 +304,44 @@ public class SupervisionService extends ISupervisionManager.Stub {
             SupervisionUserData data = getUserDataLocked(userId);
             data.supervisionEnabled = enabled;
             data.supervisionAppPackage = enabled ? supervisionAppPackage : null;
+        }
+        final long token = Binder.clearCallingIdentity();
+        try {
+            updateWebContentFilters(userId);
+
+            if (Flags.enableSupervisionAppService()) {
+                List<AppServiceConnection> connections =
+                        getSupervisionAppServiceConnections(userId);
+                for (AppServiceConnection conn : connections) {
+                    String targetPackage = conn.getFinder().getTargetPackage(userId);
+                    ISupervisionAppService binder =
+                            (ISupervisionAppService) conn.getServiceBinder();
+                    if (binder == null) {
+                        Slog.d(
+                                LOG_TAG,
+                                TextUtils.formatSimple(
+                                        "Unable to toggle supervision for package %s. Binder is"
+                                                + " null.",
+                                        targetPackage));
+                        continue;
+                    }
+                    try {
+                        if (enabled) {
+                            binder.onEnabled();
+                        } else {
+                            binder.onDisabled();
+                        }
+                    } catch (RemoteException e) {
+                        Slog.d(
+                                LOG_TAG,
+                                TextUtils.formatSimple(
+                                        "Unable to toggle supervision for package %s. e = %s",
+                                        targetPackage, e));
+                    }
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
     }
 
