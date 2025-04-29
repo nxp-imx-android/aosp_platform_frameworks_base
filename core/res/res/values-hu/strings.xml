@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"Nem lehet létrehozni az arcmodellt. Próbálja újra."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"Sötét szemüveget észlelt a rendszer. Arcának teljesen láthatónak kell lennie."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Valami eltakarja az arcát. Arcának teljesen láthatónak kell lennie."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Valami eltakarja az arcát. Az arcának teljesen láthatónak kell lennie."</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Sikertelen arcellenőrzés. A hardver nem érhető el."</string>
@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extrasötét"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Hallásjavító eszközök"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatikus kattintás"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Egérgombok"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Leválasztva"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Csatlakozva"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktív"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Görgetés"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Hosszú megnyomás"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Szüneteltetés"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozíció"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Görgetés felfelé"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Görgetés lefelé"</string>
