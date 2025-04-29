@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Binder;
+import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
@@ -67,7 +68,15 @@ public class OffscreenTouchZone {
                     return true;
                 }
             };
-
+    private final View.OnDragListener mDragListener = new View.OnDragListener() {
+        @Override
+        public boolean onDrag(View view, DragEvent dragEvent) {
+            if (dragEvent.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
+                mOnClickRunnable.run();
+            }
+            return false;
+        }
+    };
     /**
      * @param isTopLeft Whether the desired touch zone will be on the top/left or the bottom/right
      *                  screen edge.
@@ -100,6 +109,7 @@ public class OffscreenTouchZone {
         lp.setTitle(TAG);
         lp.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION | PRIVATE_FLAG_TRUSTED_OVERLAY;
         touchableView.setLayoutParams(lp);
+        touchableView.setOnDragListener(mDragListener);
 
         // Create a new leash under our stage leash.
         final SurfaceControl.Builder builder = new SurfaceControl.Builder()
