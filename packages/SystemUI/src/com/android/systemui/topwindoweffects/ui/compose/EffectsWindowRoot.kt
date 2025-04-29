@@ -30,6 +30,7 @@ import java.util.Optional
 @SuppressLint("ViewConstructor")
 class EffectsWindowRoot(
     context: Context,
+    private val onEffectStarted: suspend () -> Unit,
     private val onEffectFinished: suspend () -> Unit,
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
     @DrawableRes private val topRoundedCornerResourceId: Int,
@@ -53,6 +54,7 @@ class EffectsWindowRoot(
     override fun Content() {
         SqueezeEffect(
             viewModelFactory = viewModelFactory,
+            onEffectStarted = onEffectStarted,
             onEffectFinished = onEffectFinished,
             topRoundedCornerResourceId = topRoundedCornerResourceId,
             bottomRoundedCornerResourceId = bottomRoundedCornerResourceId,

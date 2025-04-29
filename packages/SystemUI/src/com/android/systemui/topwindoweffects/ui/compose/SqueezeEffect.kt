@@ -65,6 +65,7 @@ fun SqueezeEffect(
     @DrawableRes topRoundedCornerResourceId: Int,
     @DrawableRes bottomRoundedCornerResourceId: Int,
     physicalPixelDisplaySizeRatio: Float,
+    onEffectStarted: suspend () -> Unit,
     onEffectFinished: suspend () -> Unit,
     appZoomOutOptional: Optional<AppZoomOut>,
     interactionJankMonitor: InteractionJankMonitor,
@@ -93,6 +94,8 @@ fun SqueezeEffect(
     // point the default assistant is invoked, and since this invocation cannot be interrupted by
     // lifting the power button the animation shouldn't be interruptible either.
     var isAnimationInterruptible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) { onEffectStarted() }
 
     LaunchedEffect(longPressed) {
         if (longPressed) {
