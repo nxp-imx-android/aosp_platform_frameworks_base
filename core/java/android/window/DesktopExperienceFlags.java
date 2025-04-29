@@ -154,6 +154,8 @@ public enum DesktopExperienceFlags {
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, false,
             Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS),
+    ENABLE_WINDOW_REPOSITIONING_API(Flags::enableWindowRepositioningApi, false,
+            Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, false,
