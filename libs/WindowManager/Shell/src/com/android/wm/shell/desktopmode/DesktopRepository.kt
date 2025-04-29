@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.graphics.Region
 import android.util.ArrayMap
 import android.util.ArraySet
+import android.util.Slog
 import android.util.SparseArray
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
@@ -450,6 +451,9 @@ class DesktopRepository(
             taskId,
             isVisible,
         )
+        if (deskId == taskId) {
+            Slog.e(TAG, "Adding desk to itself: deskId=$deskId", Exception())
+        }
         addOrMoveTaskToTopOfDesk(displayId = displayId, deskId = deskId, taskId = taskId)
         addActiveTaskToDesk(displayId = displayId, deskId = deskId, taskId = taskId)
         updateTaskInDesk(
