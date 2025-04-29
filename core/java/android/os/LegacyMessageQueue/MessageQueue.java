@@ -71,6 +71,7 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     private final ArrayList<IdleHandler> mIdleHandlers = new ArrayList<IdleHandler>();
     private SparseArray<FileDescriptorRecord> mFileDescriptorRecords;
+    private volatile boolean mHasFileDescriptorRecords;
     private IdleHandler[] mPendingIdleHandlers;
     private boolean mQuitting;
 
@@ -326,6 +327,16 @@ public final class MessageQueue {
             mFileDescriptorRecords.removeAt(index);
             nativeSetFileDescriptorEvents(mPtr, fdNum, 0);
         }
+
+        // Indicate to maybePollOnce() if we have file descriptor records that
+        // need to be polled for events.
+        // We write this volatile field here and read it from the worker thread.
+        // Adding an FD on a client thread and polling for events on the worker thread are
+        // inherently racy. If the worker thread skips polling because it thinks there are
+        // no FDs to watch and there is a Message to handle, then the worker will still
+        // poll for the same events the next time. Events won't be missed, they'll just be
+        // interleaved with Message handling in undefined ways.
+        mHasFileDescriptorRecords = mFileDescriptorRecords.size() > 0;
     }
 
     // Called from native code.
@@ -380,6 +391,16 @@ public final class MessageQueue {
 
     private static final AtomicLong mMessagesDelivered = new AtomicLong();
 
+    private void maybePollOnce(int nextPollTimeoutMillis) {
+        if (!Flags.messageQueueNativePollOnceAndForAll()) {
+            // If nativePollOnce optimization is not in effect, poll unconditionally.
+            nativePollOnce(mPtr, nextPollTimeoutMillis);
+        } else if (nextPollTimeoutMillis != 0 || mHasFileDescriptorRecords) {
+            // We need to wait for the next message, or we need to poll for file descriptor events.
+            nativePollOnce(mPtr, nextPollTimeoutMillis);
+        }
+    }
+
     @UnsupportedAppUsage
     Message next() {
         // Return here if the message loop has already quit and been disposed.
@@ -397,7 +418,7 @@ public final class MessageQueue {
                 Binder.flushPendingCommands();
             }
 
-            nativePollOnce(ptr, nextPollTimeoutMillis);
+            maybePollOnce(nextPollTimeoutMillis);
 
             synchronized (this) {
                 // Try to retrieve the next message.  Return if found.

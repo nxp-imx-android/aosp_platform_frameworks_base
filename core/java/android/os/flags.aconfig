@@ -311,6 +311,14 @@ flag {
 }
 
 flag {
+    name: "message_queue_native_poll_once_and_for_all"
+    namespace: "system_performance"
+    description: "Don't call nativePollOnce unnecessarily."
+    bug: "410218466"
+    is_fixed_read_only: false
+}
+
+flag {
      name: "message_queue_testability"
      namespace: "system_performance"
      is_exported: true
