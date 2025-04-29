@@ -1297,9 +1297,21 @@ final class KeyGestureController {
             }
             for (int gestureType : keyGesturesToHandle) {
                 if (mSupportedKeyGestureToPidMap.indexOfKey(gestureType) >= 0) {
-                    throw new IllegalArgumentException(
-                            "Key gesture " + gestureType + " is already registered by pid = "
-                                    + mSupportedKeyGestureToPidMap.get(gestureType));
+                    // Check if existing registered pid is dead or not.
+                    // Due to race conditions it is possible to get cases where the process is
+                    // killed and we haven't yet received the binderDied() callback.
+                    int existingPid = mSupportedKeyGestureToPidMap.get(gestureType);
+                    KeyGestureHandlerRecord existingHandler = Objects.requireNonNull(
+                            mKeyGestureHandlerRecords.get(existingPid));
+                    if (existingHandler.mKeyGestureHandler.asBinder().isBinderAlive()) {
+                        throw new IllegalArgumentException(
+                                "Key gesture " + gestureType + " is already registered by pid = "
+                                        + existingPid);
+                    } else {
+                        Slog.w(TAG, "registerKeyGestureHandler: pid = " + existingPid
+                                + " was killed but we didn't receive binderDied callback");
+                        onKeyGestureHandlerRemoved(existingPid);
+                    }
                 }
             }
             KeyGestureHandlerRecord record = new KeyGestureHandlerRecord(pid, handler);
