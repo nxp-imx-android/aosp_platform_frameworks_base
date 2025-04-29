@@ -700,7 +700,7 @@ public class FingerprintManager implements BiometricAuthenticator, BiometricFing
 
     /**
      * Set whether the HAL should ignore display touches.
-     * Only applies to sensors where the HAL is reponsible for handling touches.
+     * Only applies to sensors where the HAL is responsible for handling touches.
      * @hide
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
