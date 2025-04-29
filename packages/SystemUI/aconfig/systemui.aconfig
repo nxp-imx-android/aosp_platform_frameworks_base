@@ -2002,16 +2002,6 @@ flag {
 }
 
 flag {
-    name: "app_shortcut_removal_fix"
-    namespace: "systemui"
-    description: "During custom app shortcut removal, use custom shortcut command as key to find the right InputGestureData to be deleted"
-    bug: "405058325"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "skip_cancelling_huns_for_guts"
    namespace: "systemui"
    description: "Do not cancel HUNs when GUTs are exposed"
