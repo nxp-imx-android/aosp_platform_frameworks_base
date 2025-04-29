@@ -177,7 +177,7 @@ public class BluetoothUtils {
             }
         }
 
-        if (cachedDevice.isHearingAidDevice()) {
+        if (cachedDevice.isHearingDevice()) {
             return new Pair<>(
                     getBluetoothDrawable(
                             context, com.android.internal.R.drawable.ic_bt_hearing_aid),
@@ -193,7 +193,8 @@ public class BluetoothUtils {
                 // profiles
                 if (profile instanceof HearingAidProfile || profile instanceof HapClientProfile) {
                     return new Pair<>(
-                            getBluetoothDrawable(context, profileResId),
+                            getBluetoothDrawable(context,
+                                    com.android.internal.R.drawable.ic_bt_hearing_aid),
                             context.getString(R.string.bluetooth_talkback_hearing_aids));
                 }
                 if (resId == 0) {

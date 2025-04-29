@@ -94,7 +94,7 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     @Override
     public String getId() {
-        if (mCachedDevice.isHearingAidDevice()) {
+        if (mCachedDevice.isHearingDevice()) {
             if (mCachedDevice.getHiSyncId() != BluetoothHearingAid.HI_SYNC_ID_INVALID) {
                 return Long.toString(mCachedDevice.getHiSyncId());
             }

@@ -1246,7 +1246,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         builder.append(", name=").append(getName());
         builder.append(", groupId=").append(mGroupId);
         builder.append(", member=").append(mMemberDevices);
-        if (isHearingAidDevice()) {
+        if (isHearingDevice()) {
             builder.append(", hearingAidInfo=").append(mHearingAidInfo);
             builder.append(", subDevice=").append(mSubDevice);
         }
