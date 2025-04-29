@@ -527,6 +527,8 @@ public class AnrTimer<V> implements AutoCloseable {
         @Override
         void start(@NonNull V arg, int pid, int uid, long timeoutMs) {
             synchronized (mLock) {
+                if (mNative == 0) throw new IllegalStateException("timer service is closed");
+
                 // If there is an existing timer, cancel it.  This is a nop if the timer does not
                 // exist.
                 if (cancel(arg)) mTotalRestarted++;
@@ -554,6 +556,8 @@ public class AnrTimer<V> implements AutoCloseable {
                 if (timer == null) {
                     return false;
                 }
+                // Race conditions may lead to timer cancellation after the service was closed.
+                if (mNative == 0) return false;
                 if (!nativeAnrTimerCancel(mNative, timer)) {
                     // There may be an expiration message in flight.  Cancel it.
                     mHandler.removeMessages(mWhat, arg);
@@ -579,6 +583,8 @@ public class AnrTimer<V> implements AutoCloseable {
                     notFoundLocked("accept", arg);
                     return null;
                 }
+                // Race conditions may lead to timer acceptance after the service was closed.
+                if (mNative == 0) return null;
                 boolean accepted = nativeAnrTimerAccept(mNative, timer);
                 trace("accept", timer);
                 // If "accepted" is true then the native layer has pending operations against this
@@ -601,6 +607,8 @@ public class AnrTimer<V> implements AutoCloseable {
                     notFoundLocked("discard", arg);
                     return false;
                 }
+                // Race conditions may lead to timer discard  after the service was closed.
+                if (mNative == 0) return false;
                 nativeAnrTimerDiscard(mNative, timer);
                 trace("discard", timer);
                 return true;
