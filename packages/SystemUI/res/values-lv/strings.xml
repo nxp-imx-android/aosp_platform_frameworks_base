@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth ierīces ikona"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Lai konfigurētu ierīces informāciju, noklikšķiniet"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurējiet ierīces informāciju."</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Sākt audio kopīgošanu ar ierīci <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Pārtraukt audio kopīgošanu ar ierīci <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Skatiet visas ierīces."</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Savienot pārī ar jaunu ierīci"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akumulatora uzlādes līmenis procentos nav zināms."</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nav iestatīts"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Pārvaldīt iestatījumos"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nav aktīvu režīmu}=1{Režīms “{mode}” ir aktīvs}zero{# režīmi ir aktīvi}one{# režīms ir aktīvs}other{# režīmi ir aktīvi}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Ieslēgti"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Jūs netraucēs skaņas un vibrācija, izņemot signālus, atgādinājumus, pasākumus un zvanītājus, ko būsiet norādījis. Jūs joprojām dzirdēsiet atskaņošanai izvēlētos vienumus, tostarp mūziku, videoklipus un spēles."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Jūs netraucēs skaņas un vibrācija, izņemot signālus. Jūs joprojām dzirdēsiet atskaņošanai izvēlētos vienumus, tostarp mūziku, videoklipus un spēles."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Pielāgot"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"Citi"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"pārslēgt elementa lielumu"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Noņemt elementu"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"pārslēgt izvietojuma režīmu"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"pārslēgt atlasi"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Pievienot elementu pēdējā pozīcijā"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Pārvietot elementu"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Pievienot elementu vēlamajā pozīcijā"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Pārvietot uz pozīciju numur <xliff:g id="POSITION">%1$d</xliff:g>"</string>

@@ -482,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Hindi nakatakda"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Pamahalaan sa mga setting"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Walang aktibong mode}=1{Aktibo ang {mode}}one{# mode ang aktibo}other{# na mode ang aktibo}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Naka-on"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban mula sa mga alarm, paalala, event, at tumatawag na tutukuyin mo. Maririnig mo pa rin ang kahit na anong piliin mong i-play kabilang ang mga musika, video, at laro."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban sa mga alarm. Maririnig mo pa rin ang anumang pipiliin mong i-play kabilang ang mga musika, video, at laro."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"I-customize"</string>
@@ -1028,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"Iba pa"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"i-toggle ang laki ng tile"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Alisin ang tile"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"i-toggle ang placement mode"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"i-toggle ang pagpili"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Magdagdag ng tile sa huling posisyon"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Ilipat ang tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Magdagdag ng tile sa gustong posisyon"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Ilipat sa <xliff:g id="POSITION">%1$d</xliff:g>"</string>

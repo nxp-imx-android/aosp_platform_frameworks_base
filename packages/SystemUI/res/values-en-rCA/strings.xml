@@ -482,7 +482,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Not set"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Manage in settings"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{No active modes}=1{{mode} is active}other{# modes are active}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="7876813862065005399">"%s Modes"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> Modes"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"On"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"You won\'t be disturbed by sounds and vibrations, except from alarms, reminders, events, and callers you specify. You\'ll still hear anything you choose to play including music, videos, and games."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"You won\'t be disturbed by sounds and vibrations, except from alarms. You\'ll still hear anything you choose to play including music, videos, and games."</string>
@@ -810,16 +810,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"To connect your keyboard with your tablet, you first have to turn on Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Turn on"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"On - Face-based"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silence and bundle"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sales, new features, and more"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Top stories, editorials, and more"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, posts, and more"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, recommended media, and more"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Done"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Apply"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Turn off"</string>
@@ -1026,9 +1021,11 @@
     <string name="other" msgid="429768510980739978">"Other"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"toggle the tile\'s size"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Remove tile"</string>
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Place tile"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"toggle placement mode"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"toggle selection"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Add tile to the last position"</string>
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Add <xliff:g id="NAME">%1$s</xliff:g> to the last position"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Move tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Add tile to desired position"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Move to <xliff:g id="POSITION">%1$d</xliff:g>"</string>
