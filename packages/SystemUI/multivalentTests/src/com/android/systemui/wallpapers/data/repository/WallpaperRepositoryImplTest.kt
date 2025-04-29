@@ -249,6 +249,63 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun wallpaperSupportsAmbientMode_sysuiOverrideFalse_deviceDoesSupport_false() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
+            context.orCreateTestableResources.addOverride(
+                R.bool.config_dozeSupportsAodWallpaper,
+                true,
+            )
+            context.orCreateTestableResources.addOverride(
+                SysUIR.integer.config_dozeSupportsAodWallpaperOverride,
+                0,
+            )
+
+            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun wallpaperSupportsAmbientMode_sysuiOverrideTrue_deviceDoesSupport_true() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
+            context.orCreateTestableResources.addOverride(
+                R.bool.config_dozeSupportsAodWallpaper,
+                true,
+            )
+            context.orCreateTestableResources.addOverride(
+                SysUIR.integer.config_dozeSupportsAodWallpaperOverride,
+                1,
+            )
+
+            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun wallpaperSupportsAmbientMode_sysuiOverrideNull_deviceDoesSupport_true() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
+            context.orCreateTestableResources.addOverride(
+                R.bool.config_dozeSupportsAodWallpaper,
+                true,
+            )
+            context.orCreateTestableResources.addOverride(
+                SysUIR.integer.config_dozeSupportsAodWallpaperOverride,
+                -1,
+            )
+
+            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
     fun wallpaperSupportsAmbientMode_deviceDoesSupport_true() =
         testScope.runTest {
             underTest = kosmos.wallpaperRepository
