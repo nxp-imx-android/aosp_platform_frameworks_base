@@ -834,7 +834,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int firstOverflowIndex = lastVisibleIndex + 1;
         float expandFactor = 0;
         boolean expandingToExpandedGroup = mUserLocked && !showingAsLowPriority();
-        if (mUserLocked) {
+        if (notificationsRedesignTemplates() || mUserLocked) {
             expandFactor = getGroupExpandFraction();
             firstOverflowIndex = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
         }
@@ -1198,10 +1198,23 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null && mHeaderViewState != null) {
-            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
-            //  but mHeaderViewState is null.
-            mHeaderViewState.applyToView(mGroupHeader);
+        if (mGroupHeader != null) {
+            if (mHeaderViewState != null) {
+                // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+                //  but mHeaderViewState is null.
+                mHeaderViewState.applyToView(mGroupHeader);
+            }
+
+            // Only apply the special viewState for the header's children if we're not currently
+            // showing the minimized header.
+            if (notificationsRedesignTemplates() && !showingAsLowPriority()) {
+                if (mTopLineViewState != null) {
+                    mTopLineViewState.applyToView(mGroupHeader.getTopLineView());
+                }
+                if (mExpandButtonViewState != null) {
+                    mExpandButtonViewState.applyToView(mGroupHeader.getExpandButton());
+                }
+            }
         }
         updateChildrenClipping();
     }
@@ -1433,7 +1446,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public void setActualHeight(int actualHeight) {
-        if (!mUserLocked) {
+        if (!notificationsRedesignTemplates() && !mUserLocked) {
             return;
         }
         mActualHeight = actualHeight;
