@@ -127,6 +127,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND),
     ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, false,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND),
+    ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX(
+            Flags::nestedTasksWithIndependentBoundsBugfix, false,
+            Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),
     ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS(
             Flags::enablePersistingDisplaySizeForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS),
