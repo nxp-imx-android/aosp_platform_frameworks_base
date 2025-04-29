@@ -24,11 +24,12 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -107,7 +108,7 @@ fun OngoingActivityChip(
             RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius)),
         modifier =
             modifier
-                .height(dimensionResource(R.dimen.ongoing_appops_chip_height))
+                .wrapContentSize()
                 .semantics {
                     if (contentDescription != null) {
                         this.contentDescription = contentDescription
@@ -161,7 +162,7 @@ private fun ChipBody(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
-                .fillMaxHeight()
+                .heightIn(min = dimensionResource(R.dimen.ongoing_appops_chip_height))
                 // Set the minWidth here as well as on the Expandable so that the content within
                 // this row is still centered correctly horizontally
                 .widthIn(min = minWidth)
