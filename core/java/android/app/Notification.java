@@ -11600,6 +11600,11 @@ public class Notification implements Parcelable
             }
             if (segment.getLength() > 0) {
                 mProgressSegments.add(segment);
+                if (mProgressSegments.size() > MAX_PROGRESS_SEGMENT_LIMIT) {
+                  Log.w(TAG, "Progress segments limit ("
+                      + MAX_PROGRESS_SEGMENT_LIMIT +") is reached. "
+                      + "All segments will be merged into one segment.");
+                }
             } else {
                 Log.w(TAG, "Dropped the segment. The length is not a positive integer.");
             }
