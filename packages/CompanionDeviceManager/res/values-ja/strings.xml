@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> が <xliff:g id="DEVICE_NAME">%2$s</xliff:g> に代わって、アプリやシステム機能を <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> からストリーミングする権限をリクエストしています"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"スマートフォンのこの情報へのアクセスを &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; に許可"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> が <xliff:g id="DEVICE_NAME">%2$s</xliff:g> に代わって<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>の写真、メディア、通知にアクセスする権限をリクエストしています"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> のアプリを &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; にストリーミングすることを &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; に許可しますか？"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> は、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。&lt;br/&gt;&lt;br/&gt;この権限へのアクセス権を削除するまで、<xliff:g id="APP_NAME_2">%1$s</xliff:g> は <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> にアプリをストリーミングできます。"</string>
