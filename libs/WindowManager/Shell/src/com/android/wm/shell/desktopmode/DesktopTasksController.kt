@@ -1506,6 +1506,8 @@ class DesktopTasksController(
                     launchingNewIntent = launchingTaskId == null,
                 )
             }
+        val closingTopTransparentTaskId =
+            deskId?.let { taskRepository.getTopTransparentFullscreenTaskData(it)?.taskId }
         val exitImmersiveResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = launchTransaction,
@@ -1543,6 +1545,8 @@ class DesktopTasksController(
                 )
             }
         }
+        // Remove top transparent fullscreen task if needed.
+        deskId?.let { closeTopTransparentFullscreenTask(launchTransaction, it) }
         val t =
             if (remoteTransition == null) {
                 logV("startLaunchTransition -- no remoteTransition -- wct = $launchTransaction")
@@ -1551,10 +1555,13 @@ class DesktopTasksController(
                     wct = launchTransaction,
                     taskId = launchingTaskId,
                     minimizingTaskId = taskIdToMinimize,
+                    closingTopTransparentTaskId = closingTopTransparentTaskId,
                     exitingImmersiveTask = exitImmersiveResult.asExit()?.exitingTask,
                     dragEvent = dragEvent,
                 )
             } else if (taskIdToMinimize == null) {
+                // TODO(b/412761429): Move OneShotRemoteHandler call to within
+                //  DesktopMixedTransitionHandler.
                 val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
                 transitions
                     .startTransition(transitionType, launchTransaction, remoteTransitionHandler)
@@ -2938,7 +2945,16 @@ class DesktopTasksController(
         // 2) minimize a Task if needed.
         // TODO: b/32994943 - remove dead code when cleaning up task_limit_separate_transition flag
         val taskIdToMinimize = addAndGetMinimizeChanges(deskId, wct, task.taskId)
-        addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+        // 3) Remove top transparent fullscreen task if needed.
+        val closingTopTransparentTaskId =
+            taskRepository.getTopTransparentFullscreenTaskData(deskId)?.taskId
+        closeTopTransparentFullscreenTask(wct, deskId)
+        addPendingAppLaunchTransition(
+            transition,
+            task.taskId,
+            taskIdToMinimize,
+            closingTopTransparentTaskId,
+        )
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
             return wct
@@ -2995,8 +3011,17 @@ class DesktopTasksController(
                                 )
                             }
                             addPendingTaskLimitTransition(transition, deskId, task.taskId)
+                            // Remove top transparent fullscreen task if needed.
+                            val closingTopTransparentTaskId =
+                                taskRepository.getTopTransparentFullscreenTaskData(deskId)?.taskId
+                            closeTopTransparentFullscreenTask(wct, deskId)
                             // Also track the pending launching task.
-                            addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+                            addPendingAppLaunchTransition(
+                                transition,
+                                task.taskId,
+                                taskIdToMinimize,
+                                closingTopTransparentTaskId,
+                            )
                         }
                     }
                 runOnTransitStart?.invoke(transition)
@@ -3060,11 +3085,15 @@ class DesktopTasksController(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             if (!inDesktop && !forceEnterDesktop(displayId)) return null
             if (
-                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                    .isTrue && isTransparentTask
+                isTransparentTask &&
+                    (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                        DesktopModeFlags
+                            .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                            .isTrue)
             ) {
                 // Only update task repository for transparent task.
-                taskRepository.setTopTransparentFullscreenTaskId(displayId, taskId)
+                val deskId = taskRepository.getActiveDeskId(displayId)
+                deskId?.let { taskRepository.setTopTransparentFullscreenTaskData(it, task) }
             }
             // Already fullscreen, no-op.
             if (task.isFullscreen) return null
@@ -3086,6 +3115,16 @@ class DesktopTasksController(
         if (!inDesktop && !isFreeform) {
             logD("handleIncompatibleTaskLaunch not in desktop, not a freeform task, nothing to do")
             return null
+        }
+        if (
+            isTransparentTask &&
+                (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                    DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
+                        .isTrue)
+        ) {
+            // Only update task repository for transparent task.
+            val deskId = taskRepository.getActiveDeskId(displayId)
+            deskId?.let { taskRepository.setTopTransparentFullscreenTaskData(it, task) }
         }
         // Both opaque and transparent incompatible tasks need to be forced to fullscreen, but
         // opaque ones force-exit the desktop while transparent ones are just shown on top of the
@@ -3448,6 +3487,7 @@ class DesktopTasksController(
         transition: IBinder,
         launchTaskId: Int,
         minimizeTaskId: Int?,
+        closingTopTransparentTaskId: Int?,
     ) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
             return
@@ -3458,6 +3498,7 @@ class DesktopTasksController(
                 transition,
                 launchTaskId,
                 minimizeTaskId,
+                closingTopTransparentTaskId,
                 /* exitingImmersiveTask= */ null,
             )
         )
@@ -3512,7 +3553,16 @@ class DesktopTasksController(
                     launchTaskId = newTask?.taskId,
                 )
                 if (newTask != null && addPendingLaunchTransition) {
-                    addPendingAppLaunchTransition(transition, newTask.taskId, taskIdToMinimize)
+                    // Remove top transparent fullscreen task if needed.
+                    val closingTopTransparentTaskId =
+                        taskRepository.getTopTransparentFullscreenTaskData(deskId)?.taskId
+                    closeTopTransparentFullscreenTask(wct, deskId)
+                    addPendingAppLaunchTransition(
+                        transition,
+                        newTask.taskId,
+                        taskIdToMinimize,
+                        closingTopTransparentTaskId,
+                    )
                 }
             }
         }
@@ -3571,6 +3621,15 @@ class DesktopTasksController(
             }
             addPendingTaskLimitTransition(transition, deskId, newTask?.taskId)
             deactivationRunnable?.invoke(transition)
+        }
+    }
+
+    private fun closeTopTransparentFullscreenTask(wct: WindowContainerTransaction, deskId: Int) {
+        if (!DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
+        val data = taskRepository.getTopTransparentFullscreenTaskData(deskId)
+        if (data != null) {
+            logD("closeTopTransparentFullscreenTask: taskId=%d, deskId=%d", data.taskId, deskId)
+            wct.removeTask(data.token)
         }
     }
 

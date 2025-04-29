@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager
 import android.graphics.Rect
 import android.graphics.Region
 import android.util.ArrayMap
@@ -25,6 +26,7 @@ import android.util.SparseArray
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
+import android.window.WindowContainerToken
 import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
@@ -56,6 +58,9 @@ class DesktopRepository(
         var activeDeskId: Int? = null
     }
 
+    /** Specific [TaskInfo] data related to top transparent fullscreen task handling. */
+    data class TopTransparentFullscreenTaskData(val taskId: Int, val token: WindowContainerToken)
+
     /**
      * Task data tracked per desk.
      *
@@ -83,7 +88,7 @@ class DesktopRepository(
         val closingTasks: ArraySet<Int> = ArraySet(),
         val freeformTasksInZOrder: ArrayList<Int> = ArrayList(),
         var fullImmersiveTaskId: Int? = null,
-        var topTransparentFullscreenTaskId: Int? = null,
+        var topTransparentFullscreenTaskData: TopTransparentFullscreenTaskData? = null,
         var leftTiledTaskId: Int? = null,
         var rightTiledTaskId: Int? = null,
     ) {
@@ -97,7 +102,7 @@ class DesktopRepository(
                 closingTasks = ArraySet(closingTasks),
                 freeformTasksInZOrder = ArrayList(freeformTasksInZOrder),
                 fullImmersiveTaskId = fullImmersiveTaskId,
-                topTransparentFullscreenTaskId = topTransparentFullscreenTaskId,
+                topTransparentFullscreenTaskData = topTransparentFullscreenTaskData,
                 leftTiledTaskId = leftTiledTaskId,
                 rightTiledTaskId = rightTiledTaskId,
             )
@@ -111,7 +116,7 @@ class DesktopRepository(
             closingTasks.clear()
             freeformTasksInZOrder.clear()
             fullImmersiveTaskId = null
-            topTransparentFullscreenTaskId = null
+            topTransparentFullscreenTaskData = null
             leftTiledTaskId = null
             rightTiledTaskId = null
         }
@@ -793,36 +798,29 @@ class DesktopRepository(
     fun getTaskInFullImmersiveState(displayId: Int): Int? =
         desktopData.getActiveDesk(displayId)?.fullImmersiveTaskId
 
-    /** Sets the top transparent fullscreen task id for a given display's active desk. */
-    @Deprecated("Deprecated with multiple desks")
-    fun setTopTransparentFullscreenTaskId(displayId: Int, taskId: Int) {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
+    /** Sets the top transparent fullscreen task data for a given desk. */
+    fun setTopTransparentFullscreenTaskData(deskId: Int, task: ActivityManager.RunningTaskInfo) {
         logD(
-            "Top transparent fullscreen task set for display: taskId=%d, displayId=%d",
-            taskId,
-            displayId,
+            "Top transparent fullscreen task set for desk: taskId=%d, deskId=%d",
+            task.taskId,
+            deskId,
         )
-        desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = taskId
+        desktopData.getDesk(deskId)?.topTransparentFullscreenTaskData =
+            TopTransparentFullscreenTaskData(task.taskId, task.token)
     }
 
-    /** Returns the top transparent fullscreen task id for a given display, or null. */
-    @Deprecated("Deprecated with multiple desks")
-    fun getTopTransparentFullscreenTaskId(displayId: Int): Int? =
-        desktopData
-            .desksSequence(displayId)
-            .mapNotNull { it.topTransparentFullscreenTaskId }
-            .firstOrNull()
+    /** Returns the top transparent fullscreen task data for a given desk, or null. */
+    fun getTopTransparentFullscreenTaskData(deskId: Int): TopTransparentFullscreenTaskData? =
+        desktopData.getDesk(deskId)?.topTransparentFullscreenTaskData
 
-    /** Clears the top transparent fullscreen task id info for a given display's active desk. */
-    @Deprecated("Deprecated with multiple desks")
-    fun clearTopTransparentFullscreenTaskId(displayId: Int) {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
+    /** Clears the top transparent fullscreen task data for a given desk. */
+    fun clearTopTransparentFullscreenTaskData(deskId: Int) {
         logD(
-            "Top transparent fullscreen task cleared for display: taskId=%d, displayId=%d",
-            desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId,
-            displayId,
+            "Top transparent fullscreen task cleared for desk: taskId=%d, deskId=%d",
+            desktopData.getDesk(deskId)?.topTransparentFullscreenTaskData?.taskId,
+            deskId,
         )
-        desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = null
+        desktopData.getDesk(deskId)?.topTransparentFullscreenTaskData = null
     }
 
     @VisibleForTesting
@@ -842,7 +840,7 @@ class DesktopRepository(
             }
             val hasVisibleTasks = desk.visibleTasks.isNotEmpty()
             val hasTopTransparentFullscreenTask =
-                getTopTransparentFullscreenTaskId(displayId) != null
+                getTopTransparentFullscreenTaskData(desk.deskId) != null
             if (
                 DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                     .isTrue && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
@@ -1188,8 +1186,8 @@ class DesktopRepository(
                     pw.println(desk.minimizedTasks.toDumpString())
                     pw.print("$desksPrefix  fullImmersiveTaskId=")
                     pw.println(desk.fullImmersiveTaskId)
-                    pw.print("$desksPrefix  topTransparentFullscreenTaskId=")
-                    pw.println(desk.topTransparentFullscreenTaskId)
+                    pw.print("$desksPrefix  topTransparentFullscreenTaskData=")
+                    pw.println(desk.topTransparentFullscreenTaskData)
                 }
             }
     }

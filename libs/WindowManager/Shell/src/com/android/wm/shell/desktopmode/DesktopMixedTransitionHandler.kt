@@ -36,6 +36,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
+import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -45,6 +46,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.MixedTransitionHandler
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
+import java.util.Optional
 
 /** The [Transitions.TransitionHandler] coordinates transition handlers in desktop windowing. */
 class DesktopMixedTransitionHandler(
@@ -56,6 +58,7 @@ class DesktopMixedTransitionHandler(
     private val desktopImmersiveController: DesktopImmersiveController,
     private val desktopMinimizationTransitionHandler: DesktopMinimizationTransitionHandler,
     private val desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler,
+    private val systemModalsTransitionHandler: Optional<SystemModalsTransitionHandler>,
     private val interactionJankMonitor: InteractionJankMonitor,
     @ShellMainThread private val handler: Handler,
     shellInit: ShellInit,
@@ -137,6 +140,7 @@ class DesktopMixedTransitionHandler(
         wct: WindowContainerTransaction,
         taskId: Int?,
         minimizingTaskId: Int? = null,
+        closingTopTransparentTaskId: Int? = null,
         exitingImmersiveTask: Int? = null,
         dragEvent: DragEvent? = null,
     ): IBinder {
@@ -163,6 +167,7 @@ class DesktopMixedTransitionHandler(
                     transition = transition,
                     launchingTask = taskId,
                     minimizingTask = minimizingTaskId,
+                    closingTopTransparentTask = closingTopTransparentTaskId,
                     exitingImmersiveTask = exitingImmersiveTask,
                     dragEvent = dragEvent,
                 )
@@ -274,6 +279,10 @@ class DesktopMixedTransitionHandler(
             pending.exitingImmersiveTask?.let { exitingTask -> findTaskChange(info, exitingTask) }
         val minimizeChange =
             pending.minimizingTask?.let { minimizingTask -> findTaskChange(info, minimizingTask) }
+        val closeTopTransparentFullscreenTaskChange =
+            pending.closingTopTransparentTask?.let { closingTopTransparentTask ->
+                findTaskChange(info, closingTopTransparentTask)
+            }
         val launchChange = findDesktopTaskLaunchChange(info, pending.launchingTask)
         if (launchChange == null) {
             check(immersiveExitChange == null)
@@ -281,6 +290,7 @@ class DesktopMixedTransitionHandler(
             return false
         }
 
+        var topTransparentAnimationCount = 0
         var subAnimationCount = -1
         var combinedWct: WindowContainerTransaction? = null
         val finishCb = TransitionFinishCallback { wct ->
@@ -291,9 +301,11 @@ class DesktopMixedTransitionHandler(
         }
 
         logV(
-            "Animating mixed launch transition task#%d, minimizingTask#%s immersiveExitTask#%s",
+            "Animating mixed launch transition task#%d, minimizingTask#%s " +
+                "closingTopTransparentTask#%s immersiveExitTask#%s",
             launchChange.taskInfo!!.taskId,
             minimizeChange?.taskInfo?.taskId,
+            closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId,
             immersiveExitChange?.taskInfo?.taskId,
         )
         if (DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
@@ -314,8 +326,26 @@ class DesktopMixedTransitionHandler(
                 finishCallback,
             )
         }
+        if (closeTopTransparentFullscreenTaskChange != null) {
+            systemModalsTransitionHandler.ifPresent { handler ->
+                logV(
+                    "Animating system modal close: taskId=%d",
+                    closeTopTransparentFullscreenTaskChange.taskInfo?.taskId,
+                )
+                topTransparentAnimationCount = 1
+                // Animate the modal closure separately.
+                info.changes.remove(closeTopTransparentFullscreenTaskChange)
+                handler.animateSystemModal(
+                    closeTopTransparentFullscreenTaskChange.leash,
+                    startTransaction,
+                    finishTransaction,
+                    finishCb,
+                    /* toShow= */ false,
+                )
+            }
+        }
         if (immersiveExitChange != null) {
-            subAnimationCount = 2
+            subAnimationCount = 2 + topTransparentAnimationCount
             // Animate the immersive exit change separately.
             info.changes.remove(immersiveExitChange)
             desktopImmersiveController.animateResizeChange(
@@ -335,7 +365,7 @@ class DesktopMixedTransitionHandler(
         }
         // There's nothing to animate separately, so let the left over handler animate
         // the entire transition.
-        subAnimationCount = 1
+        subAnimationCount = 1 + topTransparentAnimationCount
         return dispatchToLeftoverHandler(
             transition,
             info,
@@ -536,6 +566,7 @@ class DesktopMixedTransitionHandler(
             override val transition: IBinder,
             val launchingTask: Int?,
             val minimizingTask: Int?,
+            val closingTopTransparentTask: Int?,
             val exitingImmersiveTask: Int?,
             val dragEvent: DragEvent? = null,
         ) : PendingMixedTransition()
