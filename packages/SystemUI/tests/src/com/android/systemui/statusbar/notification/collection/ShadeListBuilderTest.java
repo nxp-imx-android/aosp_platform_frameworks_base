@@ -990,6 +990,38 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_groupNotifNotPromoted() {
+        final int promotableId = 123;
+
+        IdPromoter idPromoter = spy(new IdPromoter(promotableId));
+        mListBuilder.addPromoter(idPromoter);
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // Add promotable child in a group that will be bundled
+        addGroupSummary(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1).setId(promotableId);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+
+        dispatchBuild();
+
+        // Verify that group child was not promoted out of bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        group(
+                                summary(0),
+                                child(1),
+                                child(2)
+                        )
+                )
+        );
+
+        NotificationEntry promotableChild = mEntrySet.get(1);
+        verify(idPromoter, never()).shouldPromoteToTopLevel(eq(promotableChild));
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_groupChildrenAreSorted() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
