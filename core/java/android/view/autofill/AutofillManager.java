@@ -319,6 +319,32 @@ public final class AutofillManager {
             "android.view.autofill.extra.AUTOFILL_REQUEST_ID";
 
     /**
+     * Internal {@link DirectAction#getId()} used to pass to the {@link ActivityThread} to fill a
+     * remote app.
+     *
+     * @hide
+     */
+    public static final String DIRECT_ACTION_ID_REMOTE_AUTOFILL = "android.REMOTE_AUTOFILL";
+
+    /**
+     * Internal extra used to pass an {@link AutofillId} to the {@link ActivityThread} to fill a
+     * remote app.
+     *
+     * @hide
+     */
+    public static final String EXTRA_REMOTE_AUTOFILL_ID =
+            "android.view.autofill.extra.REMOTE_AUTOFILL_ID";
+
+    /**
+     * Internal extra used to pass an {@link AutofillValue} to the {@link ActivityThread} to fill a
+     * remote app.
+     *
+     * @hide
+     */
+    public static final String EXTRA_REMOTE_AUTOFILL_VALUE =
+            "android.view.autofill.extra.REMOTE_AUTOFILL_VALUE";
+
+    /**
      * Autofill Hint to indicate that it can match any field.
      *
      * @hide
@@ -3945,7 +3971,9 @@ public final class AutofillManager {
                 pw.print(" ("); pw.print(client.autofillClientGetActivityToken()); pw.println(')');
             }
             pw.print(pfx); pw.print("enabled: "); pw.println(mEnabled);
-            pw.print(pfx); pw.print("enabledAugmentedOnly: "); pw.println(mForAugmentedAutofillOnly);
+            pw.print(pfx);
+            pw.print("enabledAugmentedOnly: ");
+            pw.println(mForAugmentedAutofillOnly);
             pw.print(pfx); pw.print("hasService: "); pw.println(mService != null);
             pw.print(pfx); pw.print("hasCallback: "); pw.println(mCallback != null);
             pw.print(pfx); pw.print("onInvisibleCalled "); pw.println(mOnInvisibleCalled);
@@ -3958,7 +3986,9 @@ public final class AutofillManager {
                 final String pfx2 = pfx + "  ";
                 pw.println();
                 pw.print(pfx2); pw.print("visible:"); pw.println(mTrackedViews.mVisibleTrackedIds);
-                pw.print(pfx2); pw.print("invisible:"); pw.println(mTrackedViews.mInvisibleTrackedIds);
+                pw.print(pfx2);
+                pw.print("invisible:");
+                pw.println(mTrackedViews.mInvisibleTrackedIds);
             }
             pw.print(pfx); pw.print("fillable ids: "); pw.println(mFillableIds);
             pw.print(pfx); pw.print("entered ids: "); pw.println(mEnteredIds);
@@ -4118,6 +4148,32 @@ public final class AutofillManager {
             return true;
         }
         return false;
+    }
+
+    /**
+     * This method is used for a system component like SystemUI to autofill a remote app.
+     *
+     * @hide
+     */
+    public void autofillRemoteApp(
+            @NonNull AutofillId autofillId,
+            @NonNull String value,
+            @NonNull IBinder shareableActivityToken,
+            int taskId) {
+        if (android.view.contentcapture.flags.Flags.enableSystemUiUnderlay() && mService != null) {
+            final AutofillValue autofillValue = AutofillValue.forText(value);
+
+            try {
+                mService.autofillRemoteApp(
+                        shareableActivityToken,
+                        taskId,
+                        autofillId,
+                        autofillValue,
+                        mContext.getUserId());
+            } catch (Exception e) {
+                Log.e(TAG, "autofillRemoteApp() - cannot autofill remote app", e);
+            }
+        }
     }
 
     /**
