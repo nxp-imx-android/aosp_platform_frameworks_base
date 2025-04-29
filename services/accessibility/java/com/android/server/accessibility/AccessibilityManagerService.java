@@ -16,7 +16,6 @@
 
 package com.android.server.accessibility;
 
-import static android.Manifest.permission.CREATE_VIRTUAL_DEVICE;
 import static android.Manifest.permission.INJECT_EVENTS;
 import static android.Manifest.permission.INTERNAL_SYSTEM_WINDOW;
 import static android.Manifest.permission.MANAGE_ACCESSIBILITY;
@@ -4964,11 +4963,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     @Override
-    @EnforcePermission(CREATE_VIRTUAL_DEVICE)
     public boolean registerProxyForDisplay(IAccessibilityServiceClient client, int displayId)
             throws RemoteException {
-        registerProxyForDisplay_enforcePermission();
-        mSecurityPolicy.checkForAccessibilityPermissionOrRole();
+        mSecurityPolicy.checkForAccessibilityPermissionOrDisplayOwnership(displayId);
         enforceCurrentUserIfVisibleBackgroundEnabled();
         if (client == null) {
             return false;
@@ -4983,10 +4980,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (mProxyManager.isProxyedDisplay(displayId)) {
             throw new IllegalArgumentException("The display " + displayId + " is already being"
                     + " proxy-ed");
-        }
-        if (!mProxyManager.displayBelongsToCaller(Binder.getCallingUid(), displayId)) {
-            throw new SecurityException("The display " + displayId + " does not belong to"
-                    + " the caller.");
         }
 
         final long identity = Binder.clearCallingIdentity();
@@ -5004,10 +4997,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     @Override
-    @EnforcePermission(CREATE_VIRTUAL_DEVICE)
     public boolean unregisterProxyForDisplay(int displayId) {
-        unregisterProxyForDisplay_enforcePermission();
-        mSecurityPolicy.checkForAccessibilityPermissionOrRole();
+        mSecurityPolicy.checkForAccessibilityPermissionOrDisplayOwnership(displayId);
         final long identity = Binder.clearCallingIdentity();
         try {
             return mProxyManager.unregisterProxy(displayId);

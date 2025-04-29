@@ -375,16 +375,6 @@ public class ProxyManager {
         return isTrackingDeviceId;
     }
 
-    /** Returns true if the display belongs to one of the caller's virtual devices. */
-    public boolean displayBelongsToCaller(int callingUid, int proxyDisplayId) {
-        final VirtualDeviceManagerInternal localVdm = getLocalVdm();
-        if (localVdm == null) {
-            return false;
-        }
-        int deviceId = localVdm.getDeviceIdForDisplayId(proxyDisplayId);
-        return callingUid == localVdm.getDeviceOwnerUid(deviceId);
-    }
-
     /**
      * Sends AccessibilityEvents to a proxy given the event's displayId.
      */

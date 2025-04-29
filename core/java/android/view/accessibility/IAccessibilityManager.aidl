@@ -147,12 +147,12 @@ interface IAccessibilityManager {
     @RequiresNoPermission
     oneway void setAccessibilityWindowAttributes(int displayId, int windowId, int userId, in AccessibilityWindowAttributes attributes);
 
-    // Requires CREATE_VIRTUAL_DEVICE permission. Also requires either a11y permission or role.
-    @EnforcePermission("CREATE_VIRTUAL_DEVICE")
+    // Requires the caller to either hold the MANAGE_ACCESSIBILITY permission or own the provided
+    // displayId via VirtualDeviceManager.
     boolean registerProxyForDisplay(IAccessibilityServiceClient proxy, int displayId);
 
-    // Requires CREATE_VIRTUAL_DEVICE permission. Also requires either a11y permission or role.
-    @EnforcePermission("CREATE_VIRTUAL_DEVICE")
+    // Requires the caller to either hold the MANAGE_ACCESSIBILITY permission or own the provided
+    // displayId via VirtualDeviceManager.
     boolean unregisterProxyForDisplay(int displayId);
 
     // Used by UiAutomation for tests on the InputFilter
