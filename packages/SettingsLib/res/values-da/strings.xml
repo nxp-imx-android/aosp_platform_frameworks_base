@@ -659,7 +659,7 @@
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Administratorer har særlige rettigheder, som andre brugere ikke har. En administrator kan administrere alle brugere, opdatere eller gendanne denne enhed, skifte indstillinger, se alle installerede apps og tildele eller tilbagekalde andres administratorrettigheder."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Tildel administratorrettigheder"</string>
     <string name="user_setup_dialog_title" msgid="8037342066381939995">"Vil du konfigurere brugeren nu?"</string>
-    <string name="user_setup_dialog_message" msgid="269931619868102841">"Sørg for, at brugeren har mulighed for at tage enheden og konfigurere sit eget rum"</string>
+    <string name="user_setup_dialog_message" msgid="269931619868102841">"Sørg for, at brugeren har mulighed for at tage enheden og konfigurere sit eget område"</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"Vil du oprette en profil nu?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Konfigurer nu"</string>
     <string name="user_setup_button_setup_later" msgid="8712980133555493516">"Ikke nu"</string>
