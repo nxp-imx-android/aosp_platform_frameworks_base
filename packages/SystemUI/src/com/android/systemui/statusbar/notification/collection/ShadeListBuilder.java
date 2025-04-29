@@ -294,9 +294,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         mIdToBundleEntry.clear();
         for (BundleSpec spec : mNotifBundler.getBundleSpecs()) {
-            if (BundleCoordinator.debugBundleUi) {
-                Log.i(TAG, "create BundleEntry with id: " + spec.getKey());
-            }
+            debugBundleLog(TAG, () -> "create BundleEntry with id: " + spec.getKey());
             mIdToBundleEntry.put(spec.getKey(), new BundleEntry(spec));
         }
     }
@@ -722,7 +720,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     private void debugList(String s) {
-        if (!BundleCoordinator.debugBundleUi) {
+        if (!BundleCoordinator.debugBundleLogs) {
             return;
         }
         StringBuilder listStr = new StringBuilder();
