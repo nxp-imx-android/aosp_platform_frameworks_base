@@ -30,7 +30,6 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -62,7 +61,7 @@ class DesktopImeHandler(
     }
 
     private fun onInit() {
-        if (Flags.enableDesktopImeBugfix()) {
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_IME_BUGFIX.isTrue()) {
             displayImeController.addPositionProcessor(this)
         }
     }
