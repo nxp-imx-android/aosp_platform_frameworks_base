@@ -1196,6 +1196,16 @@ flag {
 }
 
 flag {
+    name: "enable_window_decoration_refactor"
+    namespace: "lse_desktop_experience"
+    description: "Utilizes the new WindowDecoration2."
+    bug: "409648813"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
