@@ -8454,11 +8454,15 @@ public class AudioService extends IAudioService.Stub
                 }
             }
         } else {
-            AbsoluteVolumeDeviceInfo deviceInfo = removeFromAbsoluteVolumeDevices(device);
-            if (deviceInfo != null) {
-                deviceInfo.unlinkToDeath();
-                dispatchDeviceVolumeBehavior(device, DEVICE_VOLUME_BEHAVIOR_VARIABLE);
-            }
+            unregisterAbsoluteVolumeDevice(device);
+        }
+    }
+
+    /*package*/ void unregisterAbsoluteVolumeDevice(AudioDeviceAttributes ada) {
+        AbsoluteVolumeDeviceInfo deviceInfo = removeFromAbsoluteVolumeDevices(ada);
+        if (deviceInfo != null) {
+            deviceInfo.unlinkToDeath();
+            dispatchDeviceVolumeBehavior(ada, DEVICE_VOLUME_BEHAVIOR_VARIABLE);
         }
     }
 

@@ -16,6 +16,7 @@
 package com.android.server.audio;
 
 import static android.media.audio.Flags.scoManagedByAudio;
+import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.AudioSystem.DEVICE_IN_ALL_SCO_SET;
 import static android.media.AudioSystem.DEVICE_IN_BLE_HEADSET;
 import static android.media.AudioSystem.DEVICE_IN_BLUETOOTH_SCO_HEADSET;
@@ -1731,9 +1732,13 @@ public class AudioDeviceBroker {
         }
     }
 
-    /*package*/ void clearAvrcpAbsoluteVolumeSupported() {
+    /*package*/ void clearAvrcpAbsoluteVolumeSupported(AudioDeviceAttributes ada) {
         setAvrcpAbsoluteVolumeSupported(false);
         mAudioService.setAvrcpAbsoluteVolumeSupported(false);
+
+        if (unifyAbsoluteVolumeManagement()) {
+            mAudioService.unregisterAbsoluteVolumeDevice(ada);
+        }
     }
 
     /*package*/ boolean getBluetoothA2dpEnabled() {

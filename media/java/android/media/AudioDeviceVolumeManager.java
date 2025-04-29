@@ -416,6 +416,10 @@ public class AudioDeviceVolumeManager {
      * @hide
      * Configures a device to use absolute volume model, and registers a listener for receiving
      * volume updates to apply on that device
+     *
+     * <p>For A2DP devices only, this behavior is reset when they are disconnected / made
+     * unavailable as this capability is communicated asynchronously at connection time.
+     *
      * @param device the audio device set to absolute volume mode
      * @param volume the type of volume this device responds to
      * @param executor the Executor used for receiving volume updates through the listener
@@ -439,7 +443,8 @@ public class AudioDeviceVolumeManager {
     /**
      * @hide
      * Configures a device to use absolute volume model, and registers a listener for receiving
-     * volume updates to apply on that device
+     * volume updates to apply on that device.
+     *
      * @param device the audio device set to absolute volume mode
      * @param volume the type of volume this device responds to
      * @param handlesVolumeAdjustment whether the controller handles volume adjustments separately
@@ -465,7 +470,11 @@ public class AudioDeviceVolumeManager {
     /**
      * @hide
      * Configures a device to use absolute volume model applied to different volume types, and
-     * registers a listener for receiving volume updates to apply on that device
+     * registers a listener for receiving volume updates to apply on that device.
+     *
+     * <p>For A2DP devices only, this behavior is reset when they are disconnected / made
+     * unavailable as this capability is communicated asynchronously at connection time.
+     *
      * @param device the audio device set to absolute multi-volume mode
      * @param volumes the list of volumes the given device responds to
      * @param executor the Executor used for receiving volume updates through the listener
