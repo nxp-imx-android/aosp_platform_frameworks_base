@@ -1238,7 +1238,10 @@ public final class DocumentsContract {
         return false;
     }
 
-    private static boolean isDocumentsProvider(Context context, String authority) {
+    private static boolean isDocumentsProvider(Context context, @Nullable String authority) {
+        if (authority == null) {
+            return false;
+        }
         final Intent intent = new Intent(PROVIDER_INTERFACE);
         final List<ResolveInfo> infos = context.getPackageManager()
                 .queryIntentContentProviders(intent, 0);
