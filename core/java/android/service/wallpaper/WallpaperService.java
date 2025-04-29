@@ -2667,7 +2667,15 @@ public abstract class WallpaperService extends Service {
 
         @Nullable
         public SurfaceControl mirrorSurfaceControl() {
-            return mEngine == null ? null : SurfaceControl.mirrorSurface(mEngine.mSurfaceControl);
+            if (mEngine == null) {
+                return null;
+            }
+            synchronized (mEngine.mSurfaceReleaseLock) {
+                if (mEngine.mSurfaceControl == null) {
+                    return null;
+                }
+                return SurfaceControl.mirrorSurface(mEngine.mSurfaceControl);
+            }
         }
 
         @Nullable
