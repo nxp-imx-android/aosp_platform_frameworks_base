@@ -3420,7 +3420,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return;
         }
 
-        rootTask.getDimBounds(mTmpRect);
+        rootTask.getBounds(mTmpRect);
         adjustRegionInFreeformWindowMode(mTmpRect);
         region.op(mTmpRect, Region.Op.INTERSECT);
     }
