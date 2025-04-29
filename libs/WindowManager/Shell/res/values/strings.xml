@@ -330,6 +330,18 @@
     <string name="desktop_mode_maximize_menu_snap_text">Resize</string>
     <!-- Snap resizing non-resizable string. -->
     <string name="desktop_mode_non_resizable_snap_text">App can\'t be moved here</string>
+
+    <!-- State description for app window opening. -->
+    <string name="desktop_mode_talkback_state_opening">Opening new app window</string>
+    <!-- State description for app window closing. -->
+    <string name="desktop_mode_talkback_state_closing">Closing app window window</string>
+    <!-- State description for app window minimizing. -->
+    <string name="desktop_mode_talkback_state_minimizing">Minimizing app window</string>
+    <!-- State description for app window gaining focus. -->
+    <string name="desktop_mode_talkback_state_focused"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Focused)</string>
+    <!-- State description for app window losing focus. -->
+    <string name="desktop_mode_talkback_state_not_focused"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Not Focused)</string>
+
     <!-- Accessibility text for the Maximize Menu's immersive button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_maximize_menu_immersive_button_text">Immersive</string>
     <!-- Accessibility text for the Maximize Menu's immersive restore button [CHAR LIMIT=NONE] -->
