@@ -215,3 +215,10 @@ flag {
   bug: "355296926"
   is_exported: true
 }
+
+flag {
+  name: "use_fontation_by_default"
+  namespace: "text"
+  description: "Use Fontation(Skrifa) as a default text reader."
+  bug: "405267306"
+}
