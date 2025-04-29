@@ -102,6 +102,7 @@ import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
+import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairosComposeWrapper
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModel
@@ -172,7 +173,7 @@ object ShadeHeader {
     }
 }
 
-/** The status bar that appears above the Shade scene on small screens */
+/** The status bar that appears above the Shade scene on small screens. */
 @Composable
 fun ContentScope.CollapsedShadeHeader(
     viewModel: ShadeHeaderViewModel,
@@ -243,8 +244,7 @@ fun ContentScope.CollapsedShadeHeader(
                             modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                         )
                         BatteryIcon(
-                            createBatteryMeterViewController =
-                                viewModel.createBatteryMeterViewController,
+                            viewModel = viewModel,
                             useExpandedFormat = useExpandedTextFormat,
                             modifier = Modifier.padding(vertical = 8.dp),
                         )
@@ -255,7 +255,7 @@ fun ContentScope.CollapsedShadeHeader(
     )
 }
 
-/** The status bar that appears above the Quick Settings scene on small screens */
+/** The status bar that appears above the Quick Settings scene on small screens. */
 @Composable
 fun ContentScope.ExpandedShadeHeader(
     viewModel: ShadeHeaderViewModel,
@@ -316,11 +316,7 @@ fun ContentScope.ExpandedShadeHeader(
                         useExpandedFormat = useExpandedFormat,
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                     )
-                    BatteryIcon(
-                        useExpandedFormat = useExpandedFormat,
-                        createBatteryMeterViewController =
-                            viewModel.createBatteryMeterViewController,
-                    )
+                    BatteryIcon(viewModel = viewModel, useExpandedFormat = useExpandedFormat)
                 }
             }
         }
@@ -413,8 +409,7 @@ fun ContentScope.OverlayShadeHeader(
                         isHighlighted = isHighlighted,
                     )
                     BatteryIcon(
-                        createBatteryMeterViewController =
-                            viewModel.createBatteryMeterViewController,
+                        viewModel = viewModel,
                         useExpandedFormat = false,
                         isHighlighted = isHighlighted,
                     )
@@ -441,10 +436,7 @@ fun QuickSettingsOverlayHeader(viewModel: ShadeHeaderViewModel, modifier: Modifi
         modifier = modifier.fillMaxWidth(),
     ) {
         ShadeCarrierGroup(viewModel = viewModel)
-        BatteryIcon(
-            createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
-            useExpandedFormat = true,
-        )
+        BatteryIcon(viewModel = viewModel, useExpandedFormat = true)
     }
 }
 
@@ -547,11 +539,37 @@ private fun ContentScope.Clock(
 
 @Composable
 private fun BatteryIcon(
+    viewModel: ShadeHeaderViewModel,
+    useExpandedFormat: Boolean,
+    modifier: Modifier = Modifier,
+    isHighlighted: Boolean = false,
+) {
+    if (NewStatusBarIcons.isEnabled) {
+        BatteryWithEstimate(
+            viewModelFactory = viewModel.batteryViewModelFactory,
+            isDarkProvider = { viewModel.isShadeAreaDark },
+            showEstimate = useExpandedFormat,
+            modifier = modifier,
+        )
+    } else {
+        BatteryIconLegacy(
+            createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
+            useExpandedFormat = useExpandedFormat,
+            modifier = modifier,
+            isHighlighted = isHighlighted,
+        )
+    }
+}
+
+@Composable
+private fun BatteryIconLegacy(
     createBatteryMeterViewController: (ViewGroup, StatusBarLocation) -> BatteryMeterViewController,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
     isHighlighted: Boolean = false,
 ) {
+    NewStatusBarIcons.assertInLegacyMode()
+
     val localContext = LocalContext.current
     val themedContext =
         ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
