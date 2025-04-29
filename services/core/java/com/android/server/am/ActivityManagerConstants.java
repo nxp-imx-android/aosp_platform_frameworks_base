@@ -259,7 +259,7 @@ final class ActivityManagerConstants extends ContentObserver {
     /**
      * The default value to {@link #KEY_ENABLE_BATCHING_OOM_ADJ}.
      */
-    private static final boolean DEFAULT_ENABLE_BATCHING_OOM_ADJ = Flags.batchingOomAdj();
+    private static final boolean DEFAULT_ENABLE_BATCHING_OOM_ADJ = true;
 
     /**
      * The default value to {@link #KEY_FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION}.
