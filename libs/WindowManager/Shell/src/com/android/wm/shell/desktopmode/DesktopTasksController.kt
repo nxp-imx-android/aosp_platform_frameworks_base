@@ -4810,7 +4810,7 @@ class DesktopTasksController(
         private val enableAltTabKqsFlatenning: DesktopExperienceFlag =
             DesktopExperienceFlag(
                 com.android.launcher3.Flags::enableAltTabKqsFlatenning,
-                /* shouldOverrideByDevOption= */ false,
+                /* shouldOverrideByDevOption= */ true,
                 com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
             )
     }
