@@ -92,6 +92,17 @@ flag {
 }
 
 flag {
+    name: "ignore_non_public_config_diff_for_resources_key"
+    namespace: "resource_manager"
+    description: "Only consider the resources related configuration fields to create ResourcesImpl"
+    bug: "413273054"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "system_context_handle_app_info_changed"
     is_exported: true
     namespace: "resource_manager"

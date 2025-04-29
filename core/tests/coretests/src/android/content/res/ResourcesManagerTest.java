@@ -375,6 +375,28 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
+    @RequiresFlagsEnabled(Flags.FLAG_IGNORE_NON_PUBLIC_CONFIG_DIFF_FOR_RESOURCES_KEY)
+    public void testNonPublicDiffOverrideConfigShareImpl() {
+        final Configuration overrideConfig1 = new Configuration();
+        overrideConfig1.windowConfiguration.setAppBounds(0, 0, 500, 1000);
+        final Resources resources1 = mResourcesManager.getResources(
+                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig1,
+                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+
+        final Configuration overrideConfig2 = new Configuration(overrideConfig1);
+        // WindowConfiguration is not a public API field. It shouldn't affect resources.
+        overrideConfig2.windowConfiguration.getAppBounds().offset(100, 100);
+        final Resources resources2 = mResourcesManager.getResources(
+                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig2,
+                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+
+        assertNotNull(resources1);
+        assertNotNull(resources2);
+        assertSame(resources1.getImpl(), resources2.getImpl());
+    }
+
+    @Test
+    @SmallTest
     @RequiresFlagsEnabled(Flags.FLAG_REGISTER_RESOURCE_PATHS)
     @DisabledOnRavenwood(blockedBy = PackageManager.class)
     public void testExistingResourcesAfterResourcePathsRegistration()
