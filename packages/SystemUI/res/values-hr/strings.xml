@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona Bluetooth uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite da biste konfigurirali pojedinosti o uređaju"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurirajte pojedinosti o uređaju"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Pokreni zajedničko slušanje s uređajem <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Zaustavi zajedničko slušanje s uređajem <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Pogledajte sve uređaje"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Upari novi uređaj"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Postotak baterije nije poznat."</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije postavljeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u postavkama"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih načina}=1{Aktivno: {mode}}one{# način je aktivan}few{# načina su aktivna}other{# načina je aktivno}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Uključeno"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas ometati zvukovi i vibracije, osim alarma, podsjetnika, događaja i pozivatelja koje navedete. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas ometati zvukovi i vibracije, osim alarma. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Prilagodi"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"Ostalo"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"promjenu veličine pločice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Ukloni pločicu"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"promjenu načina pozicioniranja"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"promjenu odabira"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Dodaj pločicu na posljednji položaj"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Premještanje kartice"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Dodajte karticu na željeni položaj"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Premještanje u prostoriju <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1574,7 +1575,7 @@
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Animacija u vodiču, kliknite za pauziranje i nastavak reprodukcije."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Pozadinsko osvjetljenje tipkovnice"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Razina %1$d od %2$d"</string>
-    <string name="home_controls_dream_label" msgid="6567105701292324257">"Kontrole uređaja"</string>
+    <string name="home_controls_dream_label" msgid="6567105701292324257">"Upravljanje uređajima"</string>
     <string name="home_controls_dream_description" msgid="4644150952104035789">"Brzo upravljajte uređajima putem čuvara zaslona"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Poništi"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Za povratak trima prstima prijeđite ulijevo ili udesno na dodirnoj podlozi"</string>

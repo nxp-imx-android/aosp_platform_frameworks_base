@@ -482,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"సెట్ చేసి లేదు"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"సెట్టింగ్‌లలో మేనేజ్ చేయండి"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{యాక్టివ్ మోడ్స్ లేవు}=1{{mode} యాక్టివ్‌గా ఉంది}other{# మోడ్స్ యాక్టివ్‌గా ఉన్నాయి}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ఆన్‌లో ఉంది"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"మీరు పేర్కొనే అలారాలు, రిమైండర్‌లు, ఈవెంట్‌లు మరియు కాలర్‌ల నుండి మినహా మరే ఇతర ధ్వనులు మరియు వైబ్రేషన్‌లతో మీకు అంతరాయం కలగదు. మీరు ఇప్పటికీ సంగీతం, వీడియోలు మరియు గేమ్‌లతో సహా మీరు ప్లే చేయడానికి ఎంచుకున్నవి ఏవైనా వింటారు."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"అలారాలు నుండి మినహా మరే ఇతర ధ్వనులు మరియు వైబ్రేషన్‌లతో మీకు అంతరాయం కలగదు. మీరు ఇప్పటికీ సంగీతం, వీడియోలు మరియు గేమ్‌లతో సహా మీరు ప్లే చేయడానికి ఎంచుకున్నవి ఏవైనా వింటారు."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"అనుకూలంగా మార్చండి"</string>
@@ -605,7 +604,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"మొత్తం స్క్రీన్‌ను ప్రసారం చేయండి"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g>‌ను ప్రసారం చేయండి"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"మీ స్క్రీన్‌ను మీరు ప్రసారం చేసేటప్పుడు, మీ స్క్రీన్‌పై ఉన్నవన్నీ కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, ఇంకా వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"మీరు యాప్‌ను ప్రసారం చేసేటప్పుడు, సంబంధిత యాప్‌లో చూపబడేవన్నీ లేదా ప్లే అయ్యేవన్నీ కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, ఇంకా వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"మీరు యాప్‌ను ప్రసారం చేసేటప్పుడు, సంబంధిత యాప్‌లో కనపడుతున్న కంటెంట్ లేదా ప్లే అయ్యేవ‌న్నీ మీడియా రెండో స్క్రీన్ పై కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, ఇంకా వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"స్క్రీన్‌ను ప్రసారం చేయండి"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"ప్రసారం చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"షేర్ చేయడాన్ని ప్రారంభించాలా?"</string>
@@ -1028,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"ఇతరం"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"టైల్ సైజ్‌ను టోగుల్ చేయండి"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"టైల్‌ను తీసివేయండి"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ప్లేస్‌మెంట్ మోడ్‌ను టోగుల్ చేయండి"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"టోగుల్ ఎంపిక"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"చివరి పొజిషన్‌కు టైల్‌ను జోడించండి"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"టైల్‌ను తరలించండి"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"కావలసిన పొజిషన్‌కు టైల్‌ను జోడించండి"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>కు తరలించండి"</string>

@@ -482,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Није подешено"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Управљајте у подешавањима"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Нема активних режима}=1{Активан је {mode} режим}one{Активан је # режим}few{Активна су # режима}other{Активно је # режима}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Укључено"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Неће вас узнемиравати звукови и вибрације осим за аларме, подсетнике, догађаје и позиваоце које наведете. И даље ћете чути све што одаберете да пустите, укључујући музику, видео снимке и игре."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Неће вас узнемиравати звукови и вибрације осим за аларме. И даље ћете чути све што одаберете да пустите, укључујући музику, видео снимке и игре."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Прилагоди"</string>
@@ -812,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Да бисте повезали тастатуру са таблетом, прво морате да укључите Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Укључи"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Укључено – на основу лица"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Искључивање звука и груписање"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Продаја, нове функције и друго"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Најважније вести, уводници и друго"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Свиђања, постови и друго"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Билтени, препоручени медији и друго"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Готово"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Примени"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Искључи"</string>
@@ -1028,9 +1022,13 @@
     <string name="other" msgid="429768510980739978">"Друго"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"укључивање или искључивање величине плочице"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Уклоните плочицу"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"укључивање или искључивање режима постављања"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"потврдили или опозвали избор"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Додајте плочицу на последњу позицију"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместите плочицу"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Додајте плочицу на жељену позицију"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Преместите на <xliff:g id="POSITION">%1$d</xliff:g>. позицију"</string>
