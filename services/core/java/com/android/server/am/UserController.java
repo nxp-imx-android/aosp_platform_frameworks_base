@@ -2318,6 +2318,7 @@ class UserController implements Handler.Callback {
         synchronized (mLock) {
             if (targetUserId == currentUserId && mTargetUserId == UserHandle.USER_NULL) {
                 Slogf.i(TAG, "user #" + targetUserId + " is already the current user");
+                mHandler.post(this::endUserSwitch);
                 return true;
             }
             if (targetUserInfo == null) {
