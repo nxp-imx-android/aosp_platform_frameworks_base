@@ -1214,3 +1214,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_window_repositioning_api"
+    namespace: "lse_desktop_experience"
+    description: "Enables the API to allow default browsers to reposition their windows."
+    bug: "400407139"
+}
