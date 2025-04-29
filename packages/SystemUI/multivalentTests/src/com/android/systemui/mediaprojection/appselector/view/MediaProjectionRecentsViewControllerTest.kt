@@ -66,7 +66,7 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
             colorBackground = null,
             isForegroundTask = false,
             userType = RecentTask.UserType.STANDARD,
-            splitBounds = null
+            splitBounds = null,
         )
 
     private val splitScreenTask =
@@ -79,12 +79,12 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
             colorBackground = null,
             isForegroundTask = false,
             userType = RecentTask.UserType.STANDARD,
-            splitBounds = SplitBounds(Rect(), Rect(), 0, 0, 0)
+            splitBounds = SplitBounds(Rect(), Rect(), 1, 2, 0),
         )
 
     private val taskView =
         View(context).apply {
-            layoutParams = ViewGroup.LayoutParams(/* width = */ 100, /* height = */ 200)
+            layoutParams = ViewGroup.LayoutParams(/* width= */ 100, /* height= */ 200)
         }
 
     private val controller =
@@ -116,7 +116,7 @@ class MediaProjectionRecentsViewControllerTest : SysuiTestCase() {
                 anyInt(),
                 anyInt(),
                 any(),
-                any()
+                any(),
             )
     }
 

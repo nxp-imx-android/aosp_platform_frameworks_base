@@ -54,6 +54,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -186,5 +188,61 @@ public final class StageTaskListenerTests extends ShellTestCase {
 
         mStageTaskListener.deactivate(mWct);
         assertThat(mStageTaskListener.isActive()).isFalse();
+    }
+
+    @Test
+    public void testGetAllVisibleChildTaskIds() {
+        final ActivityManager.RunningTaskInfo taskVisible1 =
+                new TestRunningTaskInfoBuilder()
+                        .setTaskId(1)
+                        .setVisible(true)
+                        .setVisibleRequested(true)
+                        .build();
+        final ActivityManager.RunningTaskInfo taskInvisible2 =
+                new TestRunningTaskInfoBuilder()
+                        .setTaskId(2)
+                        .setVisible(false)
+                        .build();
+        final ActivityManager.RunningTaskInfo taskVisible3 =
+                new TestRunningTaskInfoBuilder()
+                        .setTaskId(3)
+                        .setVisible(true)
+                        .setVisibleRequested(true)
+                        .build();
+        final ActivityManager.RunningTaskInfo taskVisible4 =
+                new TestRunningTaskInfoBuilder()
+                        .setTaskId(4)
+                        .setVisible(true)
+                        .setVisibleRequested(true)
+                        .build();
+        final ActivityManager.RunningTaskInfo taskInvisible5 =
+                new TestRunningTaskInfoBuilder()
+                        .setTaskId(5)
+                        .setVisible(false)
+                        .build();
+        final List<Integer> visibleTaskIds = Arrays.asList(taskVisible1.taskId, taskVisible3.taskId,
+                taskVisible4.taskId);
+
+        mStageTaskListener.mChildrenTaskInfo.clear();
+        assertThat(mStageTaskListener.mChildrenTaskInfo.size() == 0).isTrue();
+
+        mStageTaskListener.mChildrenTaskInfo.put(taskVisible1.taskId, taskVisible1);
+        mStageTaskListener.mChildrenTaskInfo.put(taskInvisible2.taskId, taskInvisible2);
+        mStageTaskListener.mChildrenTaskInfo.put(taskVisible3.taskId, taskVisible3);
+        mStageTaskListener.mChildrenTaskInfo.put(taskVisible4.taskId, taskVisible4);
+        mStageTaskListener.mChildrenTaskInfo.put(taskInvisible5.taskId, taskInvisible5);
+
+        final List<Integer> ids = mStageTaskListener.getAllVisibleChildTaskIds();
+        assertThat(ids.size() == 3).isTrue();
+        assertTrue("List should contain all visible taskIds",
+                ids.containsAll(visibleTaskIds));
+        assertFalse("List should not contain invisible taskId2",
+                ids.contains(taskInvisible2.taskId));
+        assertFalse("List should not contain invisible taskId5",
+                ids.contains(taskInvisible5.taskId));
+
+        // Clear the mChildrenTaskInfo.
+        mStageTaskListener.mChildrenTaskInfo.clear();
+        assertThat(mStageTaskListener.mChildrenTaskInfo.size() == 0).isTrue();
     }
 }

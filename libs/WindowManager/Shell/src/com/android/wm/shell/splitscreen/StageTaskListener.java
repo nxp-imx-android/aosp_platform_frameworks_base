@@ -57,9 +57,12 @@ import com.android.wm.shell.splitscreen.SplitScreen.StageType;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Base class that handle common task org. related for split-screen stages.
@@ -157,6 +160,16 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     }
 
     /**
+     * Returns all visible child task's ids.
+     */
+    List<Integer> getAllVisibleChildTaskIds() {
+        return getAllChildTaskInfos(t -> t.isVisible
+                && t.isVisibleRequested && t.taskId != INVALID_TASK_ID).stream()
+                .map(runningTaskInfo -> runningTaskInfo.taskId)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Returns the top activity uid for the top child task.
      */
     int getTopChildTaskUid() {
@@ -214,6 +227,18 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
             }
         }
         return null;
+    }
+
+    private List<ActivityManager.RunningTaskInfo> getAllChildTaskInfos(
+            Predicate<ActivityManager.RunningTaskInfo> predicate) {
+        List<ActivityManager.RunningTaskInfo> matchingTasks = new ArrayList<>();
+        for (int i = mChildrenTaskInfo.size() - 1; i >= 0; --i) {
+            final ActivityManager.RunningTaskInfo taskInfo = mChildrenTaskInfo.valueAt(i);
+            if (predicate.test(taskInfo)) {
+                matchingTasks.add(taskInfo);
+            }
+        }
+        return matchingTasks;
     }
 
     @Override
