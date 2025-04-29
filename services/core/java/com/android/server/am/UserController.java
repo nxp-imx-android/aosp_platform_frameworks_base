@@ -3618,6 +3618,7 @@ class UserController implements Handler.Callback {
             pw.println("  mCurrentProfileIds:" + Arrays.toString(mCurrentProfileIds));
             pw.println("  mCurrentUserId:" + mCurrentUserId);
             pw.println("  mTargetUserId:" + mTargetUserId);
+            pw.println("  mPendingTargetUserIds:" + mPendingTargetUserIds);
             pw.println("  mPendingLogoutTargetUser:" + mPendingLogoutTargetUser);
             pw.println("  mLastActiveUsersForDelayedLocking:" + mLastActiveUsersForDelayedLocking);
             pw.println("  mDelayUserDataLocking:" + mDelayUserDataLocking);
