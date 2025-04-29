@@ -753,12 +753,17 @@ public class FaceService extends SystemService {
     }
 
     public FaceService(Context context) {
-        this(context, null /* faceProviderFunction */, () -> IBiometricService.Stub.asInterface(
-                ServiceManager.getService(Context.BIOMETRIC_SERVICE)), null /* faceProvider */,
+        this(context,
+                BiometricContext.getInstance(context),
+                null /* faceProviderFunction */,
+                () -> IBiometricService.Stub.asInterface(
+                        ServiceManager.getService(Context.BIOMETRIC_SERVICE)),
+                null /* faceProvider */,
                 () -> getDeclaredInstances());
     }
 
     @VisibleForTesting FaceService(Context context,
+            BiometricContext biometricContext,
             FaceProviderFunction faceProviderFunction,
             Supplier<IBiometricService> biometricServiceSupplier,
             Function<String, FaceProvider> faceProvider,
@@ -789,7 +794,7 @@ public class FaceService extends SystemService {
                 final SensorProps[] props = face.getSensorProps();
                 return new FaceProvider(getContext(),
                         mBiometricStateCallback, mAuthenticationStateListeners, props, name,
-                        mLockoutResetDispatcher, BiometricContext.getInstance(getContext()),
+                        mLockoutResetDispatcher, biometricContext,
                         false /* resetLockoutRequiresChallenge */);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Remote exception in getSensorProps: " + fqName);
@@ -803,8 +808,7 @@ public class FaceService extends SystemService {
                         getContext(), mBiometricStateCallback, mAuthenticationStateListeners,
                         filteredSensorProps.second,
                         filteredSensorProps.first, mLockoutResetDispatcher,
-                        BiometricContext.getInstance(getContext()),
-                        resetLockoutRequiresChallenge));
+                        biometricContext, resetLockoutRequiresChallenge));
     }
 
     @Override
