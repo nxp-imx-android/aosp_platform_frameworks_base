@@ -12800,15 +12800,15 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             MemInfoReader memInfo = new MemInfoReader();
             memInfo.readMemInfo();
+            final long kernelUsed = memUsageStats.getKernelUsedSizeKb(memInfo);
             if (memUsageStats.totalNativePss > 0) {
                 synchronized (mProcessStats.mLock) {
                     final long cachedKb = memInfo.getCachedSizeKb();
                     final long freeKb = memInfo.getFreeSizeKb();
                     final long zramKb = memInfo.getZramTotalSizeKb();
-                    final long kernelKb = memInfo.getKernelUsedSizeKb();
                     EventLogTags.writeAmMeminfo(cachedKb * 1024, freeKb * 1024, zramKb * 1024,
-                            kernelKb * 1024, memUsageStats.totalNativePss * 1024);
-                    mProcessStats.addSysMemUsageLocked(cachedKb, freeKb, zramKb, kernelKb,
+                            kernelUsed * 1024, memUsageStats.totalNativePss * 1024);
+                    mProcessStats.addSysMemUsageLocked(cachedKb, freeKb, zramKb, kernelUsed,
                             memUsageStats.totalNativePss);
                 }
             }
@@ -12834,7 +12834,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                     pw.println(memUsageStats.totalPss - memUsageStats.cachedPss);
                 }
             }
-            long kernelUsed = memInfo.getKernelUsedSizeKb();
             final long dmabufMapped = Debug.getDmabufMappedSizeKb();
             final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
             if (totalExportedDmabuf >= 0) {
@@ -12846,11 +12845,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 pw.print(" mapped + ");
                 pw.print(stringifyKBSize(dmabufUnmapped));
                 pw.println(" unmapped)");
-                // Account unmapped dmabufs as part of kernel memory allocations
-                kernelUsed += dmabufUnmapped;
-                // Replace memtrack HAL reported Graphics category with mapped dmabufs
-                memUsageStats.totalPss -= memUsageStats.totalMemtrackGraphics;
-                memUsageStats.totalPss += dmabufMapped;
             }
 
             // totalDmabufHeapExported is included in totalExportedDmabuf above and hence do not
@@ -12878,10 +12872,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                     pw.print(" dmabuf + ");
                     pw.print(stringifyKBSize(gpuPrivateUsage));
                     pw.println(" private)");
-                    // private GPU allocations include memtrack GL category, and are already
-                    // accounted as part of the kernel memory used, so subtract it from total
-                    // pss to avoid double counting.
-                    memUsageStats.totalPss -= memUsageStats.totalMemtrackGl;
                 } else {
                     pw.print("      GPU: "); pw.println(stringifyKBSize(gpuUsage));
                 }
@@ -12896,16 +12886,12 @@ public class ActivityManagerService extends IActivityManager.Stub
 
              // Note: ION/DMA-BUF heap pools are reclaimable and hence, they are included as part of
              // memInfo.getCachedSizeKb().
-            final long lostRAM = memInfo.getTotalSizeKb()
-                    - (memUsageStats.totalPss - memUsageStats.totalSwapPss)
-                    - memInfo.getFreeSizeKb() - memInfo.getCachedSizeKb()
-                    // NR_SHMEM is subtracted twice (getCachedSizeKb() and getKernelUsedSizeKb())
-                    + memInfo.getShmemSizeKb()
-                    - kernelUsed - memInfo.getZramTotalSizeKb();
+            final long lostRAM = memUsageStats.getLostRam(memInfo);
+            final long usedPss = memUsageStats.getUsedPss();
             if (!opts.isCompact) {
-                pw.print(" Used RAM: "); pw.print(stringifyKBSize(memUsageStats.totalPss
-                - memUsageStats.cachedPss + kernelUsed)); pw.print(" (");
-                pw.print(stringifyKBSize(memUsageStats.totalPss - memUsageStats.cachedPss));
+                pw.print(" Used RAM: "); pw.print(stringifyKBSize(usedPss + kernelUsed));
+                pw.print(" (");
+                pw.print(stringifyKBSize(usedPss));
                 pw.print(" used pss + ");
                 pw.print(stringifyKBSize(kernelUsed)); pw.print(" kernel)\n");
                 pw.print(" Lost RAM: "); pw.println(stringifyKBSize(lostRAM));

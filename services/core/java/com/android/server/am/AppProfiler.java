@@ -1824,19 +1824,14 @@ public class AppProfiler {
         memInfoBuilder.append(stringifyKBSize(memUsageStats.cachedPss + memInfo.getCachedSizeKb()
                 + memInfo.getFreeSizeKb()));
         memInfoBuilder.append("\n");
-        long kernelUsed = memInfo.getKernelUsedSizeKb();
-        final long dmabufMapped = Debug.getDmabufMappedSizeKb();
+        long kernelUsed = memUsageStats.getKernelUsedSizeKb(memInfo);
+        final long dmabufMapped = memUsageStats.getDmabufMappedSizeKb();
         final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
         if (totalExportedDmabuf >= 0) {
             final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
             memInfoBuilder.append("DMA-BUF: ");
             memInfoBuilder.append(stringifyKBSize(totalExportedDmabuf));
             memInfoBuilder.append("\n");
-            // Account unmapped dmabufs as part of kernel memory allocations
-            kernelUsed += dmabufUnmapped;
-            // Replace memtrack HAL reported Graphics category with mapped dmabufs
-            memUsageStats.totalPss -= memUsageStats.totalMemtrackGraphics;
-            memUsageStats.totalPss += dmabufMapped;
         }
         // These are included in the totalExportedDmabuf above and hence do not need to be added
         // to kernelUsed.
@@ -1866,10 +1861,6 @@ public class AppProfiler {
                 memInfoBuilder.append(" dmabuf + ");
                 memInfoBuilder.append(stringifyKBSize(gpuPrivateUsage));
                 memInfoBuilder.append(" private)\n");
-                // private GPU allocations include memtrack GL category, and are already
-                // accounted as part of the kernel memory used, so subtract it from total
-                // pss to avoid double counting.
-                memUsageStats.totalPss -= memUsageStats.totalMemtrackGl;
             } else {
                 memInfoBuilder.append("       GPU: ");
                 memInfoBuilder.append(stringifyKBSize(gpuUsage));
@@ -1878,16 +1869,13 @@ public class AppProfiler {
 
         }
         memInfoBuilder.append("  Used RAM: ");
-        memInfoBuilder.append(stringifyKBSize(
-                                  memUsageStats.totalPss - memUsageStats.cachedPss + kernelUsed));
+        memInfoBuilder.append(stringifyKBSize(memUsageStats.getUsedPss() + kernelUsed));
         memInfoBuilder.append("\n");
 
         // Note: ION/DMA-BUF heap pools are reclaimable and hence, they are included as part of
         // memInfo.getCachedSizeKb().
         memInfoBuilder.append("  Lost RAM: ");
-        memInfoBuilder.append(stringifyKBSize(memInfo.getTotalSizeKb()
-                - (memUsageStats.totalPss - memUsageStats.totalSwapPss) - memInfo.getFreeSizeKb()
-                - memInfo.getCachedSizeKb() - kernelUsed - memInfo.getZramTotalSizeKb()));
+        memInfoBuilder.append(stringifyKBSize(memUsageStats.getLostRam(memInfo)));
         memInfoBuilder.append("\n");
         Slog.i(TAG, "Low on memory:");
         Slog.i(TAG, shortNativeBuilder.toString());
