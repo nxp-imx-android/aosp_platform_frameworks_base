@@ -322,15 +322,6 @@ public class AdbDebuggingManager {
         }
     }
 
-    private void onServerPortReceived(int port) {
-        Slog.d(TAG, "Received tls port=" + port);
-        Message msg = mHandler.obtainMessage(port > 0
-                ? AdbDebuggingHandler.MSG_SERVER_CONNECTED
-                : AdbDebuggingHandler.MSG_SERVER_DISCONNECTED);
-        msg.obj = port;
-        mHandler.sendMessage(msg);
-    }
-
     @VisibleForTesting
     static class AdbDebuggingThread extends Thread {
         private boolean mStopped;
@@ -503,8 +494,10 @@ public class AdbDebuggingManager {
                         bytes.order(ByteOrder.LITTLE_ENDIAN);
 
                         int port = bytes.getShort() & 0xFFFF;
-                        Message msg = mHandler.obtainMessage(
-                                AdbDebuggingHandler.MSG_TLS_SERVER_PORT);
+                        Slog.d(TAG, "Received tls port=" + port);
+                        Message msg = mHandler.obtainMessage(port > 0
+                                ? AdbDebuggingHandler.MSG_SERVER_CONNECTED
+                                : AdbDebuggingHandler.MSG_SERVER_DISCONNECTED);
                         msg.obj = port;
                         mHandler.sendMessage(msg);
                     } else {
@@ -776,8 +769,6 @@ public class AdbDebuggingManager {
 
         // === Messages from other parts of the system
         private static final int MESSAGE_KEY_FILES_UPDATED = 28;
-
-        private static final int MSG_TLS_SERVER_PORT = 29;
 
         // === Messages we can send to adbd ===========
         static final String MSG_DISCONNECT_DEVICE = "DD";
@@ -1230,9 +1221,6 @@ public class AdbDebuggingManager {
                 case MESSAGE_KEY_FILES_UPDATED: {
                     mAdbKeyStore.reloadKeyMap();
                     break;
-                }
-                case MSG_TLS_SERVER_PORT: {
-                    onServerPortReceived((int) msg.obj);
                 }
             }
         }
