@@ -176,16 +176,6 @@ flag {
 }
 
 flag {
-  name: "evenly_divided_call_style_action_layout"
-  namespace: "systemui"
-  description: "Evenly divides horizontal space for action buttons in CallStyle notifications."
-  bug: "268733030"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "sort_section_by_time"
   namespace: "systemui"
   description: "Changes notification sort order to be by time within a section"
