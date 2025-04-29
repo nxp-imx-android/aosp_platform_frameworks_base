@@ -12900,35 +12900,20 @@ public class ActivityManagerService extends IActivityManager.Stub
                     pw.print(" dmabuf + ");
                     pw.print(stringifyKBSize(gpuPrivateUsage));
                     pw.println(" private)");
-                    // Replace memtrack HAL reported GL category with private GPU allocations and
-                    // account it as part of kernel memory allocations
+                    // private GPU allocations include memtrack GL category, and are already
+                    // accounted as part of the kernel memory used, so subtract it from total
+                    // pss to avoid double counting.
                     ss[INDEX_TOTAL_PSS] -= ss[INDEX_TOTAL_MEMTRACK_GL];
-                    kernelUsed += gpuPrivateUsage;
                 } else {
                     pw.print("      GPU: "); pw.println(stringifyKBSize(gpuUsage));
                 }
             }
 
             final long kernelCmaUsage = Debug.getKernelCmaUsageKb();
+            // kernelUsed already includes kernel CMA usage, so no need to add it.
             if (kernelCmaUsage >= 0) {
                 pw.print("      Kernel CMA: ");
                 pw.println(stringifyKBSize(kernelCmaUsage));
-                // CMA memory can be in one of the following four states:
-                //
-                // 1. Free, in which case it is accounted for as part of MemFree, which
-                //    is already considered in the lostRAM calculation below.
-                //
-                // 2. Allocated as part of a userspace allocated, in which case it is
-                //    already accounted for in the total PSS value that was computed.
-                //
-                // 3. Allocated for storing compressed memory (ZRAM) on Android kernels.
-                //    This is accounted for by calculating the amount of memory ZRAM
-                //    consumes and including it in the lostRAM calculation.
-                //
-                // 4. Allocated by a kernel driver, in which case, it is currently not
-                //    attributed to any term that has been derived thus far. Since the
-                //    allocations come from a kernel driver, add it to kernelUsed.
-                kernelUsed += kernelCmaUsage;
             }
 
              // Note: ION/DMA-BUF heap pools are reclaimable and hence, they are included as part of

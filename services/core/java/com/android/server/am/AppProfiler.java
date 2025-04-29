@@ -1869,10 +1869,10 @@ public class AppProfiler {
                 memInfoBuilder.append(" dmabuf + ");
                 memInfoBuilder.append(stringifyKBSize(gpuPrivateUsage));
                 memInfoBuilder.append(" private)\n");
-                // Replace memtrack HAL reported GL category with private GPU allocations and
-                // account it as part of kernel memory allocations
+                // private GPU allocations include memtrack GL category, and are already
+                // accounted as part of the kernel memory used, so subtract it from total
+                // pss to avoid double counting.
                 totalPss -= totalMemtrackGl;
-                kernelUsed += gpuPrivateUsage;
             } else {
                 memInfoBuilder.append("       GPU: ");
                 memInfoBuilder.append(stringifyKBSize(gpuUsage));
