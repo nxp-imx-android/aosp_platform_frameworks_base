@@ -52,7 +52,6 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.log.core.Logger
-import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockEventListener
@@ -400,7 +399,6 @@ constructor(
     @DeprecatedSysuiVisibleForTesting
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun listenForDnd(scope: CoroutineScope): Job {
-        ModesUi.unsafeAssertInNewMode()
         return scope.launch {
             zenModeInteractor.dndMode.collect {
                 val zenMode =
@@ -418,12 +416,6 @@ constructor(
 
     private val zenModeCallback =
         object : ZenModeController.Callback {
-            override fun onZenChanged(zen: Int) {
-                if (!ModesUi.isEnabled) {
-                    handleZenMode(zen)
-                }
-            }
-
             override fun onNextAlarmChanged() {
                 val nextAlarmMillis = zenModeController.getNextAlarm()
                 alarmData =
@@ -480,9 +472,7 @@ constructor(
         disposableHandle =
             parent.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    if (ModesUi.isEnabled) {
-                        listenForDnd(this)
-                    }
+                    listenForDnd(this)
                     listenForDozeAmountTransition(this)
                     listenForAnyStateToAodTransition(this)
                     listenForAnyStateToLockscreenTransition(this)
@@ -494,9 +484,6 @@ constructor(
 
         bgExecutor.execute {
             // Query ZenMode data
-            if (!ModesUi.isEnabled) {
-                zenModeCallback.onZenChanged(zenModeController.zen)
-            }
             zenModeCallback.onNextAlarmChanged()
         }
     }

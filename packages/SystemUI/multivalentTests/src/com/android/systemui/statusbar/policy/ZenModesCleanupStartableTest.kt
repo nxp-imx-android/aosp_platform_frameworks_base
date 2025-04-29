@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.policy
 import android.app.AutomaticZenRule
 import android.app.NotificationManager
 import android.net.Uri
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -41,7 +40,6 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@EnableFlags(android.app.Flags.FLAG_MODES_UI)
 class ZenModesCleanupStartableTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

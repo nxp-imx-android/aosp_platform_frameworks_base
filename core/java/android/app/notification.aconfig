@@ -43,31 +43,12 @@ flag {
   bug: "300477976"
 }
 
+# Flag for inlined feature: In Nextfood but checked by CTS (and therefore must stay).
 flag {
   name: "modes_ui"
   namespace: "systemui"
   description: "This flag controls new and updated DND UIs; dependent on flag modes_api"
   bug: "270703654"
-}
-
-flag {
-  name: "modes_ui_icons"
-  namespace: "systemui"
-  description: "Shows current Priority Mode icon in lockscreen, status bar, and QS; dependent on flags modes_api and modes_ui"
-  bug: "360399800"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "modes_ui_empty_shade"
-  namespace: "systemui"
-  description: "Shows mode that is currently blocking notifications in the empty shade; dependent on flags modes_api and modes_ui"
-  bug: "366003631"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -98,13 +79,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-  name: "modes_cleanup_implicit"
-  namespace: "systemui"
-  description: "Deletes implicit modes if never customized and not used for some time. Depends on MODES_UI"
-  bug: "394087495"
 }
 
 flag {

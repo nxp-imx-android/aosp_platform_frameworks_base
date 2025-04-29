@@ -20,7 +20,6 @@ import android.app.AutomaticZenRule
 import android.app.Flags
 import android.graphics.drawable.TestStubDrawable
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -78,7 +77,6 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(Flags.FLAG_MODES_UI)
     @Test
     fun availableWhenFlagIsOn() =
         testScope.runTest {
@@ -87,16 +85,6 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             assertThat(availability).containsExactly(true)
         }
 
-    @DisableFlags(Flags.FLAG_MODES_UI)
-    @Test
-    fun unavailableWhenFlagIsOff() =
-        testScope.runTest {
-            val availability = underTest.availability(TEST_USER).toCollection(mutableListOf())
-
-            assertThat(availability).containsExactly(false)
-        }
-
-    @EnableFlags(Flags.FLAG_MODES_UI)
     @Test
     fun isActivatedWhenModesChange() =
         testScope.runTest {
@@ -139,7 +127,6 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI, Flags.FLAG_MODES_UI_ICONS)
     fun tileData_iconsFlagEnabled_changesIconWhenActiveModesChange() =
         testScope.runTest {
             val tileData by
@@ -200,8 +187,6 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_MODES_UI,
-        Flags.FLAG_MODES_UI_ICONS,
         Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST,
         com.android.systemui.Flags.FLAG_QS_UI_REFACTOR_COMPOSE_FRAGMENT,
     )
@@ -259,33 +244,7 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
         }
 
-    @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
-    @DisableFlags(Flags.FLAG_MODES_UI_ICONS)
-    fun tileData_iconsFlagDisabled_hasPriorityModesIcon() =
-        testScope.runTest {
-            val tileData by
-                collectLastValue(
-                    underTest.tileData(TEST_USER, flowOf(DataUpdateTrigger.InitialRequest))
-                )
-
-            runCurrent()
-            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
-
-            // Activate a Mode -> Icon doesn't change.
-            zenModeRepository.addMode(id = "Mode", active = true)
-            runCurrent()
-            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
-
-            zenModeRepository.deactivateMode(id = "Mode")
-            runCurrent()
-            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
-        }
-
-    @EnableFlags(Flags.FLAG_MODES_UI, Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
+    @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     fun tileData_withPastManualActivation_mruManualModeAsQuickMode() =
         testScope.runTest {
             val tileData by
@@ -330,7 +289,6 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             assertThat(tileData?.quickMode?.id).isEqualTo("Manual Mode 2")
         }
 
-    @EnableFlags(Flags.FLAG_MODES_UI)
     @Test
     fun getCurrentTileModel_returnsActiveModes() = runTest {
         var tileData = underTest.getCurrentTileModel()

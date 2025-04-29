@@ -36,14 +36,11 @@ import static com.android.systemui.util.DumpUtilsKt.visibilityString;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.ColorInt;
-import android.annotation.DrawableRes;
 import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.StringRes;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -59,14 +56,12 @@ import android.graphics.Shader;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Trace;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -112,7 +107,6 @@ import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent;
@@ -713,15 +707,6 @@ public class NotificationStackScrollLayout
         requestChildrenUpdate();
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        if (!ModesEmptyShadeFix.isEnabled()) {
-            inflateEmptyShadeView();
-        }
-    }
-
     /**
      * Sets whether keyguard bypass is enabled. If true, this layout will be rendered in bypass
      * mode when it is on the keyguard.
@@ -755,9 +740,6 @@ public class NotificationStackScrollLayout
     }
 
     void reinflateViews() {
-        if (!ModesEmptyShadeFix.isEnabled()) {
-            inflateEmptyShadeView();
-        }
         mSectionsManager.reinflateViews();
     }
 
@@ -4866,50 +4848,6 @@ public class NotificationStackScrollLayout
         addView(mEmptyShadeView, index);
     }
 
-    /** Trigger an update for the empty shade resources and visibility. */
-    public void updateEmptyShadeView(boolean visible, boolean areNotificationsHiddenInShade,
-            boolean hasFilteredOutSeenNotifications) {
-        ModesEmptyShadeFix.assertInLegacyMode();
-
-        mEmptyShadeView.setVisible(visible, mIsExpanded && mAnimationsEnabled);
-
-        if (areNotificationsHiddenInShade) {
-            updateEmptyShadeViewResources(R.string.dnd_suppressing_shade_text, 0, 0);
-        } else if (hasFilteredOutSeenNotifications) {
-            updateEmptyShadeViewResources(
-                    R.string.no_unseen_notif_text,
-                    R.string.unlock_to_see_notif_text,
-                    R.drawable.ic_friction_lock_closed);
-        } else {
-            updateEmptyShadeViewResources(R.string.empty_shade_text, 0, 0);
-        }
-    }
-
-    private void updateEmptyShadeViewResources(
-            @StringRes int newTextRes,
-            @StringRes int newFooterTextRes,
-            @DrawableRes int newFooterIconRes) {
-        ModesEmptyShadeFix.assertInLegacyMode();
-
-        int oldTextRes = mEmptyShadeView.getTextResource();
-        if (oldTextRes != newTextRes) {
-            mEmptyShadeView.setText(newTextRes);
-        }
-        int oldFooterTextRes = mEmptyShadeView.getFooterTextResource();
-        if (oldFooterTextRes != newFooterTextRes) {
-            mEmptyShadeView.setFooterText(newFooterTextRes);
-        }
-        int oldFooterIconRes = mEmptyShadeView.getFooterIconResource();
-        if (oldFooterIconRes != newFooterIconRes) {
-            mEmptyShadeView.setFooterIcon(newFooterIconRes);
-        }
-        if (newFooterIconRes != 0 || newFooterTextRes != 0) {
-            mEmptyShadeView.setFooterVisibility(View.VISIBLE);
-        } else {
-            mEmptyShadeView.setFooterVisibility(View.GONE);
-        }
-    }
-
     public boolean isEmptyShadeViewVisible() {
         SceneContainerFlag.assertInLegacyMode();
         if (mEmptyShadeView == null) {
@@ -5742,27 +5680,6 @@ public class NotificationStackScrollLayout
             ExpandableNotificationRow row,
             @SelectedRows int selection) {
         return canChildBeCleared(row) && matchesSelection(row, selection);
-    }
-
-    private void inflateEmptyShadeView() {
-        ModesEmptyShadeFix.assertInLegacyMode();
-
-        EmptyShadeView oldView = mEmptyShadeView;
-        EmptyShadeView view = (EmptyShadeView) LayoutInflater.from(mContext).inflate(
-                R.layout.status_bar_no_notifications, this, false);
-        view.setOnClickListener(v -> {
-            final boolean showHistory = mController.isHistoryEnabled();
-            Intent intent = showHistory
-                    ? new Intent(Settings.ACTION_NOTIFICATION_HISTORY)
-                    : new Intent(Settings.ACTION_NOTIFICATION_SETTINGS);
-            mActivityStarter.startActivity(intent, true, true, Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        });
-        setEmptyShadeView(view);
-        view.setVisible(oldView != null && oldView.isVisible(), /* animate = */ false);
-        updateEmptyShadeViewResources(
-                oldView == null ? R.string.empty_shade_text : oldView.getTextResource(),
-                oldView == null ? 0 : oldView.getFooterTextResource(),
-                oldView == null ? 0 : oldView.getFooterIconResource());
     }
 
     /**

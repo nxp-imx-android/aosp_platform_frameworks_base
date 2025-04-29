@@ -16,9 +16,6 @@
 package com.android.keyguard
 
 import android.content.BroadcastReceiver
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
-import android.provider.Settings
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
@@ -496,7 +493,6 @@ class ClockEventControllerTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     fun listenForDnd_onDndChange_updatesClockZenMode() =
         testScope.runTest {
             underTest.listenForDnd(testScope.backgroundScope)
@@ -513,24 +509,6 @@ class ClockEventControllerTest : SysuiTestCase() {
 
             zenModeRepository.deactivateMode(MANUAL_DND)
             runCurrent()
-
-            verify(events).onZenDataChanged(eq(ZenData(ZenMode.OFF, R.string::dnd_is_off.name)))
-        }
-
-    @Test
-    @DisableFlags(android.app.Flags.FLAG_MODES_UI)
-    fun zenModeControllerCallback_onDndChange_updatesClockZenMode() =
-        runBlocking(IMMEDIATE) {
-            zenModeControllerCallback!!.onZenChanged(
-                Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
-            )
-
-            verify(events)
-                .onZenDataChanged(
-                    eq(ZenData(ZenMode.IMPORTANT_INTERRUPTIONS, R.string::dnd_is_on.name))
-                )
-
-            zenModeControllerCallback!!.onZenChanged(Settings.Global.ZEN_MODE_OFF)
 
             verify(events).onZenDataChanged(eq(ZenData(ZenMode.OFF, R.string::dnd_is_off.name)))
         }

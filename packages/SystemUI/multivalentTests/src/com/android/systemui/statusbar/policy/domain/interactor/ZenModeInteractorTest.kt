@@ -45,7 +45,6 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
 import com.android.systemui.testKosmos
@@ -388,7 +387,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     fun dndMode_flows() =
         kosmos.runTest {
             val dndMode by collectLastValue(underTest.dndMode)
@@ -399,7 +397,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     fun activeModesBlockingMedia_hasModesWithPolicyBlockingMedia() =
         kosmos.runTest {
             val blockingMedia by
@@ -439,7 +436,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     fun activeModesBlockingAlarms_hasModesWithPolicyBlockingAlarms() =
         kosmos.runTest {
             val blockingAlarms by
@@ -479,7 +475,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     fun activeModesBlockingAlarms_hasModesWithPolicyBlockingSystem() =
         kosmos.runTest {
             val blockingSystem by
@@ -519,7 +514,6 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun modesHidingNotifications_onlyIncludesModesWithNotifListSuppression() =
         kosmos.runTest {
             val modesHidingNotifications by collectLastValue(underTest.modesHidingNotifications)

@@ -32,9 +32,7 @@ import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.policy.data.repository.DeviceProvisioningRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import com.android.systemui.statusbar.policy.domain.model.ActiveZenModes
@@ -44,12 +42,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -127,19 +123,9 @@ constructor(
      * other scenarios.
      */
     val dndMode: StateFlow<ZenMode?> =
-        if (ModesUi.isEnabled)
-            zenModeRepository.modes
-                .map { modes -> modes.singleOrNull { it.isManualDnd } }
-                .stateIn(
-                    scope = backgroundScope,
-                    started = SharingStarted.Eagerly,
-                    initialValue = null,
-                )
-        else MutableStateFlow<ZenMode?>(null)
-        get() {
-            ModesUi.unsafeAssertInNewMode()
-            return field
-        }
+        zenModeRepository.modes
+            .map { modes -> modes.singleOrNull { it.isManualDnd } }
+            .stateIn(scope = backgroundScope, started = SharingStarted.Eagerly, initialValue = null)
 
     /**
      * Returns the current state of the special "manual DND" mode.
@@ -190,22 +176,18 @@ constructor(
         activeModes.map { a -> a.mainMode }.distinctUntilChanged()
 
     val modesHidingNotifications: Flow<List<ZenMode>> by lazy {
-        if (ModesEmptyShadeFix.isUnexpectedlyInLegacyMode() || !ModesUi.isEnabled) {
-            flowOf(listOf())
-        } else {
-            modes
-                .map { modes ->
-                    modes.filter { mode ->
-                        mode.isActive &&
-                            !mode.policy.isVisualEffectAllowed(
-                                /* effect = */ VISUAL_EFFECT_NOTIFICATION_LIST,
-                                /* defaultVal = */ true,
-                            )
-                    }
+        modes
+            .map { modes ->
+                modes.filter { mode ->
+                    mode.isActive &&
+                        !mode.policy.isVisualEffectAllowed(
+                            /* effect = */ VISUAL_EFFECT_NOTIFICATION_LIST,
+                            /* defaultVal = */ true,
+                        )
                 }
-                .flowOn(bgDispatcher)
-                .distinctUntilChanged()
-        }
+            }
+            .flowOn(bgDispatcher)
+            .distinctUntilChanged()
     }
 
     suspend fun getModeIcon(mode: ZenMode): ZenIcon {

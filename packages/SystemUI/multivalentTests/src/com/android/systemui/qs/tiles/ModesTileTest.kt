@@ -67,7 +67,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 
-@EnableFlags(android.app.Flags.FLAG_MODES_UI, android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
+@EnableFlags(android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)

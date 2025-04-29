@@ -37,7 +37,6 @@ import com.android.systemui.Flags;
 import com.android.systemui.demomode.DemoModeCommandReceiver;
 import com.android.systemui.kairos.ExperimentalKairosApi;
 import com.android.systemui.kairos.KairosNetwork;
-import com.android.systemui.modes.shared.ModesUiIcons;
 import com.android.systemui.statusbar.BaseStatusBarFrameLayout;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.StatusIconDisplayable;
@@ -280,7 +279,7 @@ public class IconManager implements DemoModeCommandReceiver {
     }
 
     protected LinearLayout.LayoutParams onCreateLayoutParams(Shape shape) {
-        int width = ModesUiIcons.isEnabled() && shape == StatusBarIcon.Shape.FIXED_SPACE
+        int width = shape == StatusBarIcon.Shape.FIXED_SPACE
                 ? mIconSize
                 : ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -315,12 +314,10 @@ public class IconManager implements DemoModeCommandReceiver {
     /** Called once an icon has been set. */
     public void onSetIcon(int viewIndex, StatusBarIcon icon) {
         StatusBarIconView view = (StatusBarIconView) mGroup.getChildAt(viewIndex);
-        if (ModesUiIcons.isEnabled()) {
-            ViewGroup.LayoutParams current = view.getLayoutParams();
-            ViewGroup.LayoutParams desired = onCreateLayoutParams(icon.shape);
-            if (desired.width != current.width || desired.height != current.height) {
-                view.setLayoutParams(desired);
-            }
+        ViewGroup.LayoutParams current = view.getLayoutParams();
+        ViewGroup.LayoutParams desired = onCreateLayoutParams(icon.shape);
+        if (desired.width != current.width || desired.height != current.height) {
+            view.setLayoutParams(desired);
         }
         view.set(icon);
     }
