@@ -20,27 +20,29 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceViewHolder
-import com.android.settingslib.widget.theme.R
+import com.android.settingslib.widget.category.R
 
-class SettingsTitlelessPreferenceCategory @JvmOverloads constructor(
+/** A [PreferenceCategory] that has no title. */
+class UntitledPreferenceCategory
+@JvmOverloads
+constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : PreferenceCategory(context, attrs, defStyleAttr, defStyleRes) {
 
     init {
         layoutResource =
-            if (SettingsThemeHelper.isExpressiveTheme(context)) {
-                R.layout.settingslib_expressive_preference_category_no_title
-            } else {
-                R.layout.settingslib_preference_category_no_title
+            when (SettingsThemeHelper.isExpressiveTheme(context)) {
+                true -> R.layout.settingslib_expressive_untitled_preference_category
+                else -> R.layout.settingslib_untitled_preference_category
             }
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
-        holder.setDividerAllowedAbove(false)
-        holder.setDividerAllowedBelow(false)
+        holder.isDividerAllowedAbove = false
+        holder.isDividerAllowedBelow = false
     }
 }
