@@ -40,6 +40,7 @@ import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
 import android.annotation.IdRes;
 import android.annotation.IntDef;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -12270,7 +12271,7 @@ public class Notification implements Parcelable
              * @param length
              * See {@link #getLength}
              */
-            public Segment(int length) {
+            public Segment(@IntRange(from = 1) int length) {
                 mLength = length;
             }
 
@@ -12356,7 +12357,7 @@ public class Notification implements Parcelable
              * @param position
              * See {@link #getPosition}
              */
-            public Point(int position) {
+            public Point(@IntRange(from = 1) int position) {
                 mPosition = position;
             }
 

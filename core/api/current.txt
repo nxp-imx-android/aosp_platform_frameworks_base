@@ -7002,7 +7002,7 @@ package android.app {
   }
 
   public static final class Notification.ProgressStyle.Point {
-    ctor public Notification.ProgressStyle.Point(int);
+    ctor public Notification.ProgressStyle.Point(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
     method public int getPosition();
@@ -7011,7 +7011,7 @@ package android.app {
   }
 
   public static final class Notification.ProgressStyle.Segment {
-    ctor public Notification.ProgressStyle.Segment(int);
+    ctor public Notification.ProgressStyle.Segment(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
     method public int getLength();
