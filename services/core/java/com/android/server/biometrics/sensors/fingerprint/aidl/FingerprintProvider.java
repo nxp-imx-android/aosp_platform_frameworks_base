@@ -440,7 +440,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
         mHandler.post(() -> {
             final InvalidationRequesterClient<Fingerprint> client =
                     new InvalidationRequesterClient<>(mContext, userId, sensorId,
-                            BiometricLogger.ofUnknown(mContext),
+                            BiometricLogger.ofUnknown(mContext, mHandler),
                             mBiometricContext,
                             mFingerprintSensors.get(sensorId).getFingerprintUtilsInstance());
             scheduleForSensor(sensorId, client);
@@ -695,7 +695,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
     private BiometricLogger createLogger(int statsAction, int statsClient,
             AuthenticationStatsCollector authenticationStatsCollector) {
-        return new BiometricLogger(mContext, BiometricsProtoEnums.MODALITY_FINGERPRINT,
+        return new BiometricLogger(mContext, mHandler, BiometricsProtoEnums.MODALITY_FINGERPRINT,
                 statsAction, statsClient, authenticationStatsCollector);
     }
 
