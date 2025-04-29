@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import android.hardware.input.InputManager
 import android.os.Bundle
 import android.os.Handler
 import android.platform.test.annotations.DisableFlags
@@ -32,6 +33,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_KEY
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.SET_INVOCATION_EFFECT_PARAMETERS_ACTION
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -55,13 +58,16 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     private val globalSettings = FakeGlobalSettings(StandardTestDispatcher())
 
     @Mock private lateinit var bgHandler: Handler
+    @Mock private lateinit var inputManager: InputManager
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             SqueezeEffectRepositoryImpl(
                 context = mContext,
-                bgHandler = bgHandler,
-                bgCoroutineContext = testScope.testScheduler,
+                handler = bgHandler,
+                coroutineContext = testScope.testScheduler,
+                executor = Runnable::run,
+                inputManager = inputManager,
                 globalSettings = globalSettings,
             )
         }

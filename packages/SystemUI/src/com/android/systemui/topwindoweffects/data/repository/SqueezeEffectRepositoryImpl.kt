@@ -16,14 +16,18 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.database.ContentObserver
+import android.hardware.input.InputManager
+import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
 import android.util.DisplayUtils
 import android.view.DisplayInfo
+import android.view.KeyEvent
 import androidx.annotation.ArrayRes
 import androidx.annotation.DrawableRes
 import com.android.internal.annotations.VisibleForTesting
@@ -37,34 +41,32 @@ import com.android.systemui.shared.Flags
 import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-
-@VisibleForTesting
-const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
-@VisibleForTesting const val IS_INVOCATION_EFFECT_ENABLED_KEY = "is_invocation_effect_enabled"
-@VisibleForTesting const val DEFAULT_INITIAL_DELAY_MILLIS = 100L
-@VisibleForTesting const val DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS = 500L
 
 @SysUISingleton
 class SqueezeEffectRepositoryImpl
 @Inject
 constructor(
     @Application private val context: Context,
-    @Background private val bgHandler: Handler?,
-    @Background private val bgCoroutineContext: CoroutineContext,
+    @Background private val handler: Handler?,
+    @Background private val coroutineContext: CoroutineContext,
+    @Background executor: Executor,
     private val globalSettings: GlobalSettings,
+    private val inputManager: InputManager,
 ) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler {
 
     private val isPowerButtonLongPressConfiguredToLaunchAssistantFlow: Flow<Boolean> =
         conflatedCallbackFlow {
                 val observer =
-                    object : ContentObserver(bgHandler) {
+                    object : ContentObserver(handler) {
                         override fun onChange(selfChange: Boolean) {
                             trySendWithFailureLogging(
                                 getIsPowerButtonLongPressConfiguredToLaunchAssistant(),
@@ -81,7 +83,33 @@ constructor(
                 globalSettings.registerContentObserverAsync(POWER_BUTTON_LONG_PRESS, observer)
                 awaitClose { globalSettings.unregisterContentObserverAsync(observer) }
             }
-            .flowOn(bgCoroutineContext)
+            .flowOn(coroutineContext)
+
+    // TODO(b/409229366): Cancel animation if second key is pressed later than initial wait
+    // TODO(b/414534881): Use a single signal "isOnAssistLaunchPath" in squeeze effect repo
+    @SuppressLint("MissingPermission") // required due to InputManager.KeyGestureEventListener
+    override val isPowerButtonDownInKeyCombination: Flow<Boolean> =
+        conflatedCallbackFlow {
+                val listener =
+                    InputManager.KeyGestureEventListener { event ->
+                        trySendWithFailureLogging(
+                            isPowerButtonInStartMultipleKeyGesture(event),
+                            TAG,
+                            "updated isPowerButtonDownInKeyCombination",
+                        )
+                    }
+                trySendWithFailureLogging(false, TAG, "init isPowerButtonDownInKeyCombination")
+                inputManager.registerKeyGestureEventListener(executor, listener)
+                awaitClose { inputManager.unregisterKeyGestureEventListener(listener) }
+            }
+            .flowOn(coroutineContext)
+            .distinctUntilChanged()
+
+    private fun isPowerButtonInStartMultipleKeyGesture(event: KeyGestureEvent): Boolean {
+        return event.action == KeyGestureEvent.ACTION_GESTURE_START &&
+            event.keycodes.size > 1 &&
+            event.keycodes.contains(KeyEvent.KEYCODE_POWER)
+    }
 
     override suspend fun getInvocationEffectInitialDelayMs(): Long {
         val duration = getLongPressPowerDurationFromSettings()
@@ -190,5 +218,20 @@ constructor(
 
     companion object {
         private const val TAG = "SqueezeEffectRepository"
+
+        /**
+         * Current default timeout for detecting key combination is 150ms (as mentioned in
+         * [KeyCombinationManager.COMBINE_KEY_DELAY_MILLIS]). Power key combinations don't have any
+         * specific value defined yet for this timeout and they use this default timeout 150ms.
+         * We're keeping this value of initial delay as 150ms because:
+         * 1. Invocation effect doesn't show up in screenshots
+         * 2. [TopLevelWindowEffects] window isn't created if power key combination is detected
+         */
+        @VisibleForTesting const val DEFAULT_INITIAL_DELAY_MILLIS = 150L
+        @VisibleForTesting const val DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS = 500L
+        @VisibleForTesting
+        const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
+        @VisibleForTesting
+        const val IS_INVOCATION_EFFECT_ENABLED_KEY = "is_invocation_effect_enabled"
     }
 }

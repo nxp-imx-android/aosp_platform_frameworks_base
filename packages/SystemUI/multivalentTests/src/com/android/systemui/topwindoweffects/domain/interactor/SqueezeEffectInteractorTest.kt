@@ -19,9 +19,12 @@ package com.android.systemui.topwindoweffects.domain.interactor
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
+import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
@@ -35,11 +38,14 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val Kosmos.underTest by Kosmos.Fixture {
-        SqueezeEffectInteractor(
-            squeezeEffectRepository = fakeSqueezeEffectRepository
-        )
-    }
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            SqueezeEffectInteractor(
+                squeezeEffectRepository = fakeSqueezeEffectRepository,
+                keyEventInteractor = KeyEventInteractor(fakeKeyEventRepository),
+                coroutineContext = testScope.testScheduler,
+            )
+        }
 
     @Test
     fun testIsSqueezeEffectDisabled_whenDisabledInRepository() =
@@ -59,5 +65,29 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
             val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
 
             assertThat(isSqueezeEffectEnabled).isTrue()
+        }
+
+    @Test
+    fun testPowerKeyInKeyCombination_powerKeyNotDownAsSingleGesture() =
+        kosmos.runTest {
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = true
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            val isPowerButtonDownAsSingleKeyGesture by
+                collectLastValue(underTest.isPowerButtonDownAsSingleKeyGesture)
+
+            assertThat(isPowerButtonDownAsSingleKeyGesture).isFalse()
+        }
+
+    @Test
+    fun testPowerKeyNotInKeyCombination_powerKeyDownAsSingleGesture() =
+        kosmos.runTest {
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
+            fakeKeyEventRepository.setPowerButtonDown(true)
+
+            val isPowerButtonDownAsSingleKeyGesture by
+                collectLastValue(underTest.isPowerButtonDownAsSingleKeyGesture)
+
+            assertThat(isPowerButtonDownAsSingleKeyGesture).isTrue()
         }
 }
