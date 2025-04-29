@@ -420,11 +420,10 @@ public class SettingsProvider extends ContentProvider {
         SettingsState.cacheSystemPackageNamesAndSystemSignature(getContext());
         synchronized (mLock) {
             mSettingsRegistry.migrateAllLegacySettingsIfNeededLocked();
-            final List<Integer> deviceIds = getDeviceIds();
             for (UserInfo user : mUserManager.getAliveUsers()) {
-                for (int deviceId : deviceIds) {
-                    mSettingsRegistry.ensureSettingsForUserAndDeviceLocked(user.id, deviceId);
-                }
+                // Only the default device would be available during boot.
+                mSettingsRegistry.ensureSettingsForUserAndDeviceLocked(user.id,
+                        Context.DEVICE_ID_DEFAULT);
             }
             mSettingsRegistry.syncSsaidTableOnStartLocked();
         }
