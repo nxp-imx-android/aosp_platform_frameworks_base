@@ -273,6 +273,16 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_check_device_rotation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Whether to use display rotation to specify rotate-and-crop rotation."
+    bug: "395047103"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_camera_compat_for_desktop_windowing_opt_out"
     namespace: "lse_desktop_experience"
     description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
