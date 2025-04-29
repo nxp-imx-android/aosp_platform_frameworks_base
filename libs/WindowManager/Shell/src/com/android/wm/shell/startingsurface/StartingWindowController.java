@@ -64,6 +64,8 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
+import java.util.ArrayList;
+
 /**
  * Implementation to draw the starting window to an application, and remove the starting window
  * until the application displays its own window.
@@ -161,17 +163,20 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             if (!hasPendingRemoval()) {
                 return;
             }
-            final WindowRecord r = findRecord(transition);
-            if (r != null) {
+            final ArrayList<WindowRecord> records = findRecords(transition);
+            if (records != null) {
                 startTransaction.addTransactionCommittedListener(mShellMainExecutor, () -> {
-                    final WindowRecord wr = mWindowRecords.get(r.mTaskId);
-                    if (wr == null) {
-                        return;
+                    for (int i = records.size() - 1; i >= 0; --i) {
+                        final int taskId = records.get(i).mTaskId;
+                        final WindowRecord wr = mWindowRecords.get(taskId);
+                        if (wr == null) {
+                            return;
+                        }
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                                "RSO:Transaction applied for task=%d", taskId);
+                        wr.mTransactionApplied = true;
+                        executeRemovalIfPossible(wr);
                     }
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                            "RSO:Transaction applied for task=%d", r.mTaskId);
-                    wr.mTransactionApplied = true;
-                    executeRemovalIfPossible(wr);
                 });
                 return;
             }
@@ -201,10 +206,13 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                 return;
             }
             // Ensure nothing left.
-            final WindowRecord r = findRecord(transition);
-            if (r != null) {
-                r.mTransactionApplied = true;
-                executeRemovalIfPossible(r);
+            final ArrayList<WindowRecord> records = findRecords(transition);
+            if (records != null) {
+                for (int i = records.size() - 1; i >= 0; --i) {
+                    final WindowRecord r = records.get(i);
+                    r.mTransactionApplied = true;
+                    executeRemovalIfPossible(r);
+                }
             } else {
                 uncertainTrackComplete(transition);
             }
@@ -225,14 +233,18 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             return mWindowRecords.size() != 0;
         }
 
-        WindowRecord findRecord(IBinder transition) {
+        ArrayList<WindowRecord> findRecords(IBinder transition) {
+            ArrayList<WindowRecord> records = null;
             for (int i = mWindowRecords.size() - 1; i >= 0; --i) {
                 final WindowRecord record = mWindowRecords.valueAt(i);
                 if (record.mTransition == transition) {
-                    return record;
+                    if (records == null) {
+                        records = new ArrayList<>();
+                    }
+                    records.add(record);
                 }
             }
-            return null;
+            return records;
         }
 
         void requestRemoval(int taskId, StartingWindowRemovalInfo removalInfo) {
