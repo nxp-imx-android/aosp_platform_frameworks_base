@@ -198,16 +198,15 @@ class TouchLatencyView extends View implements View.OnTouchListener {
 
     public void changeMode(MenuItem item) {
         Trace.beginSection("TouchLatencyView changeMode");
-        final int NUM_MODES = 2;
-        final String modes[] = {"Touch", "Ball"};
-        mMode = (mMode + 1) % NUM_MODES;
+        mMode = (mMode + 1) % ACTION_MODES.length;
         invalidate();
-        item.setTitle(modes[mMode]);
+        item.setTitle(ACTION_MODES[mMode]);
         Trace.endSection();
     }
 
     private final Paint mBluePaint, mGreenPaint, mYellowPaint, mRedPaint, mTextPaint;
     private int mMode;
+    public static final String ACTION_MODES[] = {"Touch", "Ball"};
 
     private boolean mTouching;
     private float mTouchX, mTouchY;
