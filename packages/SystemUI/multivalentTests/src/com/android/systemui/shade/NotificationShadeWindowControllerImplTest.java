@@ -177,7 +177,8 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
                 mUserTracker,
                 mKosmos.getNotificationShadeWindowModel(),
                 mKosmos::getCommunalInteractor,
-                mKosmos.getShadeLayoutParams());
+                mKosmos.getShadeLayoutParams(),
+                mKosmos.getTopUiController());
         mNotificationShadeWindowController.setScrimsVisibilityListener((visibility) -> {});
         mNotificationShadeWindowController.fetchWindowRootView();
 

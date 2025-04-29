@@ -31,6 +31,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
+import com.android.systemui.topui.TopUiController
+import com.android.systemui.topui.TopUiControllerRefactor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
@@ -59,6 +61,7 @@ constructor(
     // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
     private val notificationShadeWindowController: NotificationShadeWindowController,
+    private val topUiController: TopUiController,
     private val interactionJankMonitor: InteractionJankMonitor,
 ) : CoreStartable {
 
@@ -104,7 +107,11 @@ constructor(
                     )
                     .apply { visibility = View.GONE }
             root?.let { rootView ->
-                runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
+                if (TopUiControllerRefactor.isEnabled) {
+                    topUiController.setRequestTopUi(true, TAG)
+                } else {
+                    runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
+                }
                 windowManager.addView(rootView, getWindowManagerLayoutParams())
                 rootView.post { rootView.visibility = View.VISIBLE }
             }
@@ -116,7 +123,13 @@ constructor(
             windowManager.removeView(root)
             root = null
         }
-        runOnMainThread { notificationShadeWindowController.setRequestTopUi(false, TAG) }
+        if (TopUiControllerRefactor.isEnabled) {
+            topUiController.setRequestTopUi(false, TAG)
+        } else {
+            runOnMainThread {
+                notificationShadeWindowController.setRequestTopUi(false, TAG)
+            }
+        }
     }
 
     private suspend fun runOnMainThread(block: () -> Unit) {

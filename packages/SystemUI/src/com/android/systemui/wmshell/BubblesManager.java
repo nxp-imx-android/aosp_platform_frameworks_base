@@ -62,6 +62,7 @@ import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.NotificationChannelHelper;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
@@ -78,6 +79,7 @@ import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.ZenModeController;
+import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleEntry;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -103,6 +105,7 @@ public class BubblesManager {
     private final Context mContext;
     private final Bubbles mBubbles;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
+    private final TopUiController mTopUiController;
     private final KeyguardStateController mKeyguardStateController;
     private final ShadeController mShadeController;
     private final IStatusBarService mBarService;
@@ -134,6 +137,7 @@ public class BubblesManager {
     public static BubblesManager create(Context context,
             Optional<Bubbles> bubblesOptional,
             NotificationShadeWindowController notificationShadeWindowController,
+            TopUiController topUiController,
             KeyguardStateController keyguardStateController,
             ShadeController shadeController,
             @Nullable IStatusBarService statusBarService,
@@ -155,6 +159,7 @@ public class BubblesManager {
             return new BubblesManager(context,
                     bubblesOptional.get(),
                     notificationShadeWindowController,
+                    topUiController,
                     keyguardStateController,
                     shadeController,
                     statusBarService,
@@ -181,6 +186,7 @@ public class BubblesManager {
     BubblesManager(Context context,
             Bubbles bubbles,
             NotificationShadeWindowController notificationShadeWindowController,
+            TopUiController topUiController,
             KeyguardStateController keyguardStateController,
             ShadeController shadeController,
             @Nullable IStatusBarService statusBarService,
@@ -201,6 +207,7 @@ public class BubblesManager {
         mContext = context;
         mBubbles = bubbles;
         mNotificationShadeWindowController = notificationShadeWindowController;
+        mTopUiController = topUiController;
         mKeyguardStateController = keyguardStateController;
         mShadeController = shadeController;
         mNotificationManager = notificationManager;
@@ -345,7 +352,12 @@ public class BubblesManager {
             @Override
             public void requestNotificationShadeTopUi(boolean requestTopUi, String componentTag) {
                 sysuiMainExecutor.execute(() -> {
-                    mNotificationShadeWindowController.setRequestTopUi(requestTopUi, componentTag);
+                    if (TopUiControllerRefactor.isEnabled()) {
+                        mTopUiController.setRequestTopUi(requestTopUi, componentTag);
+                    } else {
+                        mNotificationShadeWindowController.setRequestTopUi(requestTopUi,
+                                componentTag);
+                    }
                 });
             }
 

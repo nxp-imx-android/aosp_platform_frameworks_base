@@ -126,6 +126,7 @@ import com.android.systemui.startable.Dependencies;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.chips.StatusBarChipsModule;
 import com.android.systemui.statusbar.connectivity.ConnectivityModule;
 import com.android.systemui.statusbar.dagger.StatusBarModule;
@@ -158,6 +159,7 @@ import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;
 import com.android.systemui.telephony.data.repository.TelephonyRepositoryModule;
 import com.android.systemui.temporarydisplay.dagger.TemporaryDisplayModule;
+import com.android.systemui.topui.TopUiModule;
 import com.android.systemui.touchpad.TouchpadModule;
 import com.android.systemui.tuner.dagger.TunerModule;
 import com.android.systemui.user.UserModule;
@@ -284,6 +286,7 @@ import javax.inject.Named;
         TelephonyRepositoryModule.class,
         TemporaryDisplayModule.class,
         ShadeDisplayAwareModule.class,
+        TopUiModule.class,
         TouchpadModule.class,
         TunerModule.class,
         UserDomainLayerModule.class,
@@ -410,6 +413,7 @@ public abstract class SystemUIModule {
     static Optional<BubblesManager> provideBubblesManager(Context context,
             Optional<Bubbles> bubblesOptional,
             NotificationShadeWindowController notificationShadeWindowController,
+            TopUiController topUiController,
             KeyguardStateController keyguardStateController,
             ShadeController shadeController,
             @Nullable IStatusBarService statusBarService,
@@ -430,6 +434,7 @@ public abstract class SystemUIModule {
         return Optional.ofNullable(BubblesManager.create(context,
                 bubblesOptional,
                 notificationShadeWindowController,
+                topUiController,
                 keyguardStateController,
                 shadeController,
                 statusBarService,
