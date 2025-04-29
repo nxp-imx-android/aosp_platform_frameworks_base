@@ -303,10 +303,12 @@ public class Task {
                         CONTROLLED_WINDOWING_MODES_WHEN_ACTIVE, taskInfo.getWindowingMode())
                 && (taskInfo.getActivityType() == ACTIVITY_TYPE_UNDEFINED
                 || ArrayUtils.contains(CONTROLLED_ACTIVITY_TYPES, taskInfo.getActivityType()));
-        return new Task(taskKey,
+        Task result = new Task(taskKey,
                 td != null ? td.getPrimaryColor() : 0,
                 td != null ? td.getBackgroundColor() : 0, isDockable , isLocked, td,
                 taskInfo.topActivity);
+        result.appBounds = taskInfo.configuration.windowConfiguration.getAppBounds();
+        return result;
     }
 
     /**
