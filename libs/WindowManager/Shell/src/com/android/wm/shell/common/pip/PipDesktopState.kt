@@ -16,22 +16,47 @@
 package com.android.wm.shell.common.pip
 
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.window.DesktopExperienceFlags
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
+import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.recents.RecentsTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener
+import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import java.util.Optional
 
 /** Helper class for PiP on Desktop Mode. */
 class PipDesktopState(
     private val pipDisplayLayoutState: PipDisplayLayoutState,
+    recentsTransitionHandler: RecentsTransitionHandler,
     private val desktopUserRepositoriesOptional: Optional<DesktopUserRepositories>,
     private val dragToDesktopTransitionHandlerOptional: Optional<DragToDesktopTransitionHandler>,
     val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
 ) {
+    @RecentsTransitionState
+    private var recentsTransitionState = TRANSITION_STATE_NOT_RUNNING
+
+    init {
+        recentsTransitionHandler.addTransitionStateListener(
+            object : RecentsTransitionStateListener {
+                override fun onTransitionStateChanged(@RecentsTransitionState state: Int) {
+                    logV(
+                        "Recents transition state changed: %s",
+                        RecentsTransitionStateListener.stateToString(state),
+                    )
+                    recentsTransitionState = state
+                }
+            }
+        )
+    }
+
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
      * - PiP in Desktop Windowing flag is enabled
@@ -83,14 +108,20 @@ class PipDesktopState(
     }
 
     /** Returns the windowing mode to restore to when resizing out of PIP direction. */
-    // TODO(b/403345629): Update this for Multi-Desktop.
     fun getOutPipWindowingMode(): Int {
+        val isInDesktop = isPipInDesktopMode()
+        // Temporary workaround for b/409201669: Always expand to fullscreen if we're exiting PiP
+        // in the middle of Recents animation from Desktop session.
+        if (RecentsTransitionStateListener.isAnimating(recentsTransitionState) && isInDesktop) {
+            return WINDOWING_MODE_FULLSCREEN
+        }
+
         // If we are exiting PiP while the device is in Desktop mode, the task should expand to
         // freeform windowing mode.
         // 1) If the display windowing mode is freeform, set windowing mode to UNDEFINED so it will
         //    resolve the windowing mode to the display's windowing mode.
         // 2) If the display windowing mode is not FREEFORM, set windowing mode to FREEFORM.
-        if (isPipInDesktopMode()) {
+        if (isInDesktop) {
             return if (isDisplayInFreeform()) {
                 WINDOWING_MODE_UNDEFINED
             } else {
@@ -108,4 +139,12 @@ class PipDesktopState(
 
     /** Returns the DisplayLayout associated with the display where PiP window is in. */
     fun getCurrentDisplayLayout(): DisplayLayout = pipDisplayLayoutState.displayLayout
+
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "%s: $msg", TAG, *arguments)
+    }
+
+    companion object {
+        private const val TAG = "PipDesktopState"
+    }
 }

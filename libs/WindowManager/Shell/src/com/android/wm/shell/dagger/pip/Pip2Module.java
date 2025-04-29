@@ -61,6 +61,7 @@ import com.android.wm.shell.pip2.phone.PipTouchHandler;
 import com.android.wm.shell.pip2.phone.PipTransition;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.PipUiStateChangeController;
+import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -277,12 +278,14 @@ public abstract class Pip2Module {
     @Provides
     static PipDesktopState providePipDesktopState(
             PipDisplayLayoutState pipDisplayLayoutState,
+            RecentsTransitionHandler recentsTransitionHandler,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
             Optional<DragToDesktopTransitionHandler> dragToDesktopTransitionHandlerOptional,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
     ) {
-        return new PipDesktopState(pipDisplayLayoutState, desktopUserRepositoriesOptional,
-                dragToDesktopTransitionHandlerOptional, rootTaskDisplayAreaOrganizer);
+        return new PipDesktopState(pipDisplayLayoutState, recentsTransitionHandler,
+                desktopUserRepositoriesOptional, dragToDesktopTransitionHandlerOptional,
+                rootTaskDisplayAreaOrganizer);
     }
 
     @WMSingleton
