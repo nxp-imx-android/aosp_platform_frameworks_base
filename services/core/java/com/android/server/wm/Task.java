@@ -2423,7 +2423,7 @@ class Task extends TaskFragment {
         final int windowingMode = getWindowingMode();
         final boolean isNonStandardOrFullscreen = !isActivityTypeStandardOrUndefined()
                 || windowingMode == WINDOWING_MODE_FULLSCREEN;
-        if (!Flags.nestedTasksWithIndependentBounds()
+        if (!DesktopExperienceFlags.ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX.isTrue()
                 && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
             final Rect bounds;
             if (hasParentTask && rootTask.isOrganized()) {
