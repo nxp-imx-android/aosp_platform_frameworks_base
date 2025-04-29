@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Επιπλέον μείωση φωτεινότητας"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Συσκευές ακοής"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Αυτόματο κλικ"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Πλήκτρα ελέγχου ποντικιού"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Αποσυνδέθηκε"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Συνδέθηκε"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Ενεργή"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Κύλιση"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Παρατεταμένο πάτημα"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Παύση"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Θέση"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Κύλιση προς τα επάνω"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Κύλιση προς τα κάτω"</string>

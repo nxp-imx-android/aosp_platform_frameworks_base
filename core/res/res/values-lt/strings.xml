@@ -1807,8 +1807,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Itin blanku"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Klausos įrenginiai"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Automatinis paspaudimas"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Pelės klavišai"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Atjungta"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Prisijungta"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktyvus"</string>
@@ -2279,6 +2278,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Slinkti"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Ilgai paspausti"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pristabdyti"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozicija"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Slinkti aukštyn"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Slinkti žemyn"</string>

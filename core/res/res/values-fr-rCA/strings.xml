@@ -1806,8 +1806,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Réduction supplémentaire de la luminosité"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Appareils auditifs"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatique"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Touches de souris"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Déconnecté"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connecté"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Actif"</string>
@@ -1974,8 +1973,8 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Le mode Économiseur de pile active le thème sombre et limite ou désactive l\'activité en arrière-plan, certains effets visuels, certaines fonctionnalités et certaines connexions réseau."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"Le mode Économiseur de pile active le thème sombre et limite ou désactive l\'activité en arrière-plan, certains effets visuels, certaines fonctionnalités et certaines connexions réseau."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"Pour aider à diminuer l\'utilisation des données, la fonctionnalité Économiseur de données empêche certaines applis d\'envoyer ou de recevoir des données en arrière-plan. Une appli que vous utilisez actuellement peut accéder à des données, mais peut le faire moins souvent. Cela peut signifier, par exemple, que les images ne s\'affichent pas jusqu\'à ce que vous les touchiez."</string>
-    <string name="data_saver_enable_title" msgid="7080620065745260137">"Activer l\'économiseur de données?"</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"Pour aider à diminuer l\'utilisation des données, la fonctionnalité Économiseur de données empêche certaines applis d\'envoyer ou de recevoir des données en arrière-plan. Une appli que vous êtes en train d\'utiliser peut accéder à des données, mais peut le faire moins souvent. Cela peut signifier, par exemple, que les images ne s\'affichent pas jusqu\'à ce que vous les touchiez."</string>
+    <string name="data_saver_enable_title" msgid="7080620065745260137">"Activer l\'Économiseur de données?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activer"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{Pendant une minute (jusqu\'à {formattedTime})}one{Pendant # minute (jusqu\'à {formattedTime})}many{Pendant # minutes (jusqu\'à {formattedTime})}other{Pendant # minutes (jusqu\'à {formattedTime})}}"</string>
     <string name="zen_mode_duration_minutes_summary_short" msgid="1187553788355486950">"{count,plural, =1{Pendant 1 m (jusqu\'à {formattedTime})}one{Pendant # m (jusqu\'à {formattedTime})}many{Pendant # m (jusqu\'à {formattedTime})}other{Pendant # m (jusqu\'à {formattedTime})}}"</string>
@@ -2278,6 +2277,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Faire défiler"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Appui prolongé"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pause"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Position"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Faire défiler vers le haut"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Faire défiler vers le bas"</string>

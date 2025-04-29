@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"स्क्रीन की रोशनी को सामान्य लेवल से और कम करने की सुविधा"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"कान की मशीन"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"अपने-आप क्लिक होने की सुविधा"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"कीबोर्ड पर माउस के लिए बटन"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"डिसकनेक्ट हो गया"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"कनेक्ट हो गया"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"चालू है"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"स्क्रोल करें"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"दबाकर रखें"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"रोकें"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"पोज़िशन"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ऊपर की ओर स्क्रोल करें"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"नीचे की ओर स्क्रोल करें"</string>

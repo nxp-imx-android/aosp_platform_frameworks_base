@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"એક્સ્ટ્રા ડિમ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"સાંભળવામાં સહાય કરતા ડિવાઇસ"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ઑટોક્લિક"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"માઉસ કી"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ડિસ્કનેક્ટેડ છે"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"કનેક્ટેડ છે"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"સક્રિય"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"સ્ક્રોલ કરો"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"થોડીવાર દબાવી રાખો"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"થોભાવો"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"સ્થિતિ"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ઉપર સ્ક્રોલ કરો"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"નીચે સ્ક્રોલ કરો"</string>

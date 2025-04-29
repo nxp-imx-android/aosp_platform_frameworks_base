@@ -2277,6 +2277,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desprazar"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Manter premido"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausa"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desprazar cara arriba"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desprazar cara abaixo"</string>
