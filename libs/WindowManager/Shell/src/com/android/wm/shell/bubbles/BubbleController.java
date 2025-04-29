@@ -2983,8 +2983,10 @@ public class BubbleController implements ConfigurationChangeListener,
         public void showShortcutBubble(ShortcutInfo info, @Nullable BubbleBarLocation location) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showShortcutBubble: info=%s loc=%s",
                     info, location);
-            mMainExecutor.execute(() -> mController
-                    .expandStackAndSelectBubble(info, location));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showShortcutBubble",
+                    (controller) -> controller.expandStackAndSelectBubble(info, location));
         }
 
         @Override
@@ -2992,67 +2994,90 @@ public class BubbleController implements ConfigurationChangeListener,
                 @Nullable BubbleBarLocation location) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showAppBubble: intent=%s user=%s loc=%s",
                     intent, user, location);
-            mMainExecutor.execute(
-                    () -> mController.expandStackAndSelectBubble(intent, user, location));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showAppBubble",
+                    (controller) -> controller.expandStackAndSelectBubble(intent, user, location));
         }
 
         @Override
         public void showBubble(String key, int topOnScreen) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showBubble: key=%s top=%d",
                     key, topOnScreen);
-            mMainExecutor.execute(
-                    () -> mController.expandStackAndSelectBubbleFromLauncher(key, topOnScreen));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showBubble",
+                    (controller) ->
+                            controller.expandStackAndSelectBubbleFromLauncher(key, topOnScreen));
         }
 
         @Override
         public void removeAllBubbles() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.removeAllBubbles");
-            mMainExecutor.execute(() -> mController.removeAllBubbles(Bubbles.DISMISS_USER_GESTURE));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "removeAllBubbles",
+                    (controller) -> controller.removeAllBubbles(Bubbles.DISMISS_USER_GESTURE));
         }
 
         @Override
         public void collapseBubbles() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.collapseBubbles");
-            mMainExecutor.execute(() -> {
-                if (mBubbleData.getSelectedBubble() instanceof Bubble) {
-                    if (((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
-                            != null) {
-                        // Currently preparing a transition which will, itself, collapse the bubble.
-                        // For transition preparation, the timing of bubble-collapse must be in
-                        // sync with the rest of the set-up.
-                        return;
-                    }
-                }
-                mController.collapseStack();
-            });
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "collapseBubbles",
+                    (controller) -> {
+                        if (mBubbleData.getSelectedBubble() instanceof Bubble) {
+                            if (((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
+                                    != null) {
+                                // Currently preparing a transition which will, itself, collapse the
+                                // bubble.
+                                // For transition preparation, the timing of bubble-collapse must be
+                                // in sync with the rest of the set-up.
+                                return;
+                            }
+                        }
+                        controller.collapseStack();
+                    });
         }
 
         @Override
         public void startBubbleDrag(String bubbleKey) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.startBubbleDrag: key=%s", bubbleKey);
-            mMainExecutor.execute(() -> mController.startBubbleDrag(bubbleKey));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "startBubbleDrag",
+                    (controller) -> controller.startBubbleDrag(bubbleKey));
         }
 
         @Override
         public void stopBubbleDrag(BubbleBarLocation location, int topOnScreen) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.stopBubbleDrag: log=%s top=%d",
                     location, topOnScreen);
-            mMainExecutor.execute(() -> mController.stopBubbleDrag(location, topOnScreen));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "stopBubbleDrag",
+                    (controller) -> controller.stopBubbleDrag(location, topOnScreen));
         }
 
         @Override
         public void dragBubbleToDismiss(String key, long timestamp) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.dragBubbleToDismiss: key=%s time=%d",
                     key, timestamp);
-            mMainExecutor.execute(() -> mController.dragBubbleToDismiss(key, timestamp));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "dragBubbleToDismiss",
+                    (controller) -> controller.dragBubbleToDismiss(key, timestamp));
         }
 
         @Override
         public void showUserEducation(int positionX, int positionY) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showUserEducation: pos=[%d, %d]",
                     positionX, positionY);
-            mMainExecutor.execute(() ->
-                    mController.showUserEducation(new Point(positionX, positionY)));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showUserEducation",
+                    (controller) -> controller.showUserEducation(new Point(positionX, positionY)));
         }
 
         @Override
@@ -3060,54 +3085,70 @@ public class BubbleController implements ConfigurationChangeListener,
                 @UpdateSource int source) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.setBubbleBarLocation: loc=%s src=%d",
                     location, source);
-            mMainExecutor.execute(() ->
-                    mController.setBubbleBarLocation(location, source));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "setBubbleBarLocation",
+                    (controller) -> controller.setBubbleBarLocation(location, source));
         }
 
         @Override
         public void updateBubbleBarTopOnScreen(int topOnScreen) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.updateBubbleBarTopOnScreen: top=%d",
                     topOnScreen);
-            mMainExecutor.execute(() -> {
-                mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
-                if (mLayerView != null) mLayerView.updateExpandedView();
-            });
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "updateBubbleBarTopOnScreen",
+                    (controller) -> {
+                        mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
+                        if (mLayerView != null) mLayerView.updateExpandedView();
+                    });
         }
 
         @Override
         public void showExpandedView() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showExpandedView");
-            mMainExecutor.execute(() -> {
-                if (mLayerView != null) {
-                    showExpandedViewForBubbleBar();
-                }
-            });
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showExpandedView",
+                    (controller) -> {
+                        if (mLayerView != null) {
+                            showExpandedViewForBubbleBar();
+                        }
+                    });
         }
 
         @Override
         public void showDropTarget(boolean show, BubbleBarLocation location) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showDropTarget: show=%b loc=%s",
                     show, location);
-            mMainExecutor.execute(() -> {
-                if (show) {
-                    showBubbleBarExpandedViewDropTarget(location);
-                } else {
-                    hideBubbleBarExpandedViewDropTarget();
-                }
-            });
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "showDropTarget",
+                    (controller) -> {
+                        if (show) {
+                            showBubbleBarExpandedViewDropTarget(location);
+                        } else {
+                            hideBubbleBarExpandedViewDropTarget();
+                        }
+                    });
         }
 
         @Override
         public void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.moveDraggedBubbleToFullscreen: key=%s "
                             + "loc=%s", key, dropLocation);
-            mMainExecutor.execute(
-                    () -> mController.moveDraggedBubbleToFullscreen(key, dropLocation));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "moveDraggedBubbleToFullscreen",
+                    (controller) -> controller.moveDraggedBubbleToFullscreen(key, dropLocation));
         }
 
         @Override
         public void setHasBubbleBar(boolean hasBubbleBar) {
-            mMainExecutor.execute(() -> mController.setLauncherHasBubbleBar(hasBubbleBar));
+            executeRemoteCallWithTaskPermission(
+                    mController,
+                    "setHasBubbleBar",
+                    (controller) -> controller.setLauncherHasBubbleBar(hasBubbleBar));
         }
     }
 
