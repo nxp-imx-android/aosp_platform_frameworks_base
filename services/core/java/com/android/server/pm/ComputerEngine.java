@@ -3442,7 +3442,7 @@ public class ComputerEngine implements Computer {
                         } else {
                             final boolean isHomeActivity = ACTION_MAIN.equals(intent.getAction())
                                     && intent.hasCategory(CATEGORY_HOME);
-                            if (!Flags.improveHomeAppBehavior() || !isHomeActivity) {
+                            if (!isHomeActivity) {
                                 // Don't reset the preferred activity just for the home intent, we
                                 // should respect the default home app even though there any new
                                 // home activity is enabled.
