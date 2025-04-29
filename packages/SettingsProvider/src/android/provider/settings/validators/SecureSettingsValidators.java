@@ -469,6 +469,8 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION,
                 new InclusiveIntegerRangeValidator(0, 10));
+        VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED,
+                new InclusiveIntegerRangeValidator(1, 10));
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS, new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED,
                 new InclusiveIntegerRangeValidator(0, 1));
