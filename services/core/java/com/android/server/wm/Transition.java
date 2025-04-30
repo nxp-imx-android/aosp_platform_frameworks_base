@@ -3464,14 +3464,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);
             final DisplayContent dc = wc.asDisplayContent();
-            if (dc == null || !mChanges.get(dc).hasChanged()) continue;
+            if (dc == null) continue;
+            final ChangeInfo displayChange = mChanges.get(dc);
             if (ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()
-                    && mChanges.get(dc) != null && mChanges.get(dc).mExistenceChanged) {
+                    && displayChange.mExistenceChanged) {
                 dc.remove();
                 affectsLifecycle = true;
                 mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(dc.mDisplayId);
                 continue;
             }
+            if (!displayChange.hasChanged()) continue;
             final boolean changed = dc.sendNewConfiguration();
             // Set to ready if no other change controls the ready state. But if there is, such as
             // if an activity is pausing, it will call setReady(ar, false) and wait for the next
@@ -3671,7 +3673,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
 
         boolean hasChanged() {
-            if (mExistenceChanged && ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return true;
             final boolean currVisible = mContainer.isVisibleRequested();
             // the task including transient launch must promote to root task
             if (currVisible && ((mFlags & ChangeInfo.FLAG_TRANSIENT_LAUNCH) != 0
