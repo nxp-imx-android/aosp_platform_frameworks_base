@@ -25,6 +25,7 @@ import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
 import android.tools.traces.ConditionsFactory
+import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
@@ -89,5 +90,38 @@ fun launchBubbleViaBubbleMenu(
         .add(ConditionsFactory.isWMStateComplete())
         .withAppTransitionIdle()
         .withTopVisibleApp(testApp)
+        .waitForAndVerify()
+}
+
+/**
+ * Launches [testApp] into bubble via clicking bubble menu.
+ *
+ * @param testApp the test app to launch into bubble
+ * @param tapl the [LauncherInstrumentation]
+ * @param wmHelper the [WindowManagerStateHelper]
+ */
+fun collapseBubbleViaBackKey(
+    testApp: StandardAppHelper,
+    tapl: LauncherInstrumentation,
+    wmHelper: WindowManagerStateHelper,
+) {
+    // Ensure Bubble is shown and in expanded state.
+    wmHelper
+        .StateSyncBuilder()
+        .add(ConditionsFactory.isWMStateComplete())
+        .withAppTransitionIdle()
+        .withTopVisibleApp(testApp)
+        .withBubbleShown()
+        .waitForAndVerify()
+
+    // Press back key to collapse bubble
+    tapl.pressBack()
+
+    // Ensure Bubble is in the collapse state.
+    wmHelper
+        .StateSyncBuilder()
+        .add(ConditionsFactory.isWMStateComplete())
+        .withAppTransitionIdle()
+        .withTopVisibleApp(ComponentNameMatcher.LAUNCHER)
         .waitForAndVerify()
 }

@@ -5,6 +5,9 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest"
     }
   ]
 }
