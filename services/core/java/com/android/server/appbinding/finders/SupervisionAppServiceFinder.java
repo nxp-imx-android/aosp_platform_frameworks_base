@@ -25,8 +25,6 @@ import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
-import android.text.TextUtils;
-import android.util.Slog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -85,7 +83,7 @@ public class SupervisionAppServiceFinder
     @NonNull
     @Override
     protected String getServiceAction() {
-        return SupervisionAppService.ACTION_BIND_SUPERVISION_APP_SERVICE;
+        return SupervisionAppService.ACTION_SUPERVISION_APP_SERVICE;
     }
 
     @NonNull

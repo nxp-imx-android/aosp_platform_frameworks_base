@@ -17,6 +17,7 @@
 package com.android.settingslib.supervision
 
 import android.app.admin.DeviceAdminReceiver
+import android.app.supervision.SupervisionAppService
 import android.app.supervision.SupervisionManager
 import android.content.ComponentName
 import android.content.Context
@@ -46,7 +47,7 @@ object SupervisionRestrictionsHelper {
         // Try to find the service whose package matches the active supervision app.
         val resolveSupervisionApps =
             context.packageManager.queryIntentServicesAsUser(
-                Intent("android.app.action.BIND_SUPERVISION_APP_SERVICE"),
+                Intent(SupervisionAppService.ACTION_SUPERVISION_APP_SERVICE),
                 PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS,
                 user.identifier,
             )

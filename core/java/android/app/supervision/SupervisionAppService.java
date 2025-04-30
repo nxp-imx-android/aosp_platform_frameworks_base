@@ -42,8 +42,8 @@ public class SupervisionAppService extends Service {
      * @hide
      */
     @SdkConstant(SdkConstantType.SERVICE_ACTION)
-    public static final String ACTION_BIND_SUPERVISION_APP_SERVICE =
-            "android.app.action.BIND_SUPERVISION_APP_SERVICE";
+    public static final String ACTION_SUPERVISION_APP_SERVICE =
+            "android.app.action.SUPERVISION_APP_SERVICE";
 
     private final ISupervisionAppService mBinder =
             new ISupervisionAppService.Stub() {
