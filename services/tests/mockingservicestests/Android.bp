@@ -64,9 +64,6 @@ android_test {
         "services.companion",
         "services.core",
         "services.devicepolicy",
-        // TODO(b/411222385): only needed by HsumBootUserInitializerTest, should be moved to 
-        // its own test target
-        "HsumBootUserInitializer",
         "services.net",
         "services.usage",
         "services.wallpapereffectsgeneration",

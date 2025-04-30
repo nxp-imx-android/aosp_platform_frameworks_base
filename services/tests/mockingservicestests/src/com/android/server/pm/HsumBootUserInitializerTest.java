@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server;
+package com.android.server.pm;
 
 import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 
-import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.ADMIN_USER_CREATED;
-import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_CREATED;
-import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.NO_USER_CREATED;
-import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_MAIN;
-import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_NON_MAIN;
-import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_ONLY;
+import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.ADMIN_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.NO_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_MAIN;
+import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_NON_MAIN;
+import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -45,8 +45,6 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
 import com.android.server.am.ActivityManagerService;
-import com.android.server.pm.PackageManagerService;
-import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import com.google.common.truth.Expect;

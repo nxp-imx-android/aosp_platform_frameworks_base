@@ -167,19 +167,6 @@ java_library {
     ],
 }
 
-// TODO(b/411222385): used only by FrameworksMockingServicesTests,
-// should be refactored into services.user or something like that
-// instead
-java_library {
-    name: "HsumBootUserInitializer",
-    srcs: ["java/com/android/server/HsumBootUserInitializer.java"],
-    static_libs: [
-        "Slogf",
-        "services.core.unboosted",
-    ],
-    visibility: ["//frameworks/base/services/tests/mockingservicestests"],
-}
-
 soong_config_module_type {
     name: "art_profile_java_defaults",
     module_type: "java_defaults",
