@@ -369,8 +369,7 @@ public final class RadioMetadata implements Parcelable {
             return false;
         }
         for (String key : mBundle.keySet()) {
-            if (Flags.hdRadioImproved() && Objects.equals(METADATA_KEYS_TYPE.get(key),
-                    METADATA_TYPE_TEXT_ARRAY)) {
+            if (Objects.equals(METADATA_KEYS_TYPE.get(key), METADATA_TYPE_TEXT_ARRAY)) {
                 if (!Arrays.equals(mBundle.getStringArray(key), otherBundle.getStringArray(key))) {
                     return false;
                 }
@@ -410,8 +409,7 @@ public final class RadioMetadata implements Parcelable {
 
             sb.append(keyDisp);
             sb.append('=');
-            if (Flags.hdRadioImproved() && Objects.equals(METADATA_KEYS_TYPE.get(key),
-                    METADATA_TYPE_TEXT_ARRAY)) {
+            if (Objects.equals(METADATA_KEYS_TYPE.get(key), METADATA_TYPE_TEXT_ARRAY)) {
                 String[] stringArrayValue = mBundle.getStringArray(key);
                 sb.append('[');
                 for (int i = 0; i < stringArrayValue.length; i++) {
