@@ -184,7 +184,7 @@ public final class TransitionInfo implements Parcelable {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(prefix = { "FLAG_" }, value = {
+    @IntDef(prefix = { "FLAG_" }, flag = true, value = {
             FLAG_NONE,
             FLAG_SHOW_WALLPAPER,
             FLAG_IS_WALLPAPER,

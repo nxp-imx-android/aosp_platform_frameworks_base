@@ -592,7 +592,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     animRelOffset.y = Math.max(animRelOffset.y, change.getEndRelOffset().y);
                 }
                 if (!isTask && a.getExtensionEdges() != 0x0
-                        && animRelOffset.x == 0 && animRelOffset.y == 0) {
+                        && (change.hasFlags(FLAG_FILLS_TASK
+                        | FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY))) {
                     startTransaction.setEdgeExtensionEffect(
                             change.getLeash(), a.getExtensionEdges());
                     finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
