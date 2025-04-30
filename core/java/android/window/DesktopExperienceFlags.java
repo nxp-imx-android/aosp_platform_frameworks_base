@@ -163,6 +163,7 @@ public enum DesktopExperienceFlags {
     ENABLE_TALL_APP_HEADERS(Flags::enableTallAppHeaders, false, Flags.FLAG_ENABLE_TALL_APP_HEADERS),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
+    ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, true,
             Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS),

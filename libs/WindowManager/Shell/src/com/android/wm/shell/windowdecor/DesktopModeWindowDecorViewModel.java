@@ -652,7 +652,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
         Integer leftTiledTaskId = taskRepository.getLeftTiledTask(taskInfo.displayId);
         Integer rightTiledTaskId = taskRepository.getRightTiledTask(taskInfo.displayId);
-        boolean tilingAndPersistenceEnabled = DesktopModeFlags.ENABLE_TILE_RESIZING.isTrue()
+        boolean tilingAndPersistenceEnabled = DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
         if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
                 && tilingAndPersistenceEnabled) {
