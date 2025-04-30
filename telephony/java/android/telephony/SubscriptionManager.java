@@ -3526,29 +3526,7 @@ public class SubscriptionManager {
     @SystemApi
     public boolean canManageSubscription(@NonNull SubscriptionInfo info,
             @NonNull String packageName) {
-        if (Flags.hsumPackageManager()) {
-            return canManageSubscriptionAsUser(info, packageName, mContext.getUser());
-        } else {
-            if (info == null || info.getAccessRules() == null || packageName == null) {
-                return false;
-            }
-            PackageManager packageManager = mContext.getPackageManager();
-            PackageInfo packageInfo;
-            try {
-                packageInfo = packageManager.getPackageInfo(packageName,
-                        PackageManager.GET_SIGNING_CERTIFICATES);
-            } catch (PackageManager.NameNotFoundException e) {
-                logd("Unknown package: " + packageName);
-                return false;
-            }
-            for (UiccAccessRule rule : info.getAccessRules()) {
-                if (rule.getCarrierPrivilegeStatus(packageInfo)
-                        == TelephonyManager.CARRIER_PRIVILEGE_STATUS_HAS_ACCESS) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return canManageSubscriptionAsUser(info, packageName, mContext.getUser());
     }
 
     /**
