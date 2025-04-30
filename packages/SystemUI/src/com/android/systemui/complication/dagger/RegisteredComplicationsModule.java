@@ -23,6 +23,7 @@ import android.content.res.Resources;
 import android.view.ViewGroup;
 
 import com.android.systemui.communal.util.WindowSizeUtils;
+import com.android.systemui.communal.util.WindowSizeUtils.WindowSizeCategory;
 import com.android.systemui.complication.ComplicationLayoutParams;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.flags.FeatureFlags;
@@ -66,7 +67,8 @@ public interface RegisteredComplicationsModule {
     static ComplicationLayoutParams provideClockTimeLayoutParams(FeatureFlags featureFlags,
             Context context) {
         if (featureFlags.isEnabled(Flags.HIDE_SMARTSPACE_ON_DREAM_OVERLAY)
-                && (!dreamsV2() || !WindowSizeUtils.isCompactWindowSize(context))) {
+                && (!dreamsV2() || WindowSizeUtils.getWindowSizeCategory(context)
+                != WindowSizeCategory.MOBILE_PORTRAIT)) {
             return new ComplicationLayoutParams(0,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ComplicationLayoutParams.POSITION_BOTTOM
