@@ -120,6 +120,7 @@ class DesksTransitionObserver(
                     displayId = deskTransition.displayId,
                     deskId = deskTransition.deskId,
                 )
+                deskTransition.runOnTransitEnd?.invoke()
             }
             is DeskTransition.ActivateDeskWithTask -> {
                 val deskId = deskTransition.deskId
@@ -157,6 +158,7 @@ class DesksTransitionObserver(
                 } else {
                     logW("ActivateDeskWithTask: did not find task change")
                 }
+                deskTransition.runOnTransitEnd?.invoke()
             }
             is DeskTransition.DeactivateDesk -> handleDeactivateDeskTransition(info, deskTransition)
             is DeskTransition.ChangeDeskDisplay -> handleChangeDeskDisplay(info, deskTransition)

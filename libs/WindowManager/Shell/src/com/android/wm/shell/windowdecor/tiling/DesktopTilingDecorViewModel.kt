@@ -20,10 +20,12 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.graphics.Rect
+import android.util.ArraySet
 import android.util.SparseArray
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.core.util.getOrElse
+import androidx.core.util.keyIterator
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
@@ -75,6 +77,7 @@ class DesktopTilingDecorViewModel(
     @VisibleForTesting
     var tilingHandlerByUserAndDeskId = SparseArray<SparseArray<DesktopTilingWindowDecoration>>()
     var currentUserId: Int = -1
+    val disconnectedDisplayDesks = ArraySet<Int>()
 
     init {
         // TODO(b/374309287): Move this interface implementation to
@@ -180,6 +183,36 @@ class DesktopTilingDecorViewModel(
         // Exit if the rotation hasn't changed or is changed by 180 degrees. [fromRotation] and
         // [toRotation] can be one of the [@Surface.Rotation] values.
         if ((fromRotation % 2 == toRotation % 2)) return
+        resetAllDesksWithDisplayId(displayId)
+    }
+
+    /**
+     * Resets tiling sessions for all desks on the disconnected display and retains tiling data if
+     * the destination display supports desktop mode, otherwise erases all tiling data.
+     */
+    fun onDisplayDisconnected(
+        disconnectedDisplayId: Int,
+        desktopModeSupportedOnNewDisplay: Boolean,
+    ) {
+        if (!desktopModeSupportedOnNewDisplay) {
+            resetAllDesksWithDisplayId(disconnectedDisplayId)
+            return
+        }
+        // Reset the tiling session but keep the persistence data for when the moved desks
+        // are activated again.
+        for (userHandlerList in tilingHandlerByUserAndDeskId.valueIterator()) {
+            for (desk in userHandlerList.keyIterator()) {
+                val handler = userHandlerList[desk]
+                if (disconnectedDisplayId == handler.displayId) {
+                    handler.resetTilingSession(shouldPersistTilingData = true)
+                    userHandlerList.remove(desk)
+                    disconnectedDisplayDesks.add(desk)
+                }
+            }
+        }
+    }
+
+    private fun resetAllDesksWithDisplayId(displayId: Int) {
         for (userHandlerList in tilingHandlerByUserAndDeskId.valueIterator()) {
             for (handler in userHandlerList.valueIterator()) {
                 if (displayId == handler.displayId) {
@@ -250,6 +283,9 @@ class DesktopTilingDecorViewModel(
     fun onDeskDeactivated(deskId: Int) {
         tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.hideDividerBar()
     }
+
+    /** Removes [deskId] from the previously deactivated desks to mark it's activation. */
+    fun onDeskActivated(deskId: Int): Boolean = disconnectedDisplayDesks.remove(deskId)
 
     fun getCurrentActiveDeskForDisplay(displayId: Int): Int? =
         desktopUserRepositories.current.getActiveDeskId(displayId)

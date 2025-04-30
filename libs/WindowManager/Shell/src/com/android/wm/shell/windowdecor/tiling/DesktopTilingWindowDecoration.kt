@@ -248,9 +248,7 @@ class DesktopTilingWindowDecoration(
                 DesktopTilingDividerWindowManager(
                     config,
                     TAG,
-                    context,
                     leash,
-                    syncQueue,
                     this,
                     transactionSupplier,
                     dividerBounds,
@@ -829,7 +827,7 @@ class DesktopTilingWindowDecoration(
 
     private fun getSnapBounds(position: SnapPosition): Rect {
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return Rect()
-
+        val displayContext = displayController.getDisplayContext(displayId) ?: return Rect()
         val stableBounds = Rect()
         displayLayout.getStableBounds(stableBounds)
         val leftTiledTask = leftTaskResizingHelper
@@ -840,12 +838,14 @@ class DesktopTilingWindowDecoration(
                 val rightBound =
                     if (rightTiledTask == null) {
                         stableBounds.left + destinationWidth -
-                            context.resources.getDimensionPixelSize(
+                            displayContext.resources.getDimensionPixelSize(
                                 R.dimen.split_divider_bar_width
                             ) / 2
                     } else {
                         rightTiledTask.bounds.left -
-                            context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width)
+                            displayContext.resources.getDimensionPixelSize(
+                                R.dimen.split_divider_bar_width
+                            )
                     }
                 Rect(stableBounds.left, stableBounds.top, rightBound, stableBounds.bottom)
             }
@@ -854,12 +854,14 @@ class DesktopTilingWindowDecoration(
                 val leftBound =
                     if (leftTiledTask == null) {
                         stableBounds.right - destinationWidth +
-                            context.resources.getDimensionPixelSize(
+                            displayContext.resources.getDimensionPixelSize(
                                 R.dimen.split_divider_bar_width
                             ) / 2
                     } else {
                         leftTiledTask.bounds.right +
-                            context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width)
+                            displayContext.resources.getDimensionPixelSize(
+                                R.dimen.split_divider_bar_width
+                            )
                     }
                 Rect(leftBound, stableBounds.top, stableBounds.right, stableBounds.bottom)
             }

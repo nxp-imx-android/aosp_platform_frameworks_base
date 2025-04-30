@@ -54,6 +54,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.capture
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -181,9 +182,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         )
 
         // Assert that two handlers, one for each display is created.
-        assertThat(
-                desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.get(currentUser).size()
-            )
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.get(currentUser).size())
             .isEqualTo(2)
         // Assert only one user list exists.
         assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
@@ -236,9 +235,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         )
 
         // Assert that two handlers, one for each desk is created.
-        assertThat(
-            desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId[currentUser].size()
-        )
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId[currentUser].size())
             .isEqualTo(2)
         // Assert only one user list exists.
         assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
@@ -257,6 +254,44 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         desktopTilingDecorViewModel.removeTaskIfTiled(task1.displayId, task1.taskId)
 
         verify(desktopTilingDecoration, times(1)).removeTaskIfTiled(any(), any(), any())
+    }
+
+    @Test
+    fun displayDisconnected_newDisplaySupportsTiling_shouldPersistTilingData() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        val secondTilingDecorationMock: DesktopTilingWindowDecoration = mock()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(3, secondTilingDecorationMock)
+        whenever(secondTilingDecorationMock.displayId).thenReturn(2)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDisplayDisconnected(
+            disconnectedDisplayId = 1,
+            desktopModeSupportedOnNewDisplay = true,
+        )
+
+        // Each tiling session should be reset.
+        verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
+        // Desk on a different display shouldn't be changed.
+        verify(secondTilingDecorationMock, never()).resetTilingSession(any())
+    }
+
+    @Test
+    fun displayDisconnected_newDisplayDoesntSupportTiling_shouldPersistTilingData() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDisplayDisconnected(
+            disconnectedDisplayId = 1,
+            desktopModeSupportedOnNewDisplay = false,
+        )
+
+        // Each tiling session should be reset.
+        verify(desktopTilingDecoration, times(2)).resetTilingSession(false)
     }
 
     @Test
