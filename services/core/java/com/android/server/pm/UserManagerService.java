@@ -175,6 +175,7 @@ import com.android.server.LocalServices;
 import com.android.server.LockGuard;
 import com.android.server.SystemService;
 import com.android.server.am.UserState;
+import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pm.UserManagerInternal.UserLifecycleListener;
 import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
 import com.android.server.storage.DeviceStorageMonitorInternal;
@@ -388,6 +389,7 @@ public class UserManagerService extends IUserManager.Stub {
     private PackageManagerInternal mPmInternal;
     private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private ActivityManagerInternal mAmInternal;
+    private LockSettingsInternal mLockSettingsInternal;
 
     /** Indicates that this is the 1st boot after the system user mode was changed by emulation. */
     private boolean mUpdatingSystemUserMode;
@@ -6000,7 +6002,7 @@ public class UserManagerService extends IUserManager.Stub {
             t.traceEnd();
 
             t.traceBegin("LSS.createNewUser");
-            mLockPatternUtils.createNewUser(userId, userInfo.serialNumber);
+            getLockSettingsInternal().createNewUser(userId, userInfo.serialNumber);
             t.traceEnd();
 
             final Set<String> userTypeInstallablePackages =
@@ -6824,7 +6826,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         // Cleanup lock settings.  This requires that the user's DE storage still be accessible, so
         // this must happen before destroyUserStorageKeys().
-        mLockPatternUtils.removeUser(userId);
+        getLockSettingsInternal().removeUser(userId);
 
         // Evict and destroy the user's CE and DE encryption keys.  At this point, the user's CE and
         // DE storage is made inaccessible, except to delete its contents.
@@ -8610,6 +8612,14 @@ public class UserManagerService extends IUserManager.Stub {
             mAmInternal = LocalServices.getService(ActivityManagerInternal.class);
         }
         return mAmInternal;
+    }
+
+    /** Returns the internal lock settings interface. */
+    private LockSettingsInternal getLockSettingsInternal() {
+        if (mLockSettingsInternal == null) {
+            mLockSettingsInternal = LocalServices.getService(LockSettingsInternal.class);
+        }
+        return mLockSettingsInternal;
     }
 
     /**

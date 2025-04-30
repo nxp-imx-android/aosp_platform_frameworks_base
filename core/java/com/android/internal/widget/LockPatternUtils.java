@@ -64,7 +64,6 @@ import android.view.InputDevice;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
-import com.android.server.LocalServices;
 
 import com.google.android.collect.Lists;
 
@@ -1479,30 +1478,6 @@ public class LockPatternUtils {
         }
     }
 
-    private LockSettingsInternal getLockSettingsInternal() {
-        LockSettingsInternal service = LocalServices.getService(LockSettingsInternal.class);
-        if (service == null) {
-            throw new SecurityException("Only available to system server itself");
-        }
-        return service;
-    }
-    /**
-     * Create an escrow token for the current user, which can later be used to unlock FBE
-     * or change user password.
-     *
-     * After adding, if the user currently has lockscreen password, they will need to perform a
-     * confirm credential operation in order to activate the token for future use. If the user
-     * has no secure lockscreen, then the token is activated immediately.
-     *
-     * <p>This method is only available to code running in the system server process itself.
-     *
-     * @return a unique 64-bit token handle which is needed to refer to this token later.
-     */
-    public long addEscrowToken(byte[] token, int userId,
-            @Nullable EscrowTokenStateChangeCallback callback) {
-        return getLockSettingsInternal().addEscrowToken(token, userId, callback);
-    }
-
     /**
      * Create a weak escrow token for the current user, which can later be used to unlock FBE
      * or change user password.
@@ -1527,30 +1502,6 @@ public class LockPatternUtils {
     }
 
     /**
-     * Callback interface to notify when an added escrow token has been activated.
-     */
-    public interface EscrowTokenStateChangeCallback {
-        /**
-         * The method to be called when the token is activated.
-         * @param handle 64 bit handle corresponding to the escrow token
-         * @param userId user for whom the escrow token has been added
-         */
-        void onEscrowTokenActivated(long handle, int userId);
-    }
-
-    /**
-     * Remove an escrow token.
-     *
-     * <p>This method is only available to code running in the system server process itself.
-     *
-     * @return true if the given handle refers to a valid token previously returned from
-     * {@link #addEscrowToken}, whether it's active or not. return false otherwise.
-     */
-    public boolean removeEscrowToken(long handle, int userId) {
-        return getLockSettingsInternal().removeEscrowToken(handle, userId);
-    }
-
-    /**
      * Remove a weak escrow token.
      *
      * @return true if the given handle refers to a valid weak token previously returned from
@@ -1566,18 +1517,8 @@ public class LockPatternUtils {
     }
 
     /**
-     * Check if the given escrow token is active or not. Only active token can be used to call
-     * {@link #setLockCredentialWithToken} and {@link #unlockUserWithToken}
-     *
-     * <p>This method is only available to code running in the system server process itself.
-     */
-    public boolean isEscrowTokenActive(long handle, int userId) {
-        return getLockSettingsInternal().isEscrowTokenActive(handle, userId);
-    }
-
-    /**
-     * Check if the given weak escrow token is active or not. Only active token can be used to call
-     * {@link #setLockCredentialWithToken} and {@link #unlockUserWithToken}
+     * Checks if the given weak escrow token is active or not. Only an active token can be used to
+     * set the user's lock credential or unlock the user.
      */
     public boolean isWeakEscrowTokenActive(long handle, int userId) {
         try {
@@ -1597,43 +1538,6 @@ public class LockPatternUtils {
             throw e.rethrowFromSystemServer();
         }
     }
-
-    /**
-     * Change a user's lock credential with a pre-configured escrow token.
-     *
-     * <p>This method is only available to code running in the system server process itself.
-     *
-     * @param credential The new credential to be set
-     * @param tokenHandle Handle of the escrow token
-     * @param token Escrow token
-     * @param userHandle The user who's lock credential to be changed
-     * @return {@code true} if the operation is successful.
-     */
-    public boolean setLockCredentialWithToken(@NonNull LockscreenCredential credential,
-            long tokenHandle, byte[] token, int userHandle) {
-        if (!hasSecureLockScreen() && credential.getType() != CREDENTIAL_TYPE_NONE) {
-            throw new UnsupportedOperationException(
-                    "This operation requires the lock screen feature.");
-        }
-        LockSettingsInternal localService = getLockSettingsInternal();
-
-        return localService.setLockCredentialWithToken(credential, tokenHandle, token, userHandle);
-    }
-
-    /**
-     * Unlock the specified user by an pre-activated escrow token. This should have the same effect
-     * on device encryption as the user entering their lockscreen credentials for the first time after
-     * boot, this includes unlocking the user's credential-encrypted storage as well as the keystore
-     *
-     * <p>This method is only available to code running in the system server process itself.
-     *
-     * @return {@code true} if the supplied token is valid and unlock succeeds,
-     *         {@code false} otherwise.
-     */
-    public boolean unlockUserWithToken(long tokenHandle, byte[] token, int userId) {
-        return getLockSettingsInternal().unlockUserWithToken(tokenHandle, token, userId);
-    }
-
 
     /**
      * Callback to be notified about progress when checking credentials.
@@ -2042,14 +1946,6 @@ public class LockPatternUtils {
         } catch (RemoteException re) {
             re.rethrowFromSystemServer();
         }
-    }
-
-    public void createNewUser(@UserIdInt int userId, int userSerialNumber) {
-        getLockSettingsInternal().createNewUser(userId, userSerialNumber);
-    }
-
-    public void removeUser(@UserIdInt int userId) {
-        getLockSettingsInternal().removeUser(userId);
     }
 
    /**

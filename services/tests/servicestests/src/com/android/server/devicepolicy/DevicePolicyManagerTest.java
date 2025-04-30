@@ -59,7 +59,6 @@ import static android.net.NetworkCapabilities.NET_ENTERPRISE_ID_1;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
-import static com.android.internal.widget.LockPatternUtils.EscrowTokenStateChangeCallback;
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
 import static com.android.server.devicepolicy.DevicePolicyManagerService.ACTION_PROFILE_OFF_DEADLINE;
 import static com.android.server.devicepolicy.DevicePolicyManagerService.ACTION_TURN_PROFILE_ON_NOTIFICATION;
@@ -165,6 +164,7 @@ import com.android.internal.widget.LockscreenCredential;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.devicepolicy.DevicePolicyManagerService.RestrictionsListener;
+import com.android.server.locksettings.EscrowTokenStateChangeCallback;
 import com.android.server.pm.RestrictionsSet;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.UserRestrictionsUtils;
@@ -1549,13 +1549,13 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         // Add reset password token
         final long handle = 12000;
         final byte[] token = new byte[32];
-        when(getServices().lockPatternUtils.addEscrowToken(eq(token), eq(UserHandle.USER_SYSTEM),
-                nullable(EscrowTokenStateChangeCallback.class)))
+        when(getServices().lockSettingsInternal.addEscrowToken(eq(token),
+                eq(UserHandle.USER_SYSTEM), nullable(EscrowTokenStateChangeCallback.class)))
                 .thenReturn(handle);
         assertThat(dpm.setResetPasswordToken(admin1, token)).isTrue();
 
         // Assert reset password token is active
-        when(getServices().lockPatternUtils.isEscrowTokenActive(eq(handle),
+        when(getServices().lockSettingsInternal.isEscrowTokenActive(eq(handle),
                 eq(UserHandle.USER_SYSTEM)))
                 .thenReturn(true);
         assertThat(dpm.isResetPasswordTokenActive(admin1)).isTrue();
@@ -1564,7 +1564,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         dpm.clearDeviceOwnerApp(admin1.getPackageName());
 
         // Verify password reset password token was removed
-        verify(getServices().lockPatternUtils).removeEscrowToken(eq(handle),
+        verify(getServices().lockSettingsInternal).removeEscrowToken(eq(handle),
                 eq(UserHandle.USER_SYSTEM));
     }
 
@@ -5576,24 +5576,24 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         final byte[] token = new byte[32];
         final long handle = 123456;
         final String password = "password";
-        when(getServices().lockPatternUtils.addEscrowToken(eq(token), eq(UserHandle.USER_SYSTEM),
-                nullable(EscrowTokenStateChangeCallback.class)))
+        when(getServices().lockSettingsInternal.addEscrowToken(eq(token),
+                eq(UserHandle.USER_SYSTEM), nullable(EscrowTokenStateChangeCallback.class)))
                 .thenReturn(handle);
         assertThat(dpm.setResetPasswordToken(admin1, token)).isTrue();
 
         // test password activation
-        when(getServices().lockPatternUtils.isEscrowTokenActive(handle, UserHandle.USER_SYSTEM))
+        when(getServices().lockSettingsInternal.isEscrowTokenActive(handle, UserHandle.USER_SYSTEM))
                 .thenReturn(true);
         assertThat(dpm.isResetPasswordTokenActive(admin1)).isTrue();
 
         // test reset password with token
-        when(getServices().lockPatternUtils.setLockCredentialWithToken(
+        when(getServices().lockSettingsInternal.setLockCredentialWithToken(
                 LockscreenCredential.createPassword(password), handle, token,
                 UserHandle.USER_SYSTEM)).thenReturn(true);
         assertThat(dpm.resetPasswordWithToken(admin1, password, token, 0)).isTrue();
 
         // test removing a token
-        when(getServices().lockPatternUtils.removeEscrowToken(handle, UserHandle.USER_SYSTEM))
+        when(getServices().lockSettingsInternal.removeEscrowToken(handle, UserHandle.USER_SYSTEM))
                 .thenReturn(true);
         assertThat(dpm.clearResetPasswordToken(admin1)).isTrue();
     }
@@ -5606,14 +5606,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         // adding a token
         final byte[] token = new byte[32];
         final long handle = 123456;
-        when(getServices().lockPatternUtils.addEscrowToken(eq(token), eq(UserHandle.USER_SYSTEM),
-                nullable(EscrowTokenStateChangeCallback.class)))
+        when(getServices().lockSettingsInternal.addEscrowToken(eq(token),
+                eq(UserHandle.USER_SYSTEM), nullable(EscrowTokenStateChangeCallback.class)))
                 .thenReturn(handle);
         assertThat(dpm.setResetPasswordToken(admin1, token)).isTrue();
 
         // Test resetting with a numeric pin
         final String pin = "123456";
-        when(getServices().lockPatternUtils.setLockCredentialWithToken(
+        when(getServices().lockSettingsInternal.setLockCredentialWithToken(
                 LockscreenCredential.createPin(pin), handle, token,
                 UserHandle.USER_SYSTEM)).thenReturn(true);
         assertThat(dpm.resetPasswordWithToken(admin1, pin, token, 0)).isTrue();
@@ -5627,14 +5627,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         // adding a token
         final byte[] token = new byte[32];
         final long handle = 123456;
-        when(getServices().lockPatternUtils.addEscrowToken(eq(token), eq(UserHandle.USER_SYSTEM),
-                nullable(EscrowTokenStateChangeCallback.class)))
+        when(getServices().lockSettingsInternal.addEscrowToken(eq(token),
+                eq(UserHandle.USER_SYSTEM), nullable(EscrowTokenStateChangeCallback.class)))
                 .thenReturn(handle);
         assertThat(dpm.setResetPasswordToken(admin1, token)).isTrue();
 
         // Test resetting with an empty password
         final String password = "";
-        when(getServices().lockPatternUtils.setLockCredentialWithToken(
+        when(getServices().lockSettingsInternal.setLockCredentialWithToken(
                 LockscreenCredential.createNone(), handle, token,
                 UserHandle.USER_SYSTEM)).thenReturn(true);
         assertThat(dpm.resetPasswordWithToken(admin1, password, token, 0)).isTrue();
@@ -7469,14 +7469,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         final byte[] token = new byte[32];
         final long handle = 123456;
 
-        when(getServices().lockPatternUtils
+        when(getServices().lockSettingsInternal
                 .addEscrowToken(eq(token), eq(CALLER_USER_HANDLE),
                         nullable(EscrowTokenStateChangeCallback.class)))
                 .thenReturn(handle);
 
         dpm.setResetPasswordToken(admin1, token);
 
-        when(getServices().lockPatternUtils
+        when(getServices().lockSettingsInternal
                 .isEscrowTokenActive(eq(handle), eq(CALLER_USER_HANDLE)))
                 .thenReturn(true);
 

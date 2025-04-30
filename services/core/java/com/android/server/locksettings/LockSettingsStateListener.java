@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.internal.widget;
+package com.android.server.locksettings;
 
 /**
  * Callback interface between LockSettingService and other system services to be notified about the
  * state of primary authentication (i.e. PIN/pattern/password).
- * @hide
  */
 public interface LockSettingsStateListener {
     /**
