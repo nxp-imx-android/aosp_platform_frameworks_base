@@ -3311,21 +3311,13 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
         if (Flags.optInRichOngoing()) {
-            // New promotable specs:
-            // Must explicitly request promotion
-            if (!extras.getBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, false)) {
-                return false;
-            }
-            // Must not have disqualifying characteristics
-            if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
-                return false;
-            }
-            // "Ongoing CallStyle" notifications may be promoted regardless of style
-            if (isOngoingCallStyle()) {
-                return true;
-            }
-            // Otherwise, promote if styled correctly and NOT colorized
-            return hasPromotableStyle() && !isColorizedRequested();
+            return hasRequestedPromotedOngoing()
+                    && isOngoingEvent()
+                    && hasTitle()
+                    && hasPromotableStyle()
+                    && !isGroupSummary()
+                    && !containsCustomViews()
+                    && !isColorizedRequested();
         } else {
             // Original promotable specs:
             if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
@@ -5434,20 +5426,35 @@ public class Notification implements Parcelable
         /**
          * Set whether this is an "ongoing" notification.
          *
-         * Ongoing notifications cannot be dismissed by the user on locked devices, or by
-         * notification listeners, and some notifications (call, device management, media) cannot
-         * be dismissed on unlocked devices, so your application or service must take care of
-         * canceling them.
+         * <p>Ongoing notifications cannot be dismissed by the user on locked devices, or by
+         * notification listeners, and some notifications (call, device management, media) cannot be
+         * dismissed on unlocked devices, so your application or service must take care of canceling
+         * them.
          *
-         * They are typically used to indicate a background task that the user is actively engaged
-         * with (e.g., playing music) or is pending in some way and therefore occupying the device
-         * (e.g., a file download, sync operation, active network connection).
+         * <p>They are typically used to indicate a background task that the user is actively
+         * engaged with (e.g., playing music) or is pending in some way and therefore occupying the
+         * device (e.g., a file download, sync operation, active network connection).
          *
          * @see Notification#FLAG_ONGOING_EVENT
          */
         @NonNull
         public Builder setOngoing(boolean ongoing) {
             setFlag(FLAG_ONGOING_EVENT, ongoing);
+            return this;
+        }
+
+        /**
+         * Set whether this notification is requesting to be a promoted ongoing notification.
+         *
+         * <p>This is the first requirement of {@link Notification#hasPromotableCharacteristics()}.
+         *
+         * @see Notification#EXTRA_REQUEST_PROMOTED_ONGOING
+         * @see Notification#hasRequestedPromotedOngoing()
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+        public Builder setRequestPromotedOngoing(boolean requestPromotedOngoing) {
+            getExtras().putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, requestPromotedOngoing);
             return this;
         }
 
@@ -8169,14 +8176,25 @@ public class Notification implements Parcelable
     /**
      * Returns whether this notification is a promoted ongoing notification.
      *
-     * This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set
-     * (which may be true once the api_rich_ongoing feature flag is enabled),
-     * and requires that the ui_rich_ongoing feature flag is enabled.
+     * <p>This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set (which may be true
+     * once the api_rich_ongoing feature flag is enabled), and requires that the ui_rich_ongoing
+     * feature flag is enabled.
      *
      * @hide
      */
     public boolean isPromotedOngoing() {
         return Flags.uiRichOngoing() && (flags & Notification.FLAG_PROMOTED_ONGOING) != 0;
+    }
+
+    /**
+     * Returns whether this notification has requested to be a promoted ongoing notification.
+     *
+     * @see Notification#EXTRA_REQUEST_PROMOTED_ONGOING
+     * @see Notification.Builder#setRequestPromotedOngoing(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+    public boolean hasRequestedPromotedOngoing() {
+        return extras.getBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, false);
     }
 
     /**
