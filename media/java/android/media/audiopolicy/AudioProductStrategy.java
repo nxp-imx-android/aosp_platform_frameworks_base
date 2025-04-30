@@ -116,11 +116,15 @@ public final class AudioProductStrategy implements Parcelable {
      * @hide
      * Create an invalid AudioProductStrategy instance for testing
      * @param id the ID for the invalid strategy, always use a different one than in use
+     *        Unused: do not let caller to set it as some ids are allocated to internal strategies.
      * @return an invalid instance that cannot successfully be used for volume groups or routing
      */
     @SystemApi
     public static @NonNull AudioProductStrategy createInvalidAudioProductStrategy(int id) {
-        return new AudioProductStrategy("dummy strategy", id, new AudioAttributesGroup[0]);
+        ArrayList<AudioProductStrategy> apsList = new ArrayList<>();
+        native_list_audio_product_strategies(apsList);
+        return new AudioProductStrategy("invalid strategy", apsList.size() + 1,
+                new AudioAttributesGroup[0]);
     }
 
     /**
@@ -197,14 +201,14 @@ public final class AudioProductStrategy implements Parcelable {
     }
 
     private static List<AudioProductStrategy> initializeAudioProductStrategies() {
-        ArrayList<AudioProductStrategy> apsList = new ArrayList<AudioProductStrategy>();
+        ArrayList<AudioProductStrategy> apsList = new ArrayList<>();
         int status = native_list_audio_product_strategies(apsList);
-        if (status == AudioSystem.SUCCESS) {
-            return Collections.unmodifiableList(apsList);
-        } else {
+        if (status != AudioSystem.SUCCESS) {
             Log.e(TAG, ": initializeAudioProductStrategies failed: " + status);
             return null;
         }
+        apsList.removeIf(AudioProductStrategy::isInternalStrategy);
+        return Collections.unmodifiableList(apsList);
     }
 
     private static native int native_list_audio_product_strategies(
@@ -430,6 +434,9 @@ public final class AudioProductStrategy implements Parcelable {
         return DEFAULT_ATTRIBUTES;
     }
 
+    /** Internal strategies to AudioPolicy, no external volume control allowed */
+    private static final String INTERNAL_TAG = "reserved_internal_strategy";
+
     /**
      * To avoid duplicating the logic in java and native, we shall make use of
      * native API native_get_product_strategies_from_audio_attributes
@@ -456,6 +463,27 @@ public final class AudioProductStrategy implements Parcelable {
             && ((refFormattedTags.length() == 0) || refFormattedTags.equals(cliFormattedTags));
     }
 
+    private boolean isInternalStrategy() {
+        for (AudioAttributesGroup aag : mAudioAttributesGroups) {
+            if (aag.isInternalStrategy()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the strategy is an internal strategy, for exclusive use of the frameworks.
+     * Internal strategies are the strategy for reserved use by native audio service (e.g.
+     * patch and rerouting strategies).
+     * It is idendified by specific {@code #INTERNAL_TAG} tag.
+     */
+    /** private package */ static boolean isInternalAttributesForStrategy(
+            @NonNull AudioAttributes aa) {
+        final String formattedTags = TextUtils.join(";", aa.getTags());
+        return formattedTags.equals(INTERNAL_TAG);
+    }
+
     private static final class AudioAttributesGroup implements Parcelable {
         private int mVolumeGroupId;
         private int mLegacyStreamType;
@@ -466,6 +494,15 @@ public final class AudioProductStrategy implements Parcelable {
             mVolumeGroupId = volumeGroupId;
             mLegacyStreamType = streamType;
             mAudioAttributes = audioAttributes;
+        }
+
+        private boolean isInternalStrategy() {
+            for (AudioAttributes aa : mAudioAttributes) {
+                if (isInternalAttributesForStrategy(aa)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

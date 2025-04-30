@@ -85,11 +85,18 @@ public final class AudioVolumeGroup implements Parcelable {
         if (status != AudioSystem.SUCCESS) {
             Log.w(TAG, ": listAudioVolumeGroups failed");
         }
+        avgList.removeIf(avg -> avg.isInternalGroup());
         return avgList;
     }
 
     private static native int native_list_audio_volume_groups(
             ArrayList<AudioVolumeGroup> groups);
+
+    private boolean isInternalGroup() {
+        return Arrays.stream(mAudioAttributes)
+                .filter(aa -> AudioProductStrategy.isInternalAttributesForStrategy(aa))
+                .findFirst().isPresent();
+    }
 
     /**
      * @param name of the volume group
