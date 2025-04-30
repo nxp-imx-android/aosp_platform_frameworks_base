@@ -246,18 +246,6 @@ public class AppProfiler {
     private int mLastNumProcesses;
 
     /**
-     * Total time spent with RAM that has been added in the past since the last idle time.
-     */
-    @GuardedBy("mProcLock")
-    private long mLowRamTimeSinceLastIdle = 0;
-
-    /**
-     * If RAM is currently low, when that horrible situation started.
-     */
-    @GuardedBy("mProcLock")
-    private long mLowRamStartTime = 0;
-
-    /**
      * Last time we report a memory usage.
      */
     @GuardedBy("mService")
@@ -919,9 +907,6 @@ public class AppProfiler {
                     + " lastPss=" + profile.getLastPss()
                     + " state=" + ProcessList.makeProcStateString(procState));
         }
-        if (profile.getInitialIdlePssOrRss() == 0) {
-            profile.setInitialIdlePssOrRss(pss);
-        }
         profile.setLastPss(pss);
         profile.setLastSwapPss(swapPss);
         if (procState >= ActivityManager.PROCESS_STATE_HOME) {
@@ -985,9 +970,6 @@ public class AppProfiler {
                     "rss of " + proc.toShortString() + ": " + rss
                     + " lastRss=" + profile.getLastRss()
                     + " state=" + ProcessList.makeProcStateString(procState));
-        }
-        if (profile.getInitialIdlePssOrRss() == 0) {
-            profile.setInitialIdlePssOrRss(rss);
         }
         profile.setLastRss(rss);
         if (procState >= ActivityManager.PROCESS_STATE_HOME) {
@@ -1334,14 +1316,6 @@ public class AppProfiler {
         return mLastMemoryLevel <= ADJ_MEM_FACTOR_NORMAL;
     }
 
-    @GuardedBy("mProcLock")
-    void updateLowRamTimestampLPr(long now) {
-        mLowRamTimeSinceLastIdle = 0;
-        if (mLowRamStartTime != 0) {
-            mLowRamStartTime = now;
-        }
-    }
-
     @GuardedBy("mService")
     void setAllowLowerMemLevelLocked(boolean allowLowerMemLevel) {
         mAllowLowerMemLevel = allowLowerMemLevel;
@@ -1480,11 +1454,6 @@ public class AppProfiler {
             } catch (RemoteException e) {
             }
         }
-    }
-
-    @GuardedBy("mProcLock")
-    long getLowRamTimeSinceIdleLPr(long now) {
-        return mLowRamTimeSinceLastIdle + (mLowRamStartTime > 0 ? (now - mLowRamStartTime) : 0);
     }
 
     /**

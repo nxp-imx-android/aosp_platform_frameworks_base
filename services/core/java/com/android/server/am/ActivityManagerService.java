@@ -116,7 +116,6 @@ import static android.os.Process.ZYGOTE_POLICY_FLAG_EMPTY;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS;
 import static android.os.Process.ZYGOTE_PROCESS;
-import static android.os.Process.getTotalMemory;
 import static android.os.Process.isThreadInProcess;
 import static android.os.Process.killProcess;
 import static android.os.Process.killProcessGroup;
@@ -610,9 +609,6 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     // If set, we will push process association information in to procstats.
     static final boolean TRACK_PROCSTATS_ASSOCIATIONS = true;
-
-    // The minimum memory growth threshold (in KB) for low RAM devices.
-    private static final int MINIMUM_MEMORY_GROWTH_THRESHOLD = 10 * 1000; // 10 MB
 
     /**
      * The number of binder proxies we need to have before we start dumping debug info
@@ -8866,31 +8862,13 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mOomAdjuster.mCachedAppOptimizer.compactAllSystem();
             }
 
-            final long lowRamSinceLastIdle = mAppProfiler.getLowRamTimeSinceIdleLPr(now);
             mLastIdleTime = now;
-            mAppProfiler.updateLowRamTimestampLPr(now);
 
             StringBuilder sb = new StringBuilder(128);
             sb.append("Idle maintenance over ");
             TimeUtils.formatDuration(timeSinceLastIdle, sb);
-            sb.append(" low RAM for ");
-            TimeUtils.formatDuration(lowRamSinceLastIdle, sb);
             Slog.i(TAG, sb.toString());
 
-            // If at least 1/3 of our time since the last idle period has been spent
-            // with RAM low, then we want to kill processes.
-            boolean doKilling = lowRamSinceLastIdle > (timeSinceLastIdle/3);
-            // If the processes' memory has increased by more than 1% of the total memory,
-            // or 10 MB, whichever is greater, then the processes' are eligible to be killed.
-            final long totalMemoryInKb = getTotalMemory() / 1000;
-
-            // This threshold should be applicable to both PSS and RSS because the value is absolute
-            // and represents an increase in process memory relative to its own previous state.
-            //
-            // TODO(b/296454553): Tune this value during the flag rollout process if more processes
-            // seem to be getting killed than before.
-            final long memoryGrowthThreshold =
-                    Math.max(totalMemoryInKb / 100, MINIMUM_MEMORY_GROWTH_THRESHOLD);
             mProcessList.forEachLruProcessesLOSP(false, proc -> {
                 if (proc.getThread() == null) {
                     return;
@@ -8898,59 +8876,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 final ProcessProfileRecord pr = proc.mProfile;
                 final ProcessStateRecord state = proc.mState;
                 final int setProcState = state.getSetProcState();
-                if (state.isNotCachedSinceIdle()) {
-                    if (setProcState >= ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE
-                            && setProcState <= ActivityManager.PROCESS_STATE_SERVICE) {
-                        final long initialIdlePssOrRss, lastPssOrRss, lastSwapPss;
-                        synchronized (mAppProfiler.mProfilerLock) {
-                            initialIdlePssOrRss = pr.getInitialIdlePssOrRss();
-                            lastPssOrRss = mAppProfiler.isProfilingPss()
-                                    ? pr.getLastPss() : pr.getLastRss();
-                            lastSwapPss = pr.getLastSwapPss();
-                        }
-                        if (doKilling && initialIdlePssOrRss != 0
-                                && lastPssOrRss > (initialIdlePssOrRss * 3 / 2)
-                                && lastPssOrRss > (initialIdlePssOrRss + memoryGrowthThreshold)) {
-                            final StringBuilder sb2 = new StringBuilder(128);
-                            sb2.append("Kill");
-                            sb2.append(proc.processName);
-                            if (mAppProfiler.isProfilingPss()) {
-                                sb2.append(" in idle maint: pss=");
-                            } else {
-                                sb2.append(" in idle maint: rss=");
-                            }
-                            sb2.append(lastPssOrRss);
-
-                            if (mAppProfiler.isProfilingPss()) {
-                                sb2.append(", swapPss=");
-                                sb2.append(lastSwapPss);
-                                sb2.append(", initialPss=");
-                            } else {
-                                sb2.append(", initialRss=");
-                            }
-                            sb2.append(initialIdlePssOrRss);
-                            sb2.append(", period=");
-                            TimeUtils.formatDuration(timeSinceLastIdle, sb2);
-                            sb2.append(", lowRamPeriod=");
-                            TimeUtils.formatDuration(lowRamSinceLastIdle, sb2);
-                            Slog.wtfQuiet(TAG, sb2.toString());
-                            mHandler.post(() -> {
-                                synchronized (ActivityManagerService.this) {
-                                    proc.killLocked(mAppProfiler.isProfilingPss()
-                                            ? "idle maint (pss " : "idle maint (rss " + lastPssOrRss
-                                            + " from " + initialIdlePssOrRss + ")",
-                                            ApplicationExitInfo.REASON_OTHER,
-                                            ApplicationExitInfo.SUBREASON_MEMORY_PRESSURE,
-                                            true);
-                                }
-                            });
-                        }
-                    }
-                } else if (setProcState < ActivityManager.PROCESS_STATE_HOME
+                if (setProcState < ActivityManager.PROCESS_STATE_HOME
                         && setProcState >= ActivityManager.PROCESS_STATE_PERSISTENT) {
-                    state.setNotCachedSinceIdle(true);
                     synchronized (mAppProfiler.mProfilerLock) {
-                        pr.setInitialIdlePssOrRss(0);
                         mAppProfiler.updateNextPssTimeLPf(
                                 state.getSetProcState(), proc.mProfile, now, true);
                     }
@@ -11504,9 +11432,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 long now = SystemClock.uptimeMillis();
                 pw.print("  mLastIdleTime=");
                         TimeUtils.formatDuration(now, mLastIdleTime, pw);
-                        pw.print(" mLowRamSinceLastIdle=");
-                        TimeUtils.formatDuration(
-                                mAppProfiler.getLowRamTimeSinceIdleLPr(now), pw);
                         pw.println();
 
                 pw.println();
@@ -11669,8 +11594,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             mAppProfiler.writeMemoryLevelsToProtoLocked(proto);
             long now = SystemClock.uptimeMillis();
             ProtoUtils.toDuration(proto, ActivityManagerServiceDumpProcessesProto.LAST_IDLE_TIME, mLastIdleTime, now);
-            proto.write(ActivityManagerServiceDumpProcessesProto.LOW_RAM_SINCE_LAST_IDLE_MS,
-                    mAppProfiler.getLowRamTimeSinceIdleLPr(now));
         }
     }
 
