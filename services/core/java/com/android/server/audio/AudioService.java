@@ -425,6 +425,10 @@ public class AudioService extends IAudioService.Stub
         return mPlatformType == AudioSystem.PLATFORM_AUTOMOTIVE;
     }
 
+    /*package*/ boolean isPlatformPc() {
+        return mPlatformType == AudioSystem.PLATFORM_PC;
+    }
+
     /** The controller for the volume UI. */
     private final VolumeController mVolumeController = new VolumeController();
 

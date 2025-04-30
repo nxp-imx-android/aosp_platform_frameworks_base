@@ -26,6 +26,7 @@ import android.bluetooth.BluetoothLeAudioCodecConfig;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.audio.Flags;
 import android.media.audio.common.AidlConversion;
 import android.media.audiofx.AudioEffect;
 import android.media.audiopolicy.AudioMix;
@@ -2657,6 +2658,8 @@ public class AudioSystem
     public static final int PLATFORM_TELEVISION = 2;
     /** @hide The platform is automotive */
     public static final int PLATFORM_AUTOMOTIVE = 3;
+    /** @hide The platform is pc */
+    public static final int PLATFORM_PC = 4;
 
     /**
      * @hide
@@ -2664,6 +2667,8 @@ public class AudioSystem
      * <ul>
      * <li>{@link #PLATFORM_VOICE}</li>
      * <li>{@link #PLATFORM_TELEVISION}</li>
+     * <li>{@link #PLATFORM_AUTOMOTIVE}</li>
+     * <li>{@link #PLATFORM_PC}</li>
      * <li>{@link #PLATFORM_DEFAULT}</li>
      * </ul>
      */
@@ -2674,6 +2679,9 @@ public class AudioSystem
             return PLATFORM_VOICE;
         } else if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
             return PLATFORM_TELEVISION;
+        } else if (Flags.enablePlatformPcType()
+                       && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_PC)) {
+            return PLATFORM_PC;
         } else {
             return PLATFORM_DEFAULT;
         }
