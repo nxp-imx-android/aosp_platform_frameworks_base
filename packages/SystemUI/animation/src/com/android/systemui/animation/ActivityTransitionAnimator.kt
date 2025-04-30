@@ -61,7 +61,6 @@ import androidx.annotation.UiThread
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
-import com.android.systemui.Flags.activityTransitionUseLargestWindow
 import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.Flags.translucentOccludingActivityFix
@@ -1370,43 +1369,32 @@ constructor(
 
             for (it in apps) {
                 if (it.mode == targetMode) {
-                    if (activityTransitionUseLargestWindow()) {
-                        if (returnAnimationsEnabled()) {
-                            // If the controller contains a cookie, _only_ match if either the
-                            // candidate contains the matching cookie, or a component is also
-                            // defined and is a match.
-                            if (
-                                controller.transitionCookie != null &&
-                                    it.taskInfo
-                                        ?.launchCookies
-                                        ?.contains(controller.transitionCookie) != true &&
-                                    (controller.component == null ||
-                                        it.taskInfo?.topActivity != controller.component)
-                            ) {
-                                continue
-                            }
-                        }
-
+                    if (returnAnimationsEnabled()) {
+                        // If the controller contains a cookie, _only_ match if either the
+                        // candidate contains the matching cookie, or a component is also
+                        // defined and is a match.
                         if (
-                            candidate == null ||
-                                !it.hasAnimatingParent && candidate.hasAnimatingParent
+                            controller.transitionCookie != null &&
+                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                    true &&
+                                (controller.component == null ||
+                                    it.taskInfo?.topActivity != controller.component)
                         ) {
-                            candidate = it
                             continue
                         }
-                        if (
-                            !it.hasAnimatingParent &&
-                                it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
-                        ) {
-                            candidate = it
-                        }
-                    } else {
-                        if (!it.hasAnimatingParent) {
-                            return it
-                        }
-                        if (candidate == null) {
-                            candidate = it
-                        }
+                    }
+
+                    if (
+                        candidate == null || !it.hasAnimatingParent && candidate.hasAnimatingParent
+                    ) {
+                        candidate = it
+                        continue
+                    }
+                    if (
+                        !it.hasAnimatingParent &&
+                            it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
+                    ) {
+                        candidate = it
                     }
                 }
             }
