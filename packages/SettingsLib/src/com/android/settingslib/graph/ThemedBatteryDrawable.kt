@@ -261,11 +261,10 @@ open class ThemedBatteryDrawable(private val context: Context, frameColor: Int) 
             }
         } else if (alertEnabled) {
             c.clipOutPath(scaledExclamation)
-            if (invertFillIcon) {
-                c.drawPath(scaledExclamation, fillColorStrokePaint)
-            } else {
-                c.drawPath(scaledExclamation, fillColorStrokeProtection)
-            }
+            c.drawPath(
+                scaledExclamation,
+                if (invertFillIcon) fillColorStrokePaint else fillColorStrokeProtection
+            )
         } else if (powerSaveEnabled) {
             // If power save is enabled draw the level path with colorError
             c.drawPath(levelPath, errorPaint)
@@ -433,7 +432,7 @@ open class ThemedBatteryDrawable(private val context: Context, frameColor: Int) 
         plusPath.set(PathParser.createPathFromPathData(plusPathString))
 
         val exclamationPathString = context.resources.getString(
-            R.string.config_batterymeterExclamationPath)
+            R.string.config_batteryMeterExclamationPath)
         exclamationPath.set(PathParser.createPathFromPathData(exclamationPathString))
 
         dualTone = context.resources.getBoolean(
