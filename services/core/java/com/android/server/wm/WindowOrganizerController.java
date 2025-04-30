@@ -1784,21 +1784,28 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case OP_TYPE_REQUEST_FOCUS_ON_TASK_FRAGMENT: {
-                final ActivityRecord curFocus = taskFragment.getDisplayContent().mFocusedApp;
-                if (curFocus != null && curFocus.getTaskFragment() == taskFragment) {
-                    Slog.d(TAG, "The requested TaskFragment already has the focus.");
-                    break;
-                }
-                if (curFocus != null && curFocus.getTask() != taskFragment.getTask()) {
-                    Slog.d(TAG, "The Task of the requested TaskFragment doesn't have focus.");
-                    break;
-                }
-                final ActivityRecord targetFocus = taskFragment.getTopResumedActivity();
-                if (targetFocus == null) {
-                    Slog.d(TAG, "There is no resumed activity in the requested TaskFragment.");
-                    break;
-                }
-                taskFragment.getDisplayContent().setFocusedApp(targetFocus);
+                mService.mH.post(() -> {
+                    synchronized (mService.mGlobalLock) {
+                        final ActivityRecord curFocus =
+                                taskFragment.getDisplayContent().mFocusedApp;
+                        if (curFocus != null && curFocus.getTaskFragment() == taskFragment) {
+                            Slog.d(TAG, "The requested TaskFragment already has the focus.");
+                            return;
+                        }
+                        if (curFocus != null && curFocus.getTask() != taskFragment.getTask()) {
+                            Slog.d(TAG,
+                                    "The Task of the requested TaskFragment doesn't have focus.");
+                            return;
+                        }
+                        final ActivityRecord targetFocus = taskFragment.getTopResumedActivity();
+                        if (targetFocus == null) {
+                            Slog.d(TAG,
+                                    "There is no resumed activity in the requested TaskFragment.");
+                            return;
+                        }
+                        taskFragment.getDisplayContent().setFocusedApp(targetFocus);
+                    }
+                });
                 break;
             }
             case OP_TYPE_SET_COMPANION_TASK_FRAGMENT: {
