@@ -4717,9 +4717,14 @@ public class WindowManagerService extends IWindowManager.Stub
                     "API setRotationAtAngleIfLocked should not be used when "
                             + "enableDeviceStateAutoRotateSettingRefactor is disabled");
         }
-        synchronized (mGlobalLock) {
-            final DisplayContent display = mRoot.getDefaultDisplay();
-            display.getDisplayRotation().setRotationAtAngleIfLocked(rotation, caller);
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final DisplayContent display = mRoot.getDefaultDisplay();
+                display.getDisplayRotation().setRotationAtAngleIfLocked(rotation, caller);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
         }
     }
 
