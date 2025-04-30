@@ -69,7 +69,7 @@ class SplitMultiDisplayHelperTests : ShellTestCase() {
     fun getDisplayIds_noDisplays_returnsEmptyList() {
         `when`(mockDisplayManager.displays).thenReturn(emptyArray())
 
-        val displayIds = splitMultiDisplayHelper.getDisplayIds()
+        val displayIds = splitMultiDisplayHelper.getCachedOrSystemDisplayIds()
 
         assertThat(displayIds).isEmpty()
     }
@@ -78,7 +78,7 @@ class SplitMultiDisplayHelperTests : ShellTestCase() {
     fun getDisplayIds_singleDisplay_returnsCorrectId() {
         `when`(mockDisplayManager.displays).thenReturn(arrayOf(mockDisplay1))
 
-        val displayIds = splitMultiDisplayHelper.getDisplayIds()
+        val displayIds = splitMultiDisplayHelper.getCachedOrSystemDisplayIds()
 
         assertThat(displayIds).containsExactly(Display.DEFAULT_DISPLAY)
     }
@@ -87,7 +87,7 @@ class SplitMultiDisplayHelperTests : ShellTestCase() {
     fun getDisplayIds_multiDisplays_returnsCorrectIds() {
         `when`(mockDisplayManager.displays).thenReturn(arrayOf(mockDisplay1, mockDisplay2))
 
-        val displayIds = splitMultiDisplayHelper.getDisplayIds()
+        val displayIds = splitMultiDisplayHelper.getCachedOrSystemDisplayIds()
 
         assertThat(displayIds).containsExactly(Display.DEFAULT_DISPLAY, Display.DEFAULT_DISPLAY + 1)
     }

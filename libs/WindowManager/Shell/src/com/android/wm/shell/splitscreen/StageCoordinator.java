@@ -408,9 +408,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
                 Objects.requireNonNull(displayManager));
 
-        ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getDisplayIds();
-
         if (enableMultiDisplaySplit()) {
+            ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds();
             displayIds.forEach(id -> {
                 taskOrganizer.createRootTask(
                         id, WINDOWING_MODE_FULLSCREEN, this);
@@ -641,10 +640,18 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     }
 
     boolean isRootOrStageRoot(int taskId) {
-        ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getDisplayIds();
-        for (int displayId : displayIds) {
+        if (enableMultiDisplaySplit()) {
+            ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds();
+            for (int displayId : displayIds) {
+                ActivityManager.RunningTaskInfo rootTaskInfo =
+                        mSplitMultiDisplayHelper.getDisplayRootTaskInfo(displayId);
+                if (rootTaskInfo != null && rootTaskInfo.taskId == taskId) {
+                    return true;
+                }
+            }
+        } else {
             ActivityManager.RunningTaskInfo rootTaskInfo =
-                    mSplitMultiDisplayHelper.getDisplayRootTaskInfo(displayId);
+                    mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
             if (rootTaskInfo != null && rootTaskInfo.taskId == taskId) {
                 return true;
             }
@@ -2222,7 +2229,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     @CallSuper
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (enableMultiDisplaySplit()) {
-            ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getDisplayIds();
+            ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds();
             boolean allRootsNull = true;
             boolean taskIsNotRootTask = true;
             for (int displayId : displayIds) {
