@@ -773,19 +773,8 @@ public class StatusBarManagerServiceTest {
         // disable
         mStatusBarManagerService.disable(expectedFlags, mMockStatusBar, pkg);
 
-        ArgumentCaptor<DisableStates> disableStatesCaptor = ArgumentCaptor.forClass(
-                DisableStates.class);
-        verify(mMockStatusBar).disableForAllDisplays(disableStatesCaptor.capture());
-        DisableStates capturedDisableStates = disableStatesCaptor.getValue();
-        assertTrue(capturedDisableStates.animate);
-        assertEquals(capturedDisableStates.displaysWithStates.size(), 2);
-        Pair<Integer, Integer> display0States = capturedDisableStates.displaysWithStates.get(0);
-        assertEquals((int) display0States.first, expectedFlags);
-        assertEquals((int) display0States.second, 0);
-        Pair<Integer, Integer> display2States = capturedDisableStates.displaysWithStates.get(
-                SECONDARY_DISPLAY_ID);
-        assertEquals((int) display2States.first, expectedFlags);
-        assertEquals((int) display2States.second, 0);
+        verify(mMockStatusBar, never()).disableForAllDisplays(any());
+        verify(mMockStatusBar).disable(eq(0), eq(expectedFlags), eq(0));
     }
 
     @Test
@@ -909,19 +898,8 @@ public class StatusBarManagerServiceTest {
         // disable
         mStatusBarManagerService.disable2(expectedFlags, mMockStatusBar, pkg);
 
-        ArgumentCaptor<DisableStates> disableStatesCaptor = ArgumentCaptor.forClass(
-                DisableStates.class);
-        verify(mMockStatusBar).disableForAllDisplays(disableStatesCaptor.capture());
-        DisableStates capturedDisableStates = disableStatesCaptor.getValue();
-        assertTrue(capturedDisableStates.animate);
-        assertEquals(capturedDisableStates.displaysWithStates.size(), 2);
-        Pair<Integer, Integer> display0States = capturedDisableStates.displaysWithStates.get(0);
-        assertEquals((int) display0States.first, 0);
-        assertEquals((int) display0States.second, expectedFlags);
-        Pair<Integer, Integer> display2States = capturedDisableStates.displaysWithStates.get(
-                SECONDARY_DISPLAY_ID);
-        assertEquals((int) display2States.first, 0);
-        assertEquals((int) display2States.second, expectedFlags);
+        verify(mMockStatusBar, never()).disableForAllDisplays(any());
+        verify(mMockStatusBar).disable(eq(0), eq(0), eq(expectedFlags));
     }
 
     @Test
