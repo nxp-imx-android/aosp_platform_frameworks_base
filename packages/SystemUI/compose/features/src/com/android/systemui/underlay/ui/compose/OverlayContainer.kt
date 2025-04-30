@@ -49,6 +49,7 @@ fun OverlayContainer(
             expanded = expanded,
             modifier = Modifier.align(Alignment.BottomCenter),
             onClick = { viewModel.expand() },
+            onCloseClick = { viewModel.hide() },
         )
         ActionList(
             actions = actions,
