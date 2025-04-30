@@ -1028,9 +1028,17 @@ void signalExceptionForError(JNIEnv* env, jobject obj, status_t err,
         case UNKNOWN_ERROR:
             jniThrowException(env, "java/lang/RuntimeException", "Unknown error");
             break;
-        case NO_MEMORY:
-            jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
+        case NO_MEMORY: {
+            // Often this is from the server using too much memory or
+            // some other ENOMEM case in libbinder (such as doing an operation
+            // that is expected to pass the binder buffer). If we are really
+            // out of memory here and cannot allocate this string, it's okay
+            // to just crash, as the whole system is going down.
+            String8 msg;
+            msg.appendFormat("During transaction with Parcel size %d.", parcelSize);
+            jniThrowException(env, "java/lang/OutOfMemoryError", msg.c_str());
             break;
+        }
         case INVALID_OPERATION:
             jniThrowException(env, "java/lang/UnsupportedOperationException", NULL);
             break;
