@@ -522,6 +522,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
+                public int getMagneticDetachDirection(View view) {
+                    if (view instanceof ExpandableNotificationRow row) {
+                        return mMagneticNotificationRowManager.getDetachDirection(row);
+                    } else {
+                        return 0;
+                    }
+                }
+
+                @Override
                 public float getTotalTranslationLength(View animView) {
                     return mView.getTotalTranslationLength(animView);
                 }

@@ -406,6 +406,13 @@ constructor(
         }
     }
 
+    override fun getDetachDirection(row: ExpandableNotificationRow): Int =
+        if (row.isSwipedTarget()) {
+            detachDirectionEstimator.direction.toInt()
+        } else {
+            0
+        }
+
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {

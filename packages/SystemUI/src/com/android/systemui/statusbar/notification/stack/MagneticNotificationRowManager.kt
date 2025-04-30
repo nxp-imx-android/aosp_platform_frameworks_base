@@ -101,6 +101,15 @@ interface MagneticNotificationRowManager {
      */
     fun isMagneticRowSwipedDismissible(row: ExpandableNotificationRow, endVelocity: Float): Boolean
 
+    /**
+     * Query the direction in which the magnetic row was detached.
+     *
+     * @param[row] The magnetic row swiped.
+     * @return 1 if the row was detached towards the right, -1 if detached towards the left, and 0
+     *   if the row hasn't detached yet, or if the row is not being swiped.
+     */
+    fun getDetachDirection(row: ExpandableNotificationRow): Int
+
     /* Reset any roundness that magnetic targets may have */
     fun resetRoundness()
 
@@ -158,6 +167,8 @@ interface MagneticNotificationRowManager {
                         row: ExpandableNotificationRow,
                         endVelocity: Float,
                     ): Boolean = false
+
+                    override fun getDetachDirection(row: ExpandableNotificationRow): Int = 0
 
                     override fun resetRoundness() {}
 
