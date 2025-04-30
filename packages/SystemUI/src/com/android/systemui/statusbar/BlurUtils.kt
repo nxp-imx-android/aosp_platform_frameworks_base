@@ -82,6 +82,17 @@ constructor(
         return MathUtils.lerp(minBlurRadius, maxBlurRadius, ratio)
     }
 
+    /**
+     * Translates a ratio from 0 to 1 to a blur radius in pixels for AOD. We use half of the
+     * maxBlurRadius for AOD wallpaper blur.
+     */
+    fun blurRadiusOfRatioForAod(ratio: Float): Float {
+        if (ratio == 0f) {
+            return 0f
+        }
+        return MathUtils.lerp(minBlurRadius, maxBlurRadius / 2, ratio)
+    }
+
     /** Translates a blur radius in pixels to a ratio between 0 to 1. */
     fun ratioOfBlurRadius(blur: Float): Float {
         if (blur == 0f) {

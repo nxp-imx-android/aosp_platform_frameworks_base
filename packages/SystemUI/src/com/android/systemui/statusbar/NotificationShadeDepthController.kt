@@ -410,7 +410,7 @@ constructor(
                         addUpdateListener { animation: ValueAnimator ->
                             wakeAndUnlockBlurData =
                                 WakeAndUnlockBlurData(
-                                    blurUtils.blurRadiusOfRatio(animation.animatedValue as Float)
+                                    blurUtils.blurRadiusOfRatioForAod(animation.animatedValue as Float)
                                 )
                         }
                         addListener(
@@ -466,7 +466,7 @@ constructor(
         return if (!wallpaperSupportsAmbientMode) {
             0f
         } else {
-            blurUtils.blurRadiusOfRatio(ratio)
+            blurUtils.blurRadiusOfRatioForAod(ratio)
         }
     }
 
