@@ -49,7 +49,6 @@ import android.os.UserHandle;
 import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -1678,13 +1677,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 continue;
             }
             final Task task = mChildren.get(i).asTask();
-            if (task.inFreeformWindowingMode()
-                    && DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-                // TODO(b/391652399): Considerations for display areas that do not support
-                //  freeform tasks.
-                task.reparent(toDisplayArea, getReparentPosition(task));
-                lastReparentedRootTask = task;
-            } else if (destroyContentOnRemoval || !task.shouldReparentOnDisplayRemoval()) {
+            if (destroyContentOnRemoval || !task.shouldReparentOnDisplayRemoval()) {
                 // TODO: For root tasks created by organizer, consider reparenting children tasks
                 //  if the use case arises in the future.
                 task.remove(false /* withTransition */, "removeTaskDisplayArea");
@@ -1696,9 +1689,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                                         null /* options */,
                                         null /* sourceTask */,
                                         0 /* launchFlags */);
-
-                task.reparent(launchRoot == null ? toDisplayArea : launchRoot,
-                        getReparentPosition(task));
+                task.reparent(launchRoot == null ? toDisplayArea : launchRoot, POSITION_TOP);
 
                 // If the task is going to be reparented to the non-fullscreen root TDA and the task
                 // is set to FULLSCREEN explicitly, we keep the windowing mode as is. Otherwise, the
@@ -1727,16 +1718,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         }
 
         return lastReparentedRootTask;
-    }
-
-    private int getReparentPosition(Task task) {
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-            return POSITION_TOP;
-        }
-        final boolean taskOnTopFocusedDisplay = task.getDisplayId()
-                == mRootWindowContainer.getTopFocusedDisplayContent().getDisplayId();
-        return taskOnTopFocusedDisplay && task.isFocusedRootTaskOnDisplay()
-                ? POSITION_TOP : POSITION_BOTTOM;
     }
 
     /**
