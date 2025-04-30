@@ -57,6 +57,7 @@ class DesktopTasksTransitionObserver(
     data class CloseWallpaperTransition(val transition: IBinder, val displayId: Int)
 
     private var transitionToCloseWallpaper: CloseWallpaperTransition? = null
+    private var closingTransitionToTransitionInfo = HashMap<IBinder, TransitionInfo>()
     private var currentProfileId: Int
 
     init {
@@ -94,6 +95,7 @@ class DesktopTasksTransitionObserver(
             desktopMixedTransitionHandler.addPendingMixedTransition(
                 DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
             )
+            closingTransitionToTransitionInfo.put(transition, info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
     }
@@ -175,6 +177,35 @@ class DesktopTasksTransitionObserver(
                 }
             transitionToCloseWallpaper = null
         }
+
+        // If a task is closing and is not handled by back navigation logic, remove it here with a
+        // follow up transition fully so it doesn't show up on recents.
+        //
+        // The reason that this is done here and not on [DesktopTasksController#handleRequest] is
+        // because for closing tasks we first need to check whether it's because of back navigation
+        // so that we can minimize it if needed.
+        val info = closingTransitionToTransitionInfo.remove(transition) ?: return
+        removeClosingTask(info)
+    }
+
+    /** Finds the closing task in the change and removes it full by a [TRANSIT_CLOSE] transition. */
+    private fun removeClosingTask(info: TransitionInfo) {
+        val task =
+            info.changes
+                .find { change -> change.mode == TRANSIT_CLOSE && change.taskInfo != null }
+                ?.taskInfo ?: return
+
+        transitions.startTransition(
+            TRANSIT_CLOSE,
+            WindowContainerTransaction().removeTask(task.token),
+            null,
+        )
+
+        ProtoLog.d(
+            WM_SHELL_DESKTOP_MODE,
+            "DesktopTasksTransitionObserver: removing closing task=%d fully",
+            task.taskId,
+        )
     }
 
     private fun updateWallpaperToken(info: TransitionInfo) {

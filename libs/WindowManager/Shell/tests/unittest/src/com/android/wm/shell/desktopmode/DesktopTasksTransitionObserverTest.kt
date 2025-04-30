@@ -34,6 +34,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -277,6 +278,27 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun closingTask_startsTransitionToRemoveFully() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val freeformTask = createTaskInfo(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(freeformTask),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        transitionObserver.onTransitionFinished(transition = mockTransition, aborted = false)
+
+        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        assertThat(wct.hierarchyOps).hasSize(1)
+        wct.assertRemoveAt(index = 0, freeformTask.token)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_handlerHasTransition_notAddPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
@@ -394,6 +416,13 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             Mockito.verify(transitions).startTransition(eq(type), arg.capture(), isA(handlerClass))
         }
         return arg.value
+    }
+
+    private fun WindowContainerTransaction.assertRemoveAt(index: Int, token: WindowContainerToken) {
+        assertIndexInBounds(index)
+        val op = hierarchyOps[index]
+        assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(op.container).isEqualTo(token.asBinder())
     }
 
     private fun WindowContainerTransaction.assertReorderAt(
