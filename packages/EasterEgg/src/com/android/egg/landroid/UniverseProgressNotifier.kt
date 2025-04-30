@@ -39,7 +39,7 @@ fun lerpRange(range: ClosedFloatingPointRange<Float>, x: Float): Float =
 class UniverseProgressNotifier(val context: Context, val universe: Universe) {
     private val notificationId = universe.randomSeed.toInt()
     private val chan =
-        NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+        NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW)
             .apply { lockscreenVisibility = Notification.VISIBILITY_PUBLIC }
     private val noman =
         context.getSystemService(NotificationManager::class.java)?.apply {
@@ -83,7 +83,7 @@ class UniverseProgressNotifier(val context: Context, val universe: Universe) {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
             )
-            .setPriority(Notification.PRIORITY_DEFAULT)
+            .setFlag(Notification.FLAG_ONLY_ALERT_ONCE, true)
             .setColorized(true)
             .setOngoing(true)
             .setColor(Colors.Eigengrau2.toArgb())
