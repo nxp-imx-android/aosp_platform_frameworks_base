@@ -1139,6 +1139,42 @@ public final class UserManagerTest {
 
     @MediumTest
     @Test
+    public void testSetUserAdminFailsForGuest() throws Exception {
+        UserInfo userInfo = createUser("GuestUser", UserInfo.FLAG_GUEST);
+        assertThat(userInfo).isNotNull();
+
+        mUserManager.setUserAdmin(userInfo.id);
+        userInfo = mUserManager.getUserInfo(userInfo.id);
+        assertThat(userInfo.isAdmin()).isFalse();
+    }
+
+    @MediumTest
+    @Test
+    public void testSetUserAdminFailsForProfile() throws Exception {
+        UserHandle mainUser = mUserManager.getMainUser();
+        assertThat(mainUser).isNotNull();
+        UserInfo userInfo = createProfileForUser("Profile",
+                UserManager.USER_TYPE_PROFILE_MANAGED, mainUser.getIdentifier());
+        assertThat(userInfo).isNotNull();
+
+        mUserManager.setUserAdmin(userInfo.id);
+        userInfo = mUserManager.getUserInfo(userInfo.id);
+        assertThat(userInfo.isAdmin()).isFalse();
+    }
+
+    @MediumTest
+    @Test
+    public void testSetUserAdminFailsForRestrictedProfile() throws Exception {
+        UserInfo userInfo = createRestrictedProfile("Profile");
+        assertThat(userInfo).isNotNull();
+
+        mUserManager.setUserAdmin(userInfo.id);
+        userInfo = mUserManager.getUserInfo(userInfo.id);
+        assertThat(userInfo.isAdmin()).isFalse();
+    }
+
+    @MediumTest
+    @Test
     public void testRevokeUserAdmin() throws Exception {
         UserInfo userInfo = createUser("Admin", /*flags=*/ UserInfo.FLAG_ADMIN);
         assertThat(userInfo.isAdmin()).isTrue();

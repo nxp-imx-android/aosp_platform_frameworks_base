@@ -42,6 +42,7 @@ import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_UNSPECIFIED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_ALREADY_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_NOT_AN_ADMIN;
+import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_GRANT_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_REVOKE_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_CREATE;
@@ -2311,26 +2312,33 @@ public class UserManagerService extends IUserManager.Stub {
 
         mUserJourneyLogger.logUserJourneyBegin(userId, USER_JOURNEY_GRANT_ADMIN);
         UserData user;
+        int currentUserId = getCurrentUserId();
         synchronized (mPackagesLock) {
             synchronized (mUsersLock) {
                 user = getUserDataLU(userId);
                 if (user == null) {
                     // Exit if no user found with that id,
                     mUserJourneyLogger.logNullUserJourneyError(USER_JOURNEY_GRANT_ADMIN,
-                        getCurrentUserId(), userId, /* userType */ "", /* userFlags */ -1);
+                            currentUserId, userId, /* userType */ "", /* userFlags */ -1);
                     return;
                 } else if (user.info.isAdmin()) {
                     // Exit if the user is already an Admin.
-                    mUserJourneyLogger.logUserJourneyFinishWithError(getCurrentUserId(),
+                    mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                         user.info, USER_JOURNEY_GRANT_ADMIN,
                         ERROR_CODE_USER_ALREADY_AN_ADMIN);
+                    return;
+                } else if (user.info.isProfile() || user.info.isGuest()
+                        || user.info.isRestricted()) {
+                    // Profiles, guest users or restricted profiles cannot become an Admin.
+                    mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
+                            user.info, USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
                     return;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
                 writeUserLP(user);
             }
         }
-        mUserJourneyLogger.logUserJourneyFinishWithError(getCurrentUserId(), user.info,
+        mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                 USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_UNSPECIFIED);
     }
 
