@@ -1985,7 +1985,9 @@ public class ResourcesManager {
             // its own ApplicationInfo.
             final var collector = new PathCollector(null);
             // Pre-populate the collector's sets with the base app paths so they all get filtered
-            // out if they exist in the info that's being registered as well.
+            // out if they exist in the info that's being registered as well. Ignore the linked
+            // shared libraries though, as those are commonly altered by the apps to make the system
+            // load the same library that's being registered here.
             // Note: if someone is registering their own appInfo, we can't filter out anything
             // here and this means any asset path changes are going to be ignored.
             if (baseAppInfo != null && !baseAppInfo.sourceDir.equals(appInfo.sourceDir)) {
@@ -1993,9 +1995,7 @@ public class ResourcesManager {
                 if (baseAppInfo.splitSourceDirs != null) {
                     collector.libsSet.addAll(Arrays.asList(baseAppInfo.splitSourceDirs));
                 }
-                if (baseAppInfo.sharedLibraryFiles != null) {
-                    collector.libsSet.addAll(Arrays.asList(baseAppInfo.sharedLibraryFiles));
-                }
+                // Skipped |baseAppInfo.sharedLibraryFiles| intentionally.
                 if (baseAppInfo.resourceDirs != null) {
                     collector.overlaysSet.addAll(Arrays.asList(baseAppInfo.resourceDirs));
                 }
