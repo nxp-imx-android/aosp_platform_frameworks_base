@@ -13272,11 +13272,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Set<String> suspendedPackagesBefore = mDevicePolicyEngine.getResolvedPolicy(
                 PolicyDefinition.PACKAGES_SUSPENDED, caller.getUserId());
 
-        Set<String> currentPackages = mDevicePolicyEngine.getLocalPolicySetByAdmin(
+        Set<String> currentPackages = new ArraySet<>(mDevicePolicyEngine.getLocalPolicySetByAdmin(
                 PolicyDefinition.PACKAGES_SUSPENDED,
                 enforcingAdmin,
-                caller.getUserId());
-        if (currentPackages == null) currentPackages = new ArraySet<>();
+                caller.getUserId()));
         if (suspended) {
             currentPackages.addAll(packages);
         } else {
