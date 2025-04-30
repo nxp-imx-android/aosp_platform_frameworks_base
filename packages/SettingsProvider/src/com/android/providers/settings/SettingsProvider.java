@@ -6360,9 +6360,8 @@ public class SettingsProvider extends ContentProvider {
                             // Do nothing. Leave the value as is.
                         }
                     }
+                    currentVersion = 223;
                 }
-
-                currentVersion = 223;
 
                 // Version 223: make charging constraint update criteria customizable.
                 if (currentVersion == 223) {
