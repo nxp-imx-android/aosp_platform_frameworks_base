@@ -18,12 +18,12 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.graphics.RectF
+import android.util.TypedValue
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.ValueAnimator
-import com.android.wm.shell.shared.R
 import com.android.wm.shell.shared.bubbles.DragZone.DropTargetRect
 
 /**
@@ -46,6 +46,7 @@ class DropTargetManager(
         const val MORPH_ANIM_DURATION = 250L
         const val DROP_TARGET_ALPHA_IN_DURATION = 150L
         const val DROP_TARGET_ALPHA_OUT_DURATION = 100L
+        const val DROP_TARGET_ELEVATION_DP = 2f
     }
 
     /** Must be called when a drag gesture is starting. */
@@ -61,7 +62,11 @@ class DropTargetManager(
         if (dropTargetView.parent != null) container.removeView(dropTargetView)
         container.addView(dropTargetView, 0)
         dropTargetView.alpha = 0f
-        dropTargetView.elevation = context.resources.getDimension(R.dimen.drop_target_elevation)
+
+        dropTargetView.elevation = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            DROP_TARGET_ELEVATION_DP, context.resources.displayMetrics
+        )
         // Match parent and the target is drawn within the view
         dropTargetView.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
     }

@@ -38,7 +38,6 @@
     <dimen name="drag_zone_v_split_from_expanded_view_height_fold_short">100dp</dimen>
 
     <!-- Bubble drop target dimensions -->
-    <dimen name="drop_target_elevation">2dp</dimen>
     <dimen name="drop_target_radius">28dp</dimen>
     <dimen name="drop_target_stroke">2dp</dimen>
     <dimen name="drop_target_full_screen_padding">20dp</dimen>
