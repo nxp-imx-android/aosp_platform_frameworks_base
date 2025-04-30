@@ -196,14 +196,6 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         return mSplitDecorManager;
     }
 
-    /**
-     * Gets the leash for this task's dim layer. We manipulate this surface's alpha to dim the app
-     * when it's moving offscreen or toward dismissal.
-     */
-    public SurfaceControl getDimLayer() {
-        return mDimLayer;
-    }
-
     @Nullable
     private ActivityManager.RunningTaskInfo getChildTaskInfo(
             Predicate<ActivityManager.RunningTaskInfo> predicate) {
