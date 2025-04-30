@@ -32,9 +32,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
-import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
-import com.android.systemui.topui.topUiController
+import com.android.systemui.topui.mockTopUiController
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
@@ -66,8 +65,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
     @Mock private lateinit var windowManager: WindowManager
 
-    @Mock private lateinit var topUiController: TopUiController
-
     @Mock private lateinit var viewModelFactory: SqueezeEffectViewModel.Factory
 
     private val Kosmos.underTest by
@@ -86,7 +83,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                     ),
                 appZoomOutOptional = Optional.empty(),
                 notificationShadeWindowController = kosmos.notificationShadeWindowController,
-                topUiController = kosmos.topUiController,
+                topUiController = kosmos.mockTopUiController,
                 interactionJankMonitor = kosmos.interactionJankMonitor,
             )
         }
@@ -256,7 +253,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     private fun verifyAddViewAndTopUi(mode: VerificationMode) {
         verify(windowManager, mode).addView(any<View>(), any<WindowManager.LayoutParams>())
         if (TopUiControllerRefactor.isEnabled) {
-            verify(topUiController, mode).setRequestTopUi(true, TopLevelWindowEffects.TAG)
+            verify(kosmos.mockTopUiController, mode)
+                .setRequestTopUi(true, TopLevelWindowEffects.TAG)
         } else {
             verify(kosmos.notificationShadeWindowController, mode)
                 .setRequestTopUi(true, TopLevelWindowEffects.TAG)
