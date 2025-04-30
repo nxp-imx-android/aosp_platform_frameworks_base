@@ -19,6 +19,7 @@ package com.android.server.contextualsearch;
 import static android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH;
 import static android.app.AppOpsManager.OP_ASSIST_SCREENSHOT;
 import static android.app.AppOpsManager.OP_ASSIST_STRUCTURE;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.Context.CONTEXTUAL_SEARCH_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -75,6 +76,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
 import android.view.IWindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 
 import com.android.internal.R;
@@ -425,6 +427,9 @@ public class ContextualSearchManagerService extends SystemService {
         final ActivityOptions opts = ActivityOptions.makeCustomTaskAnimation(mContext,
                 /* enterResId= */ 0, /* exitResId= */ 0, null, null, null);
         opts.setDisableStartingWindow(true);
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
+            opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        }
         return mAtmInternal.startActivityWithScreenshot(launchIntent,
                 mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                 opts.toBundle(), userId);
