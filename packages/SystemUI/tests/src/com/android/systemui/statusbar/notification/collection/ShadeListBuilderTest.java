@@ -3148,7 +3148,7 @@ class TestBundler extends NotifBundler {
 
     public static final TestBundler INSTANCE = new TestBundler();
 
-    List<BundleSpec> mBundleSpecs = List.of(new BundleSpec("bundle_1",0));
+    List<BundleSpec> mBundleSpecs = List.of(new BundleSpec("bundle_1",0, 0));
 
     List<String> mBundleIds = this.mBundleSpecs.stream()
             .map(BundleSpec::getKey)

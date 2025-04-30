@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
 
     /** The model used by UI. */
-    val bundleRepository = BundleRepository(spec.titleTextResId)
+    val bundleRepository = BundleRepository(spec.titleTextResId, spec.icon)
 
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     val isSensitive: MutableStateFlow<Boolean> = MutableStateFlow(false)

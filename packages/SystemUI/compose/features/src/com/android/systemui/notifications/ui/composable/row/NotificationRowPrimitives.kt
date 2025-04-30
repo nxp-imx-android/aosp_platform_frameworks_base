@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.ui.composable.row
 
 import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.animation.scene.ContentScope
@@ -71,7 +73,7 @@ object NotificationRowPrimitives {
 
 /** The Icon displayed at the start of any notification row. */
 @Composable
-fun ContentScope.BundleIcon(drawable: Drawable?, modifier: Modifier = Modifier) {
+fun ContentScope.BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
     val surfaceColor = notificationElementSurfaceColor()
     Box(
         modifier =
@@ -82,7 +84,7 @@ fun ContentScope.BundleIcon(drawable: Drawable?, modifier: Modifier = Modifier) 
                 .background(color = surfaceColor, shape = CircleShape)
     ) {
         if (drawable == null) return@Box
-        val painter = rememberDrawablePainter(drawable)
+        val painter = painterResource(drawable)
         Image(
             painter = painter,
             contentDescription = null,

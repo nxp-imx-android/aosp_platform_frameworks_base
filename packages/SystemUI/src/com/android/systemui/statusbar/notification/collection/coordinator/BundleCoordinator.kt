@@ -20,6 +20,8 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
+import android.os.Build
+import android.os.SystemProperties
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -110,7 +112,7 @@ constructor(
                 add(BundleSpec.SOCIAL_MEDIA)
                 add(BundleSpec.PROMOTIONS)
                 add(BundleSpec.RECOMMENDED)
-                if (debugBundleUi) add(BundleSpec.DEBUG)
+                if (!debugBundleAppName.isNullOrEmpty()) add(BundleSpec.DEBUG)
             }
 
             private val bundleIds = this.bundleSpecs.map { it.key }
@@ -120,7 +122,7 @@ constructor(
              * ListEntry should not be bundled
              */
             override fun getBundleIdOrNull(entry: ListEntry): String? {
-                if (debugBundleUi && entry?.key?.contains("notify") == true) {
+                if (isFromDebugApp(entry)) {
                     return BundleSpec.DEBUG.key
                 }
                 if (entry is GroupEntry) {
@@ -132,6 +134,10 @@ constructor(
                     return getBundleIdForNotifEntry(summary)
                 }
                 return getBundleIdForNotifEntry(entry as NotificationEntry)
+            }
+
+            private fun isFromDebugApp(entry: ListEntry): Boolean {
+                return !debugBundleAppName.isNullOrEmpty() && entry.key.contains(debugBundleAppName)
             }
 
             private fun getBundleIdForNotifEntry(notifEntry: NotificationEntry): String? {
@@ -185,10 +191,25 @@ constructor(
 
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
-        @JvmField var debugBundleUi: Boolean = false
+
+        @JvmField var debugBundleLogs: Boolean = false
+
+        /**
+         * All notifications that contain this String in the key are bundled into a debug bundle
+         * such that bundle code can be easily and deterministically tested.
+         *
+         * E.g. use this command to bundle all notifications from notify: `adb shell setprop
+         * persist.debug.notification_bundle_ui_debug_app_name com.google.cinek.notify && adb
+         * reboot`
+         */
+        val debugBundleAppName: String? =
+            if (Build.IS_USERDEBUG)
+                SystemProperties.get("persist.debug.notification_bundle_ui_debug_app_name")
+            else null
+
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
-            if (debugBundleUi) {
+            if (debugBundleLogs) {
                 android.util.Log.d(tag, stringLambda())
             }
         }
