@@ -1279,12 +1279,7 @@ constructor(
             val window = setUpAnimation(apps, callback) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
-                val navigationBar =
-                    nonApps?.firstOrNull {
-                        it.windowType == WindowManager.LayoutParams.TYPE_NAVIGATION_BAR
-                    }
-
-                startAnimation(window, navigationBar, iCallback = callback)
+                startAnimation(window, iCallback = callback)
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
                 takeOverAnimationInternal(
@@ -1316,14 +1311,7 @@ constructor(
         ) {
             val useSpring =
                 !controller.isLaunching && startWindowState != null && startTransaction != null
-            startAnimation(
-                window,
-                navigationBar = null,
-                useSpring,
-                startWindowState,
-                startTransaction,
-                callback,
-            )
+            startAnimation(window, useSpring, startWindowState, startTransaction, callback)
         }
 
         @UiThread
@@ -1428,7 +1416,6 @@ constructor(
 
         private fun startAnimation(
             window: RemoteAnimationTarget,
-            navigationBar: RemoteAnimationTarget? = null,
             useSpring: Boolean = false,
             startingWindowState: WindowAnimationState? = null,
             startTransaction: SurfaceControl.Transaction? = null,
@@ -1650,7 +1637,6 @@ constructor(
                         linearProgress: Float,
                     ) {
                         applyStateToWindow(window, state, linearProgress, useSpring)
-                        navigationBar?.let { applyStateToNavigationBar(it, state, linearProgress) }
 
                         listener?.onTransitionAnimationProgress(linearProgress)
                         delegate.onTransitionAnimationProgress(state, progress, linearProgress)
@@ -1822,57 +1808,6 @@ constructor(
                     .withCornerRadius(cornerRadius)
                     .withVisibility(true)
             if (transaction != null) params.withMergeTransaction(transaction)
-
-            transactionApplier.scheduleApply(params.build())
-        }
-
-        // TODO(b/377643129): remote transitions have no way of identifying the navbar when
-        //  converting to RemoteAnimationTargets (and in my testing it was never included in the
-        //  transition at all). So this method is not used anymore. Remove or adapt once we fully
-        //  convert to remote transitions.
-        private fun applyStateToNavigationBar(
-            navigationBar: RemoteAnimationTarget,
-            state: TransitionAnimator.State,
-            linearProgress: Float,
-        ) {
-            if (transactionApplierView.viewRootImpl == null || !navigationBar.leash.isValid) {
-                // Don't apply any transaction if the view root we synchronize with was detached or
-                // if the SurfaceControl associated with [navigationBar] is not valid, as
-                // [SyncRtSurfaceTransactionApplier.scheduleApply] would otherwise throw.
-                return
-            }
-
-            val fadeInProgress =
-                TransitionAnimator.getProgress(
-                    TIMINGS,
-                    linearProgress,
-                    ANIMATION_DELAY_NAV_FADE_IN,
-                    ANIMATION_DURATION_NAV_FADE_OUT,
-                )
-
-            val params = SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(navigationBar.leash)
-            if (fadeInProgress > 0) {
-                matrix.reset()
-                matrix.setTranslate(
-                    0f,
-                    (state.top - navigationBar.sourceContainerBounds.top).toFloat(),
-                )
-                windowCrop.set(state.left, 0, state.right, state.height)
-                params
-                    .withAlpha(NAV_FADE_IN_INTERPOLATOR.getInterpolation(fadeInProgress))
-                    .withMatrix(matrix)
-                    .withWindowCrop(windowCrop)
-                    .withVisibility(true)
-            } else {
-                val fadeOutProgress =
-                    TransitionAnimator.getProgress(
-                        TIMINGS,
-                        linearProgress,
-                        0,
-                        ANIMATION_DURATION_NAV_FADE_OUT,
-                    )
-                params.withAlpha(1f - NAV_FADE_OUT_INTERPOLATOR.getInterpolation(fadeOutProgress))
-            }
 
             transactionApplier.scheduleApply(params.build())
         }
