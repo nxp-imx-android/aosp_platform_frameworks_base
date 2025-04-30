@@ -3424,18 +3424,19 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         controller.moveToNextDisplay(task.taskId)
 
-        val taskChange =
+        val wct =
             getLatestWct(
-                    type = TRANSIT_CHANGE,
-                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
-                )
-                .hierarchyOps
-                .find {
-                    it.container == task.token.asBinder() && it.type == HIERARCHY_OP_TYPE_REORDER
-                }
-        assertNotNull(taskChange)
-        assertThat(taskChange.toTop).isTrue()
-        assertThat(taskChange.includingParents()).isTrue()
+                type = TRANSIT_CHANGE,
+                handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+            )
+        wct.assertReorderAt(
+            // Reorder should be the last change so that other hierarchyOps do not change the
+            // display focus after moving the destination display top.
+            index = wct.hierarchyOps.size - 1,
+            task,
+            toTop = true,
+            includingParents = true,
+        )
     }
 
     @Test
@@ -3640,6 +3641,29 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .addPendingTransition(
                 DeskTransition.DeactivateDesk(token = transition, deskId = sourceDeskId)
             )
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
+        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
+    )
+    fun moveToNextDisplay_resetLauncherOnSourceDisplay() {
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        controller.moveToNextDisplay(task.taskId)
+
+        val wct =
+            getLatestWct(
+                type = TRANSIT_CHANGE,
+                handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+            )
+        wct.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
+        wct.assertPendingIntentActivityOptionsLaunchDisplayId(DEFAULT_DISPLAY)
     }
 
     @Test
@@ -9800,12 +9824,14 @@ private fun WindowContainerTransaction.assertReorderAt(
     index: Int,
     task: RunningTaskInfo,
     toTop: Boolean? = null,
+    includingParents: Boolean? = null,
 ) {
     assertIndexInBounds(index)
     val op = hierarchyOps[index]
     assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
     assertThat(op.container).isEqualTo(task.token.asBinder())
     toTop?.let { assertThat(op.toTop).isEqualTo(it) }
+    includingParents?.let { assertThat(op.includingParents()).isEqualTo(it) }
 }
 
 private fun WindowContainerTransaction.assertReorderAt(
@@ -9869,7 +9895,8 @@ private fun WindowContainerTransaction.hasRemoveAt(index: Int, token: WindowCont
 private fun WindowContainerTransaction.assertPendingIntent(intent: Intent) {
     assertHop { hop ->
         hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
-            hop.pendingIntent?.intent?.component == intent.component
+            hop.pendingIntent?.intent?.component == intent.component &&
+            hop.pendingIntent?.intent?.categories == intent.categories
     }
 }
 
@@ -9886,6 +9913,14 @@ private fun WindowContainerTransaction.assertPendingIntentAt(index: Int, intent:
     assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_PENDING_INTENT)
     assertThat(op.pendingIntent?.intent?.component).isEqualTo(intent.component)
     assertThat(op.pendingIntent?.intent?.categories).isEqualTo(intent.categories)
+}
+
+private fun WindowContainerTransaction.assertPendingIntentActivityOptionsLaunchDisplayId(
+    displayId: Int
+) {
+    assertHop { hop ->
+        hop.launchOptions != null && ActivityOptions(hop.launchOptions).launchDisplayId == displayId
+    }
 }
 
 private fun WindowContainerTransaction.assertPendingIntentActivityOptionsLaunchDisplayIdAt(

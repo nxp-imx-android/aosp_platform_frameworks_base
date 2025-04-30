@@ -1724,13 +1724,6 @@ class DesktopTasksController(
 
         val activationRunnable = addDeskActivationChanges(destinationDeskId, wct, task)
 
-        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
-            // Bring the destination display to top with includingParents=true, so that the
-            // destination display gains the display focus, which makes the top task in the display
-            // gains the global focus.
-            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
-        }
-
         val sourceDisplayId = task.displayId
         val sourceDeskId = taskRepository.getDeskIdForTask(task.taskId)
         val shouldExitDesktopIfNeeded =
@@ -1744,15 +1737,20 @@ class DesktopTasksController(
                     displayId = sourceDisplayId,
                     wct = wct,
                     forceToFullscreen = false,
-                    // TODO: b/371096166 - Temporary turing home relaunch off to prevent home
-                    // stealing
-                    // display focus. Remove shouldEndUpAtHome = false when home focus handling
-                    // with connected display is implemented in wm core.
-                    shouldEndUpAtHome = false,
                 )
             } else {
                 null
             }
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
+            // Bring the destination display to top with includingParents=true, so that the
+            // destination display gains the display focus, which makes the top task in the display
+            // gains the global focus. This must be done after performDesktopExitCleanupIfNeeded.
+            // The method launches Launcher on the source display when the last task is moved, which
+            // brings the source display to the top. Calling reorder after
+            // performDesktopExitCleanupIfNeeded ensures that the destination display becomes the
+            // top (focused) display.
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+        }
         val transition =
             transitions.startTransition(
                 TRANSIT_CHANGE,
@@ -2361,7 +2359,6 @@ class DesktopTasksController(
         displayId: Int,
         wct: WindowContainerTransaction,
         forceToFullscreen: Boolean,
-        shouldEndUpAtHome: Boolean = true,
     ): RunOnTransitStart? {
         if (!willExitDesktop(taskId, displayId, forceToFullscreen)) {
             return null
@@ -2373,7 +2370,7 @@ class DesktopTasksController(
             deskId = deskId,
             displayId = displayId,
             willExitDesktop = true,
-            shouldEndUpAtHome = shouldEndUpAtHome,
+            shouldEndUpAtHome = true,
         )
     }
 
