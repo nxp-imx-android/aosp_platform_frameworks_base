@@ -2413,9 +2413,11 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         setDividerVisibility(mainStageVisible, null);
     }
 
-    // Set divider visibility flag and try to apply it, the param transaction is used to apply.
-    // See applyDividerVisibility for more detail.
-    private void setDividerVisibility(boolean visible, @Nullable SurfaceControl.Transaction t) {
+    /**
+     * Set divider visibility flag and try to apply it, the param transaction is used to apply.
+     * See applyDividerVisibility for more detail.
+     */
+    public void setDividerVisibility(boolean visible, @Nullable SurfaceControl.Transaction t) {
         if (visible == mDividerVisible) {
             return;
         }
