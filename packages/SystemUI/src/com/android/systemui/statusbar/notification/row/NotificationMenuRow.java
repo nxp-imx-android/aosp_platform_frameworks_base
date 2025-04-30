@@ -48,6 +48,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.AlphaOptimizedImageView;
+import com.android.systemui.statusbar.notification.collection.NotificationClassificationUiFlag;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -284,7 +285,8 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 && Flags.permissionHelperUiRichOngoing()
                 && (sbn != null && sbn.getNotification().isPromotedOngoing())) {
             mInfoItem = createPromotedItem(mContext);
-        }  else if (android.app.Flags.notificationClassificationUi() && isBundled) {
+        } else if ((NotificationClassificationUiFlag.isEnabled()
+                || NotificationBundleUi.isEnabled()) && isBundled) {
             mInfoItem = createBundledInfoItem(mContext);
         } else {
             mInfoItem = createInfoItem(mContext);
