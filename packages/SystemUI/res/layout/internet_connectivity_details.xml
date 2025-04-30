@@ -353,7 +353,6 @@
 
                     <ImageView
                         android:id="@+id/arrow_forward"
-                        android:contentDescription="@string/see_all_networks"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -542,7 +541,6 @@
                         android:clickable="false">
 
                         <ImageView
-                            android:contentDescription="@string/share_wifi_button_text"
                             android:src="@drawable/ic_screenshot_share"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
