@@ -273,6 +273,17 @@ flag {
 }
 
 flag {
+  name: "fix_show_when_locked_sync_timeout"
+  namespace: "windowing_frontend"
+  description: "Prevent sync timeout from setShowWhenLocked(false) by setting the DisplayContent ready"
+  bug: "411544184"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "predictive_back_priority_system_navigation_observer"
     namespace: "systemui"
     description: "PRIORITY_SYSTEM_NAVIGATION_OBSERVER predictive back API extension"
