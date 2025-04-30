@@ -70,10 +70,10 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS(
             Flags::enableDesktopAppHeaderStateChangeAnnouncements, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS),
-    ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, false,
+    ENABLE_DESKTOP_APP_LAUNCH_BUGFIX(Flags::enableDesktopAppLaunchBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_BUGFIX),
     ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX(
-            Flags::enableDesktopCloseTaskAnimationInDtcBugfix, false,
+            Flags::enableDesktopCloseTaskAnimationInDtcBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, false,
@@ -83,12 +83,12 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_IME_BUGFIX(Flags::enableDesktopImeBugfix, false,
             Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX),
     ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
-            Flags::enableDesktopTabTearingLaunchAnimation, false,
+            Flags::enableDesktopTabTearingLaunchAnimation, true,
             Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
     ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS(Flags::enableDesktopTaskbarOnFreeformDisplays,
             false, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
-            Flags::enableDesktopTaskLimitSeparateTransition, false,
+            Flags::enableDesktopTaskLimitSeparateTransition, true,
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
     ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, false,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
