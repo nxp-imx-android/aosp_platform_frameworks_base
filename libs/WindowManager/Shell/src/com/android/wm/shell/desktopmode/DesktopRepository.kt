@@ -845,8 +845,14 @@ class DesktopRepository(
                 DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                     .isTrue && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
             ) {
+                logD(
+                    "isAnyDeskActive: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
+                    hasVisibleTasks,
+                    hasTopTransparentFullscreenTask,
+                )
                 return hasVisibleTasks || hasTopTransparentFullscreenTask
             }
+            logD("isAnyDeskActive: hasVisibleTasks=%s", hasVisibleTasks)
             return hasVisibleTasks
         }
         return desktopData.getActiveDesk(displayId) != null
