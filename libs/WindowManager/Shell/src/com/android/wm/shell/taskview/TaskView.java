@@ -79,6 +79,7 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     private Region mObscuredTouchRegion;
     private Insets mCaptionInsets;
     private Handler mHandler;
+    private boolean mIsMovingWindows;
 
     public TaskView(Context context, TaskViewController taskViewController,
             TaskViewTaskController taskViewTaskController) {
@@ -94,6 +95,24 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
 
     public TaskViewTaskController getController() {
         return mTaskViewTaskController;
+    }
+
+    /**
+     * Sets whether this task view is starting to move windows or just finished moving windows.
+     *
+     * <p>This is intended to be used temporarily while the task view is moving between windows to
+     * avoid having its surface destroyed. Call this method with {@code true} before removing it
+     * from the old window and again with {@code false} before adding it to the new window.
+     */
+    public void setIsMovingWindows(boolean isMovingWindows) {
+        mIsMovingWindows = isMovingWindows;
+        if (isMovingWindows) {
+            getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
+            mHandler = Handler.getMain();
+        } else {
+            getViewTreeObserver().addOnComputeInternalInsetsListener(this);
+            mHandler = getHandler();
+        }
     }
 
     /**
@@ -312,7 +331,18 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        if (mIsMovingWindows) {
+            return;
+        }
+        super.onWindowVisibilityChanged(visibility);
+    }
+
+    @Override
     protected void onAttachedToWindow() {
+        if (mIsMovingWindows) {
+            return;
+        }
         super.onAttachedToWindow();
         getViewTreeObserver().addOnComputeInternalInsetsListener(this);
         mHandler = getHandler();
@@ -320,6 +350,9 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
 
     @Override
     protected void onDetachedFromWindow() {
+        if (mIsMovingWindows) {
+            return;
+        }
         super.onDetachedFromWindow();
         getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
         mHandler = Handler.getMain();
