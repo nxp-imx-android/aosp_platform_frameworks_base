@@ -333,7 +333,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
             .waitForAndVerify()
     }
 
-    private fun getCaptionForTheApp(
+    fun getCaptionForTheApp(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice
     ): UiObject2? {
