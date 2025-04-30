@@ -348,8 +348,8 @@ public final class SurfaceControl implements Parcelable {
             value = {BUFFER_TRANSFORM_IDENTITY, BUFFER_TRANSFORM_MIRROR_HORIZONTAL,
                     BUFFER_TRANSFORM_MIRROR_VERTICAL, BUFFER_TRANSFORM_ROTATE_90,
                     BUFFER_TRANSFORM_ROTATE_180, BUFFER_TRANSFORM_ROTATE_270,
-                    BUFFER_TRANSFORM_MIRROR_HORIZONTAL | BUFFER_TRANSFORM_ROTATE_90,
-                    BUFFER_TRANSFORM_MIRROR_VERTICAL | BUFFER_TRANSFORM_ROTATE_90})
+                    BUFFER_TRANSFORM_MIRROR_HORIZONTAL_ROTATE_90,
+                    BUFFER_TRANSFORM_MIRROR_VERTICAL_ROTATE_90})
     public @interface BufferTransform {
     }
 
@@ -390,6 +390,20 @@ public final class SurfaceControl implements Parcelable {
      * Equivalent to ({@link #BUFFER_TRANSFORM_ROTATE_180} | {@link #BUFFER_TRANSFORM_ROTATE_90}).
      */
     public static final int BUFFER_TRANSFORM_ROTATE_270 = 0x07;
+    /**
+     * Mirror horizontally and rotate 90 degrees clock-wise.
+     * Equivalent to ({@link #BUFFER_TRANSFORM_MIRROR_HORIZONTAL} |
+     *                {@link #BUFFER_TRANSFORM_ROTATE_90}).
+     */
+    @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_ADD_SURFACECONTROL_CONSTANTS)
+    public static final int BUFFER_TRANSFORM_MIRROR_HORIZONTAL_ROTATE_90 = 0x05;
+    /**
+     * Mirror vertically and rotate 90 degrees clock-wise.
+     * Equivalent to ({@link #BUFFER_TRANSFORM_MIRROR_VERTICAL} |
+     *                {@link #BUFFER_TRANSFORM_ROTATE_90}).
+     */
+    @FlaggedApi(com.android.graphics.hwui.flags.Flags.FLAG_ADD_SURFACECONTROL_CONSTANTS)
+    public static final int BUFFER_TRANSFORM_MIRROR_VERTICAL_ROTATE_90 = 0x06;
 
     /**
      * @hide
