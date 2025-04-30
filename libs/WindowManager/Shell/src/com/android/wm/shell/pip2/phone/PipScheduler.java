@@ -210,7 +210,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
                     && mPipBoundsState.getBounds().height() == toBounds.height()) {
                 // TODO (b/393159816): Config-at-End causes a flicker without size change.
                 // If PiP size isn't changing enforce a minimal one-pixel change as a workaround.
-                ++toBounds.bottom;
+                --toBounds.bottom;
             }
         }
         wct.setBounds(pipTaskToken, toBounds);
