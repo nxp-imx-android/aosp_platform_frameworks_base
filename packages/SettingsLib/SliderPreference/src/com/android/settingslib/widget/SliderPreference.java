@@ -54,10 +54,6 @@ public class SliderPreference extends Preference {
 
     private final int mTextStartId;
     private final int mTextEndId;
-    private final int mIconStartId;
-    private final int mIconEndId;
-    private final int mIconStartContentDescriptionId;
-    private final int mIconEndContentDescriptionId;
     private final ColorStateList mTrackActiveColor;
     private final ColorStateList mTrackInactiveColor;
     private final ColorStateList mThumbColor;
@@ -76,11 +72,16 @@ public class SliderPreference extends Preference {
     private int mMin;
     private int mMax;
     private int mSliderIncrement;
+    private int mIconStartId;
+    private int mIconEndId;
+    private int mIconStartContentDescriptionId;
+    private int mIconEndContentDescriptionId;
     private int mHapticFeedbackMode = HAPTIC_FEEDBACK_MODE_NONE;
     private boolean mTickVisible = false;
     private boolean mAdjustable;
     private boolean mTrackingTouch;
     private CharSequence mSliderContentDescription;
+    private CharSequence mSliderStateDescription;
 
     /**
      * Listener reacting to the user pressing DPAD left/right keys if {@code
@@ -123,13 +124,23 @@ public class SliderPreference extends Preference {
             if ((int) slider.getValue() != mSliderValue) {
                 syncValueInternal(slider);
             }
+            if (mExtraTouchListener != null) {
+                mExtraTouchListener.onStopTrackingTouch(slider);
+            }
         }
 
         @Override
         public void onStartTrackingTouch(@NonNull Slider slider) {
             mTrackingTouch = true;
+            if (mExtraTouchListener != null) {
+                mExtraTouchListener.onStartTrackingTouch(slider);
+            }
         }
     };
+
+    @Nullable
+    private Slider.OnSliderTouchListener mExtraTouchListener;
+
     private LabelFormatter mLabelFormater;
     // Whether the SliderPreference should continuously save the Slider value while it is being
     // dragged.
@@ -143,8 +154,15 @@ public class SliderPreference extends Preference {
             if (fromUser && (mUpdatesContinuously || !mTrackingTouch)) {
                 syncValueInternal(slider);
             }
+            if (mExtraChangeListener != null) {
+                mExtraChangeListener.onValueChange(slider, value, fromUser);
+            }
         }
     };
+
+    @Nullable
+    private Slider.OnChangeListener mExtraChangeListener;
+
     // Whether to show the Slider value TextView next to the bar
     private boolean mShowSliderValue;
 
@@ -245,10 +263,59 @@ public class SliderPreference extends Preference {
         this(context, null);
     }
 
+
+    /**
+     * Provide an extra {@link Slider.OnSliderTouchListener} that is called in addition to the
+     * standard listener.
+     */
+    public void setExtraTouchListener(@Nullable Slider.OnSliderTouchListener listener) {
+        mExtraTouchListener = listener;
+    }
+
+    /**
+     * Provide an extra {@link Slider.OnChangeListener} that is called in addition to the
+     * standard listener.
+     */
+    public void setExtraChangeListener(@Nullable Slider.OnChangeListener listener) {
+        mExtraChangeListener = listener;
+    }
+
     private static void setIconViewAndFrameEnabled(View iconView, ViewGroup iconFrame,
             boolean enabled) {
         iconView.setEnabled(enabled);
         iconFrame.setEnabled(enabled);
+    }
+
+    /** Set the start icon of the Slider. */
+    public void setIconStart(int iconStartId) {
+        if (mIconStartId != iconStartId) {
+            mIconStartId = iconStartId;
+            notifyChanged();
+        }
+    }
+
+    /** Set the description resource id of the start icon. */
+    public void setIconStartContentDescription(int iconStartContentDescriptionId) {
+        if (mIconStartContentDescriptionId != iconStartContentDescriptionId) {
+            mIconStartContentDescriptionId = iconStartContentDescriptionId;
+            notifyChanged();
+        }
+    }
+
+    /** Set the end icon of the Slider. */
+    public void setIconEnd(int iconEndId) {
+        if (mIconEndId != iconEndId) {
+            mIconEndId = iconEndId;
+            notifyChanged();
+        }
+    }
+
+    /** Set the description resource id of the end icon. */
+    public void setIconEndContentDescription(int iconEndContentDescriptionId) {
+        if (mIconEndContentDescriptionId != iconEndContentDescriptionId) {
+            mIconEndContentDescriptionId = iconEndContentDescriptionId;
+            notifyChanged();
+        }
     }
 
     @Override
@@ -283,6 +350,11 @@ public class SliderPreference extends Preference {
             mSlider.setContentDescription(title);
         } else {
             mSlider.setContentDescription(null);
+        }
+        if (!TextUtils.isEmpty(mSliderStateDescription)) {
+            mSlider.setStateDescription(mSliderStateDescription);
+        } else {
+            mSlider.setStateDescription(null);
         }
         mSlider.setValueFrom(mMin);
         mSlider.setValueTo(mMax);
@@ -338,6 +410,16 @@ public class SliderPreference extends Preference {
 
         ImageView iconEndView = (ImageView) holder.findViewById(R.id.icon_end);
         updateIconEndIfNeeded(iconEndView);
+    }
+
+    /**
+     * Gets the {@link Slider} widget owned by this preference.
+     *
+     * @return the slider widget
+     */
+    @Nullable
+    public Slider getSlider() {
+        return mSlider;
     }
 
     /**
@@ -524,6 +606,18 @@ public class SliderPreference extends Preference {
         mSliderContentDescription = contentDescription;
         if (mSlider != null) {
             mSlider.setContentDescription(contentDescription);
+        }
+    }
+
+    /**
+     * Sets the state description of the {@link Slider}.
+     *
+     * @param stateDescription The state description of the {@link Slider}
+     */
+    public void setSliderStateDescription(@Nullable CharSequence stateDescription) {
+        mSliderStateDescription = stateDescription;
+        if (mSlider != null) {
+            mSlider.setStateDescription(stateDescription);
         }
     }
 
