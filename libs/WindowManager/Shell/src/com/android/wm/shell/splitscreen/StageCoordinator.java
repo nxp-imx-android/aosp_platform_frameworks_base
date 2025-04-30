@@ -37,7 +37,6 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
 import static com.android.window.flags.Flags.enableMultiDisplaySplit;
-import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
@@ -124,6 +123,7 @@ import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -865,7 +865,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // split root to the default display if the app pair is clicked on default display.
         // TODO(b/393217881): cover more cases and extract this to a new method when split screen
         //  in connected display is fully supported.
-        if (enableNonDefaultDisplaySplit()) {
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
             DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
             ActivityManager.RunningTaskInfo taskInfo1 = mTaskOrganizer.getRunningTaskInfo(taskId1);
             ActivityManager.RunningTaskInfo taskInfo2 = mTaskOrganizer.getRunningTaskInfo(taskId2);
@@ -1801,7 +1801,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         //  current displayId when multi split is supported.
         ActivityManager.RunningTaskInfo rootTaskInfo =
                 mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
-        if (enableNonDefaultDisplaySplit() && rootTaskInfo.displayId != DEFAULT_DISPLAY) {
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+                && rootTaskInfo.displayId != DEFAULT_DISPLAY) {
             DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
             if (displayAreaInfo != null) {
                 wct.reparent(rootTaskInfo.token, displayAreaInfo.token, false /* onTop */);

@@ -1813,7 +1813,7 @@ class DesktopTasksController(
         }
 
         if (
-            !Flags.enableNonDefaultDisplaySplit() ||
+            !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue ||
                 !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue
         ) {
             return
