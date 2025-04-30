@@ -207,7 +207,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorAvailable()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
@@ -224,7 +224,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorUnavailable()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
@@ -240,7 +240,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testMandatoryBiometricsAndStrongBiometricsStatus_whenRequirementsNotSatisfied()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
@@ -258,7 +258,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testMandatoryBiometricsStatus_whenRequirementsNotSatisfiedAndSensorAvailable()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
@@ -277,7 +277,6 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
     public void testCalculateByPriority()
             throws Exception {
         when(mFaceAuthenticator.hasEnrolledTemplates(anyInt(), any())).thenReturn(false);
@@ -300,7 +299,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testMandatoryBiometricsNegativeButtonText_whenSet()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
