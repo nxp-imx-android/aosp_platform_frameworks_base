@@ -6982,16 +6982,16 @@ package android.app {
     ctor public Notification.ProgressStyle();
     method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
     method @NonNull public android.app.Notification.ProgressStyle addProgressSegment(@NonNull android.app.Notification.ProgressStyle.Segment);
-    method public int getProgress();
+    method @IntRange(from=0) public int getProgress();
     method @Nullable public android.graphics.drawable.Icon getProgressEndIcon();
-    method public int getProgressMax();
+    method @IntRange(from=0) public int getProgressMax();
     method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Point> getProgressPoints();
     method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Segment> getProgressSegments();
     method @Nullable public android.graphics.drawable.Icon getProgressStartIcon();
     method @Nullable public android.graphics.drawable.Icon getProgressTrackerIcon();
     method public boolean isProgressIndeterminate();
     method public boolean isStyledByProgress();
-    method @NonNull public android.app.Notification.ProgressStyle setProgress(int);
+    method @NonNull public android.app.Notification.ProgressStyle setProgress(@IntRange(from=0) int);
     method @NonNull public android.app.Notification.ProgressStyle setProgressEndIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.app.Notification.ProgressStyle setProgressIndeterminate(boolean);
     method @NonNull public android.app.Notification.ProgressStyle setProgressPoints(@NonNull java.util.List<android.app.Notification.ProgressStyle.Point>);
@@ -7005,7 +7005,7 @@ package android.app {
     ctor public Notification.ProgressStyle.Point(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
-    method public int getPosition();
+    method @IntRange(from=1) public int getPosition();
     method @NonNull public android.app.Notification.ProgressStyle.Point setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Point setId(int);
   }
@@ -7014,7 +7014,7 @@ package android.app {
     ctor public Notification.ProgressStyle.Segment(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
-    method public int getLength();
+    method @IntRange(from=1) public int getLength();
     method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Segment setId(int);
   }
