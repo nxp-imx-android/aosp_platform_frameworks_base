@@ -19,17 +19,7 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.CheckFlagsRule
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.Tag
-import android.tools.flicker.assertions.SubjectsParser
-import android.tools.flicker.subject.FlickerSubject
 import android.tools.flicker.subject.events.EventLogSubject
-import android.tools.flicker.subject.layers.LayerTraceEntrySubject
-import android.tools.flicker.subject.layers.LayersTraceSubject
-import android.tools.flicker.subject.wm.WindowManagerStateSubject
-import android.tools.flicker.subject.wm.WindowManagerTraceSubject
-import android.tools.io.Reader
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.surfaceflinger.LayerTraceEntry
@@ -38,13 +28,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
-import com.android.server.wm.flicker.assertNavBarPosition
-import com.android.server.wm.flicker.assertStatusBarLayerPosition
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.wm.shell.Flags
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -65,7 +52,7 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class EnterBubbleViaBubbleMenuTest {
+class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase() {
 
     companion object {
         private val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -90,17 +77,6 @@ class EnterBubbleViaBubbleMenuTest {
          */
         private val testApp = SimpleAppHelper(instrumentation)
 
-        // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
-        /**
-         * Indicates whether the device uses gesture navigation bar or not.
-         */
-        private val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
-
-        /**
-         * The reader to read trace from.
-         */
-        private lateinit var traceDataReader: Reader
-
         @ClassRule
         @JvmField
         val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -110,66 +86,11 @@ class EnterBubbleViaBubbleMenuTest {
         )
     }
 
-    @get:Rule
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
-    /**
-     * The reader to read trace from.
-     */
-    private val traceDataReader = recordTraceWithTransitionRule.reader
-
-    /**
-     * The WindowManager trace subject, which is equivalent to the data shown in
-     * `Window Manager` tab in go/winscope.
-     */
-    private val wmTraceSubject = WindowManagerTraceSubject(
-        traceDataReader.readWmTrace() ?: error("Failed to read WM trace")
-    )
-
-    /**
-     * The Layer trace subject, which is equivalent to the data shown in
-     * `Surface Flinger` tab in go/winscope.
-     */
-    private val layersTraceSubject = LayersTraceSubject(
-        traceDataReader.readLayersTrace() ?: error("Failed to read layer trace")
-    )
-
-    /**
-     * The first [WindowManagerState] of the WindowManager trace.
-     */
-    private val wmStateSubjectAtStart: WindowManagerStateSubject
-
-    /**
-     * The last [WindowManagerState] of the WindowManager trace.
-     */
-    private val wmStateSubjectAtEnd: WindowManagerStateSubject
-
-    /**
-     * The first [LayerTraceEntry] of the Layers trace.
-     */
-    private val layerTraceEntrySubjectAtStart: LayerTraceEntrySubject
-
-    /**
-     * The last [LayerTraceEntry] of the Layers trace.
-     */
-    private val layerTraceEntrySubjectAtEnd: LayerTraceEntrySubject
+    override val traceDataReader
+        get() = recordTraceWithTransitionRule.reader
 
     // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
-    /**
-     * Indicates whether the device uses gesture navigation bar or not.
-     */
-    private val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
-
-    /**
-     * Initialize subjects inherited from [FlickerSubject].
-     */
-    init {
-        val parser = SubjectsParser(traceDataReader)
-        wmStateSubjectAtStart = parser.getSubjectOfType(Tag.START)
-        wmStateSubjectAtEnd = parser.getSubjectOfType(Tag.END)
-        layerTraceEntrySubjectAtStart = parser.getSubjectOfType(Tag.START)
-        layerTraceEntrySubjectAtEnd = parser.getSubjectOfType(Tag.END)
-    }
+    override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
 
 // region Bubble related tests
 
@@ -319,112 +240,6 @@ class EnterBubbleViaBubbleMenuTest {
     @Test
     fun appLayerHasRoundedCorner() {
         layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
-    }
-
-// endregion
-
-// region Generic tests
-
-    /**
-     * Verifies there's no flickers among all visible windows.
-     *
-     * In other words, all visible windows shouldn't be visible -> invisible -> visible in
-     * consecutive entries
-     */
-    @Test
-    fun visibleWindowsShownMoreThanOneConsecutiveEntry() {
-        wmTraceSubject
-            .visibleWindowsShownMoreThanOneConsecutiveEntry()
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies there's no flickers among all visible layers.
-     *
-     * In other words, all visible layers shouldn't be visible -> invisible -> visible in
-     * consecutive entries
-     */
-    @Test
-    fun visibleLayersShownMoreThanOneConsecutiveEntry() {
-        layersTraceSubject
-            .visibleLayersShownMoreThanOneConsecutiveEntry()
-            .forAllEntries()
-    }
-
-// endregion
-
-// region System UI related tests
-
-    /**
-     * Verifies the launcher window is always visible.
-     */
-    @Test
-    fun launcherWindowIsAlwaysVisible() {
-        wmTraceSubject.isAppWindowVisible(ComponentNameMatcher.LAUNCHER).forAllEntries()
-    }
-
-    /**
-     * Verifies the launcher layer is always visible.
-     */
-    @Test
-    fun launcherLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(ComponentNameMatcher.LAUNCHER).forAllEntries()
-    }
-
-    /**
-     * Verifies navigation bar layer is visible at the start and end of transition.
-     */
-    @Test
-    fun navBarLayerIsVisibleAtStartAndEnd() {
-        layerTraceEntrySubjectAtStart.isVisible(ComponentNameMatcher.NAV_BAR)
-        layerTraceEntrySubjectAtEnd.isVisible(ComponentNameMatcher.NAV_BAR)
-    }
-
-    /**
-     * Verifies navigation bar position at the start and end of transition.
-     */
-    @Test
-    fun navBarLayerPositionAtStartAndEnd() {
-        assertNavBarPosition(layerTraceEntrySubjectAtStart, isGesturalNavBar)
-        assertNavBarPosition(layerTraceEntrySubjectAtEnd, isGesturalNavBar)
-    }
-
-    /**
-     * Verifies navigation bar window is visible.
-     */
-    @Test
-    fun navBarWindowIsAlwaysVisible() {
-        wmTraceSubject
-            .isAboveAppWindowVisible(ComponentNameMatcher.NAV_BAR)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies status bar layer is visible at the start and end of transition.
-     */
-    @Test
-    fun statusBarLayerIsVisibleAtStartAndEnd() {
-        layerTraceEntrySubjectAtStart.isVisible(ComponentNameMatcher.STATUS_BAR)
-        layerTraceEntrySubjectAtEnd.isVisible(ComponentNameMatcher.STATUS_BAR)
-    }
-
-    /**
-     * Verifies status bar position at the start and end of transition.
-     */
-    @Test
-    fun statusBarLayerPositionAtStartAndEnd() {
-        assertStatusBarLayerPosition(layerTraceEntrySubjectAtStart, wmStateSubjectAtStart.wmState)
-        assertStatusBarLayerPosition(layerTraceEntrySubjectAtEnd, wmStateSubjectAtEnd.wmState)
-    }
-
-    /**
-     * Verifies status bar window is visible.
-     */
-    @Test
-    fun statusBarWindowIsAlwaysVisible() {
-        wmTraceSubject
-            .isAboveAppWindowVisible(ComponentNameMatcher.STATUS_BAR)
-            .forAllEntries()
     }
 
 // endregion
