@@ -12423,7 +12423,7 @@ public class NotificationManagerService extends SystemService {
         protected @NonNull String[] getAdjustmentDeniedPackages(@UserIdInt int userId,
                 @Adjustment.Keys String key) {
             synchronized (mLock) {
-                if (notificationClassificationUi() || nmSummarization() | nmSummarizationUi()) {
+                if (notificationClassificationUi() || nmSummarization() || nmSummarizationUi()) {
                     if (mAdjustmentKeyDeniedPackages.containsKey(userId)) {
                         return mAdjustmentKeyDeniedPackages.get(userId).getOrDefault(
                                 key, new ArraySet<>()).toArray(new String[0]);
@@ -12436,7 +12436,7 @@ public class NotificationManagerService extends SystemService {
         protected boolean isAdjustmentAllowedForPackage(@UserIdInt int userId,
                 @Adjustment.Keys String key, String pkg) {
             synchronized (mLock) {
-                if (notificationClassificationUi() || nmSummarization() | nmSummarizationUi()) {
+                if (notificationClassificationUi() || nmSummarization() || nmSummarizationUi()) {
                     if (mAdjustmentKeyDeniedPackages.containsKey(userId)) {
                         return !mAdjustmentKeyDeniedPackages.get(userId).getOrDefault(
                                 key, new ArraySet<>()).contains(pkg);
@@ -12448,7 +12448,7 @@ public class NotificationManagerService extends SystemService {
 
         public void setAdjustmentSupportedForPackage(int userId, @Adjustment.Keys String key,
                 String pkg, boolean enabled) {
-            if (!(notificationClassificationUi() || nmSummarization() | nmSummarizationUi())) {
+            if (!(notificationClassificationUi() || nmSummarization() || nmSummarizationUi())) {
                 return;
             }
             synchronized (mLock) {
