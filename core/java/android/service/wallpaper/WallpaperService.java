@@ -34,7 +34,6 @@ import static android.view.flags.Flags.disableDrawWakeLock;
 import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
 import static com.android.window.flags.Flags.noDuplicateSurfaceDestroyedEvents;
 import static com.android.window.flags.Flags.noConsecutiveVisibilityEvents;
-import static com.android.window.flags.Flags.noVisibilityEventOnDisplayStateChange;
 import static com.android.window.flags.Flags.offloadColorExtraction;
 
 import android.animation.AnimationHandler;
@@ -212,7 +211,7 @@ public abstract class WallpaperService extends Service {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
 
-    // TODO (b/287037772) remove this flag and the forceReport argument in reportVisibility
+    // TODO(b/272527315): remove this flag once shouldZoomOutWallpaper can be used instead.
     private boolean mIsWearOs;
 
     /**
@@ -1717,21 +1716,21 @@ public abstract class WallpaperService extends Service {
         void onScreenTurningOnChanged(boolean isScreenTurningOn) {
             if (!mDestroyed) {
                 mIsScreenTurningOn = isScreenTurningOn;
-                reportVisibility(false);
+                reportVisibility();
             }
         }
 
         void doVisibilityChanged(boolean visible) {
             if (!mDestroyed) {
                 mVisible = visible;
-                reportVisibility(false);
+                reportVisibility();
                 if (mReportedVisible) processLocalColors();
             } else {
                 AnimationHandler.requestAnimatorsEnabled(visible, this);
             }
         }
 
-        void reportVisibility(boolean forceReport) {
+        void reportVisibility() {
             if (mScreenshotSurfaceControl != null && mVisible) {
                 if (DEBUG) Log.v(TAG, "Frozen so don't report visibility change");
                 return;
@@ -1757,17 +1756,10 @@ public abstract class WallpaperService extends Service {
                                     + " mDisplayState="
                                     + mDisplayState);
                 }
-                if (mReportedVisible != visible || forceReport) {
+                if (mReportedVisible != visible) {
                     mReportedVisible = visible;
                     if (DEBUG) {
-                        Log.v(
-                                TAG,
-                                "onVisibilityChanged("
-                                        + visible
-                                        + "): "
-                                        + this
-                                        + " forceReport="
-                                        + forceReport);
+                        Log.v(TAG, "onVisibilityChanged(" + visible + "): " + this);
                     }
                     if (visible) {
                         // If becoming visible, in preview mode the surface
@@ -2443,11 +2435,7 @@ public abstract class WallpaperService extends Service {
                     @Override
                     public void onDisplayChanged(int displayId) {
                         if (mDisplay.getDisplayId() == displayId) {
-                            boolean forceReport =
-                                    !noVisibilityEventOnDisplayStateChange()
-                                            && mIsWearOs
-                                            && mDisplay.getState() != Display.STATE_DOZE_SUSPEND;
-                            reportVisibility(forceReport);
+                            reportVisibility();
                         }
                     }
 
