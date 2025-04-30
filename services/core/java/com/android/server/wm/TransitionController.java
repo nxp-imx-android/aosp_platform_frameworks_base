@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.view.WindowManager.KEYGUARD_VISIBILITY_TRANSIT_FLAGS;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
+import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_NONE;
 
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
@@ -1513,9 +1514,10 @@ class TransitionController {
     private void queueTransition(Transition transit, OnStartCollect onStartCollect) {
         final QueuedTransition queuedTransition = new QueuedTransition(transit, onStartCollect);
 
-        // If we queue a transition while a collecting transition is still not formally started,
-        // then check if collecting transition is changing a display
-        if (mCollectingTransition != null && !mCollectingTransition.hasStarted()) {
+        // If we queue a non-display transition while a collecting transition is still not
+        // formally started, then check if collecting transition is changing a display
+        if ((transit.getFlags() & TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) == 0
+                && mCollectingTransition != null && !mCollectingTransition.hasStarted()) {
             for (int i = 0; i < mCollectingTransition.mParticipants.size(); i++) {
                 if (mCollectingTransition.mParticipants.valueAt(i).asDisplayContent() != null) {
                     queuedTransition.mShouldNoopUponDequeue = true;

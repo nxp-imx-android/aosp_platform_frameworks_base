@@ -32,6 +32,7 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SUSTAINED_PER
 import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
+import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
@@ -2806,10 +2807,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 return;
             }
             if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-                final Transition transition = new Transition(TRANSIT_CLOSE, 0 /* flags */,
-                        mTransitionController, mWmService.mSyncEngine);
+                final Transition transition = new Transition(TRANSIT_CLOSE,
+                        TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION, mTransitionController,
+                        mWmService.mSyncEngine);
                 mTransitionController.startCollectOrQueue(transition, (deferred) -> {
-                    transition.collect(displayContent);
+                    transition.collectExistenceChange(displayContent);
                     transition.setAllReady();
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
@@ -2819,12 +2821,26 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
                             null /* remoteTransition */, displayChange);
+                    mTransitionController.mStateValidators.add(() -> {
+                        // Ensure the display content is removed even if the transition does not
+                        // successfully finish.
+                        removeDisplayContent(displayContent);
+                    });
                 });
             } else {
-                displayContent.remove();
-                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+                removeDisplayContent(displayContent);
             }
         }
+    }
+
+    private void removeDisplayContent(DisplayContent displayContent) {
+        if (displayContent.isRemoving() || displayContent.isRemoved()) {
+            Slog.e(TAG, "DisplayContent already removed or removing.");
+            return;
+        }
+        displayContent.remove();
+        mWmService.mPossibleDisplayInfoMapper
+                .removePossibleDisplayInfos(displayContent.mDisplayId);
     }
 
     @Override

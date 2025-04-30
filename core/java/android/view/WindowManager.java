@@ -636,6 +636,14 @@ public interface WindowManager extends ViewManager {
     int TRANSIT_FLAG_AVOID_MOVE_TO_FRONT = (1 << 16); // 0x10000
 
     /**
+     * Transition flag: Indicates that the transition involves a display level change
+     * (i.e, disconnect).
+     * @hide
+     */
+    int TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION = (1 << 17); // 0x20000
+
+
+    /**
      * @hide
      */
     @IntDef(flag = true, prefix = { "TRANSIT_FLAG_" }, value = {
@@ -656,6 +664,7 @@ public interface WindowManager extends ViewManager {
             TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH,
             TRANSIT_FLAG_AOD_APPEARING,
             TRANSIT_FLAG_AVOID_MOVE_TO_FRONT,
+            TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface TransitionFlags {}
