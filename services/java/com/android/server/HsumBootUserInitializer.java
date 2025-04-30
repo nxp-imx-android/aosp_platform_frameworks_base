@@ -157,39 +157,47 @@ final class HsumBootUserInitializer {
         }
 
         if (mShouldAlwaysHaveMainUser) {
-            t.traceBegin("createMainUserIfNeeded");
-            createMainUserIfNeeded();
-            t.traceEnd();
+            createMainUserIfNeeded(t);
             return;
         }
+
         if (mShouldCreateInitialUser) {
-            t.traceBegin("createAdminUserIfNeeded");
-            createAdminUserIfNeeded();
-            t.traceEnd();
+            createAdminUserIfNeeded(t);
             return;
         }
         Slogf.d(TAG, "Not checking if initial user exists (should be handled externally)");
     }
 
-    private void createMainUserIfNeeded() {
-        final int mainUser = mUmi.getMainUserId();
-        if (mainUser != UserHandle.USER_NULL) {
-            Slogf.d(TAG, "Found existing MainUser, userId=%d", mainUser);
-            return;
+    private void createMainUserIfNeeded(TimingsTraceAndSlog t) {
+        // Always tracing as it used to be done by the caller
+        t.traceBegin("createMainUserIfNeeded");
+        try {
+            int mainUserId = mUmi.getMainUserId();
+            if (mainUserId != UserHandle.USER_NULL) {
+                Slogf.d(TAG, "createMainUserIfNeeded(): found MainUser (userId=%d)", mainUserId);
+                return;
+            }
+            createInitialUser(/* isMainUser= */ true);
+        } finally {
+            t.traceEnd();
         }
-        createInitialUser(/* isMainUser= */ true);
     }
 
-    private void createAdminUserIfNeeded() {
-        int[] userIds = mUmi.getUserIds();
-        if (userIds != null && userIds.length > 1) {
-            if (DEBUG) {
-                Slogf.d(TAG, "createAdminUserIfNeeded(): already have more than 1 user (%s)",
-                        Arrays.toString(userIds));
+    private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
+        t.traceBegin("createAdminUserIfNeeded");
+        try {
+            int[] userIds = mUmi.getUserIds();
+            if (userIds != null && userIds.length > 1) {
+                if (DEBUG) {
+                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have more than 1 user (%s)",
+                            Arrays.toString(userIds));
+                }
+                return;
             }
-            return;
+            createInitialUser(/* isMainUser= */ false);
+        } finally {
+            t.traceEnd();
         }
-        createInitialUser(/* isMainUser= */ false);
     }
 
     private void createInitialUser(boolean isMainUser) {
