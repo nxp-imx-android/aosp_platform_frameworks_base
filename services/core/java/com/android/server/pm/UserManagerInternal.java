@@ -212,15 +212,6 @@ public abstract class UserManagerInternal {
     public abstract void setForceEphemeralUsers(boolean forceEphemeralUsers);
 
     /**
-     * Switches to the system user and deletes all other users.
-     *
-     * <p>Called by the {@link com.android.server.devicepolicy.DevicePolicyManagerService} when
-     * the force-ephemeral-users policy is toggled on to make sure there are no pre-existing
-     * non-ephemeral users left.
-     */
-    public abstract void removeAllUsers();
-
-    /**
      * Called by the activity manager when the ephemeral user goes to background and its removal
      * starts as a result.
      *
