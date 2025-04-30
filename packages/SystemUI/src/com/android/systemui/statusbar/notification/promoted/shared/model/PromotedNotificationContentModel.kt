@@ -19,16 +19,13 @@ package com.android.systemui.statusbar.notification.promoted.shared.model
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.DrawableRes
 import android.annotation.ElapsedRealtimeLong
-import android.app.Notification
 import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
-import com.android.systemui.Flags
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
-import com.android.systemui.util.Compile
 
 data class PromotedNotificationContentModels(
     /** The potentially redacted version of the content that will be exposed to the public */
@@ -236,17 +233,5 @@ data class PromotedNotificationContentModel(
 
     companion object {
         @JvmStatic fun featureFlagEnabled(): Boolean = PromotedNotificationUi.isEnabled
-
-        /**
-         * Returns true if the given notification should be considered promoted when deciding
-         * whether or not to show the status bar chip UI.
-         */
-        @JvmStatic
-        fun isPromotedForStatusBarChip(notification: Notification): Boolean {
-            if (Compile.IS_DEBUG && Flags.debugLiveUpdatesPromoteAll()) {
-                return true
-            }
-            return notification.isPromotedOngoing()
-        }
     }
 }

@@ -47,7 +47,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Companion.isPromotedForStatusBarChip
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.NotifIcon
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.OldProgress
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
@@ -104,8 +103,7 @@ constructor(
             return null
         }
 
-        // The status bar chips rely on this extractor, so take them into account for promotion.
-        if (!isPromotedForStatusBarChip(notification)) {
+        if (!notification.isPromotedOngoing()) {
             if (LOG_NOT_EXTRACTED) {
                 logger.logExtractionSkipped(entry, "isPromotedOngoing returned false")
             }
