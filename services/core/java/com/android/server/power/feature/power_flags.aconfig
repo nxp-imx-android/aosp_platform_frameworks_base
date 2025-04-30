@@ -50,6 +50,16 @@ flag {
 }
 
 flag {
+    name: "lock_on_unplug"
+    namespace: "lse_desktop_experience"
+    description: "Fixes device locking when all remaining external displays are unplugged"
+    bug: "414558760"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "policy_reason_in_display_power_request"
     namespace: "wear_frameworks"
     description: "Whether the policy reason is populted in DisplayPowerRequest."

@@ -148,6 +148,7 @@ import com.android.server.power.batterysaver.BatterySaverPolicy;
 import com.android.server.power.batterysaver.BatterySaverStateMachine;
 import com.android.server.power.batterysaver.BatterySavingStats;
 import com.android.server.power.feature.PowerManagerFlags;
+import com.android.server.wm.WindowManagerInternal;
 
 import dalvik.annotation.optimization.NeverCompile;
 
@@ -354,6 +355,8 @@ public final class PowerManagerService extends SystemService
     private SettingsObserver mSettingsObserver;
     private DreamManagerInternal mDreamManager;
     private LogicalLight mAttentionLight;
+    @Nullable
+    private WindowManagerInternal mWindowManagerInternal;
 
     private final InattentiveSleepWarningController mInattentiveSleepWarningOverlayController;
     private final AmbientDisplaySuppressionController mAmbientDisplaySuppressionController;
@@ -766,6 +769,34 @@ public final class PowerManagerService extends SystemService
         @Override
         public void onDisplayRemoved(int displayId) {
             mNotifier.clearScreenTimeoutPolicyListeners(displayId);
+
+            if (com.android.server.display.feature.flags.Flags.separateTimeouts()
+                    && !mFeatureFlags.isLockOnUnplugEnabled()) {
+                return;
+            }
+
+            // if all the remaining devices are asleep, lock the default display.
+            synchronized (mLock) {
+                for (int i = 0; i < mPowerGroups.size(); i++) {
+                    PowerGroup pg = mPowerGroups.valueAt(i);
+                    // If a power group remains, that is an adjacent group
+                    // and it is awake, then do not lock the device.
+                    if (pg.isDefaultOrAdjacentGroup()
+                            && pg.getWakefulnessLocked() == WAKEFULNESS_AWAKE) {
+                        return;
+                    }
+                }
+            }
+            tryToLockNow();
+        }
+
+        private void tryToLockNow() {
+            if (mWindowManagerInternal == null) {
+                mWindowManagerInternal =  getLocalService(WindowManagerInternal.class);
+            }
+            if (mWindowManagerInternal != null) {
+                mWindowManagerInternal.lockNow();
+            }
         }
 
         @Override
@@ -774,7 +805,8 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    private final class DisplayGroupPowerChangeListener implements
+    @VisibleForTesting
+    final class DisplayGroupPowerChangeListener implements
             DisplayManagerInternal.DisplayGroupListener {
 
         static final int DISPLAY_GROUP_ADDED = 0;
@@ -1379,6 +1411,7 @@ public final class PowerManagerService extends SystemService
             mPolicy = getLocalService(WindowManagerPolicy.class);
             mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
             mDisplayManager = mContext.getSystemService(DisplayManager.class);
+            mWindowManagerInternal =  getLocalService(WindowManagerInternal.class);
             mAttentionDetector.systemReady(mContext);
 
             SensorManager sensorManager = new SystemSensorManager(mContext, mHandler.getLooper());
@@ -1402,7 +1435,7 @@ public final class PowerManagerService extends SystemService
                 mDisplayManager.registerDisplayListener(new DisplayListener(), mHandler);
             }
 
-            if(mDreamManager != null){
+            if (mDreamManager != null) {
                 // This DreamManager method does not acquire a lock, so it should be safe to call.
                 mDreamManager.registerDreamManagerStateListener(new DreamManagerStateListener());
             }
