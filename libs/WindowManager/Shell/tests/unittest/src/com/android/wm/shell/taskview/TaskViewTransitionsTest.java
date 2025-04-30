@@ -435,6 +435,22 @@ public class TaskViewTransitionsTest extends ShellTestCase {
                 .isEqualTo(bounds);
     }
 
+    @Test
+    public void externalTransitionPending_alreadyFinished_removed() {
+        IBinder transition = mock(IBinder.class);
+        mTaskViewTransitions.enqueueExternal(mTaskViewTaskController, () -> transition);
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+
+        // enqueue an external transition, that when started returns a null token as if it has
+        // already finished
+        mTaskViewTransitions.enqueueExternal(mTaskViewTaskController, () -> null);
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+
+        mTaskViewTransitions.onExternalDone(transition);
+
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
     private SurfaceControl.Transaction createMockTransaction() {
         SurfaceControl.Transaction transaction = mock(SurfaceControl.Transaction.class);
         when(transaction.reparent(any(), any())).thenReturn(transaction);
