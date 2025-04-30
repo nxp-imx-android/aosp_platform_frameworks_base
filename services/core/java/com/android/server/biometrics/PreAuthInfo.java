@@ -36,7 +36,6 @@ import android.os.UserManager;
 import android.util.Pair;
 import android.util.Slog;
 
-import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
 
 import java.lang.annotation.Retention;
@@ -128,7 +127,7 @@ class PreAuthInfo {
         promptInfo.setDeviceCredentialAllowed(Utils.isCredentialRequested(promptInfo));
         final boolean isMandatoryBiometricsAuthentication =
                 updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
-                        trustManager, settingObserver, context);
+                        trustManager, settingObserver);
 
         final boolean biometricRequested = Utils.isBiometricRequested(promptInfo);
         final int requestedStrength = Utils.getPublicBiometricStrength(promptInfo);
@@ -184,24 +183,18 @@ class PreAuthInfo {
 
     private static boolean updateAuthenticatorsIfIdentityCheckIsActive(PromptInfo promptInfo,
             int effectiveUserId, ITrustManager trustManager,
-            BiometricService.SettingObserver settingObserver, Context context) {
+            BiometricService.SettingObserver settingObserver) {
         if (!Flags.identityCheckTestApi() && dropCredentialFallback(promptInfo.getAuthenticators(),
                 settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
                         effectiveUserId), trustManager)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            if (promptInfo.getNegativeButtonText() == null) {
-                promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
-            }
             return true;
         } else if (Flags.identityCheckTestApi()
-                && (promptInfo.getAuthenticators() & BiometricManager.Authenticators.IDENTITY_CHECK)
-                != 0 && settingObserver.isIdentityCheckActive(effectiveUserId)) {
+                && Utils.shouldApplyIdentityCheck(promptInfo.getAuthenticators())
+                && settingObserver.isIdentityCheckActive(effectiveUserId)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            if (promptInfo.getNegativeButtonText() == null) {
-                promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
-            }
             return true;
         }
 
@@ -210,10 +203,7 @@ class PreAuthInfo {
 
     private static boolean dropCredentialFallback(int authenticators,
             boolean isMandatoryBiometricsEnabled, ITrustManager trustManager) {
-        final boolean isMandatoryBiometricsRequested =
-                (authenticators & BiometricManager.Authenticators.IDENTITY_CHECK)
-                        == BiometricManager.Authenticators.IDENTITY_CHECK;
-        if (isMandatoryBiometricsEnabled && isMandatoryBiometricsRequested) {
+        if (isMandatoryBiometricsEnabled && Utils.shouldApplyIdentityCheck(authenticators)) {
             try {
                 final boolean isInSignificantPlace = trustManager.isInSignificantPlace();
                 return !isInSignificantPlace;
