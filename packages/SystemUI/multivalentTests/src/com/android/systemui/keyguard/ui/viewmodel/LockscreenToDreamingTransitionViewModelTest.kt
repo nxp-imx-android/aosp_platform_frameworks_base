@@ -105,6 +105,77 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         }
 
     @Test
+    fun lockscreenFadeOut_shadeExpanded() =
+        testScope.runTest {
+            val values by collectValues(underTest.lockscreenAlpha)
+            shadeExpanded(true)
+            runCurrent()
+
+            repository.sendTransitionSteps(
+                steps =
+                    listOf(
+                        step(0f, TransitionState.STARTED),
+                        step(0f),
+                        step(.3f),
+                        step(.5f),
+                        step(1f),
+                        step(1f, TransitionState.FINISHED),
+                    ),
+                testScope = testScope,
+            )
+
+            // Lockscreen is not shown during the whole transition.
+            values.forEach { assertThat(it).isEqualTo(0f) }
+        }
+
+    @Test
+    fun shortcutsFadeOut() =
+        testScope.runTest {
+            val values by collectValues(underTest.shortcutsAlpha)
+            repository.sendTransitionSteps(
+                steps =
+                    listOf(
+                        step(0f, TransitionState.STARTED), // Should start running here...
+                        step(0f),
+                        step(.1f),
+                        step(.2f),
+                        step(.3f), // ...up to here
+                        step(1f),
+                    ),
+                testScope = testScope,
+            )
+
+            // Only five values should be present, since the dream overlay runs for a small
+            // fraction of the overall animation time
+            assertThat(values.size).isEqualTo(5)
+            values.forEach { assertThat(it).isIn(Range.closed(0f, 1f)) }
+        }
+
+    @Test
+    fun shortcutsFadeOut_shadeExpanded() =
+        testScope.runTest {
+            val values by collectValues(underTest.shortcutsAlpha)
+            shadeExpanded(true)
+            runCurrent()
+
+            repository.sendTransitionSteps(
+                steps =
+                    listOf(
+                        step(0f, TransitionState.STARTED),
+                        step(0f),
+                        step(.3f),
+                        step(.5f),
+                        step(1f),
+                        step(1f, TransitionState.FINISHED),
+                    ),
+                testScope = testScope,
+            )
+
+            // Shortcuts are not shown during the whole transition.
+            values.forEach { assertThat(it).isEqualTo(0f) }
+        }
+
+    @Test
     fun lockscreenTranslationY() =
         testScope.runTest {
             val pixels = 100
@@ -177,14 +248,14 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
 
     private fun step(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return TransitionStep(
             from = KeyguardState.LOCKSCREEN,
             to = KeyguardState.DREAMING,
             value = value,
             transitionState = state,
-            ownerName = "LockscreenToDreamingTransitionViewModelTest"
+            ownerName = "LockscreenToDreamingTransitionViewModelTest",
         )
     }
 

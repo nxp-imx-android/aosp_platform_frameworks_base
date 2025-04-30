@@ -56,12 +56,15 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTra
 
     /** Lockscreen views alpha */
     val lockscreenAlpha: Flow<Float> =
-        transitionAnimation.sharedFlow(duration = 250.milliseconds, onStep = { 1f - it })
+        transitionAnimation.sharedFlowWithShade(
+            duration = 250.milliseconds,
+            onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
+        )
 
     val shortcutsAlpha: Flow<Float> =
-        transitionAnimation.sharedFlow(
+        transitionAnimation.sharedFlowWithShade(
             duration = 250.milliseconds,
-            onStep = { 1 - it },
+            onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
             onFinish = { 0f },
             onCancel = { 1f },
         )
