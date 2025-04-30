@@ -2115,8 +2115,7 @@ public class ZenModeHelper {
 
             // Update last activation for rules that are being activated.
             Instant now = mClock.instant();
-            boolean isManualOrigin =
-                    origin == ORIGIN_USER_IN_SYSTEMUI || origin == ORIGIN_USER_IN_APP;
+            boolean isManualOrigin = origin == ORIGIN_USER_IN_SYSTEMUI;
             if (Flags.modesUi()
                     && (Flags.modesCleanupImplicit() || Flags.modesUiTileReactivatesLast())) {
                 if (!mConfig.isManualActive() && config.isManualActive()) {

@@ -2658,10 +2658,9 @@ public class ZenModeConfig implements Parcelable {
         public Instant lastActivation;
 
         /**
-         * Last time at which the rule was manually activated (whether as a user action in
-         * Settings or SystemUI, or from the owner package with
-         * {@link Condition#SOURCE_USER_ACTION}). If {@code null}, the rule has never been manually
-         * activated since its creation.
+         * Last time at which the rule was manually activated (as a user action in Settings or
+         * SystemUI). If {@code null}, the rule has never been manually activated since its
+         * creation.
          *
          * <p>Note that this was previously untracked, so it will also be {@code null} for rules
          * created before we started tracking and never activated since.
@@ -2680,10 +2679,9 @@ public class ZenModeConfig implements Parcelable {
         public Instant lastDeactivation;
 
         /**
-         * Last time at which the rule was manually deactivated (whether as a user action in
-         * Settings or SystemUI, or from the owner package with
-         * {@link Condition#SOURCE_USER_ACTION}). If {@code null}, the rule has never been manually
-         * deactivated since its creation.
+         * Last time at which the rule was manually deactivated (as a user action in Settings or
+         * SystemUI). If {@code null}, the rule has never been manually deactivated since its
+         * creation.
          *
          * <p>Note that this was previously untracked, so it will also be {@code null} for rules
          * created before we started tracking and never deactivated since.
