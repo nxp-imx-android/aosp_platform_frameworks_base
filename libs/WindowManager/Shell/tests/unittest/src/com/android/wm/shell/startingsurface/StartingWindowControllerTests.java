@@ -36,6 +36,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.view.Display;
@@ -65,9 +66,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for the starting window controller.
@@ -141,6 +139,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
     public void testRemoveStartingInShell() {
         final int taskId = 1;
         final IBinder token = new Binder();
+        final IBinder appToken = new Binder();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(TRANSIT_OPEN).build();
         final StartingWindowRemovalInfo removalInfo = new StartingWindowRemovalInfo();
@@ -149,7 +148,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         final StartingWindowController.RemoveStartingObserver observer =
                 mController.mRemoveStartingObserver;
 
-        observer.onAddingWindow(taskId, token);
+        observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
         waitTransactionCommit(st);
         assertTrue(observer.hasPendingRemoval());
@@ -157,7 +156,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         assertFalse(observer.hasPendingRemoval());
 
         st.clear();
-        observer.onAddingWindow(taskId, token);
+        observer.onAddingWindow(taskId, token, appToken);
         observer.requestRemoval(taskId, removalInfo);
         observer.onTransitionReady(token, info, st, st);
         assertTrue(observer.hasPendingRemoval());
@@ -171,7 +170,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         final TransitionInfo secondInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(TRANSIT_OPEN, FLAG_IS_BEHIND_STARTING_WINDOW,
                         null, null, null).build();
-        observer.onAddingWindow(taskId, token);
+        observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
         waitTransactionCommit(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
@@ -181,7 +180,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         assertFalse(observer.hasPendingRemoval());
 
         st.clear();
-        observer.onAddingWindow(taskId, token);
+        observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
         waitTransactionCommit(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
@@ -192,13 +191,11 @@ public class StartingWindowControllerTests extends ShellTestCase {
     }
 
     private void waitTransactionCommit(SurfaceControl.Transaction st) {
-        final CountDownLatch waitCommit = new CountDownLatch(1);
-        st.addTransactionCommittedListener(Runnable::run, waitCommit::countDown);
         st.apply();
-        try {
-            waitCommit.await(3L, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-            throw new AssertionError("Test interrupted", ex);
+        final long timeout = SystemClock.currentTimeMicro() + 500L;
+        while (mMainExecutor.getCallbacks().isEmpty()
+                && SystemClock.currentTimeMicro() < timeout) {
+            SystemClock.sleep(50);
         }
         mMainExecutor.flushAll();
     }

@@ -33,6 +33,7 @@ import android.graphics.Color;
 import android.os.IBinder;
 import android.os.Trace;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.SurfaceControl;
@@ -218,14 +219,27 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             }
         }
 
-        void onAddingWindow(int taskId, IBinder transitionToken) {
-            mWindowRecords.put(taskId, new WindowRecord(taskId, transitionToken));
-            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                    "RSO:Start tracking for task=%d", taskId);
+        void onAddingWindow(int taskId, IBinder transitionToken, IBinder appToken) {
+            final WindowRecord wr = mWindowRecords.get(taskId);
+            if (wr != null) {
+                wr.addAppToken(appToken);
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                        "RSO:Start tracking appToken=%s for task=%d", appToken, taskId);
+            } else {
+                mWindowRecords.put(taskId, new WindowRecord(taskId, transitionToken, appToken));
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                        "RSO:Start tracking for task=%d", taskId);
+            }
         }
 
         // Stop tracking because the window is not created.
-        void forceRemoveWindow(int taskId) {
+        void forceRemoveWindow(int taskId, IBinder appToken) {
+            final WindowRecord wr = mWindowRecords.get(taskId);
+            if (wr == null || !wr.removeAppToken(appToken)) {
+                return;
+            }
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                    "RSO:Window wasn't created, removal record task=%d", taskId);
             mWindowRecords.remove(taskId);
         }
 
@@ -301,9 +315,21 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             boolean mTransactionApplied;
             StartingWindowRemovalInfo mStartingWindowRemovalInfo;
 
-            WindowRecord(int taskId, IBinder transition) {
+            final ArraySet<IBinder> mAppTokens = new ArraySet<>();
+
+            WindowRecord(int taskId, IBinder transition, IBinder appToken) {
                 mTaskId = taskId;
                 mTransition = transition;
+                addAppToken(appToken);
+            }
+
+            void addAppToken(IBinder token) {
+                mAppTokens.add(token);
+            }
+
+            boolean removeAppToken(IBinder token) {
+                mAppTokens.remove(token);
+                return mAppTokens.isEmpty();
             }
         }
     }
@@ -338,8 +364,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
      */
     public void addStartingWindow(StartingWindowInfo windowInfo) {
         if (Flags.removeStartingInTransition()) {
-            mShellMainExecutor.execute(() -> mRemoveStartingObserver
-                    .onAddingWindow(windowInfo.taskInfo.taskId, windowInfo.transitionToken));
+            mShellMainExecutor.execute(() -> mRemoveStartingObserver.onAddingWindow(
+                    windowInfo.taskInfo.taskId, windowInfo.transitionToken, windowInfo.appToken));
         }
         mSplashScreenExecutor.execute(() -> {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "addStartingWindow");
@@ -372,10 +398,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             }
             if (Flags.removeStartingInTransition()) {
                 if (!mStartingSurfaceDrawer.hasStartingWindow(taskId, isWindowless)) {
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                            "RSO:Window wasn't created, removal record task=%d", taskId);
                     mShellMainExecutor.execute(() ->
-                            mRemoveStartingObserver.forceRemoveWindow(taskId));
+                            mRemoveStartingObserver.forceRemoveWindow(taskId, windowInfo.appToken));
                 }
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
