@@ -4440,6 +4440,47 @@ class DesktopTasksController(
         desktopConfig.dump(pw, innerPrefix)
         userRepositories.dump(pw, innerPrefix)
         focusTransitionObserver.dump(pw, innerPrefix)
+        if (Flags.showDesktopExperienceDevOption()) {
+            dumpFlags(pw, prefix)
+        }
+    }
+
+    private fun dumpFlags(pw: PrintWriter, prefix: String) {
+        val flagPrefix = "$prefix  "
+        fun dumpFlag(
+            name: String,
+            flagNameWidth: Int,
+            value: Boolean,
+            flagValue: Boolean,
+            overridable: Boolean,
+        ) {
+            val spaces = " ".repeat(flagNameWidth - name.length)
+            pw.println(
+                "${flagPrefix}Flag $name$spaces - $value (default: $flagValue, overridable: $overridable)"
+            )
+        }
+
+        fun dumpFlag(flag: DesktopExperienceFlags, flagNameWidth: Int) {
+            dumpFlag(flag.flagName, flagNameWidth, flag.isTrue, flag.flagValue, flag.isOverridable)
+        }
+
+        fun dumpFlag(flag: DesktopExperienceFlag, flagNameWidth: Int) {
+            dumpFlag(flag.flagName, flagNameWidth, flag.isTrue, flag.flagValue, flag.isOverridable)
+        }
+        pw.println("${prefix}DesktopExperienceFlags")
+        pw.println(
+            "$prefix  Status: ${if (DesktopExperienceFlags.getToggleOverride()) "enabled" else "disabled"}"
+        )
+        val maxEnumFlagName = DesktopExperienceFlags.entries.maxOf { it.flagName.length }
+        for (flag in DesktopExperienceFlags.entries) {
+            dumpFlag(flag, maxEnumFlagName + 1)
+        }
+        val registeredFlags = DesktopExperienceFlags.getRegisteredFlags()
+        val maxRegisteredFlagName = registeredFlags.maxOf { it.flagName.length }
+        pw.println("${prefix}DesktopExperienceFlags.DesktopExperienceFlag")
+        for (flag in registeredFlags) {
+            dumpFlag(flag, maxRegisteredFlagName + 1)
+        }
     }
 
     /** The interface for calls from outside the shell, within the host process. */

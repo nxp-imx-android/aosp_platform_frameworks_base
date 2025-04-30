@@ -22,10 +22,14 @@ import static com.android.server.display.feature.flags.Flags.enableDisplayConten
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.SystemProperties;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import com.android.window.flags.Flags;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -196,6 +200,9 @@ public enum DesktopExperienceFlags {
             this.mFlagFunction = flagFunction;
             this.mFlagName = flagName;
             this.mShouldOverrideByDevOptionDefault = shouldOverrideByDevOption;
+            if (Flags.showDesktopExperienceDevOption()) {
+                registerFlag(flagName, this);
+            }
         }
 
         /**
@@ -211,6 +218,18 @@ public enum DesktopExperienceFlags {
                         mShouldOverrideByDevOptionDefault);
             }
             return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
+        }
+
+        public String getFlagName() {
+            return mFlagName;
+        }
+
+        public boolean getFlagValue() {
+            return mFlagFunction.getAsBoolean();
+        }
+
+        public boolean isOverridable() {
+            return mShouldOverrideByDevOptionDefault;
         }
     }
 
@@ -228,6 +247,13 @@ public enum DesktopExperienceFlags {
     // be refreshed only on reboots as overridden state is expected to take effect on reboots.
     @Nullable
     private static Boolean sCachedToggleOverride;
+
+    /**
+     * Local cache of dynamically defined flag, organised by name.
+     *
+     * <p> Create an array with a capacity of 10, which should be plenty.
+     */
+    private static Map<String, DesktopExperienceFlag> sDynamicFlags = new ArrayMap<>(10);
 
     public static final String SYSTEM_PROPERTY_NAME = "persist.wm.debug.desktop_experience_devopts";
     public static final String SYSTEM_PROPERTY_OVERRIDE_PREFIX =
@@ -255,6 +281,19 @@ public enum DesktopExperienceFlags {
         return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
     }
 
+    public boolean getFlagValue() {
+        return mFlagFunction.getAsBoolean();
+    }
+
+    public String getFlagName() {
+        return mFlagName;
+    }
+
+    /** Returns whether or not the developer option can override that flag. */
+    public boolean isOverridable() {
+        return mShouldOverrideByDevOptionDefault;
+    }
+
     private static boolean isFlagTrue(
             BooleanSupplier flagFunction, boolean shouldOverrideByDevOption) {
         if (Flags.showDesktopExperienceDevOption()
@@ -263,6 +302,14 @@ public enum DesktopExperienceFlags {
             return true;
         }
         return flagFunction.getAsBoolean();
+    }
+
+    private static void registerFlag(String name, DesktopExperienceFlag flag) {
+        sDynamicFlags.put(name, flag);
+    }
+
+    public static List<DesktopExperienceFlag> getRegisteredFlags() {
+        return new ArrayList<>(sDynamicFlags.values());
     }
 
     private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
@@ -279,7 +326,8 @@ public enum DesktopExperienceFlags {
                 defaultValue);
     }
 
-    private static boolean getToggleOverride() {
+    /** Check whether the flags are overridden to true or not. */
+    public static boolean getToggleOverride() {
         // If cached, return it
         if (sCachedToggleOverride != null) {
             return sCachedToggleOverride;
@@ -297,3 +345,4 @@ public enum DesktopExperienceFlags {
         return SystemProperties.getBoolean(SYSTEM_PROPERTY_NAME, false);
     }
 }
+
