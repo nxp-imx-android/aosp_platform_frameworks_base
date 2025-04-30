@@ -1174,7 +1174,7 @@ constructor(
     @JvmOverloads
     constructor(
         private val mainExecutor: Executor,
-        controller: Controller,
+        private val controller: Controller,
         callback: Callback,
         /** Listener for animation lifecycle events. */
         listener: Listener? = null,
@@ -1218,7 +1218,12 @@ constructor(
             wallpapers: Array<out RemoteAnimationTarget>?,
             nonApps: Array<out RemoteAnimationTarget>?,
             callback: IRemoteAnimationFinishedCallback?,
-        ) = impl.onAnimationStart(apps, onAnimationFinished = { callback?.invoke() })
+        ) {
+            impl.onAnimationStart(
+                resolveAnimatedWindow = { resolveAnimatedWindow(apps) },
+                onAnimationFinished = { callback?.invoke() },
+            )
+        }
 
         @UiThread
         internal fun takeOverAnimation(
@@ -1228,8 +1233,7 @@ constructor(
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             impl.takeOverAnimation(
-                apps,
-                startWindowStates,
+                resolveAnimatedWindow = { resolveAnimatedWindow(apps, startWindowStates) },
                 startTransaction,
                 onAnimationFinished = { callback?.invoke() },
             )
@@ -1237,12 +1241,81 @@ constructor(
 
         @UiThread override fun onAnimationCancelled() = impl.onAnimationCancelled()
 
+        /**
+         * Extracts the [RemoteAnimationTarget] representing the window to animate and its state
+         * from the list of [apps] participating in the transition and their [startWindowStates].
+         */
+        private fun resolveAnimatedWindow(
+            apps: Array<out RemoteAnimationTarget>?,
+            startWindowStates: Array<out WindowAnimationState>? = null,
+        ): Pair<RemoteAnimationTarget?, WindowAnimationState?> {
+            if (apps == null) {
+                return Pair(null, null)
+            }
+
+            val targetMode =
+                if (controller.isLaunching) {
+                    RemoteAnimationTarget.MODE_OPENING
+                } else {
+                    RemoteAnimationTarget.MODE_CLOSING
+                }
+            val states =
+                if (startWindowStates != null && startWindowStates.size == apps.size) {
+                    startWindowStates
+                } else {
+                    null
+                }
+
+            var candidate: RemoteAnimationTarget? = null
+            var state: WindowAnimationState? = null
+
+            for ((index, it) in apps.withIndex()) {
+                if (it.mode == targetMode) {
+                    if (returnAnimationsEnabled()) {
+                        // If the controller contains a cookie, _only_ match if either the
+                        // candidate contains the matching cookie, or a component is also
+                        // defined and is a match.
+                        if (
+                            controller.transitionCookie != null &&
+                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                    true &&
+                                (controller.component == null ||
+                                    it.taskInfo?.topActivity != controller.component)
+                        ) {
+                            continue
+                        }
+                    }
+
+                    if (
+                        candidate == null || !it.hasAnimatingParent && candidate.hasAnimatingParent
+                    ) {
+                        candidate = it
+                        state = states?.get(index)
+                        continue
+                    }
+                    if (
+                        !it.hasAnimatingParent &&
+                            it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
+                    ) {
+                        candidate = it
+                        state = states?.get(index)
+                    }
+                }
+            }
+
+            return Pair(candidate, state)
+        }
+
         private fun IRemoteAnimationFinishedCallback.invoke() {
             try {
                 onAnimationFinished()
             } catch (e: RemoteException) {
                 e.printStackTrace()
             }
+        }
+
+        private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
+            return (this.width() * this.height()) > (other.width() * other.height())
         }
     }
 
@@ -1335,10 +1408,11 @@ constructor(
 
         @UiThread
         fun onAnimationStart(
-            apps: Array<out RemoteAnimationTarget>?,
+            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(apps, onAnimationFinished) ?: return
+            val (window, state) =
+                setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
                 startAnimation(window, onAnimationFinished = onAnimationFinished)
@@ -1346,7 +1420,7 @@ constructor(
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
                 takeOverAnimationInternal(
                     window,
-                    startWindowState = null,
+                    state,
                     startTransaction = null,
                     onAnimationFinished,
                 )
@@ -1355,19 +1429,13 @@ constructor(
 
         @UiThread
         fun takeOverAnimation(
-            apps: Array<out RemoteAnimationTarget>?,
-            startWindowStates: Array<out WindowAnimationState>,
+            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(apps, onAnimationFinished) ?: return
-            val startWindowState = startWindowStates[apps!!.indexOf(window)]
-            takeOverAnimationInternal(
-                window,
-                startWindowState,
-                startTransaction,
-                onAnimationFinished,
-            )
+            val (window, state) =
+                setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            takeOverAnimationInternal(window, state, startTransaction, onAnimationFinished)
         }
 
         private fun takeOverAnimationInternal(
@@ -1389,9 +1457,9 @@ constructor(
 
         @UiThread
         private fun setUpAnimation(
-            apps: Array<out RemoteAnimationTarget>?,
+            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
             onAnimationFinished: () -> Unit,
-        ): RemoteAnimationTarget? {
+        ): Pair<RemoteAnimationTarget, WindowAnimationState?>? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
@@ -1407,7 +1475,7 @@ constructor(
                 return null
             }
 
-            val window = findTargetWindowIfPossible(apps)
+            val (window, state) = resolveAnimatedWindow()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
                 onAnimationFinished()
@@ -1423,57 +1491,7 @@ constructor(
                 return null
             }
 
-            return window
-        }
-
-        private fun findTargetWindowIfPossible(
-            apps: Array<out RemoteAnimationTarget>?
-        ): RemoteAnimationTarget? {
-            if (apps == null) {
-                return null
-            }
-
-            val targetMode =
-                if (controller.isLaunching) {
-                    RemoteAnimationTarget.MODE_OPENING
-                } else {
-                    RemoteAnimationTarget.MODE_CLOSING
-                }
-            var candidate: RemoteAnimationTarget? = null
-
-            for (it in apps) {
-                if (it.mode == targetMode) {
-                    if (returnAnimationsEnabled()) {
-                        // If the controller contains a cookie, _only_ match if either the
-                        // candidate contains the matching cookie, or a component is also
-                        // defined and is a match.
-                        if (
-                            controller.transitionCookie != null &&
-                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
-                                    true &&
-                                (controller.component == null ||
-                                    it.taskInfo?.topActivity != controller.component)
-                        ) {
-                            continue
-                        }
-                    }
-
-                    if (
-                        candidate == null || !it.hasAnimatingParent && candidate.hasAnimatingParent
-                    ) {
-                        candidate = it
-                        continue
-                    }
-                    if (
-                        !it.hasAnimatingParent &&
-                            it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
-                    ) {
-                        candidate = it
-                    }
-                }
-            }
-
-            return candidate
+            return Pair(window, state)
         }
 
         private fun startAnimation(
@@ -1919,10 +1937,6 @@ constructor(
             }
             controller.onTransitionAnimationCancelled()
             listener?.onTransitionAnimationCancelled()
-        }
-
-        private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
-            return (this.width() * this.height()) > (other.width() * other.height())
         }
     }
 
