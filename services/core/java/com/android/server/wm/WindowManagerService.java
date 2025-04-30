@@ -3229,19 +3229,9 @@ public class WindowManagerService extends IWindowManager.Stub
             final int displayId = display.getDisplayId();
             ProtoLog.d(WM_DEBUG_ADD_REMOVE, "Reparenting to displayId=%d", displayId);
 
-            final String systemUiPermission = isCallerVirtualDeviceOwner(displayId, callingUid)
-                    && display.isTrusted()
-                    // Virtual device owners can add system windows on their trusted displays.
-                    ? android.Manifest.permission.CREATE_VIRTUAL_DEVICE
-                    : android.Manifest.permission.STATUS_BAR_SERVICE;
+            // TODO b/404532651 - check the destination display content doesn't have a window
+            //  with that type already.
 
-            if (display.getDisplayPolicy().assertDisplaySingletonPolicy(
-                    token.getWindowType(), systemUiPermission, callingPid, callingUid)) {
-                ProtoLog.e(WM_DEBUG_ADD_REMOVE, "Fail to reparent windowToken since"
-                        + " there's a window with windowType=%d on displayId=%d",
-                        token.getWindowType(), display.getDisplayId());
-                return false;
-            }
             // Reparent the window created for this window context.
             display.reParentWindowToken(token);
             hideUntilNextDraw(token);
