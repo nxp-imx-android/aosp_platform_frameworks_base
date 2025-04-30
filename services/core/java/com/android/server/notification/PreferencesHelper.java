@@ -1611,7 +1611,8 @@ public class PreferencesHelper implements RankingConfig {
     // Update all reserved channels for the given adjustment type(s) when enabled or disabled.
     // If disabled, all relevant channels are marked as deleted until the type is re-enabled.
     @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
-    void updateReservedChannels(List<Integer> changedTypes, boolean enabled) {
+    void updateReservedChannels(List<Integer> userIds, List<Integer> changedTypes,
+            boolean enabled) {
         if (!notificationClassification()) {
             return;
         }
@@ -1619,13 +1620,15 @@ public class PreferencesHelper implements RankingConfig {
         boolean updated = false;
         synchronized (mLock) {
             for (PackagePreferences p : mPackagePreferences.values()) {
-                for (int type : changedTypes) {
-                    String channelId = NotificationChannel.getChannelIdForBundleType(type);
-                    NotificationChannel c = p.channels.get(channelId);
-                    if (c != null && c.isDeleted() != shouldBeDeleted) {
-                        c.setDeleted(shouldBeDeleted);
-                        c.setDeletedTimeMs(shouldBeDeleted ? System.currentTimeMillis() : -1);
-                        updated = true;
+                if (userIds.contains(UserHandle.getUserId(p.uid))) {
+                    for (int type : changedTypes) {
+                        String channelId = NotificationChannel.getChannelIdForBundleType(type);
+                        NotificationChannel c = p.channels.get(channelId);
+                        if (c != null && c.isDeleted() != shouldBeDeleted) {
+                            c.setDeleted(shouldBeDeleted);
+                            c.setDeletedTimeMs(shouldBeDeleted ? System.currentTimeMillis() : -1);
+                            updated = true;
+                        }
                     }
                 }
             }

@@ -84,8 +84,9 @@ interface INotificationManager
     boolean isImportanceLocked(String pkg, int uid);
 
     List<String> getAllowedAssistantAdjustments(String pkg);
-    void allowAssistantAdjustment(String adjustmentType);
-    void disallowAssistantAdjustment(String adjustmentType);
+    List<String> getAllowedAssistantAdjustmentsForUser(int userId);
+    void allowAssistantAdjustment(int userId, String adjustmentType);
+    void disallowAssistantAdjustment(int userId, String adjustmentType);
 
     boolean shouldHideSilentStatusIcons(String callingPkg);
     void setHideSilentStatusIcons(boolean hide);
@@ -268,11 +269,11 @@ interface INotificationManager
     void setAdjustmentTypeSupportedState(in INotificationListener token, String key, boolean supported);
     List<String> getUnsupportedAdjustmentTypes();
 
-    int[] getAllowedAdjustmentKeyTypes();
-    void setAssistantAdjustmentKeyTypeState(int type, boolean enabled);
-    String[] getAdjustmentDeniedPackages(String key);
-    boolean isAdjustmentSupportedForPackage(String key, String pkg);
-    void setAdjustmentSupportedForPackage(String key, String pkg, boolean enabled);
+    int[] getAllowedClassificationTypes();
+    void setAssistantClassificationTypeState(int type, boolean enabled);
+    String[] getAdjustmentDeniedPackages(int userId, String key);
+    boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
+    void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
 
     // TODO: b/389918945 - Remove once nm_binder_perf flags are going to Nextfood.
     void incrementCounter(String metricId);

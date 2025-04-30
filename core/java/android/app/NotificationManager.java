@@ -2236,7 +2236,7 @@ public class NotificationManager {
     public void allowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
-            service.allowAssistantAdjustment(capability);
+            service.allowAssistantAdjustment(mContext.getUserId(), capability);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2250,7 +2250,7 @@ public class NotificationManager {
     public void disallowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
-            service.disallowAssistantAdjustment(capability);
+            service.disallowAssistantAdjustment(mContext.getUserId(), capability);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2273,9 +2273,17 @@ public class NotificationManager {
     @TestApi
     @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void setAssistantAdjustmentKeyTypeState(@Adjustment.Types int type, boolean enabled) {
+        setAssistantClassificationTypeState(type, enabled);
+    }
+
+    /**
+     * @hide
+     */
+    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public void setAssistantClassificationTypeState(@Adjustment.Types int type, boolean enabled) {
         INotificationManager service = service();
         try {
-            service.setAssistantAdjustmentKeyTypeState(type, enabled);
+            service.setAssistantClassificationTypeState(type, enabled);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
