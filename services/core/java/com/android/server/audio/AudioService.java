@@ -4280,7 +4280,7 @@ public class AudioService extends IAudioService.Stub
                         // unmute immediately for volume up
                         muteAliasStreams(streamTypeAlias, false);
                     } else if (direction == AudioManager.ADJUST_LOWER) {
-                        if (mIsSingleVolume) {
+                        if (mIsSingleVolume && !isPlatformPc()) {
                             sendMsg(mAudioHandler, MSG_UNMUTE_STREAM_ON_SINGLE_VOL_DEVICE,
                                     SENDMSG_QUEUE, streamTypeAlias, flags, null,
                                     UNMUTE_STREAM_DELAY);
