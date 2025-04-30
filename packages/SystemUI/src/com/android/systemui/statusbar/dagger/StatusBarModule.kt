@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsets
 import com.android.systemui.statusbar.phone.AutoHideController
 import com.android.systemui.statusbar.phone.AutoHideControllerImpl
 import com.android.systemui.statusbar.phone.LightBarController
-import com.android.systemui.statusbar.phone.LightBarControllerImpl
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
@@ -90,11 +89,6 @@ interface StatusBarModule {
     ): StatusBarWindowController.Factory
 
     @Binds @SysUISingleton fun autoHideController(impl: AutoHideControllerImpl): AutoHideController
-
-    @Binds
-    fun lightBarControllerFactory(
-        legacyFactory: LightBarControllerImpl.LegacyFactory
-    ): LightBarController.Factory
 
     companion object {
         @Provides
