@@ -207,10 +207,10 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorAvailable()
             throws Exception {
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
 
         final BiometricSensor sensor = getFaceSensor();
         final PromptInfo promptInfo = new PromptInfo();
@@ -224,10 +224,10 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorUnavailable()
             throws Exception {
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
 
         final PromptInfo promptInfo = new PromptInfo();
         promptInfo.setAuthenticators(BiometricManager.Authenticators.IDENTITY_CHECK);
@@ -240,10 +240,10 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsAndStrongBiometricsStatus_whenRequirementsNotSatisfied()
             throws Exception {
-        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
 
         final BiometricSensor sensor = getFaceSensor();
         final PromptInfo promptInfo = new PromptInfo();
@@ -258,10 +258,10 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsStatus_whenRequirementsNotSatisfiedAndSensorAvailable()
             throws Exception {
-        when(mTrustManager.isInSignificantPlace()).thenReturn(true);
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
 
         final BiometricSensor sensor = getFaceSensor();
         final PromptInfo promptInfo = new PromptInfo();
@@ -300,10 +300,10 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MANDATORY_BIOMETRICS)
+    @RequiresFlagsEnabled({Flags.FLAG_MANDATORY_BIOMETRICS, Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsNegativeButtonText_whenSet()
             throws Exception {
-        when(mTrustManager.isInSignificantPlace()).thenReturn(false);
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
 
         final BiometricSensor sensor = getFaceSensor();
         final PromptInfo promptInfo = new PromptInfo();
