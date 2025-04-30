@@ -2605,7 +2605,6 @@ final class ActivityRecord extends WindowToken {
         removeTransferSplashScreenTimeout();
         // Client has draw the splash screen, so we can remove the starting window.
         if (mStartingWindow != null) {
-            mStartingWindow.cancelAnimation();
             mStartingWindow.hide(false, false);
         }
         // no matter what, remove the starting window.
@@ -4484,6 +4483,10 @@ final class ActivityRecord extends WindowToken {
             // Do not transfer if the orientation doesn't match, redraw starting window while it is
             // on top will cause flicker.
             if (!isStartingOrientationCompatible(fromActivity)) {
+                return false;
+            }
+
+            if (fromActivity.mTransferringSplashScreenState != TRANSFER_SPLASH_SCREEN_IDLE) {
                 return false;
             }
 
