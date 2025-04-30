@@ -442,6 +442,8 @@ cc_defaults {
         "liblog",
         "libminikin",
         "libz",
+        "libtracing_perfetto",
+        "libperfetto_c",
     ],
 
     static_libs: [
