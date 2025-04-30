@@ -18,7 +18,6 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
-import static android.app.Flags.evenlyDividedCallStyleActionLayout;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
@@ -6673,12 +6672,10 @@ public class Notification implements Parcelable
                     contentView.setInt(R.id.actions, "setCollapsibleIndentDimen",
                             R.dimen.call_notification_collapsible_indent);
                 }
-                if (evenlyDividedCallStyleActionLayout()) {
-                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                        Log.d(TAG, "setting evenly divided mode on action list");
-                    }
-                    contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
+                if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                    Log.d(TAG, "setting evenly divided mode on action list");
                 }
+                contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
             }
             if (!notificationsRedesignTemplates()) {
                 contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
@@ -7281,7 +7278,7 @@ public class Notification implements Parcelable
 
 
                 final CharSequence label = ensureColorSpanContrastOrStripStyling(title, p);
-                if (p.mCallStyleActions && evenlyDividedCallStyleActionLayout()) {
+                if (p.mCallStyleActions) {
                     if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
                         Log.d(TAG, "new action layout enabled, gluing instead of setting text");
                     }
@@ -7305,14 +7302,10 @@ public class Notification implements Parcelable
                 button.setColorStateList(R.id.action0, "setButtonBackground",
                         ColorStateList.valueOf(buttonFillColor));
                 if (p.mCallStyleActions) {
-                    if (evenlyDividedCallStyleActionLayout()) {
-                        if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                            Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
-                        }
-                        button.setIcon(R.id.action0, "glueIcon", action.getIcon());
-                    } else {
-                        button.setImageViewIcon(R.id.action0, action.getIcon());
+                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                        Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
                     }
+                    button.setIcon(R.id.action0, "glueIcon", action.getIcon());
                     boolean priority = action.getExtras().getBoolean(CallStyle.KEY_ACTION_PRIORITY);
                     button.setBoolean(R.id.action0, "setIsPriority", priority);
                     int minWidthDimen =
