@@ -311,10 +311,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopState desktopState,
             DesktopConfig desktopConfig,
             WindowDecorationActions windowDecorationActions) {
-        super(context, userContext, displayController, taskOrganizer, taskInfo,
-                taskSurface, surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
-                windowContainerTransactionSupplier, surfaceControlSupplier,
-                surfaceControlViewHostFactory, windowDecorViewHostSupplier, desktopModeEventLogger);
+        super(context, handler, transitions, userContext, displayController, taskOrganizer,
+                taskInfo, taskSurface, surfaceControlBuilderSupplier,
+                surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
+                surfaceControlSupplier, surfaceControlViewHostFactory, windowDecorViewHostSupplier,
+                desktopModeEventLogger);
         mSplitScreenController = splitScreenController;
         mHandler = handler;
         mMainExecutor = mainExecutor;

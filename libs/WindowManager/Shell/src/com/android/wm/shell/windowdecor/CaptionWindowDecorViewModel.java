@@ -343,6 +343,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
                         taskInfo,
                         taskSurface,
                         mMainHandler,
+                        mTransitions,
                         mMainExecutor,
                         mBgExecutor,
                         mMainChoreographer,

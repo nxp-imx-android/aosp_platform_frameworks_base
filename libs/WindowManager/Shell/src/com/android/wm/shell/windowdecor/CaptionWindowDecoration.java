@@ -64,6 +64,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
@@ -100,14 +101,15 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             Handler handler,
+            @NonNull Transitions transitions,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             DesktopConfig desktopConfig) {
-        super(context, userContext, displayController, taskOrganizer, taskInfo,
-                taskSurface, windowDecorViewHostSupplier);
+        super(context, handler, transitions, userContext, displayController, taskOrganizer,
+                taskInfo, taskSurface, windowDecorViewHostSupplier);
         mHandler = handler;
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
