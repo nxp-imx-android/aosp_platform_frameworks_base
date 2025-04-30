@@ -166,7 +166,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
             override fun onThemeChanged(theme: ThemeConfig) {
                 view.updateColor(
                     lockscreenColor = theme.getDefaultColor(clockCtx.context),
-                    aodColor = clockCtx.resources.getColor(android.R.color.system_accent1_100),
+                    aodColor = theme.getAodColor(clockCtx.context),
                 )
             }
 
