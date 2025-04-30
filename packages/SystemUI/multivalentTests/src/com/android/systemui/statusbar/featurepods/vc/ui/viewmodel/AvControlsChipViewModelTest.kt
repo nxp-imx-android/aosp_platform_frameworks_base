@@ -29,8 +29,8 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
