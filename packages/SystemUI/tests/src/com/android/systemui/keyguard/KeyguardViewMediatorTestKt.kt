@@ -38,8 +38,8 @@ import android.view.WindowManager
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLogger
 import com.android.internal.widget.lockPatternUtils
-import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.keyguardUnlockAnimationController
+import com.android.keyguard.keyguardUpdateMonitor
 import com.android.keyguard.mediator.ScreenOnCoordinator
 import com.android.keyguard.trustManager
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
@@ -106,6 +106,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
@@ -151,7 +152,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 broadcastDispatcher,
                 { statusBarKeyguardViewManager },
                 dismissCallbackRegistry,
-                mock<KeyguardUpdateMonitor>(),
+                keyguardUpdateMonitor,
                 dumpManager,
                 fakeExecutor,
                 powerManager,
@@ -244,6 +245,18 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
         }
 
     @Test
+    fun doKeyguardTimeout_dreaming_keyguardNotReset() =
+        kosmos.runTest {
+            underTest.setShowingLocked(true, "")
+            whenever(powerManager.isInteractive()).thenReturn(true)
+            whenever(keyguardStateController.isShowing()).thenReturn(true)
+            whenever(keyguardUpdateMonitor.isDreaming).thenReturn(true)
+            underTest.doDelayedKeyguardAction(0)
+            testableLooper.processAllMessages()
+            verify(statusBarKeyguardViewManager, never()).reset(anyBoolean())
+        }
+
+    @Test
     fun doKeyguardTimeout_hubConditionNotActive_sleeps() =
         kosmos.runTest {
             // Communal enabled, but hub condition set to never.
@@ -296,7 +309,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
 
             verify(finishedCallback).onAnimationFinished()
             verify(dreamViewModelSpy).startTransitionFromDream()
-      }
+        }
 
     @Test
     @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
