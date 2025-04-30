@@ -296,7 +296,10 @@ public class BatteryUsageStatsProvider {
 
     private void populateBatterySessionInfo(BatteryUsageStats.Builder builder,
             BatteryStatsSession session) {
-        builder.setBatteryCapacity(session.getEstimatedBatteryCapacity());
+        double estimatedBatteryCapacity = session.getEstimatedBatteryCapacity();
+        if (estimatedBatteryCapacity > 0) {
+            builder.setBatteryCapacity(estimatedBatteryCapacity);
+        }
         builder.setBatteryTimeRemainingMs(session.getBatteryTimeRemainingMs());
         builder.setChargeTimeRemainingMs(session.getChargeTimeRemainingMs());
     }

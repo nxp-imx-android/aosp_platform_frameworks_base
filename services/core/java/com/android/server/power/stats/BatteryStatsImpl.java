@@ -346,7 +346,7 @@ public class BatteryStatsImpl extends BatteryStats {
             return mChargeTimeRemainingMs;
         }
 
-        double getEstimatedBatteryCapacity() {
+        long getEstimatedBatteryCapacity() {
             return mEstimatedBatteryCapacityMah;
         }
 
@@ -1782,6 +1782,7 @@ public class BatteryStatsImpl extends BatteryStats {
     private int mNumConnectivityChange;
 
     private int mEstimatedBatteryCapacityMah = -1;
+    private int mReportedBatteryCapacityMah = -1;
 
     private int mLastLearnedBatteryCapacityUah = -1;
     private int mMinLearnedBatteryCapacityUah = -1;
@@ -10962,10 +10963,8 @@ public class BatteryStatsImpl extends BatteryStats {
             mKernelCpuSpeedReaders[i] = new KernelCpuSpeedReader(cpus[0], freqs.length);
         }
 
-        if (mEstimatedBatteryCapacityMah == -1) {
-            // Initialize the estimated battery capacity to a known preset one.
-            mEstimatedBatteryCapacityMah = (int) mPowerProfile.getBatteryCapacity();
-        }
+        // Initialize the estimated battery capacity to a known preset one.
+        mEstimatedBatteryCapacityMah = (int) mPowerProfile.getBatteryCapacity();
 
         setDisplayCountLocked(mPowerProfile.getNumDisplays());
     }
@@ -11478,10 +11477,8 @@ public class BatteryStatsImpl extends BatteryStats {
             mPerDisplayBatteryStats[i].reset(elapsedRealtimeUs);
         }
 
-        if (mPowerProfile != null) {
+        if (mEstimatedBatteryCapacityMah <= 0 && mPowerProfile != null) {
             mEstimatedBatteryCapacityMah = (int) mPowerProfile.getBatteryCapacity();
-        } else {
-            mEstimatedBatteryCapacityMah = -1;
         }
         mLastLearnedBatteryCapacityUah = -1;
         mMinLearnedBatteryCapacityUah = -1;
@@ -13580,10 +13577,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 }
                 doWrite = true;
                 startNewSession(RESET_REASON_FULL_CHARGE);
-                if (chargeUah > 0 && level > 0) {
-                    // Only use the reported coulomb charge value if it is supported and reported.
-                    mEstimatedBatteryCapacityMah = (int) ((chargeUah / 1000) / (level / 100.0));
-                }
                 reset = true;
                 mDischargeStepTracker.init();
             }
@@ -13699,6 +13692,17 @@ public class BatteryStatsImpl extends BatteryStats {
         }
         int oldStatus = mBatteryStatus;
         if (onBattery) {
+            if (mReportedBatteryCapacityMah <= 0) {
+                if (chargeFullUah > 0) {
+                    mReportedBatteryCapacityMah = chargeFullUah / 1000;
+                    mEstimatedBatteryCapacityMah = mReportedBatteryCapacityMah;
+                } else if (chargeUah > 0 && level > 25) {
+                    // Only use the reported coulomb charge value if it is supported and reported.
+                    mReportedBatteryCapacityMah = (int) ((chargeUah / 1000.0) / (level / 100.0));
+                    mEstimatedBatteryCapacityMah = mReportedBatteryCapacityMah;
+                }
+            }
+
             mDischargeCurrentLevel = level;
             if (!mHistory.isRecordingHistory()) {
                 mHistory.startRecordingHistory(elapsedRealtimeMs, uptimeMs, true);

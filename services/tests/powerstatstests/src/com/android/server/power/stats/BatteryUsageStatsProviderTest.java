@@ -105,7 +105,7 @@ public class BatteryUsageStatsProviderTest {
 
     @Test
     public void test_getBatteryUsageStats() throws IOException {
-        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(false);
+        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(false, false);
 
         final List<UidBatteryConsumer> uidBatteryConsumers =
                 batteryUsageStats.getUidBatteryConsumers();
@@ -136,7 +136,7 @@ public class BatteryUsageStatsProviderTest {
 
     @Test
     public void batteryLevelInfo_charging() throws IOException {
-        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(true);
+        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(true, false);
         assertThat(batteryUsageStats.getBatteryCapacity()).isEqualTo(4000.0);
         assertThat(batteryUsageStats.getChargeTimeRemainingMs()).isEqualTo(1_200_000);
         batteryUsageStats.close();
@@ -144,16 +144,24 @@ public class BatteryUsageStatsProviderTest {
 
     @Test
     public void batteryLevelInfo_onBattery() throws IOException {
-        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(false);
+        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(false, false);
         assertThat(batteryUsageStats.getBatteryCapacity()).isEqualTo(4000.0);
         assertThat(batteryUsageStats.getBatteryTimeRemainingMs()).isEqualTo(600_000);
+        batteryUsageStats.close();
+    }
+
+    @Test
+    public void batteryLevelInfo_reportedBatteryCapacity() throws IOException {
+        final BatteryUsageStats batteryUsageStats = prepareBatteryUsageStats(false, true);
+        // From setBatteryStateLocked(..., 5_000_000, ...)
+        assertThat(batteryUsageStats.getBatteryCapacity()).isEqualTo(5000.0);
         batteryUsageStats.close();
     }
 
     @Ignore("BatteryUsageStatsQuery.includePowerComponents is unsupported")
     @Test
     public void test_selectPowerComponents() throws IOException {
-        BatteryStatsImpl batteryStats = prepareBatteryStats(false);
+        BatteryStatsImpl batteryStats = prepareBatteryStats(false, true);
 
         BatteryUsageStatsProvider provider = createBatteryUsageStatsProvider(0);
         final BatteryUsageStats batteryUsageStats =
@@ -178,14 +186,17 @@ public class BatteryUsageStatsProviderTest {
         batteryUsageStats.close();
     }
 
-    private BatteryStatsImpl prepareBatteryStats(boolean plugInAtTheEnd) {
+    private BatteryStatsImpl prepareBatteryStats(boolean plugInAtTheEnd,
+            boolean fullChargeReported) {
         BatteryStatsImpl batteryStats = mStatsRule.getBatteryStats();
         batteryStats.setNoAutoReset(true);
         batteryStats.onSystemReady(mContext);
 
+        int chargeFullUah = fullChargeReported ? 5_000_000 : 0;
+
         synchronized (batteryStats) {
             batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING,
-                    100, /* plugType */ 0, 90, 72, 3700, 3_600_000, 4_000_000, 0, 0,
+                    100, /* plugType */ 0, 90, 72, 3700, 3_600_000, chargeFullUah, 0, 0,
                     0, 0);
         }
 
@@ -245,13 +256,13 @@ public class BatteryUsageStatsProviderTest {
 
         synchronized (batteryStats) {
             batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING,
-                    100, /* plugType */ 0, 60, 72, 3700, 2_600_000, 4_000_000, 0,
+                    100, /* plugType */ 0, 60, 72, 3700, 2_600_000, chargeFullUah, 0,
                     100 * MINUTE_IN_MS, 100 * MINUTE_IN_MS, 21000);
         }
 
         synchronized (batteryStats) {
             batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_DISCHARGING,
-                    100, /* plugType */ 0, 30, 72, 3700, 1_600_000, 4_000_000, 0,
+                    100, /* plugType */ 0, 30, 72, 3700, 1_600_000, chargeFullUah, 0,
                     110 * MINUTE_IN_MS, 110 * MINUTE_IN_MS, 21000);
         }
 
@@ -259,7 +270,7 @@ public class BatteryUsageStatsProviderTest {
             synchronized (batteryStats) {
                 batteryStats.setBatteryStateLocked(BatteryManager.BATTERY_STATUS_CHARGING,
                         100, /* plugType */ BatteryManager.BATTERY_PLUGGED_USB, 30, 72, 3700,
-                        1_600_000, 4_000_000, /* chargeTimeToFullSeconds */ 20 * 60,
+                        1_600_000, chargeFullUah, /* chargeTimeToFullSeconds */ 20 * 60,
                         120 * MINUTE_IN_MS, 120 * MINUTE_IN_MS, 22000);
             }
         }
@@ -269,8 +280,9 @@ public class BatteryUsageStatsProviderTest {
         return batteryStats;
     }
 
-    private BatteryUsageStats prepareBatteryUsageStats(boolean plugInAtTheEnd) {
-        BatteryStatsImpl batteryStats = prepareBatteryStats(plugInAtTheEnd);
+    private BatteryUsageStats prepareBatteryUsageStats(boolean plugInAtTheEnd,
+            boolean fullChargeReported) {
+        BatteryStatsImpl batteryStats = prepareBatteryStats(plugInAtTheEnd, fullChargeReported);
         BatteryUsageStatsProvider provider = createBatteryUsageStatsProvider(0);
 
         return provider.getBatteryUsageStats(batteryStats, BatteryUsageStatsQuery.DEFAULT);
