@@ -744,7 +744,7 @@ public class SettingsHelper {
     }
 
     private boolean hasVibrationSettings(String value, int type) {
-        if (Utils.hasVibration(Uri.parse(value)) && mContext.getResources().getBoolean(
+        if (Utils.hasVibrationParameter(Uri.parse(value)) && mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_ringtoneVibrationSettingsSupported)) {
             if (type == RingtoneManager.TYPE_RINGTONE) {
                 return android.media.audio.Flags.enableRingtoneHapticsCustomization();

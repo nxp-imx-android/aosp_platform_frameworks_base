@@ -16,14 +16,19 @@
 
 package android.media;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.media.audio.Flags;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Environment;
@@ -64,22 +69,30 @@ import java.util.concurrent.Executor;
  * @hide
  */
 @TestApi
-@SuppressLint({"UnflaggedApi", "StaticUtils"}) // Test API
+@SuppressLint({"StaticUtils"})
+@FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
+@SystemApi(client = MODULE_LIBRARIES)
 public class Utils {
+
+    // Not instantiable.
+    private Utils() {}
+
     private static final String TAG = "Utils";
 
     /** @hide
      * The vibration uri key parameter
      */
     @TestApi
-    @SuppressLint("UnflaggedApi") // Test API
+    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final String VIBRATION_URI_PARAM = "vibration_uri";
 
     /** @hide
      * Indicates the synchronized vibration
      */
     @TestApi
-    @SuppressLint("UnflaggedApi") // Test API
+    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final String SYNCHRONIZED_VIBRATION = "synchronized";
 
     /**
@@ -750,7 +763,9 @@ public class Utils {
      *
      * @hide
      */
-    public static boolean hasVibration(Uri ringtoneUri) {
+    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
+    @SystemApi(client = MODULE_LIBRARIES)
+    public static boolean hasVibrationParameter(@Nullable Uri ringtoneUri) {
         if (ringtoneUri == null) {
             return false;
         }
