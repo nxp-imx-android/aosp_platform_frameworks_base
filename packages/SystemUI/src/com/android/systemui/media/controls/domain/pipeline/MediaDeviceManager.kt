@@ -204,6 +204,9 @@ constructor(
         private var started = false
         private var playbackType = PLAYBACK_TYPE_UNKNOWN
         private var playbackVolumeControlId: String? = null
+        private val requestSuggestionRunnable = Runnable {
+            bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
+        }
         private var current: MediaDeviceData? = null
             set(value) {
                 val sameWithoutIcon = value != null && value.equalsWithoutIcon(field)
@@ -213,9 +216,11 @@ constructor(
                 }
             }
 
-        private var suggestionData: SuggestionData? = null
+        private var suggestionData =
+            SuggestionData(onSuggestionSpaceVisible = requestSuggestionRunnable)
             set(value) {
-                if (field != value) {
+                val sameWithoutConnect = value.equalsWithoutConnect(field)
+                if (!sameWithoutConnect) {
                     field = value
                     fgExecutor.execute { processSuggestionData(key, oldKey, value) }
                 }
@@ -238,6 +243,9 @@ constructor(
                 if (!started) {
                     // Fetch in case a suggestion already exists before registering for suggestions
                     localMediaManager.registerCallback(this)
+                    if (enableSuggestedDeviceUi()) {
+                        onSuggestedDeviceUpdated(localMediaManager.getSuggestedDevice())
+                    }
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
                     }
@@ -320,10 +328,7 @@ constructor(
                                     connect = { localMediaManager.connectSuggestedDevice(it) },
                                 )
                             },
-                        onSuggestionSpaceVisible =
-                            Runnable {
-                                bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
-                            },
+                        onSuggestionSpaceVisible = requestSuggestionRunnable,
                     )
             }
         }

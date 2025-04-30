@@ -239,6 +239,7 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
+    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -617,6 +618,19 @@ public class MediaControlPanel {
         Trace.endSection();
     }
 
+    /**
+     * Should be called when the space that holds device suggestions becomes visible to the user.
+     */
+    public void onSuggestionSpaceVisible() {
+        if (!Flags.enableSuggestedDeviceUi()) {
+            return;
+        }
+        @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
+        if (onSuggestionVisibleRunnable != null) {
+            onSuggestionVisibleRunnable.run();
+        }
+    }
+
     private void bindDeviceSuggestion(@NonNull MediaData data) {
         if (!Flags.enableSuggestedDeviceUi()) {
             return;
@@ -625,6 +639,7 @@ public class MediaControlPanel {
         TextView deviceText = mMediaViewHolder.getSeamlessText();
         @Nullable SuggestionData suggestionData = data.getSuggestionData();
         if (suggestionData != null) {
+            mOnSuggestionSpaceVisibleRunnable = suggestionData.getOnSuggestionSpaceVisible();
             @Nullable
             SuggestedMediaDeviceData suggestionDeviceData =
                     suggestionData.getSuggestedMediaDeviceData();
