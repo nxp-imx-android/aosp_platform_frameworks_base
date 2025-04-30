@@ -31,7 +31,6 @@ import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -484,16 +483,13 @@ public final class AudioProductStrategy implements Parcelable {
     @NonNull
     @Override
     public String toString() {
-        return toString("");
-    }
-
-    @NonNull
-    String toString(@NonNull String indent) {
         StringBuilder s = new StringBuilder();
-        s.append("\n").append(indent).append("Name: ").append(mName);
-        s.append(" Id: ").append(mId);
+        s.append("\n Name: ");
+        s.append(mName);
+        s.append(" Id: ");
+        s.append(Integer.toString(mId));
         for (AudioAttributesGroup aag : mAudioAttributesGroups) {
-            s.append(aag.toString(indent)).append(indent);
+            s.append(aag.toString());
         }
         return s.toString();
     }
@@ -740,39 +736,17 @@ public final class AudioProductStrategy implements Parcelable {
 
         @Override
         public @NonNull String toString() {
-            return toString("");
-        }
-
-        String toString(String indent) {
             StringBuilder s = new StringBuilder();
-            s.append("\n").append(indent).append("Legacy Stream Type: ");
-            s.append(mLegacyStreamType);
+            s.append("\n    Legacy Stream Type: ");
+            s.append(Integer.toString(mLegacyStreamType));
             s.append(" Volume Group Id: ");
-            s.append(mVolumeGroupId);
+            s.append(Integer.toString(mVolumeGroupId));
 
             for (AudioAttributes attribute : mAudioAttributes) {
-                s.append("\n").append(indent).append("-");
+                s.append("\n    -");
                 s.append(attribute.toString());
             }
             return s.toString();
         }
-    }
-
-    private static final String INDENT = "  ";
-
-    /**
-     * @hide
-     */
-    public static void dump(@NonNull PrintWriter pw) {
-        pw.println("- AUDIO PRODUCT STRATEGIES:");
-        getAudioProductStrategies().forEach(aps -> {
-            pw.printf("%s%s\n", INDENT, aps.toString(INDENT + INDENT));
-        });
-        pw.println();
-        pw.println("- AUDIO VOLUME GROUPS:");
-        AudioVolumeGroup.getAudioVolumeGroups().forEach(avg -> {
-            pw.printf("%s%s\n", INDENT, avg.toString(INDENT + INDENT));
-        });
-        pw.println();
     }
 }

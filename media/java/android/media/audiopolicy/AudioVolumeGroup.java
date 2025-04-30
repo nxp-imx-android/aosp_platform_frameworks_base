@@ -207,23 +207,21 @@ public final class AudioVolumeGroup implements Parcelable {
 
     @Override
     public @NonNull String toString() {
-        return toString("");
-    }
-
-    String toString(String indent) {
         StringBuilder s = new StringBuilder();
-        s.append("\n").append(indent).append("Name: ").append(mName);
-        s.append(" Id: ").append(mId);
+        s.append("\n Name: ");
+        s.append(mName);
+        s.append(" Id: ");
+        s.append(Integer.toString(mId));
 
-        s.append("\n").append(indent).append(indent).append("Supported Audio Attributes:");
+        s.append("\n     Supported Audio Attributes:");
         for (AudioAttributes attribute : mAudioAttributes) {
-            s.append("\n").append(indent).append(indent).append(indent).append("-");
+            s.append("\n       -");
             s.append(attribute.toString());
         }
-
-        s.append("\n").append(indent).append(indent).append("Supported Legacy Stream Types: { ");
+        s.append("\n     Supported Legacy Stream Types: { ");
         for (int legacyStreamType : mLegacyStreamTypes) {
-            s.append(legacyStreamType).append(" ");
+            s.append(Integer.toString(legacyStreamType));
+            s.append(" ");
         }
         s.append("}");
         return s.toString();
