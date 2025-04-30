@@ -74,8 +74,6 @@ import java.util.function.Predicate;
  */
 final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
-    DisplayContent mDisplayContent;
-
     // Cached reference to some special tasks we tend to get a lot so we don't need to loop
     // through the list to find them.
     private Task mRootHomeTask;
@@ -158,23 +156,15 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     private final Configuration mTempConfiguration = new Configuration();
 
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature) {
-        this(displayContent, service, name, displayAreaFeature, false /* createdByOrganizer */,
-                true /* canHostHomeTask */);
-    }
-
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature, boolean createdByOrganizer) {
-        this(displayContent, service, name, displayAreaFeature, createdByOrganizer,
-                true /* canHostHomeTask */);
-    }
-
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature, boolean createdByOrganizer,
-                    boolean canHostHomeTask) {
+    /**
+     * @param createdByOrganizer    whether this TaskDisplayArea is created by a
+     *                              {@link android.window.WindowOrganizer}.
+     * @param canHostHomeTask       whether this TaskDisplayArea can have a home task child
+     *                              {@link WindowConfiguration#ACTIVITY_TYPE_HOME}
+     */
+    TaskDisplayArea(@NonNull WindowManagerService service, @NonNull String name,
+            int displayAreaFeature, boolean createdByOrganizer, boolean canHostHomeTask) {
         super(service, Type.ANY, name, displayAreaFeature);
-        mDisplayContent = displayContent;
         mRootWindowContainer = service.mRoot;
         mAtmService = service.mAtmService;
         mCreatedByOrganizer = createdByOrganizer;

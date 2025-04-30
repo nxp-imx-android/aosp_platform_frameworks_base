@@ -1051,8 +1051,9 @@ public class WindowContainerTests extends WindowTestsBase {
         assertNull(task.getDisplayArea());
 
         // TaskDisplayArea > Task > WindowContainer
-        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(
-                mDisplayContent, mWm, "TaskDisplayArea", FEATURE_DEFAULT_TASK_CONTAINER);
+        final TaskDisplayArea taskDisplayArea = new TaskDisplayArea(mWm, "TaskDisplayArea",
+                FEATURE_DEFAULT_TASK_CONTAINER, false /* createdByOrganizer */,
+                true /* canHostHomeTask */);
         taskDisplayArea.addChild(task, 0);
 
         assertEquals(taskDisplayArea, windowContainer.getDisplayArea());

@@ -1207,8 +1207,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
         final TaskDisplayArea defaultTaskDisplayArea = getDefaultTaskDisplayArea();
         defaultTaskDisplayArea.getOrCreateRootHomeTask(ON_TOP);
-        positionChildAt(POSITION_TOP, defaultTaskDisplayArea.mDisplayContent,
-                false /* includingParents */);
+        positionChildAt(POSITION_TOP, mDefaultDisplay, false /* includingParents */);
     }
 
     /**
