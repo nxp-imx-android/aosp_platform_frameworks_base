@@ -42,5 +42,5 @@ android {
 }
 
 dependencies {
-    implementation(project(":spa"))
+    implementation(project(":Spa:spa"))
 }
