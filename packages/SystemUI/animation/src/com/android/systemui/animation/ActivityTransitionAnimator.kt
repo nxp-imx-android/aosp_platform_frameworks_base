@@ -1218,7 +1218,7 @@ constructor(
             wallpapers: Array<out RemoteAnimationTarget>?,
             nonApps: Array<out RemoteAnimationTarget>?,
             callback: IRemoteAnimationFinishedCallback?,
-        ) = impl.onAnimationStart(apps, callback)
+        ) = impl.onAnimationStart(apps, onAnimationFinished = { callback?.invoke() })
 
         @UiThread
         internal fun takeOverAnimation(
@@ -1226,9 +1226,24 @@ constructor(
             startWindowStates: Array<out WindowAnimationState>,
             startTransaction: SurfaceControl.Transaction,
             callback: IRemoteAnimationFinishedCallback?,
-        ) = impl.takeOverAnimation(apps, startWindowStates, startTransaction, callback)
+        ) {
+            impl.takeOverAnimation(
+                apps,
+                startWindowStates,
+                startTransaction,
+                onAnimationFinished = { callback?.invoke() },
+            )
+        }
 
         @UiThread override fun onAnimationCancelled() = impl.onAnimationCancelled()
+
+        private fun IRemoteAnimationFinishedCallback.invoke() {
+            try {
+                onAnimationFinished()
+            } catch (e: RemoteException) {
+                e.printStackTrace()
+            }
+        }
     }
 
     /** Implementation of launch and return animations agnostic of WindowManager API. */
@@ -1321,19 +1336,19 @@ constructor(
         @UiThread
         fun onAnimationStart(
             apps: Array<out RemoteAnimationTarget>?,
-            callback: IRemoteAnimationFinishedCallback?,
+            onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(apps, callback) ?: return
+            val window = setUpAnimation(apps, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
-                startAnimation(window, iCallback = callback)
+                startAnimation(window, onAnimationFinished = onAnimationFinished)
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
                 takeOverAnimationInternal(
                     window,
                     startWindowState = null,
                     startTransaction = null,
-                    callback,
+                    onAnimationFinished,
                 )
             }
         }
@@ -1343,35 +1358,46 @@ constructor(
             apps: Array<out RemoteAnimationTarget>?,
             startWindowStates: Array<out WindowAnimationState>,
             startTransaction: SurfaceControl.Transaction,
-            callback: IRemoteAnimationFinishedCallback?,
+            onAnimationFinished: () -> Unit,
         ) {
-            val window = setUpAnimation(apps, callback) ?: return
+            val window = setUpAnimation(apps, onAnimationFinished) ?: return
             val startWindowState = startWindowStates[apps!!.indexOf(window)]
-            takeOverAnimationInternal(window, startWindowState, startTransaction, callback)
+            takeOverAnimationInternal(
+                window,
+                startWindowState,
+                startTransaction,
+                onAnimationFinished,
+            )
         }
 
         private fun takeOverAnimationInternal(
             window: RemoteAnimationTarget,
             startWindowState: WindowAnimationState?,
             startTransaction: SurfaceControl.Transaction?,
-            callback: IRemoteAnimationFinishedCallback?,
+            onAnimationFinished: () -> Unit,
         ) {
             val useSpring =
                 !controller.isLaunching && startWindowState != null && startTransaction != null
-            startAnimation(window, useSpring, startWindowState, startTransaction, callback)
+            startAnimation(
+                window,
+                useSpring,
+                startWindowState,
+                startTransaction,
+                onAnimationFinished,
+            )
         }
 
         @UiThread
         private fun setUpAnimation(
             apps: Array<out RemoteAnimationTarget>?,
-            callback: IRemoteAnimationFinishedCallback?,
+            onAnimationFinished: () -> Unit,
         ): RemoteAnimationTarget? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
             // timed out.
             if (timedOut) {
-                callback?.invoke()
+                onAnimationFinished()
                 return null
             }
 
@@ -1384,7 +1410,7 @@ constructor(
             val window = findTargetWindowIfPossible(apps)
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
-                callback?.invoke()
+                onAnimationFinished()
 
                 if (DEBUG_TRANSITION_ANIMATION) {
                     Log.d(
@@ -1455,7 +1481,7 @@ constructor(
             useSpring: Boolean = false,
             startingWindowState: WindowAnimationState? = null,
             startTransaction: SurfaceControl.Transaction? = null,
-            iCallback: IRemoteAnimationFinishedCallback? = null,
+            onAnimationFinished: () -> Unit,
         ) {
             if (TransitionAnimator.DEBUG) {
                 Log.d(TAG, "Remote animation started")
@@ -1617,7 +1643,7 @@ constructor(
 
                     override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
                         listener?.onTransitionAnimationEnd()
-                        if (!instantHideShade()) iCallback?.invoke()
+                        if (!instantHideShade()) onAnimationFinished()
 
                         if (reparent) {
                             val cleanUpTransitionLeash: () -> Unit = {
@@ -1666,7 +1692,7 @@ constructor(
                         }
                         delegate.onTransitionAnimationEnd(isExpandingFullyAbove)
 
-                        if (instantHideShade()) iCallback?.invoke()
+                        if (instantHideShade()) onAnimationFinished()
                     }
 
                     override fun onTransitionAnimationProgress(
@@ -1893,14 +1919,6 @@ constructor(
             }
             controller.onTransitionAnimationCancelled()
             listener?.onTransitionAnimationCancelled()
-        }
-
-        private fun IRemoteAnimationFinishedCallback.invoke() {
-            try {
-                onAnimationFinished()
-            } catch (e: RemoteException) {
-                e.printStackTrace()
-            }
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
