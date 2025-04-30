@@ -42,7 +42,7 @@ import com.android.server.wm.flicker.assertNavBarPosition
 import com.android.server.wm.flicker.assertStatusBarLayerPosition
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.wm.shell.Flags
-import org.junit.BeforeClass
+import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -101,29 +101,28 @@ class EnterBubbleViaBubbleMenuTest {
          */
         private lateinit var traceDataReader: Reader
 
-        @BeforeClass
-        @JvmStatic
-        fun recordTraceWithTransition() {
-            setUpBeforeTransition(instrumentation, wmHelper)
-
-            // Run transition while recording trace.
-            traceDataReader = runTransitionWithTrace {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-            }
-
-            // Finish the test app.
-            testApp.exit(wmHelper)
-        }
+        @ClassRule
+        @JvmField
+        val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
+            setUpBeforeTransition = { setUpBeforeTransition(instrumentation, wmHelper) },
+            transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+            tearDownAfterTransition = { testApp.exit(wmHelper) }
+        )
     }
 
     @get:Rule
     val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     /**
+     * The reader to read trace from.
+     */
+    private val traceDataReader = recordTraceWithTransitionRule.reader
+
+    /**
      * The WindowManager trace subject, which is equivalent to the data shown in
      * `Window Manager` tab in go/winscope.
      */
-    private val wmTraceSubject: WindowManagerTraceSubject = WindowManagerTraceSubject(
+    private val wmTraceSubject = WindowManagerTraceSubject(
         traceDataReader.readWmTrace() ?: error("Failed to read WM trace")
     )
 
@@ -131,7 +130,7 @@ class EnterBubbleViaBubbleMenuTest {
      * The Layer trace subject, which is equivalent to the data shown in
      * `Surface Flinger` tab in go/winscope.
      */
-    private val layersTraceSubject: LayersTraceSubject = LayersTraceSubject(
+    private val layersTraceSubject = LayersTraceSubject(
         traceDataReader.readLayersTrace() ?: error("Failed to read layer trace")
     )
 
@@ -154,6 +153,12 @@ class EnterBubbleViaBubbleMenuTest {
      * The last [LayerTraceEntry] of the Layers trace.
      */
     private val layerTraceEntrySubjectAtEnd: LayerTraceEntrySubject
+
+    // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
+    /**
+     * Indicates whether the device uses gesture navigation bar or not.
+     */
+    private val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
 
     /**
      * Initialize subjects inherited from [FlickerSubject].
@@ -207,36 +212,6 @@ class EnterBubbleViaBubbleMenuTest {
             .isInvisible(ComponentNameMatcher.BUBBLE, mustExist = false)
             .then()
             .isVisible(ComponentNameMatcher.BUBBLE)
-            .forAllEntries()
-    }
-
-// endregion
-
-// region Generic tests
-
-    /**
-     * Verifies there's no flickers among all visible windows.
-     *
-     * In other words, all visible windows shouldn't be visible -> invisible -> visible in
-     * consecutive entries
-     */
-    @Test
-    fun visibleWindowsShownMoreThanOneConsecutiveEntry() {
-        wmTraceSubject
-            .visibleWindowsShownMoreThanOneConsecutiveEntry()
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies there's no flickers among all visible layers.
-     *
-     * In other words, all visible layers shouldn't be visible -> invisible -> visible in
-     * consecutive entries
-     */
-    @Test
-    fun visibleLayersShownMoreThanOneConsecutiveEntry() {
-        layersTraceSubject
-            .visibleLayersShownMoreThanOneConsecutiveEntry()
             .forAllEntries()
     }
 
@@ -344,6 +319,36 @@ class EnterBubbleViaBubbleMenuTest {
     @Test
     fun appLayerHasRoundedCorner() {
         layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
+    }
+
+// endregion
+
+// region Generic tests
+
+    /**
+     * Verifies there's no flickers among all visible windows.
+     *
+     * In other words, all visible windows shouldn't be visible -> invisible -> visible in
+     * consecutive entries
+     */
+    @Test
+    fun visibleWindowsShownMoreThanOneConsecutiveEntry() {
+        wmTraceSubject
+            .visibleWindowsShownMoreThanOneConsecutiveEntry()
+            .forAllEntries()
+    }
+
+    /**
+     * Verifies there's no flickers among all visible layers.
+     *
+     * In other words, all visible layers shouldn't be visible -> invisible -> visible in
+     * consecutive entries
+     */
+    @Test
+    fun visibleLayersShownMoreThanOneConsecutiveEntry() {
+        layersTraceSubject
+            .visibleLayersShownMoreThanOneConsecutiveEntry()
+            .forAllEntries()
     }
 
 // endregion
