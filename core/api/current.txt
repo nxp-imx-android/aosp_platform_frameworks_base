@@ -10128,6 +10128,8 @@ package android.appwidget {
     method public void setColorResources(@NonNull android.util.SparseIntArray);
     method public void setExecutor(java.util.concurrent.Executor);
     method public void setOnLightBackground(boolean);
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void startVisibilityTracking();
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void stopVisibilityTracking();
     method public void updateAppWidget(android.widget.RemoteViews);
     method public void updateAppWidgetOptions(android.os.Bundle);
     method @Deprecated public void updateAppWidgetSize(android.os.Bundle, int, int, int, int);

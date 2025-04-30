@@ -43,7 +43,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
-import android.os.Looper;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -196,6 +195,12 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         public Context getRemoteContextEnsuringCorrectCachedApkPath() {
             // To reduce noise in error messages
             return null;
+        }
+
+        @Override
+        protected boolean isVisibilityTrackingPermitted() {
+            // Do not track visibility for individual adapter items
+            return false;
         }
     }
 
@@ -353,8 +358,8 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                             0 /* heightUsed */);
                 }
             }
-            if (changed) {
-                post(mInteractionLogger::onPositionChanged);
+            if (changed && isVisibilityTrackingPermitted()) {
+                mInteractionLogger.onPositionChanged();
             }
             super.onLayout(changed, left, top, right, bottom);
         } catch (final RuntimeException e) {
@@ -366,7 +371,9 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        mInteractionLogger.onWindowFocusChanged(hasWindowFocus);
+        if (isVisibilityTrackingPermitted()) {
+            mInteractionLogger.onWindowFocusChanged();
+        }
     }
 
     /**
@@ -1039,7 +1046,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     protected void dispatchDraw(@NonNull Canvas canvas) {
         try {
             super.dispatchDraw(canvas);
-            mInteractionLogger.onDraw();
         } catch (Exception e) {
             // Catch draw exceptions that may be caused by RemoteViews
             Log.e(TAG, "Drawing view failed: " + e);
@@ -1047,20 +1053,56 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         }
     }
 
+    @Override
+    public void onVisibilityAggregated(boolean isVisible) {
+        super.onVisibilityAggregated(isVisible);
+        if (isVisibilityTrackingPermitted()) {
+            mInteractionLogger.onVisibilityAggregated();
+        }
+    }
+
+    /**
+     * Start visibility tracking for this widget. This should be called when this view has become
+     * visible on screen to the user. This view will mark the start of a duration of visibility.
+     */
+    @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
+    public void startVisibilityTracking()  {
+        mInteractionLogger.onTrackingChanged(true);
+    }
+
+    /**
+     * Stop visibility tracking for this widget. This should be called when this view is no longer
+     * visible on screen to the user. This view will mark the end of a duration of visibility and
+     * add it to the total visibility duration tracked by this view.
+     *
+     * <p>Once the {@link AppWidgetHost} stops listening or this widget is deleted, the duration of
+     * visibility will be recorded into an {@link AppWidgetEvent} and reported to the widget
+     * service.
+     */
+    @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
+    public void stopVisibilityTracking() {
+        mInteractionLogger.onTrackingChanged(false);
+    }
+
+    /**
+     * Override this to return false for AppWidgetHostViews that should never allow visibility
+     * tracking.
+     *
+     * @hide
+     */
+    protected boolean isVisibilityTrackingPermitted() {
+        return true;
+    }
+
     /**
      * This function returns the current set of widget event data being tracked by this widget. The
      * tracked data is cleared is returned here.
-     *
-     * This should always be called on the main thread.
      *
      * @hide
      */
     @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
     @Override
     public AppWidgetEvent collectWidgetEvent() {
-        if (!Looper.getMainLooper().isCurrentThread()) {
-            throw new IllegalStateException("collectWidgetEvent must be called from main thread");
-        }
         return mInteractionLogger.collectWidgetEvent();
     }
 
@@ -1069,17 +1111,14 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      * @hide
      */
     public class InteractionLogger implements RemoteViews.InteractionHandler {
-        // Determines the minimum time between calls to updateVisibility().
-        private static final long UPDATE_VISIBILITY_DELAY_MS = 1000L;
         @NonNull
         private final AppWidgetEvent.Builder mEvent = new AppWidgetEvent.Builder();
         @Nullable
         private RemoteViews.InteractionHandler mInteractionHandler = null;
-        // Holds event data since last report.
         // Last time the widget became visible in SystemClock.uptimeMillis()
         private long mVisibilityChangeMs = 0L;
         private boolean mIsVisible = false;
-        private boolean mUpdateVisibilityScheduled = false;
+        private boolean mIsTracking = false;
 
         InteractionLogger() {
         }
@@ -1093,14 +1132,18 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
          */
         @VisibleForTesting
         public AppWidgetEvent getEvent() {
-            return mEvent.build();
+            synchronized (this) {
+                return mEvent.build();
+            }
         }
 
         @Override
         public boolean onInteraction(View view, PendingIntent pendingIntent,
                 RemoteViews.RemoteResponse response) {
             if (engagementMetrics()) {
-                mEvent.addClickedId(getMetricsId(view));
+                synchronized (this) {
+                    mEvent.addClickedId(getMetricsId(view));
+                }
             }
             AppWidgetManager manager = AppWidgetManager.getInstance(mContext);
             if (manager != null) {
@@ -1119,7 +1162,9 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         public void onScroll(@NonNull AbsListView view) {
             if (!engagementMetrics()) return;
 
-            mEvent.addScrolledId(getMetricsId(view));
+            synchronized (this) {
+                mEvent.addScrolledId(getMetricsId(view));
+            }
             if (mInteractionHandler != null) {
                 mInteractionHandler.onScroll(view);
             }
@@ -1143,7 +1188,9 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
             Rect position = new Rect();
             if (getGlobalVisibleRect(position)) {
                 applyScrollOffset(position);
-                mEvent.setPosition(position);
+                synchronized (this) {
+                    mEvent.setPosition(position);
+                }
             }
         }
 
@@ -1166,81 +1213,73 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
             position.offset(dx, dy);
         }
 
-        private void onDraw() {
+        private void onWindowFocusChanged() {
             if (!engagementMetrics()) return;
-            if (getParent() instanceof View view && view.isDirty()) {
-                scheduleUpdateVisibility();
+            synchronized (this) {
+                updateVisibilityLocked(mIsTracking);
             }
         }
 
-        private void onWindowFocusChanged(boolean hasWindowFocus) {
+        private void onVisibilityAggregated() {
             if (!engagementMetrics()) return;
-            updateVisibility(hasWindowFocus);
+            synchronized (this) {
+                updateVisibilityLocked(mIsTracking);
+            }
         }
 
-        /**
-         * Schedule a delayed call to updateVisibility. Will skip if a call is already scheduled.
-         */
-        private void scheduleUpdateVisibility() {
-            if (mUpdateVisibilityScheduled) {
-                return;
+        private void onTrackingChanged(boolean isTracking) {
+            if (!engagementMetrics()) return;
+            synchronized (this) {
+                mIsTracking = isTracking;
+                updateVisibilityLocked(mIsTracking);
             }
-
-            postDelayed(() -> updateVisibility(hasWindowFocus()), UPDATE_VISIBILITY_DELAY_MS);
-            mUpdateVisibilityScheduled = true;
         }
 
         /**
          * Check if this view is currently visible, and update the duration if an impression has
          * finished.
          */
-        private void updateVisibility(boolean hasWindowFocus) {
+        private void updateVisibilityLocked(boolean isTracking) {
             boolean wasVisible = mIsVisible;
-            boolean isVisible = hasWindowFocus && testVisibility(AppWidgetHostView.this);
-            if (isVisible) {
-                // Test parent visibility.
-                for (ViewParent parent = getParent(); parent != null && isVisible;
-                        parent = parent.getParent()) {
-                    if (parent instanceof View view) {
-                        isVisible = testVisibility(view);
-                    } else {
-                        break;
-                    }
-                }
-            }
-
+            boolean isVisible = isTracking && hasWindowFocus() && isVisibleToUser();
             if (!wasVisible && isVisible) {
                 // View has become visible, start the tracker.
                 mVisibilityChangeMs = SystemClock.uptimeMillis();
+                if (LOGD) Log.d(TAG, logName() + " became visible");
             } else if (wasVisible && !isVisible) {
                 // View is no longer visible, add duration.
                 mEvent.addDurationMs(SystemClock.uptimeMillis() - mVisibilityChangeMs);
+                if (LOGD) Log.d(TAG, logName() + " lost visibility");
             }
 
             mIsVisible = isVisible;
-            mUpdateVisibilityScheduled = false;
-        }
-
-        private boolean testVisibility(View view) {
-            return view.isAggregatedVisible() && view.getGlobalVisibleRect(new Rect())
-                    && view.getAlpha() != 0;
         }
 
         @Nullable
         private AppWidgetEvent collectWidgetEvent() {
             if (!engagementMetrics()) return null;
 
-            if (mIsVisible) {
-                // If the widget is currently visible, add the current duration to the event data.
-                updateVisibility(false);
+            synchronized (this) {
+                if (mIsVisible) {
+                    // If the widget is currently visible, add the current duration to the event
+                    // data.
+                    updateVisibilityLocked(false);
+                }
+                mEvent.setAppWidgetId(mAppWidgetId);
+                if (mEvent.isEmpty()) {
+                    if (LOGD) Log.d(TAG, "Skipping event for " + logName() + ", no event data");
+                    return null;
+                }
+                AppWidgetEvent event = mEvent.build();
+                mEvent.clear();
+                if (LOGD) Log.d(TAG, "Returning event for " + logName() + ", " + event);
+                return event;
             }
-            mEvent.setAppWidgetId(mAppWidgetId);
-            if (mEvent.isEmpty()) {
-                return null;
-            }
-            AppWidgetEvent event = mEvent.build();
-            mEvent.clear();
-            return event;
+        }
+
+        private String logName() {
+            return (mInfo == null ? "null" : mInfo.provider.getPackageName()) + "(" + mAppWidgetId
+                + ")";
         }
     }
 }

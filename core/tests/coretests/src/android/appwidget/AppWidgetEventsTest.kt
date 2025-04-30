@@ -38,7 +38,7 @@ import org.junit.runner.RunWith
 class AppWidgetEventsTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext!!
     private val hostView = AppWidgetHostView(context).apply {
-        setAppWidget(0, AppWidgetManager.getInstance(context).installedProviders.first())
+        setAppWidget(1, AppWidgetManager.getInstance(context).installedProviders.first())
     }
     private val pendingIntent = PendingIntent.getActivity(
         context,
@@ -202,10 +202,12 @@ class AppWidgetEventsTest {
             scenario.onActivity { activity ->
                 activity.setContentView(hostView)
                 hostView.layout(0, 0, 500, 500)
-                hostView.dispatchWindowFocusChanged(true)
+                hostView.startVisibilityTracking()
             }
             Thread.sleep(2000L)
-            hostView.dispatchWindowFocusChanged(false)
+            scenario.onActivity { activity ->
+                hostView.stopVisibilityTracking()
+            }
             assertThat(hostView.interactionLogger.event.durationMs).isGreaterThan(2000L)
         }
     }
