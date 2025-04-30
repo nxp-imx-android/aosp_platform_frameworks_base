@@ -91,6 +91,8 @@ data class ActiveNotificationModel(
      * this notification cannot be rendered as a promoted notification.
      */
     val promotedContent: PromotedNotificationContentModels?,
+    /** True if this notification set the "requested promotion?" extra and false otherwise. */
+    val requestedPromotion: Boolean,
 ) : ActiveNotificationEntryModel() {
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {

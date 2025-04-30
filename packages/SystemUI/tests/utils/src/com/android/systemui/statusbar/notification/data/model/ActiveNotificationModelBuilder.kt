@@ -50,6 +50,7 @@ fun activeNotificationModel(
     contentIntent: PendingIntent? = null,
     bucket: Int = BUCKET_UNKNOWN,
     callType: CallType = CallType.None,
+    requestedPromotion: Boolean = false,
     promotedContent: PromotedNotificationContentModels? = null,
 ) =
     ActiveNotificationModel(
@@ -76,5 +77,6 @@ fun activeNotificationModel(
         isGroupSummary = isGroupSummary,
         bucket = bucket,
         callType = callType,
+        requestedPromotion = requestedPromotion,
         promotedContent = promotedContent,
     )

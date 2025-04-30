@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
+import android.app.Flags
 import android.app.PendingIntent
 import com.android.internal.logging.InstanceId
 import com.android.systemui.activity.data.repository.activityManagerRepository
@@ -42,6 +43,7 @@ fun inCallModel(
     intent: PendingIntent? = null,
     notificationKey: String = "test",
     appName: String = "",
+    requestedPromotion: Boolean = false,
     promotedContent: PromotedNotificationContentModels? = null,
     isAppVisible: Boolean = false,
     instanceId: InstanceId? = null,
@@ -52,6 +54,7 @@ fun inCallModel(
         intent,
         notificationKey,
         appName,
+        requestedPromotion,
         promotedContent,
         isAppVisible,
         instanceId,
@@ -82,14 +85,32 @@ object OngoingCallTestHelper {
         key: String = DEFAULT_KEY,
         startTimeMs: Long = 1000L,
         statusBarChipIconView: StatusBarIconView? = createStatusBarIconViewOrNull(),
-        promotedContent: PromotedNotificationContentModels? =
-            callPromotedContentBuilder(key).build(),
+        requestedPromotion: Boolean = false,
+        promotedContent: PromotedContentInput = PromotedContentInput.Default,
         contentIntent: PendingIntent? = null,
         uid: Int = DEFAULT_UID,
         appName: String = "Fake name",
         isAppVisible: Boolean = false,
         instanceId: InstanceId? = null,
     ) {
+        val actualPromotedContent =
+            when (promotedContent) {
+                is PromotedContentInput.Default -> {
+                    if (Flags.optInRichOngoing()) {
+                        // With the opt-in flag, you only get a call chip if you do *not* have
+                        // promoted content
+                        null
+                    } else {
+                        // Without the opt-in flag, you only get a call chip if you *do* have
+                        // promoted content
+                        callPromotedContentBuilder(key).build()
+                    }
+                }
+                is PromotedContentInput.OverrideToNull -> null
+                is PromotedContentInput.OverrideToValue -> {
+                    promotedContent.value
+                }
+            }
         if (StatusBarChipsModernization.isEnabled) {
             activityManagerRepository.fake.startingIsAppVisibleValue = isAppVisible
             activeNotificationListRepository.addNotif(
@@ -99,7 +120,8 @@ object OngoingCallTestHelper {
                     callType = CallType.Ongoing,
                     statusBarChipIcon = statusBarChipIconView,
                     contentIntent = contentIntent,
-                    promotedContent = promotedContent,
+                    requestedPromotion = requestedPromotion,
+                    promotedContent = actualPromotedContent,
                     uid = uid,
                     appName = appName,
                     instanceId = instanceId,
@@ -113,12 +135,22 @@ object OngoingCallTestHelper {
                     intent = contentIntent,
                     notificationKey = key,
                     appName = appName,
-                    promotedContent = promotedContent,
+                    requestedPromotion = requestedPromotion,
+                    promotedContent = actualPromotedContent,
                     isAppVisible = isAppVisible,
                     instanceId = instanceId,
                 )
             )
         }
+    }
+
+    sealed interface PromotedContentInput {
+        data object Default : PromotedContentInput
+
+        data object OverrideToNull : PromotedContentInput
+
+        data class OverrideToValue(val value: PromotedNotificationContentModels) :
+            PromotedContentInput
     }
 
     private fun createStatusBarIconViewOrNull(): StatusBarIconView? =

@@ -198,6 +198,7 @@ private class ActiveNotificationsStoreBuilder(
             bucket = bucket,
             callType = sbn.toCallType(),
             promotedContent = promotedContent,
+            requestedPromotion = sbn.notification.hasRequestedPromotedOngoing(),
         )
     }
 }
@@ -227,6 +228,7 @@ private fun ActiveNotificationsStore.createOrReuse(
     bucket: Int,
     callType: CallType,
     promotedContent: PromotedNotificationContentModels?,
+    requestedPromotion: Boolean,
 ): ActiveNotificationModel {
     return individuals[key]?.takeIf {
         it.isCurrent(
@@ -254,6 +256,7 @@ private fun ActiveNotificationsStore.createOrReuse(
             bucket = bucket,
             callType = callType,
             promotedContent = promotedContent,
+            requestedPromotion = requestedPromotion,
         )
     }
         ?: ActiveNotificationModel(
@@ -281,6 +284,7 @@ private fun ActiveNotificationsStore.createOrReuse(
             bucket = bucket,
             callType = callType,
             promotedContent = promotedContent,
+            requestedPromotion = requestedPromotion,
         )
 }
 
@@ -309,6 +313,7 @@ private fun ActiveNotificationModel.isCurrent(
     bucket: Int,
     callType: CallType,
     promotedContent: PromotedNotificationContentModels?,
+    requestedPromotion: Boolean,
 ): Boolean {
     return when {
         key != this.key -> false
@@ -337,6 +342,7 @@ private fun ActiveNotificationModel.isCurrent(
         // QQQ: Do we need to do the same `isCurrent` thing within the content model to avoid
         // recreating the active notification model constantly?
         promotedContent != this.promotedContent -> false
+        requestedPromotion != this.requestedPromotion -> false
         else -> true
     }
 }

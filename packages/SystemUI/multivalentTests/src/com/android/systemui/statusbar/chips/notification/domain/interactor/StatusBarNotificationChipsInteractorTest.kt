@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.notification.domain.interactor
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -216,7 +217,8 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
     /** Regression test for b/388521980. */
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun allNotificationChips_callNotifIsAlsoPromoted_callNotifExcluded() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun allNotificationChips_callNotifIsAlsoPromoted_optInDisabled_callNotifExcluded() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.allNotificationChips)
 
@@ -242,6 +244,39 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
             // Verify the promoted call notification is not included
             assertThat(latest).hasSize(1)
             assertThat(latest!![0].key).isEqualTo("promotedNormal")
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun allNotificationChips_callNotifIsAlsoPromoted_optInEnabled_callNotifIncluded() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.allNotificationChips)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "promotedNormal",
+                        statusBarChipIcon = mock(),
+                        requestedPromotion = true,
+                        promotedContent =
+                            PromotedNotificationContentBuilder("promotedNormal").build(),
+                        callType = CallType.None,
+                    ),
+                    activeNotificationModel(
+                        key = "promotedCall",
+                        statusBarChipIcon = mock(),
+                        requestedPromotion = true,
+                        promotedContent =
+                            PromotedNotificationContentBuilder("promotedCall").build(),
+                        callType = CallType.Ongoing,
+                    ),
+                )
+            )
+
+            // Verify the promoted call notification is included
+            assertThat(latest).hasSize(2)
+            assertThat(latest!![0].key).isEqualTo("promotedNormal")
+            assertThat(latest!![1].key).isEqualTo("promotedCall")
         }
 
     @Test

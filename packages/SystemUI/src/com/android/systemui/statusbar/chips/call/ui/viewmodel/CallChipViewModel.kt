@@ -44,7 +44,6 @@ import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
@@ -187,14 +186,7 @@ constructor(
         systemClock: SystemClock,
         isHidden: Boolean,
         transitionState: TransitionState = TransitionState.NoTransition,
-    ): OngoingActivityChipModel {
-        if (PromotedNotificationUi.isEnabled && state.promotedContent == null) {
-            // [ActiveNotificationsInteractor] should've already filtered this out, filter it out
-            // again just in case.
-            logger.w({ "Not showing call chip with null promoted content" }) {}
-            return OngoingActivityChipModel.Inactive()
-        }
-
+    ): OngoingActivityChipModel.Active {
         val key = "$KEY_PREFIX${state.notificationKey}"
         val contentDescription = getContentDescription(state.appName)
         val icon =
@@ -263,6 +255,8 @@ constructor(
             logger.i({ "Chip clicked" }) {}
             uiEventLogger.logChipTapToShow(instanceId)
 
+            // TODO(b/414830065): Tapping the call chip should show the notification instead of
+            // launching the activity.
             val backgroundView =
                 view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
             // This mimics OngoingCallController#updateChipClickListener.
@@ -290,6 +284,8 @@ constructor(
                     logger.i({ "Chip clicked" }) {}
                     uiEventLogger.logChipTapToShow(instanceId)
 
+                    // TODO(b/414830065): Tapping the call chip should show the notification instead
+                    // of launching the activity.
                     val animationController =
                         if (
                             !StatusBarChipsReturnAnimations.isEnabled ||
