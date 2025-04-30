@@ -32,13 +32,9 @@ import java.util.concurrent.Executor;
 public final class BackgroundThread extends HandlerThread {
     private static final long SLOW_DISPATCH_THRESHOLD_MS = 10_000;
     private static final long SLOW_DELIVERY_THRESHOLD_MS = 30_000;
-
-    // Note: These static fields are shadowed in Robolectric, and cannot be easily changed without
-    // breaking downstream tests. This makes refactoring or optimization a bit messier than it could
-    // be, e.g., using common lazy singleton abstractions or the holder init pattern.
-    private static volatile BackgroundThread sInstance;
-    private static volatile Handler sHandler;
-    private static volatile HandlerExecutor sHandlerExecutor;
+    private static BackgroundThread sInstance;
+    private static Handler sHandler;
+    private static HandlerExecutor sHandlerExecutor;
 
     private BackgroundThread() {
         super("android.bg", android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -51,23 +47,17 @@ public final class BackgroundThread extends HandlerThread {
         }
     }
 
-    private static void ensureThreadReady() {
-        // As the executor is assigned and initialized last, we use it to signal full readiness.
-        if (sHandlerExecutor != null) {
-            return;
-        }
-        synchronized (BackgroundThread.class) {
-            if (sHandlerExecutor == null) {
-                ensureThreadStartedLocked();
-                // This will block until the looper is initialized on the background thread.
-                final Looper looper = sInstance.getLooper();
-                looper.setTraceTag(Trace.TRACE_TAG_SYSTEM_SERVER);
-                looper.setSlowLogThresholdMs(
-                        SLOW_DISPATCH_THRESHOLD_MS, SLOW_DELIVERY_THRESHOLD_MS);
-                sHandler = new Handler(sInstance.getLooper(), /*callback=*/ null, /* async=*/ false,
-                        /* shared=*/ true);
-                sHandlerExecutor = new HandlerExecutor(sHandler);
-            }
+    private static void ensureThreadReadyLocked() {
+        ensureThreadStartedLocked();
+        if (sHandler == null) {
+            // This will block until the looper is initialized on the background thread.
+            final Looper looper = sInstance.getLooper();
+            looper.setTraceTag(Trace.TRACE_TAG_SYSTEM_SERVER);
+            looper.setSlowLogThresholdMs(
+                    SLOW_DISPATCH_THRESHOLD_MS, SLOW_DELIVERY_THRESHOLD_MS);
+            sHandler = new Handler(sInstance.getLooper(), /*callback=*/ null, /* async=*/ false,
+                    /* shared=*/ true);
+            sHandlerExecutor = new HandlerExecutor(sHandler);
         }
     }
 
@@ -75,28 +65,32 @@ public final class BackgroundThread extends HandlerThread {
      * Starts the thread if needed, but doesn't block on thread initialization or readiness.
      */
     public static void startIfNeeded() {
-        if (sInstance == null) {
-            synchronized (BackgroundThread.class) {
-                ensureThreadStartedLocked();
-            }
+        synchronized (BackgroundThread.class) {
+            ensureThreadStartedLocked();
         }
     }
 
     @NonNull
     public static BackgroundThread get() {
-        ensureThreadReady();
-        return sInstance;
+        synchronized (BackgroundThread.class) {
+            ensureThreadReadyLocked();
+            return sInstance;
+        }
     }
 
     @NonNull
     public static Handler getHandler() {
-        ensureThreadReady();
-        return sHandler;
+        synchronized (BackgroundThread.class) {
+            ensureThreadReadyLocked();
+            return sHandler;
+        }
     }
 
     @NonNull
     public static Executor getExecutor() {
-        ensureThreadReady();
-        return sHandlerExecutor;
+        synchronized (BackgroundThread.class) {
+            ensureThreadReadyLocked();
+            return sHandlerExecutor;
+        }
     }
 }
