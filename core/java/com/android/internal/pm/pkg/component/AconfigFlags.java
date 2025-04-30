@@ -17,6 +17,7 @@
 package com.android.internal.pm.pkg.component;
 
 import static android.provider.flags.Flags.newStoragePublicApi;
+
 import static com.android.internal.pm.pkg.parsing.ParsingUtils.ANDROID_RES_NAMESPACE;
 
 import android.aconfig.DeviceProtos;
@@ -320,6 +321,18 @@ public class AconfigFlags {
             negated = true;
             featureFlag = featureFlag.substring(1).strip();
         }
+        return skip(pkg, featureFlag, negated);
+    }
+
+    /**
+     * Check if whatever is behind this flag should be skipped
+     *
+     * @param pkg The package being parsed
+     * @param featureFlag The name of the flag being checked
+     * @param negated Whether that flag is negated
+     * @return true if the resource is disabled because of its feature flag
+     */
+    public boolean skip(@Nullable ParsingPackage pkg, String featureFlag, boolean negated) {
         Boolean flagValue = getFlagValue(featureFlag);
         boolean isUndefined = false;
         if (flagValue == null) {

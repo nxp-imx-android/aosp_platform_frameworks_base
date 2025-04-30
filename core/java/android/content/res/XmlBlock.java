@@ -350,20 +350,24 @@ public final class XmlBlock implements AutoCloseable {
             }
 
             if (useLayoutReadwrite() && mUsesFeatureFlags && ev == START_TAG) {
-                AconfigFlags flags = ParsingPackageUtils.getAconfigFlags();
-                if (flags.skipCurrentElement(/* pkg= */ null, this)) {
-                    int depth = 1;
-                    while (depth > 0) {
-                        int ev2 = nativeNext(mParseState);
-                        if (ev2 == ERROR_BAD_DOCUMENT) {
-                            throw new XmlPullParserException("Corrupt XML binary file");
-                        } else if (ev2 == START_TAG) {
-                            depth++;
-                        } else if (ev2 == END_TAG) {
-                            depth--;
+                FlagInfo flag = nativeGetFlagInfo(mParseState);
+                if (flag != null && flag.mNameIndex > 0) {
+                    AconfigFlags flags = ParsingPackageUtils.getAconfigFlags();
+                    String flagName = getSequenceString(mStrings.getSequence(flag.mNameIndex));
+                    if (flags.skip(/* pkg= */ null, flagName, flag.mNegated)) {
+                        int depth = 1;
+                        while (depth > 0) {
+                            int ev2 = nativeNext(mParseState);
+                            if (ev2 == ERROR_BAD_DOCUMENT) {
+                                throw new XmlPullParserException("Corrupt XML binary file");
+                            } else if (ev2 == START_TAG) {
+                                depth++;
+                            } else if (ev2 == END_TAG) {
+                                depth--;
+                            }
                         }
+                        return next();
                     }
-                    return next();
                 }
             }
             if (mDecNextDepth) {
@@ -696,6 +700,17 @@ public final class XmlBlock implements AutoCloseable {
 
     private final boolean mUsesFeatureFlags;
 
+    // This class only exists for JNI communication
+    private static class FlagInfo {
+        private int mNameIndex;
+        private boolean mNegated;
+
+        private FlagInfo(int nameIndex, boolean negated) {
+            mNameIndex = nameIndex;
+            mNegated = negated;
+        }
+    }
+
     private static final native long nativeCreate(byte[] data,
                                                  int offset,
                                                  int size);
@@ -758,4 +773,7 @@ public final class XmlBlock implements AutoCloseable {
 
     @CriticalNative
     private static final native int nativeGetSourceResId(long state);
+
+    @FastNative
+    private static final native FlagInfo nativeGetFlagInfo(long state);
 }
