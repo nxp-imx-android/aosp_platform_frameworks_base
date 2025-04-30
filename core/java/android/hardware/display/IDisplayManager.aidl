@@ -194,7 +194,9 @@ interface IDisplayManager {
     // Sets the user preferred display mode.
     // Requires MODIFY_USER_PREFERRED_DISPLAY_MODE permission.
     @EnforcePermission("MODIFY_USER_PREFERRED_DISPLAY_MODE")
-    void setUserPreferredDisplayMode(int displayId, in Mode mode);
+    void setUserPreferredDisplayMode(int displayId, in Mode mode, boolean storeMode);
+    @EnforcePermission("MODIFY_USER_PREFERRED_DISPLAY_MODE")
+    void resetUserPreferredDisplayMode(int displayId);
     Mode getUserPreferredDisplayMode(int displayId);
     Mode getSystemPreferredDisplayMode(int displayId);
 
