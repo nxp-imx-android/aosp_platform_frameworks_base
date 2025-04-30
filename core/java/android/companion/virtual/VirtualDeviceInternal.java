@@ -23,9 +23,11 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOARD;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
+import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
 import android.companion.virtual.audio.VirtualAudioDevice;
@@ -199,6 +201,7 @@ public class VirtualDeviceInternal {
     @Nullable
     private VirtualAudioDevice mVirtualAudioDevice;
 
+    @RequiresPermission(Manifest.permission.CREATE_VIRTUAL_DEVICE)
     VirtualDeviceInternal(
             IVirtualDeviceManager service,
             Context context,
@@ -209,6 +212,20 @@ public class VirtualDeviceInternal {
                 new Binder(),
                 mContext.getAttributionSource(),
                 associationId,
+                params,
+                mActivityListenerBinder,
+                mSoundEffectListener);
+    }
+
+    @RequiresPermission(Manifest.permission.COMPUTER_CONTROL_ACCESS)
+    VirtualDeviceInternal(
+            IVirtualDeviceManager service,
+            Context context,
+            VirtualDeviceParams params) throws RemoteException {
+        mContext = context.getApplicationContext();
+        mVirtualDevice = service.createLocalVirtualDevice(
+                new Binder(),
+                mContext.getAttributionSource(),
                 params,
                 mActivityListenerBinder,
                 mSoundEffectListener);
