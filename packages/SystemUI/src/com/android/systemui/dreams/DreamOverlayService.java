@@ -81,6 +81,7 @@ import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.touch.TouchInsetManager;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+import com.android.systemui.util.kotlin.BooleanFlowOperators;
 
 import kotlin.Unit;
 
@@ -147,7 +148,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private boolean mCommunalVisible = false;
 
     /**
-     * True if the primary bouncer is visible.
+     * True if either the primary bouncer or alternate bouncer is visible.
      */
     private boolean mBouncerShowing = false;
 
@@ -455,7 +456,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             mFlows.add(collectFlow(getLifecycle(), sceneInteractor.getCurrentOverlays(),
                     mCurrentOverlaysConsumer));
         } else {
-            mFlows.add(collectFlow(getLifecycle(), keyguardInteractor.primaryBouncerShowing,
+            mFlows.add(collectFlow(getLifecycle(), BooleanFlowOperators.INSTANCE.anyOf(
+                    keyguardInteractor.primaryBouncerShowing,
+                    keyguardInteractor.getAlternateBouncerShowing()),
                     mBouncerShowingConsumer));
         }
 
