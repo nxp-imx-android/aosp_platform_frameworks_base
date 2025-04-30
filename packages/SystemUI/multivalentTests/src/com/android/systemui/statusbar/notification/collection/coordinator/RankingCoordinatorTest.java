@@ -71,6 +71,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -322,6 +324,26 @@ public class RankingCoordinatorTest extends SysuiTestCase {
         for (String id : SYSTEM_RESERVED_IDS) {
             assertFalse(mSilentSectioner.isInSection(makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));
         }
+    }
+
+    @Test
+    public void testSilentSectionComparator_sortsBundlesByPrefixedKeys() {
+        // This is the sorted order
+        BundleEntry socialBundle = new BundleEntry(BundleSpec.Companion.getSOCIAL_MEDIA());
+        BundleEntry promoBundle = new BundleEntry(BundleSpec.Companion.getPROMOTIONS());
+        BundleEntry newsBundle = new BundleEntry(BundleSpec.Companion.getNEWS());
+        BundleEntry recsBundle = new BundleEntry(BundleSpec.Companion.getRECOMMENDED());
+
+        // Add them in unsorted order
+        List<BundleEntry> bundles = new ArrayList<>(Arrays.asList(
+                newsBundle, socialBundle, recsBundle, promoBundle
+        ));
+        Collections.sort(bundles, mSilentSectioner.getComparator());
+
+        assertEquals("i=0 expected Social", socialBundle, bundles.get(0));
+        assertEquals("i=1 expected Promo", promoBundle, bundles.get(1));
+        assertEquals("i=2 expected News", newsBundle, bundles.get(2));
+        assertEquals("i=3 expected Recs", recsBundle, bundles.get(3));
     }
 
     @Test

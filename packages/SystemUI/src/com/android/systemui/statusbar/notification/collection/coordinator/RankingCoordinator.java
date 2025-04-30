@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.NotificationChannel;
 
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
@@ -37,7 +38,9 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -58,6 +61,16 @@ public class RankingCoordinator implements Coordinator {
     private final NodeController mAlertingHeaderController;
     private boolean mHasSilentEntries;
     private boolean mHasMinimizedEntries;
+
+    // Define the explicit sort order for bundle keys
+    private static final Map<String, Integer> BUNDLE_KEY_SORT_ORDER = new HashMap<>();
+    static {
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.SOCIAL_MEDIA_ID, 1);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.PROMOTIONS_ID, 2);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.NEWS_ID, 3);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.RECS_ID, 4);
+        BUNDLE_KEY_SORT_ORDER.put("debug_bundle", 99);
+    }
 
     @Inject
     public RankingCoordinator(
@@ -176,11 +189,18 @@ public class RankingCoordinator implements Coordinator {
                 boolean isBundle1 = o1 instanceof BundleEntry;
                 boolean isBundle2 = o2 instanceof BundleEntry;
                 if (isBundle1 && isBundle2) {
-                    // When both are bundles, order by bundle id, which is guaranteed to be in
-                    // a fixed order
-                    // TODO(b/399736937) prefix bundle keys to ensure fixed order
-                    // TODO(b/399736937) optimize sort since this is on the main thread
-                    return o1.getKey().compareTo(o2.getKey());
+                    final String key1 = o1.getKey();
+                    final String key2 = o2.getKey();
+                    // When both are bundles, use the BUNDLE_KEY_SORT_ORDER map to get rankings for
+                    // the keys, which are guaranteed to be in fixed order. Default to large value
+                    // for unknown bundle keys to sort them last.
+                    int rank1 = BUNDLE_KEY_SORT_ORDER.getOrDefault(key1, Integer.MAX_VALUE);
+                    int rank2 = BUNDLE_KEY_SORT_ORDER.getOrDefault(key2, Integer.MAX_VALUE);
+                    int rankComparison = Integer.compare(rank1, rank2);
+                    if (rankComparison != 0) {
+                        return rankComparison;
+                    }
+                    return key1.compareTo(key2);
                 }
                 // Order bundles before non-bundles
                 return -1 * Boolean.compare(isBundle1, isBundle2);
