@@ -347,6 +347,15 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
+    public void testSilentSectionComparator_sortsBundlesBeforeNotifs() {
+        BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getSOCIAL_MEDIA());
+        int comparison = mSilentSectioner.getComparator().compare(bundleEntry, mEntry);
+        assertTrue("Expected BundleEntry before NotifEntry (comparison < 0) but was: "
+                        + comparison,
+                comparison < 0);
+    }
+
+    @Test
     public void testMinimizedSectioner_rejectsBundle() {
         BundleEntry bundleEntry = new BundleEntry(BundleSpec.Companion.getNEWS());
         assertFalse(mMinimizedSectioner.isInSection(bundleEntry));
