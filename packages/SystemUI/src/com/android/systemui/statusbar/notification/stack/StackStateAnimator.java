@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.stack;
 
 import static com.android.systemui.Flags.physicalNotificationMovement;
-import static com.android.systemui.statusbar.notification.row.ExpandableView.HEIGHT_PROPERTY;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_CYCLING_IN;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_CYCLING_OUT;
@@ -693,8 +692,8 @@ public class StackStateAnimator {
                     // running anymore, the panel will instantly hide itself. We need to wait until
                     // the animation is fully finished for this though.
                     final Runnable tmpEndRunnable = endRunnable;
-                    Runnable postAnimation;
-                    Runnable startAnimation;
+                    final Runnable logAnimationStart;
+                    final Runnable logAnimationEnd;
                     if (loggable) {
                         String finalKey1 = key;
                         final boolean finalIsHeadsUp = isHeadsUp;
@@ -702,28 +701,37 @@ public class StackStateAnimator {
                                 event.animationType == ANIMATION_TYPE_HEADS_UP_DISAPPEAR
                                         ? "ANIMATION_TYPE_HEADS_UP_DISAPPEAR"
                                         : "ANIMATION_TYPE_HEADS_UP_DISAPPEAR_CLICK";
-                        startAnimation = () -> {
-                            mLogger.animationStart(finalKey1, type, finalIsHeadsUp);
-                            changingView.setInRemovalAnimation(true);
-                        };
-                        postAnimation = () -> {
-                            mLogger.animationEnd(finalKey1, type, finalIsHeadsUp);
-                            changingView.setInRemovalAnimation(false);
-                            if (tmpEndRunnable != null) {
-                                tmpEndRunnable.run();
-                            }
-                        };
+                        logAnimationStart = () -> mLogger.animationStart(finalKey1, type,
+                                finalIsHeadsUp);
+                        logAnimationEnd = () -> mLogger.animationEnd(finalKey1, type,
+                                finalIsHeadsUp);
                     } else {
-                        startAnimation = () -> {
-                            changingView.setInRemovalAnimation(true);
-                        };
-                        postAnimation = () -> {
-                            changingView.setInRemovalAnimation(false);
-                            if (tmpEndRunnable != null) {
-                                tmpEndRunnable.run();
-                            }
-                        };
+                        logAnimationStart = null;
+                        logAnimationEnd = null;
                     }
+
+                    Runnable startAnimation = () -> {
+                        if (logAnimationStart != null) {
+                            logAnimationStart.run();
+                        }
+                        changingView.setInRemovalAnimation(true);
+                    };
+                    Runnable postAnimation = () -> {
+                        if (logAnimationEnd != null) {
+                            logAnimationEnd.run();
+                        }
+                        changingView.setInRemovalAnimation(false);
+                        if (physicalNotificationMovement()) {
+                            // Finish any running animations, in case the content disappear
+                            // animation would finish earlier.
+                            // Note: a cancellation would not be finalized by onAnimationFinished().
+                            changingView.getViewState().finishAnimations(changingView);
+                        }
+                        if (tmpEndRunnable != null) {
+                            tmpEndRunnable.run();
+                        }
+                    };
+
                     long removeAnimationDelay = changingView.performRemoveAnimation(
                             ANIMATION_DURATION_HEADS_UP_DISAPPEAR,
                             0, 0.0f, true /* isHeadsUpAppear */,
