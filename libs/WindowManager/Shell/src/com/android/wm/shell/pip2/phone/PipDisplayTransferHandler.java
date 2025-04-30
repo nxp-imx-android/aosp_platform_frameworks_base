@@ -15,7 +15,11 @@
  */
 package com.android.wm.shell.pip2.phone;
 
+import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
+import static com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUNDS;
+
 import android.annotation.Nullable;
+import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -27,12 +31,17 @@ import android.view.SurfaceControl.Transaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator;
+import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.animation.PipResizeAnimator;
+import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
 /**
  * Handler for moving PiP window to another display when the device is connected to external
@@ -53,14 +62,21 @@ public class PipDisplayTransferHandler implements
     private final DisplayController mDisplayController;
     private final PipTransitionState mPipTransitionState;
     private final PipScheduler mPipScheduler;
+    private final Context mContext;
+    private final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final PipBoundsAlgorithm mPipBoundsAlgorithm;
 
     @VisibleForTesting boolean mWaitingForDisplayTransfer;
     @VisibleForTesting
     ArrayMap<Integer, SurfaceControl> mOnDragMirrorPerDisplayId = new ArrayMap<>();
+    private int mTargetDisplayId;
+    private PipResizeAnimatorSupplier mPipResizeAnimatorSupplier;
 
     public PipDisplayTransferHandler(Context context, PipTransitionState pipTransitionState,
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            PipBoundsState pipBoundsState, DisplayController displayController) {
+            PipBoundsState pipBoundsState, DisplayController displayController,
+            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm) {
+        mContext = context;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipScheduler = pipScheduler;
@@ -70,12 +86,20 @@ public class PipDisplayTransferHandler implements
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
         mPipBoundsState = pipBoundsState;
         mDisplayController = displayController;
+        mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipBoundsAlgorithm = pipBoundsAlgorithm;
+        mPipResizeAnimatorSupplier = PipResizeAnimator::new;
     }
 
-    void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId) {
+    void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId,
+            Rect destinationBounds) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "%s scheduleMovePipToDisplay from=%d to=%d", TAG, originDisplayId, targetDisplayId);
+
         Bundle extra = new Bundle();
         extra.putInt(ORIGIN_DISPLAY_ID_KEY, originDisplayId);
         extra.putInt(TARGET_DISPLAY_ID_KEY, targetDisplayId);
+        extra.putParcelable(PIP_DESTINATION_BOUNDS, destinationBounds);
 
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
     }
@@ -83,36 +107,77 @@ public class PipDisplayTransferHandler implements
     @Override
     public void onPipTransitionStateChanged(@PipTransitionState.TransitionState int oldState,
             @PipTransitionState.TransitionState int newState, @Nullable Bundle extra) {
+        if (extra == null) return;
+
         switch (newState) {
             case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
-                if (extra == null || !extra.containsKey(ORIGIN_DISPLAY_ID_KEY)
-                        || !extra.containsKey(TARGET_DISPLAY_ID_KEY)) {
+                if (!extra.containsKey(ORIGIN_DISPLAY_ID_KEY) || !extra.containsKey(
+                        TARGET_DISPLAY_ID_KEY)) {
                     break;
                 }
-                mWaitingForDisplayTransfer = true;
 
-                mPipScheduler.scheduleMoveToDisplay(extra.getInt(ORIGIN_DISPLAY_ID_KEY),
-                        extra.getInt(TARGET_DISPLAY_ID_KEY));
+                final int originDisplayId = extra.getInt(ORIGIN_DISPLAY_ID_KEY);
+                mTargetDisplayId = extra.getInt(TARGET_DISPLAY_ID_KEY);
+                if (originDisplayId == mTargetDisplayId) {
+                    break;
+                }
+
+                mWaitingForDisplayTransfer = true;
+                mPipScheduler.scheduleMoveToDisplay(mTargetDisplayId,
+                        extra.getParcelable(PIP_DESTINATION_BOUNDS, Rect.class));
                 break;
             case PipTransitionState.CHANGING_PIP_BOUNDS:
-                if (extra == null || !mWaitingForDisplayTransfer) {
+                if (!mWaitingForDisplayTransfer) {
                     break;
                 }
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "%s Animating PiP display change to=%d", TAG, mTargetDisplayId);
 
+                SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+                TaskInfo taskInfo = mPipTransitionState.getPipTaskInfo();
+                final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
+                        PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
                 final Transaction startTx = extra.getParcelable(
                         PipTransition.PIP_START_TX, Transaction.class);
-                final Rect destinationBounds = extra.getParcelable(
-                        PipTransition.PIP_DESTINATION_BOUNDS, Rect.class);
+                final Transaction finishTx = extra.getParcelable(
+                        PipTransition.PIP_FINISH_TX, Transaction.class);
+                final Rect pipBounds = extra.getParcelable(
+                        PIP_DESTINATION_BOUNDS, Rect.class);
 
-                startMoveToDisplayAnimation(startTx, destinationBounds);
+                Rect finalBounds = new Rect(pipBounds);
+                mPipBoundsAlgorithm.snapToMovementBoundsEdge(finalBounds);
+
+                mPipSurfaceTransactionHelper.round(startTx, pipLeash, true).shadow(startTx,
+                        pipLeash, true /* applyShadowRadius */);
+                // Set state to exiting and exited PiP to unregister input consumer on the current
+                // display.
+                // TODO(b/414864788): Refactor transition states setting during display transfer
+                mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+                mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
+
+                mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
+                mPipDisplayLayoutState.setDisplayLayout(mDisplayController.getDisplayLayout(
+                        mTargetDisplayId));
+                mPipTransitionState.setPinnedTaskLeash(pipLeash);
+                mPipTransitionState.setPipTaskInfo(taskInfo);
+
+                final PipResizeAnimator animator = mPipResizeAnimatorSupplier.get(mContext,
+                        mPipSurfaceTransactionHelper, pipLeash, startTx, finishTx,
+                        pipBounds, pipBounds, finalBounds, duration, 0);
+
+                animator.setAnimationEndCallback(() -> {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                            "%s Finished animating PiP display change to=%d", TAG,
+                            mTargetDisplayId);
+                    mPipScheduler.scheduleFinishPipBoundsChange(finalBounds);
+                    // Set state to ENTERED_PIP to register input consumer on the target display
+                    mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
+                    mPipBoundsState.setHasUserResizedPip(true);
+                    mWaitingForDisplayTransfer = false;
+                });
+                animator.start();
+                break;
         }
-    }
-
-    private void startMoveToDisplayAnimation(Transaction startTx, Rect destinationBounds) {
-        if (startTx == null) return;
-
-        startTx.apply();
-        mPipScheduler.scheduleFinishPipBoundsChange(destinationBounds);
     }
 
     /**
@@ -187,5 +252,24 @@ public class PipDisplayTransferHandler implements
     @VisibleForTesting
     void setSurfaceTransactionHelper(PipSurfaceTransactionHelper surfaceTransactionHelper) {
         mPipSurfaceTransactionHelper = surfaceTransactionHelper;
+    }
+
+    @VisibleForTesting
+    interface PipResizeAnimatorSupplier {
+        PipResizeAnimator get(@NonNull Context context,
+                @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+                @NonNull SurfaceControl leash,
+                @Nullable SurfaceControl.Transaction startTx,
+                @Nullable SurfaceControl.Transaction finishTx,
+                @NonNull Rect baseBounds,
+                @NonNull Rect startBounds,
+                @NonNull Rect endBounds,
+                int duration,
+                float delta);
+    }
+
+    @VisibleForTesting
+    void setPipResizeAnimatorSupplier(@NonNull PipResizeAnimatorSupplier supplier) {
+        mPipResizeAnimatorSupplier = supplier;
     }
 }

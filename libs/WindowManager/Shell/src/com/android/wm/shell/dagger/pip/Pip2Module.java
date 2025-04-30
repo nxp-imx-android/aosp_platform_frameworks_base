@@ -226,10 +226,12 @@ public abstract class Pip2Module {
     static PipDisplayTransferHandler providePipDisplayTransferHandler(Context context,
             PipTransitionState pipTransitionState,
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            PipBoundsState pipBoundsState, DisplayController displayController
+            PipBoundsState pipBoundsState, DisplayController displayController,
+            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm
     ) {
         return new PipDisplayTransferHandler(context, pipTransitionState, pipScheduler,
-                rootTaskDisplayAreaOrganizer, pipBoundsState, displayController);
+                rootTaskDisplayAreaOrganizer, pipBoundsState, displayController,
+                pipDisplayLayoutState, pipBoundsAlgorithm);
     }
 
     @WMSingleton

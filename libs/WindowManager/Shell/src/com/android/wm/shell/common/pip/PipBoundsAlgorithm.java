@@ -461,6 +461,24 @@ public class PipBoundsAlgorithm {
     }
 
     /**
+     * Snaps PiP bounds to its movement bounds.
+     */
+    public void snapToMovementBoundsEdge(Rect bounds) {
+        // Get the current movement bounds
+        final Rect movementBounds = getMovementBounds(bounds);
+        final int leftEdge = bounds.left;
+
+        final int fromLeft = Math.abs(leftEdge - movementBounds.left);
+        final int fromRight = Math.abs(movementBounds.right - leftEdge);
+
+        // The PIP will be snapped to either the right or left edge, so calculate which one
+        // is closest to the current position.
+        final int newLeft = fromLeft < fromRight
+                ? movementBounds.left : movementBounds.right;
+
+        bounds.offsetTo(newLeft, bounds.top);
+    }
+    /**
      * Dumps internal states.
      */
     public void dump(PrintWriter pw, String prefix) {
