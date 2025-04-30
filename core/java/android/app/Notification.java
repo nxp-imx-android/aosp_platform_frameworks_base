@@ -11674,6 +11674,7 @@ public class Notification implements Parcelable
          * Gets the progress value of the progress bar.
          * @see #setProgress
          */
+        @IntRange(from = 0)
         public int getProgress() {
             return mProgress;
         }
@@ -11685,7 +11686,7 @@ public class Notification implements Parcelable
         * The max progress value is the sum of all Segment lengths.
         * The default value is 0.
         */
-        public @NonNull ProgressStyle setProgress(int progress) {
+        public @NonNull ProgressStyle setProgress(@IntRange(from = 0) int progress) {
             mProgress = progress;
             return this;
         }
@@ -11694,6 +11695,7 @@ public class Notification implements Parcelable
          * Gets the sum of the lengths of all Segments in the style, which
          * defines the maximum progress. Defaults to 100 when segments are omitted.
          */
+        @IntRange(from = 0)
         public int getProgressMax() {
             final List<Segment> progressSegment = mProgressSegments;
             if (progressSegment == null || progressSegment.isEmpty()) {
@@ -12274,6 +12276,7 @@ public class Notification implements Parcelable
              * This value has no units, it is just relative to the length of other segments,
              * and the value provided to {@link ProgressStyle#setProgress}.
              */
+            @IntRange(from = 1)
             public int getLength() {
                 return mLength;
             }
@@ -12289,6 +12292,7 @@ public class Notification implements Parcelable
 
             /**
              * Optional ID used to uniquely identify the element across updates.
+             * The default is 0.
              */
             public @NonNull Segment setId(int id) {
                 mId = id;
@@ -12340,7 +12344,7 @@ public class Notification implements Parcelable
         public static final class Point {
 
             private int mPosition;
-            private int mId;
+            private int mId = 0;
             @ColorInt
             private int mColor = Notification.COLOR_DEFAULT;
 
@@ -12360,6 +12364,7 @@ public class Notification implements Parcelable
              * The position of this point on the progress bar
              * relative to {@link ProgressStyle#getProgressMax}.
              */
+            @IntRange(from = 1)
             public int getPosition() {
                 return mPosition;
             }
@@ -12374,6 +12379,7 @@ public class Notification implements Parcelable
 
             /**
              * Optional ID used to uniquely identify the element across updates.
+             * The default is 0.
              */
             public @NonNull Point setId(int id) {
                 mId = id;
