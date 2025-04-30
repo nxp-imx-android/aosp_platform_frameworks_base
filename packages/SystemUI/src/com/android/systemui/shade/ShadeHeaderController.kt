@@ -24,6 +24,7 @@ import android.app.StatusBarManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.Insets
 import android.os.Bundle
 import android.os.Trace
@@ -46,8 +47,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.animation.Interpolators
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
-import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterView.MODE_ESTIMATE
@@ -352,10 +353,8 @@ constructor(
     override fun onInit() {
         variableDateViewControllerFactory.create(date as VariableDateView).init()
 
-        val fgColor =
-            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimary)
-        val bgColor =
-            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimaryInverse)
+        val fgColor = getFgColor()
+        val bgColor = getBgColor()
 
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
         iconManager.setTint(fgColor, bgColor)
@@ -368,8 +367,8 @@ constructor(
 
             batteryIcon.isVisible = true
             batteryIcon.updateColors(
-                fgColor /* foreground */,
-                bgColor /* background */,
+                fgColor, /* foreground */
+                bgColor, /* background */
                 fgColor, /* single tone (current default) */
             )
         } else {
@@ -394,6 +393,20 @@ constructor(
 
         privacyIconsController.onParentVisible()
     }
+
+    private fun getBgColor() =
+        if (notificationShadeBlur()) {
+            header.context.getColor(com.android.internal.R.color.materialColorSurfaceDim)
+        } else {
+            Color.BLACK
+        }
+
+    private fun getFgColor() =
+        if (notificationShadeBlur()) {
+            header.context.getColor(com.android.internal.R.color.materialColorOnSurface)
+        } else {
+            Color.WHITE
+        }
 
     private fun createBatteryComposeView(): ComposeView {
         return if (RudimentaryBattery.isEnabled) {
@@ -510,6 +523,7 @@ constructor(
         clock.setTextAppearance(R.style.TextAppearance_QS_Status)
         date.setTextAppearance(R.style.TextAppearance_QS_Status)
         mShadeCarrierGroup.updateTextAppearance(R.style.TextAppearance_QS_Status)
+        iconManager.setTint(getFgColor(), getBgColor())
     }
 
     private fun updateCarrierGroupPadding() {
