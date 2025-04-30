@@ -2,17 +2,12 @@ package {
     default_applicable_licenses: ["frameworks_base_license"],
 }
 
-filegroup {
-    name: "SettingsLibIpc-srcs",
-    srcs: ["src/**/*.kt"],
-}
-
 android_library {
     name: "SettingsLibIpc",
     defaults: [
         "SettingsLintDefaults",
     ],
-    srcs: [":SettingsLibIpc-srcs"],
+    srcs: ["src/**/*.kt"],
     static_libs: [
         "androidx.collection_collection",
         "guava",

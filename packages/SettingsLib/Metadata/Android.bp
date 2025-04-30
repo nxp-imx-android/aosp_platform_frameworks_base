@@ -2,18 +2,13 @@ package {
     default_applicable_licenses: ["frameworks_base_license"],
 }
 
-filegroup {
-    name: "SettingsLibMetadata-srcs",
-    srcs: ["src/**/*.kt"],
-}
-
 android_library {
     name: "SettingsLibMetadata",
     defaults: [
         "SettingsLintDefaults",
     ],
     min_sdk_version: "21",
-    srcs: [":SettingsLibMetadata-srcs"],
+    srcs: ["src/**/*.kt"],
     static_libs: [
         "SettingsLibDataStore",
         "androidx.annotation_annotation",
