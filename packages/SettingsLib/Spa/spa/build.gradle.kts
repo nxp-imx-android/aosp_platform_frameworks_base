@@ -50,7 +50,7 @@ android {
 }
 
 dependencies {
-    api(project(":SettingsLibColor"))
+    api(project(":SettingsLib:Color"))
     api("androidx.appcompat:appcompat:1.7.0")
     api("androidx.compose.material3:material3:1.4.0-alpha13")
     api("androidx.compose.material:material-icons-extended:1.7.8")
@@ -66,7 +66,7 @@ dependencies {
     debugApi("androidx.compose.ui:ui-tooling:$jetpackComposeVersion")
     implementation("com.airbnb.android:lottie-compose:6.5.2")
 
-    androidTestImplementation(project(":testutils"))
+    androidTestImplementation(project(":Spa:testutils"))
     androidTestImplementation(libs.dexmaker.mockito)
 }
 
