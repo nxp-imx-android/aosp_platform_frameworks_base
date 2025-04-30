@@ -21,14 +21,8 @@ import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.traces.component.ComponentNameMatcher
-import android.tools.traces.parsers.WindowManagerStateHelper
-import android.tools.traces.surfaceflinger.LayerTraceEntry
-import android.tools.traces.wm.WindowManagerState
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
-import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.wm.shell.Flags
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -54,28 +48,7 @@ import org.junit.runners.MethodSorters
 @Presubmit
 class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase() {
 
-    companion object {
-        private val instrumentation = InstrumentationRegistry.getInstrumentation()
-
-        /**
-         * Helper class to wait on [WindowManagerState] or [LayerTraceEntry] conditions.
-         *
-         * This is also used to wait for transition completes.
-         */
-        private val wmHelper = WindowManagerStateHelper(
-            instrumentation,
-            clearCacheAfterParsing = false,
-        )
-
-        /**
-         * Used for building the scenario.
-         */
-        private val tapl: LauncherInstrumentation = LauncherInstrumentation()
-
-        /**
-         * The app used in scenario.
-         */
-        private val testApp = SimpleAppHelper(instrumentation)
+    companion object : FlickerPropertyInitializer() {
 
         @ClassRule
         @JvmField
