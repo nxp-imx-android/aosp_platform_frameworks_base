@@ -1243,14 +1243,15 @@ constructor(
 
         /**
          * Extracts the [RemoteAnimationTarget] representing the window to animate and its state
-         * from the list of [apps] participating in the transition and their [startWindowStates].
+         * from the list of [apps] participating in the transition and their [startWindowStates],
+         * and wraps them in an [AnimatedWindow] object.
          */
         private fun resolveAnimatedWindow(
             apps: Array<out RemoteAnimationTarget>?,
             startWindowStates: Array<out WindowAnimationState>? = null,
-        ): Pair<RemoteAnimationTarget?, WindowAnimationState?> {
+        ): AnimatedWindow? {
             if (apps == null) {
-                return Pair(null, null)
+                return null
             }
 
             val targetMode =
@@ -1303,7 +1304,7 @@ constructor(
                 }
             }
 
-            return Pair(candidate, state)
+            return candidate?.let { AnimatedWindow.fromRemoteAnimationTarget(it, state) }
         }
 
         private fun IRemoteAnimationFinishedCallback.invoke() {
@@ -1316,6 +1317,47 @@ constructor(
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
             return (this.width() * this.height()) > (other.width() * other.height())
+        }
+    }
+
+    /**
+     * Abstraction layer for a window, used to hide the implementation details (i.e. the
+     * WindowManager API used) from the animation.
+     */
+    internal class AnimatedWindow
+    private constructor(
+        /** The [SurfaceControl] used to animate this window. */
+        val leash: SurfaceControl,
+
+        /** The state of this window at the beginning of the animation, if any. */
+        val startState: WindowAnimationState?,
+
+        /** The state of this window at the end of the animation. */
+        val endState: WindowAnimationState,
+
+        /** The background color of the task populating this window. */
+        val backgroundColor: Int,
+
+        /** Whether this window's background should be ignored and considered transparent. */
+        val isTranslucent: Boolean,
+
+        /** The [TaskInfo] representing the content of this window. */
+        val taskInfo: TaskInfo?,
+    ) {
+        companion object {
+            fun fromRemoteAnimationTarget(
+                window: RemoteAnimationTarget,
+                startState: WindowAnimationState?,
+            ): AnimatedWindow =
+                AnimatedWindow(
+                    leash = window.leash,
+                    startState = startState,
+                    endState =
+                        WindowAnimationState().apply { bounds = RectF(window.screenSpaceBounds) },
+                    backgroundColor = window.backgroundColor,
+                    isTranslucent = window.isTranslucent,
+                    taskInfo = window.taskInfo,
+                )
         }
     }
 
@@ -1408,58 +1450,44 @@ constructor(
 
         @UiThread
         fun onAnimationStart(
-            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
+            resolveAnimatedWindow: () -> AnimatedWindow?,
             onAnimationFinished: () -> Unit,
         ) {
-            val (window, state) =
-                setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
                 startAnimation(window, onAnimationFinished = onAnimationFinished)
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
-                takeOverAnimationInternal(
-                    window,
-                    state,
-                    startTransaction = null,
-                    onAnimationFinished,
-                )
+                takeOverAnimationInternal(window, startTransaction = null, onAnimationFinished)
             }
         }
 
         @UiThread
         fun takeOverAnimation(
-            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
+            resolveAnimatedWindow: () -> AnimatedWindow?,
             startTransaction: SurfaceControl.Transaction,
             onAnimationFinished: () -> Unit,
         ) {
-            val (window, state) =
-                setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
-            takeOverAnimationInternal(window, state, startTransaction, onAnimationFinished)
+            val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
+            takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
         }
 
         private fun takeOverAnimationInternal(
-            window: RemoteAnimationTarget,
-            startWindowState: WindowAnimationState?,
+            window: AnimatedWindow,
             startTransaction: SurfaceControl.Transaction?,
             onAnimationFinished: () -> Unit,
         ) {
             val useSpring =
-                !controller.isLaunching && startWindowState != null && startTransaction != null
-            startAnimation(
-                window,
-                useSpring,
-                startWindowState,
-                startTransaction,
-                onAnimationFinished,
-            )
+                !controller.isLaunching && window.startState != null && startTransaction != null
+            startAnimation(window, useSpring, startTransaction, onAnimationFinished)
         }
 
         @UiThread
         private fun setUpAnimation(
-            resolveAnimatedWindow: () -> Pair<RemoteAnimationTarget?, WindowAnimationState?>,
+            resolveAnimatedWindow: () -> AnimatedWindow?,
             onAnimationFinished: () -> Unit,
-        ): Pair<RemoteAnimationTarget, WindowAnimationState?>? {
+        ): AnimatedWindow? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
@@ -1475,7 +1503,7 @@ constructor(
                 return null
             }
 
-            val (window, state) = resolveAnimatedWindow()
+            val window = resolveAnimatedWindow()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
                 onAnimationFinished()
@@ -1491,13 +1519,12 @@ constructor(
                 return null
             }
 
-            return Pair(window, state)
+            return window
         }
 
         private fun startAnimation(
-            window: RemoteAnimationTarget,
+            window: AnimatedWindow,
             useSpring: Boolean = false,
-            startingWindowState: WindowAnimationState? = null,
             startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
         ) {
@@ -1505,15 +1532,15 @@ constructor(
                 Log.d(TAG, "Remote animation started")
             }
 
-            val windowBounds = window.screenSpaceBounds
+            val windowBounds = window.endState.bounds
             val endState =
                 if (controller.isLaunching) {
                     controller.windowAnimatorState?.toTransitionState()
                         ?: TransitionAnimator.State(
-                                top = windowBounds.top,
-                                bottom = windowBounds.bottom,
-                                left = windowBounds.left,
-                                right = windowBounds.right,
+                                top = windowBounds.top.roundToInt(),
+                                bottom = windowBounds.bottom.roundToInt(),
+                                left = windowBounds.left.roundToInt(),
+                                right = windowBounds.right.roundToInt(),
                             )
                             .apply {
                                 // TODO(b/184121838): We should somehow get the top and bottom
@@ -1543,7 +1570,7 @@ constructor(
 
             val isExpandingFullyAbove =
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
-            val windowState = startingWindowState ?: controller.windowAnimatorState
+            val windowState = window.startState ?: controller.windowAnimatorState
 
             // We animate the opening window and delegate the view expansion to [this.controller].
             val delegate = this.controller
@@ -1556,10 +1583,10 @@ constructor(
                             return delegate.windowAnimatorState?.toTransitionState()
                                 ?: getWindowRadius(isExpandingFullyAbove).let {
                                     TransitionAnimator.State(
-                                        top = windowBounds.top,
-                                        bottom = windowBounds.bottom,
-                                        left = windowBounds.left,
-                                        right = windowBounds.right,
+                                        top = windowBounds.top.roundToInt(),
+                                        bottom = windowBounds.bottom.roundToInt(),
+                                        left = windowBounds.left.roundToInt(),
+                                        right = windowBounds.right.roundToInt(),
                                         topCornerRadius = it,
                                         bottomCornerRadius = it,
                                     )
@@ -1569,17 +1596,17 @@ constructor(
                         // TODO(b/323863002): use the timestamp and velocity to update the initial
                         //   position.
                         val bounds = windowState?.bounds
-                        val left: Int = bounds?.left?.toInt() ?: windowBounds.left
-                        val top: Int = bounds?.top?.toInt() ?: windowBounds.top
-                        val right: Int = bounds?.right?.toInt() ?: windowBounds.right
-                        val bottom: Int = bounds?.bottom?.toInt() ?: windowBounds.bottom
+                        val left: Float = bounds?.left ?: windowBounds.left
+                        val top: Float = bounds?.top ?: windowBounds.top
+                        val right: Float = bounds?.right ?: windowBounds.right
+                        val bottom: Float = bounds?.bottom ?: windowBounds.bottom
 
                         val width = windowBounds.right - windowBounds.left
                         val height = windowBounds.bottom - windowBounds.top
                         // Scale the window. We use the max of (widthRatio, heightRatio) so that
                         // there is no blank space on any side.
-                        val widthRatio = (right - left).toFloat() / width
-                        val heightRatio = (bottom - top).toFloat() / height
+                        val widthRatio = (right - left) / width
+                        val heightRatio = (bottom - top) / height
                         val startScale = maxOf(widthRatio, heightRatio)
 
                         val maybeRadius = windowState?.topLeftRadius
@@ -1591,10 +1618,10 @@ constructor(
                             }
 
                         return TransitionAnimator.State(
-                            top = top,
-                            bottom = bottom,
-                            left = left,
-                            right = right,
+                            top = top.roundToInt(),
+                            bottom = bottom.roundToInt(),
+                            left = left.roundToInt(),
+                            right = right.roundToInt(),
                             topCornerRadius = windowRadius,
                             bottomCornerRadius = windowRadius,
                         )
@@ -1766,7 +1793,7 @@ constructor(
         }
 
         private fun applyStateToWindow(
-            window: RemoteAnimationTarget,
+            window: AnimatedWindow,
             state: TransitionAnimator.State,
             linearProgress: Float,
             useSpring: Boolean,
@@ -1779,7 +1806,7 @@ constructor(
                 return
             }
 
-            val screenBounds = window.screenSpaceBounds
+            val screenBounds = window.endState.bounds
             val centerX = (screenBounds.left + screenBounds.right) / 2f
             val centerY = (screenBounds.top + screenBounds.bottom) / 2f
             val width = screenBounds.right - screenBounds.left
