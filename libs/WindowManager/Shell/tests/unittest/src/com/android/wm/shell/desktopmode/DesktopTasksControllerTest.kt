@@ -237,6 +237,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock
     lateinit var toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler
     @Mock lateinit var dragToDesktopTransitionHandler: DragToDesktopTransitionHandler
+    @Mock lateinit var mDisplayDisconnectTransitionHandler: DisplayDisconnectTransitionHandler
     @Mock lateinit var mMockDesktopImmersiveController: DesktopImmersiveController
     @Mock lateinit var splitScreenController: SplitScreenController
     @Mock lateinit var recentsTransitionHandler: RecentsTransitionHandler
@@ -460,6 +461,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             dragAndDropTransitionHandler,
             toggleResizeDesktopTaskTransitionHandler,
             dragToDesktopTransitionHandler,
+            mDisplayDisconnectTransitionHandler,
             mMockDesktopImmersiveController,
             userRepositories,
             repositoryInitializer,
@@ -9081,7 +9083,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val defaultDisplayTask = setUpFreeformTask()
         val transition = Binder()
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
-        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
 
         performDisplayDisconnectTransition(
             transition = transition,
@@ -9122,7 +9125,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val defaultDisplayTask = setUpFreeformTask()
         val transition = Binder()
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
-        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
 
         performDisplayDisconnectTransition(
             transition = transition,
@@ -9155,12 +9159,43 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDisplayDisconnect_desktopModeSupported_emptyDeskRemoved() {
+        val defaultDisplayTask = setUpFreeformTask()
+        val transition = Binder()
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+
+        performDisplayDisconnectTransition(
+            transition = transition,
+            desktopSupportedOnDefaultDisplay = true,
+            taskOnSecondDisplayHasFocus = false,
+            defaultDisplayTask = defaultDisplayTask,
+            secondDisplayTask = null,
+        )
+
+        verify(desksOrganizer).removeDesk(any(), eq(DISCONNECTED_DESK_ID), anyInt())
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.RemoveDesk &&
+                        this.token == transition &&
+                        this.displayId == SECOND_DISPLAY &&
+                        this.deskId == DISCONNECTED_DESK_ID
+                }
+            )
+    }
+
     private fun performDisplayDisconnectTransition(
         transition: IBinder,
         desktopSupportedOnDefaultDisplay: Boolean,
         taskOnSecondDisplayHasFocus: Boolean,
         defaultDisplayTask: RunningTaskInfo,
-        secondDisplayTask: RunningTaskInfo,
+        secondDisplayTask: RunningTaskInfo?,
     ): WindowContainerTransaction {
         desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] =
             desktopSupportedOnDefaultDisplay
@@ -9173,26 +9208,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     /* remoteTransition= */ null,
                 )
                 .apply { setDisplayChange(displayChange) }
-        if (desktopSupportedOnDefaultDisplay) {
-            taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-            taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESK_ID)
-            taskRepository.addTaskToDesk(
-                displayId = DEFAULT_DISPLAY,
-                deskId = DEFAULT_DESK_ID,
-                taskId = defaultDisplayTask.taskId,
-                isVisible = true,
-            )
-        }
-        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
-        taskRepository.addTaskToDesk(
-            displayId = SECOND_DISPLAY,
-            deskId = DISCONNECTED_DESK_ID,
-            taskId = secondDisplayTask.taskId,
-            isVisible = true,
-        )
         val focusedTaskId =
             if (taskOnSecondDisplayHasFocus) {
-                secondDisplayTask.taskId
+                secondDisplayTask?.taskId ?: error("Cannot have a focused null task")
             } else {
                 defaultDisplayTask.taskId
             }

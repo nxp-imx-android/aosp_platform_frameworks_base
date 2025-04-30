@@ -205,6 +205,7 @@ class DesktopTasksController(
     private val desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler,
     private val toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler,
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
+    private val displayDisconnectTransitionHandler: DisplayDisconnectTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val userRepositories: DesktopUserRepositories,
     desktopRepositoryInitializer: DesktopRepositoryInitializer,
@@ -668,12 +669,36 @@ class DesktopTasksController(
                         desktopRepository
                             .getActiveTasks(disconnectedDisplayId)
                             .contains(focusTransitionObserver.globallyFocusedTaskId)
-                    desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
-                    desksTransitionObserver.addPendingTransition(
-                        DeskTransition.ChangeDeskDisplay(transition, deskId, destinationDisplayId)
-                    )
-                    updateDesksActivationOnDisconnection(deskId, destinationDisplayId, wct, toTop)
-                        ?.invoke(transition)
+                    // Remove desk if it's empty.
+                    if (desktopRepository.getActiveTasks(disconnectedDisplayId).isEmpty()) {
+                        desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
+                        desksTransitionObserver.addPendingTransition(
+                            DeskTransition.RemoveDesk(
+                                token = transition,
+                                displayId = disconnectedDisplayId,
+                                deskId = deskId,
+                                tasks = emptySet(),
+                                onDeskRemovedListener = onDeskRemovedListener,
+                            )
+                        )
+                    } else {
+                        // Otherwise, reparent it to the destination display.
+                        desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
+                        desksTransitionObserver.addPendingTransition(
+                            DeskTransition.ChangeDeskDisplay(
+                                transition,
+                                deskId,
+                                destinationDisplayId,
+                            )
+                        )
+                        updateDesksActivationOnDisconnection(
+                                deskId,
+                                destinationDisplayId,
+                                wct,
+                                toTop,
+                            )
+                            ?.invoke(transition)
+                    }
                 }
             } else {
                 // Desktop not supported on display; reparent tasks to display area, remove desk.
@@ -709,6 +734,8 @@ class DesktopTasksController(
                 }
             }
         }
+        // Inform the transition handler here since this class will handle the request.
+        displayDisconnectTransitionHandler.addPendingTransition(transition)
         return wct
     }
 
