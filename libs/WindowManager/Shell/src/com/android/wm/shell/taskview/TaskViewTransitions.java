@@ -17,7 +17,6 @@
 package com.android.wm.shell.taskview;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_NONE;
@@ -28,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -457,19 +457,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (taskToken == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.moveTaskViewToFullscreen(): taskView=%d",
                 taskView.hashCode());
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setWindowingMode(taskToken, WINDOWING_MODE_UNDEFINED);
-        wct.setAlwaysOnTop(taskToken, false /* alwaysOnTop */);
-        wct.setLaunchNextToBubble(taskToken, false /* launchNextToBubble */);
-        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-            wct.setTaskForceExcludedFromRecents(taskToken, false /* forceExcluded */);
-        }
-        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(taskToken, false /* disablePip */);
-        }
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-            wct.setDisableLaunchAdjacent(taskToken, false);
-        }
+        final WindowContainerTransaction wct = getExitBubbleTransaction(taskToken);
         mShellExecutor.execute(() -> {
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false /* intercept */);
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));

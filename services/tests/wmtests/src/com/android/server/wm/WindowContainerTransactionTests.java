@@ -480,6 +480,26 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertFalse(task.isDisablePip());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
+    public void testSetDisableLaunchAdjacent() {
+        final Task task = createTask(mDisplayContent);
+        assertFalse(task.isLaunchAdjacentDisabled());
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.getTaskInfo().token;
+        wct.setDisableLaunchAdjacent(token, true /* disabled */);
+        applyTransaction(wct);
+
+        assertTrue(task.isLaunchAdjacentDisabled());
+
+        wct = new WindowContainerTransaction();
+        wct.setDisableLaunchAdjacent(token, false /* disabled */);
+        applyTransaction(wct);
+
+        assertFalse(task.isLaunchAdjacentDisabled());
+    }
+
     private Task createTask(int taskId) {
         return new Task.Builder(mAtm)
                 .setTaskId(taskId)

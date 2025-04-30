@@ -859,8 +859,9 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction setDisableLaunchAdjacent(
             @NonNull WindowContainerToken container, boolean disabled) {
-        mHierarchyOps.add(HierarchyOp.createForSetDisableLaunchAdjacent(container.asBinder(),
-                disabled));
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mChangeMask |= Change.CHANGE_DISABLE_LAUNCH_ADJACENT;
+        chg.mDisableLaunchAdjacent = disabled;
         return this;
     }
 
@@ -1379,6 +1380,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_FORCE_EXCLUDED_FROM_RECENTS = 1 << 9;
         public static final int CHANGE_LAUNCH_NEXT_TO_BUBBLE = 1 << 10;
         public static final int CHANGE_DISABLE_PIP = 1 << 11;
+        public static final int CHANGE_DISABLE_LAUNCH_ADJACENT = 1 << 12;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1393,6 +1395,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_FORCE_EXCLUDED_FROM_RECENTS,
                 CHANGE_LAUNCH_NEXT_TO_BUBBLE,
                 CHANGE_DISABLE_PIP,
+                CHANGE_DISABLE_LAUNCH_ADJACENT,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1405,6 +1408,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mDragResizing = false;
         private boolean mForceExcludedFromRecents = false;
         private boolean mDisablePip = false;
+        private boolean mDisableLaunchAdjacent = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1432,6 +1436,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForceExcludedFromRecents = in.readBoolean();
             mLaunchNextToBubble = in.readBoolean();
             mDisablePip = in.readBoolean();
+            mDisableLaunchAdjacent = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1485,6 +1490,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_DISABLE_PIP) != 0) {
                 mDisablePip = other.mDisablePip;
+            }
+            if ((other.mChangeMask & CHANGE_DISABLE_LAUNCH_ADJACENT) != 0) {
+                mDisableLaunchAdjacent = other.mDisableLaunchAdjacent;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -1581,6 +1589,14 @@ public final class WindowContainerTransaction implements Parcelable {
             return mDisablePip;
         }
 
+        /**
+         * Gets whether activities are disabled to be started in adjacent tasks for the specified
+         * root of any child tasks .
+         */
+        public boolean getDisableLaunchAdjacent() {
+            return mDisableLaunchAdjacent;
+        }
+
         /** Gets whether the config should be sent to the client at the end of the transition. */
         public boolean getConfigAtTransitionEnd() {
             return mConfigAtTransitionEnd;
@@ -1657,6 +1673,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_DISABLE_PIP) != 0) {
                 sb.append("disablePip:" + mDisablePip + ",");
             }
+            if ((mChangeMask & CHANGE_DISABLE_LAUNCH_ADJACENT) != 0) {
+                sb.append("disableLaunchAdjacent:" + mDisableLaunchAdjacent + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1687,6 +1706,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mForceExcludedFromRecents);
             dest.writeBoolean(mLaunchNextToBubble);
             dest.writeBoolean(mDisablePip);
+            dest.writeBoolean(mDisableLaunchAdjacent);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
@@ -1751,11 +1771,10 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_RESTORE_BACK_NAVIGATION = 20;
         public static final int HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES = 21;
         public static final int HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE = 22;
-        public static final int HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT = 23;
-        public static final int HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK = 24;
-        public static final int HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY = 25;
-        public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 26;
-        public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 27;
+        public static final int HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK = 23;
+        public static final int HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY = 24;
+        public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 25;
+        public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 26;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -1781,7 +1800,6 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_RESTORE_BACK_NAVIGATION,
                 HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES,
                 HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE,
-                HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT,
                 HIERARCHY_OP_TYPE_REMOVE_ROOT_TASK,
                 HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY,
                 HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS,
@@ -1871,8 +1889,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private @InsetsType int mForciblyShowingInsetsTypes;
         private @InsetsType int mForciblyHidingInsetsTypes;
-
-        private boolean mLaunchAdjacentDisabled;
 
         @Nullable
         private Rect mSafeRegionBounds;
@@ -1977,16 +1993,6 @@ public final class WindowContainerTransaction implements Parcelable {
                     .build();
         }
 
-        /** Creates a hierarchy op for disabling launch adjacent. */
-        @NonNull
-        public static HierarchyOp createForSetDisableLaunchAdjacent(@Nullable IBinder container,
-                boolean disabled) {
-            return new HierarchyOp.Builder(HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT)
-                    .setContainer(container)
-                    .setLaunchAdjacentDisabled(disabled)
-                    .build();
-        }
-
         /** Creates a hierarchy op for deleting a task **/
         @NonNull
         public static HierarchyOp createForRemoveTask(@NonNull IBinder container) {
@@ -2082,7 +2088,6 @@ public final class WindowContainerTransaction implements Parcelable {
             mExcludeInsetsTypes = copy.mExcludeInsetsTypes;
             mForciblyShowingInsetsTypes = copy.mForciblyShowingInsetsTypes;
             mForciblyHidingInsetsTypes = copy.mForciblyHidingInsetsTypes;
-            mLaunchAdjacentDisabled = copy.mLaunchAdjacentDisabled;
             mSafeRegionBounds = copy.mSafeRegionBounds;
         }
 
@@ -2112,7 +2117,6 @@ public final class WindowContainerTransaction implements Parcelable {
             mExcludeInsetsTypes = in.readInt();
             mForciblyShowingInsetsTypes = in.readInt();
             mForciblyHidingInsetsTypes = in.readInt();
-            mLaunchAdjacentDisabled = in.readBoolean();
             mSafeRegionBounds = in.readTypedObject(Rect.CREATOR);
         }
 
@@ -2238,11 +2242,6 @@ public final class WindowContainerTransaction implements Parcelable {
             return mForciblyHidingInsetsTypes;
         }
 
-        /** Denotes whether launch-adjacent flag is respected from this task or its children */
-        public boolean isLaunchAdjacentDisabled() {
-            return mLaunchAdjacentDisabled;
-        }
-
         /** Denotes the safe region bounds */
         @Nullable
         public Rect getSafeRegionBounds() {
@@ -2259,8 +2258,6 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_SET_ADJACENT_ROOTS: return "setAdjacentRoots";
                 case HIERARCHY_OP_TYPE_LAUNCH_TASK: return "launchTask";
                 case HIERARCHY_OP_TYPE_SET_LAUNCH_ADJACENT_FLAG_ROOT: return "setAdjacentFlagRoot";
-                case HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT:
-                    return "setDisableLaunchAdjacent";
                 case HIERARCHY_OP_TYPE_PENDING_INTENT: return "pendingIntent";
                 case HIERARCHY_OP_TYPE_START_SHORTCUT: return "startShortcut";
                 case HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER: return "restoreTransientOrder";
@@ -2330,10 +2327,6 @@ public final class WindowContainerTransaction implements Parcelable {
                     break;
                 case HIERARCHY_OP_TYPE_SET_LAUNCH_ADJACENT_FLAG_ROOT:
                     sb.append("container=").append(mContainer).append(" clearRoot=").append(mToTop);
-                    break;
-                case HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT:
-                    sb.append("container=").append(mContainer).append(" disabled=")
-                            .append(mLaunchAdjacentDisabled);
                     break;
                 case HIERARCHY_OP_TYPE_START_SHORTCUT:
                     sb.append("options=").append(mLaunchOptions)
@@ -2436,7 +2429,6 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mExcludeInsetsTypes);
             dest.writeInt(mForciblyShowingInsetsTypes);
             dest.writeInt(mForciblyHidingInsetsTypes);
-            dest.writeBoolean(mLaunchAdjacentDisabled);
             dest.writeTypedObject(mSafeRegionBounds, flags);
         }
 
@@ -2523,8 +2515,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
             private @InsetsType int mForciblyShowingInsetsTypes;
             private @InsetsType int mForciblyHidingInsetsTypes;
-
-            private boolean mLaunchAdjacentDisabled;
 
             @Nullable
             private Rect mSafeRegionBounds;
@@ -2653,11 +2643,6 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
-            Builder setLaunchAdjacentDisabled(boolean disabled) {
-                mLaunchAdjacentDisabled = disabled;
-                return this;
-            }
-
             Builder setSafeRegionBounds(Rect safeRegionBounds) {
                 mSafeRegionBounds = safeRegionBounds;
                 return this;
@@ -2694,7 +2679,6 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mExcludeInsetsTypes = mExcludeInsetsTypes;
                 hierarchyOp.mForciblyShowingInsetsTypes = mForciblyShowingInsetsTypes;
                 hierarchyOp.mForciblyHidingInsetsTypes = mForciblyHidingInsetsTypes;
-                hierarchyOp.mLaunchAdjacentDisabled = mLaunchAdjacentDisabled;
                 hierarchyOp.mSafeRegionBounds = mSafeRegionBounds;
                 return hierarchyOp;
             }
