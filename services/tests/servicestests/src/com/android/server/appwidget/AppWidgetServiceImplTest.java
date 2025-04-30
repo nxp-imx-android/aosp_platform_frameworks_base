@@ -24,8 +24,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -36,9 +38,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManagerInternal;
+import android.app.UiAutomation;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
@@ -74,6 +78,7 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -116,6 +121,7 @@ public class AppWidgetServiceImplTest {
     private PackageManagerInternal mMockPackageManager;
     private AppOpsManagerInternal mMockAppOpsManagerInternal;
     private IAppWidgetHost mMockHost;
+    private UiAutomation mUiAutomation;
 
     @Before
     public void setUp() throws Exception {
@@ -141,6 +147,13 @@ public class AppWidgetServiceImplTest {
                 .thenReturn(false);
         mService.onStart();
         mService.systemServicesReady();
+
+        mUiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    }
+
+    @After
+    public void tearDown() {
+        mUiAutomation.dropShellPermissionIdentity();
     }
 
     @Test
@@ -184,6 +197,27 @@ public class AppWidgetServiceImplTest {
             // No other provider found. Ignore this test.
         }
         assertFalse(mManager.requestPinAppWidget(otherProvider, null, null));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PLAY_STORE_PIN_WIDGETS)
+    public void testRequestPinAppWidget_otherProvider_installPackagesPermission() {
+        mUiAutomation.adoptShellPermissionIdentity(Manifest.permission.INSTALL_PACKAGES);
+        ComponentName otherProvider = null;
+        int uid = 0;
+        for (AppWidgetProviderInfo provider : mManager.getInstalledProviders()) {
+            if (!provider.provider.getPackageName().equals(mTestContext.getPackageName())) {
+                otherProvider = provider.provider;
+                uid = provider.providerInfo.applicationInfo.uid;
+                break;
+            }
+        }
+        assumeNotNull(otherProvider);
+        when(mMockShortcutService.requestPinAppWidget(anyString(), any(AppWidgetProviderInfo.class),
+                eq(null), eq(null), anyInt())).thenReturn(true);
+        when(mMockPackageManager.getPackageUid(eq(otherProvider.getPackageName()), anyLong(),
+                anyInt())).thenReturn(uid);
+        assertTrue(mManager.requestPinAppWidget(otherProvider, null, null));
     }
 
     @Test

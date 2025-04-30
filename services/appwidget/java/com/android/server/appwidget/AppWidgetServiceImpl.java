@@ -17,6 +17,7 @@
 package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
+import static android.appwidget.flags.Flags.playStorePinWidgets;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -2545,7 +2546,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             if (!mPackageManagerInternal.isSameApp(pkg, callingUid, userId)) {
                 // If the calling process is requesting to pin appwidgets from another process,
                 // check if the calling process has the necessary permission.
-                if (!injectHasAccessWidgetsPermission(Binder.getCallingPid(), callingUid)) {
+                if (!injectHasPinWidgetsPermission(Binder.getCallingPid(), callingUid)) {
                     return false;
                 }
                 id = new ProviderId(mPackageManagerInternal.getPackageUid(
@@ -2571,9 +2572,14 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     /**
      * Returns true if the caller has the proper permission to access app widgets.
      */
-    private boolean injectHasAccessWidgetsPermission(int callingPid, int callingUid) {
-        return mContext.checkPermission(Manifest.permission.CLEAR_APP_USER_DATA,
-                callingPid, callingUid) == PackageManager.PERMISSION_GRANTED;
+    private boolean injectHasPinWidgetsPermission(int callingPid, int callingUid) {
+        boolean hasClearAppUserData = mContext.checkPermission(
+                Manifest.permission.CLEAR_APP_USER_DATA, callingPid, callingUid)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean hasInstallPackages = playStorePinWidgets() && mContext.checkPermission(
+                Manifest.permission.INSTALL_PACKAGES, callingPid, callingUid)
+                == PackageManager.PERMISSION_GRANTED;
+        return hasClearAppUserData || hasInstallPackages;
     }
 
     /**
