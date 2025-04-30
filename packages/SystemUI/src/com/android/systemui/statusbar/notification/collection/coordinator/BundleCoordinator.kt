@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
+import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
@@ -168,11 +169,17 @@ constructor(
             }
         }
 
+    private val bundleCountUpdater = OnBeforeRenderListListener { entries ->
+        entries.filterIsInstance<BundleEntry>()
+            .forEach(BundleEntry::updateTotalCount)
+    }
+
     override fun attach(pipeline: NotifPipeline) {
         if (NotificationBundleUi.isEnabled) {
             pipeline.setNotifBundler(bundler)
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
             pipeline.addFinalizeFilter(bundleFilter)
+            pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
         }
     }
 
