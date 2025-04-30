@@ -3190,7 +3190,7 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private int getDeviceId() {
-        return android.permission.flags.Flags.deviceAwarePermissionApisEnabled()
+        return android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
                 && canUidAccessDeviceAwareSettings(Binder.getCallingUid())
                 ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
     }
