@@ -235,13 +235,6 @@ public class Notification implements Parcelable
     public static final String EXTRA_NOTIFICATION_ID = "android.intent.extra.NOTIFICATION_ID";
 
     /**
-     * Optional extra for {@link Notification}. If provided, should contain a boolean indicating
-     * whether the notification is requesting promoted treatment.
-     */
-    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.REQUEST_PROMOTED_ONGOING";
-
-    /**
      * Use all default values (where applicable).
      */
     public static final int DEFAULT_ALL = ~0;
@@ -1736,6 +1729,13 @@ public class Notification implements Parcelable
     public static final String EXTRA_PROGRESS_END_ICON = "android.progressEndIcon";
 
     /**
+     * {@link #extras} key: If provided, should contain a boolean indicating
+     * whether the notification is requesting promoted treatment.
+     */
+    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+    public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing";
+
+    /**
      * @hide
      */
     public static final String EXTRA_BUILDER_APPLICATION_INFO = "android.appInfo";
@@ -1795,6 +1795,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public static final String EXTRA_SUMMARIZED_CONTENT = "android.summarization";
+
 
     @UnsupportedAppUsage
     private Icon mSmallIcon;
