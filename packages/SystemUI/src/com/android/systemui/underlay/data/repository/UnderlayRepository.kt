@@ -20,8 +20,10 @@ import android.content.IntentFilter
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.underlay.shared.model.ActionModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -49,6 +51,10 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+
+    val isOverlayVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    val actions: MutableStateFlow<List<ActionModel>> = MutableStateFlow(listOf())
 
     companion object {
         const val ACTION_CREATE_UNDERLAY = "com.systemui.underlay.action.CREATE_UNDERLAY"
