@@ -22,6 +22,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.collection.BundleEntry
+import com.android.systemui.statusbar.notification.collection.PipelineDumpable
+import com.android.systemui.statusbar.notification.collection.PipelineDumper
 import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator.Companion.debugBundleLog
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.RowInflaterTask
@@ -37,9 +39,6 @@ import javax.inject.Provider
 
 /**
  * Class that handles inflating BundleEntry view and controller, for use by NodeSpecBuilder.
- *
- * TODO(b/402628023) Make this class dumpable and dump its map so that we can see the "inflation
- *   pending" state per bundle
  */
 @SysUISingleton
 class BundleBarn
@@ -53,10 +52,13 @@ constructor(
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
     private val presenterLazy: Lazy<NotificationPresenter?>? = null,
-) {
+): PipelineDumpable {
+
     /**
-     * Map of [BundleEntry] key to [NodeController]: no key -> not started key maps to null ->
-     * inflating key maps to controller -> inflated
+     * Map of [BundleEntry] key to [NodeController]:
+     *     no key -> not started
+     *     key maps to null -> inflating
+     *     key maps to controller -> inflated
      */
     private val keyToControllerMap = mutableMapOf<String, NotifViewController?>()
 
@@ -108,6 +110,23 @@ constructor(
         })
         return keyToControllerMap[bundleEntry.key]
             ?: error("No view has been registered for bundle: ${bundleEntry.key}")
+    }
+
+    override fun dumpPipeline(d: PipelineDumper) {
+        d.dump("trackedBundleCount", keyToControllerMap.size)
+        if (keyToControllerMap.isEmpty()) {
+            d.println("No bundles tracked.")
+        } else {
+            d.println("Bundle Inflation States:")
+            keyToControllerMap.forEach { (key, controller) ->
+                val stateString = if (controller == null) {
+                    "INFLATING"
+                } else {
+                    "INFLATED (Controller: ${controller::class.simpleName})"
+                }
+                d.dump("Bundle key:$key", stateString)
+            }
+        }
     }
 }
 
