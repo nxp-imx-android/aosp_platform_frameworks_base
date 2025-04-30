@@ -43,7 +43,6 @@ import android.view.SurfaceControl
 import android.view.SyncRtSurfaceTransactionApplier
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -1019,7 +1018,7 @@ constructor(
         // This is being passed across IPC boundaries and cycles (through PendingIntentRecords,
         // etc.) are possible. So we need to make sure we drop any references that might
         // transitively cause leaks when we're done with animation.
-        @VisibleForTesting var delegate: AnimationDelegate?
+        @VisibleForTesting var delegate: LegacyAnimationDelegate?
 
         init {
             assert((controller != null).xor(controllerFactory != null))
@@ -1069,7 +1068,7 @@ constructor(
         @BinderThread
         private fun initAndRun(
             finishedCallback: IRemoteAnimationFinishedCallback?,
-            performAnimation: (AnimationDelegate) -> Unit,
+            performAnimation: (LegacyAnimationDelegate) -> Unit,
         ) {
             val controller = controller
             val controllerFactory = controllerFactory
@@ -1096,7 +1095,7 @@ constructor(
 
         /** Tries to start the animation on the main thread and returns whether it succeeded. */
         @BinderThread
-        private fun startAnimation(performAnimation: (AnimationDelegate) -> Unit): Boolean {
+        private fun startAnimation(performAnimation: (LegacyAnimationDelegate) -> Unit): Boolean {
             val delegate = delegate
             return if (delegate != null) {
                 mainExecutor.execute { performAnimation(delegate) }
@@ -1144,7 +1143,7 @@ constructor(
         @AnyThread
         private fun createDelegate(controller: Controller) {
             delegate =
-                AnimationDelegate(
+                LegacyAnimationDelegate(
                     mainExecutor,
                     controller,
                     callback,
@@ -1167,17 +1166,20 @@ constructor(
         }
     }
 
-    class AnimationDelegate
+    /**
+     * Implements the actual activity launch/return animation using the deprecated
+     * [RemoteAnimationAdapter] and related APIs.
+     */
+    class LegacyAnimationDelegate
     @JvmOverloads
     constructor(
         private val mainExecutor: Executor,
-        private val controller: Controller,
-        private val callback: Callback,
+        controller: Controller,
+        callback: Callback,
         /** Listener for animation lifecycle events. */
-        private val listener: Listener? = null,
+        listener: Listener? = null,
         /** The animator to use to animate the window transition. */
-        private val transitionAnimator: TransitionAnimator =
-            defaultTransitionAnimator(mainExecutor),
+        transitionAnimator: TransitionAnimator = defaultTransitionAnimator(mainExecutor),
 
         /**
          * Whether we should disable the WindowManager timeout. This should be set to true in tests
@@ -1194,8 +1196,57 @@ constructor(
          * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper
          *   anymore and we can just inject a fake transaction.
          */
-        private val skipReparentTransaction: Boolean = false,
+        skipReparentTransaction: Boolean = false,
     ) : RemoteAnimationDelegate<IRemoteAnimationFinishedCallback> {
+        private val impl =
+            AnimationDelegateInternal(
+                mainExecutor,
+                controller,
+                callback,
+                listener,
+                transitionAnimator,
+                disableWmTimeout,
+                skipReparentTransaction,
+            )
+
+        @UiThread internal fun postTimeouts() = impl.postTimeouts()
+
+        @UiThread
+        override fun onAnimationStart(
+            transit: Int,
+            apps: Array<out RemoteAnimationTarget>?,
+            wallpapers: Array<out RemoteAnimationTarget>?,
+            nonApps: Array<out RemoteAnimationTarget>?,
+            callback: IRemoteAnimationFinishedCallback?,
+        ) = impl.onAnimationStart(apps, callback)
+
+        @UiThread
+        internal fun takeOverAnimation(
+            apps: Array<out RemoteAnimationTarget>?,
+            startWindowStates: Array<out WindowAnimationState>,
+            startTransaction: SurfaceControl.Transaction,
+            callback: IRemoteAnimationFinishedCallback?,
+        ) = impl.takeOverAnimation(apps, startWindowStates, startTransaction, callback)
+
+        @UiThread override fun onAnimationCancelled() = impl.onAnimationCancelled()
+    }
+
+    /** Implementation of launch and return animations agnostic of WindowManager API. */
+    private class AnimationDelegateInternal
+    @JvmOverloads
+    constructor(
+        private val mainExecutor: Executor,
+        private val controller: Controller,
+        private val callback: Callback,
+        private val listener: Listener? = null,
+        private val transitionAnimator: TransitionAnimator =
+            defaultTransitionAnimator(mainExecutor),
+        // TODO(b/301385865): Remove this flag.
+        disableWmTimeout: Boolean = false,
+        // TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper
+        //  anymore and we can just inject a fake transaction.
+        private val skipReparentTransaction: Boolean = false,
+    ) {
         private val transitionContainer = controller.transitionContainer
         private val context = transitionContainer.context
         private val transactionApplierView =
@@ -1253,7 +1304,7 @@ constructor(
         }
 
         @UiThread
-        internal fun postTimeouts() {
+        fun postTimeouts() {
             if (timeoutHandler != null) {
                 timeoutHandler.postDelayed(onTimeout, TRANSITION_TIMEOUT)
                 timeoutHandler.postDelayed(onLongTimeout, LONG_TRANSITION_TIMEOUT)
@@ -1268,11 +1319,8 @@ constructor(
         }
 
         @UiThread
-        override fun onAnimationStart(
-            @WindowManager.TransitionOldType transit: Int,
+        fun onAnimationStart(
             apps: Array<out RemoteAnimationTarget>?,
-            wallpapers: Array<out RemoteAnimationTarget>?,
-            nonApps: Array<out RemoteAnimationTarget>?,
             callback: IRemoteAnimationFinishedCallback?,
         ) {
             val window = setUpAnimation(apps, callback) ?: return
@@ -1291,9 +1339,9 @@ constructor(
         }
 
         @UiThread
-        internal fun takeOverAnimation(
+        fun takeOverAnimation(
             apps: Array<out RemoteAnimationTarget>?,
-            startWindowStates: Array<WindowAnimationState>,
+            startWindowStates: Array<out WindowAnimationState>,
             startTransaction: SurfaceControl.Transaction,
             callback: IRemoteAnimationFinishedCallback?,
         ) {
@@ -1823,7 +1871,7 @@ constructor(
         }
 
         @UiThread
-        override fun onAnimationCancelled() {
+        fun onAnimationCancelled() {
             removeTimeouts()
 
             // The short timeout happened, so we already cancelled the transition animation.
