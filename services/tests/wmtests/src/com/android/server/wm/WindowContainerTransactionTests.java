@@ -16,6 +16,9 @@
 
 package com.android.server.wm;
 
+import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
+import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
+import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
@@ -498,6 +501,49 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         applyTransaction(wct);
 
         assertFalse(task.isLaunchAdjacentDisabled());
+    }
+
+    @Test
+    public void testSetSelfMovable() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken token = task.getTaskInfo().token;
+        wct.setSelfMovable(token, SELF_MOVABLE_ALLOWED /* selfMovable */);
+        applyTransaction(wct);
+
+        assertEquals(SELF_MOVABLE_ALLOWED, task.getSelfMovable());
+
+        wct = new WindowContainerTransaction();
+        wct.setSelfMovable(token, SELF_MOVABLE_DENIED /* selfMovable */);
+        applyTransaction(wct);
+
+        assertEquals(SELF_MOVABLE_DENIED, task.getSelfMovable());
+
+        wct = new WindowContainerTransaction();
+        wct.setSelfMovable(token, SELF_MOVABLE_DEFAULT /* selfMovable */);
+        applyTransaction(wct);
+
+        assertEquals(SELF_MOVABLE_DEFAULT, task.getSelfMovable());
+    }
+
+    @Test
+    public void testSetIsTaskMoveAllowed() {
+        final Task task = createTask(mDisplayContent);
+        assertFalse(task.getIsTaskMoveAllowed());
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        WindowContainerToken token = task.getTaskInfo().token;
+        wct.setIsTaskMoveAllowed(token, true /* isTaskMoveAllowed */);
+        applyTransaction(wct);
+
+        assertTrue(task.getIsTaskMoveAllowed());
+
+        wct = new WindowContainerTransaction();
+        wct.setIsTaskMoveAllowed(token, false /* isTaskMoveAllowed */);
+        applyTransaction(wct);
+
+        assertFalse(task.getIsTaskMoveAllowed());
     }
 
     private Task createTask(int taskId) {

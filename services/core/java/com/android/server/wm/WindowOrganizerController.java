@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.app.ActivityManager.isStartResultSuccessful;
+import static android.app.TaskInfo.SELF_MOVABLE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -876,6 +877,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             }
         }
 
+        if ((change.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
+            container.setIsTaskMoveAllowed(change.getIsTaskMoveAllowed());
+        }
+
         if (windowingMode > -1) {
             if (mService.isInLockTaskMode()
                     && WindowConfiguration.inMultiWindowMode(windowingMode)
@@ -996,6 +1002,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     activity.supportsEnterPipOnTaskSwitch = lastSupportsEnterPipOnTaskSwitch;
                 }
             }
+        }
+
+        if (c.getSelfMovable() != SELF_MOVABLE_UNSET) {
+            tr.setSelfMovable(c.getSelfMovable());
         }
 
         return effects;

@@ -128,6 +128,7 @@ import android.app.AppGlobals;
 import android.app.IActivityController;
 import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
+import android.app.TaskInfo.SelfMovable;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -526,6 +527,12 @@ class Task extends TaskFragment {
      * the activity that started this task.
      */
     private boolean mForceNonResizeOverride;
+
+    /**
+     * If the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    private @SelfMovable int mSelfMovable = TaskInfo.SELF_MOVABLE_DEFAULT;
 
     private static final int TRANSLUCENT_TIMEOUT_MSG = FIRST_ACTIVITY_TASK_MSG + 1;
 
@@ -3856,6 +3863,7 @@ class Task extends TaskFragment {
         if (mReparentLeafTaskIfRelaunch) {
             pw.println(prefix + "mReparentLeafTaskIfRelaunch=true");
         }
+        pw.println(prefix + "mSelfMovable=" + mSelfMovable);
     }
 
     @Override
@@ -6403,6 +6411,22 @@ class Task extends TaskFragment {
         return mRequiredDisplayCategory != null && mRequiredDisplayCategory.equals(
                 info.requiredDisplayCategory)
                 || (mRequiredDisplayCategory == null && info.requiredDisplayCategory == null);
+    }
+
+    /**
+     * Sets whether the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    void setSelfMovable(@SelfMovable int selfMovable) {
+        mSelfMovable = selfMovable;
+    }
+
+    /**
+     * Gets whether the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    @SelfMovable int getSelfMovable() {
+        return mSelfMovable;
     }
 
     @Override
