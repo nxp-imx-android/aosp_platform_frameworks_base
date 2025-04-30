@@ -65,16 +65,6 @@ flag {
 }
 
 flag {
-  name: "notification_hide_unused_channels"
-  namespace: "systemui"
-  description: "By default, hide non-blocked notification channels that haven't sent a notification in the last 2 weeks"
-  bug: "322536537"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "polite_notifications_attn_update"
   namespace: "systemui"
   description: "This flag controls the polite notification attention behavior updates as per UXR feedback"
