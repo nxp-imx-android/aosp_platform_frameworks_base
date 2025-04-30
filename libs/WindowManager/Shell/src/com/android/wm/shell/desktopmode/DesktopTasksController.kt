@@ -3787,7 +3787,11 @@ class DesktopTasksController(
         desksOrganizer.deactivateDesk(wct, deskId)
         return { transition ->
             desksTransitionObserver.addPendingTransition(
-                DeskTransition.DeactivateDesk(token = transition, deskId = deskId)
+                DeskTransition.DeactivateDesk(
+                    token = transition,
+                    deskId = deskId,
+                    runOnTransitEnd = { snapEventHandler.onDeskDeactivated(deskId) },
+                )
             )
         }
     }

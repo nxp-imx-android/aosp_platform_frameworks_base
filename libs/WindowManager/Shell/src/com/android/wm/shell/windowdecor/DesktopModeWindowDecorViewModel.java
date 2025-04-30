@@ -650,8 +650,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     private void initializeTiling(RunningTaskInfo taskInfo) {
         DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
-        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(taskInfo.displayId);
-        Integer rightTiledTaskId = taskRepository.getRightTiledTask(taskInfo.displayId);
+        Integer deskId = taskRepository.getActiveDeskId(taskInfo.displayId);
+        if (deskId == null) {
+            return;
+        }
+        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(deskId);
+        Integer rightTiledTaskId = taskRepository.getRightTiledTask(deskId);
         boolean tilingAndPersistenceEnabled = DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
         if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
@@ -997,6 +1001,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @NotNull
     public Rect getRightSnapBoundsIfTiled(int displayId) {
         return mDesktopTilingDecorViewModel.getRightSnapBoundsIfTiled(displayId);
+    }
+
+    @Override
+    public void onDeskDeactivated(int deskId) {
+        mDesktopTilingDecorViewModel.onDeskDeactivated(deskId);
     }
 
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener

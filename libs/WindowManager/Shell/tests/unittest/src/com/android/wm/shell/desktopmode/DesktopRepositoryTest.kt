@@ -384,9 +384,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun leftTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
-            repo.addLeftTiledTask(displayId = DEFAULT_DISPLAY, taskId = 1)
+            repo.addLeftTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                // TODO(b/414589444): Swap with deskId when multi desk is more stable.
+                deskId = DEFAULT_DISPLAY,
+            )
 
-            assertThat(repo.getLeftTiledTask(displayId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -398,8 +403,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = null,
                 )
 
-            repo.removeRightTiledTask(displayId = DEFAULT_DISPLAY)
-            assertThat(repo.getRightTiledTask(displayId = DEFAULT_DISPLAY)).isNull()
+            repo.removeLeftTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
         }
     }
 
@@ -407,9 +413,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun rightTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
-            repo.addRightTiledTask(displayId = DEFAULT_DISPLAY, taskId = 1)
+            repo.addRightTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                deskId = DEFAULT_DISPLAY,
+            )
 
-            assertThat(repo.getRightTiledTask(displayId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -421,8 +431,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = 1,
                 )
 
-            repo.removeLeftTiledTask(displayId = DEFAULT_DISPLAY)
-            assertThat(repo.getLeftTiledTask(displayId = DEFAULT_DISPLAY)).isNull()
+            repo.removeRightTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
         }
     }
 

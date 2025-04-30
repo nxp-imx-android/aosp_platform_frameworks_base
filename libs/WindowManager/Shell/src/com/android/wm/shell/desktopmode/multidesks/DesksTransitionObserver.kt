@@ -172,6 +172,7 @@ class DesksTransitionObserver(
         val desktopRepository = desktopUserRepositories.current
         var deskChangeFound = false
 
+        deskTransition.runOnTransitEnd?.invoke()
         val changes = info?.changes ?: emptyList()
         for (change in changes) {
             val isDeskChange = desksOrganizer.isDeskChange(change, deskTransition.deskId)
