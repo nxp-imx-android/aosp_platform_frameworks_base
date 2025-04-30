@@ -285,7 +285,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val largeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
 
-    private val endMarginPx: Int =
+    private val marginPx: Int =
         if (notificationsRedesignTemplates()) {
             root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
         } else {
@@ -295,14 +295,14 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
 
     private val imageEndMarginPx: Int
-        get() = largeIconSizePx + 2 * endMarginPx
+        get() = largeIconSizePx + 2 * marginPx
 
     private val PromotedNotificationContentModel.imageEndMarginPxIfHasLargeIcon: Int
         get() =
             if (!skeletonLargeIcon.isNullOrEmpty()) {
                 imageEndMarginPx
             } else {
-                endMarginPx
+                marginPx
             }
 
     private data class SmallIconSavedState(val background: Drawable?, val padding: Rect)
@@ -329,11 +329,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         rightIcon?.setRightIconState(
             width = largeIconSizePx,
             height = largeIconSizePx,
-            marginEnd = endMarginPx,
+            marginEnd = marginPx,
         )
 
-        bigText?.setImageEndMargin(largeIconSizePx + endMarginPx)
-        text?.setImageEndMargin(largeIconSizePx + endMarginPx)
+        bigText?.setImageEndMargin(largeIconSizePx + marginPx)
+        text?.setImageEndMargin(largeIconSizePx + marginPx)
 
         setTextViewColor(appNameDivider, SecondaryText)
         setTextViewColor(headerTextDivider, SecondaryText)
@@ -493,8 +493,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateConversationHeaderDividers(content, hideTitle = true, hideAppName = collapsed)
 
         updateTopLine(content)
-
-        updateNotifIcon(conversationIcon, content.skeletonNotifIcon, content.iconLevel)
+        updateConversationIcon(content)
         updateTitle(conversationText, content)
     }
 
@@ -520,6 +519,14 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         appNameDivider?.isVisible = showDividerBeforeAppName
         timeDivider?.isVisible = showDividerBeforeTime
         verificationDivider?.isVisible = showDividerBeforeVerification
+    }
+
+    private fun updateConversationIcon(content: PromotedNotificationContentModel) {
+        updateNotifIcon(conversationIcon, content.skeletonNotifIcon, content.iconLevel)
+        (conversationIcon?.layoutParams as? MarginLayoutParams)?.let {
+            it.bottomMargin = marginPx
+            conversationIcon?.layoutParams = it
+        }
     }
 
     private fun updateAppName(content: PromotedNotificationContentModel, forceHide: Boolean) {
