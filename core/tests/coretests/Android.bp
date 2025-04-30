@@ -296,7 +296,6 @@ android_ravenwood_test {
         "src/android/view/DisplayTest.java",
         "src/com/android/internal/logging/**/*.java",
         "src/com/android/internal/os/**/*.java",
-        "src/com/android/internal/power/EnergyConsumerStatsTest.java",
         "src/com/android/internal/ravenwood/**/*.java",
         "src/com/android/internal/util/**/*.java",
 

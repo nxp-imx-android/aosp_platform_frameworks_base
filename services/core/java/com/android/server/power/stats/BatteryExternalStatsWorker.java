@@ -20,9 +20,6 @@ import android.app.usage.NetworkStatsManager;
 import android.bluetooth.BluetoothActivityEnergyInfo;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.hardware.power.stats.EnergyConsumer;
-import android.hardware.power.stats.EnergyConsumerResult;
-import android.hardware.power.stats.EnergyConsumerType;
 import android.net.wifi.WifiManager;
 import android.os.BatteryConsumer;
 import android.os.BatteryStats;
@@ -33,17 +30,12 @@ import android.os.Parcelable;
 import android.os.SynchronousResultReceiver;
 import android.os.SystemClock;
 import android.os.connectivity.WifiActivityEnergyInfo;
-import android.power.PowerStatsInternal;
 import android.telephony.ModemActivityInfo;
 import android.telephony.TelephonyManager;
-import android.util.IntArray;
 import android.util.Slog;
-import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.power.EnergyConsumerStats;
-import com.android.internal.util.GrowingArrayUtils;
 import com.android.server.LocalServices;
 
 import java.util.concurrent.CompletableFuture;
@@ -123,26 +115,10 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
     @GuardedBy("mWorkerLock")
     private TelephonyManager mTelephony = null;
 
-    @GuardedBy("mWorkerLock")
-    private PowerStatsInternal mPowerStatsInternal = null;
-
     // WiFi keeps an accumulated total of stats. Keep the last WiFi stats so we can compute a delta.
     // (This is unlike Bluetooth, where BatteryStatsImpl is left responsible for taking the delta.)
     @GuardedBy("mWorkerLock")
     private WifiActivityEnergyInfo mLastWifiInfo = null;
-
-    /**
-     * Maps an {@link EnergyConsumerType} to it's corresponding {@link EnergyConsumer#id}s,
-     * unless it is of {@link EnergyConsumer#type}=={@link EnergyConsumerType#OTHER}
-     */
-    @GuardedBy("mWorkerLock")
-    @Nullable
-    private SparseArray<int[]> mEnergyConsumerTypeToIdMap = null;
-
-    /** List of supported energy consumers, or null if no EnergyConsumers are supported. */
-    @GuardedBy("mWorkerLock")
-    @Nullable
-    private EnergyConsumer[] mEnergyConsumers = null;
 
     /**
      * Timestamp at which all external stats were last collected in
@@ -182,31 +158,10 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
     }
 
     public void systemServicesReady() {
-        final WifiManager wm = mInjector.getSystemService(WifiManager.class);
-        final TelephonyManager tm = mInjector.getSystemService(TelephonyManager.class);
-        final PowerStatsInternal psi = mInjector.getLocalService(PowerStatsInternal.class);
-
         synchronized (mWorkerLock) {
-            mWifiManager = wm;
-            mTelephony = tm;
-            mPowerStatsInternal = psi;
-
-            boolean[] supportedStdBuckets = null;
-            String[] customBucketNames = new String[0];
-            if (mPowerStatsInternal != null) {
-                populateEnergyConsumerSubsystemMapsLocked();
-                if (mEnergyConsumers != null) {
-                    for (int i = 0; i < mEnergyConsumers.length; i++) {
-                        if (mEnergyConsumers[i].type == EnergyConsumerType.OTHER) {
-                            customBucketNames = GrowingArrayUtils.append(customBucketNames,
-                                    customBucketNames.length, mEnergyConsumers[i].name);
-                        }
-                    }
-                    supportedStdBuckets = getSupportedEnergyBuckets(mEnergyConsumers);
-                }
-            }
+            mWifiManager = mInjector.getSystemService(WifiManager.class);
+            mTelephony = mInjector.getSystemService(TelephonyManager.class);
             synchronized (mStats) {
-                mStats.initEnergyConsumerStatsLocked(supportedStdBuckets, customBucketNames);
                 mPerDisplayScreenStates = new int[mStats.getDisplayCount()];
             }
         }
@@ -742,164 +697,5 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
             Slog.v(TAG, "WiFi energy data was reset, new WiFi energy data is " + delta);
         }
         return delta;
-    }
-
-    /**
-     * Map the {@link EnergyConsumerType}s in the given energyArray to
-     * their corresponding {@link EnergyConsumerStats.StandardPowerBucket}s.
-     * Does not include custom energy buckets (which are always, by definition, supported).
-     *
-     * @return array with true for index i if standard energy bucket i is supported.
-     */
-    private static @Nullable boolean[] getSupportedEnergyBuckets(EnergyConsumer[] energyConsumers) {
-        if (energyConsumers == null) {
-            return null;
-        }
-        final boolean[] buckets = new boolean[EnergyConsumerStats.NUMBER_STANDARD_POWER_BUCKETS];
-        for (int i = energyConsumers.length - 1; i >= 0; i--) {
-            final EnergyConsumer consumer = energyConsumers[i];
-            switch (consumer.type) {
-                case EnergyConsumerType.BLUETOOTH:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_BLUETOOTH] = true;
-                    break;
-                case EnergyConsumerType.CPU_CLUSTER:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_CPU] = true;
-                    break;
-                case EnergyConsumerType.GNSS:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_GNSS] = true;
-                    break;
-                case EnergyConsumerType.MOBILE_RADIO:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO] = true;
-                    buckets[EnergyConsumerStats.POWER_BUCKET_PHONE] = true;
-                    break;
-                case EnergyConsumerType.DISPLAY:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_SCREEN_ON] = true;
-                    buckets[EnergyConsumerStats.POWER_BUCKET_SCREEN_DOZE] = true;
-                    buckets[EnergyConsumerStats.POWER_BUCKET_SCREEN_OTHER] = true;
-                    break;
-                case EnergyConsumerType.WIFI:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_WIFI] = true;
-                    break;
-                case EnergyConsumerType.CAMERA:
-                    buckets[EnergyConsumerStats.POWER_BUCKET_CAMERA] = true;
-                    break;
-            }
-        }
-        return buckets;
-    }
-
-    /** Get all {@link EnergyConsumerResult}s with the latest energy usage since boot. */
-    @GuardedBy("mWorkerLock")
-    @Nullable
-    private CompletableFuture<EnergyConsumerResult[]> getEnergyConsumptionData() {
-        return getEnergyConsumptionData(new int[0]);
-    }
-
-    /**
-     * Get {@link EnergyConsumerResult}s of the specified {@link EnergyConsumer} ids with the latest
-     * energy usage since boot.
-     */
-    @GuardedBy("mWorkerLock")
-    @Nullable
-    private CompletableFuture<EnergyConsumerResult[]> getEnergyConsumptionData(int[] consumerIds) {
-        return mPowerStatsInternal.getEnergyConsumedAsync(consumerIds);
-    }
-
-    /** Fetch EnergyConsumerResult[] for supported subsystems based on the given updateFlags. */
-    @VisibleForTesting
-    @GuardedBy("mWorkerLock")
-    @Nullable
-    public CompletableFuture<EnergyConsumerResult[]> getEnergyConsumersLocked(
-            @ExternalUpdateFlag int flags) {
-        if (mEnergyConsumers == null || mPowerStatsInternal == null) return null;
-
-        if (flags == UPDATE_ALL) {
-            // Gotta catch 'em all... including custom (non-specific) subsystems
-            return getEnergyConsumptionData();
-        }
-
-        final IntArray energyConsumerIds = new IntArray();
-        if ((flags & UPDATE_BT) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.BLUETOOTH);
-        }
-        if ((flags & UPDATE_CPU) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.CPU_CLUSTER);
-        }
-        if ((flags & UPDATE_DISPLAY) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.DISPLAY);
-        }
-        if ((flags & UPDATE_RADIO) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.MOBILE_RADIO);
-        }
-        if ((flags & UPDATE_WIFI) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.WIFI);
-        }
-        if ((flags & UPDATE_CAMERA) != 0) {
-            addEnergyConsumerIdLocked(energyConsumerIds, EnergyConsumerType.CAMERA);
-        }
-
-        if (energyConsumerIds.size() == 0) {
-            return null;
-        }
-        return getEnergyConsumptionData(energyConsumerIds.toArray());
-    }
-
-    @GuardedBy("mWorkerLock")
-    private void addEnergyConsumerIdLocked(
-            IntArray energyConsumerIds, @EnergyConsumerType int type) {
-        final int[] consumerIds = mEnergyConsumerTypeToIdMap.get(type);
-        if (consumerIds == null) return;
-        energyConsumerIds.addAll(consumerIds);
-    }
-
-    /** Populates the cached type->ids map, and returns the (inverse) id->EnergyConsumer map. */
-    @GuardedBy("mWorkerLock")
-    private void populateEnergyConsumerSubsystemMapsLocked() {
-        if (mPowerStatsInternal == null) {
-            return;
-        }
-        mEnergyConsumers = mPowerStatsInternal.getEnergyConsumerInfo();
-        if (mEnergyConsumers == null || mEnergyConsumers.length == 0) {
-            return;
-        }
-
-        // Maps id -> EnergyConsumer (1:1 map)
-        final SparseArray<EnergyConsumer> idToConsumer = new SparseArray<>(mEnergyConsumers.length);
-        // Maps type -> {ids} (1:n map, since multiple ids might have the same type)
-        final SparseArray<IntArray> tempTypeToId = new SparseArray<>();
-
-        // Add all expected EnergyConsumers to the maps
-        for (final EnergyConsumer consumer : mEnergyConsumers) {
-            // Check for inappropriate ordinals
-            if (consumer.ordinal != 0) {
-                switch (consumer.type) {
-                    case EnergyConsumerType.OTHER:
-                    case EnergyConsumerType.CPU_CLUSTER:
-                    case EnergyConsumerType.DISPLAY:
-                        break;
-                    default:
-                        Slog.w(TAG, "EnergyConsumer '" + consumer.name + "' has unexpected ordinal "
-                                + consumer.ordinal + " for type " + consumer.type);
-                        continue; // Ignore this consumer
-                }
-            }
-            idToConsumer.put(consumer.id, consumer);
-
-            IntArray ids = tempTypeToId.get(consumer.type);
-            if (ids == null) {
-                ids = new IntArray();
-                tempTypeToId.put(consumer.type, ids);
-            }
-            ids.add(consumer.id);
-        }
-
-        mEnergyConsumerTypeToIdMap = new SparseArray<>(tempTypeToId.size());
-        // Populate mEnergyConsumerTypeToIdMap with EnergyConsumer type to ids mappings
-        final int size = tempTypeToId.size();
-        for (int i = 0; i < size; i++) {
-            final int consumerType = tempTypeToId.keyAt(i);
-            final int[] consumerIds = tempTypeToId.valueAt(i).toArray();
-            mEnergyConsumerTypeToIdMap.put(consumerType, consumerIds);
-        }
     }
 }

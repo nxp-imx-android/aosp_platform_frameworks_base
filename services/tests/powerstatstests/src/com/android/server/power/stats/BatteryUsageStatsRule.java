@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.Resources;
 import android.net.NetworkStats;
@@ -42,7 +43,6 @@ import android.util.Xml;
 import com.android.internal.os.CpuScalingPolicies;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.os.PowerProfile;
-import com.android.internal.power.EnergyConsumerStats;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -53,7 +53,6 @@ import org.xmlpull.v1.XmlPullParser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class BatteryUsageStatsRule implements TestRule {
@@ -81,8 +80,7 @@ public class BatteryUsageStatsRule implements TestRule {
     private int mDisplayCount = -1;
     private int mPerUidModemModel = -1;
     private NetworkStats mNetworkStats;
-    private boolean[] mSupportedStandardBuckets;
-    private String[] mCustomPowerComponentNames;
+    private String[] mCustomPowerComponentNames = new String[0];
     private Throwable mThrowable;
     private final BatteryStatsImpl.BatteryStatsConfig.Builder mBatteryStatsConfigBuilder;
     private BatteryStatsImpl.BatteryStatsConfig mBatteryStatsConfig;
@@ -123,8 +121,7 @@ public class BatteryUsageStatsRule implements TestRule {
                 mMonotonicClock, mHistoryDir, mHandler, mPowerProfile, new PowerStatsUidResolver());
         mBatteryStats.setCpuScalingPolicies(new CpuScalingPolicies(mCpusByPolicy, mFreqsByPolicy));
         synchronized (mBatteryStats) {
-            mBatteryStats.initEnergyConsumerStatsLocked(mSupportedStandardBuckets,
-                    mCustomPowerComponentNames);
+            mBatteryStats.noteCustomEnergyConsumerNamesLocked(mCustomPowerComponentNames);
         }
         mBatteryStats.informThatAllExternalStatsAreFlushed();
 
@@ -292,14 +289,11 @@ public class BatteryUsageStatsRule implements TestRule {
 
     /** Call only after setting the power profile information. */
     public BatteryUsageStatsRule initMeasuredEnergyStatsLocked(
-            String[] customPowerComponentNames) {
+            @NonNull String[] customPowerComponentNames) {
         mCustomPowerComponentNames = customPowerComponentNames;
-        mSupportedStandardBuckets = new boolean[EnergyConsumerStats.NUMBER_STANDARD_POWER_BUCKETS];
-        Arrays.fill(mSupportedStandardBuckets, true);
         if (mBatteryStats != null) {
             synchronized (mBatteryStats) {
-                mBatteryStats.initEnergyConsumerStatsLocked(mSupportedStandardBuckets,
-                        mCustomPowerComponentNames);
+                mBatteryStats.noteCustomEnergyConsumerNamesLocked(mCustomPowerComponentNames);
                 mBatteryStats.informThatAllExternalStatsAreFlushed();
             }
         }
