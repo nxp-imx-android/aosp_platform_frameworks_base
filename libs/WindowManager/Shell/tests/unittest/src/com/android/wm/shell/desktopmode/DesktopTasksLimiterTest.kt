@@ -725,6 +725,63 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
+    fun onTransitionReady_taskLimitTransition_taskNotAvailable_minimizesNextTask() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        val minimizeTransition = Binder()
+        val existingTasks = (1..MAX_TASK_LIMIT + 1).map { setUpFreeformTask() }
+        // Make the bottom task non-available
+        `when`(shellTaskOrganizer.getRunningTaskInfo(existingTasks.first().taskId)).thenReturn(null)
+        val launchTask = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition,
+            deskId = 0,
+            taskId = launchTask.taskId,
+        )
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, launchTask).build()
+        whenever(desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(any(), anyInt()))
+            .thenReturn(minimizeTransition)
+
+        callOnTransitionReady(transition, transitionInfo)
+
+        val onIdleArgumentCaptor = argumentCaptor<Runnable>()
+        verify(transitions).runOnIdle(onIdleArgumentCaptor.capture())
+        onIdleArgumentCaptor.lastValue.run()
+        verify(desktopMixedTransitionHandler).startTaskLimitMinimizeTransition(any(), any())
+        // Ensure we minimize the second task, since the first one is not available
+        assertThat(desktopTasksLimiter.getMinimizingTask(minimizeTransition)?.taskId)
+            .isEqualTo(existingTasks[1].taskId)
+    }
+
+    @Test
+    fun onTransitionReady_taskLimitTransition_taskNotAvailable_nextTaskBelowLimit_doesntMinimize() {
+        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val transition = Binder()
+        val existingTasks = (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
+        // Make the bottom task non-available
+        `when`(shellTaskOrganizer.getRunningTaskInfo(existingTasks.first().taskId)).thenReturn(null)
+        val launchTask = setUpFreeformTask()
+        desktopTasksLimiter.addPendingTaskLimitTransition(
+            transition,
+            deskId = 0,
+            taskId = launchTask.taskId,
+        )
+        val transitionInfo =
+            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, launchTask).build()
+
+        callOnTransitionReady(transition, transitionInfo)
+
+        val onIdleArgumentCaptor = argumentCaptor<Runnable>()
+        verify(transitions).runOnIdle(onIdleArgumentCaptor.capture())
+        onIdleArgumentCaptor.lastValue.run()
+        verify(desktopMixedTransitionHandler, never())
+            .startTaskLimitMinimizeTransition(any(), any())
+    }
+
+    @Test
     fun onTransitionReady_noPendingTaskLimitTransition_doesntTriggerOnIdle() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
