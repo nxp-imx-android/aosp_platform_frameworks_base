@@ -358,13 +358,12 @@ public class SettingsStateTest {
                         SettingsState.makeKey(SettingsState.SETTINGS_TYPE_GLOBAL, 1,
                                 Context.DEVICE_ID_DEFAULT),
                         SettingsState.MAX_BYTES_PER_APP_PACKAGE_UNLIMITED, Looper.getMainLooper());
-        ssWriter.setVersionLocked(SettingsState.SETTINGS_VERSION_NEW_ENCODING);
-
-        ssWriter.insertSettingLocked("k1", "\u0000", null, false, "package");
-        ssWriter.insertSettingLocked("k2", "abc", null, false, "p2");
-        ssWriter.insertSettingLocked("k3", null, null, false, "p2");
-        ssWriter.insertSettingLocked("k4", CRAZY_STRING, null, false, "p3");
         synchronized (lock) {
+            ssWriter.setVersionLocked(SettingsState.SETTINGS_VERSION_NEW_ENCODING);
+            ssWriter.insertSettingLocked("k1", "\u0000", null, false, "package");
+            ssWriter.insertSettingLocked("k2", "abc", null, false, "p2");
+            ssWriter.insertSettingLocked("k3", null, null, false, "p2");
+            ssWriter.insertSettingLocked("k4", CRAZY_STRING, null, false, "p3");
             ssWriter.persistSettingsLocked();
         }
         ssWriter.waitForHandler();
@@ -391,25 +390,28 @@ public class SettingsStateTest {
     @Parameters(method = "getVirtualDeviceIds")
     public void testNoWriteForVirtualDevice(int deviceId) {
         final Object lock = new Object();
+        File settingsFile = new File(InstrumentationRegistry.getContext().getCacheDir(),
+                "vdsetting.xml");
+        settingsFile.delete();
+        assertFalse(settingsFile.exists());
 
-        assertFalse(mSettingsFile.exists());
         final SettingsState ssWriter =
                 new SettingsState(
-                        InstrumentationRegistry.getContext(), lock, mSettingsFile,
+                        InstrumentationRegistry.getContext(), lock, settingsFile,
                         SettingsState.makeKey(SettingsState.SETTINGS_TYPE_GLOBAL, 1,
                                 deviceId),
                         SettingsState.MAX_BYTES_PER_APP_PACKAGE_UNLIMITED, Looper.getMainLooper());
-        ssWriter.setVersionLocked(SettingsState.SETTINGS_VERSION_NEW_ENCODING);
-
-        ssWriter.insertSettingLocked("k1", "\u0000", null, false, "package");
-        ssWriter.insertSettingLocked("k2", "abc", null, false, "p2");
-        ssWriter.insertSettingLocked("k3", null, null, false, "p2");
-        ssWriter.insertSettingLocked("k4", CRAZY_STRING, null, false, "p3");
         synchronized (lock) {
+            ssWriter.setVersionLocked(SettingsState.SETTINGS_VERSION_NEW_ENCODING);
+            ssWriter.insertSettingLocked("k1", "\u0000", null, false, "package");
+            ssWriter.insertSettingLocked("k2", "abc", null, false, "p2");
+            ssWriter.insertSettingLocked("k3", null, null, false, "p2");
+            ssWriter.insertSettingLocked("k4", CRAZY_STRING, null, false, "p3");
             ssWriter.persistSettingsLocked();
         }
         ssWriter.waitForHandler();
-        assertFalse(mSettingsFile.exists());
+
+        assertFalse(settingsFile.exists());
     }
 
     /**
