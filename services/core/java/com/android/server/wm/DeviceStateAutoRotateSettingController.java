@@ -34,6 +34,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.Slog;
 import android.util.SparseIntArray;
 
@@ -44,6 +45,8 @@ import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.Update
 import com.android.server.wm.DeviceStateController.DeviceStateEnum;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -68,6 +71,7 @@ public class DeviceStateAutoRotateSettingController {
     private static final String SEPARATOR_REGEX = ":";
     private static final int ACCELEROMETER_ROTATION_OFF = 0;
     private static final int ACCELEROMETER_ROTATION_ON = 1;
+    private static final int INVALID_DEVICE_STATE = -1;
     // TODO(b/413598268): Disable debugging after the
     //  com.android.window.flags.enable_device_state_auto_rotate_setting_refactor flag is rolled-out
     private static final boolean DEBUG = true;
@@ -78,10 +82,9 @@ public class DeviceStateAutoRotateSettingController {
     private final DeviceStateAutoRotateSettingManager mDeviceStateAutoRotateSettingManager;
     private final ContentResolver mContentResolver;
     private final DeviceStateController mDeviceStateController;
+    private final List<Event> mPendingEvents = new ArrayList<>();
 
-    // TODO(b/413639166): Handle device state being missing until we receive first device state
-    //  update
-    private int mDeviceState = -1;
+    private int mDeviceState = INVALID_DEVICE_STATE;
     private boolean mAccelerometerSetting;
     private SparseIntArray mDeviceStateAutoRotateSetting;
 
@@ -103,10 +106,23 @@ public class DeviceStateAutoRotateSettingController {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 final Event event = (Event) msg.obj;
-                final boolean inMemoryStateUpdated = updateInMemoryState(event);
+                if (mDeviceState == INVALID_DEVICE_STATE && !(event instanceof UpdateDeviceState)) {
+                    mPendingEvents.add(event);
+                    Log.w(TAG, "Trying to write into auto-rotate settings, while "
+                            + "device-state is unavailable.\n" + "Could not process the event="
+                            + event.getClass().getSimpleName() + ".\n"
+                            + "This event will be queued and processed later once we receive "
+                            + "device-state update.");
+                    return;
+                }
 
-                if (inMemoryStateUpdated) {
-                    writeInMemoryStateIntoPersistedSetting();
+                handleEvent(event);
+
+                if (!mPendingEvents.isEmpty()) {
+                    for (int i = 0; i < mPendingEvents.size(); i++) {
+                        handleEvent(mPendingEvents.get(i));
+                    }
+                    mPendingEvents.clear();
                 }
             }
         };
@@ -114,6 +130,14 @@ public class DeviceStateAutoRotateSettingController {
         registerDeviceStateAutoRotateSettingObserver();
         registerAccelerometerRotationSettingObserver();
         registerDeviceStateObserver();
+    }
+
+    private void handleEvent(@NonNull Event event) {
+        final boolean inMemoryStateUpdated = updateInMemoryState(event);
+
+        if (inMemoryStateUpdated) {
+            writeInMemoryStateIntoPersistedSetting();
+        }
     }
 
     /** Request to change {@link DEVICE_STATE_ROTATION_LOCK} persisted setting. */
@@ -128,8 +152,7 @@ public class DeviceStateAutoRotateSettingController {
 
     private void registerDeviceStateAutoRotateSettingObserver() {
         mDeviceStateAutoRotateSettingManager.registerListener(
-                () -> postUpdate(
-                        PersistedSettingUpdate.INSTANCE));
+                () -> postUpdate(PersistedSettingUpdate.INSTANCE));
     }
 
     private void registerAccelerometerRotationSettingObserver() {
