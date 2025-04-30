@@ -127,17 +127,6 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                     currentParent = pref
                 }
 
-                // ExpandablePreference is PreferenceGroup but it should handle round corner
-                is Expandable -> {
-                    // When ExpandablePreference is expanded, we treat is as the first item.
-                    if (pref.isExpanded()) {
-                        currentParent = pref as? PreferenceGroup
-                        startIndex = i
-                        cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_TOP or ROUND_CORNER_CENTER
-                        endIndex = -1
-                    }
-                }
-
                 // SpacePreference should not have round corner background.
                 is SpacePreference -> {
                     cornerStyles[i] = 0
@@ -145,34 +134,43 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
                 }
 
                 else -> {
-                    val parent = pref?.parent
+                    // When ExpandablePreference is expanded, we treat is as the first item.
+                    if (pref is Expandable && pref.isExpanded()) {
+                        currentParent = pref as? PreferenceGroup
+                        startIndex = i
+                        cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_TOP or ROUND_CORNER_CENTER
+                        endIndex = -1
+                    } else {
 
-                    // item in the group should have round corner background.
-                    cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_CENTER
-                    if (parent === currentParent) {
-                        // find the first item in the group
-                        if (startIndex == -1) {
+                        val parent = pref?.parent
+
+                        // item in the group should have round corner background.
+                        cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_CENTER
+                        if (parent === currentParent) {
+                            // find the first item in the group
+                            if (startIndex == -1) {
+                                startIndex = i
+                                cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_TOP
+                            }
+
+                            // find the last item in the group, if we find the new last item, we should
+                            // remove the old last item round corner.
+                            if (endIndex == -1 || endIndex < i) {
+                                if (endIndex != -1) {
+                                    cornerStyles[endIndex] =
+                                        cornerStyles[endIndex] and ROUND_CORNER_BOTTOM.inv()
+                                }
+                                endIndex = i
+                                cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_BOTTOM
+                            }
+                        } else {
+                            // this item is new group, we should reset the index.
+                            currentParent = parent
                             startIndex = i
                             cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_TOP
-                        }
-
-                        // find the last item in the group, if we find the new last item, we should
-                        // remove the old last item round corner.
-                        if (endIndex == -1 || endIndex < i) {
-                            if (endIndex != -1) {
-                                cornerStyles[endIndex] =
-                                    cornerStyles[endIndex] and ROUND_CORNER_BOTTOM.inv()
-                            }
                             endIndex = i
                             cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_BOTTOM
                         }
-                    } else {
-                        // this item is new group, we should reset the index.
-                        currentParent = parent
-                        startIndex = i
-                        cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_TOP
-                        endIndex = i
-                        cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_BOTTOM
                     }
                 }
             }
