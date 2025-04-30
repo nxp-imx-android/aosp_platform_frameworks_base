@@ -32,17 +32,14 @@ import android.window.IWindowContainerToken
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
-import android.window.WindowContainerTransaction
 import com.android.window.flags.Flags
-import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.transition.Transitions
-import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
@@ -62,12 +59,11 @@ import org.mockito.kotlin.whenever
 class DesktopBackNavTransitionObserverTest : ShellTestCase() {
 
     private val testExecutor = mock<ShellExecutor>()
-    private val transitions = mock<Transitions>()
     private val userRepositories = mock<DesktopUserRepositories>()
     private val taskRepository = mock<DesktopRepository>()
     private val mixedHandler = mock<DesktopMixedTransitionHandler>()
     private val backAnimationController = mock<BackAnimationController>()
-    private val wallpaperToken = MockToken().token()
+    private val desksOrganizer = mock<DesksOrganizer>()
     private val desktopState = FakeDesktopState()
 
     private lateinit var transitionObserver: DesktopBackNavTransitionObserver
@@ -86,6 +82,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
                 userRepositories,
                 mixedHandler,
                 backAnimationController,
+                desksOrganizer,
                 desktopState,
                 shellInit,
             )
@@ -96,6 +93,26 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     fun backNavigation_taskMinimized() {
         val task = createTaskInfo(1)
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createBackNavigationTransition(task),
+        )
+
+        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(mixedHandler).addPendingMixedTransition(any())
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun backNavigation_nonFreeformDesktopTask_taskMinimized() {
+        val task = createTaskInfo(1, windowingMode = WINDOWING_MODE_FULLSCREEN)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -112,6 +129,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isOnlyVisibleTask(task.taskId, task.displayId)).thenReturn(false)
         whenever(taskRepository.hasOnlyOneVisibleTask(task.displayId)).thenReturn(false)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
@@ -139,6 +157,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -166,6 +185,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -228,6 +248,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTasks_onTaskFullscreenLaunchWithOpenTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
@@ -243,7 +264,44 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeTasks_onTaskFullscreenInDeskLaunchWithOpenTransition_taskNotRemovedFromRepo() {
+        val deskId = 0
+        val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        val transitionInfo = createOpenChangeTransition(task)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(deskId)
+
+        transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
+
+        verify(taskRepository, never()).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeTasks_onTaskOutsideDeskLaunchWithOpenTransition_taskRemovedFromRepo() {
+        val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        val transitionInfo = createOpenChangeTransition(task)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(null)
+
+        transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
+
+        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTasks_onTaskFullscreenLaunchExitDesktopTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
@@ -258,10 +316,40 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
-    private fun WindowContainerTransaction.assertIndexInBounds(index: Int) {
-        assertWithMessage("WCT does not have a hierarchy operation at index $index")
-            .that(hierarchyOps.size)
-            .isGreaterThan(index)
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeTasks_onTaskFullscreenInDeskLaunchExitDesktopTransition_taskNotRemovedFromRepo() {
+        val deskId = 0
+        val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        val transitionInfo = createOpenChangeTransition(task, TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(deskId)
+
+        transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
+
+        verify(taskRepository, never()).removeTask(task.displayId, task.taskId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun removeTasks_onTaskOutsideDeskLaunchExitDesktopTransition_taskRemovedFromRepo() {
+        val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        val transitionInfo = createOpenChangeTransition(task, TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(null)
+
+        transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
+
+        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
     private fun createOpenChangeTransition(

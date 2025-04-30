@@ -60,7 +60,9 @@ import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_NONE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
+import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
+import android.view.WindowManager.transitTypeToString
 import android.widget.Toast
 import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.DesktopExperienceFlag
@@ -1516,7 +1518,7 @@ class DesktopTasksController(
     ): IBinder {
         logV(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
-            WindowManager.transitTypeToString(transitionType),
+            transitTypeToString(transitionType),
             launchingTaskId,
             deskId,
             displayId,
@@ -2894,7 +2896,7 @@ class DesktopTasksController(
         )
         val wct = WindowContainerTransaction()
         if (!anyDeskActive && !shouldEnterDesktop) {
-            // We are outside of desktop mode and already existing desktop task is being
+            // We are outside of desktop mode and an already existing desktop task is being
             // launched. We should make this task go to fullscreen instead of freeform. Note
             // that this means any re-launch of a freeform window outside of desktop will be in
             // fullscreen as long as default-desktop flag is disabled.
@@ -2902,12 +2904,7 @@ class DesktopTasksController(
                 addMoveToFullscreenChanges(
                     wct = wct,
                     taskInfo = task,
-                    willExitDesktop =
-                        willExitDesktop(
-                            triggerTaskId = task.taskId,
-                            displayId = task.displayId,
-                            forceExitDesktop = true,
-                        ),
+                    willExitDesktop = false, // Already outside desktop.
                 )
             runOnTransitStart?.invoke(transition)
             return wct
@@ -3174,23 +3171,43 @@ class DesktopTasksController(
     }
 
     /**
-     * Handle task closing by removing wallpaper activity if it's the last active task.
-     *
-     * TODO: b/394268248 - desk needs to be deactivated.
+     * Handles a closing task. This usually means deactivating and cleaning up the desk if it was
+     * the last task in it. It also handles to-back transitions of the last desktop task as a
+     * minimize operation.
      */
     private fun handleTaskClosing(
         task: RunningTaskInfo,
         transition: IBinder,
-        requestType: Int,
+        @WindowManager.TransitionType requestType: Int,
     ): WindowContainerTransaction? {
-        logV("handleTaskClosing")
+        logV(
+            "handleTaskClosing taskId=%d closingType=%s",
+            task.taskId,
+            transitTypeToString(requestType),
+        )
         if (!isAnyDeskActive(task.displayId)) return null
         val deskId = taskRepository.getDeskIdForTask(task.taskId)
         if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return null
         }
-
         val wct = WindowContainerTransaction()
+        if (
+            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                requestType == TRANSIT_TO_BACK
+        ) {
+            val isLastTask = taskRepository.isOnlyVisibleTask(task.taskId, task.displayId)
+            logV(
+                "Handling to-back of taskId=%d (isLast=%b) as minimize in deskId=%d",
+                task.taskId,
+                isLastTask,
+                deskId,
+            )
+            desksOrganizer.minimizeTask(
+                wct = wct,
+                deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                task = task,
+            )
+        }
         val deactivationRunnable =
             performDesktopExitCleanupIfNeeded(
                 taskId = task.taskId,
