@@ -459,7 +459,8 @@ public class SettingsProvider extends ContentProvider {
                 Setting setting = getSecureSetting(name, requestingUserId, callingDeviceId);
                 // If any overridden setting is not available for a virtual device, return the
                 // setting corresponding to the default device.
-                if (setting == null || setting.isNull()) {
+                if (callingDeviceId != Context.DEVICE_ID_DEFAULT
+                        && (setting == null || setting.isNull())) {
                     setting = getSecureSetting(name, requestingUserId, Context.DEVICE_ID_DEFAULT);
                 }
                 return packageValueForCallResult(SETTINGS_TYPE_SECURE, name, requestingUserId,
@@ -469,7 +470,8 @@ public class SettingsProvider extends ContentProvider {
                 Setting setting = getSystemSetting(name, requestingUserId, callingDeviceId);
                 // If any overridden setting is not available for a virtual device, return the
                 // setting corresponding to the default device.
-                if (setting == null || setting.isNull()) {
+                if (callingDeviceId != Context.DEVICE_ID_DEFAULT
+                        && (setting == null || setting.isNull())) {
                     setting = getSystemSetting(name, requestingUserId, Context.DEVICE_ID_DEFAULT);
                 }
                 return packageValueForCallResult(SETTINGS_TYPE_SYSTEM, name, requestingUserId,
