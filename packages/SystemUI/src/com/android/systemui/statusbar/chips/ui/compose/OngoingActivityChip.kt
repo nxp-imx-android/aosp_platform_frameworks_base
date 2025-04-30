@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -87,8 +88,12 @@ fun OngoingActivityChip(
             is OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification -> { _ ->
                     clickBehavior.onClick()
                 }
+            is OngoingActivityChipModel.ClickBehavior.HideHeadsUpNotification -> { _ ->
+                    clickBehavior.onClick()
+                }
             is OngoingActivityChipModel.ClickBehavior.None -> null
         }
+    val onClickLabel = model.clickBehavior.customOnClickLabel?.let { stringResource(it) }
     val isClickable = onClick != null
 
     val chipSidePaddingTotal = 20.dp
@@ -140,6 +145,7 @@ fun OngoingActivityChip(
                 ),
         borderStroke = borderStroke,
         onClick = onClick,
+        onClickLabel = onClickLabel,
         useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,
         // Some chips like the 3-2-1 countdown chip should be very small, smaller than a
         // reasonable minimum size.
