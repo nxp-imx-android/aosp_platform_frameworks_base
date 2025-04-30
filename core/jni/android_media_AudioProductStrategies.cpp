@@ -60,7 +60,6 @@ static struct {
     jfieldID    mVolumeGroupId;
     jfieldID    mLegacyStreamType;
     jfieldID    mAudioAttributes;
-    jfieldID    mStrategyId;
 } gAudioAttributesGroupsFields;
 
 static jclass gArrayListClass;
@@ -131,7 +130,6 @@ static jint convertAudioProductStrategiesFromNative(
                                                        gAudioAttributesGroupCstor,
                                                        jGroupId,
                                                        jLegacyStreamType,
-                                                       jStrategyId,
                                                        jAudioAttributes);
         env->SetObjectArrayElement(jAudioAttributesGroups, indexGroup++, jAudioAttributesGroup);
 
@@ -241,13 +239,11 @@ int register_android_media_AudioProductStrategies(JNIEnv *env)
     jclass audioAttributesGroupClass = FindClassOrDie(env, kAudioAttributesGroupsClassPathName);
     gAudioAttributesGroupClass = MakeGlobalRefOrDie(env, audioAttributesGroupClass);
     gAudioAttributesGroupCstor = GetMethodIDOrDie(env, audioAttributesGroupClass, "<init>",
-                                                  "(III[Landroid/media/AudioAttributes;)V");
+                                                  "(II[Landroid/media/AudioAttributes;)V");
     gAudioAttributesGroupsFields.mVolumeGroupId = GetFieldIDOrDie(
                 env, audioAttributesGroupClass, "mVolumeGroupId", "I");
     gAudioAttributesGroupsFields.mLegacyStreamType = GetFieldIDOrDie(
                 env, audioAttributesGroupClass, "mLegacyStreamType", "I");
-    gAudioAttributesGroupsFields.mStrategyId = GetFieldIDOrDie(
-                env, audioAttributesGroupClass, "mProductStrategyId", "I");
     gAudioAttributesGroupsFields.mAudioAttributes = GetFieldIDOrDie(
                 env, audioAttributesGroupClass, "mAudioAttributes",
                 "[Landroid/media/AudioAttributes;");

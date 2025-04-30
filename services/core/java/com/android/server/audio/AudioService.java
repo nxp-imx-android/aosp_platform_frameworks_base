@@ -13144,8 +13144,6 @@ public class AudioService extends IAudioService.Stub
         pw.println("\n");
         dumpSupportedSystemUsage(pw);
 
-        AudioProductStrategy.dump(pw);
-
         pw.println("\n");
         pw.println("\nSpatial audio:");
         pw.println("mHasSpatializerEffect:" + mHasSpatializerEffect + " (effect present)");
