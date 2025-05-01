@@ -55,6 +55,7 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.BatteryController;
@@ -101,6 +102,9 @@ public class PowerNotificationWarningsTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        // This is true in SystemUIGoogle, but the tests assume false
+        overrideResource(R.bool.config_extra_battery_saver_confirmation, false);
 
         Context wrapper = new ContextWrapper(mContext) {
             @Override
