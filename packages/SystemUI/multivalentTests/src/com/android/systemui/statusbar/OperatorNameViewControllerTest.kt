@@ -43,7 +43,6 @@ import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertTrue
 import kotlin.test.Test
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -117,7 +116,7 @@ class OperatorNameViewControllerTest : SysuiTestCase() {
                 }
             whenever(keyguardUpdateMonitor.getSubscriptionInfoForSubId(any()))
                 .thenReturn(mockSubInfo)
-            whenever(keyguardUpdateMonitor.getSimState(any()))
+            whenever(keyguardUpdateMonitor.getSimStateForSlotId(any()))
                 .thenReturn(TelephonyManager.SIM_STATE_READY)
             whenever(keyguardUpdateMonitor.getServiceState(any()))
                 .thenReturn(ServiceState().also { it.state = ServiceState.STATE_IN_SERVICE })
@@ -142,7 +141,7 @@ class OperatorNameViewControllerTest : SysuiTestCase() {
                 }
             whenever(keyguardUpdateMonitor.getSubscriptionInfoForSubId(any()))
                 .thenReturn(mockSubInfo)
-            whenever(keyguardUpdateMonitor.getSimState(any()))
+            whenever(keyguardUpdateMonitor.getSimStateForSlotId(any()))
                 .thenReturn(TelephonyManager.SIM_STATE_READY)
             whenever(keyguardUpdateMonitor.getServiceState(any()))
                 .thenReturn(ServiceState().also { it.state = ServiceState.STATE_IN_SERVICE })
@@ -166,7 +165,7 @@ class OperatorNameViewControllerTest : SysuiTestCase() {
                 }
             whenever(keyguardUpdateMonitor.getSubscriptionInfoForSubId(any()))
                 .thenReturn(mockSubInfo)
-            whenever(keyguardUpdateMonitor.getSimState(any()))
+            whenever(keyguardUpdateMonitor.getSimStateForSlotId(any()))
                 .thenReturn(TelephonyManager.SIM_STATE_READY)
             whenever(keyguardUpdateMonitor.getServiceState(any()))
                 .thenReturn(ServiceState().also { it.state = ServiceState.STATE_IN_SERVICE })
@@ -193,7 +192,7 @@ class OperatorNameViewControllerTest : SysuiTestCase() {
                 }
             whenever(keyguardUpdateMonitor.getSubscriptionInfoForSubId(any()))
                 .thenReturn(mockSubInfo)
-            whenever(keyguardUpdateMonitor.getSimState(any()))
+            whenever(keyguardUpdateMonitor.getSimStateForSlotId(any()))
                 .thenReturn(TelephonyManager.SIM_STATE_READY)
 
             // Not in service
