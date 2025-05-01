@@ -90,6 +90,7 @@ abstract class DragMoveWindowToNextDisplay {
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
+        // Verify app window moved to target display
         wmHelper
             .StateSyncBuilder()
             .add("testApp is on the connected display") { dump ->
@@ -105,9 +106,5 @@ abstract class DragMoveWindowToNextDisplay {
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-    }
-
-    private companion object {
-        val CAPTION_BAR_OFFSET_Y_PX = 20
     }
 }
