@@ -3139,6 +3139,14 @@ package android.security {
 
 }
 
+package android.security.authenticationpolicy {
+
+  @FlaggedApi("android.security.secure_lockdown") public final class AuthenticationPolicyManager {
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void setSecureLockDeviceTestStatus(boolean);
+  }
+
+}
+
 package android.security.keystore {
 
   public static final class KeyGenParameterSpec.Builder {

@@ -46,6 +46,9 @@ interface IAuthenticationPolicyService {
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
     void unregisterSecureLockDeviceStatusListener(in ISecureLockDeviceStatusListener listener);
 
+    @EnforcePermission("TEST_BIOMETRIC")
+    void setSecureLockDeviceTestStatus(boolean isTestMode);
+
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     void startWatchRangingForIdentityCheck(in long authenticationRequestId, in IProximityResultCallback resultCallback);
 
