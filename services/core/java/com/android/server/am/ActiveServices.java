@@ -393,7 +393,7 @@ public final class ActiveServices {
      * <li>{@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK}</li>
      */
     @ChangeId
-    @EnabledSince(targetSdkVersion = VERSION_CODES.VANILLA_ICE_CREAM)
+    @EnabledSince(targetSdkVersion = VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Overridable
     public static final long MEDIA_FGS_STATE_TRANSITION = 281762171L;
 
