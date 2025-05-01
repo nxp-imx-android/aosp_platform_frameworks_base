@@ -22,7 +22,7 @@ package {
 android_test {
     name: "SystemUITests",
     use_resource_processor: true,
-
+    defaults: ["systemui-non-platform-apis-defaults"],
     dxflags: ["--multi-dex"],
     platform_apis: true,
     test_suites: ["device-tests"],

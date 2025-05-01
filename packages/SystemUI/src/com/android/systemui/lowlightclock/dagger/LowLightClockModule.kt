@@ -16,40 +16,28 @@
 package com.android.systemui.lowlightclock.dagger
 
 import android.content.res.Resources
-import android.hardware.Sensor
 import com.android.dream.lowlight.dagger.LowLightDreamModule
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
-import com.android.systemui.lowlightclock.AmbientLightModeMonitor
-import com.android.systemui.lowlightclock.AmbientLightModeMonitor.DebounceAlgorithm
-import com.android.systemui.lowlightclock.AmbientLightModeMonitorImpl
-import com.android.systemui.lowlightclock.LowLightDisplayController
+import com.android.systemui.lowlight.shared.model.LowLightActionEntry
+import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
+import com.android.systemui.lowlightclock.LowLightClockDreamAction
 import com.android.systemui.lowlightclock.LowLightMonitor
 import com.android.systemui.res.R
 import dagger.Binds
-import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import dagger.multibindings.IntoSet
 import javax.inject.Named
+import javax.inject.Provider
 
 @Module(includes = [LowLightDreamModule::class])
-abstract class LowLightModule {
-    @BindsOptionalOf abstract fun bindsLowLightDisplayController(): LowLightDisplayController
-
-    @BindsOptionalOf @Named(LIGHT_SENSOR) abstract fun bindsLightSensor(): Sensor
-
-    @BindsOptionalOf abstract fun bindsDebounceAlgorithm(): DebounceAlgorithm
-
-    @Binds
-    abstract fun bindAmbientLightModeMonitor(
-        impl: AmbientLightModeMonitorImpl
-    ): AmbientLightModeMonitor
-
+abstract class LowLightClockModule {
     /** Inject into LowLightMonitor. */
     @Binds
     @IntoMap
@@ -63,7 +51,7 @@ abstract class LowLightModule {
         const val ALPHA_ANIMATION_IN_START_DELAY_MILLIS: String =
             "alpha_animation_in_start_delay_millis"
         const val ALPHA_ANIMATION_DURATION_MILLIS: String = "alpha_animation_duration_millis"
-        const val LIGHT_SENSOR: String = "low_light_monitor_light_sensor"
+        const val LOW_LIGHT_CLOCK_ACTION: String = "low_light_clock_action"
 
         /** Provides a [LogBuffer] for logs related to low-light features. */
         @JvmStatic
@@ -112,6 +100,16 @@ abstract class LowLightModule {
             return resources
                 .getInteger(R.integer.low_light_clock_alpha_animation_duration_ms)
                 .toLong()
+        }
+
+        @Provides
+        @IntoSet
+        fun providesLowLightClockActionEntry(
+            lowLightClock: Provider<LowLightClockDreamAction>
+        ): LowLightActionEntry {
+            return LowLightActionEntry(LowLightDisplayBehavior.LOW_LIGHT_DREAM) {
+                lowLightClock.get()
+            }
         }
     }
 }

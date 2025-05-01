@@ -84,7 +84,8 @@ import com.android.systemui.keyguard.ui.composable.LockscreenContent;
 import com.android.systemui.log.dagger.LogModule;
 import com.android.systemui.log.dagger.MonitorLog;
 import com.android.systemui.log.table.TableLogBuffer;
-import com.android.systemui.lowlightclock.dagger.LowLightModule;
+import com.android.systemui.lowlight.dagger.LowLightModule;
+import com.android.systemui.lowlightclock.dagger.LowLightClockModule;
 import com.android.systemui.mediaprojection.MediaProjectionModule;
 import com.android.systemui.mediaprojection.appselector.MediaProjectionActivitiesModule;
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherModule;
@@ -126,7 +127,6 @@ import com.android.systemui.startable.Dependencies;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
-import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.chips.StatusBarChipsModule;
 import com.android.systemui.statusbar.connectivity.ConnectivityModule;
 import com.android.systemui.statusbar.dagger.StatusBarModule;
@@ -159,6 +159,7 @@ import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;
 import com.android.systemui.telephony.data.repository.TelephonyRepositoryModule;
 import com.android.systemui.temporarydisplay.dagger.TemporaryDisplayModule;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.topui.TopUiModule;
 import com.android.systemui.touchpad.TouchpadModule;
 import com.android.systemui.tuner.dagger.TunerModule;
@@ -295,6 +296,7 @@ import javax.inject.Named;
         NoteTaskModule.class,
         WalletModule.class,
         LowLightModule.class,
+        LowLightClockModule.class,
         PerDisplayRepositoriesModule.class
 },
         subcomponents = {
