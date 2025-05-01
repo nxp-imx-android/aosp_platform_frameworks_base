@@ -3143,6 +3143,18 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 } else if ("-c".equals(arg)) {
                     useCheckinFormat = true;
                     flags |= BatteryStats.DUMP_INCLUDE_HISTORY;
+                    if (Flags.checkinHistoryStartTime()) {
+                        long checkinDurationLimit = mContext.getResources().getInteger(
+                                com.android.internal.R.integer
+                                .config_batteryHistoryDumpCheckinWindowSize);
+                        if (checkinDurationLimit > 0) {
+                            monotonicClockStartTime =
+                                mMonotonicClock.monotonicTime() - checkinDurationLimit;
+                            if (monotonicClockStartTime < 0) {
+                                monotonicClockStartTime = 0;
+                            }
+                        }
+                    }
                 } else if ("--proto".equals(arg)) {
                     toProto = true;
                 } else if ("--charged".equals(arg)) {
@@ -3250,11 +3262,13 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     return;
                 } else if ("-a".equals(arg)) {
                     flags |= BatteryStats.DUMP_VERBOSE;
-                    monotonicClockStartTime =
-                        mMonotonicClock.monotonicTime() - mContext.getResources().getInteger(
+                    long durationLimit = mContext.getResources().getInteger(
                             com.android.internal.R.integer.config_batteryHistoryDumpWindowSize);
-                    if (monotonicClockStartTime < 0) {
-                        monotonicClockStartTime = 0;
+                    if (durationLimit > 0) {
+                        monotonicClockStartTime = mMonotonicClock.monotonicTime() - durationLimit;
+                        if (monotonicClockStartTime < 0) {
+                            monotonicClockStartTime = 0;
+                        }
                     }
                 } else if ("-v".equals(arg)) {
                     flags |= BatteryStats.DUMP_VERBOSE;
@@ -3376,7 +3390,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                                 checkinStats.readSummaryFromParcel(in);
                                 in.recycle();
                                 checkinStats.dumpCheckin(mContext, pw, apps, flags,
-                                        historyStart, mDumpHelper);
+                                        historyStart, mDumpHelper, monotonicClockStartTime);
                                 mStats.mCheckinFile.delete();
                                 return;
                             }
@@ -3389,7 +3403,8 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             }
             if (DBG) Slog.d(TAG, "begin dumpCheckin from UID " + Binder.getCallingUid());
             awaitCompletion();
-            mStats.dumpCheckin(mContext, pw, apps, flags, historyStart, mDumpHelper);
+            mStats.dumpCheckin(mContext, pw, apps, flags, historyStart, mDumpHelper,
+                    monotonicClockStartTime);
             if (writeData) {
                 mStats.writeAsyncLocked();
             }

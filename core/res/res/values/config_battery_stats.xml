@@ -60,4 +60,9 @@
     It only affects the `dumpsys batterystats -a` command -->
     <integer name="config_batteryHistoryDumpWindowSize">86400000</integer>
 
+    <!-- Time span of battery history dump, in milliseconds, default value is 0 milliseconds.
+    It only affects the `dumpsys batterystats -c` command, The checkin Format -->
+    <integer name="config_batteryHistoryDumpCheckinWindowSize">0</integer>
+
+
 </resources>
