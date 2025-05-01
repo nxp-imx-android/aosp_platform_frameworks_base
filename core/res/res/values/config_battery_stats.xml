@@ -24,6 +24,12 @@
 
     <!-- Whether to reset Battery Stats on unplug when the battery level is high. -->
     <bool name="config_batteryStatsResetOnUnplugHighBatteryLevel">true</bool>
+
+    <!-- Battery level (as percent of battery) to consider as "high enough" to trigger
+    a battery session reset.
+    Only has an effect if config_batteryStatsResetOnUnplugHighBatteryLevel is true  -->
+    <integer name="config_batteryStatsHighBatteryLevelAfterCharge">79</integer>
+
     <!-- Whether to reset Battery Stats on unplug if the battery was significantly charged -->
     <bool name="config_batteryStatsResetOnUnplugAfterSignificantCharge">true</bool>
 

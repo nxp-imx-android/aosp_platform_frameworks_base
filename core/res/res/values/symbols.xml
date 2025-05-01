@@ -5457,6 +5457,7 @@
   <java-symbol type="string" name="screen_not_shared_sensitive_content"/>
 
   <java-symbol type="bool" name="config_batteryStatsResetOnUnplugHighBatteryLevel" />
+  <java-symbol type="integer" name="config_batteryStatsHighBatteryLevelAfterCharge" />
   <java-symbol type="bool" name="config_batteryStatsResetOnUnplugAfterSignificantCharge" />
   <java-symbol type="string" name="config_powerStatsThrottlePeriods" />
   <java-symbol type="integer" name="config_powerStatsAggregationPeriod" />
