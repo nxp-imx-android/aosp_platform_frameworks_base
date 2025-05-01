@@ -30,6 +30,7 @@ import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
+import kotlinx.coroutines.CoroutineScope
 import org.mockito.kotlin.mock
 
 val Kosmos.quickSettingsContainerViewModelFactory by
@@ -38,6 +39,7 @@ val Kosmos.quickSettingsContainerViewModelFactory by
             override fun create(
                 supportsBrightnessMirroring: Boolean,
                 expansion: Float?,
+                volumeSliderCoroutineScope: CoroutineScope?,
             ): QuickSettingsContainerViewModel {
                 return QuickSettingsContainerViewModel(
                     shadeContext = applicationContext,
@@ -47,6 +49,7 @@ val Kosmos.quickSettingsContainerViewModelFactory by
                     tileGridViewModelFactory = tileGridViewModelFactory,
                     supportsBrightnessMirroring = supportsBrightnessMirroring,
                     expansion = expansion,
+                    volumeSliderCoroutineScope = volumeSliderCoroutineScope,
                     editModeViewModel = editModeViewModel,
                     detailsViewModel = detailsViewModel,
                     toolbarViewModelFactory = toolbarViewModelFactory,
