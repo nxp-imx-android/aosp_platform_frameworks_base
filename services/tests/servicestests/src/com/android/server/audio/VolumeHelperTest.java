@@ -179,7 +179,7 @@ public class VolumeHelperTest {
         }
 
         @Override
-        public int getDeviceForStream(int stream) {
+        public int getDeviceForStream(int stream, boolean selectAbsoluteDevices) {
             if (mStreamDevice.indexOfKey(stream) < 0) {
                 return DEVICE_OUT_SPEAKER;
             }
@@ -187,7 +187,8 @@ public class VolumeHelperTest {
         }
 
         @Override
-        public AudioDeviceAttributes getDeviceAttributesForStream(int stream) {
+        public AudioDeviceAttributes getDeviceAttributesForStream(int stream,
+                boolean selectAbsoluteDevices) {
             if (mStreamDevice.indexOfKey(stream) < 0) {
                 return new AudioDeviceAttributes(DEVICE_OUT_SPEAKER, "speaker");
             }

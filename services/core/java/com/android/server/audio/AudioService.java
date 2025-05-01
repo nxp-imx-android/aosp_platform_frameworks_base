@@ -67,6 +67,7 @@ import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
 import static android.provider.Settings.Secure.VOLUME_HUSH_VIBRATE;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
+import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioserverPermissions;
@@ -4014,6 +4015,11 @@ public class AudioService extends IAudioService.Stub
         return true;
     }
 
+    private static boolean flagsContainsAbsoluteDevices(int flags) {
+        return (flags & (AudioManager.FLAG_BLUETOOTH_ABS_VOLUME
+                | AudioManager.FLAG_ABSOLUTE_VOLUME)) != 0;
+    }
+
     /** Retain API for unsupported app usage */
     public void adjustStreamVolume(int streamType, int direction, int flags,
             String callingPackage) {
@@ -4103,7 +4109,8 @@ public class AudioService extends IAudioService.Stub
 
         VolumeStreamState streamState = getVssForStreamOrDefault(streamTypeAlias);
 
-        final AudioDeviceAttributes deviceAttr = getDeviceAttributesForStream(streamTypeAlias);
+        final AudioDeviceAttributes deviceAttr = getDeviceAttributesForStream(streamTypeAlias,
+                flagsContainsAbsoluteDevices(flags));
         final int deviceType = deviceAttr.getInternalType();
 
         int aliasIndex = streamState.getIndex(deviceType);
@@ -4457,7 +4464,8 @@ public class AudioService extends IAudioService.Stub
                     // Unmute all aliasted streams
                     muteAliasStreams(streamAlias, false);
                 }
-                final int device = getDeviceForStream(streamAlias);
+                final int device = getDeviceForStream(streamAlias,
+                        flagsContainsAbsoluteDevices(flags));
                 final int index = streamState.getIndex(device);
                 sendVolumeUpdate(streamAlias, index, index, flags, device);
             }
@@ -4762,7 +4770,7 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
-        final int currDev = getDeviceForStream(streamType);
+        final int currDev = getDeviceForStream(streamType, /*selectAbsoluteDevices=*/true);
 
         AudioService.sVolumeLogger.enqueue(
                 new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada, callingPackage,
@@ -4961,7 +4969,7 @@ public class AudioService extends IAudioService.Stub
 
         if (ada == null) {
             // call was already logged in setDeviceVolume()
-            ada = getDeviceAttributesForStream(streamType);
+            ada = getDeviceAttributesForStream(streamType, flagsContainsAbsoluteDevices(flags));
             sVolumeLogger.enqueue(new VolumeEvent(VolumeEvent.VOL_SET_STREAM_VOL, streamType,
                     index/*val1*/, flags/*val2*/,
                     getStreamVolume(streamType, ada.getInternalType()) /*val3*/,
@@ -5227,6 +5235,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tandroid.media.audio.scoManagedByAudio:"
                 + scoManagedByAudio());
         pw.println("\tcom.android.media.audio.absVolumeIndexFix - EOL");
+        pw.println("\tcom.android.media.audio.absVolumePrioritizesAbsDevice:"
+                + absVolumePrioritizesAbsDevice());
         pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
         pw.println("\tcom.android.media.audio.replaceStreamBtSco:"
                 + replaceStreamBtSco());
@@ -5381,7 +5391,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         final AudioDeviceAttributes deviceAttr = (ada == null)
-                ? getDeviceAttributesForStream(streamType)
+                ? getDeviceAttributesForStream(streamType, flagsContainsAbsoluteDevices(flags))
                 : ada;
         final int deviceType = deviceAttr.getInternalType();
         int oldIndex;
@@ -8197,38 +8207,56 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
+    /** @see AudioService#getDeviceForStream(int, int) */
+    public int getDeviceForStream(int stream) {
+        return getDeviceForStream(stream, /*selectAbsoluteDevices=*/false);
+    }
+
     /**
      * Returns device associated with the stream volume.
      *
-     * Only public for mocking/spying, do not call outside of AudioService.
+     * <p>Only public for mocking/spying, do not call outside of AudioService.
      * Device volume aliasing means DEVICE_OUT_SPEAKER may be returned for
      * DEVICE_OUT_SPEAKER_SAFE.
+     *
+     * @param stream for which to check the device
+     * @param selectAbsoluteDevices used to prioritize absolute volume devices if available
      */
     @VisibleForTesting
-    public int getDeviceForStream(int stream) {
+    public int getDeviceForStream(int stream, boolean selectAbsoluteDevices) {
         stream = replaceBtScoStreamWithVoiceCall(stream, "getDeviceForStream");
-        return selectOneAudioDevice(getDeviceSetForStream(stream));
+        return selectOneAudioDevice(getDeviceSetForStream(stream), selectAbsoluteDevices);
+    }
+
+    private AudioDeviceAttributes getDeviceAttributesForStream(int stream) {
+        return getDeviceAttributesForStream(stream, /*selectAbsoluteDevices=*/false);
     }
 
     /**
      * Returns {@link AudioDeviceAttributes} associated with the stream volume.
      *
-     * Only public for mocking/spying, do not call outside of AudioService.
+     * <p>Only public for mocking/spying, do not call outside of AudioService.
      * Device volume aliasing means DEVICE_OUT_SPEAKER may be returned for
      * DEVICE_OUT_SPEAKER_SAFE.
+     *
+     * @param stream for which to check the device
+     * @param selectAbsoluteDevices used to prioritize absolute volume devices if available
      */
     @VisibleForTesting
-    public AudioDeviceAttributes getDeviceAttributesForStream(int stream) {
+    public AudioDeviceAttributes getDeviceAttributesForStream(int stream,
+            boolean selectAbsoluteDevices) {
         stream = replaceBtScoStreamWithVoiceCall(stream, "getDeviceForStream");
-        return selectOneAudioDeviceAttribute(getDeviceSetForStream(stream));
+        return selectOneAudioDeviceAttribute(getDeviceSetForStream(stream), selectAbsoluteDevices);
     }
+
 
     /*
      * Must match native apm_extract_one_audio_device() used in getDeviceForVolume()
      * or the wrong device volume may be adjusted.
      */
-    private static int selectOneAudioDevice(Set<AudioDeviceAttributes> deviceSet) {
-        return selectOneAudioDeviceAttribute(deviceSet).getInternalType();
+    private int selectOneAudioDevice(Set<AudioDeviceAttributes> deviceSet,
+            boolean selectAbsoluteDevices) {
+        return selectOneAudioDeviceAttribute(deviceSet, selectAbsoluteDevices).getInternalType();
     }
 
     /*
@@ -8236,22 +8264,37 @@ public class AudioService extends IAudioService.Stub
      * or the wrong device volume may be adjusted.
      */
     @NonNull
-    private static AudioDeviceAttributes selectOneAudioDeviceAttribute(
-            Set<AudioDeviceAttributes> deviceSet) {
+    private AudioDeviceAttributes selectOneAudioDeviceAttribute(
+            Set<AudioDeviceAttributes> deviceSet, boolean selectAbsoluteDevices) {
         if (deviceSet.isEmpty()) {
             return new AudioDeviceAttributes(AudioManager.DEVICE_NONE, /*address=*/"");
         } else if (deviceSet.size() == 1) {
             return deviceSet.iterator().next();
         } else {
             // Multiple device selection is either:
+            //  - absolute volume device + one other device: give priority to absolute volume
+            // device if absolute volume flag is set
             //  - dock + one other device: give priority to dock in this case.
             //  - speaker + one other device: give priority to speaker in this case.
             //  - one A2DP device + another device: happens with duplicated output. In this case
             // retain the device on the A2DP output as the other must not correspond to an active
             // selection if not the speaker.
             //  - HDMI-CEC system audio mode only output: give priority to available item in order.
-
             Optional<AudioDeviceAttributes> ada;
+            if (absVolumePrioritizesAbsDevice() && selectAbsoluteDevices) {
+                ada = deviceSet.stream().filter(
+                        device -> isA2dpAbsoluteVolumeDevice(device.getInternalType())
+                                || AudioSystem.isLeAudioDeviceType(
+                                device.getInternalType())).findFirst();
+                if (ada.isPresent()) {
+                    return ada.get();
+                }
+                ada = deviceSet.stream().filter(
+                        device -> isAbsoluteVolumeDevice(device.getInternalType())).findFirst();
+                if (ada.isPresent()) {
+                    return ada.get();
+                }
+            }
             if ((ada = deviceSet.stream().filter(device -> device.getInternalType()
                     == AudioSystem.DEVICE_OUT_DGTL_DOCK_HEADSET).findFirst()).isPresent()) {
                 return ada.get();
