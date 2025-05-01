@@ -3234,15 +3234,22 @@ class DesktopTasksController(
                 task = task,
             )
         }
-        val deactivationRunnable =
-            performDesktopExitCleanupIfNeeded(
-                taskId = task.taskId,
-                deskId = deskId,
-                displayId = task.displayId,
-                wct = wct,
-                forceToFullscreen = false,
-            )
-        deactivationRunnable?.invoke(transition)
+
+        // TODO(b/416014060): Check if task is really receiving a back gesture
+        if (
+            !(DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue)
+        ) {
+            val deactivationRunnable =
+                performDesktopExitCleanupIfNeeded(
+                    taskId = task.taskId,
+                    deskId = deskId,
+                    displayId = task.displayId,
+                    wct = wct,
+                    forceToFullscreen = false,
+                )
+            deactivationRunnable?.invoke(transition)
+        }
 
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()) {
             taskRepository.addClosingTask(
