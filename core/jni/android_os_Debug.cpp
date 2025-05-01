@@ -764,7 +764,7 @@ static jlong android_os_Debug_getDmabufMappedSizeKb(JNIEnv* env, jobject clazz) 
             continue;
         }
 
-        if (!ReadDmaBufMapRefs(pid, &dmabufs)) {
+        if (!ReadDmaBufMapRefs(pid, dmabufs)) {
             LOG(ERROR) << "Failed to read maps for pid " << pid;
         }
     }
