@@ -26,7 +26,12 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
-/** Handler to animate the transition from disconnecting a display. */
+/**
+ * Handler to animate the transition from disconnecting a display.
+ *
+ * TODO: b/391652399 Consider moving this out of desktop package as it becomes less
+ *   desktop-specific.
+ */
 class DisplayDisconnectTransitionHandler(val transitions: Transitions, shellInit: ShellInit) :
     Transitions.TransitionHandler {
 

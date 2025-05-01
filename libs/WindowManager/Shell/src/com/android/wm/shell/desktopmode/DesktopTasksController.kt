@@ -205,7 +205,6 @@ class DesktopTasksController(
     private val desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler,
     private val toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler,
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
-    private val displayDisconnectTransitionHandler: DisplayDisconnectTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val userRepositories: DesktopUserRepositories,
     desktopRepositoryInitializer: DesktopRepositoryInitializer,
@@ -734,8 +733,6 @@ class DesktopTasksController(
                 }
             }
         }
-        // Inform the transition handler here since this class will handle the request.
-        displayDisconnectTransitionHandler.addPendingTransition(transition)
         return wct
     }
 

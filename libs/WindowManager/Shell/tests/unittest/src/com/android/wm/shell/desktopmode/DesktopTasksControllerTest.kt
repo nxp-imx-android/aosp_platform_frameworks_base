@@ -237,7 +237,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock
     lateinit var toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler
     @Mock lateinit var dragToDesktopTransitionHandler: DragToDesktopTransitionHandler
-    @Mock lateinit var mDisplayDisconnectTransitionHandler: DisplayDisconnectTransitionHandler
     @Mock lateinit var mMockDesktopImmersiveController: DesktopImmersiveController
     @Mock lateinit var splitScreenController: SplitScreenController
     @Mock lateinit var recentsTransitionHandler: RecentsTransitionHandler
@@ -461,7 +460,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             dragAndDropTransitionHandler,
             toggleResizeDesktopTaskTransitionHandler,
             dragToDesktopTransitionHandler,
-            mDisplayDisconnectTransitionHandler,
             mMockDesktopImmersiveController,
             userRepositories,
             repositoryInitializer,
