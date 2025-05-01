@@ -511,6 +511,44 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
                 bounds.top, originalBounds.top);
     }
 
+    @Test
+    public void snapToMovementBoundsEdge_customDisplayLayout_boundsSnappedToLeft() {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.displayId = 2;
+        displayInfo.logicalWidth = 500;
+        displayInfo.logicalHeight = 500;
+        final DisplayLayout displayLayout = new DisplayLayout(displayInfo,
+                mContext.getResources(), true, true);
+        final Rect bounds = new Rect(100, 100, 200, 200);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds, displayLayout);
+
+        assertEquals("Bounds are snapped to left edge of movement bounds of custom display",
+                bounds.left, mPipDisplayLayoutState.getInsetBounds(displayLayout).left);
+        assertEquals("Bounds top edge is unchanged",
+                bounds.top, originalBounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_customDisplayLayout_boundsSnappedToRight() {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.displayId = 2;
+        displayInfo.logicalWidth = 500;
+        displayInfo.logicalHeight = 500;
+        final DisplayLayout displayLayout = new DisplayLayout(displayInfo,
+                mContext.getResources(), true, true);
+        final Rect bounds = new Rect(300, 100, 400, 200);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds, displayLayout);
+
+        assertEquals("Bounds are snapped to right edge of movement bounds of custom display",
+                bounds.right, mPipDisplayLayoutState.getInsetBounds(displayLayout).right);
+        assertEquals("Bounds top edge is unchanged",
+                bounds.top, originalBounds.top);
+    }
+
     private void overrideDefaultAspectRatio(float aspectRatio) {
         final TestableResources res = mContext.getOrCreateTestableResources();
         res.addOverride(

@@ -225,6 +225,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         extra.putParcelable(PIP_START_TX, SurfaceControl.Transaction())
         extra.putParcelable(PIP_DESTINATION_BOUNDS, destinationBounds)
         pipDisplayTransferHandler.mWaitingForDisplayTransfer = true
+        pipDisplayTransferHandler.mTargetDisplayId = TARGET_DISPLAY_ID
 
         pipDisplayTransferHandler.onPipTransitionStateChanged(
             UNDEFINED,
@@ -232,6 +233,10 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
+        verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
+            eq(destinationBounds),
+            eq(displayLayouts.get(TARGET_DISPLAY_ID))
+        )
         verify(mockPipTransitionState).state = eq(EXITING_PIP)
         verify(mockPipTransitionState).state = eq(EXITED_PIP)
         verify(mockPipResizeAnimator).start()
