@@ -1765,7 +1765,7 @@
     <string name="keyguard_indication_after_adaptive_auth_lock">Device locked\nFailed authentication</string>
 
     <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
-    <string name="keyguard_indication_after_watch_disconnected">Locked out by your watch</string>
+    <string name="keyguard_indication_after_watch_disconnected">Locked by your watch</string>
 
     <!-- Accessibility string for current zen mode and selected exit condition. A template that simply concatenates existing mode string and the current condition description. [CHAR LIMIT=20] -->
     <string name="zen_mode_and_condition"><xliff:g id="zen_mode" example="Priority interruptions only">%1$s</xliff:g>. <xliff:g id="exit_condition" example="For one hour">%2$s</xliff:g></string>
