@@ -74,7 +74,7 @@ import com.android.internal.util.CollectionUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.os.AtomsProto;
-import com.android.os.notification.NotificationBundlePreferences;
+import com.android.os.notification.NotificationAdjustmentPreferences;
 import com.android.os.notification.NotificationExtensionAtoms;
 import com.android.os.notification.NotificationProtoEnums;
 import com.android.server.LocalServices;
@@ -979,7 +979,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     @SuppressWarnings("GuardedBy")
     @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
-    public void testPullBundlePreferencesStats_fillsOutStatsEvent()
+    public void testPullAdjustmentPreferencesStats_fillsOutStatsEvent()
             throws Exception {
         // Create the current user and enable the package
         int userId = ActivityManager.getCurrentUser();
@@ -1000,9 +1000,9 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         // When pullBundlePreferencesStats is run with the given preferences
         ArrayList<StatsEvent> events = new ArrayList<>();
-        mAssistants.pullBundlePreferencesStats(events);
+        mAssistants.pullAdjustmentPreferencesStats(events);
 
-        // The StatsEvent is filled out with the expected NotificationBundlePreferences values.
+        // The StatsEvent is filled out with the expected NotificationAdjustmentPreferences values.
         assertThat(events.size()).isEqualTo(1);
         AtomsProto.Atom atom = StatsEventTestUtils.convertToAtom(events.get(0));
 
@@ -1016,9 +1016,9 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         CodedInputStream codedis = CodedInputStream.newInstance(inputStream);
         atom = AtomsProto.Atom.parseFrom(codedis, mRegistry);
-        assertTrue(atom.hasExtension(NotificationExtensionAtoms.notificationBundlePreferences));
-        NotificationBundlePreferences p =
-                atom.getExtension(NotificationExtensionAtoms.notificationBundlePreferences);
+        assertTrue(atom.hasExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences));
+        NotificationAdjustmentPreferences p =
+                atom.getExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences);
         assertThat(p.getBundlesAllowed()).isTrue();
         assertThat(p.getAllowedBundleTypes(0).getNumber())
                 .isEqualTo(NotificationProtoEnums.TYPE_NEWS);
@@ -1034,9 +1034,9 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 true);
 
         ArrayList<StatsEvent> eventsDisabled = new ArrayList<>();
-        mAssistants.pullBundlePreferencesStats(eventsDisabled);
+        mAssistants.pullAdjustmentPreferencesStats(eventsDisabled);
 
-        // The StatsEvent is filled out with the expected NotificationBundlePreferences values.
+        // The StatsEvent is filled out with the expected NotificationAdjustmentPreferences values.
         assertThat(eventsDisabled.size()).isEqualTo(1);
         AtomsProto.Atom atomDisabled = StatsEventTestUtils.convertToAtom(eventsDisabled.get(0));
 
@@ -1051,10 +1051,10 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         codedis = CodedInputStream.newInstance(inputStream);
         atomDisabled = AtomsProto.Atom.parseFrom(codedis, mRegistry);
         assertTrue(atomDisabled.hasExtension(NotificationExtensionAtoms
-                .notificationBundlePreferences));
+                .notificationAdjustmentPreferences));
 
-        NotificationBundlePreferences p2 =
-                atomDisabled.getExtension(NotificationExtensionAtoms.notificationBundlePreferences);
+        NotificationAdjustmentPreferences p2 = atomDisabled.getExtension(
+                NotificationExtensionAtoms.notificationAdjustmentPreferences);
         assertThat(p2.getBundlesAllowed()).isFalse();
         assertThat(p2.getAllowedBundleTypes(0).getNumber())
                 .isEqualTo(NotificationProtoEnums.TYPE_PROMOTION);

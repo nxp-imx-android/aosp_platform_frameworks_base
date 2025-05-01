@@ -28,6 +28,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.Person;
 import android.os.Bundle;
+import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationStats;
 import android.util.Log;
@@ -36,6 +37,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.os.notification.NotificationProtoEnums;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -376,6 +378,17 @@ interface NotificationRecordLogger {
         }
         @Override public int getId() {
             return mId;
+        }
+
+        /**
+         * Maps an adjustment key string to its corresponding logging enum.
+         */
+        public static int adjustmentKeyEnum(String adjustmentKey) {
+            return switch (adjustmentKey) {
+                case Adjustment.KEY_TYPE -> NotificationProtoEnums.KEY_TYPE;
+                case Adjustment.KEY_SUMMARIZATION -> NotificationProtoEnums.KEY_SUMMARIZATION;
+                default -> NotificationProtoEnums.KEY_UNKNOWN;
+            };
         }
     }
 
