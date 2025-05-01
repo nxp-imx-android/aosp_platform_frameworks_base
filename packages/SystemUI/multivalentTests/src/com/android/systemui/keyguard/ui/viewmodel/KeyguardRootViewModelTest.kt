@@ -327,6 +327,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
             val topClippingBounds by collectLastValue(underTest.topClippingBounds)
             assertThat(topClippingBounds).isNull()
 
+            shadeTestUtil.setShadeExpansion(0.5f)
             keyguardRepository.topClippingBounds.value = 50
             assertThat(topClippingBounds).isEqualTo(50)
 
@@ -341,9 +342,23 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
             )
 
             kosmos.setSceneTransition(Idle(Scenes.Gone))
-            // Make sure the value hasn't changed since we're GONE
+            shadeTestUtil.setShadeExpansion(0f)
             keyguardRepository.topClippingBounds.value = 5
-            assertThat(topClippingBounds).isEqualTo(1000)
+            assertThat(topClippingBounds).isEqualTo(null)
+        }
+
+    @Test
+    fun topClippingBoundsEmitsNullWhenNotExpanded() =
+        testScope.runTest {
+            val topClippingBounds by collectLastValue(underTest.topClippingBounds)
+            assertThat(topClippingBounds).isNull()
+
+            shadeTestUtil.setShadeExpansion(0f)
+            keyguardRepository.topClippingBounds.value = 50
+            assertThat(topClippingBounds).isNull()
+
+            keyguardRepository.topClippingBounds.value = 1000
+            assertThat(topClippingBounds).isNull()
         }
 
     @Test
