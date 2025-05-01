@@ -920,6 +920,8 @@ public class LocalMediaManager implements BluetoothCallback {
                             }
                             unregisterCallback(mDeviceCallback);
                             stopScan();
+                            mInfoMediaManager.onConnectionAttemptCompletedForSuggestion(
+                                    mSuggestedDeviceState);
                         }
                     };
         }
@@ -929,6 +931,7 @@ public class LocalMediaManager implements BluetoothCallback {
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
                     mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
+            mInfoMediaManager.onConnectionAttemptedForSuggestion(mSuggestedDeviceState);
         }
     }
 }
