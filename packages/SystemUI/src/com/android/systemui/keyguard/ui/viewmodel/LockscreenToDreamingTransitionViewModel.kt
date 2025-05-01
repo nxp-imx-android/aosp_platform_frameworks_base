@@ -22,11 +22,14 @@ import com.android.systemui.keyguard.domain.interactor.FromLockscreenTransitionI
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
+import com.android.systemui.keyguard.shared.model.ScrimAlpha
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
+import com.android.systemui.statusbar.phone.ScrimState
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Breaks down LOCKSCREEN->DREAMING transition into discrete steps for corresponding views to
@@ -75,6 +78,23 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTra
             onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
             onCancel = { 0f },
         )
+
+    // Fade out behind scrim as it's on top of the dream.
+    val scrimAlpha: Flow<ScrimAlpha> =
+        transitionAnimation
+            .sharedFlowWithShade(
+                duration = 250.milliseconds,
+                onStep = { step, isShadeExpanded ->
+                    (1 - step) *
+                        (if (isShadeExpanded) ScrimState.SHADE_LOCKED.behindAlpha
+                        else ScrimState.KEYGUARD.behindAlpha)
+                },
+                onFinish = { 0f },
+                // Shade is closed by ACTION_CLOSE_SYSTEM_DIALOGS when dream starts, so we'll be
+                // returning to the keyguard with no shade open.
+                onCancel = { ScrimState.KEYGUARD.behindAlpha },
+            )
+            .map { ScrimAlpha(behindAlpha = it) }
 
     companion object {
         @JvmField val DREAMING_ANIMATION_DURATION_MS = TO_DREAMING_DURATION.inWholeMilliseconds
