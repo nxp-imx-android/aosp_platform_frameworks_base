@@ -23,8 +23,6 @@ import static android.media.codec.Flags.FLAG_SUBSESSION_METRICS;
 import static android.media.tv.flags.Flags.applyPictureProfiles;
 import static android.media.tv.flags.Flags.mediaQualityFw;
 
-import static com.android.media.codec.flags.Flags.FLAG_LARGE_AUDIO_FRAME;
-
 import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -3212,7 +3210,6 @@ final public class MediaCodec {
      * @throws CryptoException if a crypto object has been specified in
      *         {@link #configure}
      */
-    @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
     public final void queueInputBuffers(
             int index,
             @NonNull ArrayDeque<BufferInfo> bufferInfos) {
@@ -3541,7 +3538,6 @@ final public class MediaCodec {
      *              An error code associated with the exception helps identify the
      *              reason for the failure.
      */
-    @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
     public final void queueSecureInputBuffers(
             int index,
             @NonNull ArrayDeque<BufferInfo> bufferInfos,
@@ -3843,7 +3839,6 @@ final public class MediaCodec {
          * @return this object
          * @throws IllegalStateException if a buffer is already set
          */
-        @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
         public @NonNull QueueRequest setMultiFrameLinearBlock(
                 @NonNull LinearBlock block,
                 @NonNull ArrayDeque<BufferInfo> infos) {
@@ -3912,7 +3907,6 @@ final public class MediaCodec {
          * @throws IllegalArgumentException upon if bufferInfos is empty, contains null, or if the
          *                     access units are not contiguous.
          */
-        @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
         public @NonNull QueueRequest setMultiFrameEncryptedLinearBlock(
                 @NonNull LinearBlock block,
                 @NonNull ArrayDeque<MediaCodec.BufferInfo> bufferInfos,
@@ -4977,7 +4971,6 @@ final public class MediaCodec {
          * describes the access units present in the OutputFrame. Access units are laid
          * out contiguously without gaps and in order.
          */
-        @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
         public @NonNull ArrayDeque<BufferInfo> getBufferInfos() {
             if (mBufferInfos.isEmpty()) {
                 // single BufferInfo could be present.
@@ -5923,7 +5916,6 @@ final public class MediaCodec {
          *              Access units present in the output buffer are laid out contiguously
          *              without gaps and in order.
          */
-        @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
         public void onOutputBuffersAvailable(
                 @NonNull MediaCodec codec, int index, @NonNull ArrayDeque<BufferInfo> infos) {
             /*
