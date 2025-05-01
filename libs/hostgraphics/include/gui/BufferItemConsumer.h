@@ -33,33 +33,22 @@ public:
     static std::tuple<sp<BufferItemConsumer>, sp<Surface>> create(
             uint64_t consumerUsage, int bufferCount = DEFAULT_MAX_BUFFERS,
             bool controlledByApp = false, bool isConsumerSurfaceFlinger = false) {
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
         sp<BufferItemConsumer> bufferItemConsumer =
                 sp<BufferItemConsumer>::make(consumerUsage, bufferCount, controlledByApp,
                                              isConsumerSurfaceFlinger);
         return {bufferItemConsumer, bufferItemConsumer->getSurface()};
-#else
-        sp<IGraphicBufferProducer> igbp;
-        sp<IGraphicBufferConsumer> igbc;
-        BufferQueue::createBufferQueue(&igbp, &igbc, isConsumerSurfaceFlinger);
-        sp<BufferItemConsumer> bufferItemConsumer =
-                sp<BufferItemConsumer>::make(igbc, consumerUsage, bufferCount, controlledByApp);
-        return {bufferItemConsumer, sp<Surface>::make(igbp, controlledByApp)};
-#endif
     }
 
     BufferItemConsumer(const sp<IGraphicBufferConsumer>& consumer, uint64_t consumerUsage,
                        int bufferCount = -1, bool controlledByApp = false)
           : mConsumer(consumer) {}
 
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
     BufferItemConsumer(uint64_t consumerUsage, int bufferCount = -1,
                        bool controlledByApp = false, bool isConsumerSurfaceFlinger = false) {
         sp<IGraphicBufferProducer> producer;
         BufferQueue::createBufferQueue(&producer, &mConsumer);
         mSurface = sp<Surface>::make(producer, controlledByApp);
     }
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 
     status_t setConsumerIsProtected(bool isProtected) {
         return OK;
@@ -111,20 +100,16 @@ public:
         return OK;
     }
 
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
-// Returns a Surface that can be used as the producer for this consumer.
+    // Returns a Surface that can be used as the producer for this consumer.
     sp<Surface> getSurface() const {
         return mSurface;
     }
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 
 private:
     sp<IGraphicBufferConsumer> mConsumer;
-#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
-        // This Surface wraps the IGraphicBufferConsumer created for this
+    // This Surface wraps the IGraphicBufferConsumer created for this
     // ConsumerBase.
     sp<Surface> mSurface;
-#endif // COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_CONSUMER_BASE_OWNS_BQ)
 };
 
 } // namespace android
