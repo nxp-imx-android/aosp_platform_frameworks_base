@@ -1122,8 +1122,7 @@ public class BatteryStatsImpl extends BatteryStats {
     private boolean mShuttingDown;
 
     private final HistoryEventTracker mActiveEvents = new HistoryEventTracker();
-    private final BatteryHistoryStepDetailsProvider mStepDetailsProvider =
-            new BatteryHistoryStepDetailsProvider(this);
+    private final BatteryHistoryStepDetailsProvider mStepDetailsProvider;
 
     private boolean mHaveBatteryLevel = false;
     private boolean mBatteryPluggedIn;
@@ -10769,6 +10768,8 @@ public class BatteryStatsImpl extends BatteryStats {
         mPowerStatsUidResolver = powerStatsUidResolver;
         mFrameworkStatsLogger = frameworkStatsLogger;
 
+        mStepDetailsProvider = new BatteryHistoryStepDetailsProvider(this, clock);
+
         initPowerProfile();
 
         if (systemDir != null) {
@@ -10852,10 +10853,10 @@ public class BatteryStatsImpl extends BatteryStats {
         mFrameworkStatsLogger.deviceIdleModeStateChanged(mDeviceIdleMode);
     }
 
-    private void recordPowerStats(PowerStats stats) {
+    private void recordPowerStats(PowerStats stats, long elapsedRealtimeMs, long uptimeMs) {
         if (stats.durationMs > 0) {
             synchronized (this) {
-                mHistory.recordPowerStats(mClock.elapsedRealtime(), mClock.uptimeMillis(), stats);
+                mHistory.recordPowerStats(elapsedRealtimeMs, uptimeMs, stats);
             }
         }
     }

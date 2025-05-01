@@ -47,6 +47,7 @@ public class BatteryExternalStatsWorkerTest {
     private BatteryExternalStatsWorker mBatteryExternalStatsWorker;
     private MockPowerStatsInternal mPowerStatsInternal;
     private Handler mHandler;
+    private MockClock mClock = new MockClock();
 
     @Before
     public void setUp() {
@@ -61,7 +62,8 @@ public class BatteryExternalStatsWorkerTest {
                 new PowerStatsUidResolver());
         mPowerStatsInternal = new MockPowerStatsInternal();
         mBatteryExternalStatsWorker =
-                new BatteryExternalStatsWorker(new TestInjector(context), batteryStats, mHandler);
+                new BatteryExternalStatsWorker(new TestInjector(context), batteryStats, mHandler,
+                        mClock);
     }
 
     @Test

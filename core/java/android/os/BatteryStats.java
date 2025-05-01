@@ -6711,6 +6711,8 @@ public abstract class BatteryStats {
         // This constant MUST be incremented whenever the history dump format changes.
         private static final int FORMAT_VERSION = 2;
 
+        private static final boolean DEBUG_TIMELINE = false;
+
         private final boolean mPerformanceBaseline;
         private final HistoryLogTimeFormatter mHistoryLogTimeFormatter;
         private final SimpleDateFormat mHistoryItemTimestampFormat;
@@ -6811,6 +6813,12 @@ public abstract class BatteryStats {
                     } else {
                         mHistoryLogTimeFormatter.append(item, rec.currentTime);
                         item.append(' ');
+                        if (DEBUG_TIMELINE) {
+                            if (rec.time < lastTime) {
+                                item.append("[Earlier timestamp by ")
+                                        .append(rec.time - lastTime).append("] ");
+                            }
+                        }
                     }
                 }
             } else {
@@ -6821,8 +6829,8 @@ public abstract class BatteryStats {
                 } else {
                     item.append(rec.time - lastTime);
                 }
-                lastTime = rec.time;
             }
+            lastTime = rec.time;
             if (rec.cmd == HistoryItem.CMD_START) {
                 if (checkin) {
                     item.append(":");

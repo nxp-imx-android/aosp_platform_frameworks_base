@@ -28,7 +28,6 @@ import android.os.Handler;
 import android.os.OutcomeReceiver;
 import android.os.Parcelable;
 import android.os.SynchronousResultReceiver;
-import android.os.SystemClock;
 import android.os.connectivity.WifiActivityEnergyInfo;
 import android.telephony.ModemActivityInfo;
 import android.telephony.TelephonyManager;
@@ -36,6 +35,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.Clock;
 import com.android.server.LocalServices;
 
 import java.util.concurrent.CompletableFuture;
@@ -80,6 +80,7 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
     private static final int SYNC_USER_REMOVAL = 5;
 
     private final Handler mHandler;
+    private final Clock mClock;
 
     @GuardedBy("mStats")
     private final BatteryStatsImpl mStats;
@@ -122,7 +123,7 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
 
     /**
      * Timestamp at which all external stats were last collected in
-     * {@link SystemClock#elapsedRealtime()} time base.
+     * {@link Clock#elapsedRealtime()} time base.
      */
     @GuardedBy("this")
     private long mLastCollectionTimeStamp;
@@ -146,15 +147,18 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
         }
     }
 
-    public BatteryExternalStatsWorker(Context context, BatteryStatsImpl stats, Handler handler) {
-        this(new Injector(context), stats, handler);
+    public BatteryExternalStatsWorker(Context context, BatteryStatsImpl stats, Handler handler,
+            Clock clock) {
+        this(new Injector(context), stats, handler, clock);
     }
 
     @VisibleForTesting
-    BatteryExternalStatsWorker(Injector injector, BatteryStatsImpl stats, Handler handler) {
+    BatteryExternalStatsWorker(Injector injector, BatteryStatsImpl stats, Handler handler,
+            Clock clock) {
         mInjector = injector;
         mStats = stats;
         mHandler = handler;
+        mClock = clock;
     }
 
     public void systemServicesReady() {
@@ -301,7 +305,11 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
         if (!mHandler.hasMessages(SYNC_UPDATE)) {
             mUpdateFlags = flags;
             mCurrentReason = reason;
-            mHandler.postDelayed(mSyncTask, SYNC_UPDATE, 0);
+            synchronized (mClock) {
+                long elapsedRealtimeMs = mClock.elapsedRealtime();
+                long uptimeMs = mClock.uptimeMillis();
+                mHandler.postDelayed(() -> sync(elapsedRealtimeMs, uptimeMs), SYNC_UPDATE, 0);
+            }
         }
         mUpdateFlags |= flags;
     }
@@ -312,81 +320,78 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
         }
     }
 
-    private final Runnable mSyncTask = new Runnable() {
-        @Override
-        public void run() {
-            // Capture a snapshot of the state we are meant to process.
-            final int updateFlags;
-            final String reason;
-            final boolean onBattery;
-            final boolean onBatteryScreenOff;
-            final int screenState;
-            final int[] displayScreenStates;
-            final boolean useLatestStates;
-            synchronized (BatteryExternalStatsWorker.this) {
-                updateFlags = mUpdateFlags;
-                reason = mCurrentReason;
-                onBattery = mOnBattery;
-                onBatteryScreenOff = mOnBatteryScreenOff;
-                screenState = mScreenState;
-                displayScreenStates = mPerDisplayScreenStates;
-                useLatestStates = mUseLatestStates;
-                mUpdateFlags = 0;
-                mCurrentReason = null;
-                mUseLatestStates = true;
-                if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
-                    cancelSyncDueToBatteryLevelChangeLocked();
-                }
-                if ((updateFlags & UPDATE_CPU) != 0) {
-                    cancelCpuSyncDueToWakelockChange();
-                }
-                if ((updateFlags & UPDATE_ON_PROC_STATE_CHANGE) == UPDATE_ON_PROC_STATE_CHANGE) {
-                    cancelSyncDueToProcessStateChange();
-                }
+    private void sync(long elapsedRealtimeMs, long uptimeMs) {
+        // Capture a snapshot of the state we are meant to process.
+        final int updateFlags;
+        final String reason;
+        final boolean onBattery;
+        final boolean onBatteryScreenOff;
+        final int screenState;
+        final int[] displayScreenStates;
+        final boolean useLatestStates;
+        synchronized (BatteryExternalStatsWorker.this) {
+            updateFlags = mUpdateFlags;
+            reason = mCurrentReason;
+            onBattery = mOnBattery;
+            onBatteryScreenOff = mOnBatteryScreenOff;
+            screenState = mScreenState;
+            displayScreenStates = mPerDisplayScreenStates;
+            useLatestStates = mUseLatestStates;
+            mUpdateFlags = 0;
+            mCurrentReason = null;
+            mUseLatestStates = true;
+            if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
+                cancelSyncDueToBatteryLevelChangeLocked();
             }
+            if ((updateFlags & UPDATE_CPU) != 0) {
+                cancelCpuSyncDueToWakelockChange();
+            }
+            if ((updateFlags & UPDATE_ON_PROC_STATE_CHANGE) == UPDATE_ON_PROC_STATE_CHANGE) {
+                cancelSyncDueToProcessStateChange();
+            }
+        }
 
-            try {
-                synchronized (mWorkerLock) {
+        try {
+            synchronized (mWorkerLock) {
+                if (DEBUG) {
+                    Slog.d(TAG, "begin updateExternalStatsSync reason=" + reason);
+                }
+                try {
+                    updateExternalStatsLocked(reason, updateFlags, onBattery,
+                            onBatteryScreenOff, screenState, displayScreenStates,
+                            useLatestStates, elapsedRealtimeMs, uptimeMs);
+                } finally {
+                    if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
+                        synchronized (mStats) {
+                            // This helps mStats deal with ignoring data from prior to resets.
+                            mStats.informThatAllExternalStatsAreFlushed();
+                        }
+                    }
                     if (DEBUG) {
-                        Slog.d(TAG, "begin updateExternalStatsSync reason=" + reason);
-                    }
-                    try {
-                        updateExternalStatsLocked(reason, updateFlags, onBattery,
-                                onBatteryScreenOff, screenState, displayScreenStates,
-                                useLatestStates);
-                    } finally {
-                        if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
-                            synchronized (mStats) {
-                                // This helps mStats deal with ignoring data from prior to resets.
-                                mStats.informThatAllExternalStatsAreFlushed();
-                            }
-                        }
-                        if (DEBUG) {
-                            Slog.d(TAG, "end updateExternalStatsSync");
-                        }
+                        Slog.d(TAG, "end updateExternalStatsSync");
                     }
                 }
-
-                if ((updateFlags & UPDATE_CPU) != 0) {
-                    mStats.updateCpuTimesForAllUids();
-                }
-
-                // Clean up any UIDs if necessary.
-                synchronized (mStats) {
-                    mStats.clearPendingRemovedUidsLocked();
-                }
-            } catch (Exception e) {
-                Slog.wtf(TAG, "Error updating external stats: ", e);
             }
 
-            if ((updateFlags & RESET) != 0) {
-                synchronized (BatteryExternalStatsWorker.this) {
-                    mLastCollectionTimeStamp = 0;
-                }
-            } else if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
-                synchronized (BatteryExternalStatsWorker.this) {
-                    mLastCollectionTimeStamp = SystemClock.elapsedRealtime();
-                }
+            if ((updateFlags & UPDATE_CPU) != 0) {
+                mStats.updateCpuTimesForAllUids();
+            }
+
+            // Clean up any UIDs if necessary.
+            synchronized (mStats) {
+                mStats.clearPendingRemovedUidsLocked();
+            }
+        } catch (Exception e) {
+            Slog.wtf(TAG, "Error updating external stats: ", e);
+        }
+
+        if ((updateFlags & RESET) != 0) {
+            synchronized (BatteryExternalStatsWorker.this) {
+                mLastCollectionTimeStamp = 0;
+            }
+        } else if ((updateFlags & UPDATE_ALL) == UPDATE_ALL) {
+            synchronized (BatteryExternalStatsWorker.this) {
+                mLastCollectionTimeStamp = elapsedRealtimeMs;
             }
         }
     };
@@ -403,7 +408,7 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
     @GuardedBy("mWorkerLock")
     private void updateExternalStatsLocked(final String reason, int updateFlags, boolean onBattery,
             boolean onBatteryScreenOff, int screenState, int[] displayScreenStates,
-            boolean useLatestStates) {
+            boolean useLatestStates, long elapsedRealtime, long uptime) {
         // We will request data from external processes asynchronously, and wait on a timeout.
         SynchronousResultReceiver wifiReceiver = null;
         SynchronousResultReceiver bluetoothReceiver = null;
@@ -528,8 +533,6 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
             Slog.w(TAG, "exception reading modem stats: " + e.getCause());
         }
 
-        final long elapsedRealtime = SystemClock.elapsedRealtime();
-        final long uptime = SystemClock.uptimeMillis();
         final long elapsedRealtimeUs = elapsedRealtime * 1000;
         final long uptimeUs = uptime * 1000;
 

@@ -45,14 +45,14 @@ public class WakelockPowerStatsCollectorTest {
 
     private final MockClock mClock = mStatsRule.getMockClock();
     private PowerStats mPowerStats;
-    private WakelockPowerStatsLayout mStatsLayout = new WakelockPowerStatsLayout();
+    private final WakelockPowerStatsLayout mStatsLayout = new WakelockPowerStatsLayout();
 
     @Before
     public void setup() throws Throwable {
         mBatteryStats = mStatsRule.getBatteryStats();
         mBatteryStats.setPowerStatsCollectorEnabled(POWER_COMPONENT_WAKELOCK, true);
         mBatteryStats.getPowerStatsCollector(POWER_COMPONENT_WAKELOCK)
-                .addConsumer(ps -> mPowerStats = ps);
+                .addConsumer((stats, elapsedRealtime, uptime) -> mPowerStats = stats);
         mBatteryStats.onSystemReady(mock(Context.class));
         // onSystemReady schedules the initial power stats collection. Wait for it to finish
         mStatsRule.waitForBackgroundThread();
@@ -79,7 +79,7 @@ public class WakelockPowerStatsCollectorTest {
         }
 
         mStatsRule.advanceTime(1000);
-        powerStatsCollector.collectAndDeliverStats();
+        powerStatsCollector.collectAndDeliverStats(mClock.realtime, mClock.uptime);
 
         assertThat(mStatsLayout.getUsageDuration(mPowerStats.stats)).isEqualTo(1000);
         assertThat(mStatsLayout.getUidUsageDuration(mPowerStats.uidStats.get(APP_UID1)))
@@ -108,7 +108,7 @@ public class WakelockPowerStatsCollectorTest {
         }
 
         mStatsRule.advanceSuspendedTime(1000);
-        powerStatsCollector.collectAndDeliverStats();
+        powerStatsCollector.collectAndDeliverStats(mClock.realtime, mClock.uptime);
 
         // Based on the uptime, the device was awake for (3000+2000+5000) = 10000 ms
         assertThat(mStatsLayout.getUsageDuration(mPowerStats.stats)).isEqualTo(10000);
