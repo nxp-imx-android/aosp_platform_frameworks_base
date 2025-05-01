@@ -16,6 +16,7 @@
 
 package android.window;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 
@@ -71,6 +72,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG),
     ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION(Flags::defaultDeskWithoutWarmupMigration, false,
             Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION),
+    ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
+            com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
+            false, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
     ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS(
             Flags::enableDesktopAppHeaderStateChangeAnnouncements, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS),
