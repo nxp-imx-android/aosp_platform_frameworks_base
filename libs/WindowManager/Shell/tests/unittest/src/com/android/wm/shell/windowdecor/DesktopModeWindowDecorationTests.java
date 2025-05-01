@@ -1530,6 +1530,24 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB,
+            com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+            com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN})
+    public void capturedLink_desktopNotAvailable_linkNotUsed() {
+        mDesktopState.getOverrideDesktopModeSupportPerDisplay().put(Display.DEFAULT_DISPLAY, false);
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
+        final DesktopModeWindowDecoration decor = createWindowDecoration(
+                taskInfo, TEST_URI1 /* captured link */, null /* web uri */,
+                null /* session transfer uri */, TEST_URI4 /* generic link */);
+
+        decor.createHandleMenu(false);
+        // Verify handle menu is created without app or browser link
+        verifyHandleMenuCreated(/* uri= */ null);
+        // Verify assist content is not requested as it is not used
+        verify(mMockAssistContentRequester, never()).requestAssistContent(anyInt(), any());
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void sessionTransferUri_sessionTransferUriUsedWhenWhenAvailable() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);

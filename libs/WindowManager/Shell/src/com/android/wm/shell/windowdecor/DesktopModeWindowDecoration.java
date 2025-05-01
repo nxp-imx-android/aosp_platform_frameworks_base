@@ -1428,11 +1428,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void createHandleMenu(boolean minimumInstancesFound) {
         if (isHandleMenuActive()) return;
-        // Requests assist content. When content is received, calls {@link #onAssistContentReceived}
-        // which sets app info and creates the handle menu.
         mMinimumInstancesFound = minimumInstancesFound;
-        mAssistContentRequester.requestAssistContent(
-                mTaskInfo.taskId, this::onAssistContentReceived);
+        if (AppToWebUtils.canShowAppLinks(mDisplay, mDesktopState)) {
+            // Requests assist content. When content is received, calls
+            // {@link #onAssistContentReceived} which sets app info and creates the handle menu.
+            mAssistContentRequester.requestAssistContent(
+                    mTaskInfo.taskId, this::onAssistContentReceived);
+        } else {
+            // Skip request for assist content as it is only used for links, which are not supported
+            onAssistContentReceived(null);
+        }
     }
 
     /**
@@ -1453,7 +1458,15 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 .shouldShowRestartButton(mTaskInfo);
         final boolean inDesktopImmersive = mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                 .isTaskInFullImmersiveState(mTaskInfo.taskId);
-        final boolean isBrowserApp = isBrowserApp();
+        final boolean isBrowserApp;
+        final Intent openInAppOrBrowserIntent;
+        if (AppToWebUtils.canShowAppLinks(mDisplay, mDesktopState)) {
+            isBrowserApp = isBrowserApp();
+            openInAppOrBrowserIntent = isBrowserApp ? getAppLink() : getBrowserLink();
+        } else {
+            isBrowserApp = false;
+            openInAppOrBrowserIntent = null;
+        }
         mHandleMenu = mHandleMenuFactory.create(
                 mMainDispatcher,
                 mBgScope,
@@ -1470,7 +1483,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mDesktopState.isDesktopModeSupportedOnDisplay(mDisplay),
                 shouldShowRestartButton,
                 isBrowserApp,
-                isBrowserApp ? getAppLink() : getBrowserLink(),
+                openInAppOrBrowserIntent,
                 mDesktopModeUiEventLogger,
                 mResult.mCaptionWidth,
                 mResult.mCaptionHeight,
