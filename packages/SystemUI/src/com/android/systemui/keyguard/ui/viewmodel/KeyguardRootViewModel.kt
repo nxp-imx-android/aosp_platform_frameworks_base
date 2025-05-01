@@ -223,7 +223,12 @@ constructor(
      * non-split shade cases.
      */
     val topClippingBounds: Flow<Int?> =
-        keyguardInteractor.topClippingBounds.dumpWhileCollecting("topClippingBounds")
+        combine(keyguardInteractor.topClippingBounds, shadeInteractor.isShadeAnyExpanded) {
+                topClippingBounds,
+                isShadeAnyExpanded ->
+                if (isShadeAnyExpanded) topClippingBounds else null
+            }
+            .dumpWhileCollecting("topClippingBounds")
 
     /** An observable for the alpha level for the entire keyguard root view. */
     fun alpha(viewState: ViewStateAccessor): Flow<Float> {
