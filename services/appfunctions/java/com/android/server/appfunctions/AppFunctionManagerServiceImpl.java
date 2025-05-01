@@ -85,7 +85,6 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /** Implementation of the AppFunctionManagerService. */
 public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
@@ -154,7 +153,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         final long token = Binder.clearCallingIdentity();
         try {
-            AppFunctionDumpHelper.dumpAppFunctionsState(mContext, pw);
+            AppFunctionDumpHelper.dumpAppFunctionsState(mContext, pw, args);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
