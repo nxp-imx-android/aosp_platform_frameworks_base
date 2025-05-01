@@ -316,6 +316,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testWakeAndUnlock_transitionsToGone_evenIfBouncerShows() =
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setBiometricUnlockState(
@@ -333,6 +334,23 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
             underTest.dismissAod()
             advanceTimeBy(100) // account for debouncing
+
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun testWakeAndUnlock_transitionsToGone_evenIfBouncerShows_wmStateRefactor() =
+        testScope.runTest {
+            kosmos.fakeKeyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.WAKE_AND_UNLOCK
+            )
+            runCurrent()
+            bouncerRepository.setPrimaryShow(true)
+            runCurrent()
+            powerInteractor.setAwakeForTest()
+            runCurrent()
 
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
@@ -468,6 +486,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testTransitionToOccluded_onWakeUpFromAod_whenGlanceableHubEnabled() =
         kosmos.runTest {
             setCommunalV2Available(true)
