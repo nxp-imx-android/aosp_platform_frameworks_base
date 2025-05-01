@@ -150,6 +150,7 @@ public class NavBarHelperTest extends SysuiTestCase {
         when(mUserTracker.getUserId()).thenReturn(1);
         when(mDisplayTracker.getDefaultDisplayId()).thenReturn(0);
         when(mEdgeBackGestureHandlerFactory.create(any())).thenReturn(mEdgeBackGestureHandler);
+        when(mLauncherProxyService.isSystemOrVisibleBgUser()).thenReturn(true);
 
         doAnswer((invocation) -> mAccessibilityServicesStateChangeListener =
                 invocation.getArgument(0)).when(

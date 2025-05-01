@@ -853,6 +853,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         assistUtils.registerVoiceInteractionSessionListener(mVoiceInteractionSessionListener);
     }
 
+    public boolean isSystemOrVisibleBgUser() {
+        return mIsSystemOrVisibleBgUser;
+    }
+
     public void onVoiceSessionWindowVisibilityChanged(boolean visible) {
         mDefaultDisplaySysUIState.setFlag(SYSUI_STATE_VOICE_INTERACTION_WINDOW_SHOWING, visible)
                 .commitUpdate(mContext.getDisplayId());
