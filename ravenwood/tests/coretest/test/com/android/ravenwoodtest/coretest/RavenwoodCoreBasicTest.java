@@ -39,4 +39,11 @@ public class RavenwoodCoreBasicTest {
         assertEquals("datafile2", readFile("data/datafile2.txt"));
         assertEquals("morefile", readFile("data/subdir/morefile.txt"));
     }
+
+    @Test
+    public void testTestConfig() throws Exception {
+        // These properties are injected via the Android.bp, using the -D java option.
+        assertEquals("value1", System.getProperty("xxx-extra-tradefed-option"));
+        assertEquals("value2", System.getProperty("xxx-extra-runner-option"));
+    }
 }

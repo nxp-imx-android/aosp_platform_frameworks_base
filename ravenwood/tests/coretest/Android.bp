@@ -29,6 +29,23 @@ java_defaults {
         "test/**/*.kt",
     ],
     data: ["data/**/*"],
+    test_options: {
+        // This is injected outside of the <test> element.
+        tradefed_options: [
+            {
+                name: "java-flags",
+                value: "-Dxxx-extra-tradefed-option=value1",
+            },
+        ],
+
+        // This is injected inside the <test> element.
+        test_runner_options: [
+            {
+                name: "java-flags",
+                value: "-Dxxx-extra-runner-option=value2",
+            },
+        ],
+    },
     ravenizer: {
         strip_mockito: true,
     },
