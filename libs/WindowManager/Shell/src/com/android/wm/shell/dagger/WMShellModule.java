@@ -836,7 +836,6 @@ public abstract class WMShellModule {
             DesktopModeDragAndDropTransitionHandler desktopModeDragAndDropTransitionHandler,
             ToggleResizeDesktopTaskTransitionHandler toggleResizeDesktopTaskTransitionHandler,
             DragToDesktopTransitionHandler dragToDesktopTransitionHandler,
-            DisplayDisconnectTransitionHandler displayDisconnectTransitionHandler,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
@@ -887,7 +886,6 @@ public abstract class WMShellModule {
                 desktopModeDragAndDropTransitionHandler,
                 toggleResizeDesktopTaskTransitionHandler,
                 dragToDesktopTransitionHandler,
-                displayDisconnectTransitionHandler,
                 desktopImmersiveController.get(),
                 desktopUserRepositories,
                 desktopRepositoryInitializer,
@@ -1049,10 +1047,15 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static DisplayDisconnectTransitionHandler provideDesktopDisconnectTransitionHandler(
-            Transitions transitions,
-            ShellInit shellInit) {
-        return new DisplayDisconnectTransitionHandler(transitions, shellInit);
+    static Optional<DisplayDisconnectTransitionHandler> provideDisplayDisconnectTransitionHandler(
+            ShellInit shellInit, Transitions transitions) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(
+                    new DisplayDisconnectTransitionHandler(transitions, shellInit)
+            );
+        }
     }
 
     @WMSingleton
@@ -1794,6 +1797,7 @@ public abstract class WMShellModule {
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
             Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
+            Optional<DisplayDisconnectTransitionHandler> displayDisconnectTransitionHandler,
             Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler) {
         return new Object();
