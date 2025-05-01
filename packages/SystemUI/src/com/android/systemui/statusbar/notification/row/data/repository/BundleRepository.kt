@@ -28,7 +28,5 @@ class BundleRepository(@StringRes val titleTextResId: Int, @DrawableRes val bund
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 
-    var hasUnreadMessages by mutableStateOf(false)
-
     var previewIcons by mutableStateOf(listOf<Drawable>())
 }
