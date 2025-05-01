@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"無法建立面部模型，請再試一次。"</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"偵測到深色眼鏡。你必須展示整個面孔。"</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"偵測到面部遮蓋物。你必須展示整個面孔。"</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"偵測到面部被遮住。你必須展示整個面孔。"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"無法驗證面孔，硬件無法使用。"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"宣傳"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"新聞"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"建議"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"你可以設定這些通知的重要性。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"列為重要的原因：涉及的人。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自訂應用程式通知"</string>

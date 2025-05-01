@@ -740,8 +740,8 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Model se nepodařilo vytvořit. Zkuste to znovu."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Je příliš světlo. Zmírněte osvětlení."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Nedostatečné osvětlení"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Umístěte telefon dál"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Umístěte telefon blíž"</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Oddalte telefon"</string>
+    <string name="face_acquired_too_far" msgid="2922278214231064859">"Přibližte telefon"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Posuňte telefon výš"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Posuňte telefon níž"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Posuňte telefon doleva"</string>
@@ -2046,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promoakce"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Sociální sítě"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Zprávy"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Navrhováno"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Důležitost oznámení určujete vy."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Tato zpráva je důležitá kvůli lidem zapojeným do konverzace."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Vlastní oznámení aplikace"</string>

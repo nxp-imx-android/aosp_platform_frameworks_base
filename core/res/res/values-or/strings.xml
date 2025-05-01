@@ -1715,7 +1715,7 @@
     <string name="media_route_button_content_description" msgid="2299223698196869956">"କାଷ୍ଟ କରନ୍ତୁ"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"ଡିଭାଇସ୍‍ ସଂଯୋଗ କରନ୍ତୁ"</string>
     <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"ଡିଭାଇସରେ ସ୍କ୍ରିନ୍‍ କାଷ୍ଟ କରନ୍ତୁ"</string>
-    <string name="media_route_chooser_searching" msgid="6119673534251329535">"ଡିଭାଇସ୍‍ ଖୋଜାଯାଉଛି…"</string>
+    <string name="media_route_chooser_searching" msgid="6119673534251329535">"ଡିଭାଇସଗୁଡ଼ିକୁ ସର୍ଚ୍ଚ କରାଯାଉଛି…"</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"ସେଟିଂସ୍"</string>
     <string name="media_route_controller_disconnect" msgid="7362617572732576959">"ଡିସକନେକ୍ଟ କରନ୍ତୁ"</string>
     <string name="media_route_status_scanning" msgid="8045156315309594482">"ସ୍କାନ୍‌ କରୁଛି…"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ପ୍ରଚାରଗୁଡ଼ିକ"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ସୋସିଆଲ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ନ୍ୟୁଜ"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"ପ୍ରସ୍ତାବିତ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକର ପ୍ରମୁଖତା ଆପଣ ସେଟ୍‍ କରନ୍ତି।"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ସମ୍ପୃକ୍ତ ଲୋକଙ୍କ କାରଣରୁ ଏହା ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଅଟେ।"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"କଷ୍ଟମ୍ ଆପ୍ ବିଜ୍ଞପ୍ତି"</string>

@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"சலுகைகள்"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"சமூகம்"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"செய்திகள்"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"பரிந்துரைக்கப்படுவது"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"இந்த அறிவிப்புகளின் முக்கியத்துவத்தை அமைத்துள்ளீர்கள்."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ஈடுபட்டுள்ளவர்களின் காரணமாக, இது முக்கியமானது."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"பிரத்தியேக ஆப்ஸ் அறிவிப்பு"</string>

@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"프로모션"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"소셜"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"뉴스"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"추천"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"이러한 알림의 중요도를 설정했습니다."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"관련된 사용자가 있으므로 중요합니다."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"맞춤 앱 알림"</string>

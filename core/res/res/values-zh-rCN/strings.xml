@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"无法创建您的脸部模型，请重试。"</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"检测到墨镜，您的脸部必须完全可见。"</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"检测到面部被遮挡，请露出整个面部。"</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"检测到面部被遮挡，请露出整个面部"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"无法验证人脸。硬件无法使用。"</string>
@@ -1972,7 +1972,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"为了减少流量消耗，省流模式会阻止某些应用在后台收发数据。您当前使用的应用可以收发数据，但频率可能会降低。举例而言，这可能意味着图片只有在您点按之后才会显示。"</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"省流模式会阻止部分应用在后台收发数据，以减少流量消耗。您正在使用的应用可以收发数据，但频率可能会降低。例如，图片可能需要点按才会显示。"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"要开启省流模式吗？"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"开启"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{1 分钟（直到 {formattedTime}）}other{# 分钟（直到 {formattedTime}）}}"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"促销"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"资讯"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"建议"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"这些通知的重要程度由您来设置。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"这条通知涉及特定的人，因此被归为重要通知。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自定义应用通知"</string>

@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ਪ੍ਰਮੋਸ਼ਨ"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ਸੋਸ਼ਲ ਐਪਾਂ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ਖਬਰਾਂ"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"ਸੁਝਾਏ ਗਏ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"ਤੁਸੀਂ ਇਹਨਾਂ ਸੂਚਨਾਵਾਂ ਦੀ ਮਹੱਤਤਾ ਸੈੱਟ ਕੀਤੀ।"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ਇਹ ਸ਼ਾਮਲ ਲੋਕਾਂ ਦੇ ਕਾਰਨ ਮਹੱਤਵਪੂਰਨ ਹੈ।"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ਵਿਉਂਤੀ ਐਪ ਸੂਚਨਾ"</string>

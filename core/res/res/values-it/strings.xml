@@ -298,7 +298,7 @@
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"Modalità automobile"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"Stato dell\'account"</string>
     <string name="notification_channel_developer" msgid="1691059964407549150">"Messaggi dello sviluppatore"</string>
-    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Messaggi importanti relativi agli sviluppatori"</string>
+    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Messaggi importanti per gli sviluppatori"</string>
     <string name="notification_channel_updates" msgid="7907863984825495278">"Aggiornamenti"</string>
     <string name="notification_channel_network_status" msgid="2127687368725272809">"Stato della rete"</string>
     <string name="notification_channel_network_alerts" msgid="6312366315654526528">"Avvisi di rete"</string>
@@ -740,7 +740,7 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Troppa luce. Prova con una luce più soft."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Luce insufficiente"</string>
     <string name="face_acquired_too_close" msgid="4453646176196302462">"Allontana il telefono"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Avvicina il telefono"</string>
+    <string name="face_acquired_too_far" msgid="2922278214231064859">"Avvicina lo smartphone"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Sposta lo smartphone più in alto"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Sposta lo smartphone più in basso"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Sposta lo smartphone verso sinistra"</string>
@@ -2045,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promozioni"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Social"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Novità"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Suggeriti"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Stabilisci tu l\'importanza di queste notifiche."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Importante a causa delle persone coinvolte."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notifica app personalizzata"</string>
@@ -2277,8 +2276,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Scorri"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Tieni premuto"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Metti in pausa"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Riprendi"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posizione"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Scorri verso l\'alto"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Scorri verso il basso"</string>
