@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"మీ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> నుండి యాప్‌లను, సిస్టమ్ ఫీచర్‌లను స్ట్రీమ్ చేయడానికి <xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%2$s</xliff:g> తరఫున అనుమతిని రిక్వెస్ట్ చేస్తోంది"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"మీ ఫోన్ నుండి ఈ సమాచారాన్ని యాక్సెస్ చేయడానికి &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; యాప్‌ను అనుమతించండి"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"మీ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ఫోటోలను, మీడియాను, ఇంకా నోటిఫికేషన్‌లను యాక్సెస్ చేయడానికి <xliff:g id="APP_NAME">%1$s</xliff:g> మీ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> తరఫున అనుమతిని రిక్వెస్ట్ చేస్తోంది"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"మీ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> యాప్‌లను &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;‌కు స్ట్రీమ్ చేయడానికి &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;‌ను అనుమతించాలా?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"ఆడియో, ఫోటోలు, పేమెంట్ సమాచారం, పాస్‌వర్డ్‌లతో సహా <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>‌లో కనిపించే లేదా ప్లే అయ్యే దేనికైనా <xliff:g id="APP_NAME_0">%1$s</xliff:g>‌కు యాక్సెస్ ఉంటుంది.&lt;br/&gt;&lt;br/&gt;మీరు ఈ అనుమతికి యాక్సెస్‌ను తీసివేసే వరకు <xliff:g id="APP_NAME_2">%1$s</xliff:g> <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>‌కు యాప్‌లను స్ట్రీమ్ చేయగలదు."</string>
@@ -77,9 +76,9 @@
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"కాంటాక్ట్‌లు, మెసేజ్‌లు, ఫోటోల వంటి సమాచారంతో సహా అన్ని నోటిఫికేషన్‌లను చదవగలదు"</string>
     <string name="permission_notifications_summary" msgid="2272810466047367030">"• కాంటాక్ట్‌లు, మెసేజ్‌లు, ఫోటోల వంటి సమాచారంతో సహా నోటిఫికేషన్‌లన్నింటిని చదవగలదు&lt;br/&gt;• నోటిఫికేషన్‌లను పంపగలదు&lt;br/&gt;&lt;br/&gt;నోటిఫికేషన్‌లను చదవగల, పంపగల ఈ యాప్ సామర్థ్యాన్ని మీరు సెట్టింగ్‌లు &gt; నోటిఫికేషన్‌లలో ఎప్పుడైనా మేనేజ్ చేయవచ్చు."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"అందుబాటులో ఉన్న పరికరాల లిస్ట్‌ను యాక్సెస్ చేసి, ఇతర యాప్‌లలోని ఆడియో లేదా వీడియోను ఏ పరికరం స్ట్రీమ్ చేయాలో లేదా ప్రసారం చేయాలో కంట్రోల్ చేయండి"</string>
+    <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"అందుబాటులో ఉన్న డివైజ్‌ల లిస్ట్‌ను యాక్సెస్ చేసి, ఇతర యాప్‌లలోని ఆడియో లేదా వీడియోను ఏ డివైజ్ స్ట్రీమ్ చేయాలో లేదా ప్రసారం చేయాలో కంట్రోల్ చేయండి"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ఫోన్"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"టాబ్లెట్"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"టీవీ"</string>
-    <string name="device_type" product="device" msgid="1526125965802507189">"పరికరం"</string>
+    <string name="device_type" product="device" msgid="1526125965802507189">"డివైజ్"</string>
 </resources>

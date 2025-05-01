@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> biður um heimild fyrir hönd <xliff:g id="DEVICE_NAME">%2$s</xliff:g> til að streyma forritum og kerfiseiginleikum úr <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"Veita &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; aðgang að þessum upplýsingum úr símanum þínum"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> biður um heimild fyrir <xliff:g id="DEVICE_NAME">%2$s</xliff:g> vegna aðgangs að myndum, margmiðlunarefni og tilkynningum í <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Leyfa &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; að streyma forritum <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> í &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> fær aðgang að öllu sem er sýnilegt eða spilað í <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> getur streymt forritum í <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> þar til þú fjarlægir þessa heimild."</string>

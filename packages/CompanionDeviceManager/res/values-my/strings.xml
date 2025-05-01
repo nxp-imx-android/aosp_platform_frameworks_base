@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> သည် သင့် <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> မှ အက်ပ်များနှင့် စနစ်တူးလ်များကို တိုက်ရိုက်ဖွင့်ရန် <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ကိုယ်စား ခွင့်ပြုချက်တောင်းနေသည်"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; ကို သင့်ဖုန်းမှ ဤအချက်အလက် သုံးခွင့်ပြုမည်"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> သည် သင့် <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ၏ ဓာတ်ပုံ၊ မီဒီယာနှင့် အကြောင်းကြားချက်များသုံးရန် <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ကိုယ်စား ခွင့်ပြုချက်တောင်းနေသည်"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; အား သင့် <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ၏ အက်ပ်များကို &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; တွင် တိုက်ရိုက်ဖွင့်ခွင့်ပြုမလား။"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> သည် အသံ၊ ဓာတ်ပုံ၊ စကားဝှက်နှင့် မက်ဆေ့ဂျ်များအပါအဝင် <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> တွင် မြင်နိုင်သော (သို့) ဖွင့်ထားသော အရာအားလုံးကို သုံးခွင့်ရှိပါမည်။&lt;br/&gt;&lt;br/&gt;ဤခွင့်ပြုချက်သုံးခွင့်ကို သင်မဖယ်ရှားမချင်း <xliff:g id="APP_NAME_2">%1$s</xliff:g> သည် <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> တွင် အက်ပ်များကို တိုက်ရိုက်ဖွင့်နိုင်ပါမည်။"</string>

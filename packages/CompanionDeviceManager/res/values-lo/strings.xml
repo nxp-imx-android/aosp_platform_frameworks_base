@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> ກຳລັງຮ້ອງຂໍການອະນຸຍາດໃນນາມ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ເພື່ອສະຕຣີມແອັລ ແລະ ຄຸນສົມບັດລະບົບຈາກ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ຂອງທ່ານ"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"ອະນຸຍາດໃຫ້ &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; ເຂົ້າເຖິງຂໍ້ມູນນີ້ຈາກໂທລະສັບຂອງທ່ານ"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> ກຳລັງຮ້ອງຂໍການອະນຸຍາດໃນນາມຂອງ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ຂອງທ່ານເພື່ອເຂົ້າເຖິງຮູບພາບ, ສື່ ແລະ ການແຈ້ງເຕືອນໃນ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ຂອງທ່ານ"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"ອະນຸຍາດໃຫ້ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ສະຕຣີມແອັບຂອງ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ຂອງທ່ານໄປຫາ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ບໍ?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ຈະມີສິດເຂົ້າເຖິງທຸກຢ່າງທີ່ປາກົດ ຫຼື ຫຼິ້ນຢູ່ <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, ເຊິ່ງຮວມທັງສຽງ, ຮູບພາບ, ຂໍ້ມູນການຈ່າຍເງິນ, ລະຫັດຜ່ານ ແລະ ຂໍ້ຄວາມ.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> ຈະສາມາດສະຕຣີມແອັບໄປຫາ <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> ໄດ້ຈົນກວ່າທ່ານຈະລຶບສິດເຂົ້າເຖິງການອະນຸຍາດນີ້ອອກ."</string>
