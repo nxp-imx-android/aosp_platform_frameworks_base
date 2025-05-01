@@ -103,7 +103,6 @@ import dagger.assisted.AssistedInject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -143,7 +142,6 @@ public class MediaSwitchingController
     protected final Object mMediaDevicesLock = new Object();
     protected final Object mInputMediaDevicesLock = new Object();
     @VisibleForTesting
-    final List<MediaDevice> mGroupMediaDevices = new CopyOnWriteArrayList<>();
     final List<MediaDevice> mCachedMediaDevices = new CopyOnWriteArrayList<>();
     private final OutputMediaItemListProxy mOutputMediaItemListProxy;
     private final List<MediaItem> mInputMediaItemList = new CopyOnWriteArrayList<>();
@@ -847,42 +845,6 @@ public class MediaSwitchingController
         MediaDevice currentConnectedMediaDevice = getCurrentConnectedMediaDevice();
         return currentConnectedMediaDevice != null
                 && (currentConnectedMediaDevice.isHostForOngoingSession());
-    }
-
-    List<MediaDevice> getGroupMediaDevices() {
-        final List<MediaDevice> selectedDevices = getSelectedMediaDevice();
-        final List<MediaDevice> selectableDevices = getSelectableMediaDevice();
-        if (mGroupMediaDevices.isEmpty()) {
-            mGroupMediaDevices.addAll(selectedDevices);
-            mGroupMediaDevices.addAll(selectableDevices);
-            return mGroupMediaDevices;
-        }
-        // To keep the same list order
-        final Collection<MediaDevice> sourceDevices = new ArrayList<>();
-        final Collection<MediaDevice> targetMediaDevices = new ArrayList<>();
-        sourceDevices.addAll(selectedDevices);
-        sourceDevices.addAll(selectableDevices);
-        for (MediaDevice originalDevice : mGroupMediaDevices) {
-            for (MediaDevice newDevice : sourceDevices) {
-                if (TextUtils.equals(originalDevice.getId(), newDevice.getId())) {
-                    targetMediaDevices.add(newDevice);
-                    sourceDevices.remove(newDevice);
-                    break;
-                }
-            }
-        }
-        // Add new devices at the end of list if necessary
-        if (!sourceDevices.isEmpty()) {
-            targetMediaDevices.addAll(sourceDevices);
-        }
-        mGroupMediaDevices.clear();
-        mGroupMediaDevices.addAll(targetMediaDevices);
-
-        return mGroupMediaDevices;
-    }
-
-    void resetGroupMediaDevices() {
-        mGroupMediaDevices.clear();
     }
 
     protected void connectDevice(MediaDevice device) {
