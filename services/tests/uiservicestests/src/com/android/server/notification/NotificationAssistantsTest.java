@@ -1019,7 +1019,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         assertTrue(atom.hasExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences));
         NotificationAdjustmentPreferences p =
                 atom.getExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences);
-        assertThat(p.getBundlesAllowed()).isTrue();
+        assertThat(p.getAdjustmentAllowed()).isTrue();
         assertThat(p.getAllowedBundleTypes(0).getNumber())
                 .isEqualTo(NotificationProtoEnums.TYPE_NEWS);
         assertThat(p.getAllowedBundleTypes(1).getNumber())
@@ -1055,7 +1055,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         NotificationAdjustmentPreferences p2 = atomDisabled.getExtension(
                 NotificationExtensionAtoms.notificationAdjustmentPreferences);
-        assertThat(p2.getBundlesAllowed()).isFalse();
+        assertThat(p2.getAdjustmentAllowed()).isFalse();
         assertThat(p2.getAllowedBundleTypes(0).getNumber())
                 .isEqualTo(NotificationProtoEnums.TYPE_PROMOTION);
         assertThat(p2.getAllowedBundleTypes(1).getNumber())

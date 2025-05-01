@@ -13064,7 +13064,7 @@ public class NotificationManagerService extends SystemService {
                     NOTIFICATION_ADJUSTMENT_PREFERENCES,
                     /* optional int32 event_id = 1 */
                     NotificationPullStatsEvent.NOTIFICATION_BUNDLE_PREFERENCES_PULLED.getId(),
-                    /* optional bool bundles_allowed = 2 */ bundlesAllowed,
+                    /* optional bool adjustment_allowed = 2 */ bundlesAllowed,
                     /* repeated android.stats.notification.BundleTypes allowed_bundle_types = 3 */
                     allowedBundleTypes,
                     /* optional android.stats.notification.AdjustmentKey key = 4 */
