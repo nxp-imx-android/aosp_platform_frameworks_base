@@ -2444,6 +2444,11 @@ public class UserManagerService extends IUserManager.Stub {
                 int number = mUser0Allocations.incrementAndGet();
                 Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
             }
+            if (android.multiuser.Flags.logoutUserApi()) {
+                if (isHeadlessSystemUserMode()) {
+                    return getHeadlessSystemUserName();
+                }
+            }
             return getOwnerName();
         }
         if (user.isMain()) {
@@ -5107,6 +5112,10 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     String getGuestName() {
         return mContext.getString(com.android.internal.R.string.guest_name);
+    }
+
+    String getHeadlessSystemUserName() {
+        return mContext.getString(com.android.internal.R.string.headless_system_user_name);
     }
 
     private void invalidateOwnerNameIfNecessary(@NonNull Resources res, boolean forceUpdate) {
