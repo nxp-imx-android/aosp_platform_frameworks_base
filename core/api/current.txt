@@ -25297,6 +25297,7 @@ package android.media {
 
   public final class MediaRouter2 {
     method @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") public void cancelScanRequest(@NonNull android.media.MediaRouter2.ScanToken);
+    method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void clearDeviceSuggestions();
     method @Nullable public android.media.MediaRouter2.RoutingController getController(@NonNull String);
     method @NonNull public java.util.List<android.media.MediaRouter2.RoutingController> getControllers();
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") @NonNull public java.util.Map<java.lang.String,java.util.List<android.media.SuggestedDeviceInfo>> getDeviceSuggestions();
@@ -25306,7 +25307,7 @@ package android.media {
     method @NonNull public java.util.List<android.media.MediaRoute2Info> getRoutes();
     method @NonNull public android.media.MediaRouter2.RoutingController getSystemController();
     method public void registerControllerCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.ControllerCallback);
-    method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void registerDeviceSuggestionsCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.DeviceSuggestionsCallback);
+    method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void registerDeviceSuggestionsUpdatesCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.DeviceSuggestionsUpdatesCallback);
     method public void registerRouteCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.RouteCallback, @NonNull android.media.RouteDiscoveryPreference);
     method public void registerRouteListingPreferenceUpdatedCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
     method public void registerTransferCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.TransferCallback);
@@ -25319,7 +25320,7 @@ package android.media {
     method public void stop();
     method public void transferTo(@NonNull android.media.MediaRoute2Info);
     method public void unregisterControllerCallback(@NonNull android.media.MediaRouter2.ControllerCallback);
-    method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void unregisterDeviceSuggestionsCallback(@NonNull android.media.MediaRouter2.DeviceSuggestionsCallback);
+    method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void unregisterDeviceSuggestionsUpdatesCallback(@NonNull android.media.MediaRouter2.DeviceSuggestionsUpdatesCallback);
     method public void unregisterRouteCallback(@NonNull android.media.MediaRouter2.RouteCallback);
     method public void unregisterRouteListingPreferenceUpdatedCallback(@NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
     method public void unregisterTransferCallback(@NonNull android.media.MediaRouter2.TransferCallback);
@@ -25330,9 +25331,10 @@ package android.media {
     method public void onControllerUpdated(@NonNull android.media.MediaRouter2.RoutingController);
   }
 
-  @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public static interface MediaRouter2.DeviceSuggestionsCallback {
-    method public void onSuggestionRequested();
-    method public void onSuggestionUpdated(@NonNull String, @NonNull java.util.List<android.media.SuggestedDeviceInfo>);
+  @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public static interface MediaRouter2.DeviceSuggestionsUpdatesCallback {
+    method public void onSuggestionsCleared(@NonNull String);
+    method public void onSuggestionsRequested();
+    method public void onSuggestionsUpdated(@NonNull String, @NonNull java.util.List<android.media.SuggestedDeviceInfo>);
   }
 
   public static interface MediaRouter2.OnGetControllerHintsListener {

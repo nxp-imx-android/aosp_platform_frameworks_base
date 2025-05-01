@@ -159,8 +159,8 @@ public final class MediaRouter2 {
             new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<ControllerCallbackRecord> mControllerCallbackRecords =
             new CopyOnWriteArrayList<>();
-    private final CopyOnWriteArrayList<DeviceSuggestionsCallbackRecord>
-            mDeviceSuggestionsCallbackRecords = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<DeviceSuggestionsUpdatesCallbackRecord>
+            mDeviceSuggestionsUpdatesCallbackRecords = new CopyOnWriteArrayList<>();
 
     private final CopyOnWriteArrayList<ControllerCreationRequest> mControllerCreationRequests =
             new CopyOnWriteArrayList<>();
@@ -771,17 +771,18 @@ public final class MediaRouter2 {
      * <p>Calls using a previously registered callback will overwrite the previous executor.
      */
     @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
-    public void registerDeviceSuggestionsCallback(
+    public void registerDeviceSuggestionsUpdatesCallback(
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull DeviceSuggestionsCallback deviceSuggestionsCallback) {
+            @NonNull DeviceSuggestionsUpdatesCallback deviceSuggestionsUpdatesCallback) {
         Objects.requireNonNull(executor, "executor must not be null");
-        Objects.requireNonNull(deviceSuggestionsCallback, "callback must not be null");
+        Objects.requireNonNull(deviceSuggestionsUpdatesCallback, "callback must not be null");
 
-        DeviceSuggestionsCallbackRecord record =
-                new DeviceSuggestionsCallbackRecord(executor, deviceSuggestionsCallback);
+        DeviceSuggestionsUpdatesCallbackRecord record =
+                new DeviceSuggestionsUpdatesCallbackRecord(
+                        executor, deviceSuggestionsUpdatesCallback);
 
-        mDeviceSuggestionsCallbackRecords.remove(record);
-        mDeviceSuggestionsCallbackRecords.add(record);
+        mDeviceSuggestionsUpdatesCallbackRecords.remove(record);
+        mDeviceSuggestionsUpdatesCallbackRecords.add(record);
     }
 
     /**
@@ -805,15 +806,19 @@ public final class MediaRouter2 {
     /**
      * Unregisters the given callback to not receive {@link SuggestedDeviceInfo} change events.
      *
-     * @see #registerDeviceSuggestionsCallback(Executor, DeviceSuggestionsCallback)
+     * @see #registerDeviceSuggestionsUpdatesCallback(Executor, DeviceSuggestionsUpdatesCallback)
      */
     @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
-    public void unregisterDeviceSuggestionsCallback(@NonNull DeviceSuggestionsCallback callback) {
+    public void unregisterDeviceSuggestionsUpdatesCallback(
+            @NonNull DeviceSuggestionsUpdatesCallback callback) {
         Objects.requireNonNull(callback, "callback must not be null");
 
-        if (!mDeviceSuggestionsCallbackRecords.remove(
-                new DeviceSuggestionsCallbackRecord(/* executor */ null, callback))) {
-            Log.w(TAG, "unregisterDeviceSuggestionsCallback: Ignoring an unknown" + " callback");
+        if (!mDeviceSuggestionsUpdatesCallbackRecords.remove(
+                new DeviceSuggestionsUpdatesCallbackRecord(/* executor */ null, callback))) {
+            Log.w(
+                    TAG,
+                    "unregisterDeviceSuggestionsUpdatesCallback: Ignoring an unknown"
+                            + " callback");
         }
     }
 
@@ -886,6 +891,20 @@ public final class MediaRouter2 {
     @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
     public void setDeviceSuggestions(@NonNull List<SuggestedDeviceInfo> suggestedDeviceInfo) {
         mImpl.setDeviceSuggestions(suggestedDeviceInfo);
+    }
+
+    /**
+     * Clears the {@link SuggestedDeviceInfo device suggestions} provided by this router.
+     *
+     * <p>Use this method to tell the system that this router is not currently providing any
+     * suggestions.
+     *
+     * <p>If the router explicitly wants to recommend that no suggestion is appropriate, use {@link
+     * setDeviceSuggestions} with an empty list
+     */
+    @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    public void clearDeviceSuggestions() {
+        mImpl.setDeviceSuggestions(null);
     }
 
     /**
@@ -1610,18 +1629,26 @@ public final class MediaRouter2 {
     private void notifyDeviceSuggestionsUpdated(
             @NonNull String suggestingPackageName,
             @Nullable List<SuggestedDeviceInfo> deviceSuggestions) {
-        for (DeviceSuggestionsCallbackRecord record : mDeviceSuggestionsCallbackRecords) {
+        for (DeviceSuggestionsUpdatesCallbackRecord record :
+                mDeviceSuggestionsUpdatesCallbackRecords) {
             record.mExecutor.execute(
-                    () ->
-                            record.mDeviceSuggestionsCallback.onSuggestionUpdated(
-                                    suggestingPackageName, deviceSuggestions));
+                    () -> {
+                        if (deviceSuggestions != null) {
+                            record.mDeviceSuggestionsUpdatesCallback.onSuggestionsUpdated(
+                                    suggestingPackageName, deviceSuggestions);
+                        } else {
+                            record.mDeviceSuggestionsUpdatesCallback.onSuggestionsCleared(
+                                    suggestingPackageName);
+                        }
+                    });
         }
     }
 
     private void notifyCallbacksDeviceSuggestionRequested() {
-        for (DeviceSuggestionsCallbackRecord record : mDeviceSuggestionsCallbackRecords) {
+        for (DeviceSuggestionsUpdatesCallbackRecord record :
+                mDeviceSuggestionsUpdatesCallbackRecords) {
             record.mExecutor.execute(
-                    () -> record.mDeviceSuggestionsCallback.onSuggestionRequested());
+                    () -> record.mDeviceSuggestionsUpdatesCallback.onSuggestionsRequested());
         }
     }
 
@@ -1677,7 +1704,7 @@ public final class MediaRouter2 {
 
     /** Callback for receiving events about device suggestions */
     @FlaggedApi(FLAG_ENABLE_SUGGESTED_DEVICE_API)
-    public interface DeviceSuggestionsCallback {
+    public interface DeviceSuggestionsUpdatesCallback {
 
         /**
          * Called when suggestions are updated.
@@ -1685,12 +1712,19 @@ public final class MediaRouter2 {
          * @param suggestingPackageName the package that provided the suggestions.
          * @param suggestedDeviceInfo the suggestions provided by the package.
          */
-        void onSuggestionUpdated(
+        void onSuggestionsUpdated(
                 @NonNull String suggestingPackageName,
                 @NonNull List<SuggestedDeviceInfo> suggestedDeviceInfo);
 
+        /**
+         * Called when suggestions are cleared.
+         *
+         * @param suggestingPackageName the package that cleared their provided suggestions.
+         */
+        void onSuggestionsCleared(@NonNull String suggestingPackageName);
+
         /** Called when a router requests a suggestion from suggestion providers. */
-        void onSuggestionRequested();
+        void onSuggestionsRequested();
     }
 
     /** Callback for receiving events about media route discovery. */
@@ -2458,15 +2492,15 @@ public final class MediaRouter2 {
         }
     }
 
-    private static final class DeviceSuggestionsCallbackRecord {
+    private static final class DeviceSuggestionsUpdatesCallbackRecord {
         public final Executor mExecutor;
-        public final DeviceSuggestionsCallback mDeviceSuggestionsCallback;
+        public final DeviceSuggestionsUpdatesCallback mDeviceSuggestionsUpdatesCallback;
 
-        /* package */ DeviceSuggestionsCallbackRecord(
+        /* package */ DeviceSuggestionsUpdatesCallbackRecord(
                 @NonNull Executor executor,
-                @NonNull DeviceSuggestionsCallback deviceSuggestionsCallback) {
+                @NonNull DeviceSuggestionsUpdatesCallback deviceSuggestionsUpdatesCallback) {
             mExecutor = executor;
-            mDeviceSuggestionsCallback = deviceSuggestionsCallback;
+            mDeviceSuggestionsUpdatesCallback = deviceSuggestionsUpdatesCallback;
         }
 
         @Override
@@ -2474,16 +2508,17 @@ public final class MediaRouter2 {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof DeviceSuggestionsCallbackRecord)) {
+            if (!(obj instanceof DeviceSuggestionsUpdatesCallbackRecord)) {
                 return false;
             }
-            return mDeviceSuggestionsCallback
-                    == ((DeviceSuggestionsCallbackRecord) obj).mDeviceSuggestionsCallback;
+            return mDeviceSuggestionsUpdatesCallback
+                    == ((DeviceSuggestionsUpdatesCallbackRecord) obj)
+                            .mDeviceSuggestionsUpdatesCallback;
         }
 
         @Override
         public int hashCode() {
-            return mDeviceSuggestionsCallback.hashCode();
+            return mDeviceSuggestionsUpdatesCallback.hashCode();
         }
     }
 
@@ -2608,7 +2643,7 @@ public final class MediaRouter2 {
 
         @Override
         public void notifyDeviceSuggestionsUpdated(
-                String suggestingPackageName, List<SuggestedDeviceInfo> suggestions) {
+                String suggestingPackageName, @Nullable List<SuggestedDeviceInfo> suggestions) {
             mHandler.sendMessage(
                     obtainMessage(
                             MediaRouter2::notifyDeviceSuggestionsUpdated,
