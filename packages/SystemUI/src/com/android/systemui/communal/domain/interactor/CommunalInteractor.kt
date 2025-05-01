@@ -189,9 +189,11 @@ constructor(
             .filter { step -> step.to == KeyguardState.OCCLUDED }
             .combine(isCommunalAvailable, ::Pair)
             .map { (step, available) ->
-                available &&
-                    (step.from == KeyguardState.GLANCEABLE_HUB ||
-                        step.from == KeyguardState.DREAMING)
+                val enteredFromHub = step.from == KeyguardState.GLANCEABLE_HUB
+                val enteredFromDream =
+                    step.from == KeyguardState.DREAMING &&
+                        !communalSettingsInteractor.isV2FlagEnabled()
+                available && (enteredFromHub || enteredFromDream)
             }
             .flowOn(bgDispatcher)
             .stateIn(
@@ -467,6 +469,7 @@ constructor(
                             size = CommunalContentSize.toSize(widget.spanY),
                         )
                     }
+
                     is CommunalWidgetContentModel.Pending -> {
                         WidgetContent.PendingWidget(
                             appWidgetId = widget.appWidgetId,
@@ -493,6 +496,7 @@ constructor(
                     when (model) {
                         is CommunalWidgetContentModel.Available ->
                             model.providerInfo.profile.identifier
+
                         is CommunalWidgetContentModel.Pending -> model.user.identifier
                     }
                 uid != disallowedByDevicePolicyUser.id
@@ -576,6 +580,7 @@ constructor(
             when (widget) {
                 is CommunalWidgetContentModel.Available ->
                     currentUserIds.contains(widget.providerInfo.profile?.identifier)
+
                 is CommunalWidgetContentModel.Pending -> true
             }
         }

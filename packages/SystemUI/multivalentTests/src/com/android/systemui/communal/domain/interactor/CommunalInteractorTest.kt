@@ -36,6 +36,7 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_COMMUNAL_RESPONSIVE_GRID
 import com.android.systemui.Flags.FLAG_COMMUNAL_WIDGET_RESIZING
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
+import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
@@ -52,8 +53,6 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.Flags
-import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -81,21 +80,29 @@ import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
+@EnableFlags(FLAG_COMMUNAL_HUB)
 class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val mainUser =
         UserInfo(/* id= */ 0, /* name= */ "primary user", /* flags= */ UserInfo.FLAG_MAIN)
     private val secondaryUser = UserInfo(/* id= */ 1, /* name= */ "secondary user", /* flags= */ 0)
 
-    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val kosmos =
+        testKosmos().useUnconfinedTestDispatcher().apply {
+            userManager.stub {
+                on { isQuietModeEnabled(any()) } doReturn false
+                on { isManagedProfile(any()) } doReturn false
+            }
+        }
 
     private val Kosmos.underTest by Kosmos.Fixture { communalInteractor }
 
@@ -105,12 +112,8 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        whenever(kosmos.userManager.isQuietModeEnabled(any<UserHandle>())).thenReturn(false)
-        whenever(kosmos.userManager.isManagedProfile(anyInt())).thenReturn(false)
         kosmos.fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
-
-        kosmos.fakeFeatureFlagsClassic.set(Flags.COMMUNAL_SERVICE_ENABLED, true)
-        mSetFlagsRule.enableFlags(FLAG_COMMUNAL_HUB)
+        kosmos.setCommunalV2Enabled(true)
     }
 
     @Test
@@ -841,7 +844,11 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
                 testScope,
             )
 
-            assertThat(showCommunalFromOccluded).isTrue()
+            if (glanceableHubV2()) {
+                assertThat(showCommunalFromOccluded).isFalse()
+            } else {
+                assertThat(showCommunalFromOccluded).isTrue()
+            }
         }
 
     private fun smartspaceTimer(id: String, timestamp: Long = 0L): CommunalSmartspaceTimer {
@@ -1112,7 +1119,10 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(FLAG_COMMUNAL_RESPONSIVE_GRID)
+            return FlagsParameterization.allCombinationsOf(
+                FLAG_COMMUNAL_RESPONSIVE_GRID,
+                FLAG_GLANCEABLE_HUB_V2,
+            )
         }
 
         private val MAIN_USER_INFO = UserInfo(0, "primary", UserInfo.FLAG_MAIN)
