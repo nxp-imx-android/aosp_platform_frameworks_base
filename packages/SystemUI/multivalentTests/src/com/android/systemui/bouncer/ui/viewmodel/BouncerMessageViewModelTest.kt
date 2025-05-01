@@ -19,11 +19,9 @@ package com.android.systemui.bouncer.ui.viewmodel
 import android.content.pm.UserInfo
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.fingerprint.FingerprintManager
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
@@ -42,6 +40,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteract
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.HelpFaceAuthenticationStatus
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.fakeSystemPropertiesHelper
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
@@ -70,7 +69,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_COMPOSE_BOUNCER)
+@EnableSceneContainer
 class BouncerMessageViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
@@ -84,14 +83,14 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
         kosmos.fakeUserRepository.setUserInfos(listOf(PRIMARY_USER))
         overrideResource(
             R.array.config_face_acquire_device_entry_ignorelist,
-            intArrayOf(ignoreHelpMessageId)
+            intArrayOf(ignoreHelpMessageId),
         )
         underTest = kosmos.bouncerMessageViewModel
         underTest.activateIn(testScope)
         overrideResource(R.string.kg_trust_agent_disabled, "Trust agent is unavailable")
         kosmos.fakeSystemPropertiesHelper.set(
             DeviceUnlockedInteractor.SYS_BOOT_REASON_PROP,
-            "not mainline reboot"
+            "not mainline reboot",
         )
     }
 
@@ -199,7 +198,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
                         "Enter PIN",
-                        "Added security required. Device wasn’t unlocked for a while."
+                        "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
         }
@@ -236,7 +235,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
                         "Unlock with PIN or fingerprint",
-                        "Added security required. Device wasn’t unlocked for a while."
+                        "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
         }
@@ -366,7 +365,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             kosmos.deviceEntryFingerprintAuthRepository.setAuthenticationStatus(
                 ErrorFingerprintAuthenticationStatus(
                     FingerprintManager.FINGERPRINT_ERROR_LOCKOUT,
-                    "locked out"
+                    "locked out",
                 )
             )
             runCurrent()
@@ -393,7 +392,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                 HelpFaceAuthenticationStatus(
                     0,
                     "some helpful message",
-                    FaceHelpMessageDebouncer.DEFAULT_WINDOW_MS
+                    FaceHelpMessageDebouncer.DEFAULT_WINDOW_MS,
                 )
             )
             runCurrent()
@@ -403,7 +402,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setAuthenticationStatus(
                 ErrorFaceAuthenticationStatus(
                     BiometricFaceConstants.FACE_ERROR_TIMEOUT,
-                    "Try again"
+                    "Try again",
                 )
             )
             runCurrent()
@@ -420,7 +419,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             kosmos.fakeDeviceEntryFaceAuthRepository.setAuthenticationStatus(
                 ErrorFaceAuthenticationStatus(
                     BiometricFaceConstants.FACE_ERROR_LOCKOUT,
-                    "locked out"
+                    "locked out",
                 )
             )
             runCurrent()
@@ -466,10 +465,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
         }
     }
 
-    private fun assertTryAgainMessage(
-        message: String?,
-        time: Int,
-    ) {
+    private fun assertTryAgainMessage(message: String?, time: Int) {
         assertThat(message).contains("Try again in $time second")
     }
 
@@ -480,7 +476,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             UserInfo(
                 /* id= */ PRIMARY_USER_ID,
                 /* name= */ "primary user",
-                /* flags= */ UserInfo.FLAG_PRIMARY
+                /* flags= */ UserInfo.FLAG_PRIMARY,
             )
     }
 }

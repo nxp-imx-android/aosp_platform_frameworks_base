@@ -23,7 +23,6 @@ import androidx.core.graphics.alpha
 import com.android.app.animation.Interpolators.EMPHASIZED_ACCELERATE
 import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
-import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -32,6 +31,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.ScrimAlpha
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.ui.ShadeColors.notificationScrim
@@ -61,7 +61,7 @@ constructor(
 ) {
     /** Common fade for scrim alpha values during *BOUNCER->GONE */
     fun scrimAlpha(duration: Duration, fromState: KeyguardState): Flow<ScrimAlpha> {
-        return if (ComposeBouncerFlags.isEnabled) {
+        return if (SceneContainerFlag.isEnabled) {
             keyguardDismissActionInteractor
                 .get()
                 .willAnimateDismissActionOnLockscreen
@@ -194,11 +194,14 @@ constructor(
                 bouncerBehindAlpha = 1.0f,
             )
         val shadeNotifAlpha = colorAlpha(notificationScrim(context, isBlurCurrentlySupported))
-        val shadeBehindAlpha = colorAlpha(shadePanel(
-            context = context,
-            blurSupported = isBlurCurrentlySupported,
-            withScrim = true
-        ))
+        val shadeBehindAlpha =
+            colorAlpha(
+                shadePanel(
+                    context = context,
+                    blurSupported = isBlurCurrentlySupported,
+                    withScrim = true,
+                )
+            )
         val bouncerBehindAlpha =
             if (isBlurCurrentlySupported) ScrimController.TRANSPARENT_BOUNCER_SCRIM_ALPHA else 1.0f
         return when {

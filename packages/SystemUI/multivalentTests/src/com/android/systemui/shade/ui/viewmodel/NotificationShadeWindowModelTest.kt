@@ -16,14 +16,12 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -249,21 +247,6 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_COMPOSE_BOUNCER)
-    fun withComposeBouncer_bouncerShowing_providesTheCorrectState() =
-        testScope.runTest {
-            val bouncerShowing by collectLastValue(underTest.isBouncerShowing)
-
-            kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(isShowing = false)
-            runCurrent()
-            assertThat(bouncerShowing).isFalse()
-
-            kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(isShowing = true)
-            runCurrent()
-            assertThat(bouncerShowing).isTrue()
-        }
-
-    @Test
     @EnableSceneContainer
     fun withSceneContainer_doesBouncerRequireIme_providesTheCorrectState() =
         testScope.runTest {
@@ -293,26 +276,5 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
                 ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
             runCurrent()
             assertThat(bouncerRequiresIme).isTrue()
-        }
-
-    @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_COMPOSE_BOUNCER)
-    fun withComposeBouncer_doesBouncerRequireIme_providesTheCorrectState() =
-        testScope.runTest {
-            val bouncerRequiresIme by collectLastValue(underTest.doesBouncerRequireIme)
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.Pin
-            )
-
-            kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(isShowing = true)
-            runCurrent()
-            assertThat(bouncerRequiresIme).isFalse()
-
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.Password
-            )
-            kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(isShowing = true)
-            runCurrent()
-            assertThat(bouncerRequiresIme).isFalse()
         }
 }
