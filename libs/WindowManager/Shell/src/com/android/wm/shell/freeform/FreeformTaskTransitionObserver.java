@@ -22,6 +22,7 @@ import android.app.ActivityManager;
 import android.os.IBinder;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
@@ -123,53 +124,85 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
         final ArrayList<ActivityManager.RunningTaskInfo> taskInfoList = new ArrayList<>();
         final ArrayList<WindowContainerToken> taskParents = new ArrayList<>();
+        final ArrayList<TransitionInfo.Change> filteredChanges = new ArrayList<>();
+
         for (TransitionInfo.Change change : info.getChanges()) {
-            if ((change.getFlags() & TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
-                continue;
-            }
+            if (shouldSkipChange(info, change, taskParents)) continue;
+            filteredChanges.add(change);
+        }
 
-            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-            if (taskInfo == null || taskInfo.taskId == -1) {
-                continue;
+        if (DesktopExperienceFlags.ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX.isTrue()) {
+            for (TransitionInfo.Change change : filteredChanges.reversed()) {
+                notifyChange(transition, info, startT, finishT, change, taskInfoList);
             }
-            // Filter out non-leaf tasks. Freeform/fullscreen don't nest tasks, but split-screen
-            // does, so this prevents adding duplicate captions in that scenario.
-            if (change.getParent() != null
-                    && info.getChange(change.getParent()).getTaskInfo() != null) {
-                // This logic relies on 2 assumptions: 1 is that child tasks will be visited before
-                // parents (due to how z-order works). 2 is that no non-tasks are interleaved
-                // between tasks (hierarchically).
-                taskParents.add(change.getParent());
-            }
-            if (taskParents.contains(change.getContainer())) {
-                continue;
-            }
-
-            switch (change.getMode()) {
-                case WindowManager.TRANSIT_OPEN:
-                    onOpenTransitionReady(change, startT, finishT);
-                    break;
-                case WindowManager.TRANSIT_TO_FRONT:
-                    onToFrontTransitionReady(change, startT, finishT);
-                    break;
-                case WindowManager.TRANSIT_TO_BACK: {
-                    if (info.getType() == TRANSIT_START_RECENTS_TRANSITION) {
-                        mTransientTransition = transition;
-                    }
-                    onToBackTransitionReady(change, startT, finishT);
-                    break;
-                }
-                case WindowManager.TRANSIT_CLOSE: {
-                    taskInfoList.add(change.getTaskInfo());
-                    onCloseTransitionReady(change, startT, finishT);
-                    break;
-                }
-                case WindowManager.TRANSIT_CHANGE:
-                    onChangeTransitionReady(change, startT, finishT);
-                    break;
+        } else {
+            for (TransitionInfo.Change change : filteredChanges) {
+                notifyChange(transition, info, startT, finishT, change, taskInfoList);
             }
         }
+
         mTransitionToTaskInfo.put(transition, taskInfoList);
+    }
+
+    private void notifyChange(
+            @NonNull IBinder transition,
+            @NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startT,
+            @NonNull SurfaceControl.Transaction finishT,
+            TransitionInfo.Change change,
+            ArrayList<ActivityManager.RunningTaskInfo> taskInfoList) {
+        switch (change.getMode()) {
+            case WindowManager.TRANSIT_OPEN:
+                onOpenTransitionReady(change, startT, finishT);
+                break;
+            case WindowManager.TRANSIT_TO_FRONT:
+                onToFrontTransitionReady(change, startT, finishT);
+                break;
+            case WindowManager.TRANSIT_CHANGE:
+                onChangeTransitionReady(change, startT, finishT);
+                break;
+            case WindowManager.TRANSIT_TO_BACK: {
+                if (info.getType() == TRANSIT_START_RECENTS_TRANSITION) {
+                    mTransientTransition = transition;
+                }
+                onToBackTransitionReady(change, startT, finishT);
+                break;
+            }
+            case WindowManager.TRANSIT_CLOSE: {
+                taskInfoList.add(change.getTaskInfo());
+                onCloseTransitionReady(change, startT, finishT);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    private static boolean shouldSkipChange(
+            @NonNull TransitionInfo info,
+            TransitionInfo.Change change,
+            ArrayList<WindowContainerToken> taskParents) {
+        if ((change.getFlags() & TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
+            return true;
+        }
+
+        final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+        if (taskInfo == null || taskInfo.taskId == -1) {
+            return true;
+        }
+        // Filter out non-leaf tasks. Freeform/fullscreen don't nest tasks, but split-screen
+        // does, so this prevents adding duplicate captions in that scenario.
+        if (change.getParent() != null
+                && info.getChange(change.getParent()).getTaskInfo() != null) {
+            // This logic relies on 2 assumptions: 1 is that child tasks will be visited before
+            // parents (due to how z-order works). 2 is that no non-tasks are interleaved
+            // between tasks (hierarchically).
+            taskParents.add(change.getParent());
+        }
+        if (taskParents.contains(change.getContainer())) {
+            return true;
+        }
+        return false;
     }
 
     private void onOpenTransitionReady(
