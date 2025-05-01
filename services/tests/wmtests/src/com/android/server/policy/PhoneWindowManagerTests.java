@@ -462,6 +462,32 @@ public class PhoneWindowManagerTests {
                         KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    public void testKeyGestureEvents_sysuiKeyGesturesEventsEnabled_notRegistered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
+        assertThat(registeredKeyGestureEvents.getValue()).doesNotContain(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    public void testKeyGestureEvents_sysuiKeyGesturesEventsDisabled_registered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
+        assertThat(registeredKeyGestureEvents.getValue()).contains(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
+    }
+
     private void initPhoneWindowManager() {
         mPhoneWindowManager.mDefaultDisplayPolicy = mDisplayPolicy;
         mPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);

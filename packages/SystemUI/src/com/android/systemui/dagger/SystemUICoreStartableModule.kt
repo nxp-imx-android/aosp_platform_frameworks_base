@@ -37,6 +37,7 @@ import com.android.systemui.globalactions.GlobalActionsComponent
 import com.android.systemui.haptics.msdl.MSDLCoreStartable
 import com.android.systemui.keyboard.KeyboardUI
 import com.android.systemui.keyboard.PhysicalKeyboardCoreStartable
+import com.android.systemui.keyevent.SysUIKeyGestureEventInitializer
 import com.android.systemui.keyguard.KeyguardViewConfigurator
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.data.quickaffordance.MuteQuickAffordanceCoreStartable
@@ -346,4 +347,11 @@ abstract class SystemUICoreStartableModule {
     @IntoMap
     @ClassKey(ComplicationTypesUpdater::class)
     abstract fun bindComplicationTypesUpdater(updater: ComplicationTypesUpdater): CoreStartable
+
+    @Binds
+    @IntoMap
+    @ClassKey(SysUIKeyGestureEventInitializer::class)
+    abstract fun bindSysUIKeyGestureEventInitializer(
+        keyGestureEventInitializer: SysUIKeyGestureEventInitializer
+    ): CoreStartable
 }

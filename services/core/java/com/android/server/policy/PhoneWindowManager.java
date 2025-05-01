@@ -3381,7 +3381,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
@@ -3413,6 +3412,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER);
+        }
+        if (!com.android.window.flags.Flags.enableKeyGestureHandlerForSysui()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
         }
         mInputManager.registerKeyGestureEventHandler(supportedGestures,
                 PhoneWindowManager.this::handleKeyGestureEvent);
