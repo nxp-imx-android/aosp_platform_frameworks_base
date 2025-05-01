@@ -28,6 +28,7 @@ import static com.android.systemui.util.leak.RotationUtils.ROTATION_SEASCAPE;
 import static com.android.systemui.util.leak.RotationUtils.ROTATION_UPSIDE_DOWN;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
@@ -58,6 +59,7 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider;
+import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.window.StatusBarWindowModule.InternalWindowViewInflater;
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider;
 import com.android.systemui.unfold.util.JankMonitorTransitionProgressListener;
@@ -94,6 +96,14 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     private WindowManager.LayoutParams mLp;
     private final WindowManager.LayoutParams mLpChanged;
     private final Binder mInsetsSourceOwner = new Binder();
+
+    private final ConfigurationController.ConfigurationListener mConfigurationListener =
+            new ConfigurationController.ConfigurationListener() {
+                @Override
+                public void onConfigChanged(Configuration newConfig) {
+                    refreshStatusBarHeight();
+                }
+            };
 
     @AssistedInject
     public StatusBarWindowControllerImpl(
@@ -174,6 +184,10 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
                             + " doesn't exist anymore.",
                     e);
         }
+        if (StatusBarConnectedDisplays.isEnabled()) {
+            mStatusBarConfigurationController.addCallback(mConfigurationListener);
+            refreshStatusBarHeight();
+        }
         mLpChanged.copyFrom(mLp);
 
         mContentInsetsProvider.addCallback(this::calculateStatusBarLocationsForAllRotations);
@@ -195,7 +209,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             // it here will fail too, since it wasn't added in the first place.
             Log.e(TAG, "Failed to remove View from WindowManager. View was not attached", e);
         }
-
+        mStatusBarConfigurationController.removeCallback(mConfigurationListener);
         if (StatusBarRootModernization.isEnabled()) {
             return;
         }
