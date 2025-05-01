@@ -482,10 +482,8 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"No definit"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gestiona a la configuració"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Cap mode actiu}=1{{mode} està actiu}many{# de modes actius}other{# modes actius}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modes"</string>
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Activat"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"No t\'interromprà cap so ni cap vibració, tret dels de les alarmes, recordatoris, esdeveniments i trucades de les persones que especifiquis. Continuaràs sentint tot allò que decideixis reproduir, com ara música, vídeos i jocs."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"No t\'interromprà cap so ni cap vibració, tret dels de les alarmes. Continuaràs sentint tot allò que decideixis reproduir, com ara música, vídeos i jocs."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Personalitza"</string>
@@ -812,16 +810,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Per connectar el teclat amb la tauleta, primer has d\'activar el Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activa"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activat: basat en cares"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silencia i agrupa"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Vendes, funcions noves i més"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Notícies destacades, editorials i més"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"M\'agrades, publicacions i més"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Butlletins d\'informació, mitjans recomanats i més"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Fet"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplica"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactiva"</string>
@@ -1028,13 +1021,11 @@
     <string name="other" msgid="429768510980739978">"Altres"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"commutar la mida de la icona"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Suprimir la icona"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Col·loca la icona"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"commuta el mode d\'emplaçament"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"commuta la selecció"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Afegir la icona a la darrera posició"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Afegeix <xliff:g id="NAME">%1$s</xliff:g> a la darrera posició"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mou el mosaic"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Afegeix una icona a la posició que vulguis"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Mou a la posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1357,6 +1348,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"Posa en pausa l\'animació"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Trucada en curs"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"En curs"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Dades mòbils"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Connectat"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Connexió temporal"</string>

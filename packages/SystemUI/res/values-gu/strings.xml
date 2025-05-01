@@ -481,7 +481,7 @@
     <string name="zen_mode_off" msgid="1736604456618147306">"બંધ"</string>
     <string name="zen_mode_set_up" msgid="8231201163894922821">"સેટઅપ કર્યું નથી"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"સેટિંગમાં જઈને મેનેજ કરો"</string>
-    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{કોઈ સક્રિય મોડ નથી}=1{{mode} સક્રિય છે}one{# મોડ સક્રિય છે}other{# મોડ સક્રિય છે}}"</string>
+    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{કોઈ ઍક્ટિવ મોડ નથી}=1{{mode} ઍક્ટિવ છે}one{# મોડ ઍક્ટિવ છે}other{# મોડ ઍક્ટિવ છે}}"</string>
     <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ચાલુ"</string>
@@ -811,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"તમારા ટેબ્લેટ સાથે કીબોર્ડ કનેક્ટ કરવા માટે, તમારે પહેલાં બ્લૂટૂથ ચાલુ કરવાની જરૂર પડશે."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ચાલુ કરો"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ચાલુ છે - ચહેરા આધારિત રોટેશન"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"સાઇલન્ટ અને બંડલ"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"વેચાણ, નવી સુવિધાઓ અને બીજું ઘણું"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"લોકપ્રિય સ્ટોરી, એડિટોરિયલ અને બીજું ઘણું"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"પસંદ, પોસ્ટ અને બીજું ઘણું"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ન્યૂઝલેટર, સુઝાવ આપેલું મીડિયા અને બીજું ઘણું"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
@@ -1136,7 +1131,7 @@
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"સ્ક્રીન રેકોર્ડિંગ"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"કોઈ શીર્ષક નથી"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"સ્ટૅન્ડબાય"</string>
-    <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ફૉન્ટ સાઇઝ"</string>
+    <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ફૉન્ટનું કદ"</string>
     <string name="font_scaling_smaller" msgid="1012032217622008232">"વધુ નાનું બનાવો"</string>
     <string name="font_scaling_larger" msgid="5476242157436806760">"વધુ મોટું બનાવો"</string>
     <string name="magnification_window_title" msgid="4863914360847258333">"વિસ્તૃતીકરણ વિંડો"</string>
@@ -1356,6 +1351,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"ઍનિમેશન થોભાવો"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ચાલુ કૉલ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ચાલી રહેલી પ્રવૃત્તિ"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"મોબાઇલ ડેટા"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"કનેક્ટ કરેલું"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"હંગામી રીતે કનેક્ટ કર્યું"</string>

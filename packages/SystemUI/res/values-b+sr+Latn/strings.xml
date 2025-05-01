@@ -410,7 +410,7 @@
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Snimanje ekrana"</string>
     <string name="performance" msgid="6552785217174378320">"Performanse"</string>
     <string name="user_interface" msgid="3712869377953950887">"Korisnički interfejs"</string>
-    <string name="thermal" msgid="6758074791325414831">"Termalna kamera"</string>
+    <string name="thermal" msgid="6758074791325414831">"Zagrevanje"</string>
     <string name="custom" msgid="3337456985275158299">"Prilagođeno"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Podešavanja prilagođenog praćenja"</string>
     <string name="restore_default" msgid="5259420807486239755">"Vrati podrazumevano"</string>
@@ -482,8 +482,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije podešeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u podešavanjima"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih režima}=1{Aktivan je {mode} režim}one{Aktivan je # režim}few{Aktivna su # režima}other{Aktivno je # režima}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> režim/a"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Uključeno"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas uznemiravati zvukovi i vibracije osim za alarme, podsetnike, događaje i pozivaoce koje navedete. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas uznemiravati zvukovi i vibracije osim za alarme. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
@@ -525,7 +524,7 @@
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"Vidžeti na zaključanom ekranu"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"Vidžet <xliff:g id="WIDGET_NAME">%1$s</xliff:g> je dodat na zaključani ekran"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Prevucite ulevo da biste započeli zajednički vodič"</string>
-    <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Prilagodite"</string>
+    <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Prilagodi"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Odbaci"</string>
     <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Dodajte, uklonite i preuredite vidžete ovde"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Dodajte još vidžeta"</string>
@@ -1022,13 +1021,11 @@
     <string name="other" msgid="429768510980739978">"Drugo"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"uključivanje ili isključivanje veličine pločice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Uklonite pločicu"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Postavite pločicu"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"uključivanje ili isključivanje režima postavljanja"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"potvrdili ili opozvali izbor"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Dodajte pločicu na poslednju poziciju"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Dodajte <xliff:g id="NAME">%1$s</xliff:g> na poslednju poziciju"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Premestite pločicu"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Dodajte pločicu na željenu poziciju"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Premestite na <xliff:g id="POSITION">%1$d</xliff:g>. poziciju"</string>
@@ -1351,6 +1348,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pauzirajte animaciju"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Poziv je u toku"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Aktivno"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobilni podaci"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Povezano"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Privremeno povezano"</string>
