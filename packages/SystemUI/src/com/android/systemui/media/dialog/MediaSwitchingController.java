@@ -310,8 +310,7 @@ public class MediaSwitchingController
     }
 
     private MediaController getMediaController() {
-        if (mToken != null
-                && com.android.settingslib.media.flags.Flags.usePlaybackInfoForRoutingControls()) {
+        if (mToken != null) {
             return new MediaController(mContext, mToken);
         } else {
             for (NotificationEntry entry : mNotifCollection.getAllNotifs()) {

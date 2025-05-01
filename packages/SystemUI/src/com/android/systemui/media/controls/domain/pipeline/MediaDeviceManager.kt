@@ -395,7 +395,7 @@ constructor(
         private fun updateCurrent() {
             if (isLeAudioBroadcastEnabled()) {
                 current = getLeAudioBroadcastDeviceData()
-            } else if (Flags.usePlaybackInfoForRoutingControls()) {
+            } else {
                 val activeDevice: MediaDeviceData?
 
                 // LocalMediaManager provides the connected device based on PlaybackInfo.
@@ -442,35 +442,6 @@ constructor(
 
                 current = activeDevice ?: EMPTY_AND_DISABLED_MEDIA_DEVICE_DATA
                 logger.logNewDeviceName(current?.name?.toString())
-            } else {
-                val aboutToConnect = aboutToConnectDeviceOverride
-                if (
-                    aboutToConnect != null &&
-                        aboutToConnect.fullMediaDevice == null &&
-                        aboutToConnect.backupMediaDeviceData != null
-                ) {
-                    // Only use [backupMediaDeviceData] when we don't have [fullMediaDevice].
-                    current = aboutToConnect.backupMediaDeviceData
-                    return
-                }
-                val device =
-                    aboutToConnect?.fullMediaDevice ?: localMediaManager.currentConnectedDevice
-                val routingSession =
-                    controller?.let { mr2manager.get().getRoutingSessionForMediaController(it) }
-
-                // If we have a controller but get a null route, then don't trust the device
-                val enabled = device != null && (controller == null || routingSession != null)
-
-                val name = getDeviceName(device, routingSession)
-                logger.logNewDeviceName(name)
-                current =
-                    MediaDeviceData(
-                        enabled,
-                        device?.iconWithoutBackground,
-                        name,
-                        id = device?.id,
-                        showBroadcastButton = false,
-                    )
             }
         }
 
