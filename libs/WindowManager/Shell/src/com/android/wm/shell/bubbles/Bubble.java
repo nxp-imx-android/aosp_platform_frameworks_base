@@ -347,7 +347,7 @@ public class Bubble implements BubbleViewProvider {
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
         mTaskId = task.taskId;
-        mIntent = null;
+        mIntent = task.baseIntent;
         mDesiredHeight = Integer.MAX_VALUE;
         mPackageName = task.baseActivity.getPackageName();
     }
