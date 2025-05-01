@@ -167,6 +167,7 @@ class ModernStatusBarMobileView(context: Context, attrs: AttributeSet?) :
                         logger = logger,
                         scope = scope,
                         kairosNetwork = kairosNetwork,
+                        subId = subscriptionId,
                     )
                 jobResult = job
                 binding
