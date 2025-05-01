@@ -1213,7 +1213,13 @@ class DesktopTasksController(
             desktopExitRunnable?.invoke(transition)
         } else {
             snapEventHandler.removeTaskIfTiled(displayId, taskId)
-            val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
+            val willExitDesktop =
+                if (
+                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                        DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
+                )
+                    false
+                else willExitDesktop(taskId, displayId, forceExitDesktop = false)
             val desktopExitRunnable =
                 performDesktopExitCleanUp(
                     wct = wct,
