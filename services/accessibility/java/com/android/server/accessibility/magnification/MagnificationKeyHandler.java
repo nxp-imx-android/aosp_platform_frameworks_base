@@ -71,6 +71,18 @@ public class MagnificationKeyHandler extends BaseEventStreamTransformation {
          * Called when all keyboard interaction with magnification should be stopped.
          */
         void onKeyboardInteractionStop();
+
+        /**
+         * Check for whether magnification is active on the given display. If it is not,
+         * there is no need to send scale and zoom events.
+         * Note that magnification may be enabled (so this handler is installed) but not
+         * activated, for example when the shortcut button is shown or if an A11y service
+         * using magnification is active.
+         *
+         * @param displayId The logical display ID
+         * @return true if magnification is activated.
+         */
+        boolean isMagnificationActivated(int displayId);
     }
 
     protected final MagnificationKeyHandler.Callback mCallback;
@@ -87,7 +99,9 @@ public class MagnificationKeyHandler extends BaseEventStreamTransformation {
             super.onKeyEvent(event, policyFlags);
             return;
         }
-        boolean modifiersPressed = event.isAltPressed() && event.isMetaPressed();
+        // Look for exactly Alt and Meta.
+        boolean modifiersPressed = event.isAltPressed() && event.isMetaPressed()
+                && !event.isCtrlPressed() && !event.isShiftPressed();
         if (!modifiersPressed) {
             super.onKeyEvent(event, policyFlags);
             if (mIsKeyboardInteracting) {
@@ -98,39 +112,53 @@ public class MagnificationKeyHandler extends BaseEventStreamTransformation {
             }
             return;
         }
-        boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
         int keyCode = event.getKeyCode();
-        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
-                || keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            int panDirection = switch(keyCode) {
+        boolean isArrowKeyCode = keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+                || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                || keyCode == KeyEvent.KEYCODE_DPAD_UP
+                || keyCode == KeyEvent.KEYCODE_DPAD_DOWN;
+        boolean isZoomKeyCode = keyCode == KeyEvent.KEYCODE_EQUALS
+                || keyCode == KeyEvent.KEYCODE_MINUS;
+        if (!isArrowKeyCode && !isZoomKeyCode) {
+            // Some other key was pressed.
+            super.onKeyEvent(event, policyFlags);
+            return;
+        }
+        int displayId = getDisplayId(event);
+        // Check magnification is active only when we know we have the correct keys pressed.
+        // This requires `synchronized` which is expensive to do on every key event.
+        if (!mCallback.isMagnificationActivated(displayId)) {
+            // Magnification isn't active.
+            super.onKeyEvent(event, policyFlags);
+            return;
+        }
+        boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
+        if (isArrowKeyCode) {
+            int panDirection = switch (keyCode) {
                 case KeyEvent.KEYCODE_DPAD_LEFT -> MagnificationController.PAN_DIRECTION_LEFT;
                 case KeyEvent.KEYCODE_DPAD_RIGHT -> MagnificationController.PAN_DIRECTION_RIGHT;
                 case KeyEvent.KEYCODE_DPAD_UP -> MagnificationController.PAN_DIRECTION_UP;
                 default -> MagnificationController.PAN_DIRECTION_DOWN;
             };
             if (isDown) {
-                mCallback.onPanMagnificationStart(getDisplayId(event), panDirection);
+                mCallback.onPanMagnificationStart(displayId, panDirection);
                 mIsKeyboardInteracting = true;
             } else {
                 mCallback.onPanMagnificationStop(panDirection);
             }
             return;
-        } else if (keyCode == KeyEvent.KEYCODE_EQUALS || keyCode == KeyEvent.KEYCODE_MINUS) {
-            int zoomDirection = MagnificationController.ZOOM_DIRECTION_OUT;
-            if (keyCode == KeyEvent.KEYCODE_EQUALS) {
-                zoomDirection = MagnificationController.ZOOM_DIRECTION_IN;
-            }
-            if (isDown) {
-                mCallback.onScaleMagnificationStart(getDisplayId(event), zoomDirection);
-                mIsKeyboardInteracting = true;
-            } else {
-                mCallback.onScaleMagnificationStop(zoomDirection);
-            }
-            return;
         }
-
-        // Continue down the eventing chain if this was unused.
-        super.onKeyEvent(event, policyFlags);
+        // Zoom key code.
+        int zoomDirection = MagnificationController.ZOOM_DIRECTION_OUT;
+        if (keyCode == KeyEvent.KEYCODE_EQUALS) {
+            zoomDirection = MagnificationController.ZOOM_DIRECTION_IN;
+        }
+        if (isDown) {
+            mCallback.onScaleMagnificationStart(displayId, zoomDirection);
+            mIsKeyboardInteracting = true;
+        } else {
+            mCallback.onScaleMagnificationStop(zoomDirection);
+        }
     }
 
     private int getDisplayId(KeyEvent event) {

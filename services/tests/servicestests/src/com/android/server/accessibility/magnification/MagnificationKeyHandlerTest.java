@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -68,6 +69,7 @@ public class MagnificationKeyHandlerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mCallback.isMagnificationActivated(any(Integer.class))).thenReturn(true);
         mMkh = new MagnificationKeyHandler(mCallback);
         mMkh.setNext(mNextHandler);
     }
@@ -77,15 +79,7 @@ public class MagnificationKeyHandlerTest {
         final KeyEvent event = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_L, 0, 0);
         mMkh.onKeyEvent(event, 0);
 
-        // No callbacks were called.
-        verify(mCallback, times(0)).onPanMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onPanMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onKeyboardInteractionStop();
-
-        // The event was passed on.
-        verify(mNextHandler, times(1)).onKeyEvent(event, 0);
+        verifySentEventToNext(event);
     }
 
     @Test
@@ -95,15 +89,7 @@ public class MagnificationKeyHandlerTest {
                         0, KeyEvent.META_ALT_ON);
         mMkh.onKeyEvent(event, 0);
 
-        // No callbacks were called.
-        verify(mCallback, times(0)).onPanMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onPanMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onKeyboardInteractionStop();
-
-        // The event was passed on.
-        verify(mNextHandler, times(1)).onKeyEvent(event, 0);
+        verifySentEventToNext(event);
     }
 
     @Test
@@ -113,15 +99,41 @@ public class MagnificationKeyHandlerTest {
                         KeyEvent.META_META_ON | KeyEvent.META_ALT_ON);
         mMkh.onKeyEvent(event, 0);
 
-        // No callbacks were called.
-        verify(mCallback, times(0)).onPanMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onPanMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStart(anyInt(), anyInt());
-        verify(mCallback, times(0)).onScaleMagnificationStop(anyInt());
-        verify(mCallback, times(0)).onKeyboardInteractionStop();
+        verifySentEventToNext(event);
+    }
 
-        // The event was passed on.
-        verify(mNextHandler, times(1)).onKeyEvent(event, 0);
+    @Test
+    public void onKeyEvent_arrowKeyPressWithTooManyModifiers_sendToNext() {
+        // Add ctrl.
+        KeyEvent event =
+                new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, 0,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON | KeyEvent.META_CTRL_ON);
+        mMkh.onKeyEvent(event, 0);
+        verifySentEventToNext(event);
+
+        // Add shift.
+        event = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, 0,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON | KeyEvent.META_SHIFT_ON);
+        mMkh.onKeyEvent(event, 0);
+        verifySentEventToNext(event);
+
+        // Add ctrl and shift.
+        event = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, 0,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON | KeyEvent.META_CTRL_ON
+                        | KeyEvent.META_SHIFT_ON);
+        mMkh.onKeyEvent(event, 0);
+        verifySentEventToNext(event);
+    }
+
+    @Test
+    public void onKeyEvent_arrowKeyPressWithoutMagnificationActive_sendToNext() {
+        when(mCallback.isMagnificationActivated(any(Integer.class))).thenReturn(false);
+        final KeyEvent event =
+                new KeyEvent(0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, 0,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON);
+        mMkh.onKeyEvent(event, 0);
+
+        verifySentEventToNext(event);
     }
 
     @Test
@@ -290,4 +302,15 @@ public class MagnificationKeyHandlerTest {
         verify(mNextHandler, times(0)).onKeyEvent(any(), anyInt());
     }
 
+    private void verifySentEventToNext(KeyEvent event) {
+        // No callbacks were called.
+        verify(mCallback, times(0)).onPanMagnificationStart(anyInt(), anyInt());
+        verify(mCallback, times(0)).onPanMagnificationStop(anyInt());
+        verify(mCallback, times(0)).onScaleMagnificationStart(anyInt(), anyInt());
+        verify(mCallback, times(0)).onScaleMagnificationStop(anyInt());
+        verify(mCallback, times(0)).onKeyboardInteractionStop();
+
+        // The event was passed on.
+        verify(mNextHandler, times(1)).onKeyEvent(event, 0);
+    }
 }
