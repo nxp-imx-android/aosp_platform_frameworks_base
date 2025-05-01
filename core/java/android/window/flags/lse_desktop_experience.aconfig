@@ -1259,3 +1259,13 @@ flag {
     description: "Enables the API to allow default browsers to reposition their windows."
     bug: "400407139"
 }
+
+flag {
+    name: "enable_empty_desk_on_minimize"
+    namespace: "lse_desktop_experience"
+    description: "Keep desktop open when the last window is minimized."
+    bug: "410493575"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
