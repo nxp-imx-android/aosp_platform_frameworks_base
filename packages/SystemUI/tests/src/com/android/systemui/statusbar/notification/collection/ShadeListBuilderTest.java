@@ -298,88 +298,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         );
     }
 
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testBundleSingleNotif() {
-        mListBuilder.setBundler(TestBundler.INSTANCE);
-
-        // GIVEN single notif that will be bundled
-        addNotif(0, PACKAGE_1, BUNDLE_1);
-        dispatchBuild();
-
-        // VERIFY single notif shows in bundle
-        verifyBuiltList(
-                bundle(
-                        BUNDLE_1,
-                        notif(0)
-                )
-        );
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testBundle_combineTwoNotifs_intoOneGroup() {
-        mListBuilder.setBundler(TestBundler.INSTANCE);
-
-        // GIVEN single notif that will be bundled
-        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1);
-        dispatchBuild();
-
-        // VERIFY single notif shows in bundle
-        verifyBuiltList(
-                bundle(
-                        BUNDLE_1,
-                        notif(0) // Child is promoted out of group inside bundle
-                )
-        );
-
-        // Add summary and child in same group
-        addGroupSummary(1, PACKAGE_1, GROUP_1, BUNDLE_1);
-        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
-        dispatchBuild();
-
-        // Verify new additions are grouped inside bundle
-        verifyBuiltList(
-                bundle(
-                        BUNDLE_1,
-                        group(
-                            summary(1),
-                            child(0),
-                            child(2)
-                        )
-                )
-        );
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testBundleGroupChildrenAreSorted() {
-        mListBuilder.setBundler(TestBundler.INSTANCE);
-
-        // GIVEN a simple pipeline
-        // WHEN we add two groups
-        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(3);
-        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(2);
-        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(1);
-        addGroupSummary(3, PACKAGE_1, GROUP_1, BUNDLE_1);
-
-        dispatchBuild();
-
-        // THEN bundle group children are sorted by rank
-        verifyBuiltList(
-                bundle(
-                        BUNDLE_1,
-                        group(
-                                summary(3),
-                                child(2),
-                                child(1),
-                                child(0)
-                        )
-                )
-        );
-    }
-
     @Test
     public void testDuplicateGroupSummariesAreDiscarded() {
         // GIVEN a simple pipeline
@@ -994,6 +912,140 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         // THEN the entry that didn't have an explicit section gets assigned the DefaultSection
         assertNotNull(notif(0).entry.getSection());
         assertEquals(1, notif(0).entry.getSectionIndex());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_singleNotif() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN single notif that will be bundled
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY single notif shows in bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(0)
+                )
+        );
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_combineTwoNotifs_intoOneGroup() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN single notif that will be bundled
+        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // VERIFY single notif shows in bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(0) // Child is promoted out of group inside bundle
+                )
+        );
+
+        // Add summary and child in same group
+        addGroupSummary(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+        dispatchBuild();
+
+        // Verify new additions are grouped inside bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        group(
+                                summary(1),
+                                child(0),
+                                child(2)
+                        )
+                )
+        );
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_notifNotPromoted() {
+        final int promotableId = 123;
+
+        IdPromoter idPromoter = spy(new IdPromoter(promotableId));
+        mListBuilder.addPromoter(idPromoter);
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        addNotif(0, PACKAGE_1, BUNDLE_1)
+                .setId(promotableId);
+        dispatchBuild();
+
+        verifyBuiltList(
+                bundle(BUNDLE_1, notif(0))
+        );
+
+        NotificationEntry promotableEntry = mEntrySet.get(0);
+        verify(idPromoter, never()).shouldPromoteToTopLevel(eq(promotableEntry));
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_groupNotifNotPromoted() {
+        final int promotableId = 123;
+
+        IdPromoter idPromoter = spy(new IdPromoter(promotableId));
+        mListBuilder.addPromoter(idPromoter);
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // Add promotable child in a group that will be bundled
+        addGroupSummary(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1).setId(promotableId);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+
+        dispatchBuild();
+
+        // Verify that group child was not promoted out of bundle
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        group(
+                                summary(0),
+                                child(1),
+                                child(2)
+                        )
+                )
+        );
+
+        NotificationEntry promotableChild = mEntrySet.get(1);
+        verify(idPromoter, never()).shouldPromoteToTopLevel(eq(promotableChild));
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_groupChildrenAreSorted() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a simple pipeline
+        // WHEN we add two groups
+        addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(3);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(2);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(1);
+        addGroupSummary(3, PACKAGE_1, GROUP_1, BUNDLE_1);
+
+        dispatchBuild();
+
+        // THEN bundle group children are sorted by rank
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        group(
+                                summary(3),
+                                child(2),
+                                child(1),
+                                child(0)
+                        )
+                )
+        );
     }
 
     @Test
