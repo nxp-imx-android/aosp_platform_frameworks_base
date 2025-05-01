@@ -29,6 +29,7 @@ import com.android.server.servicewatcher.ServiceWatcher
 import com.android.server.servicewatcher.ServiceWatcher.ServiceListener
 import com.android.systemui.communal.shared.model.CommunalWidgetContentModel
 import com.android.systemui.communal.shared.model.GlanceableHubMultiUserHelper
+import com.android.systemui.communal.widgets.IGlanceableHubWidgetManagerService.IAppWidgetEventCallback
 import com.android.systemui.communal.widgets.IGlanceableHubWidgetManagerService.IAppWidgetHostListener
 import com.android.systemui.communal.widgets.IGlanceableHubWidgetManagerService.IConfigureWidgetCallback
 import com.android.systemui.communal.widgets.IGlanceableHubWidgetManagerService.IGlanceableHubWidgetsListener
@@ -211,6 +212,10 @@ constructor(
 
             override fun onViewDataChanged(viewId: Int) {
                 listener.onViewDataChanged(viewId)
+            }
+
+            override fun collectWidgetEvent(callback: IAppWidgetEventCallback) {
+                callback.onResult(listener.collectWidgetEvent())
             }
         }
     }
