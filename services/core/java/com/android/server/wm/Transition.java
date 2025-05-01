@@ -3866,7 +3866,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (!mController.useFullReadyTracking()) {
             Slog.e(TAG, "#" + mSyncId + " readiness timeout, used=" + mReadyTrackerOld.mUsed
                     + " deferReadyDepth=" + mReadyTrackerOld.mDeferReadyDepth
-                    + " group=" + mReadyTrackerOld.mReadyGroups);
+                    + " group=" + mReadyTrackerOld.mReadyGroups
+                    + " state=" + mState);
         } else {
             Slog.e(TAG, "#" + mSyncId + " met conditions: " + mReadyTracker.mMet);
             Slog.e(TAG, "#" + mSyncId + " unmet conditions: " + mReadyTracker.mConditions);
