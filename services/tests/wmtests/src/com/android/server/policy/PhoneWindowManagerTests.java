@@ -433,7 +433,7 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_RECENTS)
+    @EnableFlags(Flags.FLAG_GRANT_MANAGE_KEY_GESTURES_TO_RECENTS)
     public void testKeyGestureEvents_recentKeyGesturesEventsEnabled_notRegistered() {
         initPhoneWindowManager();
 
@@ -448,7 +448,7 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_RECENTS)
+    @DisableFlags(Flags.FLAG_GRANT_MANAGE_KEY_GESTURES_TO_RECENTS)
     public void testKeyGestureEvents_recentKeyGesturesEventsDisabled_registered() {
         initPhoneWindowManager();
 
