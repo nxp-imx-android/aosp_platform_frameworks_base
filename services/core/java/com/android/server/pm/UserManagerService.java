@@ -3108,6 +3108,13 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public boolean canHaveRestrictedProfile(@UserIdInt int userId) {
         checkManageUsersPermission("canHaveRestrictedProfile");
+        return canHaveRestrictedProfileNoChecks(userId);
+    }
+
+    private boolean canHaveRestrictedProfileNoChecks(@UserIdInt int userId) {
+        if (isCreationOverrideEnabled()) {
+            return true;
+        }
         synchronized (mUsersLock) {
             final UserInfo userInfo = getUserInfoLU(userId);
             if (userInfo == null || !userInfo.canHaveProfile()) {
@@ -6113,10 +6120,9 @@ public class UserManagerService extends IUserManager.Stub {
                                     + " for user " + parentId,
                             UserManager.USER_OPERATION_ERROR_MAX_USERS);
                 }
-                if (isRestricted && (parentId != UserHandle.USER_SYSTEM)
-                        && !isCreationOverrideEnabled()) {
+                if (isRestricted && !canHaveRestrictedProfileNoChecks(parentId)) {
                     throwCheckedUserOperationException(
-                            "Cannot add restricted profile - parent user must be system",
+                            "Cannot add restricted profile for user " + parentId,
                             USER_OPERATION_ERROR_UNKNOWN);
                 }
 
