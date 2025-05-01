@@ -91,7 +91,8 @@ import java.util.stream.Collectors;
  */
 public class RecentTasksController implements TaskStackListenerCallback,
         RemoteCallable<RecentTasksController>, DesktopRepository.ActiveTasksListener,
-        TaskStackTransitionObserver.TaskStackTransitionObserverListener, UserChangeListener {
+        TaskStackTransitionObserver.TaskStackTransitionObserverListener, UserChangeListener,
+        DesktopRepository.DeskChangeListener {
     private static final String TAG = RecentTasksController.class.getSimpleName();
 
     // When the multiple desktops feature is disabled, all freeform tasks are lumped together into
@@ -203,8 +204,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
         mShellCommandHandler.addCommandCallback("recents", mRecentsShellCommandHandler, this);
         mUserId = ActivityManager.getCurrentUser();
         mDesktopUserRepositories.ifPresent(
-                desktopUserRepositories ->
-                        desktopUserRepositories.getCurrent().addActiveTaskListener(this));
+                desktopUserRepositories -> {
+                    desktopUserRepositories.getCurrent().addActiveTaskListener(this);
+                    if (mDesktopState.enableMultipleDesktops()) {
+                        desktopUserRepositories.getCurrent().addDeskChangeListener(this,
+                                mMainExecutor);
+                    }
+                });
         mTaskStackListener.addListener(this);
         mTaskStackTransitionObserver.addTaskStackTransitionObserverListener(this,
                 mMainExecutor);
@@ -975,6 +981,26 @@ public class RecentTasksController implements TaskStackListenerCallback,
         if (previousUserRepository.getUserId() == currentUserRepository.getUserId()) return;
         previousUserRepository.removeActiveTasksListener(this);
         currentUserRepository.addActiveTaskListener(this);
+    }
+
+    @Override
+    public void onDeskAdded(int displayId, int deskId) {
+        notifyRecentTasksChanged();
+    }
+
+    @Override
+    public void onDeskRemoved(int displayId, int deskId) {
+        notifyRecentTasksChanged();
+    }
+
+    @Override
+    public void onActiveDeskChanged(int displayId, int newActiveDeskId, int oldActiveDeskId) {
+        // No-op for now, as only desk additions/removals affect the recent tasks list directly.
+    }
+
+    @Override
+    public void onCanCreateDesksChanged(boolean canCreateDesks) {
+        // No-op for now.
     }
 
     /**
