@@ -505,6 +505,11 @@ public abstract class DisplayManagerInternal {
             SparseArray<DisplayBrightnessOverrideRequest> brightnessOverrides);
 
     /**
+     * Gets the flags set for the supplied DisplayGroupId
+     */
+    public abstract long getDisplayGroupFlags(int groupId);
+
+    /**
      * Describes a request for overriding the brightness of a single display.
      */
     public static class DisplayBrightnessOverrideRequest {

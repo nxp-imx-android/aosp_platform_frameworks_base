@@ -138,6 +138,7 @@ import com.android.server.SystemService;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.BatteryStatsService;
+import com.android.server.display.DisplayGroup;
 import com.android.server.display.feature.DeviceConfigParameterProvider;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
@@ -786,6 +787,7 @@ public final class PowerManagerService extends SystemService
 
         @Override
         public void onDisplayGroupAdded(int groupId) {
+            final boolean isDefaultGroupAdjacent = isDefaultGroupAdjacent(groupId);
             synchronized (mLock) {
                 if (mPowerGroups.contains(groupId)) {
                     Slog.e(TAG, "Tried to add already existing group:" + groupId);
@@ -802,7 +804,8 @@ public final class PowerManagerService extends SystemService
                         /* ready= */ false,
                         supportsSandman,
                         mClock.uptimeMillis(),
-                        mFeatureFlags);
+                        mFeatureFlags,
+                        isDefaultGroupAdjacent);
                 mPowerGroups.append(groupId, powerGroup);
                 onPowerGroupEventLocked(DISPLAY_GROUP_ADDED, powerGroup);
             }
@@ -833,6 +836,16 @@ public final class PowerManagerService extends SystemService
                 onPowerGroupEventLocked(DISPLAY_GROUP_CHANGED, mPowerGroups.get(groupId));
             }
         }
+    }
+
+    // Indicates that the display group is adjacent to the default group. Some of the
+    // properties that happen for such groups in conjuncture with the default groups are
+    // 1. The device will lock only when all the groups with this flag and the default group are
+    // made non interactive
+    // 2. The power button will sleep only these groups and the default group
+    private boolean isDefaultGroupAdjacent(int groupId) {
+        long flags = mDisplayManagerInternal.getDisplayGroupFlags(groupId);
+        return (flags & DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT) != 0;
     }
 
     private final class ForegroundProfileObserver extends SynchronousUserSwitchObserver {
@@ -1385,7 +1398,7 @@ public final class PowerManagerService extends SystemService
             mPowerGroups.append(Display.DEFAULT_DISPLAY_GROUP,
                     new PowerGroup(WAKEFULNESS_AWAKE, mPowerGroupWakefulnessChangeListener,
                             mNotifier, mDisplayManagerInternal, mClock.uptimeMillis(),
-                            mFeatureFlags));
+                            mFeatureFlags, /* isDefaultGroupAdjacent */  true));
             DisplayGroupPowerChangeListener displayGroupPowerChangeListener =
                     new DisplayGroupPowerChangeListener();
             mDisplayManagerInternal.registerDisplayGroupListener(displayGroupPowerChangeListener);
@@ -4676,6 +4689,7 @@ public final class PowerManagerService extends SystemService
                 Slog.e(TAG, "Tried to add already existing group:" + displayGroupId);
                 continue;
             }
+            final boolean isDefaultGroupAdjacent = isDefaultGroupAdjacent(displayGroupId);
             PowerGroup powerGroup = new PowerGroup(
                     displayGroupId,
                     mPowerGroupWakefulnessChangeListener,
@@ -4685,7 +4699,8 @@ public final class PowerManagerService extends SystemService
                     /* ready= */ false,
                     /* supportsSandman= */ false,
                     mClock.uptimeMillis(),
-                    mFeatureFlags);
+                    mFeatureFlags,
+                    isDefaultGroupAdjacent);
             mPowerGroups.append(displayGroupId, powerGroup);
         }
         mDirty |= DIRTY_DISPLAY_GROUP_WAKEFULNESS;
