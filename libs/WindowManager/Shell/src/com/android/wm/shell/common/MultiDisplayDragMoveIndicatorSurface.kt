@@ -313,6 +313,6 @@ class MultiDisplayDragMoveIndicatorSurface(
         private const val MOVE_INDICATOR_ICON_LAYER = 1
 
         private const val ALPHA_FOR_MOVE_INDICATOR_ON_DISPLAY_WITH_CURSOR = 1.0f
-        private const val ALPHA_FOR_MOVE_INDICATOR_ON_NON_CURSOR_DISPLAY = 0.8f
+        private const val ALPHA_FOR_MOVE_INDICATOR_ON_NON_CURSOR_DISPLAY = 0.7f
     }
 }

@@ -312,7 +312,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
         private const val ICON_SIZE = 48
         private val BOUNDS = Rect(10, 20, 100, 200)
         private val NEW_BOUNDS = Rect(50, 50, 150, 250)
-        private val ALPHA_FOR_TRANSLUCENT = 0.8f
+        private val ALPHA_FOR_TRANSLUCENT = 0.7f
         private val ALPHA_FOR_VISIBLE = 1.0f
     }
 }

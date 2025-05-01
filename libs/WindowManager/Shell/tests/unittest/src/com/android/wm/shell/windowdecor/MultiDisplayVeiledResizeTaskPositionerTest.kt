@@ -722,7 +722,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         private const val NAVBAR_HEIGHT = 50
         private const val CAPTION_HEIGHT = 50
         private const val DISALLOWED_AREA_FOR_END_BOUNDS_HEIGHT = 10
-        private const val ALPHA_FOR_TRANSLUCENT_WINDOW = 0.8f
+        private const val ALPHA_FOR_TRANSLUCENT_WINDOW = 0.7f
         private const val ALPHA_FOR_VISIBLE_WINDOW = 1.0f
         private val DISPLAY_BOUNDS = Rect(0, 0, 2400, 1600)
         private val STARTING_BOUNDS = Rect(100, 100, 200, 200)
