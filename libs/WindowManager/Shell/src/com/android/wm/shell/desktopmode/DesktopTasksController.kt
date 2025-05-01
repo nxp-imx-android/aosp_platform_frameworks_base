@@ -1631,7 +1631,8 @@ class DesktopTasksController(
         val bounds = calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId) ?: return
         if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
-            cascadeWindow(bounds, displayLayout, deskId)
+            val stableBounds = Rect().apply { displayLayout.getStableBounds(this) }
+            cascadeWindow(bounds, displayLayout, deskId, stableBounds)
         }
         val pendingIntent =
             PendingIntent.getActivityAsUser(
@@ -2909,8 +2910,9 @@ class DesktopTasksController(
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId)
             if (displayLayout != null) {
+                val stableBounds = Rect().apply { displayLayout.getStableBounds(this) }
                 val initialBounds = Rect(task.configuration.windowConfiguration.bounds)
-                cascadeWindow(initialBounds, displayLayout, deskId)
+                cascadeWindow(initialBounds, displayLayout, deskId, stableBounds)
                 wct.setBounds(task.token, initialBounds)
             }
         }
@@ -3338,9 +3340,15 @@ class DesktopTasksController(
         )
     }
 
-    private fun cascadeWindow(bounds: Rect, displayLayout: DisplayLayout, deskId: Int) {
-        val stableBounds = Rect()
-        displayLayout.getStableBoundsForDesktopMode(stableBounds)
+    private fun cascadeWindow(
+        bounds: Rect,
+        displayLayout: DisplayLayout,
+        deskId: Int,
+        stableBounds: Rect = Rect(),
+    ) {
+        if (stableBounds.isEmpty) {
+            displayLayout.getStableBoundsForDesktopMode(stableBounds)
+        }
 
         val activeTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
         activeTasks
