@@ -24,6 +24,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
@@ -40,23 +41,29 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 /**
  * Tests for [@link DesktopTasksTransitionObserver].
  *
  * Build/Install/Run: atest WMShellUnitTests:DesktopBackNavTransitionObserverTest
  */
-class DesktopBackNavTransitionObserverTest : ShellTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : ShellTestCase() {
 
     private val testExecutor = mock<ShellExecutor>()
     private val userRepositories = mock<DesktopUserRepositories>()
@@ -64,10 +71,15 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     private val mixedHandler = mock<DesktopMixedTransitionHandler>()
     private val backAnimationController = mock<BackAnimationController>()
     private val desksOrganizer = mock<DesksOrganizer>()
+    private val transitions = mock<Transitions>()
     private val desktopState = FakeDesktopState()
 
     private lateinit var transitionObserver: DesktopBackNavTransitionObserver
     private lateinit var shellInit: ShellInit
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setup() {
@@ -83,6 +95,7 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
                 mixedHandler,
                 backAnimationController,
                 desksOrganizer,
+                transitions,
                 desktopState,
                 shellInit,
             )
@@ -92,7 +105,9 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_taskMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        val deskId = 0
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -100,7 +115,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createBackNavigationTransition(task),
         )
 
-        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository)
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(mixedHandler).addPendingMixedTransition(any())
     }
 
@@ -111,7 +127,9 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     )
     fun backNavigation_nonFreeformDesktopTask_taskMinimized() {
         val task = createTaskInfo(1, windowingMode = WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        val deskId = 0
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -119,7 +137,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createBackNavigationTransition(task),
         )
 
-        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository)
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(mixedHandler).addPendingMixedTransition(any())
     }
 
@@ -127,8 +146,10 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_withCloseTransitionNotLastTask_taskMinimized() {
         val task = createTaskInfo(1)
+        val deskId = 0
         val transition = mock<IBinder>()
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isOnlyVisibleTask(task.taskId, task.displayId)).thenReturn(false)
         whenever(taskRepository.hasOnlyOneVisibleTask(task.displayId)).thenReturn(false)
@@ -140,7 +161,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createBackNavigationTransition(task, TRANSIT_CLOSE),
         )
 
-        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository)
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         val pendingTransition =
             DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
                 transition,
@@ -155,8 +177,10 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
     fun backNavigation_withCloseTransitionLastTask_wallpaperActivityClosed_taskMinimized() {
         val task = createTaskInfo(1)
+        val deskId = 0
         val transition = mock<IBinder>()
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
@@ -166,7 +190,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createBackNavigationTransition(task, TRANSIT_CLOSE, true),
         )
 
-        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository)
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         val pendingTransition =
             DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
                 transition,
@@ -183,8 +208,10 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     )
     fun backNavigation_withCloseTransitionLastTask_wallpaperActivityReordered_taskMinimized() {
         val task = createTaskInfo(1)
+        val deskId = 0
         val transition = mock<IBinder>()
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
@@ -194,7 +221,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createBackNavigationTransition(task, TRANSIT_CLOSE, true, TRANSIT_TO_BACK),
         )
 
-        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository)
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         val pendingTransition =
             DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
                 transition,
@@ -208,14 +236,36 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_nullTaskInfo_taskNotMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        val deskId = 0
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
             info = createBackNavigationTransition(null),
         )
 
-        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository, never())
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun backNavigation_withToBackTransitionOfDesktopTask_taskReparentedAndMinimized() {
+        val task = createTaskInfo(1)
+        val deskId = 0
+        val transitionInfo = createBackNavigationTransition(task)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
+        whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(desksOrganizer.isMinimizedInDeskAtEnd(transitionInfo.changes.first()))
+            .thenReturn(false)
+
+        transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
+
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(deskId), eq(task), minimized = eq(true))
     }
 
     private fun createBackNavigationTransition(
@@ -251,7 +301,9 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTasks_onTaskFullscreenLaunchWithOpenTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        val deskId = 0
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -259,7 +311,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createOpenChangeTransition(task),
         )
 
-        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository, never())
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
@@ -272,7 +325,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         val deskId = 0
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
         val transitionInfo = createOpenChangeTransition(task)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(deskId)
 
@@ -288,14 +342,17 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     )
     fun removeTasks_onTaskOutsideDeskLaunchWithOpenTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        val deskId = 0
         val transitionInfo = createOpenChangeTransition(task)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(null)
 
         transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
 
-        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository, never())
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
@@ -304,7 +361,9 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTasks_onTaskFullscreenLaunchExitDesktopTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        val deskId = 0
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -312,7 +371,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             info = createOpenChangeTransition(task, TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG),
         )
 
-        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository, never())
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
@@ -325,7 +385,8 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         val deskId = 0
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
         val transitionInfo = createOpenChangeTransition(task, TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(deskId)
 
@@ -340,15 +401,18 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun removeTasks_onTaskOutsideDeskLaunchExitDesktopTransition_taskRemovedFromRepo() {
+        val deskId = 0
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
         val transitionInfo = createOpenChangeTransition(task, TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG)
-        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.getActiveDeskId(task.displayId)).thenReturn(deskId)
+        whenever(taskRepository.getDeskIdForTask(task.taskId)).thenReturn(deskId)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desksOrganizer.getDeskAtEnd(transitionInfo.changes.first())).thenReturn(null)
 
         transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
 
-        verify(taskRepository, never()).minimizeTask(task.displayId, task.taskId)
+        verify(taskRepository, never())
+            .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
         verify(taskRepository).removeTask(task.displayId, task.taskId)
     }
 
@@ -383,4 +447,11 @@ class DesktopBackNavTransitionObserverTest : ShellTestCase() {
             baseIntent =
                 Intent().apply { component = DesktopWallpaperActivity.wallpaperActivityComponent }
         }
+
+    private companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> =
+            FlagsParameterization.allCombinationsOf(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    }
 }

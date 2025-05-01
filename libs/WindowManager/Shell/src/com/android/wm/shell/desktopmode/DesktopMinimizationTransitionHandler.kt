@@ -23,6 +23,7 @@ import android.os.IBinder
 import android.os.SystemProperties
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_TO_BACK
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -98,7 +99,16 @@ class DesktopMinimizationTransitionHandler(
         animations +=
             info.changes
                 .filter {
-                    checkChangeMode(it) && it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
+                    checkChangeMode(it) &&
+                        (it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM ||
+                            // Minimizing desktop tasks can be fullscreen too, such as
+                            // in some back-nav cases where the task is reparented out
+                            // into a touch-first TDA before being forcibly put back into
+                            // a desk as a minimized task by
+                            // [DesktopBackBavTransitionObserver].
+                            // Also, fullscreen-in-desktop tasks for immersive or
+                            // fullscreen app requests.
+                            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue)
                 }
                 .mapNotNull {
                     createMinimizeAnimation(it, finishTransaction, onAnimFinish, startAnimDelay)

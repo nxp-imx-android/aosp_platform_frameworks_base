@@ -302,7 +302,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onTransitionReady_deactivateDeskWithExitingTask_updatesRepository() {
+    fun onTransitionReady_deactivateDeskWithExitingTask_doesNotUpdateRepository() {
         val transition = Binder()
         val exitingTask = createFreeformTask(DEFAULT_DISPLAY)
         val exitingTaskChange = Change(mock(), mock()).apply { taskInfo = exitingTask }
@@ -327,7 +327,9 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 },
         )
 
-        assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isFalse()
+        // Let the task remain in the desk, desktop task state updates are the responsibility of
+        // [DesktopTaskChangeListener]
+        assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isTrue()
     }
 
     @Test

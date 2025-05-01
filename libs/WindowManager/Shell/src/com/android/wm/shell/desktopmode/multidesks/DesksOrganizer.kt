@@ -48,6 +48,7 @@ interface DesksOrganizer {
         wct: WindowContainerTransaction,
         deskId: Int,
         task: ActivityManager.RunningTaskInfo,
+        minimized: Boolean = false,
     )
 
     /** Reorders a desk's task to the front. */
@@ -85,6 +86,9 @@ interface DesksOrganizer {
      * transition, if any.
      */
     fun getDeskAtEnd(change: TransitionInfo.Change): Int?
+
+    /** Whether the task in [change] is minimized in a desk. */
+    fun isMinimizedInDeskAtEnd(change: TransitionInfo.Change): Boolean
 
     /** Whether the desk is activate according to the given change at the end of a transition. */
     fun isDeskActiveAtEnd(change: TransitionInfo.Change, deskId: Int): Boolean

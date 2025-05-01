@@ -514,6 +514,33 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testMoveTaskToDesk_minimized() = runTest {
+        val desk = createDeskSuspending()
+
+        val desktopTask = createFreeformTask().apply { parentTaskId = -1 }
+        val wct = WindowContainerTransaction()
+        organizer.moveTaskToDesk(wct, desk.deskRoot.deskId, desktopTask, minimized = true)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.isReparent &&
+                        hop.toTop &&
+                        hop.container == desktopTask.token.asBinder() &&
+                        // Reparented to minimization root.
+                        hop.newParent == desk.minimizationRoot.taskInfo.token.asBinder()
+                }
+            )
+            .isTrue()
+        assertThat(
+                wct.changes.any { change ->
+                    change.key == desktopTask.token.asBinder() &&
+                        change.value.windowingMode == WINDOWING_MODE_UNDEFINED
+                }
+            )
+            .isTrue()
+    }
+
+    @Test
     fun testGetDeskAtEnd() = runTest {
         val desk = createDeskSuspending()
 
@@ -537,6 +564,18 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             )
 
         assertThat(endDesk).isEqualTo(desk.deskRoot.deskId)
+    }
+
+    @Test
+    fun testIsMinimizedInDeskAtEnd() = runTest {
+        val desk = createDeskSuspending()
+        val notInDesk = createFreeformTask().apply { parentTaskId = -1 }
+        val inDeskNotMinimized = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val minimized = createFreeformTask().apply { parentTaskId = desk.minimizationRoot.rootId }
+
+        assertThat(organizer.isMinimizedInDeskAtEnd(notInDesk.toChange())).isFalse()
+        assertThat(organizer.isMinimizedInDeskAtEnd(inDeskNotMinimized.toChange())).isFalse()
+        assertThat(organizer.isMinimizedInDeskAtEnd(minimized.toChange())).isTrue()
     }
 
     @Test
@@ -1044,6 +1083,9 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         suspendCoroutine { cont ->
             createDesk(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
         }
+
+    private fun ActivityManager.RunningTaskInfo.toChange() =
+        TransitionInfo.Change(token, SurfaceControl()).apply { taskInfo = this@toChange }
 
     companion object {
         private const val PRIMARY_USER_ID = 10

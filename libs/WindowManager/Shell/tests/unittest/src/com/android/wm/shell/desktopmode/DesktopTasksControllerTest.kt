@@ -3293,7 +3293,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         controller.moveToNextDisplay(task.taskId)
 
-        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task))
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task), eq(false))
     }
 
     @Test
@@ -3339,7 +3339,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
         controller.moveToNextDisplay(task.taskId)
 
-        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task))
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task), eq(false))
     }
 
     @Test
@@ -3731,7 +3731,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         controller.moveToNextDisplay(task.taskId)
 
-        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task))
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task), eq(false))
         verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
         verify(desksTransitionsObserver)
             .addPendingTransition(

@@ -182,16 +182,6 @@ class DesksTransitionObserver(
                 deskChangeFound = true
                 continue
             }
-            val taskId = change.taskInfo?.taskId ?: continue
-            val removedFromDesk =
-                desktopRepository.getDeskIdForTask(taskId) == deskTransition.deskId &&
-                    desksOrganizer.getDeskAtEnd(change) == null
-            if (removedFromDesk) {
-                desktopRepository.removeTaskFromDesk(
-                    deskId = deskTransition.deskId,
-                    taskId = taskId,
-                )
-            }
         }
         // Always deactivate even if there's no change that confirms the desk was
         // deactivated. Some interactions, such as the desk deactivating because it's

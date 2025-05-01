@@ -578,6 +578,12 @@ class DesktopRepository(
     /** Whether the task is the only visible desktop task in the display. */
     fun isOnlyVisibleTask(taskId: Int, displayId: Int): Boolean {
         val desk = desktopData.getActiveDesk(displayId) ?: return false
+        return isOnlyVisibleTaskInDesk(taskId = taskId, deskId = desk.deskId)
+    }
+
+    /** Whether the task is the only visible task in the desk. */
+    fun isOnlyVisibleTaskInDesk(taskId: Int, deskId: Int): Boolean {
+        val desk = desktopData.getDesk(deskId) ?: return false
         return desk.visibleTasks.size == 1 && desk.visibleTasks.single() == taskId
     }
 
