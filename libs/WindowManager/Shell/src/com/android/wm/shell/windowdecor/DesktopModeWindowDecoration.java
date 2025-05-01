@@ -859,6 +859,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) {
             return mAppHandleViewHolderFactory.create(
                     mResult.mRootView,
+                    mDecorWindowContext,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
                     mWindowManagerWrapper,
@@ -868,6 +869,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(
                     mResult.mRootView,
+                    mDecorWindowContext,
                     mWindowDecorationActions,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
