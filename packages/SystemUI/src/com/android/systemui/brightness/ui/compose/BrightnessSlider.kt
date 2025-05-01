@@ -131,21 +131,17 @@ fun BrightnessSlider(
     val enabled = !isRestricted
     val contentDescription = stringResource(R.string.accessibility_brightness)
     val interactionSource = remember { MutableInteractionSource() }
-    val hapticsViewModel: SliderHapticsViewModel? =
-        if (Flags.hapticsForComposeSliders()) {
-            rememberViewModel(traceName = "SliderHapticsViewModel") {
-                hapticsViewModelFactory.create(
-                    interactionSource,
-                    floatValueRange,
-                    Orientation.Horizontal,
-                    SliderHapticFeedbackConfig(
-                        maxVelocityToScale = 1f /* slider progress(from 0 to 1) per sec */
-                    ),
-                    SeekableSliderTrackerConfig(),
-                )
-            }
-        } else {
-            null
+    val hapticsViewModel: SliderHapticsViewModel =
+        rememberViewModel(traceName = "SliderHapticsViewModel") {
+            hapticsViewModelFactory.create(
+                interactionSource,
+                floatValueRange,
+                Orientation.Horizontal,
+                SliderHapticFeedbackConfig(
+                    maxVelocityToScale = 1f /* slider progress(from 0 to 1) per sec */
+                ),
+                SeekableSliderTrackerConfig(),
+            )
         }
     val colors = colors()
 
@@ -193,7 +189,7 @@ fun BrightnessSlider(
         onValueChange = {
             if (enabled) {
                 if (!overriddenByAppState) {
-                    hapticsViewModel?.onValueChange(it)
+                    hapticsViewModel.onValueChange(it)
                     value = it.toInt()
                     onDrag(value)
                 }
@@ -202,7 +198,7 @@ fun BrightnessSlider(
         onValueChangeFinished = {
             if (enabled) {
                 if (!overriddenByAppState) {
-                    hapticsViewModel?.onValueChangeEnded()
+                    hapticsViewModel.onValueChangeEnded()
                     onStop(value)
                 }
             }
