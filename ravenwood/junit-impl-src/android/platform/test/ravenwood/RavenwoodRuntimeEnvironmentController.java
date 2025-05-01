@@ -82,6 +82,7 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -209,11 +210,14 @@ public class RavenwoodRuntimeEnvironmentController {
 
     private static final int DEFAULT_TARGET_SDK_LEVEL = VERSION_CODES.CUR_DEVELOPMENT;
     private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
+    private static final String DEFAULT_INSTRUMENTATION_CLASS =
+            "androidx.test.runner.AndroidJUnitRunner";
 
     private static final int sMyPid = new Random().nextInt(100, 32768);
     private static int sTargetSdkLevel;
     private static String sTestPackageName;
     private static String sTargetPackageName;
+    private static String sInstrumentationClass;
     private static Instrumentation sInstrumentation;
     private static final long sCallingIdentity =
             packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
@@ -404,16 +408,22 @@ public class RavenwoodRuntimeEnvironmentController {
 
         var instArgs = Bundle.EMPTY;
         RavenwoodUtils.runOnMainThreadSync(() -> {
+            var instClassName = withDefault(sInstrumentationClass, DEFAULT_INSTRUMENTATION_CLASS);
             try {
-                // TODO We should get the instrumentation class name from the build file or
-                // somewhere.
-                var InstClass = Class.forName("android.app.Instrumentation");
-                sInstrumentation = (Instrumentation) InstClass.getConstructor().newInstance();
-                sInstrumentation.basicInit(instContext, targetContext, null);
-                sInstrumentation.onCreate(instArgs);
-            } catch (Exception e) {
-                SneakyThrow.sneakyThrow(e);
+                var clazz = Class.forName(instClassName);
+                sInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
+            } catch (ReflectiveOperationException e) {
+                if (sInstrumentationClass != null) {
+                    // If the class is explicitly set, it is an error if the class is not found
+                    SneakyThrow.sneakyThrow(e);
+                } else {
+                    // Fallback to the platform instrumentation
+                    sInstrumentation = new Instrumentation();
+                }
             }
+
+            sInstrumentation.basicInit(instContext, targetContext, null);
+            sInstrumentation.onCreate(instArgs);
         });
         InstrumentationRegistry.registerInstance(sInstrumentation, instArgs);
 
@@ -441,6 +451,7 @@ public class RavenwoodRuntimeEnvironmentController {
                 parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
         sTargetPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
         sTestPackageName = withDefault(props.get("instPackageName"), sTargetPackageName);
+        sInstrumentationClass = props.get("instrumentationClass");
 
         // TODO(b/377765941) Read them from the manifest too?
     }

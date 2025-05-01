@@ -25,6 +25,7 @@ import android.util.SparseArray;
  * instrumentation.  This corresponds to information collected
  * from the AndroidManifest.xml's &lt;instrumentation&gt; tag.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class InstrumentationInfo extends PackageItemInfo implements Parcelable {
     /**
      * The name of the application package being instrumented.  From the

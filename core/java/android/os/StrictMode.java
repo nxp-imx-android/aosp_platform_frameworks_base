@@ -1312,6 +1312,7 @@ public final class StrictMode {
      *
      * @param policy the policy to put into place
      */
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static void setThreadPolicy(final ThreadPolicy policy) {
         setThreadPolicyMask(policy.mask);
         sThreadViolationListener.set(policy.mListener);
@@ -1436,6 +1437,7 @@ public final class StrictMode {
      *
      * @return the old policy, to be passed to setThreadPolicy to restore the policy.
      */
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static ThreadPolicy allowThreadDiskReads() {
         return new ThreadPolicy(
                 allowThreadDiskReadsMask(),

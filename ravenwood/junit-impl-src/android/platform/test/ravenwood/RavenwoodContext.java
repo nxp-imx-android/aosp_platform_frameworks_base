@@ -20,6 +20,7 @@ import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOUR
 
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
@@ -69,6 +70,9 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @GuardedBy("mLock")
     private Resources.Theme mTheme;
+
+    @GuardedBy("mLock")
+    private PackageManager mPm;
 
     private void registerService(Class<?> serviceClass, String serviceName,
             Supplier<?> serviceSupplier) {
@@ -125,6 +129,21 @@ public class RavenwoodContext extends RavenwoodBaseContext {
             throw new UnsupportedOperationException(
                     "Service " + serviceClass + " not yet supported under Ravenwood");
         }
+    }
+
+    @Override
+    public PackageManager getPackageManager() {
+        synchronized (mLock) {
+            if (mPm == null) {
+                mPm = new RavenwoodPackageManager(this);
+            }
+            return mPm;
+        }
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return getClass().getClassLoader();
     }
 
     @Override
