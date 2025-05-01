@@ -441,7 +441,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
                 /* alpha= */ 1.0f,
                 /* visible= */ true,
                 /* bounds= */ maxBounds,
-                /* baseBounds= */ maxBounds);
+                /* baseBounds= */ maxBounds,
+                /* enableBackgroundDimming= */ false);
     }
 
     private static void applyWindowAnimationStates(
