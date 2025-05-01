@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
+import androidx.tracing.trace
 import com.android.app.tracing.traceSection
 import com.android.internal.R
 import com.android.internal.widget.BigPictureNotificationImageView
@@ -171,43 +172,51 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
 
     // This mirrors the logic in NotificationContentView.onMeasure.
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (childCount != 1) {
-            Log.wtf(TAG, "Should contain exactly one child.")
-            return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        trace("AODPromotedNotif#onMeasure") {
+            if (childCount != 1) {
+                Log.wtf(TAG, "Should contain exactly one child.")
+                return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            }
+
+            val horizPadding = paddingStart + paddingEnd
+            val vertPadding = paddingTop + paddingBottom
+
+            val ownWidthSize = MeasureSpec.getSize(widthMeasureSpec)
+            val ownHeightMode = MeasureSpec.getMode(heightMeasureSpec)
+            val ownHeightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+            val availableHeight =
+                if (ownHeightMode != UNSPECIFIED) {
+                    maxHeight.coerceAtMost(ownHeightSize)
+                } else {
+                    maxHeight
+                }
+
+            val child = getChildAt(0)
+            val childWidthSpec = makeMeasureSpec(ownWidthSize, EXACTLY)
+            val childHeightSpec =
+                child.layoutParams.height
+                    .takeIf { it >= 0 }
+                    ?.let { makeMeasureSpec(availableHeight.coerceAtMost(it), EXACTLY) }
+                    ?: run { makeMeasureSpec(availableHeight, AT_MOST) }
+            measureChildWithMargins(
+                child,
+                childWidthSpec,
+                horizPadding,
+                childHeightSpec,
+                vertPadding,
+            )
+            val childMeasuredHeight = child.measuredHeight
+
+            val ownMeasuredWidth = MeasureSpec.getSize(widthMeasureSpec)
+            val ownMeasuredHeight =
+                if (ownHeightMode != UNSPECIFIED) {
+                    childMeasuredHeight.coerceAtMost(ownHeightSize)
+                } else {
+                    childMeasuredHeight
+                }
+            setMeasuredDimension(ownMeasuredWidth, ownMeasuredHeight)
         }
-
-        val horizPadding = paddingStart + paddingEnd
-        val vertPadding = paddingTop + paddingBottom
-
-        val ownWidthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val ownHeightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val ownHeightSize = MeasureSpec.getSize(heightMeasureSpec)
-
-        val availableHeight =
-            if (ownHeightMode != UNSPECIFIED) {
-                maxHeight.coerceAtMost(ownHeightSize)
-            } else {
-                maxHeight
-            }
-
-        val child = getChildAt(0)
-        val childWidthSpec = makeMeasureSpec(ownWidthSize, EXACTLY)
-        val childHeightSpec =
-            child.layoutParams.height
-                .takeIf { it >= 0 }
-                ?.let { makeMeasureSpec(availableHeight.coerceAtMost(it), EXACTLY) }
-                ?: run { makeMeasureSpec(availableHeight, AT_MOST) }
-        measureChildWithMargins(child, childWidthSpec, horizPadding, childHeightSpec, vertPadding)
-        val childMeasuredHeight = child.measuredHeight
-
-        val ownMeasuredWidth = MeasureSpec.getSize(widthMeasureSpec)
-        val ownMeasuredHeight =
-            if (ownHeightMode != UNSPECIFIED) {
-                childMeasuredHeight.coerceAtMost(ownHeightSize)
-            } else {
-                childMeasuredHeight
-            }
-        setMeasuredDimension(ownMeasuredWidth, ownMeasuredHeight)
     }
 }
 
