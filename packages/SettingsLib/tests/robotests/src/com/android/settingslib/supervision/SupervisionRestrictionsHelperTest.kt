@@ -17,6 +17,7 @@
 package com.android.settingslib.supervision
 
 import android.app.admin.DeviceAdminReceiver
+import android.app.supervision.SupervisionAppService
 import android.app.supervision.SupervisionManager
 import android.content.Context
 import android.content.ContextWrapper
@@ -97,7 +98,7 @@ class SupervisionRestrictionsHelperTest {
             .thenReturn(SUPERVISION_APP_PACKAGE)
         `when`(
                 mockPackageManager.queryIntentServicesAsUser(
-                    argThat(hasAction("android.app.action.BIND_SUPERVISION_APP_SERVICE")),
+                    argThat(hasAction(SupervisionAppService.ACTION_SUPERVISION_APP_SERVICE)),
                     anyInt(),
                     eq(USER_ID),
                 )
