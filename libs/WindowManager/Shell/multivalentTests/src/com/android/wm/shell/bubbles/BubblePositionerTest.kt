@@ -222,7 +222,7 @@ class BubblePositionerTest {
 
         positioner.setShowingInBubbleBar(true)
         positioner.update(deviceConfig)
-        positioner.bubbleBarTopOnScreen = 2500
+        positioner.updateBubbleBarTopOnScreen(100)
 
         val spaceBetweenTopInsetAndBubbleBarInLandscape = 1680
         val expandedViewVerticalSpacing =
@@ -248,7 +248,7 @@ class BubblePositionerTest {
             )
         positioner.setShowingInBubbleBar(true)
         positioner.update(deviceConfig)
-        positioner.bubbleBarTopOnScreen = 2500
+        positioner.updateBubbleBarTopOnScreen(100)
 
         val spaceBetweenTopInsetAndBubbleBarInLandscape = 180
         val expandedViewSpacing =
@@ -681,7 +681,7 @@ class BubblePositionerTest {
         positioner.update(deviceConfig)
 
         val bubbleBarHeight = 100
-        positioner.bubbleBarTopOnScreen = windowBounds.bottom - insets.bottom - bubbleBarHeight
+        positioner.updateBubbleBarTopOnScreen(bubbleBarHeight)
 
         val expandedViewPadding =
             context.resources.getDimensionPixelSize(R.dimen.bubble_expanded_view_padding)

@@ -1444,11 +1444,12 @@ public class BubbleController implements ConfigurationChangeListener,
      * Will be called only when bubble bar is expanded.
      *
      * @param location location where bubble was released
-     * @param topOnScreen      top coordinate of the bubble bar on the screen after release
+     * @param bubbleBarTopToScreenBottom the distance between the top coordinate of the bubble
+     *        bar and the bottom of the screen after release
      */
-    public void stopBubbleDrag(BubbleBarLocation location, int topOnScreen) {
+    public void stopBubbleDrag(BubbleBarLocation location, int bubbleBarTopToScreenBottom) {
         mBubblePositioner.setBubbleBarLocation(location);
-        mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
+        mBubblePositioner.updateBubbleBarTopOnScreen(bubbleBarTopToScreenBottom);
         if (mBubbleData.getSelectedBubble() != null) {
             showExpandedViewForBubbleBar();
         }
@@ -1524,8 +1525,8 @@ public class BubbleController implements ConfigurationChangeListener,
      * <p>This is used by external callers (launcher).
      */
     @VisibleForTesting
-    public void expandStackAndSelectBubbleFromLauncher(String key, int topOnScreen) {
-        mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
+    public void expandStackAndSelectBubbleFromLauncher(String key, int bubbleBarTopToScreenBottom) {
+        mBubblePositioner.updateBubbleBarTopOnScreen(bubbleBarTopToScreenBottom);
 
         if (BubbleOverflow.KEY.equals(key)) {
             mBubbleData.setSelectedBubbleFromLauncher(mBubbleData.getOverflow());
@@ -3001,14 +3002,16 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void showBubble(String key, int topOnScreen) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showBubble: key=%s top=%d",
-                    key, topOnScreen);
+        public void showBubble(String key, int bubbleBarTopToScreenBottom) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "IBubbles.showBubble: key=%s bubbleBarTopToScreenBottom=%d",
+                    key, bubbleBarTopToScreenBottom);
             executeRemoteCallWithTaskPermission(
                     mController,
                     "showBubble",
                     (controller) ->
-                            controller.expandStackAndSelectBubbleFromLauncher(key, topOnScreen));
+                            controller.expandStackAndSelectBubbleFromLauncher(
+                                key, bubbleBarTopToScreenBottom));
         }
 
         @Override
@@ -3051,13 +3054,15 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void stopBubbleDrag(BubbleBarLocation location, int topOnScreen) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.stopBubbleDrag: log=%s top=%d",
-                    location, topOnScreen);
+        public void stopBubbleDrag(BubbleBarLocation location, int bubbleBarTopToScreenBottom) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "IBubbles.stopBubbleDrag: log=%s bubbleBarTopToScreenBottom=%d",
+                    location, bubbleBarTopToScreenBottom);
             executeRemoteCallWithTaskPermission(
                     mController,
                     "stopBubbleDrag",
-                    (controller) -> controller.stopBubbleDrag(location, topOnScreen));
+                    (controller) ->
+                        controller.stopBubbleDrag(location, bubbleBarTopToScreenBottom));
         }
 
         @Override
@@ -3092,14 +3097,15 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void updateBubbleBarTopOnScreen(int topOnScreen) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.updateBubbleBarTopOnScreen: top=%d",
-                    topOnScreen);
+        public void updateBubbleBarTopToScreenBottom(int bubbleBarTopToScreenBottom) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "IBubbles.updateBubbleBarTopOnScreen: bubbleBarTopToScreenBottom=%d",
+                    bubbleBarTopToScreenBottom);
             executeRemoteCallWithTaskPermission(
                     mController,
-                    "updateBubbleBarTopOnScreen",
+                    "updateBubbleBarTopToScreenBottom",
                     (controller) -> {
-                        mBubblePositioner.setBubbleBarTopOnScreen(topOnScreen);
+                        mBubblePositioner.updateBubbleBarTopOnScreen(bubbleBarTopToScreenBottom);
                         if (mLayerView != null) mLayerView.updateExpandedView();
                     });
         }
