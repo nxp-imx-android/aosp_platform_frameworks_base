@@ -16,10 +16,8 @@
 
 package com.android.wm.shell.bubbles.bar
 
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.pm.ShortcutInfo
 import android.graphics.Insets
 import android.graphics.Rect
 import android.view.LayoutInflater
@@ -38,25 +36,20 @@ import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubbleLogger
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
-import com.android.wm.shell.bubbles.BubbleTaskViewFactory
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
+import com.android.wm.shell.bubbles.FakeBubbleFactory
+import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.RegionSamplingProvider
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.shared.handles.RegionSamplingHelper
-import com.android.wm.shell.taskview.TaskView
-import com.android.wm.shell.taskview.TaskViewController
-import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import java.util.concurrent.Executor
 
 /** Tests for [BubbleBarExpandedViewTest] */
@@ -78,6 +71,7 @@ class BubbleBarExpandedViewTest {
     private lateinit var positioner: BubblePositioner
     private lateinit var bubbleTaskView: BubbleTaskView
     private lateinit var bubble: Bubble
+    private lateinit var bubbleTaskViewFactory: FakeBubbleTaskViewFactory
 
     private lateinit var bubbleExpandedView: BubbleBarExpandedView
     private var testableRegionSamplingHelper: TestableRegionSamplingHelper? = null
@@ -105,13 +99,14 @@ class BubbleBarExpandedViewTest {
         positioner.update(deviceConfig)
 
         expandedViewManager = FakeBubbleExpandedViewManager(bubbleBar = true, expanded = true)
-        bubbleTaskView = FakeBubbleTaskViewFactory().create()
+        bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
 
-        val inflater = LayoutInflater.from(context)
+        bubble = FakeBubbleFactory.createChatBubble(context)
+        bubbleTaskView = bubbleTaskViewFactory.create()
 
         regionSamplingProvider = TestRegionSamplingProvider()
 
-        bubbleExpandedView = inflater.inflate(
+        bubbleExpandedView = LayoutInflater.from(context).inflate(
             R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
         ) as BubbleBarExpandedView
         bubbleExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
@@ -119,6 +114,7 @@ class BubbleBarExpandedViewTest {
             expandedViewManager,
             positioner,
             false /* isOverflow */,
+            bubble,
             bubbleTaskView,
             mainExecutor,
             bgExecutor,
@@ -131,18 +127,6 @@ class BubbleBarExpandedViewTest {
             testableRegionSamplingHelper = regionSamplingProvider!!.helper
         }
 
-        bubble = Bubble(
-            "key",
-            ShortcutInfo.Builder(context, "id").build(),
-            100 /* desiredHeight */,
-            0 /* desiredHeightResId */,
-            "title",
-            0 /* taskId */,
-            null /* locus */,
-            true /* isDismissable */,
-            directExecutor(),
-            directExecutor()
-        ) {}
         bubbleExpandedView.update(bubble)
     }
 
@@ -270,7 +254,7 @@ class BubbleBarExpandedViewTest {
         val expandedView = inflater.inflate(
             R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
         ) as BubbleBarExpandedView
-        val taskView = FakeBubbleTaskViewFactory().create()
+        val taskView = bubbleTaskViewFactory.create()
         val taskViewParent = FrameLayout(context)
         taskViewParent.addView(taskView.taskView)
         taskView.listener.onTaskCreated(666, ComponentName(context, "BubbleBarExpandedViewTest"))
@@ -280,6 +264,7 @@ class BubbleBarExpandedViewTest {
             expandedViewManager,
             positioner,
             false /* isOverflow */,
+            bubble,
             taskView,
             mainExecutor,
             bgExecutor,
@@ -309,7 +294,7 @@ class BubbleBarExpandedViewTest {
         val expandedView = inflater.inflate(
             R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
         ) as BubbleBarExpandedView
-        val taskView = FakeBubbleTaskViewFactory().create()
+        val taskView = bubbleTaskViewFactory.create()
         val taskViewParent = FrameLayout(context)
         taskViewParent.addView(taskView.taskView)
         taskView.listener.onTaskCreated(666, ComponentName(context, "BubbleBarExpandedViewTest"))
@@ -321,6 +306,7 @@ class BubbleBarExpandedViewTest {
             expandedViewManager,
             positioner,
             false /* isOverflow */,
+            bubble,
             taskView,
             mainExecutor,
             bgExecutor,
@@ -350,16 +336,6 @@ class BubbleBarExpandedViewTest {
         assertWithMessage("Expecting a single action with text '$text'").that(views).hasSize(1)
         // findViewsWithText returns the TextView, but the click listener is on the parent container
         return views.first().parent as View
-    }
-
-    private inner class FakeBubbleTaskViewFactory : BubbleTaskViewFactory {
-        override fun create(): BubbleTaskView {
-            val taskViewTaskController = mock<TaskViewTaskController>()
-            val taskView = TaskView(context, mock<TaskViewController>(), taskViewTaskController)
-            val taskInfo = mock<ActivityManager.RunningTaskInfo>()
-            whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
-            return BubbleTaskView(taskView, mainExecutor)
-        }
     }
 
     private inner class TestRegionSamplingProvider : RegionSamplingProvider {

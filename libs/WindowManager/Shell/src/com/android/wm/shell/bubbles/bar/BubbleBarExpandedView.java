@@ -233,10 +233,12 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     public void initialize(BubbleExpandedViewManager expandedViewManager,
             BubblePositioner positioner,
             boolean isOverflow,
+            @Nullable Bubble bubble,
             @Nullable BubbleTaskView bubbleTaskView,
             @Nullable Executor mainExecutor,
             @Nullable Executor backgroundExecutor,
             @Nullable RegionSamplingProvider regionSamplingProvider) {
+        mBubble = bubble;
         mManager = expandedViewManager;
         mPositioner = positioner;
         mIsOverflow = isOverflow;
