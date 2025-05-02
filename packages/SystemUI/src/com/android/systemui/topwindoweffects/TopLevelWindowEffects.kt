@@ -18,6 +18,7 @@ package com.android.systemui.topwindoweffects
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
@@ -38,20 +39,19 @@ import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.util.Optional
+import java.util.concurrent.Executor
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class TopLevelWindowEffects
 @Inject
 constructor(
     @Application private val context: Context,
-    @Main private val mainDispatcher: CoroutineDispatcher,
+    @Main private val mainExecutor: Executor,
     @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
@@ -92,7 +92,7 @@ constructor(
         }
     }
 
-    private suspend fun addWindow(
+    private fun addWindow(
         @DrawableRes topRoundedCornerId: Int,
         @DrawableRes bottomRoundedCornerId: Int,
         physicalPixelDisplaySizeRatio: Float,
@@ -102,6 +102,7 @@ constructor(
         }
 
         if (root != null) {
+            Log.i(TAG, "addWindow: remove previous window")
             removeWindow()
         }
 
@@ -120,29 +121,31 @@ constructor(
                 .apply { visibility = View.GONE }
 
         root?.let { rootView ->
-            runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
+            setRequestTopUi(true)
             windowManager.addView(rootView, getWindowManagerLayoutParams())
             rootView.post { rootView.visibility = View.VISIBLE }
         }
     }
 
-    private suspend fun removeWindow() {
-        if (root?.isAttachedToWindow == true) {
+    private fun removeWindow() {
+        if (root != null) {
             windowManager.removeView(root)
+            root = null
         }
 
-        root = null
         isInvocationEffectHappening = false
 
-        if (TopUiControllerRefactor.isEnabled) {
-            topUiController.setRequestTopUi(false, TAG)
-        } else {
-            runOnMainThread { notificationShadeWindowController.setRequestTopUi(false, TAG) }
-        }
+        setRequestTopUi(false)
     }
 
-    private suspend fun runOnMainThread(block: () -> Unit) {
-        withContext(mainDispatcher) { block() }
+    private fun setRequestTopUi(requestTopUi: Boolean) {
+        if (TopUiControllerRefactor.isEnabled) {
+            topUiController.setRequestTopUi(requestTopUi, TAG)
+        } else {
+            mainExecutor.execute {
+                notificationShadeWindowController.setRequestTopUi(requestTopUi, TAG)
+            }
+        }
     }
 
     private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {
