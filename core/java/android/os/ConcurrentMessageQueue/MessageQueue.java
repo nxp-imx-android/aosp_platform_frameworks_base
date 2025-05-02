@@ -438,7 +438,6 @@ public final class MessageQueue {
     private final Object mFileDescriptorRecordsLock = new Object();
     @GuardedBy("mFileDescriptorRecordsLock")
     private SparseArray<FileDescriptorRecord> mFileDescriptorRecords;
-    private volatile boolean mHasFileDescriptorRecords;
 
     // The next barrier token.
     // Barriers are indicated by messages with a null target whose arg1 field carries the token.
@@ -886,16 +885,6 @@ public final class MessageQueue {
         }
     }
 
-    private void maybePollOnce(int nextPollTimeoutMillis) {
-        if (!Flags.messageQueueNativePollOnceAndForAll()) {
-            // If nativePollOnce optimization is not in effect, poll unconditionally.
-            nativePollOnce(mPtr, nextPollTimeoutMillis);
-        } else if (nextPollTimeoutMillis != 0 || mHasFileDescriptorRecords || getQuitting()) {
-            // We need to wait for the next message, or we need to poll for file descriptor events.
-            nativePollOnce(mPtr, nextPollTimeoutMillis);
-        }
-    }
-
     Message next() {
         final long ptr = mPtr;
         if (ptr == 0) {
@@ -910,7 +899,7 @@ public final class MessageQueue {
             }
 
             mMessageDirectlyQueued = false;
-            maybePollOnce(mNextPollTimeoutMillis);
+            nativePollOnce(ptr, mNextPollTimeoutMillis);
 
             Message msg = nextMessage(false, false);
             if (msg != null) {
@@ -1761,17 +1750,6 @@ public final class MessageQueue {
             mFileDescriptorRecords.removeAt(index);
             setFileDescriptorEvents(fdNum, 0);
         }
-
-        // Indicate to maybePollOnce() if we have file descriptor records that
-        // need to be polled for events.
-        // We write this volatile field here and read it from the worker thread.
-        // Adding an FD on a client thread and polling for events on the worker thread are
-        // inherently racy. If the worker thread skips polling because it thinks there are
-        // no FDs to watch and there is a Message to handle, then the worker will still
-        // poll for the same events the next time. Events won't be missed, they'll just be
-        // interleaved with Message handling in undefined ways.
-        mHasFileDescriptorRecords = mFileDescriptorRecords != null
-                && (mFileDescriptorRecords.size() > 0);
     }
 
     // Called from native code.
