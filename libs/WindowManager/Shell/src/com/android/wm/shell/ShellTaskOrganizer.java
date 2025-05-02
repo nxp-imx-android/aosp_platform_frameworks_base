@@ -506,10 +506,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * Returns the home task surface, not for wide use.
      */
     @Nullable
-    public SurfaceControl getHomeTaskSurface() {
+    public SurfaceControl getHomeTaskSurface(int displayId) {
         for (int i = 0; i < mTasks.size(); i++) {
             final TaskAppearedInfo info = mTasks.valueAt(i);
-            if (info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+            if (info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME
+                    && info.getTaskInfo().displayId == displayId) {
                 return info.getLeash();
             }
         }

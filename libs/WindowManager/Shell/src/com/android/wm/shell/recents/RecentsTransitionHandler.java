@@ -194,10 +194,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         final boolean isSyntheticRequest = options.getBoolean(
                 "is_synthetic_recents_transition", /* defaultValue= */ false);
         final IBinder transition;
+        ActivityOptions activityOptions = ActivityOptions.fromBundle(options);
+        int displayId = activityOptions.getLaunchDisplayId();
+        if (displayId == INVALID_DISPLAY) {
+            displayId = DEFAULT_DISPLAY;
+        }
         if (isSyntheticRequest) {
-            transition = startSyntheticRecentsTransition(listener);
+            transition = startSyntheticRecentsTransition(listener, displayId);
         } else {
-            transition = startRealRecentsTransition(intent, fillIn, options, wct, listener);
+            transition = startRealRecentsTransition(intent, fillIn, options, wct, listener,
+                    displayId);
         }
         return transition;
     }
@@ -205,7 +211,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     /**
      * Starts a synthetic recents transition that is not backed by a real WM transition.
      */
-    private IBinder startSyntheticRecentsTransition(@NonNull IRecentsAnimationRunner listener) {
+    private IBinder startSyntheticRecentsTransition(@NonNull IRecentsAnimationRunner listener,
+            int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                 "RecentsTransitionHandler.startRecentsTransition(synthetic)");
         final RecentsController lastController = getLastController();
@@ -218,7 +225,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
         // Create a new synthetic transition and start it immediately
         final RecentsController controller = new RecentsController(listener);
-        controller.startSyntheticTransition();
+        controller.startSyntheticTransition(displayId);
         mControllers.add(controller);
         return SYNTHETIC_TRANSITION;
     }
@@ -227,9 +234,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
      * Starts a real WM-backed recents transition.
      */
     private IBinder startRealRecentsTransition(PendingIntent intent, Intent fillIn, Bundle options,
-            @Nullable WindowContainerTransaction requestWct, IRecentsAnimationRunner listener) {
+            @Nullable WindowContainerTransaction requestWct, IRecentsAnimationRunner listener,
+            int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                "RecentsTransitionHandler.startRecentsTransition");
+                "RecentsTransitionHandler.startRecentsTransition, displayId=%d", displayId);
 
         final WindowContainerTransaction wct = requestWct != null
                 ? requestWct : new WindowContainerTransaction();
@@ -240,11 +248,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // requires the handler, but the mixed handler also needs a reference to the transition.
         RecentsMixedHandler mixer = null;
         Consumer<IBinder> setTransitionForMixer = null;
-        ActivityOptions activityOptions = ActivityOptions.fromBundle(options);
-        int displayId = activityOptions.getLaunchDisplayId();
-        if (displayId == INVALID_DISPLAY) {
-            displayId = DEFAULT_DISPLAY;
-        }
         for (int i = 0; i < mMixers.size(); ++i) {
             setTransitionForMixer = mMixers.get(i).handleRecentsRequest(displayId);
             if (setTransitionForMixer != null) {
@@ -593,30 +596,31 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         /**
          * Starts a new transition that is not backed by a system transition.
          */
-        void startSyntheticTransition() {
+        void startSyntheticTransition(int displayId) {
             mTransition = SYNTHETIC_TRANSITION;
 
             // TODO(b/366021931): Update mechanism for pulling the home task, for now add home as
             //                    both opening and closing since there's some pre-existing
             //                    dependencies on having a closing task
             final ActivityManager.RunningTaskInfo homeTask =
-                    mShellTaskOrganizer.getRunningTasks(DEFAULT_DISPLAY).stream()
+                    mShellTaskOrganizer.getRunningTasks(displayId).stream()
                             .filter(task -> task.getActivityType() == ACTIVITY_TYPE_HOME)
                             .findFirst()
                             .get();
             final RemoteAnimationTarget openingTarget = TransitionUtil.newSyntheticTarget(
-                    homeTask, mShellTaskOrganizer.getHomeTaskSurface(), TRANSIT_OPEN,
+                    homeTask, mShellTaskOrganizer.getHomeTaskSurface(displayId), TRANSIT_OPEN,
                     0, true /* isTranslucent */);
             final RemoteAnimationTarget closingTarget = TransitionUtil.newSyntheticTarget(
-                    homeTask, mShellTaskOrganizer.getHomeTaskSurface(), TRANSIT_CLOSE,
+                    homeTask, mShellTaskOrganizer.getHomeTaskSurface(displayId), TRANSIT_CLOSE,
                     0, true /* isTranslucent */);
             final ArrayList<RemoteAnimationTarget> apps = new ArrayList<>();
             apps.add(openingTarget);
             apps.add(closingTarget);
             try {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                        "[%d] RecentsController.start: calling onAnimationStart with %d apps",
-                        mInstanceId, apps.size());
+                        "[%d] RecentsController.start: calling onAnimationStart with %d apps, "
+                                + "displayId=%d",
+                        mInstanceId, apps.size(), displayId);
                 mListener.onAnimationStart(this,
                         apps.toArray(new RemoteAnimationTarget[apps.size()]),
                         new RemoteAnimationTarget[0],
