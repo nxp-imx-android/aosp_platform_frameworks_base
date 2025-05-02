@@ -36,6 +36,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PhoneSizeSpecSource;
@@ -89,6 +90,9 @@ public class PipResizeGestureHandlerTest extends ShellTestCase {
     @Mock
     private ShellExecutor mMainExecutor;
 
+    @Mock
+    private DisplayController mDisplayController;
+
     private PipResizeGestureHandler mPipResizeGestureHandler;
 
     private PipBoundsState mPipBoundsState;
@@ -105,7 +109,7 @@ public class PipResizeGestureHandlerTest extends ShellTestCase {
         final TestableResources res = mContext.getOrCreateTestableResources();
         res.addOverride(R.bool.config_pipEnablePinchResize, true);
 
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
         final PipSnapAlgorithm pipSnapAlgorithm = new PipSnapAlgorithm();

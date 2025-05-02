@@ -31,11 +31,13 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
 /**
  * Unit tests against {@link PipBoundsAlgorithm}, including but not limited to:
@@ -62,12 +64,13 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
     private PipBoundsState mPipBoundsState;
     private SizeSpecSource mSizeSpecSource;
     private PipDisplayLayoutState mPipDisplayLayoutState;
+    @Mock private DisplayController mDisplayController;
 
 
     @Before
     public void setUp() throws Exception {
         initializeMockResources();
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
 
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
