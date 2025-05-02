@@ -8811,8 +8811,7 @@ public final class ActiveServices {
                                     callingUid, callingPid, callingPackage)) {
                 // Starting from Android V, it is not enough to only have the SYSTEM_ALERT_WINDOW
                 // permission granted - apps must also be showing an overlay window.
-                if (Flags.fgsDisableSaw()
-                        && CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, callingUid)) {
+                if (CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, callingUid)) {
                     final UidRecord uidRecord = mAm.mProcessList.getUidRecordLOSP(callingUid);
                     if (uidRecord != null) {
                         for (int i = uidRecord.getNumOfProcs() - 1; i >= 0; i--) {

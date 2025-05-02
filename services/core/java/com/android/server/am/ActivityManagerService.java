@@ -6510,8 +6510,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             case REASON_INSTR_BACKGROUND_ACTIVITY_PERMISSION:
                 return true;
             case REASON_SYSTEM_ALERT_WINDOW_PERMISSION:
-                if (!Flags.fgsDisableSaw()
-                        || !CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid)) {
+                if (!CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid)) {
                     return true;
                 } else {
                     // With the new SAW restrictions starting Android V, only allow the app to
@@ -6620,8 +6619,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             final UidRecord uidRecord = mProcessList.getUidRecordLOSP(uid);
             final boolean hasSawPermission = mAtmInternal.hasSystemAlertWindowPermission(uid, pid,
                                                             pkgName);
-            final boolean strictSawCheckEnabled = Flags.fgsDisableSaw()
-                            && CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid);
+            final boolean strictSawCheckEnabled =
+                    CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid);
             if (uidRecord != null) {
                 for (int i = uidRecord.getNumOfProcs() - 1; i >= 0; --i) {
                     ProcessRecord pr = uidRecord.getProcessRecordByIndex(i);
