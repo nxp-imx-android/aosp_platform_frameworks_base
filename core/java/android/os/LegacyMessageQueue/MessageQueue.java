@@ -32,8 +32,6 @@ import android.util.Printer;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
-import dalvik.annotation.optimization.CriticalNative;
-import dalvik.annotation.optimization.FastNative;
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.FileDescriptor;
@@ -87,29 +85,17 @@ public final class MessageQueue {
     private int mNextBarrierToken;
 
     @RavenwoodRedirect
-    @FastNative
     private native static long nativeInit();
-
     @RavenwoodRedirect
-    @FastNative
     private native static void nativeDestroy(long ptr);
-
     @UnsupportedAppUsage
     @RavenwoodRedirect
-    // Not @FastNative since significant time is spent in the native code as it may invoke
-    // application callbacks.
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
-
     @RavenwoodRedirect
-    @CriticalNative
     private native static void nativeWake(long ptr);
-
     @RavenwoodRedirect
-    @CriticalNative
     private native static boolean nativeIsPolling(long ptr);
-
     @RavenwoodRedirect
-    @CriticalNative
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
     MessageQueue(boolean quitAllowed) {

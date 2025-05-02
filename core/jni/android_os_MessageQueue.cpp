@@ -226,17 +226,18 @@ static void android_os_MessageQueue_nativePollOnce(JNIEnv* env, jobject obj,
     nativeMessageQueue->pollOnce(env, obj, timeoutMillis);
 }
 
-static void android_os_MessageQueue_nativeWake(jlong ptr) {
+static void android_os_MessageQueue_nativeWake(JNIEnv* env, jclass clazz, jlong ptr) {
     NativeMessageQueue* nativeMessageQueue = reinterpret_cast<NativeMessageQueue*>(ptr);
     nativeMessageQueue->wake();
 }
 
-static jboolean android_os_MessageQueue_nativeIsPolling(jlong ptr) {
+static jboolean android_os_MessageQueue_nativeIsPolling(JNIEnv* env, jclass clazz, jlong ptr) {
     NativeMessageQueue* nativeMessageQueue = reinterpret_cast<NativeMessageQueue*>(ptr);
     return nativeMessageQueue->getLooper()->isPolling();
 }
 
-static void android_os_MessageQueue_nativeSetFileDescriptorEvents(jlong ptr, jint fd, jint events) {
+static void android_os_MessageQueue_nativeSetFileDescriptorEvents(JNIEnv* env, jclass clazz,
+        jlong ptr, jint fd, jint events) {
     NativeMessageQueue* nativeMessageQueue = reinterpret_cast<NativeMessageQueue*>(ptr);
     nativeMessageQueue->setFileDescriptorEvents(fd, events);
 }
