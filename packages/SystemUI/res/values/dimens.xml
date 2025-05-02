@@ -2259,6 +2259,7 @@
     <dimen name="tile_details_button_size">20dp</dimen>
     <dimen name="tile_details_entry_gap">2dp</dimen>
     <dimen name="tile_details_bottom_padding">14dp</dimen>
+    <dimen name="tile_details_horizontal_padding">14dp</dimen>
     <!-- Tile Details end -->
 
 </resources>
