@@ -16,6 +16,7 @@
 package android.proximity;
 
 /** @hide */
+@Backing(type="int")
 enum ProximityResultCode {
     /** Indicates a successful operation. */
     SUCCESS = 0,
@@ -54,6 +55,6 @@ enum ProximityResultCode {
     ASSOCIATED_DEVICE_RANGING_ALREADY_RUNNING = 15,
     /** User turned off ranging method on associated device. */
     ASSOCIATED_DEVICE_RANGING_TURNED_OFF = 16,
-    /** The primary device Bluetooth adapter is turned off by the user. */
-    ASSOCIATED_DEVICE_BT_ADAPTER_OFF = 17,
+    /** Request contains invalid parameters. */
+    INVALID_PARAMETERS = 17,
 }

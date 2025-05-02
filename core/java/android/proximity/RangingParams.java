@@ -77,16 +77,29 @@ public final class RangingParams implements Parcelable {
         private double mThresholdMeters = 0.0;
         private int mTimeoutMillis = 0;
 
+        public Builder() {
+            mThresholdMeters = 1.5;
+            mTimeoutMillis = 5000;
+        }
+
         public Builder(@NonNull RangingParams src) {
             mThresholdMeters = src.mThresholdMeters;
             mTimeoutMillis = src.mTimeoutMillis;
         }
 
+        /**
+         * Sets the threshold in meters for ranging. If not set or set to <= 0.0 , a default value
+         * of 1.5 meters is used.
+         */
         public @NonNull Builder setThresholdMeters(double thresholdMeters) {
             mThresholdMeters = thresholdMeters;
             return this;
         }
 
+        /**
+         * Sets the timeout in milliseconds for ranging request. If not set or set to <= 0, a
+         * default value of 5000 milliseconds is used.
+         */
         public @NonNull Builder setTimeoutMillis(int timeoutMillis) {
             mTimeoutMillis = timeoutMillis;
             return this;

@@ -29,7 +29,7 @@ interface IProximityProviderService {
     /**
      * Finds nearby watch paired to this phone. If the watch is not found within the
      * specified timeout, the callback is called with result set to NO_RANGING_RESULT.
-     * If timeout is 0, it will use a default timeout of 5 seconds. Returns an integer
+     * If timeout is <= 0, it will use a default timeout of 5 seconds. Returns an integer
      * handle identifying the ranging session.
      */
     ICancellationSignal anyWatchNearby(
