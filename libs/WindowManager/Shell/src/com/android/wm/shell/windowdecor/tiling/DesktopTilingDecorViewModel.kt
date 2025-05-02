@@ -287,6 +287,12 @@ class DesktopTilingDecorViewModel(
     /** Removes [deskId] from the previously deactivated desks to mark it's activation. */
     fun onDeskActivated(deskId: Int): Boolean = disconnectedDisplayDesks.remove(deskId)
 
+    /** Destroys a tiling session for a removed desk. */
+    fun onDeskRemoved(deskId: Int) {
+        tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.resetTilingSession()
+        tilingHandlerByUserAndDeskId[currentUserId]?.remove(deskId)
+    }
+
     fun getCurrentActiveDeskForDisplay(displayId: Int): Int? =
         desktopUserRepositories.current.getActiveDeskId(displayId)
 

@@ -684,6 +684,7 @@ class DesktopTasksController(
                                 deskId = deskId,
                                 tasks = emptySet(),
                                 onDeskRemovedListener = onDeskRemovedListener,
+                                runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                             )
                         )
                     } else {
@@ -731,6 +732,7 @@ class DesktopTasksController(
                             deskId = deskId,
                             tasks = emptySet(),
                             onDeskRemovedListener = onDeskRemovedListener,
+                            runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                         )
                     )
                     desksTransitionObserver.addPendingTransition(
@@ -3895,6 +3897,7 @@ class DesktopTasksController(
                     deskId = deskId,
                     tasks = tasksToRemove,
                     onDeskRemovedListener = onDeskRemovedListener,
+                    runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                 )
             )
         }

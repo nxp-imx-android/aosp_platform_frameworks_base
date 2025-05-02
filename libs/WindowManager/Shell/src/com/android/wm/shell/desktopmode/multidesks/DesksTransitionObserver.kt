@@ -101,6 +101,7 @@ class DesksTransitionObserver(
                 //  visible, such as when dismissing from Overview.
                 val deskId = deskTransition.deskId
                 val displayId = deskTransition.displayId
+                deskTransition.runOnTransitEnd?.invoke()
                 desktopRepository.removeDesk(deskTransition.deskId)
                 deskTransition.onDeskRemovedListener?.onDeskRemoved(displayId, deskId)
             }

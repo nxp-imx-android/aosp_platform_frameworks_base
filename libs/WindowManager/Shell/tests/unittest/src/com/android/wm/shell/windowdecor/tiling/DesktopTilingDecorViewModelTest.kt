@@ -338,6 +338,21 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     }
 
     @Test
+    fun deskDestroyed_tilingSessionEnded() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration)
+        desktopTilingDecorViewModel.currentUserId = 1
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDeskRemoved(1)
+
+        // Reset tiling session only called once for the removed desk.
+        verify(desktopTilingDecoration, times(1)).resetTilingSession()
+        assertThat(decorationByDeskId.contains(1)).isFalse()
+    }
+
+    @Test
     fun displayOrientationChange_tilingForDisplayShouldBeDestroyed() {
         val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
         decorationByDeskId.put(1, desktopTilingDecoration)

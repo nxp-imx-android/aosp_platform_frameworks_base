@@ -79,4 +79,9 @@ interface SnapEventHandler {
      * Notifies the snap event handler of a desk being activated.
      */
     fun onDeskActivated(deskId: Int, displayId: Int)
+
+    /**
+     * Notifies the snap event handler of a desk being removed.
+     */
+    fun onDeskRemoved(deskId: Int)
 }

@@ -1039,6 +1039,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopModeSupportedOnNewDisplay);
     }
 
+    @Override
+    public void onDeskRemoved(int deskId) {
+        mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
+    }
+
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
             View.OnGenericMotionListener, DragDetector.MotionEventHandler {
