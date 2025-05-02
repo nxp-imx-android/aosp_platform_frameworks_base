@@ -47,11 +47,10 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
-import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
-import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -658,20 +657,21 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             rightTaskResizingHelper = additionalTaskHelper
             this.desktopTilingDividerWindowManager = manager
             isTilingManagerInitialised = true
-            onOverviewAnimationStateChange(TRANSITION_STATE_ANIMATING)
         }
-
-        verify(desktopTilingDividerWindowManager, times(1)).hideDividerBar()
-
-        tilingDecoration.onOverviewAnimationStateChange(TRANSITION_STATE_NOT_RUNNING)
-        val changeInfo = createTransitFrontTransition(task1, task2)
+        val changeInfoWithRecents =
+            createTransitFrontTransition(task1, task2, TRANSIT_START_RECENTS_TRANSITION)
         tilingDecoration.onTransitionReady(
             transition = mock(),
-            info = changeInfo,
+            info = changeInfoWithRecents,
             startTransaction = mock(),
             finishTransaction = mock(),
         )
 
+        verify(desktopTilingDividerWindowManager, times(1)).hideDividerBar()
+
+        tilingDecoration.onRecentsAnimationEndedToSameDesk()
+
+        // First transition won't result in transit to front as there are no tiled tasks.
         verify(desktopTilingDividerWindowManager, times(1)).showDividerBar(equals(true))
     }
 

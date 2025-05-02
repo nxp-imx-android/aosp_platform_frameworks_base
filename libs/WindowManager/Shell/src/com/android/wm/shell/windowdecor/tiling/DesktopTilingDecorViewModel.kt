@@ -42,7 +42,6 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
-import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -147,12 +146,10 @@ class DesktopTilingDecorViewModel(
             ?.moveTiledPairToFront(taskInfo.taskId, isFocusedOnDisplay = true) ?: false
     }
 
-    fun onOverviewAnimationStateChange(
-        @RecentsTransitionStateListener.RecentsTransitionState state: Int
-    ) {
+    fun onOverviewAnimationEndedToSameDesk() {
         val activeUserHandlers = tilingHandlerByUserAndDeskId[currentUserId] ?: return
         for (tilingHandler in activeUserHandlers.valueIterator()) {
-            tilingHandler.onOverviewAnimationStateChange(state)
+            tilingHandler.onRecentsAnimationEndedToSameDesk()
         }
     }
 

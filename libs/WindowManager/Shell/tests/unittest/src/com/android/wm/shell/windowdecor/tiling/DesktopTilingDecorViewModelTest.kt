@@ -35,7 +35,6 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
-import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -309,19 +308,6 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
 
         verify(desktopTilingDecoration, times(1))
             .moveTiledPairToFront(any(), isFocusedOnDisplay = eq(true))
-    }
-
-    @Test
-    fun overviewAnimationStarting_shouldNotifyAllDecorations() {
-        val decorationByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
-        decorationByDisplayId.put(1, desktopTilingDecoration)
-        decorationByDisplayId.put(2, desktopTilingDecoration)
-        desktopTilingDecorViewModel.currentUserId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDisplayId)
-
-        desktopTilingDecorViewModel.onOverviewAnimationStateChange(TRANSITION_STATE_ANIMATING)
-
-        verify(desktopTilingDecoration, times(2)).onOverviewAnimationStateChange(any())
     }
 
     @Test

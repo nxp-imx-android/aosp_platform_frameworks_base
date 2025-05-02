@@ -52,7 +52,6 @@ import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
-import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -60,6 +59,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
+import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener
@@ -113,7 +113,7 @@ class DesktopTilingWindowDecoration(
     private var isDarkMode = false
     private var isResizing = false
     private var isTilingFocused = false
-    private var isTilingVisibleAfterRecents = false
+    private var hiddenByOverviewAnimation = false
 
     fun onAppTiled(
         taskInfo: RunningTaskInfo,
@@ -438,6 +438,10 @@ class DesktopTilingWindowDecoration(
     ) {
         var leftTaskBroughtToFront = false
         var rightTaskBroughtToFront = false
+        if (info.type == TRANSIT_START_RECENTS_TRANSITION && isTilingManagerInitialised) {
+            hiddenByOverviewAnimation = true
+            hideDividerBar()
+        }
         for (change in info.changes) {
             change.taskInfo?.let { taskInfo ->
                 when {
@@ -477,8 +481,8 @@ class DesktopTilingWindowDecoration(
         }
 
         if (leftTaskBroughtToFront && rightTaskBroughtToFront) {
-            desktopTilingDividerWindowManager?.showDividerBar(isTilingVisibleAfterRecents)
-            isTilingVisibleAfterRecents = false
+            desktopTilingDividerWindowManager?.showDividerBar(hiddenByOverviewAnimation)
+            hiddenByOverviewAnimation = false
         }
     }
 
@@ -722,17 +726,9 @@ class DesktopTilingWindowDecoration(
         appResizingHelper.dispose()
     }
 
-    fun onOverviewAnimationStateChange(
-        @RecentsTransitionStateListener.RecentsTransitionState state: Int
-    ) {
-        if (!isTilingManagerInitialised) return
-        if (RecentsTransitionStateListener.isRunning(state)) {
-            isTilingVisibleAfterRecents = true
-            desktopTilingDividerWindowManager?.hideDividerBar()
-        } else if (allTiledTasksVisible()) {
-            desktopTilingDividerWindowManager?.showDividerBar(isTilingVisibleAfterRecents)
-            isTilingVisibleAfterRecents = false
-        }
+    fun onRecentsAnimationEndedToSameDesk() {
+        desktopTilingDividerWindowManager?.showDividerBar(hiddenByOverviewAnimation)
+        hiddenByOverviewAnimation = false
     }
 
     override fun onTaskVanished(taskInfo: RunningTaskInfo?) {

@@ -216,6 +216,14 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    fun overviewAnimationChanges_shouldNotifyTiling() {
+        desktopModeWindowDecorViewModel.onRecentsAnimationEndedToSameDesk()
+
+        verify(mockTilingWindowDecoration, times(1))
+            .onOverviewAnimationEndedToSameDesk()
+    }
+
+    @Test
     fun testBackEventHasRightDisplayId() {
         val secondaryDisplay = createVirtualDisplay() ?: return
         val secondaryDisplayId = secondaryDisplay.display.displayId
