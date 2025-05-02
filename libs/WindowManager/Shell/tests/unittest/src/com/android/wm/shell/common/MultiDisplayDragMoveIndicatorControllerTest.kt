@@ -88,8 +88,10 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
         whenever(displayController.getDisplay(0)).thenReturn(display0)
         whenever(displayController.getDisplay(1)).thenReturn(display1)
-        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any())).thenReturn(indicatorSurface0)
-        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any())).thenReturn(indicatorSurface1)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any()))
+            .thenReturn(indicatorSurface0)
+        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any()))
+            .thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
     }
 
@@ -101,7 +103,9 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) { transaction }
+        ) {
+            transaction
+        }
         executor.flushAll()
 
         verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
@@ -115,7 +119,9 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) { transaction }
+        ) {
+            transaction
+        }
         executor.flushAll()
 
         verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
@@ -129,27 +135,41 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) { transaction }
+        ) {
+            transaction
+        }
         executor.flushAll()
 
         verify(indicatorSurfaceFactory, times(1)).create(eq(taskInfo), eq(display1), any())
         verify(indicatorSurface1, times(1))
-            .show(transaction, taskInfo, rootTaskDisplayAreaOrganizer, 1, Rect(0, 1800, 200, 2400),
-                  MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE)
+            .show(
+                transaction,
+                taskInfo,
+                rootTaskDisplayAreaOrganizer,
+                1,
+                Rect(0, 1800, 200, 2400),
+                MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+            )
 
         controller.onDragMove(
             RectF(2000f, 2000f, 2100f, 2200f), // not intersect with display 1
             currentDisplayId = 0,
             startDisplayId = 0,
             taskInfo,
-            displayIds = setOf(0, 1)
-        ) { transaction }
+            displayIds = setOf(0, 1),
+        ) {
+            transaction
+        }
         while (executor.callbacks.isNotEmpty()) {
             executor.flushAll()
         }
 
         verify(indicatorSurface1, times(1))
-            .relayout(any(), eq(transaction), eq(MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE))
+            .relayout(
+                any(),
+                eq(transaction),
+                eq(MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE),
+            )
 
         controller.onDragEnd(TASK_ID, { transaction })
         while (executor.callbacks.isNotEmpty()) {
