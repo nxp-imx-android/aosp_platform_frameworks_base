@@ -1676,7 +1676,7 @@ class DesktopTasksController(
         val bounds = calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId) ?: return
         if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
-            val stableBounds = Rect().apply { displayLayout.getStableBounds(this) }
+            val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
             cascadeWindow(bounds, displayLayout, deskId, stableBounds)
         }
         val pendingIntent =
@@ -1993,7 +1993,7 @@ class DesktopTasksController(
                 .any { taskId ->
                     val taskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: return false
                     val displayLayout = displayController.getDisplayLayout(taskInfo.displayId)
-                    val stableBounds = Rect().apply { displayLayout?.getStableBounds(this) }
+                    val stableBounds = Rect().also { displayLayout?.getStableBounds(it) }
                     logD("taskInfo = %s", taskInfo)
                     logD(
                         "isTaskSnappedToHalfScreen(taskInfo) = %s",
@@ -2171,8 +2171,7 @@ class DesktopTasksController(
     private fun getSnapBounds(taskInfo: RunningTaskInfo, position: SnapPosition): Rect {
         val displayLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return Rect()
 
-        val stableBounds = Rect()
-        displayLayout.getStableBounds(stableBounds)
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
 
         val destinationWidth = stableBounds.width() / 2
         return when (position) {
@@ -2950,7 +2949,7 @@ class DesktopTasksController(
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId)
             if (displayLayout != null) {
-                val stableBounds = Rect().apply { displayLayout.getStableBounds(this) }
+                val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
                 val initialBounds = Rect(task.configuration.windowConfiguration.bounds)
                 cascadeWindow(initialBounds, displayLayout, deskId, stableBounds)
                 wct.setBounds(task.token, initialBounds)
