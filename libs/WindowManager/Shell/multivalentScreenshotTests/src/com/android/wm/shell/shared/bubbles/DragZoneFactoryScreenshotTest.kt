@@ -91,6 +91,7 @@ class DragZoneFactoryScreenshotTest(private val param: Param) {
                 is DraggedObject.Bubble -> "bubble"
                 is DraggedObject.BubbleBar -> "bubbleBar"
                 is DraggedObject.ExpandedView -> "expandedView"
+                is DraggedObject.LauncherIcon -> "launcherIcon"
             }
 
         private val splitScreenModeName =
