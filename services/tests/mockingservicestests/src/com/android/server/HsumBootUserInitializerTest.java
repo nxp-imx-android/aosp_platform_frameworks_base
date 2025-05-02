@@ -22,7 +22,6 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.ADMIN_USER_CREATED;
 import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_CREATED;
 import static com.android.server.HsumBootUserInitializerTest.ExpectedResult.NO_USER_CREATED;
-
 import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_MAIN;
 import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_NON_MAIN;
 import static com.android.server.HsumBootUserInitializerTest.InitialUsers.SYSTEM_ONLY;
@@ -106,8 +105,9 @@ public final class HsumBootUserInitializerTest {
     private final InitialUsers mInitialUsers;
     private final ExpectedResult mExpectedResult;
 
-    @Parameters( name = "{index}: hasMain={0},createInitial={1},initial={2},result={3}" )
-    public static Collection<Object[]> data() {
+    /** Useless javadoc to make checkstyle happy... */
+    @Parameters(name = "{index}: hasMain={0},createInitial={1},initial={2},result={3}")
+    public static Collection<Object[]> junitParametersPassedToConstructor() {
         return Arrays.asList(new Object[][] {
                 // shouldAlwaysHaveMainUser false, shouldCreateInitialUser false
                 { false, false, SYSTEM_ONLY, NO_USER_CREATED },
@@ -137,7 +137,7 @@ public final class HsumBootUserInitializerTest {
         mExpectedResult = expectedResult;
         Log.i(TAG, "Constructor: shouldAlwaysHaveMainUser=" + shouldAlwaysHaveMainUser
                 + ", shouldCreateInitialUser=" + shouldCreateInitialUser
-                + ", initialUsers=" + initialUsers + ",expectedResult=" +expectedResult);
+                + ", initialUsers=" + initialUsers + ",expectedResult=" + expectedResult);
     }
 
     @Before
@@ -159,8 +159,8 @@ public final class HsumBootUserInitializerTest {
         // NOTE: need to mock createNewUser() as the user id is used on Slog.
         switch (mExpectedResult) {
             case ADMIN_USER_CREATED:
-              mockCreateNewUser(NON_SYSTEM_USER_ID);
-              break;
+                mockCreateNewUser(NON_SYSTEM_USER_ID);
+                break;
             case MAIN_USER_CREATED:
                 mockCreateNewUser(MAIN_USER_ID);
                 break;
@@ -184,17 +184,19 @@ public final class HsumBootUserInitializerTest {
     @Test
     @EnableFlags(FLAG_CREATE_INITIAL_USER)
     public void testFlagEnabled() {
-        var initializer =
-                createHsumBootUserInitializer(mShouldAlwaysHaveMainUser, mShouldCreateInitialUser);
+        var initializer = createHsumBootUserInitializer(mShouldAlwaysHaveMainUser,
+                mShouldCreateInitialUser);
 
         initializer.init(mTracer);
 
         switch (mExpectedResult) {
             case ADMIN_USER_CREATED:
                 expectAdminUserCreated();
-              break;
+                expectSetBootUserId(NON_SYSTEM_USER_ID);
+                break;
             case MAIN_USER_CREATED:
                 expectMainUserCreated();
+                expectSetBootUserId(MAIN_USER_ID);
                 break;
             case NO_USER_CREATED:
                 expectNoUserCreated();
@@ -219,13 +221,8 @@ public final class HsumBootUserInitializerTest {
                 break;
             case MAIN_USER_CREATED:
                 expectMainUserCreated();
+                break;
         }
-    }
-
-    private HsumBootUserInitializer createHsumBootUserInitializer(
-            boolean shouldAlwaysHaveMainUser) {
-        return createHsumBootUserInitializer(shouldAlwaysHaveMainUser,
-                /* shouldCreateInitialUser= */ false);
     }
 
     private HsumBootUserInitializer createHsumBootUserInitializer(
@@ -310,13 +307,13 @@ public final class HsumBootUserInitializerTest {
 
     // NOTE: enums below must be public to be static imported
 
-    public static enum InitialUsers {
+    public enum InitialUsers {
         SYSTEM_ONLY,
         SYSTEM_AND_MAIN,
         SYSTEM_AND_NON_MAIN
     }
 
-    public static enum ExpectedResult {
+    public enum ExpectedResult {
         NO_USER_CREATED,
         MAIN_USER_CREATED,
         ADMIN_USER_CREATED
