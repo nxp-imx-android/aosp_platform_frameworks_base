@@ -126,16 +126,19 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
 
     protected final Context mContext;
     protected final MediaRoute2Info mRouteInfo;
+    @Nullable private final DynamicRouteAttributes mDynamicRouteAttributes;
     protected final RouteListingPreference.Item mItem;
     private boolean mIsSuggested;
 
     MediaDevice(
             @NonNull Context context,
             @Nullable MediaRoute2Info info,
+            @Nullable DynamicRouteAttributes dynamicRouteAttributes,
             @Nullable RouteListingPreference.Item item) {
         mContext = context;
         mRouteInfo = info;
         mItem = item;
+        mDynamicRouteAttributes = dynamicRouteAttributes;
         setType(info);
         if (Flags.enableSuggestedDeviceApi()) {
             mState = LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
@@ -603,6 +606,38 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         }
         final MediaDevice otherDevice = (MediaDevice) obj;
         return otherDevice.getId().equals(getId());
+    }
+
+    /** Whether a device supports moving media playback to itself. */
+    public boolean isTransferable() {
+        if (mDynamicRouteAttributes == null) {
+            return false;
+        }
+        return mDynamicRouteAttributes.getTransferable();
+    }
+
+    /** Whether a device has active playback. */
+    public boolean isSelected() {
+        if (mDynamicRouteAttributes == null) {
+            return false;
+        }
+        return mDynamicRouteAttributes.getSelected();
+    }
+
+    /** Whether a device can be added to playback session. */
+    public boolean isSelectable() {
+        if (mDynamicRouteAttributes == null) {
+            return false;
+        }
+        return mDynamicRouteAttributes.getSelectable();
+    }
+
+    /** Whether a device can be removed from a playback session. */
+    public boolean isDeselectable() {
+        if (mDynamicRouteAttributes == null) {
+            return false;
+        }
+        return mDynamicRouteAttributes.getDeselectable();
     }
 
     @RequiresApi(34)

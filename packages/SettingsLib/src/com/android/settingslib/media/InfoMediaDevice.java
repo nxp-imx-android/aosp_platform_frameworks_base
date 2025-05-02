@@ -48,8 +48,9 @@ public class InfoMediaDevice extends MediaDevice {
     InfoMediaDevice(
             @NonNull Context context,
             @NonNull MediaRoute2Info info,
+            @Nullable DynamicRouteAttributes dynamicRouteAttributes,
             @Nullable RouteListingPreference.Item item) {
-        super(context, info, item);
+        super(context, info, dynamicRouteAttributes, item);
         initDeviceRecord();
     }
 

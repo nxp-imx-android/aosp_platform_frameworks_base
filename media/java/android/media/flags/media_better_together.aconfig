@@ -271,6 +271,16 @@ flag {
 }
 
 flag {
+    name: "avoid_binder_calls_during_render"
+    namespace: "media_better_together"
+    description: "Reduces number of expensive binder calls during rendering."
+    bug: "414668703"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_output_switcher_personal_audio_sharing"
     namespace: "cross_device_experiences"
     description: "Enables personal audio sharing in the output switcher."

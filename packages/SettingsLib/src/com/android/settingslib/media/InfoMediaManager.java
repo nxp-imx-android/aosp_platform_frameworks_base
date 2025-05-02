@@ -45,6 +45,7 @@ import static android.media.MediaRoute2Info.TYPE_WIRED_HEADPHONES;
 import static android.media.MediaRoute2Info.TYPE_WIRED_HEADSET;
 import static android.media.session.MediaController.PlaybackInfo;
 
+import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED;
 
 import android.annotation.TargetApi;
@@ -73,7 +74,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.R;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
-import com.android.settingslib.media.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,6 +87,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -582,16 +583,21 @@ public abstract class InfoMediaManager {
      */
     @NonNull
     List<MediaDevice> getSelectableMediaDevices() {
+        if (avoidBinderCallsDuringRender()) {
+            return mMediaDevices.stream().filter(MediaDevice::isSelectable).toList();
+        }
+
         final RoutingSessionInfo info = getActiveRoutingSession();
 
         final List<MediaDevice> deviceList = new ArrayList<>();
         for (MediaRoute2Info route : getSelectableRoutes(info)) {
             if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                deviceList.add(createMediaDeviceFromRoute(route));
+                deviceList.add(
+                        createMediaDeviceFromRoute(route, /* dynamicRouteAttributes= */ null));
             } else {
                 deviceList.add(
-                        new InfoMediaDevice(
-                                mContext, route, mPreferenceItemMap.get(route.getId())));
+                        new InfoMediaDevice(mContext, route, /* dynamicRouteAttributes= */ null,
+                                mPreferenceItemMap.get(route.getId())));
             }
         }
         return deviceList;
@@ -603,16 +609,21 @@ public abstract class InfoMediaManager {
      */
     @NonNull
     List<MediaDevice> getTransferableMediaDevices() {
+        if (avoidBinderCallsDuringRender()) {
+            return mMediaDevices.stream().filter(MediaDevice::isTransferable).toList();
+        }
+
         final RoutingSessionInfo info = getActiveRoutingSession();
 
         final List<MediaDevice> deviceList = new ArrayList<>();
         for (MediaRoute2Info route : getTransferableRoutes(info)) {
             if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                deviceList.add(createMediaDeviceFromRoute(route));
+                deviceList.add(
+                        createMediaDeviceFromRoute(route, /* dynamicRouteAttributes= */ null));
             } else {
                 deviceList.add(
-                        new InfoMediaDevice(
-                                mContext, route, mPreferenceItemMap.get(route.getId())));
+                        new InfoMediaDevice(mContext, route, /* dynamicRouteAttributes= */ null,
+                                mPreferenceItemMap.get(route.getId())));
             }
         }
         return deviceList;
@@ -624,16 +635,21 @@ public abstract class InfoMediaManager {
      */
     @NonNull
     List<MediaDevice> getDeselectableMediaDevices() {
+        if (avoidBinderCallsDuringRender()) {
+            return mMediaDevices.stream().filter(MediaDevice::isDeselectable).toList();
+        }
+
         final RoutingSessionInfo info = getActiveRoutingSession();
 
         final List<MediaDevice> deviceList = new ArrayList<>();
         for (MediaRoute2Info route : getDeselectableRoutes(info)) {
             if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                deviceList.add(createMediaDeviceFromRoute(route));
+                deviceList.add(
+                        createMediaDeviceFromRoute(route, /* dynamicRouteAttributes= */ null));
             } else {
                 deviceList.add(
-                        new InfoMediaDevice(
-                                mContext, route, mPreferenceItemMap.get(route.getId())));
+                        new InfoMediaDevice(mContext, route,  /* dynamicRouteAttributes= */ null,
+                                mPreferenceItemMap.get(route.getId())));
             }
             Log.d(TAG, route.getName() + " is deselectable for " + mPackageName);
         }
@@ -646,16 +662,21 @@ public abstract class InfoMediaManager {
      */
     @NonNull
     List<MediaDevice> getSelectedMediaDevices() {
+        if (avoidBinderCallsDuringRender()) {
+            return mMediaDevices.stream().filter(MediaDevice::isSelected).toList();
+        }
+
         RoutingSessionInfo info = getActiveRoutingSession();
 
         final List<MediaDevice> deviceList = new ArrayList<>();
         for (MediaRoute2Info route : getSelectedRoutes(info)) {
             if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                deviceList.add(createMediaDeviceFromRoute(route));
+                deviceList.add(
+                        createMediaDeviceFromRoute(route, /* dynamicRouteAttributes= */ null));
             } else {
                 deviceList.add(
-                        new InfoMediaDevice(
-                                mContext, route, mPreferenceItemMap.get(route.getId())));
+                        new InfoMediaDevice(mContext, route,  /* dynamicRouteAttributes= */ null,
+                                mPreferenceItemMap.get(route.getId())));
             }
         }
         return deviceList;
@@ -904,7 +925,10 @@ public abstract class InfoMediaManager {
     @SuppressWarnings("NewApi")
     @VisibleForTesting
     void addMediaDevice(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo activeSession) {
-        MediaDevice mediaDevice = createMediaDeviceFromRoute(route);
+        DynamicRouteAttributes dynamicRouteAttributes =
+                avoidBinderCallsDuringRender()
+                        ? getDynamicRouteAttributes(activeSession, route) : null;
+        MediaDevice mediaDevice = createMediaDeviceFromRoute(route, dynamicRouteAttributes);
         if (mediaDevice != null) {
             if (activeSession.getSelectedRoutes().contains(route.getId())) {
                 setDeviceState(mediaDevice, STATE_SELECTED);
@@ -914,17 +938,17 @@ public abstract class InfoMediaManager {
     }
 
     @Nullable
-    private MediaDevice createMediaDeviceFromRoute(@NonNull MediaRoute2Info route) {
+    private MediaDevice createMediaDeviceFromRoute(@NonNull MediaRoute2Info route,
+            @Nullable DynamicRouteAttributes dynamicRouteAttributes) {
         final int deviceType = route.getType();
         MediaDevice mediaDevice = null;
         if (isInfoMediaDevice(deviceType)) {
-            mediaDevice =
-                    new InfoMediaDevice(mContext, route, mPreferenceItemMap.get(route.getId()));
+            mediaDevice = new InfoMediaDevice(mContext, route, dynamicRouteAttributes,
+                    mPreferenceItemMap.get(route.getId()));
 
         } else if (isPhoneMediaDevice(deviceType)) {
-            mediaDevice =
-                    new PhoneMediaDevice(
-                            mContext, route, mPreferenceItemMap.getOrDefault(route.getId(), null));
+            mediaDevice = new PhoneMediaDevice(mContext, route, dynamicRouteAttributes,
+                    mPreferenceItemMap.getOrDefault(route.getId(), null));
 
         } else if (isBluetoothMediaDevice(deviceType)) {
             if (route.getAddress() == null) {
@@ -935,23 +959,32 @@ public abstract class InfoMediaManager {
                 final CachedBluetoothDevice cachedDevice =
                         mBluetoothManager.getCachedDeviceManager().findDevice(device);
                 if (cachedDevice != null) {
-                    mediaDevice =
-                            new BluetoothMediaDevice(
-                                    mContext,
-                                    cachedDevice,
-                                    route,
-                                    mPreferenceItemMap.getOrDefault(route.getId(), null));
+                    mediaDevice = new BluetoothMediaDevice(mContext, cachedDevice, route,
+                            dynamicRouteAttributes,
+                            mPreferenceItemMap.getOrDefault(route.getId(), null));
                 }
             }
         } else if (isComplexMediaDevice(deviceType)) {
-            mediaDevice =
-                    new ComplexMediaDevice(mContext, route, mPreferenceItemMap.get(route.getId()));
+            mediaDevice = new ComplexMediaDevice(mContext, route, dynamicRouteAttributes,
+                    mPreferenceItemMap.get(route.getId()));
 
         } else {
             Log.w(TAG, "createRouteToMediaDevice() unknown device type : " + deviceType);
         }
 
         return mediaDevice;
+    }
+
+    @NonNull
+    private DynamicRouteAttributes getDynamicRouteAttributes(
+            @NonNull RoutingSessionInfo activeSession, @NonNull MediaRoute2Info route) {
+        Predicate<MediaRoute2Info> isSameRoute = r -> r.getId().equals(route.getId());
+        return new DynamicRouteAttributes(
+                getTransferableRoutes(activeSession).stream().anyMatch(isSameRoute),
+                getSelectedRoutes(activeSession).stream().anyMatch(isSameRoute),
+                getSelectableRoutes(activeSession).stream().anyMatch(isSameRoute),
+                getDeselectableRoutes(activeSession).stream().anyMatch(isSameRoute)
+        );
     }
 
     /** Updates the state of the device and updates liteners of the updated device state. */

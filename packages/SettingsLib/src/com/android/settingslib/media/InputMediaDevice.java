@@ -63,7 +63,7 @@ public class InputMediaDevice extends MediaDevice {
             int currentVolume,
             boolean isVolumeFixed,
             @Nullable String productName) {
-        super(context, /* info= */ null, /* item= */ null);
+        super(context, /* info= */ null, /* dynamicRouteAttributes= */ null, /* item= */ null);
         mId = id;
         mAddress = address;
         mAudioDeviceInfoType = audioDeviceInfoType;
