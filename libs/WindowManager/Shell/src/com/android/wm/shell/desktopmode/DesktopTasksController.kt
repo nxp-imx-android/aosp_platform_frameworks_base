@@ -459,7 +459,12 @@ class DesktopTasksController(
     private fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
         if (task1.taskId == task2.parentTaskId) task2 else task1
 
+    @Deprecated("Use isDisplayDesktopFirst() instead.", ReplaceWith("isDisplayDesktopFirst()"))
     private fun forceEnterDesktop(displayId: Int): Boolean {
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue) {
+            return rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+        }
+
         if (!desktopState.enterDesktopByDefaultOnFreeformDisplay) {
             return false
         }

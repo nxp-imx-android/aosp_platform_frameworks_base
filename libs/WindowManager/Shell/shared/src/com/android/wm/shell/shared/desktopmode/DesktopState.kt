@@ -53,6 +53,7 @@ interface DesktopState {
      * Whether a display should enter desktop mode by default when the windowing mode of the
      * display's root [TaskDisplayArea] is set to `WINDOWING_MODE_FREEFORM`.
      */
+    @Deprecated("Use isDisplayDesktopFirst() instead.", ReplaceWith("isDisplayDesktopFirst()"))
     @get:JvmName("enterDesktopByDefaultOnFreeformDisplay")
     val enterDesktopByDefaultOnFreeformDisplay: Boolean
 
