@@ -107,9 +107,6 @@ public interface Bubbles {
      */
     boolean isBubbleExpanded(String key);
 
-    /** Tell the stack of bubbles to collapse. */
-    void collapseStack();
-
     /**
      * Request the stack expand if needed, then select the specified Bubble as current.
      * If no bubble exists for this entry, one is created.
