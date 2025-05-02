@@ -7864,7 +7864,8 @@ package android.media {
     method public int getStreamType();
     method @NonNull public android.media.audiopolicy.AudioVolumeGroup getVolumeGroup();
     method public int getVolumeIndex();
-    method public boolean hasMuteCommand();
+    method @Deprecated @FlaggedApi("android.media.audio.device_volume_apis") public boolean hasMuteCommand();
+    method @FlaggedApi("android.media.audio.device_volume_apis") public boolean hasMuteState();
     method public boolean hasStreamType();
     method public boolean hasVolumeGroup();
     method public boolean isMuted();
