@@ -9290,8 +9290,9 @@
         <attr name="settingsActivity" />
         <!-- A preview, in a drawable resource id, of what the Dream will look like. -->
         <attr name="previewImage" format="reference" />
-        <!-- Whether to show clock and other complications such as weather in the overlay. Default
-             to true. Note that the overlay on dreams is currently only supported on tablets. -->
+        <!-- Whether to show clock and other complications such as weather in the overlay. Defaults
+             to false. Note that the home button complication ignores this value and is always
+             shown. The overlay on dreams is currently only supported on tablets. -->
         <attr name="showClockAndComplications" format="boolean" />
 
         <!-- Dream Category to determine the type of dream. Default to default.

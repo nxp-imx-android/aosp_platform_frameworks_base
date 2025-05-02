@@ -109,13 +109,16 @@ import java.util.function.Consumer;
  * initialization and teardown should be done by overriding the hooks above.</p>
  *
  * <p>To be available to the system, your {@code DreamService} should be declared in the
- * manifest as follows:</p>
+ * manifest as follows (note: when targeting API level 21 and above, you must declare the service in
+ * your app manifest file with the {@link android.Manifest.permission#BIND_DREAM_SERVICE}
+ * permission):</p>
  * <pre>
  * &lt;service
  *     android:name=".MyDream"
  *     android:exported="true"
  *     android:icon="@drawable/my_icon"
- *     android:label="@string/my_dream_label" >
+ *     android:label="@string/my_dream_label"
+ *     android:permission="android.permission.BIND_DREAM_SERVICE">
  *
  *     &lt;intent-filter>
  *         &lt;action android:name="android.service.dreams.DreamService" />
@@ -132,17 +135,27 @@ import java.util.function.Consumer;
  * <p>If specified with the {@code <meta-data>} element,
  * additional information for the dream is defined using the
  * {@link android.R.styleable#Dream &lt;dream&gt;} element in a separate XML file.
- * Currently, the only additional
- * information you can provide is for a settings activity that allows the user to configure
- * the dream behavior. For example:</p>
+ * For example:</p>
  * <p class="code-caption">res/xml/my_dream.xml</p>
  * <pre>
  * &lt;dream xmlns:android="http://schemas.android.com/apk/res/android"
+ *     android:previewImage="@drawable/screensaver_preview"
+ *     android:showClockAndComplications="true"
  *     android:settingsActivity="com.example.app/.MyDreamSettingsActivity" />
  * </pre>
- * <p>This makes a Settings button available alongside your dream's listing in the
- * system settings, which when pressed opens the specified activity.</p>
+ * <p><code>android:previewImage</code> specifies a preview image to display in the screensavers
+ * grid in Settings. <code>android:settingsActivity</code> makes a Settings button available
+ * alongside your dream's listing in the system settings, which when pressed opens the specified
+ * activity. <code>android:showClockAndComplications</code> can be set to <code>true</code> to
+ * indicate that a clock and other complications may be shown above the screensaver. (This is
+ * currently only available on large-screen devices.)</p>
  *
+ * <p>Interactive screensavers that require users to swipe near areas reserved for system gestures
+ * can use the {@link Window#setSystemGestureExclusionRects} API to exclude areas that overlap
+ * system gesture areas. See <a href=
+ * "https://developer.android.com/develop/ui/views/touch-and-input/gestures/gesturenav#games">
+ * https://developer.android.com/develop/ui/views/touch-and-input/gestures/gesturenav#games</a> for
+ * more information.
  *
  * <p>To specify your dream layout, call {@link #setContentView}, typically during the
  * {@link #onAttachedToWindow} callback. For example:</p>
@@ -161,22 +174,6 @@ import java.util.function.Consumer;
  *         setContentView(R.layout.dream);
  *     }
  * }
- * </pre>
- *
- * <p>When targeting api level 21 and above, you must declare the service in your manifest file
- * with the {@link android.Manifest.permission#BIND_DREAM_SERVICE} permission. For example:</p>
- * <pre>
- * &lt;service
- *     android:name=".MyDream"
- *     android:exported="true"
- *     android:icon="@drawable/my_icon"
- *     android:label="@string/my_dream_label"
- *     android:permission="android.permission.BIND_DREAM_SERVICE">
- *   &lt;intent-filter>
- *     &lt;action android:name=”android.service.dreams.DreamService” />
- *     &lt;category android:name=”android.intent.category.DEFAULT” />
- *   &lt;/intent-filter>
- * &lt;/service>
  * </pre>
  */
 public class DreamService extends Service implements Window.Callback {
