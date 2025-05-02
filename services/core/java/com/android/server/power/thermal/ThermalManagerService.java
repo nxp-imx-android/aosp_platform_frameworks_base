@@ -906,20 +906,20 @@ public class ThermalManagerService extends SystemService {
                 pw.println("Thermal Status: " + mStatus);
                 pw.println("Cached temperatures:");
                 dumpItemsLocked(pw, "\t", mTemperatureMap.values());
-                pw.println("HAL Ready: " + mHalReady.get());
-                if (mHalReady.get()) {
-                    pw.println("HAL connection:");
-                    mHalWrapper.dump(pw, "\t");
-                    pw.println("Current temperatures from HAL:");
-                    dumpItemsLocked(pw, "\t",
-                            mHalWrapper.getCurrentTemperatures(false, 0));
-                    pw.println("Current cooling devices from HAL:");
-                    dumpItemsLocked(pw, "\t",
-                            mHalWrapper.getCurrentCoolingDevices(false, 0));
-                    pw.println("Temperature static thresholds from HAL:");
-                    dumpTemperatureThresholds(pw, "\t",
-                            mHalWrapper.getTemperatureThresholds(false, 0));
-                }
+            }
+            pw.println("HAL Ready: " + mHalReady.get());
+            if (mHalReady.get()) {
+                pw.println("HAL connection:");
+                mHalWrapper.dump(pw, "\t");
+                pw.println("Current temperatures from HAL:");
+                dumpItemsLocked(pw, "\t",
+                        mHalWrapper.getCurrentTemperatures(false, 0));
+                pw.println("Current cooling devices from HAL:");
+                dumpItemsLocked(pw, "\t",
+                        mHalWrapper.getCurrentCoolingDevices(false, 0));
+                pw.println("Temperature static thresholds from HAL:");
+                dumpTemperatureThresholds(pw, "\t",
+                        mHalWrapper.getTemperatureThresholds(false, 0));
             }
             if (Flags.allowThermalHeadroomThresholds()) {
                 synchronized (mTemperatureWatcher.mSamples) {
