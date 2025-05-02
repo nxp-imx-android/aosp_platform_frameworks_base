@@ -240,7 +240,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                         unresolvedName = ", unresolvedName=" + user.name;
                     }
                     pw.printf("%d: id=%d, name=%s%s, type=%s, "
-                            + "flags=%s%s%s%s%s%s%s%s%s%s\n",
+                            + "flags=%s%s%s%s%s%s%s%s%s%s%s\n",
                             i,
                             user.id,
                             name,
@@ -250,6 +250,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                             hasParent ? " (parentId=" + user.profileGroupId + ")" : "",
                             running ? " (running)" : "",
                             user.partial ? " (partial)" : "",
+                            user.guestToRemove ? " (guestToRemove)" : "",
                             user.preCreated ? " (pre-created)" : "",
                             user.convertedFromPreCreated ? " (converted)" : "",
                             deviceOwner, profileOwner,
