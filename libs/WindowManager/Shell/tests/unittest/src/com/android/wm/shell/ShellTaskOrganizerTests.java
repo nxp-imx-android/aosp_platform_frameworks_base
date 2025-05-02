@@ -16,6 +16,9 @@
 
 package com.android.wm.shell;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -27,6 +30,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_FULLSCREEN;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_MULTI_WINDOW;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_PIP;
+import static com.android.wm.shell.ShellTaskOrganizer.isHomeTaskOnDefaultDisplay;
 import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
 
 import static org.junit.Assert.assertEquals;
@@ -667,11 +671,51 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         assertEquals(vanishedTasks[0], task1);
     }
 
+    @Test
+    public void testHomeTaskOnDefaultDisplay() {
+        RunningTaskInfo taskInfo = createTaskInfo(
+                /* taskId= */ 1, ACTIVITY_TYPE_HOME, DEFAULT_DISPLAY);
+
+        assertTrue(isHomeTaskOnDefaultDisplay(taskInfo));
+    }
+
+    @Test
+    public void testNonHomeTaskOnDefaultDisplay() {
+        RunningTaskInfo taskInfo = createTaskInfo(
+                /* taskId= */ 1, ACTIVITY_TYPE_DREAM, DEFAULT_DISPLAY);
+
+        assertFalse(isHomeTaskOnDefaultDisplay(taskInfo));
+    }
+
+    @Test
+    public void testHomeTaskOnExternalDisplay() {
+        RunningTaskInfo taskInfo = createTaskInfo(
+                /* taskId= */ 1, ACTIVITY_TYPE_HOME, /* displayId= */ 2);
+
+        assertFalse(isHomeTaskOnDefaultDisplay(taskInfo));
+    }
+
+    @Test
+    public void testRecentTaskOnExternalDisplay() {
+        RunningTaskInfo taskInfo = createTaskInfo(
+                /* taskId= */ 1, ACTIVITY_TYPE_RECENTS, /* displayId= */ 3);
+
+        assertFalse(isHomeTaskOnDefaultDisplay(taskInfo));
+    }
+
     private static RunningTaskInfo createTaskInfo(int taskId, int windowingMode) {
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = taskId;
         taskInfo.configuration.windowConfiguration.setWindowingMode(windowingMode);
         taskInfo.isVisible = true;
+        return taskInfo;
+    }
+
+    private static RunningTaskInfo createTaskInfo(int taskId, int activityType, int displayId) {
+        RunningTaskInfo taskInfo = new RunningTaskInfo();
+        taskInfo.taskId = taskId;
+        taskInfo.configuration.windowConfiguration.setActivityType(activityType);
+        taskInfo.displayId = displayId;
         return taskInfo;
     }
 
