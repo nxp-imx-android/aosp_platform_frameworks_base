@@ -25,10 +25,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,12 +47,15 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
+import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.res.R
 import com.android.systemui.underlay.ui.viewmodel.ActionViewModel
 
 @Composable
@@ -61,6 +66,7 @@ fun NavBarPill(
     visible: Boolean = true,
     expanded: Boolean = false,
     onClick: () -> Unit = {},
+    onCloseClick: () -> Unit = {},
 ) {
     val outlineColor = Color.White
     val backgroundColor = Color.Black
@@ -96,43 +102,76 @@ fun NavBarPill(
             }
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier.clip(RoundedCornerShape(16.dp))
-                    .border(2.dp, outlineColor, RoundedCornerShape(16.dp))
-                    .background(backgroundColor)
-                    .clickable { onClick() }
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-                    .onGloballyPositioned { expandedSize = it.size },
         ) {
-            actions.fastForEachIndexed { _, action ->
-                val painter = rememberDrawablePainter(action.icon)
-                Image(
-                    painter = painter,
-                    colorFilter =
-                        if (action.attribution != null) ColorFilter.tint(outlineColor) else null,
-                    contentDescription = action.label,
-                    modifier = Modifier.size(16.dp).clip(CircleShape),
-                )
-            }
+            val closeButtonSize = 28.dp
+            Spacer(modifier = Modifier.size(closeButtonSize))
 
-            if (actions.size == 1 || (actions.isNotEmpty() && actions.last().attribution != null)) {
-                val action = actions.last()
-                Text(
-                    action.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = outlineColor,
-                )
-                if (action.attribution != null) {
-                    Text(
-                        action.attribution,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = outlineColor,
-                        modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier.clip(RoundedCornerShape(16.dp))
+                        .border(2.dp, outlineColor, RoundedCornerShape(16.dp))
+                        .background(backgroundColor)
+                        .clickable { onClick() }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .onGloballyPositioned { expandedSize = it.size },
+            ) {
+                actions.fastForEach { action ->
+                    Image(
+                        painter = rememberDrawablePainter(action.icon),
+                        colorFilter =
+                            if (action.attribution != null) {
+                                ColorFilter.tint(outlineColor)
+                            } else {
+                                null
+                            },
+                        contentDescription = action.label,
+                        modifier = Modifier.size(16.dp).clip(CircleShape),
                     )
                 }
+
+                if (
+                    actions.size == 1 ||
+                        (actions.isNotEmpty() && actions.last().attribution != null)
+                ) {
+                    val lastAction = actions.last()
+                    Text(
+                        text = lastAction.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = outlineColor,
+                    )
+                    if (lastAction.attribution != null) {
+                        Text(
+                            text = lastAction.attribution,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = outlineColor,
+                            modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
+                        )
+                    }
+                }
             }
+
+            PlatformIconButton(
+                modifier =
+                    Modifier.size(closeButtonSize)
+                        .clip(CircleShape)
+                        .background(backgroundColor)
+                        .padding(8.dp),
+                iconResource = R.drawable.ic_close_white_rounded,
+                colors =
+                    IconButtonColors(
+                        containerColor = backgroundColor,
+                        contentColor = outlineColor,
+                        disabledContainerColor = backgroundColor,
+                        disabledContentColor = outlineColor,
+                    ),
+                contentDescription =
+                    stringResource(id = R.string.underlay_close_button_content_description),
+                onClick = onCloseClick,
+            )
         }
     }
 }
