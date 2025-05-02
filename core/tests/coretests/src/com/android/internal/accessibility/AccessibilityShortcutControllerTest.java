@@ -736,14 +736,14 @@ public class AccessibilityShortcutControllerTest {
 
     private void configureNoShortcutService() throws Exception {
         when(mAccessibilityManagerService
-                .getAccessibilityShortcutTargets(HARDWARE))
+                .getAccessibilityShortcutTargets(eq(HARDWARE), anyInt()))
                 .thenReturn(Collections.emptyList());
         Settings.Secure.putString(mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, "");
     }
 
     private void configureValidShortcutService() throws Exception {
         when(mAccessibilityManagerService
-                .getAccessibilityShortcutTargets(HARDWARE))
+                .getAccessibilityShortcutTargets(eq(HARDWARE), anyInt()))
                 .thenReturn(Collections.singletonList(SERVICE_NAME_STRING));
         Settings.Secure.putString(
                 mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, SERVICE_NAME_STRING);
@@ -754,7 +754,7 @@ public class AccessibilityShortcutControllerTest {
                 (ComponentName) AccessibilityShortcutController.getFrameworkShortcutFeaturesMap()
                         .keySet().toArray()[0];
         when(mAccessibilityManagerService
-                .getAccessibilityShortcutTargets(HARDWARE))
+                .getAccessibilityShortcutTargets(eq(HARDWARE), anyInt()))
                 .thenReturn(Collections.singletonList(featureComponentName.flattenToString()));
         Settings.Secure.putString(mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE,
                 featureComponentName.flattenToString());
@@ -816,7 +816,7 @@ public class AccessibilityShortcutControllerTest {
 
     private void configureDefaultAccessibilityService() throws Exception {
         when(mAccessibilityManagerService
-                .getAccessibilityShortcutTargets(HARDWARE))
+                .getAccessibilityShortcutTargets(eq(HARDWARE), anyInt()))
                 .thenReturn(Collections.singletonList(SERVICE_NAME_STRING));
 
         when(mResources.getString(R.string.config_defaultAccessibilityService)).thenReturn(

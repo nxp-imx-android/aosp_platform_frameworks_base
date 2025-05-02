@@ -387,7 +387,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             new HashSet<IUserInitializationCompleteCallback>();
 
     @GuardedBy("mLock")
-    private @UserIdInt int mCurrentUserId = UserHandle.USER_SYSTEM;
+    @VisibleForTesting
+    public @UserIdInt int mCurrentUserId = UserHandle.USER_SYSTEM;
 
     // TODO(b/255426725): temporary workaround to support visible background users for UiAutomation:
     // when the UiAutomation is set in a visible background user, mCurrentUserId points to that user
@@ -772,13 +773,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 return;
         }
 
+        int userId;
+        synchronized (mLock) {
+            userId = mCurrentUserId;
+        }
         List<String> shortcutTargets = getAccessibilityShortcutTargets(
-                KEY_GESTURE);
+                KEY_GESTURE, userId);
         if (!shortcutTargets.contains(targetName)) {
-            int userId;
-            synchronized (mLock) {
-                userId = mCurrentUserId;
-            }
             // TODO(b/377752960): Add dialog to confirm enabling the service and to
             //  activate the first time.
             enableShortcutForTargets(true, UserShortcutType.KEY_GESTURE,
@@ -911,7 +912,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     @NonNull
-    private AccessibilityUserState getUserStateLocked(int userId) {
+    @VisibleForTesting
+    public AccessibilityUserState getUserStateLocked(int userId) {
         AccessibilityUserState state = mUserStates.get(userId);
         if (state == null) {
             state = new AccessibilityUserState(userId, mContext, this);
@@ -1848,7 +1850,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             @UserIdInt int userId, @NonNull List<ComponentName> tileComponentNames) {
         notifyQuickSettingsTilesChanged_enforcePermission();
 
-        Slog.d(LOG_TAG, String.format(
+        Slog.d(LOG_TAG, TextUtils.formatSimple(
                 "notifyQuickSettingsTilesChanged userId: %s, tileComponentNames: %s",
                 userId, tileComponentNames));
         final Set<ComponentName> newTileComponentNames = new ArraySet<>(tileComponentNames);
@@ -2156,7 +2158,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 userId = mSecurityPolicy.resolveProfileParentLocked(userId);
             }
             if (mCurrentUserId == userId && mInitialized) {
-                Slog.w(LOG_TAG, String.format("userId: %d is already initialized", userId));
+                Slog.w(LOG_TAG, TextUtils.formatSimple(
+                        "userId: %d is already initialized", userId));
                 return;
             }
         }
@@ -3320,7 +3323,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      * @param forceUpdate whether to force an update of the app Clients.
      */
     private void onUserStateChangedLocked(AccessibilityUserState userState, boolean forceUpdate) {
-        Slog.v(LOG_TAG, String.format("onUserStateChangedLocked for userId: %d, forceUpdate: %s",
+        Slog.v(LOG_TAG, TextUtils.formatSimple(
+                "onUserStateChangedLocked for userId: %d, forceUpdate: %s",
                 userState.mUserId, forceUpdate));
 
         // TODO: Remove this hack
@@ -3897,6 +3901,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         persistColonDelimitedSetToSettingLocked(ShortcutUtils.convertToKey(shortcutType),
                 userState.mUserId, currentTargets, str -> str);
         scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+
+        // Log new shortcut targets in VERBOSE
+        Slog.v(LOG_TAG, TextUtils.formatSimple(
+                "UserState shortcut targets: userId: %s, type: %s, targets: %s",
+                userState.mUserId,
+                ShortcutUtils.convertToKey(shortcutType),
+                currentTargets));
     }
 
     private void updateShortcutTargetSets(AccessibilityUserState userState,
@@ -4148,8 +4159,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      */
     private void performAccessibilityShortcutInternal(int displayId,
             @UserShortcutType int shortcutType, @Nullable String targetName) {
+        int userId;
+        synchronized (mLock) {
+            userId = mCurrentUserId;
+        }
+
         final List<String> shortcutTargets = getAccessibilityShortcutTargetsInternal(
-                shortcutType);
+                shortcutType, userId);
         if (shortcutTargets.isEmpty()) {
             Slog.d(LOG_TAG, "No target to perform shortcut, shortcutType=" + shortcutType);
             return;
@@ -4365,7 +4381,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void enableShortcutForTargets(
             boolean enable, @UserShortcutType int shortcutType,
             @NonNull List<String> shortcutTargets, @UserIdInt int userId) {
-        Slog.d(LOG_TAG, String.format(
+        Slog.d(LOG_TAG, TextUtils.formatSimple(
                 "enableShortcutForTargets: enable %s, shortcutType: %s, shortcutTargets: %s, "
                         + "userId: %s",
                 enable, shortcutType, shortcutTargets, userId));
@@ -4433,12 +4449,18 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
             if (currentTargets.equals(validNewTargets)) {
                 Slog.d(LOG_TAG,
-                        String.format(
+                        TextUtils.formatSimple(
                                 "shortcutTargets are the same: skip modifying: target: %s, "
-                                        + "shortcutType: %s",
-                                validNewTargets, shortcutType));
+                                        + "shortcutType: %s, userId: %s",
+                                validNewTargets, shortcutType, userId));
                 return;
             }
+            Slog.d(LOG_TAG,
+                    TextUtils.formatSimple(
+                            "writing new shortcut targets: target: %s, "
+                                    + "shortcutType: %s, userId: %s",
+                            validNewTargets, shortcutType, userId));
+
             persistColonDelimitedSetToSettingLocked(
                     shortcutTypeSettingKey,
                     userId,
@@ -4450,7 +4472,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (shortcutType == QUICK_SETTINGS) {
                 int numOfFeatureChanged = Math.abs(currentTargets.size() - validNewTargets.size());
                 logMetricForQsShortcutConfiguration(enable, numOfFeatureChanged);
-                userState.updateShortcutTargetsLocked(validNewTargets, QUICK_SETTINGS);
+                if (!Flags.managerLifecycleUserChange()) {
+                    userState.updateShortcutTargetsLocked(validNewTargets, shortcutType);
+                    scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+                    onUserStateChangedLocked(userState);
+                }
+            }
+            if (Flags.managerLifecycleUserChange()) {
+                userState.updateShortcutTargetsLocked(validNewTargets, shortcutType);
                 scheduleNotifyClientsOfServicesStateChangeLocked(userState);
                 onUserStateChangedLocked(userState);
             }
@@ -4511,7 +4540,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             Set<String> newQsTargets,
             Set<String> currentQsTargets, @UserIdInt int userId) {
         Slog.d(LOG_TAG,
-                String.format(
+                TextUtils.formatSimple(
                         "updateA11yTileServicesInQuickSettingsPanel: newQsTargets: %s , "
                                 + "currentQsTargets: %s, userId: %s",
                         newQsTargets, currentQsTargets, userId));
@@ -4640,19 +4669,23 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     @Override
     @EnforcePermission(MANAGE_ACCESSIBILITY)
-    public List<String> getAccessibilityShortcutTargets(@UserShortcutType int shortcutType) {
+    public List<String> getAccessibilityShortcutTargets(@UserShortcutType int shortcutType,
+            int userId) {
         getAccessibilityShortcutTargets_enforcePermission();
-        if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_ACCESSIBILITY_MANAGER)) {
-            mTraceManager.logTrace(LOG_TAG + ".getAccessibilityShortcutTargets",
-                    FLAGS_ACCESSIBILITY_MANAGER, "shortcutType=" + shortcutType);
+        if (userId == UserHandle.USER_CURRENT) {
+            synchronized (mLock) {
+                userId = mCurrentUserId;
+            }
         }
-        return getAccessibilityShortcutTargetsInternal(shortcutType);
+        Slog.d(LOG_TAG, ".getAccessibilityShortcutTargets {shortcutType="
+                + shortcutType + ", userId=" + userId + "}");
+        return getAccessibilityShortcutTargetsInternal(shortcutType, userId);
     }
 
     private List<String> getAccessibilityShortcutTargetsInternal(
-            @UserShortcutType int shortcutType) {
+            @UserShortcutType int shortcutType, int userId) {
         synchronized (mLock) {
-            final AccessibilityUserState userState = getCurrentUserStateLocked();
+            final AccessibilityUserState userState = getUserStateLocked(userId);
             final ArrayList<String> shortcutTargets = new ArrayList<>(
                     userState.getShortcutTargetsLocked(shortcutType));
             if (shortcutType != SOFTWARE) {
@@ -5131,17 +5164,18 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         final ComponentName componentName = info.getComponentName();
+        final AccessibilityUserState userState;
 
         // Warning is not required if the service is already enabled.
         synchronized (mLock) {
-            final AccessibilityUserState userState = getCurrentUserStateLocked();
+            userState = getCurrentUserStateLocked();
             if (userState.getEnabledServicesLocked().contains(componentName)) {
                 return false;
             }
         }
         // Warning is not required if the service is already assigned to a shortcut.
         for (int shortcutType : ShortcutConstants.USER_SHORTCUT_TYPES) {
-            if (getAccessibilityShortcutTargets(shortcutType).contains(
+            if (getAccessibilityShortcutTargets(shortcutType, userState.mUserId).contains(
                     componentName.flattenToString())) {
                 return false;
             }
