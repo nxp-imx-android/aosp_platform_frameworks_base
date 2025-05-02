@@ -123,8 +123,8 @@ constructor(
                             KeyguardState.DOZING,
                             KeyguardState.DREAMING,
                             KeyguardState.PRIMARY_BOUNCER,
-                            KeyguardState.AOD,
-                            KeyguardState.UNDEFINED -> emit(0f)
+                            KeyguardState.AOD -> emit(0f)
+                            KeyguardState.UNDEFINED,
                             KeyguardState.ALTERNATE_BOUNCER,
                             KeyguardState.LOCKSCREEN -> emit(1f)
                         }
