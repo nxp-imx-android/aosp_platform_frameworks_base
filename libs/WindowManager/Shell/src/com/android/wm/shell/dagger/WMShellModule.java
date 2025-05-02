@@ -1182,11 +1182,12 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             MultiDisplayDragMoveIndicatorSurface.Factory
                 multiDisplayDragMoveIndicatorSurfaceFactory,
-            @ShellDesktopThread ShellExecutor desktopExecutor
+            @ShellDesktopThread ShellExecutor desktopExecutor,
+            DesktopState desktopState
     ) {
         return new MultiDisplayDragMoveIndicatorController(
                 displayController, rootTaskDisplayAreaOrganizer,
-                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor);
+                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor, desktopState);
     }
 
     @WMSingleton
