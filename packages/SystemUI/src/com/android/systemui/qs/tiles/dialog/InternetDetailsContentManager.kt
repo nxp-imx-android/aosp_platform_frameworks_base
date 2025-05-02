@@ -961,10 +961,11 @@ constructor(
             }
 
             override fun dismissDialog() {
+                // With the dialog, this would be implemented to close the internet dialog. As this
+                // details view is embedded within the QS panel, collapsing is handled by System UI.
                 if (DEBUG) {
                     Log.d(TAG, "dismissDialog")
                 }
-                // TODO: b/377388104 Close details view
             }
 
             override fun onAccessPointsChanged(
