@@ -10646,10 +10646,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     private void checkUserProvisioningStateTransition(int currentState, int newState) {
-        if (Flags.userProvisioningSameState()) {
-            Preconditions.checkState(newState != currentState, "New state cannot"
-                    + " be the same as the current state: [" + newState + "]");
-        }
+        Preconditions.checkState(newState != currentState, "New state cannot"
+                + " be the same as the current state: [" + newState + "]");
         // Valid transitions for normal use-cases.
         switch (currentState) {
             case STATE_USER_UNMANAGED:
