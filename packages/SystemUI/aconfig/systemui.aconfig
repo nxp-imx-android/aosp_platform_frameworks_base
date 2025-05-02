@@ -1286,6 +1286,16 @@ flag {
 }
 
 flag {
+  name: "dream_biometric_prompt_fixes"
+  namespace: "systemui"
+  description: "Flags the behavior of  turning off dream back gesture disablement and gesture handling when the biometric prompt is showing"
+  bug: "413511537"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_clips_backlinks"
   namespace: "systemui"
   description: "Enables Backlinks improvement feature in App Clips"

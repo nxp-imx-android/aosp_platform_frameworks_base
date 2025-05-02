@@ -36,12 +36,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.test.filters.SmallTest
-import com.android.app.viewcapture.ViewCaptureFactory
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
+import com.android.systemui.Flags.FLAG_DREAM_BIOMETRIC_PROMPT_FIXES
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
@@ -49,6 +49,8 @@ import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.ambient.touch.TouchMonitor
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.ambient.touch.scrim.ScrimController
+import com.android.systemui.biometrics.data.repository.promptRepository
+import com.android.systemui.biometrics.domain.interactor.promptCredentialInteractor
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -72,9 +74,8 @@ import com.android.systemui.keyguard.gesture.domain.gestureInteractor
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.navigationbar.gestural.domain.GestureInteractor
+import com.android.systemui.navigationbar.gestural.data.gestureRepository
 import com.android.systemui.navigationbar.gestural.domain.TaskInfo
-import com.android.systemui.navigationbar.gestural.domain.TaskMatcher
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -149,8 +150,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val lifecycleRegistry = FakeLifecycleRegistry(mLifecycleOwner)
     private val bouncerRepository = kosmos.fakeKeyguardBouncerRepository
     private val communalRepository = kosmos.fakeCommunalSceneRepository
-    private var viewCaptureSpy = spy(ViewCaptureFactory.getInstance(context))
-    private val gestureInteractor = spy(kosmos.gestureInteractor)
 
     private lateinit var mCommunalInteractor: CommunalInteractor
     private lateinit var environmentComponents: EnvironmentComponents
@@ -245,34 +244,37 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         // it to testDispatcher.
         Dispatchers.setMain(kosmos.testDispatcher)
         onTeardown { Dispatchers.resetMain() }
-        mService =
-            DreamOverlayService(
-                mContext,
-                mLifecycleOwner,
-                mMainExecutor,
-                mWindowManager,
-                mComplicationComponentFactory,
-                mDreamComplicationComponentFactory,
-                mDreamOverlayComponentFactory,
-                mAmbientTouchComponentFactory,
-                mStateController,
-                mKeyguardUpdateMonitor,
-                mScrimController,
-                mCommunalInteractor,
-                kosmos.communalSettingsInteractor,
-                kosmos.sceneInteractor,
-                mSystemDialogsCloser,
-                mUiEventLogger,
-                mTouchInsetManager,
-                LOW_LIGHT_COMPONENT,
-                HOME_CONTROL_PANEL_DREAM_COMPONENT,
-                mDreamOverlayCallbackController,
-                kosmos.keyguardInteractor,
-                gestureInteractor,
-                kosmos.wakeGestureMonitor,
-                kosmos.powerInteractor,
-                WINDOW_NAME,
-            )
+        with(kosmos) {
+            mService =
+                DreamOverlayService(
+                    mContext,
+                    mLifecycleOwner,
+                    mMainExecutor,
+                    mWindowManager,
+                    mComplicationComponentFactory,
+                    mDreamComplicationComponentFactory,
+                    mDreamOverlayComponentFactory,
+                    mAmbientTouchComponentFactory,
+                    mStateController,
+                    mKeyguardUpdateMonitor,
+                    mScrimController,
+                    mCommunalInteractor,
+                    promptCredentialInteractor,
+                    communalSettingsInteractor,
+                    sceneInteractor,
+                    mSystemDialogsCloser,
+                    mUiEventLogger,
+                    mTouchInsetManager,
+                    LOW_LIGHT_COMPONENT,
+                    HOME_CONTROL_PANEL_DREAM_COMPONENT,
+                    mDreamOverlayCallbackController,
+                    keyguardInteractor,
+                    gestureInteractor,
+                    wakeGestureMonitor,
+                    powerInteractor,
+                    WINDOW_NAME,
+                )
+        }
     }
 
     private val client: IDreamOverlayClient
@@ -1035,7 +1037,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             bouncerRepository.setPrimaryShow(true)
             mMainExecutor.runAllReady()
 
-            // Lifecycle state goes from resumed back to started when the notification shade shows.
+            // Lifecycle state goes from resumed back to started when the bouncer shows.
             assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.STARTED)
 
             // Bouncer closes.
@@ -1080,6 +1082,88 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
         }
 
+    @DisableFlags(FLAG_SCENE_CONTAINER)
+    @Test
+    fun testBouncerShown_stopsGestureBlocking() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false, /*isPreview*/
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            // GestureBlockedMatcher added when overlay starts.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
+
+            // Matcher matches dream activity.
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+
+            // Bouncer shows.
+            bouncerRepository.setPrimaryShow(true)
+            mMainExecutor.runAllReady()
+
+            // Matcher is removed.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+
+            // Bouncer closes.
+            bouncerRepository.setPrimaryShow(false)
+            mMainExecutor.runAllReady()
+
+            // Matcher is added again.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+        }
+
+    @EnableFlags(FLAG_SCENE_CONTAINER)
+    @Test
+    fun testBouncerShown_withSceneContainer_stopsGestureBlocking() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false, /*isPreview*/
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            // GestureBlockedMatcher added when overlay starts.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
+
+            // Matcher matches dream activity.
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+
+            // Bouncer shows.
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "test")
+            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "test")
+            mMainExecutor.runAllReady()
+
+            // Matcher is removed.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+
+            // Bouncer closes.
+            kosmos.sceneInteractor.changeScene(Scenes.Dream, "test")
+            kosmos.sceneInteractor.hideOverlay(Overlays.Bouncer, "test")
+            mMainExecutor.runAllReady()
+
+            // Matcher is added again.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+        }
+
     @Test
     @DisableFlags(FLAG_SCENE_CONTAINER)
     fun testCommunalVisible_setsLifecycleState() =
@@ -1104,7 +1188,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
             mMainExecutor.runAllReady()
 
-            // Lifecycle state goes from resumed back to started when the notification shade shows.
+            // Lifecycle state goes from resumed back to started when communal shows.
             assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.STARTED)
 
             // Communal closes.
@@ -1140,7 +1224,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
             mMainExecutor.runAllReady()
 
-            // Lifecycle state goes from resumed back to started when the notification shade shows.
+            // Lifecycle state goes from resumed back to started when the communal shows.
             assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.STARTED)
 
             // Communal closes.
@@ -1184,121 +1268,189 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         }
 
     @Test
-    fun testDreamActivityGesturesBlockedWhenDreaming() {
-        val client = client
+    fun testDreamActivityGesturesBlockedWhenDreaming() =
+        kosmos.runTest {
+            val client = client
 
-        // Inform the overlay service of dream starting.
-        client.startDream(
-            mWindowParams,
-            mDreamOverlayCallback,
-            DREAM_COMPONENT,
-            false /*isPreview*/,
-            false, /*shouldShowComplication*/
-        )
-        mMainExecutor.runAllReady()
+            // Inform the overlay service of dream starting.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
 
-        val matcherCaptor = argumentCaptor<TaskMatcher>()
-        verify(gestureInteractor)
-            .addGestureBlockedMatcher(matcherCaptor.capture(), eq(GestureInteractor.Scope.Global))
-        val matcher = matcherCaptor.firstValue
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
 
-        val dreamTaskInfo = TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
-        assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
 
-        client.endDream()
-        mMainExecutor.runAllReady()
+            client.endDream()
+            mMainExecutor.runAllReady()
 
-        verify(gestureInteractor)
-            .removeGestureBlockedMatcher(eq(matcher), eq(GestureInteractor.Scope.Global))
-    }
-
-    @Test
-    fun testDreamActivityGesturesNotBlockedWhenPreview() {
-        val client = client
-
-        // Inform the overlay service of dream starting.
-        client.startDream(
-            mWindowParams,
-            mDreamOverlayCallback,
-            DREAM_COMPONENT,
-            true /*isPreview*/,
-            false, /*shouldShowComplication*/
-        )
-        mMainExecutor.runAllReady()
-
-        verify(gestureInteractor, never())
-            .addGestureBlockedMatcher(any(), eq(GestureInteractor.Scope.Global))
-    }
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
 
     @Test
-    fun testDreamActivityGesturesNotBlockedWhenNotificationShadeShowing() {
-        val client = client
+    fun testDreamActivityGesturesNotBlockedWhenPreview() =
+        kosmos.runTest {
+            val client = client
 
-        // Inform the overlay service of dream starting.
-        client.startDream(
-            mWindowParams,
-            mDreamOverlayCallback,
-            DREAM_COMPONENT,
-            false /*isPreview*/,
-            false, /*shouldShowComplication*/
-        )
-        mMainExecutor.runAllReady()
+            // Inform the overlay service of dream starting.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                true /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
 
-        val matcherCaptor = argumentCaptor<TaskMatcher>()
-        verify(gestureInteractor)
-            .addGestureBlockedMatcher(matcherCaptor.capture(), eq(GestureInteractor.Scope.Global))
-        val matcher = matcherCaptor.firstValue
-
-        val dreamTaskInfo = TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
-        assertThat(matcher.matches(dreamTaskInfo)).isTrue()
-
-        val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
-        verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
-
-        // Notification shade opens.
-        callbackCaptor.lastValue.onShadeExpandedChanged(true)
-        mMainExecutor.runAllReady()
-
-        verify(gestureInteractor)
-            .removeGestureBlockedMatcher(eq(matcher), eq(GestureInteractor.Scope.Global))
-    }
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
 
     @Test
-    fun testDreamActivityGesturesNotBlockedDreamEndedBeforeKeyguardStateChanged() {
-        val client = client
+    fun testDreamActivityGesturesNotBlockedWhenNotificationShadeShowing() =
+        kosmos.runTest {
+            val client = client
 
-        // Inform the overlay service of dream starting.
-        client.startDream(
-            mWindowParams,
-            mDreamOverlayCallback,
-            DREAM_COMPONENT,
-            false /*isPreview*/,
-            false, /*shouldShowComplication*/
-        )
-        mMainExecutor.runAllReady()
+            // Inform the overlay service of dream starting.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
 
-        val matcherCaptor = argumentCaptor<TaskMatcher>()
-        verify(gestureInteractor)
-            .addGestureBlockedMatcher(matcherCaptor.capture(), eq(GestureInteractor.Scope.Global))
-        val matcher = matcherCaptor.firstValue
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
 
-        val dreamTaskInfo = TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
-        assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
 
-        client.endDream()
-        mMainExecutor.runAllReady()
-        clearInvocations(gestureInteractor)
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
 
-        val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
-        verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+            // Notification shade opens.
+            callbackCaptor.lastValue.onShadeExpandedChanged(true)
+            mMainExecutor.runAllReady()
 
-        // Notification shade opens.
-        callbackCaptor.lastValue.onShadeExpandedChanged(true)
-        mMainExecutor.runAllReady()
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
 
-        verify(gestureInteractor)
-            .removeGestureBlockedMatcher(eq(matcher), eq(GestureInteractor.Scope.Global))
-    }
+    @Test
+    fun testDreamActivityGesturesNotBlockedDreamEndedBeforeKeyguardStateChanged() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
+
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+
+            client.endDream()
+            mMainExecutor.runAllReady()
+
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+
+            // Notification shade opens.
+            callbackCaptor.lastValue.onShadeExpandedChanged(true)
+            mMainExecutor.runAllReady()
+
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
+
+    @EnableFlags(FLAG_DREAM_BIOMETRIC_PROMPT_FIXES)
+    @Test
+    fun testBiometricPromptShowing_setsLifecycleState() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+            assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
+
+            // Biometric prompt shows.
+            promptRepository.setIsShowing(true)
+            mMainExecutor.runAllReady()
+
+            // Lifecycle state goes from resumed back to started when the biometric prompt shows.
+            assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.STARTED)
+
+            // Biometric prompt closes.
+            promptRepository.setIsShowing(false)
+            mMainExecutor.runAllReady()
+
+            // Lifecycle state goes back to RESUMED.
+            assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
+        }
+
+    @EnableFlags(FLAG_DREAM_BIOMETRIC_PROMPT_FIXES)
+    @Test
+    fun testBiometricPromptShowing_stopsGestureBlocking() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting. Do not show dream complications.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            // GestureBlockedMatcher added when overlay starts.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+            val matcher = gestureRepository.gestureBlockedMatchers.value.first()
+
+            // Matcher matches dream activity.
+            val dreamTaskInfo =
+                TaskInfo(mock<ComponentName>(), WindowConfiguration.ACTIVITY_TYPE_DREAM)
+            assertThat(matcher.matches(dreamTaskInfo)).isTrue()
+
+            // Biometric prompt shows.
+            promptRepository.setIsShowing(true)
+            mMainExecutor.runAllReady()
+
+            // Matcher is removed.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+
+            // Biometric prompt closes.
+            promptRepository.setIsShowing(false)
+            mMainExecutor.runAllReady()
+
+            // Matcher is added again.
+            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
+        }
 
     @Test
     fun testComponentsRecreatedBetweenDreams() {
