@@ -3196,6 +3196,32 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     /**
      * This is used for mixed-transition scenarios (specifically when transitioning one split task
      * into PIP). For such scenarios, just make sure to include exiting split or entering split when
+     * appropriate. This is an addition to
+     * {@link #addEnterOrExitForPipIfNeeded(TransitionRequestInfo, WindowContainerTransaction)},
+     * for PiP2 where PiP-able task can also come in through the pip change request field,
+     * and this method is provided to explicitly prepare an exit in that case.
+     *
+     * This is only called if requestImpliesSplitToPip() returns `true`.
+     */
+    public void removePipFromSplitIfNeeded(@NonNull TransitionRequestInfo request,
+            @NonNull WindowContainerTransaction outWCT) {
+        if (request.getPipChange() == null || request.getPipChange().getTaskInfo() == null) {
+            return;
+        }
+        final TaskInfo info = request.getPipChange().getTaskInfo();
+        @StageType int topStage = STAGE_TYPE_UNDEFINED;
+        @StageType int pipStage = getStageOfTask(info.taskId);
+        if (pipStage == STAGE_TYPE_MAIN) {
+            topStage = STAGE_TYPE_SIDE;
+        } else if (pipStage == STAGE_TYPE_SIDE) {
+            topStage = STAGE_TYPE_MAIN;
+        }
+        prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_CHILD_TASK_ENTER_PIP);
+    }
+
+    /**
+     * This is used for mixed-transition scenarios (specifically when transitioning one split task
+     * into PIP). For such scenarios, just make sure to include exiting split or entering split when
      * appropriate.
      *
      * This is only called if requestImpliesSplitToPip() returns `true`.
