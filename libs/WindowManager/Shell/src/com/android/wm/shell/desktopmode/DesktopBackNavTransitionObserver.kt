@@ -18,11 +18,14 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.os.IBinder
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
+import android.view.WindowManager.transitTypeToString
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TransitionInfo
+import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isExitDesktopModeTransition
@@ -31,6 +34,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.Transitions
 
 /**
  * Class responsible for updating [DesktopRepository] with back navigation related changes. Also
@@ -42,6 +46,7 @@ class DesktopBackNavTransitionObserver(
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val backAnimationController: BackAnimationController,
     private val desksOrganizer: DesksOrganizer,
+    private val transitions: Transitions,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) {
@@ -75,79 +80,91 @@ class DesktopBackNavTransitionObserver(
 
             val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
             if (desktopRepository.isExitingDesktopTask(change)) {
+                logD("removeTaskIfNeeded taskId=%d", taskInfo.taskId)
                 desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             }
         }
     }
 
     private fun handleBackNavigation(transition: IBinder, info: TransitionInfo) {
-        // When default back navigation happens, transition type is TO_BACK and the change is
-        // TO_BACK. Mark the task going to back as minimized.
-        if (info.type == TRANSIT_TO_BACK) {
-            for (change in info.changes) {
-                val taskInfo = change.taskInfo
-                if (taskInfo == null || taskInfo.taskId == -1) {
-                    continue
-                }
-                val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-                val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
-                if (
-                    isInDesktop &&
-                        change.mode == TRANSIT_TO_BACK &&
-                        desktopRepository.isDesktopTask(taskInfo)
-                ) {
-                    val isLastTask =
-                        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                            desktopRepository.hasOnlyOneVisibleTask(taskInfo.displayId)
-                        } else {
-                            desktopRepository.isOnlyVisibleTask(taskInfo.taskId, taskInfo.displayId)
-                        }
-                    logD(
-                        "handleBackNavigation marking to-back taskId=%d as minimized",
-                        taskInfo.taskId,
-                    )
-                    desktopRepository.minimizeTask(taskInfo.displayId, taskInfo.taskId)
-                    desktopMixedTransitionHandler.addPendingMixedTransition(
-                        DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
-                            transition,
-                            taskInfo.taskId,
-                            isLastTask,
-                        )
-                    )
-                }
-            }
-        } else if (info.type == TRANSIT_CLOSE) {
-            // In some cases app will be closing as a result of back navigation but we would like
-            // to minimize. Mark the task closing as minimized.
-            var hasWallpaperClosing = false
-            var minimizingTask: Int? = null
-            for (change in info.changes) {
-                val taskInfo = change.taskInfo
-                if (taskInfo == null || taskInfo.taskId == -1) continue
-
-                if (
-                    TransitionUtil.isClosingMode(change.mode) &&
-                        DesktopWallpaperActivity.isWallpaperTask(taskInfo)
-                ) {
-                    hasWallpaperClosing = true
-                }
-
-                if (change.mode == TRANSIT_CLOSE && minimizingTask == null) {
-                    minimizingTask = getMinimizingTaskForClosingTransition(taskInfo)
-                }
-            }
-
-            if (minimizingTask == null) return
-            // If the transition has wallpaper closing, it means we are moving out of desktop.
-            logD("handleBackNavigation marking close taskId=%d as minimized", minimizingTask)
-            desktopMixedTransitionHandler.addPendingMixedTransition(
-                DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
-                    transition,
-                    minimizingTask,
-                    isLastTask = hasWallpaperClosing,
-                )
+        val taskToMinimize = findTaskToMinimize(info) ?: return
+        logD("handleBackNavigation taskToMinimize=%s", taskToMinimize)
+        desktopUserRepositories
+            .getProfile(taskToMinimize.taskInfo.userId)
+            .minimizeTaskInDesk(
+                displayId = taskToMinimize.displayId,
+                deskId = taskToMinimize.deskId,
+                taskId = taskToMinimize.taskId,
             )
+        desktopMixedTransitionHandler.addPendingMixedTransition(
+            DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
+                transition,
+                taskToMinimize.taskId,
+                taskToMinimize.isLastTask,
+            )
+        )
+        if (taskToMinimize.shouldReparentToDesk) {
+            // The task was reparented out of the desk. Move it back into the desk, but minimized.
+            val wct = WindowContainerTransaction()
+            desksOrganizer.moveTaskToDesk(
+                wct = wct,
+                deskId = taskToMinimize.deskId,
+                task = taskToMinimize.taskInfo,
+                minimized = true,
+            )
+            if (!wct.isEmpty) {
+                transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+            }
         }
+    }
+
+    private data class TaskToMinimize(
+        val taskId: Int,
+        val deskId: Int,
+        val displayId: Int,
+        val isLastTask: Boolean,
+        val shouldReparentToDesk: Boolean,
+    ) {
+        constructor(
+            taskInfo: RunningTaskInfo,
+            deskId: Int,
+            isLastTask: Boolean,
+            shouldReparentToDesk: Boolean,
+        ) : this(taskInfo.taskId, deskId, taskInfo.displayId, isLastTask, shouldReparentToDesk) {
+            this.taskInfo = taskInfo
+        }
+
+        lateinit var taskInfo: RunningTaskInfo
+    }
+
+    private fun findTaskToMinimize(info: TransitionInfo): TaskToMinimize? {
+        if (info.type != TRANSIT_TO_BACK && info.type != TRANSIT_CLOSE) return null
+        val hasWallpaperClosing =
+            info.taskChanges().any { change ->
+                TransitionUtil.isClosingMode(change.mode) &&
+                    DesktopWallpaperActivity.isWallpaperTask(checkNotNull(change.taskInfo))
+            }
+        for (change in info.taskChanges()) {
+            val mode = change.mode
+            when (info.type) {
+                TRANSIT_TO_BACK -> {
+                    val taskToMinimize = getMinimizingTaskForToBackTransition(change)
+                    if (taskToMinimize != null) {
+                        return taskToMinimize
+                    }
+                }
+                TRANSIT_CLOSE -> {
+                    if (mode != TRANSIT_CLOSE) continue
+                    val taskToMinimize =
+                        getMinimizingTaskForClosingTransition(change, hasWallpaperClosing)
+                    if (taskToMinimize != null) {
+                        return taskToMinimize
+                    }
+                }
+                else -> error("Unsupported transition type: ${transitTypeToString(info.type)}")
+            }
+        }
+        return null
     }
 
     /**
@@ -162,19 +179,85 @@ class DesktopBackNavTransitionObserver(
      * will be rare. E.g. triggering back navigation on an app that pops up a close dialog, and
      * closing it will minimize it here.
      */
-    private fun getMinimizingTaskForClosingTransition(taskInfo: RunningTaskInfo): Int? {
-        val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-        val isInDesktop = desktopRepository.isAnyDeskActive(taskInfo.displayId)
+    private fun getMinimizingTaskForClosingTransition(
+        change: TransitionInfo.Change,
+        hasWallpaperClosing: Boolean,
+    ): TaskToMinimize? {
+        val taskInfo = change.taskInfo ?: return null
+        if (taskInfo.taskId == -1) return null
+        val repository = desktopUserRepositories.getProfile(taskInfo.userId)
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val deskId = repository.getActiveDeskId(taskInfo.displayId)
+            if (
+                deskId != null &&
+                    repository.isDesktopTask(taskInfo) &&
+                    backAnimationController.latestTriggerBackTask == taskInfo.taskId &&
+                    !repository.isClosingTask(taskInfo.taskId)
+            ) {
+                return TaskToMinimize(
+                    taskInfo = taskInfo,
+                    deskId = deskId,
+                    isLastTask = hasWallpaperClosing,
+                    shouldReparentToDesk = false,
+                )
+            }
+            return null
+        }
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         if (
-            isInDesktop &&
-                desktopRepository.isDesktopTask(taskInfo) &&
+            deskId != null &&
                 backAnimationController.latestTriggerBackTask == taskInfo.taskId &&
-                !desktopRepository.isClosingTask(taskInfo.taskId)
+                !repository.isClosingTask(taskInfo.taskId)
         ) {
-            desktopRepository.minimizeTask(taskInfo.displayId, taskInfo.taskId)
-            return taskInfo.taskId
+            return TaskToMinimize(
+                taskInfo = taskInfo,
+                deskId = deskId,
+                isLastTask = hasWallpaperClosing,
+                shouldReparentToDesk = false,
+            )
         }
         return null
+    }
+
+    /**
+     * Given this a task in a to-back transition, a task is assumed to be closed by back navigation
+     * if:
+     * 1) Desktop mode is visible.
+     * 2) It is a desktop task.
+     * 3) Change mode is to-back.
+     */
+    private fun getMinimizingTaskForToBackTransition(
+        change: TransitionInfo.Change
+    ): TaskToMinimize? {
+        val taskInfo = change.taskInfo ?: return null
+        if (taskInfo.taskId == -1) return null
+        if (change.mode != TRANSIT_TO_BACK) return null
+        val repository = desktopUserRepositories.getProfile(taskInfo.userId)
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val deskId = repository.getActiveDeskId(taskInfo.displayId)
+            if (deskId != null && repository.isDesktopTask(taskInfo)) {
+                return TaskToMinimize(
+                    taskInfo = taskInfo,
+                    deskId = deskId,
+                    isLastTask = repository.isLastTask(taskInfo, deskId),
+                    shouldReparentToDesk = false,
+                )
+            }
+            return null
+        }
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
+        if (deskId == null) {
+            return null
+        }
+        return TaskToMinimize(
+            taskInfo = taskInfo,
+            deskId = deskId,
+            isLastTask = repository.isLastTask(taskInfo, deskId),
+            // Some back navigation transitions can result in the task being reparented out of its
+            // original desk and into the TDA. Given we want this task to end up minimized in that
+            // same desk, check here if this happened so that we can reparent as minimized.
+            shouldReparentToDesk = !desksOrganizer.isMinimizedInDeskAtEnd(change),
+        )
     }
 
     private fun DesktopRepository.isDesktopTask(task: RunningTaskInfo): Boolean =
@@ -191,6 +274,17 @@ class DesktopBackNavTransitionObserver(
         } else {
             isActiveTask(task.taskId) && !task.isFreeform
         }
+    }
+
+    private fun DesktopRepository.isLastTask(taskInfo: RunningTaskInfo, deskId: Int): Boolean =
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            hasOnlyOneVisibleTask(taskInfo.displayId)
+        } else {
+            isOnlyVisibleTaskInDesk(taskInfo.taskId, deskId)
+        }
+
+    private fun TransitionInfo.taskChanges(): List<TransitionInfo.Change> {
+        return changes.filter { change -> change.taskInfo != null && change.taskInfo?.taskId != -1 }
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {

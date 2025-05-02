@@ -1387,6 +1387,7 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
             DesksOrganizer desksOrganizer,
+            Transitions transitions,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1397,6 +1398,7 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         backAnimationController.get(),
                                         desksOrganizer,
+                                        transitions,
                                         desktopState,
                                         shellInit)));
     }
