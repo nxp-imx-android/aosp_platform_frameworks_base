@@ -28,6 +28,7 @@ import static android.content.Context.BLUETOOTH_SERVICE;
 import static android.os.Process.ROOT_UID;
 import static android.os.Process.SHELL_UID;
 
+import static com.android.server.companion.utils.MetricUtils.logDevicePresenceEvent;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanObserveDevicePresenceByUuid;
 
@@ -59,6 +60,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.CollectionUtils;
 import com.android.server.companion.CompanionExemptionProcessor;
 import com.android.server.companion.association.AssociationStore;
+import com.android.server.companion.utils.MetricUtils;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -663,6 +665,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         final int userId = association.getUserId();
         final String packageName = association.getPackageName();
         final DevicePresenceEvent event = new DevicePresenceEvent(associationId, eventType, null);
+        final String deviceProfile = association.getDeviceProfile();
 
         if (eventType == EVENT_BLE_APPEARED) {
             synchronized (mBtDisconnectedDevices) {
@@ -694,7 +697,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 }
 
                 if (association.isSelfManaged() || added) {
-                    notifyDevicePresenceEvent(userId, packageName, event);
+                    notifyDevicePresenceEvent(userId, packageName, deviceProfile, event);
                     // Also send the legacy callback.
                     legacyNotifyDevicePresenceEvent(association, true);
                 }
@@ -713,7 +716,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 }
 
                 if (association.isSelfManaged() || removed) {
-                    notifyDevicePresenceEvent(userId, packageName, event);
+                    notifyDevicePresenceEvent(userId, packageName, deviceProfile, event);
                     // Also send the legacy callback.
                     legacyNotifyDevicePresenceEvent(association, false);
                 }
@@ -755,7 +758,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
                 bindApplicationIfNeeded(userId, packageName, false);
 
-                notifyDevicePresenceEvent(userId, packageName, event);
+                notifyDevicePresenceEvent(userId, packageName, MetricUtils.UUID, event);
                 break;
             case EVENT_BT_DISCONNECTED:
                 final boolean removed = mConnectedUuidDevices.remove(parcelUuid);
@@ -769,7 +772,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                     return;
                 }
 
-                notifyDevicePresenceEvent(userId, packageName, event);
+                notifyDevicePresenceEvent(userId, packageName, MetricUtils.UUID, event);
 
                 if (!shouldBindPackage(userId, packageName)) {
                     mCompanionAppBinder.unbindCompanionApp(userId, packageName);
@@ -813,10 +816,12 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
      * Notify the device presence event to the app.
      */
     private void notifyDevicePresenceEvent(int userId, String packageName,
-            DevicePresenceEvent event) {
+            String deviceProfileOrUuid, DevicePresenceEvent event) {
         Slog.i(TAG,
-                "notifyCompanionDevicePresenceEvent userId=[" + userId + "], packageName=["
-                        + packageName + "], event=[" + event + "]...");
+                "notifyCompanionDevicePresenceEvent userId=[" + userId + "],"
+                        + "packageName=[" + packageName + "],"
+                        + "deviceProfileOrUuid=[" + deviceProfileOrUuid + "],"
+                        + "event=[" + event + "]...");
 
         final CompanionServiceConnector primaryServiceConnector =
                 mCompanionAppBinder.getPrimaryServiceConnector(userId, packageName);
@@ -825,6 +830,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             Slog.e(TAG, "Package is NOT bound.");
             return;
         }
+        logDevicePresenceEvent(mContext, deviceProfileOrUuid, packageName, event.getEvent());
 
         primaryServiceConnector.postOnDevicePresenceEvent(event);
     }
