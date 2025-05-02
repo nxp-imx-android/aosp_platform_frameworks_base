@@ -53,7 +53,6 @@ import com.android.keyguard.KeyguardViewController;
 import com.android.keyguard.TrustGrantFlags;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.DejankUtils;
-import com.android.systemui.Flags;
 import com.android.systemui.animation.back.FlingOnBackAnimationCallback;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor;
@@ -710,10 +709,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      */
     protected void showBouncerOrKeyguard(boolean hideBouncerWhenShowing, boolean isFalsingReset,
             String reason) {
-        boolean showBouncer = needsFullscreenBouncer() && !mDozing;
-        if (Flags.simPinRaceConditionOnRestart()) {
-            showBouncer = showBouncer && !mIsSleeping;
-        }
+        boolean showBouncer = needsFullscreenBouncer() && !mDozing && !mIsSleeping;
         if (showBouncer) {
             // The keyguard might be showing (already). So we need to hide it.
             if (!primaryBouncerIsShowing()) {
@@ -724,28 +720,23 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                             TAG + "#showBouncerOrKeyguard"
                     );
                 } else {
-                    if (Flags.simPinRaceConditionOnRestart()) {
-                        if (mPrimaryBouncerInteractor.show(/* isScrimmed= */ true, reason)) {
-                            mAttemptsToShowBouncer = 0;
-                            mCentralSurfaces.hideKeyguard();
-                        } else {
-                            if (mAttemptsToShowBouncer > 6) {
-                                mAttemptsToShowBouncer = 0;
-                                Log.e(TAG, "Too many failed attempts to show bouncer, showing "
-                                        + "keyguard instead");
-                                mCentralSurfaces.showKeyguard();
-                            } else {
-                                Log.v(TAG, "Failed to show bouncer, attempt #: "
-                                        + mAttemptsToShowBouncer++);
-                                mExecutor.executeDelayed(() ->
-                                        showBouncerOrKeyguard(hideBouncerWhenShowing,
-                                            isFalsingReset, reason),
-                                        500);
-                            }
-                        }
-                    } else {
+                    if (mPrimaryBouncerInteractor.show(/* isScrimmed= */ true, reason)) {
+                        mAttemptsToShowBouncer = 0;
                         mCentralSurfaces.hideKeyguard();
-                        mPrimaryBouncerInteractor.show(/* isScrimmed= */ true, reason);
+                    } else {
+                        if (mAttemptsToShowBouncer > 6) {
+                            mAttemptsToShowBouncer = 0;
+                            Log.e(TAG, "Too many failed attempts to show bouncer, showing "
+                                     + "keyguard instead");
+                            mCentralSurfaces.showKeyguard();
+                        } else {
+                            Log.v(TAG, "Failed to show bouncer, attempt #: "
+                                    + mAttemptsToShowBouncer++);
+                            mExecutor.executeDelayed(() ->
+                                    showBouncerOrKeyguard(hideBouncerWhenShowing, isFalsingReset,
+                                        reason),
+                                    500);
+                        }
                     }
                 }
             } else if (!isFalsingReset) {
