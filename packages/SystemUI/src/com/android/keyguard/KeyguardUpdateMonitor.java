@@ -47,7 +47,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.systemui.Flags.fingerprintCancelRaceMitigation;
 import static com.android.systemui.Flags.glanceableHubV2;
 import static com.android.systemui.Flags.simPinBouncerReset;
-import static com.android.systemui.Flags.simPinUseSlotId;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
 
 import android.annotation.AnyThread;
@@ -320,7 +319,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private final FaceWakeUpTriggersConfig mFaceWakeUpTriggersConfig;
 
     private final Object mSimDataLockObject = new Object();
-    HashMap<Integer, SimData> mSimDatas = new HashMap<>();
     HashMap<Integer, SimData> mSimDatasBySlotId = new HashMap<>();
     HashMap<Integer, ServiceState> mServiceStates = new HashMap<>();
 
@@ -628,9 +626,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
                 // It is possible for active subscriptions to become invalid (-1), and these will
                 // not be present in the subscriptionInfo list
                 synchronized (mSimDataLockObject) {
-                    var iter = simPinUseSlotId() ? mSimDatasBySlotId.entrySet().iterator()
-                            : mSimDatas.entrySet().iterator();
-
+                    var iter = mSimDatasBySlotId.entrySet().iterator();
                     while (iter.hasNext()) {
                         SimData data = iter.next().getValue();
                         if (!activeSubIds.contains(data.subId)) {
@@ -647,13 +643,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
                     }
 
                     for (int i = 0; i < changedSubscriptions.size(); i++) {
-                        SimData data;
-                        if (simPinUseSlotId()) {
-                            data = mSimDatasBySlotId.get(changedSubscriptions.get(i)
+                        SimData data = mSimDatasBySlotId.get(changedSubscriptions.get(i)
                                 .getSimSlotIndex());
-                        } else {
-                            data = mSimDatas.get(changedSubscriptions.get(i).getSubscriptionId());
-                        }
                         if (data == null) {
                             Log.w(TAG, "Null SimData for subscription: "
                                     + changedSubscriptions.get(i));
@@ -3484,27 +3475,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     }
 
     /**
-     * Removes all valid subscription info from the map for the given slotId.
-     */
-    private void invalidateSlot(int slotId) {
-        if (simPinUseSlotId()) {
-            return;
-        }
-        synchronized (mSimDataLockObject) {
-            var iter = simPinUseSlotId() ? mSimDatasBySlotId.entrySet().iterator()
-                    : mSimDatas.entrySet().iterator();
-            while (iter.hasNext()) {
-                SimData data = iter.next().getValue();
-                if (data.slotId == slotId
-                        && SubscriptionManager.isValidSubscriptionId(data.subId)) {
-                    mSimLogger.logInvalidSubId(data.subId, data.slotId);
-                    iter.remove();
-                }
-            }
-        }
-    }
-
-    /**
      * Handle {@link #MSG_SIM_STATE_CHANGE}
      */
     @VisibleForTesting
@@ -3521,20 +3491,15 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
                     || state == TelephonyManager.SIM_STATE_CARD_IO_ERROR) {
                 updateTelephonyCapable(true);
             }
-            invalidateSlot(slotId);
         }
 
         // TODO(b/327476182): Preserve SIM_STATE_CARD_IO_ERROR sims in a separate data source.
         synchronized (mSimDataLockObject) {
-            SimData data = simPinUseSlotId() ? mSimDatasBySlotId.get(slotId) : mSimDatas.get(subId);
+            SimData data = mSimDatasBySlotId.get(slotId);
             final boolean changed;
             if (data == null) {
                 data = new SimData(state, slotId, subId);
-                if (simPinUseSlotId()) {
-                    mSimDatasBySlotId.put(slotId, data);
-                } else {
-                    mSimDatas.put(subId, data);
-                }
+                mSimDatasBySlotId.put(slotId, data);
                 changed = true; // no data yet; force update
             } else {
                 changed = (data.simState != state || data.subId != subId || data.slotId != slotId);
@@ -3813,8 +3778,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         callback.onTelephonyCapable(mTelephonyCapable);
 
         synchronized (mSimDataLockObject) {
-            var simDatas = simPinUseSlotId() ? mSimDatasBySlotId : mSimDatas;
-            for (Entry<Integer, SimData> data : simDatas.entrySet()) {
+            for (Entry<Integer, SimData> data : mSimDatasBySlotId.entrySet()) {
                 final SimData state = data.getValue();
                 callback.onSimStateChanged(state.subId, state.slotId, state.simState);
             }
@@ -3943,8 +3907,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      */
     public boolean isSimPinSecure() {
         synchronized (mSimDataLockObject) {
-            var simDatas = simPinUseSlotId() ? mSimDatasBySlotId : mSimDatas;
-            for (SimData data : simDatas.values()) {
+            for (SimData data : mSimDatasBySlotId.values()) {
                 if (isSimPinSecure(data.simState)) {
                     return true;
                 }
@@ -3953,28 +3916,10 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         }
     }
 
-    public int getSimState(int subId) {
-        if (simPinUseSlotId()) {
-            throw new UnsupportedOperationException("Method not supported with flag "
-                    + "simPinUseSlotId");
-        }
-        synchronized (mSimDataLockObject) {
-            if (mSimDatas.containsKey(subId)) {
-                return mSimDatas.get(subId).simState;
-            } else {
-                return TelephonyManager.SIM_STATE_UNKNOWN;
-            }
-        }
-    }
-
     /**
      * Find the sim state for a slot id, or SIM_STATE_UNKNOWN if not found.
      */
     public int getSimStateForSlotId(int slotId) {
-        if (!simPinUseSlotId()) {
-            throw new UnsupportedOperationException("Method not supported without flag "
-                    + "simPinUseSlotId");
-        }
         synchronized (mSimDataLockObject) {
             if (mSimDatasBySlotId.containsKey(slotId)) {
                 return mSimDatasBySlotId.get(slotId).simState;
@@ -3986,13 +3931,11 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
 
     private int getSlotId(int subId) {
         synchronized (mSimDataLockObject) {
-            var simDatas = simPinUseSlotId() ? mSimDatasBySlotId : mSimDatas;
             int slotId = SubscriptionManager.getSlotIndex(subId);
-            int index = simPinUseSlotId() ? slotId : subId;
-            if (!simDatas.containsKey(index)) {
+            if (!mSimDatasBySlotId.containsKey(slotId)) {
                 refreshSimState(subId, slotId);
             }
-            SimData simData = simDatas.get(index);
+            SimData simData = mSimDatasBySlotId.get(slotId);
             return simData != null ? simData.slotId : SubscriptionManager.INVALID_SUBSCRIPTION_ID;
         }
     }
@@ -4036,19 +3979,11 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private boolean refreshSimState(int subId, int slotId) {
         int state = mTelephonyManager.getSimState(slotId);
         synchronized (mSimDataLockObject) {
-            if (!SubscriptionManager.isValidSubscriptionId(subId)) {
-                invalidateSlot(slotId);
-            }
-            SimData data = simPinUseSlotId() ? mSimDatasBySlotId.get(slotId) : mSimDatas.get(subId);
-
+            SimData data = mSimDatasBySlotId.get(slotId);
             final boolean changed;
             if (data == null) {
                 data = new SimData(state, slotId, subId);
-                if (simPinUseSlotId()) {
-                    mSimDatasBySlotId.put(slotId, data);
-                } else {
-                    mSimDatas.put(subId, data);
-                }
+                mSimDatasBySlotId.put(slotId, data);
                 changed = true; // no data yet; force update
             } else {
                 changed = data.simState != state;
@@ -4145,16 +4080,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
             final SubscriptionInfo info = list.get(i);
             final int id = info.getSubscriptionId();
             final int slotId = info.getSimSlotIndex();
-            if (simPinUseSlotId()) {
-                if (state == getSimStateForSlotId(slotId) && bestSlotId > slotId) {
-                    resultId = id;
-                    bestSlotId = slotId;
-                }
-            } else {
-                if (state == getSimState(id) && bestSlotId > slotId) {
-                    resultId = id;
-                    bestSlotId = slotId;
-                }
+            if (state == getSimStateForSlotId(slotId) && bestSlotId > slotId) {
+                resultId = id;
+                bestSlotId = slotId;
             }
         }
         return resultId;
@@ -4229,7 +4157,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         pw.println("  getUserUnlockedWithBiometric()="
                 + getUserUnlockedWithBiometric(mSelectedUserInteractor.getSelectedUserId()));
         pw.println("  SIM States:");
-        for (SimData data : mSimDatas.values()) {
+        for (SimData data : mSimDatasBySlotId.values()) {
             pw.println("    " + data.toString());
         }
         pw.println("  Subs:");
