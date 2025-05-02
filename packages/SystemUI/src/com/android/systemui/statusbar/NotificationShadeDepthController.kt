@@ -240,8 +240,6 @@ constructor(
             scheduleUpdate()
         }
 
-    private data class WakeAndUnlockBlurData(val radius: Float, val useZoom: Boolean = true)
-
     private val isShadeOnDefaultDisplay: Boolean
         get() =
             if (ShadeWindowGoesAround.isEnabled) {
@@ -251,7 +249,7 @@ constructor(
             }
 
     /** Blur radius of the wake and unlock animation on this frame, and whether to zoom out. */
-    private var wakeAndUnlockBlurData = WakeAndUnlockBlurData(0f)
+    private var wakeAndUnlockBlurRadius = 0f
         set(value) {
             if (field == value) return
             field = value
@@ -278,7 +276,7 @@ constructor(
             ShadeInterpolation.getNotificationScrimAlpha(qsPanelExpansion) * shadeExpansion
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(qsExpandedRatio))
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(transitionToFullShadeProgress))
-        var shadeRadius = max(combinedBlur, wakeAndUnlockBlurData.radius)
+        var shadeRadius = max(combinedBlur, wakeAndUnlockBlurRadius)
 
         if (areBlursDisabledForAppLaunch || blursDisabledForUnlock) {
             shadeRadius = 0f
@@ -297,8 +295,7 @@ constructor(
                 // When the shade is in another display, we don't want to zoom out the background.
                 // Only the default display is supported right now.
                 !isShadeOnDefaultDisplay -> 0f
-                shadeRadius != wakeAndUnlockBlurData.radius || wakeAndUnlockBlurData.useZoom ->
-                    blurRadiusToZoomOut(blurRadius = shadeRadius)
+                shadeRadius != wakeAndUnlockBlurRadius -> blurRadiusToZoomOut(blurRadius = shadeRadius)
                 else -> 0f
             }
         // Make blur be 0 if it is necessary to stop blur effect.
@@ -408,16 +405,14 @@ constructor(
                         startDelay = keyguardStateController.keyguardFadingAwayDelay
                         interpolator = Interpolators.FAST_OUT_SLOW_IN
                         addUpdateListener { animation: ValueAnimator ->
-                            wakeAndUnlockBlurData =
-                                WakeAndUnlockBlurData(
-                                    blurUtils.blurRadiusOfRatioForAod(animation.animatedValue as Float)
-                                )
+                            wakeAndUnlockBlurRadius =
+                                blurUtils.blurRadiusOfRatioForAod(animation.animatedValue as Float)
                         }
                         addListener(
                             object : AnimatorListenerAdapter() {
                                 override fun onAnimationEnd(animation: Animator) {
                                     keyguardAnimator = null
-                                    wakeAndUnlockBlurData = WakeAndUnlockBlurData(0f)
+                                    wakeAndUnlockBlurRadius = 0f
                                 }
                             }
                         )
@@ -459,7 +454,7 @@ constructor(
         }
 
     private fun updateWakeBlurRadius(ratio: Float) {
-        wakeAndUnlockBlurData = WakeAndUnlockBlurData(getNewWakeBlurRadius(ratio), false)
+        wakeAndUnlockBlurRadius = getNewWakeBlurRadius(ratio)
     }
 
     private fun getNewWakeBlurRadius(ratio: Float): Float {
@@ -496,10 +491,7 @@ constructor(
         applicationScope.launch {
             wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
                 wallpaperSupportsAmbientMode = supported
-                if (
-                    getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius &&
-                        !wakeAndUnlockBlurData.useZoom
-                ) {
+                if (getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurRadius) {
                     // Update wake and unlock radius only if the previous value comes from wake-up.
                     updateWakeBlurRadius(prevDozeAmount)
                 }
@@ -717,8 +709,7 @@ constructor(
             it.println("shouldApplyShadeBlur: ${shouldApplyShadeBlur()}")
             it.println("shadeAnimation: ${shadeAnimation.radius}")
             it.println("brightnessMirrorRadius: ${brightnessMirrorSpring.radius}")
-            it.println("wakeAndUnlockBlurRadius: ${wakeAndUnlockBlurData.radius}")
-            it.println("wakeAndUnlockBlurUsesZoom: ${wakeAndUnlockBlurData.useZoom}")
+            it.println("wakeAndUnlockBlurRadius: ${wakeAndUnlockBlurRadius}")
             it.println("blursDisabledForAppLaunch: $blursDisabledForAppLaunch")
             it.println("appLaunchTransitionIsInProgress: $appLaunchTransitionIsInProgress")
             it.println("qsPanelExpansion: $qsPanelExpansion")
