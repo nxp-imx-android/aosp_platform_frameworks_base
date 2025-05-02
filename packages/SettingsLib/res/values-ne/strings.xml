@@ -706,7 +706,7 @@
     <string name="user_image_photo_selector" msgid="433658323306627093">"फोटो चयन गर्नुहोस्"</string>
     <string name="failed_attempts_now_wiping_device" msgid="4016329172216428897">"धेरै पटक गलत तरिकाले अनलक गर्ने प्रयास गरियो। यो डिभाइसमा भएको डेटा मेटाइने छ।"</string>
     <string name="failed_attempts_now_wiping_user" msgid="469060411789668050">"धेरै पटक गलत तरिकाले अनलक गर्ने प्रयास गरियो। यो प्रयोगकर्ता मेटाइने छ।"</string>
-    <string name="failed_attempts_now_wiping_profile" msgid="7626589520888963129">"धेरै पटक गलत तरिकाले अनलक गर्ने प्रयास गरियो। यो कार्य प्रोफाइल र यसमा भएको डेटा मेटाइने छ।"</string>
+    <string name="failed_attempts_now_wiping_profile" msgid="7626589520888963129">"धेरै पटक गलत तरिकाले अनलक गर्ने प्रयास गरियो। यो वर्क प्रोफाइल र यसमा भएको डेटा मेटाइने छ।"</string>
     <string name="failed_attempts_now_wiping_dialog_dismiss" msgid="2749889771223578925">"हटाउनुहोस्"</string>
     <string name="cached_apps_freezer_device_default" msgid="2616594131750144342">"डिफल्ट डिभाइस"</string>
     <string name="cached_apps_freezer_disabled" msgid="4816382260660472042">"असक्षम पारिएको छ"</string>
