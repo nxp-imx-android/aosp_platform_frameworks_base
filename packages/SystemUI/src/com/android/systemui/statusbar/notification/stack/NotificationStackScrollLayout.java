@@ -5532,6 +5532,7 @@ public class NotificationStackScrollLayout
             println(pw, "lastUpdateSidePaddingMillisAgo",
                     elapsedRealtime - mLastUpdateSidePaddingElapsedRealtime);
             println(pw, "isSmallLandscapeLockscreenEnabled", mIsSmallLandscapeLockscreenEnabled);
+            println(pw, "isAnimating", isCurrentlyAnimating());
             mNotificationStackSizeCalculator.dump(pw, args);
             mScrollViewFields.dump(pw);
             if (!SceneContainerFlag.isEnabled()) {
