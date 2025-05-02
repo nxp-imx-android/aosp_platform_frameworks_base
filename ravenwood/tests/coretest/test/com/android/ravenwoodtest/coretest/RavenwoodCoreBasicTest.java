@@ -17,6 +17,8 @@ package com.android.ravenwoodtest.coretest;
 
 import static org.junit.Assert.assertEquals;
 
+import android.app.appsearch.AppSearchManager;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -45,5 +47,11 @@ public class RavenwoodCoreBasicTest {
         // These properties are injected via the Android.bp, using the -D java option.
         assertEquals("value1", System.getProperty("xxx-extra-tradefed-option"));
         assertEquals("value2", System.getProperty("xxx-extra-runner-option"));
+    }
+
+    @Test
+    public void testClassPath() throws Exception {
+        // The mainline stub jar has this class too, but our own copy should be used at runtime.
+        assertEquals(42, AppSearchManager.foo());
     }
 }
