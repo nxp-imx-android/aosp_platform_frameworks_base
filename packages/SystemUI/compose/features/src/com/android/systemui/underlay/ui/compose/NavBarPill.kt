@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -109,11 +110,12 @@ fun NavBarPill(
             Spacer(modifier = Modifier.size(closeButtonSize))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier.clip(RoundedCornerShape(16.dp))
                         .border(2.dp, outlineColor, RoundedCornerShape(16.dp))
+                        .defaultMinSize(minWidth = navBarWidth)
                         .background(backgroundColor)
                         .clickable { onClick() }
                         .padding(horizontal = 8.dp, vertical = 6.dp)
