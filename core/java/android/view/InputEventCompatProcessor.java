@@ -16,29 +16,23 @@
 
 package android.view;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.os.Handler;
-import android.view.input.LetterboxScrollProcessor;
-import android.view.input.StylusButtonCompatibility;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Compatibility processor for InputEvents that allows events to be adjusted before and
  * after it is sent to the application.
  *
- * {@hide}
+ * @hide
  */
-public class InputEventCompatProcessor {
+public abstract class InputEventCompatProcessor {
 
     protected Context mContext;
     protected int mTargetSdkVersion;
-    private final StylusButtonCompatibility mStylusButtonCompatibility;
-    private final LetterboxScrollProcessor mLetterboxScrollProcessor;
-
-    /** List of events to be used to return the processed events */
-    private final List<InputEvent> mProcessedEvents;
 
     public InputEventCompatProcessor(Context context) {
         this(context, null);
@@ -47,84 +41,30 @@ public class InputEventCompatProcessor {
     public InputEventCompatProcessor(Context context, Handler handler) {
         mContext = context;
         mTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
-        if (StylusButtonCompatibility.isCompatibilityNeeded(context)) {
-            mStylusButtonCompatibility = new StylusButtonCompatibility();
-        } else {
-            mStylusButtonCompatibility = null;
-        }
-        if (LetterboxScrollProcessor.isCompatibilityNeeded()) {
-            mLetterboxScrollProcessor = new LetterboxScrollProcessor(mContext, handler);
-        } else {
-            mLetterboxScrollProcessor = null;
-        }
-
-        mProcessedEvents = new ArrayList<>();
     }
 
-
     /**
-     * Processes the InputEvent for compatibility before it is sent to the app, allowing for the
+     * Process the InputEvent for compatibility before it is sent to the app, allowing for the
      * generation of more than one event if necessary.
      *
      * @param inputEvent The InputEvent to process.
      * @return The list of adjusted events, or null if no adjustments are needed. The list is empty
      * if the event should be ignored. Do not keep a reference to the output as the list is reused.
      */
-    public List<InputEvent> processInputEventForCompatibility(InputEvent inputEvent) {
-        mProcessedEvents.clear();
-
-        // Process the event for StylusButtonCompatibility.
-        final InputEvent stylusCompatEvent = processStylusButtonCompatibility(inputEvent);
-
-        // Process the event for LetterboxScrollCompatibility.
-        List<InputEvent> letterboxScrollCompatEvents = processLetterboxScrollCompatibility(
-                stylusCompatEvent != null ? stylusCompatEvent : inputEvent);
-
-        // If no adjustments are needed for LetterboxCompatibility.
-        if (letterboxScrollCompatEvents == null) {
-            // If stylus compatibility made adjustments, return that adjusted event.
-            if (stylusCompatEvent != null) {
-                mProcessedEvents.add(stylusCompatEvent);
-                return mProcessedEvents;
-            }
-            // Otherwise, return null to indicate no adjustments.
-            return null;
-        }
-
-        // Otherwise if LetterboxCompatibility made adjustments, return the list of adjusted events.
-        mProcessedEvents.addAll(letterboxScrollCompatEvents);
-        return mProcessedEvents;
+    @Nullable
+    public List<InputEvent> processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
+        return null;
     }
 
     /**
-     * Processes the InputEvent for compatibility before it is finished by calling
+     * Process the InputEvent for compatibility before it is finished by calling
      * InputEventReceiver#finishInputEvent().
      *
      * @param inputEvent The InputEvent to process.
      * @return The InputEvent to finish, or null if it should not be finished.
      */
-    public InputEvent processInputEventBeforeFinish(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null) {
-            // LetterboxScrollProcessor may have generated events while processing motion events.
-            return mLetterboxScrollProcessor.processInputEventBeforeFinish(inputEvent);
-        }
-
-        // No changes needed
+    @Nullable
+    public InputEvent processInputEventBeforeFinish(@NonNull InputEvent inputEvent) {
         return inputEvent;
-    }
-
-
-    private List<InputEvent> processLetterboxScrollCompatibility(InputEvent inputEvent) {
-        if (mLetterboxScrollProcessor != null) {
-            return mLetterboxScrollProcessor.processInputEventForCompatibility(inputEvent);
-        }
-        return null;
-    }
-
-    private InputEvent processStylusButtonCompatibility(InputEvent inputEvent) {
-        if (mStylusButtonCompatibility != null) {
-            return mStylusButtonCompatibility.processInputEventForCompatibility(inputEvent);
-        }
-        return null;
     }
 }

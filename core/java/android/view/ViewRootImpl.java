@@ -36,8 +36,8 @@ import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NORMAL;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NO_PREFERENCE;
-import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
+import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_BOOST;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_CONFLICTED;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_INTERMITTENT;
@@ -263,6 +263,7 @@ import android.view.autofill.AutofillManager;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
 import android.view.flags.Flags;
+import android.view.input.InputEventCompatHandler;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Scroller;
@@ -978,7 +979,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private boolean mNeedsRendererSetup;
 
-    private final InputEventCompatProcessor mInputCompatProcessor;
+    private final InputEventCompatHandler mInputCompatHandler;
 
     /**
      * Consistency verifier for debugging purposes.
@@ -1282,24 +1283,7 @@ public final class ViewRootImpl implements ViewParent,
 
         initializeProtoLogInProcess();
 
-        String processorOverrideName = context.getResources().getString(
-                                    R.string.config_inputEventCompatProcessorOverrideClassName);
-        if (processorOverrideName.isEmpty()) {
-            // No compatibility processor override, using default.
-            mInputCompatProcessor = new InputEventCompatProcessor(context, mHandler);
-        } else {
-            InputEventCompatProcessor compatProcessor = null;
-            try {
-                final Class<? extends InputEventCompatProcessor> klass =
-                        (Class<? extends InputEventCompatProcessor>) Class.forName(
-                                processorOverrideName);
-                compatProcessor = klass.getConstructor(Context.class).newInstance(context);
-            } catch (Exception e) {
-                Log.e(TAG, "Unable to create the InputEventCompatProcessor. ", e);
-            } finally {
-                mInputCompatProcessor = compatProcessor;
-            }
-        }
+        mInputCompatHandler = InputEventCompatHandler.buildChain(context, mHandler);
 
         if (!sCompatibilityDone) {
             sAlwaysAssignFocus = mTargetSdkVersion < Build.VERSION_CODES.P;
@@ -10584,12 +10568,12 @@ public final class ViewRootImpl implements ViewParent,
         if (q.mReceiver != null) {
             boolean handled = (q.mFlags & QueuedInputEvent.FLAG_FINISHED_HANDLED) != 0;
             boolean modified = (q.mFlags & QueuedInputEvent.FLAG_MODIFIED_FOR_COMPATIBILITY) != 0;
-            if (modified) {
+            if (modified && mInputCompatHandler != null) {
                 Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventBeforeFinish");
                 InputEvent processedEvent;
                 try {
                     processedEvent =
-                            mInputCompatProcessor.processInputEventBeforeFinish(q.mEvent);
+                            mInputCompatHandler.processInputEventBeforeFinish(q.mEvent);
                 } finally {
                     Trace.traceEnd(Trace.TRACE_TAG_VIEW);
                 }
@@ -10889,17 +10873,18 @@ public final class ViewRootImpl implements ViewParent,
      */
     @VisibleForTesting
     public void processRawInputEvent(InputEvent event) {
-        Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventForCompatibility");
-        List<InputEvent> processedEvents;
-        try {
-            processedEvents =
-                    mInputCompatProcessor.processInputEventForCompatibility(event);
-        } finally {
-            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+        List<InputEvent> processedEvents = null;
+        if (mInputCompatHandler != null) {
+            Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventForCompatibility");
+            try {
+                processedEvents = mInputCompatHandler.processInputEvent(event);
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+            }
         }
         if (processedEvents != null) {
             if (processedEvents.isEmpty()) {
-                // InputEvent consumed by mInputCompatProcessor
+                // InputEvent consumed by mInputCompatHandler
                 mInputEventReceiver.finishInputEvent(event, true);
             } else {
                 for (int i = 0; i < processedEvents.size(); i++) {

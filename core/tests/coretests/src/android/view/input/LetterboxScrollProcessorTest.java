@@ -21,6 +21,8 @@ import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -32,7 +34,10 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -41,7 +46,10 @@ import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.window.flags.Flags;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -57,6 +65,9 @@ import java.util.List;
 @SmallTest
 @Presubmit
 public class LetterboxScrollProcessorTest {
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private LetterboxScrollProcessor mLetterboxScrollProcessor;
     private Context mContext;
@@ -77,6 +88,18 @@ public class LetterboxScrollProcessorTest {
         // Recreate to reset LetterboxScrollProcessor state.
         mLetterboxScrollProcessor = new LetterboxScrollProcessor(mContext,
                 new Handler(Looper.getMainLooper()));
+    }
+
+    @DisableFlags(Flags.FLAG_SCROLLING_FROM_LETTERBOX)
+    @Test
+    public void testCompatibilityNeededIfFlagIsDisabled() {
+        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded()).isFalse();
+    }
+
+    @EnableFlags(Flags.FLAG_SCROLLING_FROM_LETTERBOX)
+    @Test
+    public void testCompatibilityNeededIfFlagIsEnabled() {
+        assertThat(LetterboxScrollProcessor.isCompatibilityNeeded()).isTrue();
     }
 
     @Test
