@@ -1189,7 +1189,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 default:
                     break;
             }
-            sendMotionEvent(actionButton);
+            sendMotionEventsForClick(actionButton);
         }
 
         /**
@@ -1239,7 +1239,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return true;
         }
 
-        private void sendMotionEvent(int actionButton) {
+        /**
+         * Sends a set of motion events consisting of downEvent, pressEvent, releaseEvent
+         * and downEvent for a specific action button.
+         */
+        private void sendMotionEventsForClick(int actionButton) {
             final long now = SystemClock.uptimeMillis();
             MotionEvent downEvent = buildMotionEvent(
                     now, now, actionButton, mLastMotionEvent);
@@ -1272,11 +1276,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         private void sendDoubleClickEvent() {
             mHasOngoingDoubleClick = true;
-            sendMotionEvent(BUTTON_PRIMARY);
+            sendMotionEventsForClick(BUTTON_PRIMARY);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    sendMotionEvent(BUTTON_PRIMARY);
+                    sendMotionEventsForClick(BUTTON_PRIMARY);
                     mHasOngoingDoubleClick = false;
                     resetInternalState();
                 }
