@@ -1304,9 +1304,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun handleRequest_newFreeformTaskLaunch_cascadeApplied() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
         setUpLandscapeDisplay()
-        val stableBounds = Rect()
-        displayLayout.getStableBoundsForDesktopMode(stableBounds)
 
         setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
         val freeformTask = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, active = false)
@@ -1324,7 +1327,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun handleRequest_newFreeformTaskLaunch_newDesk_desksCascadeIndependently() {
         setUpLandscapeDisplay()
         val stableBounds = Rect()
-        displayLayout.getStableBoundsForDesktopMode(stableBounds)
+        displayLayout.getStableBounds(stableBounds)
 
         // Launch freeform tasks in default desk.
         setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
@@ -1349,7 +1352,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun handleRequest_freeformTaskAlreadyExistsInDesktopMode_cascadeNotApplied() {
         setUpLandscapeDisplay()
         val stableBounds = Rect()
-        displayLayout.getStableBoundsForDesktopMode(stableBounds)
+        displayLayout.getStableBounds(stableBounds)
 
         setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
         val freeformTask = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
