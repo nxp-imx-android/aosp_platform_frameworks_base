@@ -25,6 +25,7 @@ import static android.view.WindowManager.DOCKED_TOP;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_DISMISSING;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX;
+import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_NONE;
 
 import android.graphics.Point;
@@ -110,6 +111,9 @@ class ResizingEffectPolicy {
             case PARALLAX_FLEX:
                 mParallaxSpec = new FlexParallaxSpec();
                 break;
+            case PARALLAX_FLEX_HYBRID:
+                mParallaxSpec = new FlexHybridParallaxSpec();
+                break;
             case PARALLAX_NONE:
             default:
                 mParallaxSpec = new NoParallaxSpec();
@@ -188,7 +192,8 @@ class ResizingEffectPolicy {
                     mTempRect2.set(mSplitLayout.getTopLeftBounds());
                     break;
             }
-        } else if (mParallaxType == PARALLAX_ALIGN_CENTER || mParallaxType == PARALLAX_FLEX) {
+        } else if (mParallaxType == PARALLAX_ALIGN_CENTER || mParallaxType == PARALLAX_FLEX
+                || mParallaxType == PARALLAX_FLEX_HYBRID) {
             switch (mShrinkSide) {
                 case DOCKED_TOP:
                 case DOCKED_LEFT:
