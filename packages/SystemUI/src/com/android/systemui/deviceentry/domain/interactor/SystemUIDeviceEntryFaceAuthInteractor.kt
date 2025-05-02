@@ -116,27 +116,34 @@ constructor(
         keyguardUpdateMonitor.setFaceAuthInteractor(this)
         observeFaceAuthStateUpdates()
         faceAuthenticationLogger.interactorStarted()
-        isBouncerVisible
-            .whenItFlipsToTrue()
-            .onEach {
-                faceAuthenticationLogger.bouncerVisibilityChanged()
-                runFaceAuth(
-                    FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN,
-                    fallbackToDetect = false,
-                )
-            }
-            .launchIn(applicationScope)
 
-        isBouncerShowingSoon
-            .whenItFlipsToTrue()
-            .onEach {
-                faceAuthenticationLogger.bouncerShowingSoon()
-                runFaceAuth(
-                    FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
-                    fallbackToDetect = false,
-                )
-            }
-            .launchIn(applicationScope)
+        if (SceneContainerFlag.isEnabled) {
+            isBouncerVisible
+                .whenItFlipsToTrue()
+                .onEach {
+                    faceAuthenticationLogger.bouncerVisibilityChanged()
+                    runFaceAuth(
+                        FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN,
+                        fallbackToDetect = false,
+                    )
+                }
+                .launchIn(applicationScope)
+        } else {
+            // When face auth can run, `isBouncerShowingSoon` will always gets triggered before
+            // `isBouncerVisible`. Only run face auth when `isBouncerShowingSoon` (and not
+            // `isBouncerVisible` to avoid running face auth twice for a single transition
+            // to the primary bouncer.
+            isBouncerShowingSoon
+                .whenItFlipsToTrue()
+                .onEach {
+                    faceAuthenticationLogger.bouncerShowingSoon()
+                    runFaceAuth(
+                        FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
+                        fallbackToDetect = false,
+                    )
+                }
+                .launchIn(applicationScope)
+        }
 
         alternateBouncerInteractor.isVisible
             .whenItFlipsToTrue()
