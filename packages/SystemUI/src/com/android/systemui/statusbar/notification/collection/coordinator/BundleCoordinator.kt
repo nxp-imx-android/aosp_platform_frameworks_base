@@ -112,7 +112,6 @@ constructor(
                 add(BundleSpec.SOCIAL_MEDIA)
                 add(BundleSpec.PROMOTIONS)
                 add(BundleSpec.RECOMMENDED)
-                if (!debugBundleAppName.isNullOrEmpty()) add(BundleSpec.DEBUG)
             }
 
             private val bundleIds = this.bundleSpecs.map { it.key }
@@ -123,7 +122,7 @@ constructor(
              */
             override fun getBundleIdOrNull(entry: ListEntry): String? {
                 if (isFromDebugApp(entry)) {
-                    return BundleSpec.DEBUG.key
+                    return BundleSpec.RECOMMENDED.key
                 }
                 if (entry is GroupEntry) {
                     if (entry.children.isEmpty()) return null
@@ -176,8 +175,7 @@ constructor(
         }
 
     private val bundleCountUpdater = OnBeforeRenderListListener { entries ->
-        entries.filterIsInstance<BundleEntry>()
-            .forEach(BundleEntry::updateTotalCount)
+        entries.filterIsInstance<BundleEntry>().forEach(BundleEntry::updateTotalCount)
     }
 
     override fun attach(pipeline: NotifPipeline) {
@@ -195,8 +193,8 @@ constructor(
         @JvmField var debugBundleLogs: Boolean = false
 
         /**
-         * All notifications that contain this String in the key are bundled into a debug bundle
-         * such that bundle code can be easily and deterministically tested.
+         * All notifications that contain this String in the key are bundled into the recommended
+         * bundle such that bundle code can be easily and deterministically tested.
          *
          * E.g. use this command to bundle all notifications from notify: `adb shell setprop
          * persist.debug.notification_bundle_ui_debug_app_name com.google.cinek.notify && adb

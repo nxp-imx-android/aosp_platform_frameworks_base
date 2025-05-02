@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
 
+    override val bucket: Int = spec.bucket
+
     /** The model used by UI. */
     val bundleRepository = BundleRepository(spec.titleTextResId, spec.icon)
 
@@ -80,8 +82,8 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         get() = _children.all { it.representativeEntry?.sbn?.isClearable != false }
 
     /**
-     * The total count of [NotificationEntry]s within bundle. Notification updates trigger
-     * pipeline rebuilds, so updates to group children will be reflected in this count.
+     * The total count of [NotificationEntry]s within bundle. Notification updates trigger pipeline
+     * rebuilds, so updates to group children will be reflected in this count.
      */
     @VisibleForTesting
     fun updateTotalCount() {
