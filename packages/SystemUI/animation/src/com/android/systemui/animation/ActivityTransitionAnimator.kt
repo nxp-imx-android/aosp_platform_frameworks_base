@@ -1167,9 +1167,152 @@ constructor(
     }
 
     /**
-     * Implements the actual activity launch/return animation using the deprecated
-     * [RemoteAnimationAdapter] and related APIs.
+     * Implements the actual activity launch/return animation using the modern [RemoteTransition]
+     * APIs.
      */
+    private class TransitionAnimationDelegate
+    @JvmOverloads
+    constructor(
+        private val mainExecutor: Executor,
+        private val controller: Controller,
+        callback: Callback,
+        /** Listener for animation lifecycle events. */
+        listener: Listener? = null,
+        /** The animator to use to animate the window transition. */
+        transitionAnimator: TransitionAnimator = defaultTransitionAnimator(mainExecutor),
+
+        /**
+         * Whether we should disable the WindowManager timeout. This should be set to true in tests
+         * only.
+         */
+        // TODO(b/301385865): Remove this flag.
+        disableWmTimeout: Boolean = false,
+
+        /**
+         * Whether we should disable the reparent transaction that puts the opening/closing window
+         * above the view's window. This should be set to true in tests only, where we can't
+         * currently use a valid leash.
+         *
+         * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper
+         *   anymore and we can just inject a fake transaction.
+         */
+        skipReparentTransaction: Boolean = false,
+    ) {
+        private val impl =
+            AnimationDelegateInternal(
+                mainExecutor,
+                controller,
+                callback,
+                listener,
+                transitionAnimator,
+                disableWmTimeout,
+                skipReparentTransaction,
+            )
+
+        @UiThread
+        fun onAnimationStart(
+            info: TransitionInfo,
+            finishCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            val finishTransaction = SurfaceControl.Transaction()
+            impl.onAnimationStart(
+                resolveAnimatedWindow = { resolveAnimatedWindow(info) },
+                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+            )
+        }
+
+        @UiThread
+        fun takeOverAnimation(
+            info: TransitionInfo,
+            startTransaction: SurfaceControl.Transaction,
+            finishCallback: IRemoteTransitionFinishedCallback?,
+            states: Array<out WindowAnimationState>,
+        ) {
+            val finishTransaction = SurfaceControl.Transaction()
+            impl.takeOverAnimation(
+                resolveAnimatedWindow = { resolveAnimatedWindow(info, states) },
+                startTransaction = startTransaction,
+                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+            )
+        }
+
+        @UiThread fun onAnimationCancelled() = impl.onAnimationCancelled()
+
+        /**
+         * Extracts the [TransitionInfo.Change] representing the window to animate and its state
+         * from [info] and [startWindowStates], and wraps them in an [AnimatedWindow] object.
+         */
+        private fun resolveAnimatedWindow(
+            info: TransitionInfo?,
+            startWindowStates: Array<out WindowAnimationState>? = null,
+        ): AnimatedWindow? {
+            if (info == null) {
+                return null
+            }
+
+            val targetModes =
+                if (controller.isLaunching) {
+                    setOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
+                } else {
+                    setOf(TRANSIT_CLOSE, TRANSIT_TO_BACK)
+                }
+            val states =
+                if (startWindowStates?.size == info.changes.size) {
+                    startWindowStates
+                } else {
+                    null
+                }
+
+            var candidate: TransitionInfo.Change? = null
+            var state: WindowAnimationState? = null
+
+            for ((index, it) in info.changes.withIndex()) {
+                if (targetModes.contains(it.mode)) {
+                    if (returnAnimationsEnabled()) {
+                        // If the controller contains a cookie, _only_ match if either the candidate
+                        // contains the matching cookie, or a component is also defined and is a
+                        // match.
+                        if (
+                            controller.transitionCookie != null &&
+                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                    true &&
+                                (controller.component == null ||
+                                    it.taskInfo?.topActivity != controller.component)
+                        ) {
+                            continue
+                        }
+                    }
+
+                    if (candidate == null) {
+                        candidate = it
+                        state = states?.get(index)
+                        continue
+                    }
+                    if (it.endAbsBounds.hasGreaterAreaThan(candidate.endAbsBounds)) {
+                        candidate = it
+                        state = states?.get(index)
+                    }
+                }
+            }
+
+            return candidate?.let { AnimatedWindow.fromTransitionInfo(candidate, state) }
+        }
+
+        private fun IRemoteTransitionFinishedCallback.invoke(
+            finishTransaction: SurfaceControl.Transaction
+        ) {
+            try {
+                onTransitionFinished(null, finishTransaction)
+            } catch (e: RemoteException) {
+                e.printStackTrace()
+            }
+        }
+
+        private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
+            return (this.width() * this.height()) > (other.width() * other.height())
+        }
+    }
+
     class LegacyAnimationDelegate
     @JvmOverloads
     constructor(
@@ -1261,7 +1404,7 @@ constructor(
                     RemoteAnimationTarget.MODE_CLOSING
                 }
             val states =
-                if (startWindowStates != null && startWindowStates.size == apps.size) {
+                if (startWindowStates?.size == apps.size) {
                     startWindowStates
                 } else {
                     null
@@ -1356,6 +1499,19 @@ constructor(
                         WindowAnimationState().apply { bounds = RectF(window.screenSpaceBounds) },
                     backgroundColor = window.backgroundColor,
                     isTranslucent = window.isTranslucent,
+                    taskInfo = window.taskInfo,
+                )
+
+            fun fromTransitionInfo(
+                window: TransitionInfo.Change,
+                startState: WindowAnimationState?,
+            ): AnimatedWindow =
+                AnimatedWindow(
+                    leash = window.leash,
+                    startState = startState,
+                    endState = WindowAnimationState().apply { bounds = RectF(window.endAbsBounds) },
+                    backgroundColor = window.backgroundColor,
+                    isTranslucent = (window.flags and TransitionInfo.FLAG_TRANSLUCENT) != 0,
                     taskInfo = window.taskInfo,
                 )
         }
