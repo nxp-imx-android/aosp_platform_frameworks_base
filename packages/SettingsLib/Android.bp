@@ -10,6 +10,7 @@ package {
 android_library {
     name: "SettingsLib",
     defaults: [
+        "SettingsLibApexDefaults",
         "SettingsLintDefaults",
     ],
 
@@ -91,6 +92,21 @@ java_defaults {
             "SettingsLibLintChecker",
         ],
     },
+}
+
+// defaults for apex_available
+java_defaults {
+    name: "SettingsLibApexDefaults",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.cellbroadcast",
+        "com.android.devicelock",
+        "com.android.extservices",
+        "com.android.healthfitness",
+        "com.android.mediaprovider",
+        "com.android.permission",
+    ],
 }
 
 // NOTE: Keep this module in sync with ./common.mk

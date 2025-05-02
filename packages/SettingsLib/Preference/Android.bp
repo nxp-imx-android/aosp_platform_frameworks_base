@@ -21,6 +21,7 @@ package {
 android_library {
     name: "SettingsLibPreference",
     defaults: [
+        "SettingsLibApexDefaults",
         "SettingsLintDefaults",
     ],
     min_sdk_version: "21",
@@ -34,11 +35,4 @@ android_library {
         "guava",
     ],
     kotlincflags: ["-Xjvm-default=all"],
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.adservices",
-        "com.android.cellbroadcast",
-        "com.android.extservices",
-        "com.android.healthfitness",
-    ],
 }
