@@ -3590,15 +3590,17 @@ public class NotificationManagerService extends SystemService {
         }
 
         if (notificationForceGrouping()) {
-            final NotificationChannel updatedChannel = mPreferencesHelper.getNotificationChannel(
-                    pkg, uid, channel.getId(), false);
-            mHandler.postDelayed(() -> {
-                synchronized (mNotificationLock) {
-                    mGroupHelper.onChannelUpdated(
-                            UserHandle.getUserHandleForUid(uid).getIdentifier(), pkg,
-                            updatedChannel, mNotificationList, mSummaryByGroupKey);
-                }
-            }, DELAY_FORCE_REGROUP_TIME);
+                mHandler.postDelayed(() -> {
+                    final NotificationChannel updatedChannel = mPreferencesHelper
+                            .getNotificationChannel(pkg, uid, channel.getId(), false);
+                    synchronized (mNotificationLock) {
+                        if (updatedChannel != null) {
+                            mGroupHelper.onChannelUpdated(
+                                    UserHandle.getUserHandleForUid(uid).getIdentifier(), pkg,
+                                    updatedChannel, mNotificationList, mSummaryByGroupKey);
+                        }
+                    }
+                }, DELAY_FORCE_REGROUP_TIME);
         }
 
         handleSavePolicyFile();
