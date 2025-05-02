@@ -227,10 +227,12 @@ public class BubbleTest extends ShellTestCase {
         when(componentName.getPackageName()).thenReturn(mContext.getPackageName());
         info.taskId = 1;
         info.baseActivity = componentName;
+        info.baseIntent = createIntent();
         Bubble bubble = Bubble.createTaskBubble(info, UserHandle.of(0),
                 mock(Icon.class),
                 mMainExecutor, mBgExecutor);
         assertThat(bubble.isApp()).isTrue();
+        assertThat(bubble.getIntent()).isNotNull();
     }
 
     @Test
