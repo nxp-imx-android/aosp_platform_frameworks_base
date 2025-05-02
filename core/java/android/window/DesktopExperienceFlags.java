@@ -172,6 +172,9 @@ public enum DesktopExperienceFlags {
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
+    ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX(
+            Flags::enableWindowingTaskStackOrderBugfix, false,
+            Flags.FLAG_ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX),
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, true,
             Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS),
