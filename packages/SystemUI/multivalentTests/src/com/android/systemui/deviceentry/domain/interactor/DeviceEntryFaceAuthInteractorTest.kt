@@ -354,22 +354,6 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableSceneContainer
-    fun faceAuthIsRequestedWhenPrimaryBouncerIsVisible() =
-        testScope.runTest {
-            underTest.start()
-
-            bouncerRepository.setPrimaryShow(false)
-            runCurrent()
-
-            bouncerRepository.setPrimaryShow(true)
-            runCurrent()
-
-            assertThat(faceAuthRepository.runningAuthRequest.value)
-                .isEqualTo(Pair(FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN, false))
-        }
-
-    @Test
     @EnableSceneContainer
     fun faceAuthIsRequestedWhenPrimaryBouncerIsVisible_withSceneContainerEnabled() =
         testScope.runTest {
@@ -389,6 +373,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun faceAuthIsRequestedWhenPrimaryBouncerIsAboutToShow() =
         testScope.runTest {
             underTest.start()
@@ -399,6 +384,30 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             bouncerRepository.setPrimaryShowingSoon(true)
 
             runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(
+                    Pair(
+                        FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
+                        false,
+                    )
+                )
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun faceAuthIsOnlyRequestedWhenPrimaryBouncerIsAboutToShow() =
+        testScope.runTest {
+            underTest.start()
+
+            bouncerRepository.setPrimaryShowingSoon(false)
+            bouncerRepository.setPrimaryShow(false)
+            runCurrent()
+
+            bouncerRepository.setPrimaryShowingSoon(true)
+            runCurrent()
+            bouncerRepository.setPrimaryShow(true)
+            runCurrent()
+
             assertThat(faceAuthRepository.runningAuthRequest.value)
                 .isEqualTo(
                     Pair(
