@@ -429,6 +429,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                         callback instanceof OnBackAnimationCallback,
                         overrideAnimation);
             }
+            Log.d(TAG, "setTopOnBackInvokedCallback (unwrapped): " + callback);
             mWindowSession.setOnBackInvokedCallbackInfo(mWindow, callbackInfo);
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to set OnBackInvokedCallback to WM. Error: " + e);
