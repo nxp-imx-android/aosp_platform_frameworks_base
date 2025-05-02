@@ -356,6 +356,16 @@ flag {
 }
 
 flag {
+    name: "enable_windowing_task_stack_order_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Reverses the order of TaskStackListener updates."
+    bug: "414808458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_caption_compat_inset_conversion"
     namespace: "lse_desktop_experience"
     description: "Enables compatibility mitigation for apps that don't support caption insets well"
