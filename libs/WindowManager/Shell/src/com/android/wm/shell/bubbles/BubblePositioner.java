@@ -893,11 +893,9 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
         return mBubbleBarLocation.isOnLeft(mDeviceConfig.isRtl());
     }
 
-    /**
-     * Set top coordinate of bubble bar on screen
-     */
-    public void setBubbleBarTopOnScreen(int topOnScreen) {
-        mBubbleBarTopOnScreen = topOnScreen;
+    /** Updates the top coordinate of bubble bar on screen. */
+    public void updateBubbleBarTopOnScreen(int bubbleBarTopToScreenBottom) {
+        mBubbleBarTopOnScreen = getScreenRect().bottom - bubbleBarTopToScreenBottom;
     }
 
     /**

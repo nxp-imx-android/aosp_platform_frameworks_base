@@ -89,8 +89,7 @@ class BubbleExpandedViewPinControllerTest {
                 insets = Insets.of(10, 20, 30, 40),
             )
         positioner.update(deviceConfig)
-        positioner.bubbleBarTopOnScreen =
-            SCREEN_HEIGHT - deviceConfig.insets.bottom - BUBBLE_BAR_HEIGHT
+        positioner.updateBubbleBarTopOnScreen(BUBBLE_BAR_HEIGHT)
         controller = BubbleExpandedViewPinController(context, container, positioner)
         testListener = TestLocationChangeListener()
         controller.setListener(testListener)
