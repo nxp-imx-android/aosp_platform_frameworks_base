@@ -126,7 +126,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
 
         mTestClass = new TestClass(testClass);
 
-        Log.v(TAG, "RavenwoodAwareTestRunner initializing for " + testClass.getCanonicalName());
+        Log.i(TAG, "RavenwoodAwareTestRunner initializing for " + testClass.getCanonicalName());
 
         // Hook point to allow more customization.
         runAnnotatedMethodsOnRavenwood(RavenwoodTestRunnerInitializing.class, null);
@@ -168,7 +168,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         RavenwoodTestStats.getInstance().attachToRunNotifier(notifier);
 
         if (mRealRunner instanceof ClassSkippingTestRunner) {
-            Log.v(TAG, "onClassSkipped: description=" + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.v(TAG, "onClassSkipped: description=" + description);
+            }
             mRealRunner.run(notifier);
             return;
         }
@@ -280,7 +282,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Return false if it should be skipped.
      */
     private boolean onBefore(Description description, Scope scope, Order order) {
-        Log.v(TAG, "onBefore: description=" + description + ", " + scope + ", " + order);
+        if (RAVENWOOD_VERBOSE_LOGGING) {
+            Log.v(TAG, "onBefore: description=" + description + ", " + scope + ", " + order);
+        }
 
         final var classDescription = getDescription();
 
@@ -306,7 +310,10 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Return false if the exception should be ignored.
      */
     private boolean onAfter(Description description, Scope scope, Order order, Throwable th) {
-        Log.v(TAG, "onAfter: description=" + description + ", " + scope + ", " + order + ", " + th);
+        if (RAVENWOOD_VERBOSE_LOGGING) {
+            Log.v(TAG, "onAfter: description=" + description + ", " + scope + ", " + order + ", "
+                    + th);
+        }
 
         final var classDescription = getDescription();
 
@@ -350,7 +357,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Called by RavenwoodRule.
      */
     static void onRavenwoodRuleEnter(Description description, RavenwoodRule rule) {
-        Log.v(TAG, "onRavenwoodRuleEnter: description=" + description);
+        if (RAVENWOOD_VERBOSE_LOGGING) {
+            Log.v(TAG, "onRavenwoodRuleEnter: description=" + description);
+        }
         getCurrentRunner().mState.enterRavenwoodRule(rule);
     }
 
@@ -358,7 +367,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Called by RavenwoodRule.
      */
     static void onRavenwoodRuleExit(Description description, RavenwoodRule rule) {
-        Log.v(TAG, "onRavenwoodRuleExit: description=" + description);
+        if (RAVENWOOD_VERBOSE_LOGGING) {
+            Log.v(TAG, "onRavenwoodRuleExit: description=" + description);
+        }
         getCurrentRunner().mState.exitRavenwoodRule(rule);
     }
 
@@ -367,7 +378,9 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     }
 
     private void dumpDescription(Description desc, String header, String indent) {
-        Log.v(TAG, indent + header + desc);
+        if (RAVENWOOD_VERBOSE_LOGGING) {
+            Log.v(TAG, indent + header + desc);
+        }
 
         var children = desc.getChildren();
         var childrenIndent = "  " + indent;

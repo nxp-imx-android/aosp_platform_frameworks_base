@@ -15,29 +15,34 @@
 
 # Run all the ravenwood tests + hoststubgen unit tests.
 #
-# Options:
+# Major options:
 #
-#   -s: "Smoke" test -- skip slow tests (SysUI, ICU)
+#   -s: "Smoke" test -- skip slow tests (SysUI, ICU) and large tests.
 #
 #   -x PCRE: Specify exclusion filter in PCRE
 #            Example: -x '^(Cts|hoststub)' # Exclude CTS and hoststubgen tests.
 #
 #   -f PCRE: Specify inclusion filter in PCRE
 
+set -e
 
-# Regex to identify slow tests, in PCRE
-SLOW_TEST_RE='^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests)$'
+# Move to the script's directory
+cd "${0%/*}"
 
 smoke=0
 include_re=""
 exclude_re=""
+smoke=0
 smoke_exclude_re=""
 dry_run=""
-while getopts "sx:f:dtb" opt; do
+exclude_large_tests=0
+atest_opts=""
+while getopts "sx:f:dtbLa:" opt; do
 case "$opt" in
     s)
         # Remove slow tests.
-        smoke_exclude_re="$SLOW_TEST_RE"
+        smoke=1
+        exclude_large_tests=1
         ;;
     x)
         # Take a PCRE from the arg, and use it as an exclusion filter.
@@ -53,11 +58,19 @@ case "$opt" in
         ;;
     t)
         # Redirect log to terminal
-        export RAVENWOOD_LOG_OUT=$(tty)
+        export RAVENWOOD_LOG_OUT=-
         ;;
     b)
         # Build only
         ATEST=m
+        ;;
+    a)
+        # atest options (e.g. "-t")
+        atest_opts="$OPTARG"
+        ;;
+    L)
+        # exclude large tests
+        exclude_large_tests=1
         ;;
     '?')
         exit 1
@@ -67,7 +80,33 @@ done
 shift $(($OPTIND - 1))
 
 all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
-all_tests+=( $(${0%/*}/list-ravenwood-tests.sh) )
+all_raven_tests=( $( ./list-ravenwood-tests.sh ) )
+
+all_tests+=( "${all_raven_tests[@]}" )
+
+
+get_smoke_re() {
+    # Extract tests from smoke-excluded-tests.txt
+    # - Skip lines starting with #
+    # - Remove all spaces and tabs
+    # - Skip empty lines
+    local tests=($(sed -e '/^#/d; s/[ \t][ \t]*//g; /^$/d' smoke-excluded-tests.txt))
+
+    # Then convert it to a regex.
+    # - Wrap in "^( ... )$"
+    # - Conact the tests with "|"
+    echo -n "^("
+    (
+        local IFS='|'
+        echo -n "${tests[*]}"
+    )
+    echo -n ")$"
+}
+
+if (( $smoke )) ; then
+    smoke_exclude_re=$(get_smoke_re)
+    echo "smoke_exclude_re=${smoke_exclude_re%Q}" # %Q == shell quote
+fi
 
 filter() {
     local re="$1"
@@ -86,7 +125,6 @@ filter_in() {
 filter_out() {
     filter "$1" -v
 }
-
 
 # Remove the slow tests.
 targets=( $(
@@ -111,9 +149,25 @@ if [[ "$diff" != "" ]]; then
     echo "$diff"
 fi
 
+
 run() {
     echo "Running: ${@}"
     "${@}"
 }
 
-run $dry_run ${ATEST:-atest} "${targets[@]}"
+extra_args=()
+if (( $exclude_large_tests )) ; then
+    extra_args+=("--")
+
+    # Need to add the following two options for each module.
+    # But we can't add it to non-ravenwood tests, so use $all_raven_tests
+    # instead of $targets.
+    for module in "${all_raven_tests[@]}" ; do
+        extra_args+=(
+            "--module-arg $module:exclude-annotation:android.platform.test.annotations.LargeTest"
+            "--module-arg $module:exclude-annotation:androidx.test.filters.LargeTest"
+            )
+    done
+fi
+
+run $dry_run ${ATEST:-atest} $atest_opts "${targets[@]}" "${extra_args[@]}"

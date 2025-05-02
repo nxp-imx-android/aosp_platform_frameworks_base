@@ -88,7 +88,7 @@ public class RavenwoodSystemProperties {
         var ravenwoodProps = readProperties(path + RAVENWOOD_BUILD_PROP);
         var deviceProps = readProperties(path + DEVICE_BUILD_PROP);
 
-        Log.v(TAG, "Default system properties:");
+        Log.i(TAG, "Default system properties:");
         ravenwoodProps.forEach((key, origValue) -> {
             final String value;
 
@@ -102,11 +102,11 @@ public class RavenwoodSystemProperties {
                 var deviceKey = origValue.substring(3);
                 if ("r".equals(deviceKey)) {
                     sReadableKeys.add(key);
-                    Log.v(TAG, key + " (readable)");
+                    Log.i(TAG, key + " (readable)");
                     return;
                 } else if ("w".equals(deviceKey)) {
                     sWritableKeys.add(key);
-                    Log.v(TAG, key + " (writable)");
+                    Log.i(TAG, key + " (writable)");
                     return;
                 }
 
@@ -119,7 +119,7 @@ public class RavenwoodSystemProperties {
             } else {
                 value = origValue;
             }
-            Log.v(TAG, key + "=" + value);
+            Log.i(TAG, key + "=" + value);
             sDefaultValues.put(key, value);
         });
 

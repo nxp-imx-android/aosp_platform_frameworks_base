@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 
+import androidx.test.filters.LargeTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import java.util.ArrayList;
@@ -232,6 +233,7 @@ public class RateLimitingCacheTest {
      * of order.
      */
     @Test
+    @LargeTest
     public void testMultipleThreads_cachedValueNeverGoesBackInTime() throws InterruptedException {
         final long periodMillis = 10;
         final int maxCountPerPeriod = 3;

@@ -15,6 +15,8 @@
  */
 package android.platform.test.ravenwood;
 
+import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
+
 import android.util.Log;
 
 import org.junit.runner.Description;
@@ -188,34 +190,46 @@ public class RavenwoodTestStats {
     private final RunListener mRunListener = new RunListener() {
         @Override
         public void testSuiteStarted(Description description) {
-            Log.d(TAG, "testSuiteStarted: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "testSuiteStarted: " + description);
+            }
         }
 
         @Override
         public void testSuiteFinished(Description description) {
-            Log.d(TAG, "testSuiteFinished: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "testSuiteFinished: " + description);
+            }
         }
 
         @Override
         public void testRunStarted(Description description) {
-            Log.d(TAG, "testRunStarted: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "testRunStarted: " + description);
+            }
         }
 
         @Override
         public void testRunFinished(org.junit.runner.Result result) {
-            Log.d(TAG, "testRunFinished: " + result);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "testRunFinished: " + result);
+            }
 
             dumpAllAndClear();
         }
 
         @Override
         public void testStarted(Description description) {
-            Log.d(TAG, "  testStarted: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "  testStarted: " + description);
+            }
         }
 
         @Override
         public void testFinished(Description description) {
-            Log.d(TAG, "  testFinished: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "  testFinished: " + description);
+            }
 
             // Send "Passed", but if there's already another result sent for this, this won't
             // override it.
@@ -224,7 +238,9 @@ public class RavenwoodTestStats {
 
         @Override
         public void testFailure(Failure failure) {
-            Log.d(TAG, "    testFailure: " + failure);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "    testFailure: " + failure);
+            }
 
             var description = failure.getDescription();
             onTestFinished(description.getClassName(), description.getMethodName(), Result.Failed);
@@ -232,14 +248,18 @@ public class RavenwoodTestStats {
 
         @Override
         public void testAssumptionFailure(Failure failure) {
-            Log.d(TAG, "    testAssumptionFailure: " + failure);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "    testAssumptionFailure: " + failure);
+            }
             var description = failure.getDescription();
             onTestFinished(description.getClassName(), description.getMethodName(), Result.Skipped);
         }
 
         @Override
         public void testIgnored(Description description) {
-            Log.d(TAG, "    testIgnored: " + description);
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, "    testIgnored: " + description);
+            }
             onTestFinished(description.getClassName(), description.getMethodName(), Result.Skipped);
         }
     };

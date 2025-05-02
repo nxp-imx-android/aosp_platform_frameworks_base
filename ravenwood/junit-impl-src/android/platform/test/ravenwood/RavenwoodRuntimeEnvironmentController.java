@@ -732,7 +732,7 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void dumpCommandLineArgs() {
-        Log.v(TAG, "JVM arguments:");
+        Log.i(TAG, "JVM arguments:");
 
         // Note, we use the wrapper in JUnit4, not the actual class (
         // java.lang.management.ManagementFactory), because we can't see the later at the build
@@ -741,7 +741,7 @@ public class RavenwoodRuntimeEnvironmentController {
         var args = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
         for (var arg : args) {
-            Log.v(TAG, "  " + arg);
+            Log.i(TAG, "  " + arg);
         }
     }
 
@@ -776,31 +776,31 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void dumpJavaProperties() {
-        Log.v(TAG, "JVM properties:");
+        Log.i(TAG, "JVM properties:");
         dumpMap(System.getProperties());
     }
 
     private static void dumpEnvironment() {
-        Log.v(TAG, "Environment:");
+        Log.i(TAG, "Environment:");
         dumpMap(System.getenv());
     }
 
     private static void dumpMap(Map<?, ?> map) {
         for (var key : map.keySet().stream().sorted().toList()) {
-            Log.v(TAG, "  " + key + "=" + map.get(key));
+            Log.i(TAG, "  " + key + "=" + map.get(key));
         }
     }
     private static void dumpOtherInfo() {
-        Log.v(TAG, "Other key information:");
+        Log.i(TAG, "Other key information:");
         var jloc = Locale.getDefault();
-        Log.v(TAG, "  java.util.Locale=" + jloc + " / " + jloc.toLanguageTag());
+        Log.i(TAG, "  java.util.Locale=" + jloc + " / " + jloc.toLanguageTag());
         var uloc = ULocale.getDefault();
-        Log.v(TAG, "  android.icu.util.ULocale=" + uloc + " / " + uloc.toLanguageTag());
+        Log.i(TAG, "  android.icu.util.ULocale=" + uloc + " / " + uloc.toLanguageTag());
 
         var jtz = java.util.TimeZone.getDefault();
-        Log.v(TAG, "  java.util.TimeZone=" + jtz.getDisplayName() + " / " + jtz);
+        Log.i(TAG, "  java.util.TimeZone=" + jtz.getDisplayName() + " / " + jtz);
 
         var itz = android.icu.util.TimeZone.getDefault();
-        Log.v(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
+        Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
     }
 }
