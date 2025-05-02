@@ -15,6 +15,7 @@
  */
 package com.android.systemui.lowlight
 
+import android.content.res.mockResources
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -37,12 +38,14 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.lowlight.data.repository.lowLightRepository
 import com.android.systemui.lowlight.data.repository.lowLightSettingsRepository
 import com.android.systemui.lowlight.domain.interactor.lowLightInteractor
+import com.android.systemui.lowlight.domain.interactor.lowLightSettingInteractor
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
 import com.android.systemui.lowlight.shell.lowLightBehaviorShellCommand
 import com.android.systemui.lowlight.shell.lowLightShellCommand
 import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
+import com.android.systemui.res.R
 import com.android.systemui.settings.userTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -54,6 +57,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -68,6 +72,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
         Kosmos.Fixture {
             LowLightBehaviorCoreStartable(
                 lowLightInteractor = lowLightInteractor,
+                lowLightSettingsInteractor = lowLightSettingInteractor,
                 dreamSettingsInteractor = dreamSettingsInteractorKosmos,
                 displayStateInteractor = displayStateInteractor,
                 logger = logger,
@@ -96,6 +101,11 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
 
     private fun Kosmos.setUserUnlocked(unlocked: Boolean) {
         fakeUserRepository.setUserUnlocked(selectedUserInteractor.getSelectedUserId(), unlocked)
+    }
+
+    private fun Kosmos.setAllowLowLightWhenLocked(allowed: Boolean) {
+        whenever(mockResources.getBoolean(R.bool.config_allowLowLightBehaviorWhenLocked))
+            .thenReturn(allowed)
     }
 
     private val action = FakeActivatable()
@@ -146,6 +156,28 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             assertThat(action.activationCount).isEqualTo(0)
             setLowLightFromSensor(true)
             assertThat(action.activationCount).isEqualTo(1)
+        }
+
+    @Test
+    fun testWhenAllowLowLightBehaviorWhenLockedAndUserLocked_lowLightBehaviorActivates() =
+        kosmos.runTest {
+            setUserUnlocked(false)
+            setAllowLowLightWhenLocked(true)
+            underTest.start()
+            setDisplayOn(true)
+
+            assertThat(action.activationCount).isEqualTo(1)
+        }
+
+    @Test
+    fun testWhenDisallowLowLightBehaviorWhenLockedAndUserLocked_LowLightBehaviorDoesNotActivate() =
+        kosmos.runTest {
+            setUserUnlocked(false)
+            setAllowLowLightWhenLocked(false)
+            underTest.start()
+            setDisplayOn(true)
+
+            assertThat(action.activationCount).isEqualTo(0)
         }
 
     @Test

@@ -43,4 +43,7 @@ constructor(
         userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
             settingsRepository.getLowLightDisplayBehaviorEnabled(user)
         }
+
+    val allowLowLightBehaviorWhenLocked: Boolean
+        get() = settingsRepository.allowLowLightBehaviorWhenLocked
 }

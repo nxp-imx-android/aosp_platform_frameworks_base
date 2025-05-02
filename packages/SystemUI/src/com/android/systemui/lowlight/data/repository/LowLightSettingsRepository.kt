@@ -22,6 +22,7 @@ import android.provider.Settings
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
+import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
@@ -57,6 +58,8 @@ interface LowLightSettingsRepository {
 
     /** Sets the {@link LowLightDisplayBehavior} for the given user. */
     fun setLowLightDisplayBehavior(user: UserInfo, behavior: LowLightDisplayBehavior)
+
+    val allowLowLightBehaviorWhenLocked: Boolean
 }
 
 class LowLightSettingsRepositoryImpl
@@ -131,6 +134,10 @@ constructor(
             behavior.toSettingsInt(),
             user.id,
         )
+    }
+
+    override val allowLowLightBehaviorWhenLocked by lazy {
+        resources.getBoolean(R.bool.config_allowLowLightBehaviorWhenLocked)
     }
 
     private fun Int.toLowLightDisplayBehavior(): LowLightDisplayBehavior {

@@ -25,6 +25,7 @@ import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
 import com.android.systemui.lowlight.domain.interactor.LowLightInteractor
+import com.android.systemui.lowlight.domain.interactor.LowLightSettingsInteractor
 import com.android.systemui.lowlight.shared.model.LowLightActionEntry
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
 import com.android.systemui.lowlight.shared.model.ScreenState
@@ -63,6 +64,7 @@ constructor(
     private val dreamSettingsInteractor: DreamSettingsInteractor,
     displayStateInteractor: DisplayStateInteractor,
     private val lowLightInteractor: LowLightInteractor,
+    private val lowLightSettingsInteractor: LowLightSettingsInteractor,
     private val logger: LowLightLogger,
     @Background private val scope: CoroutineScope,
     private val userLockedInteractor: UserLockedInteractor,
@@ -168,7 +170,11 @@ constructor(
                         ),
                         anyOf(
                             isLowLight,
-                            not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT)),
+                            if (lowLightSettingsInteractor.allowLowLightBehaviorWhenLocked) {
+                                not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT))
+                            } else {
+                                flowOf(false)
+                            },
                         ),
                     )
                 } else {

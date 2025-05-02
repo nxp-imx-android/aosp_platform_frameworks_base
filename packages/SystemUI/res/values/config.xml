@@ -1116,6 +1116,9 @@
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
 
+    <!-- Determines whether low light should be allowed pre-unlock -->
+    <bool translatable="false" name="config_allowLowLightBehaviorWhenLocked">false</bool>
+
     <!-- Configuration for wallpaper focal area -->
     <bool name="center_align_focal_area_shape">false</bool>
     <string name="focal_area_target" translatable="false" />
