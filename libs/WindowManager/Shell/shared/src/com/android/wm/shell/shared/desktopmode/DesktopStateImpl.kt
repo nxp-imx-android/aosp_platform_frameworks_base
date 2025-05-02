@@ -64,8 +64,12 @@ class DesktopStateImpl(context: Context) : DesktopState {
         DesktopModeFlags.isDesktopModeForcedEnabled() && canShowDesktopModeDevOption
 
     override val canEnterDesktopMode: Boolean = run {
+        val isEligibleForDesktopMode =
+            isDeviceEligibleForDesktopMode &&
+                    (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue ||
+                            canInternalDisplayHostDesktops)
         val desktopModeEnabled =
-            isDeviceEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
+            isEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
         desktopModeEnabled || isDesktopModeEnabledByDevOption
     }
 

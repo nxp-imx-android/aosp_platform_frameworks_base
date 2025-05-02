@@ -194,7 +194,23 @@ class DesktopStateImplTest : ShellTestCase() {
     )
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @Test
-    fun canEnterDesktopMode_DWFlagEnabled_deviceEligibleWithoutInternalDisplay_returnsTrue() {
+    fun canEnterDesktopMode_DWFlagEnabled_deviceEligibleWithoutInternalDisplay_returnsFalse() {
+        setDeviceEligibleForDesktopMode(true)
+        setCanInternalDisplayHostDesktops(false)
+        val desktopState = DesktopStateImpl(context)
+
+        assertThat(desktopState.canEnterDesktopMode).isFalse()
+    }
+
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION,
+    )
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE,
+    )
+    @Test
+    fun canEnterDesktopMode_DWAndProjectedFlagEnabled_eligibleWithoutInternalDisplay_returnsTrue() {
         setDeviceEligibleForDesktopMode(true)
         setCanInternalDisplayHostDesktops(false)
         val desktopState = DesktopStateImpl(context)

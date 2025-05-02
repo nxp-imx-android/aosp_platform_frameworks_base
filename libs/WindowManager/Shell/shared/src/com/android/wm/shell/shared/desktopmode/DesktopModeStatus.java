@@ -133,9 +133,12 @@ public class DesktopModeStatus {
      * Return {@code true} if desktop mode is enabled and can be entered on the current device.
      */
     public static boolean canEnterDesktopMode(@NonNull Context context) {
-        return (isDeviceEligibleForDesktopMode(context)
-                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue())
-                || isDesktopModeEnabledByDevOption(context);
+        boolean isEligibleForDesktopMode = isDeviceEligibleForDesktopMode(context) && (
+                DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue()
+                        || canInternalDisplayHostDesktops(context));
+        boolean desktopModeEnabled =
+                isEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue();
+        return desktopModeEnabled || isDesktopModeEnabledByDevOption(context);
     }
 
     /**
