@@ -123,4 +123,26 @@ class SmartspaceViewModelTest : SysuiTestCase() {
 
             assertThat(dozeTimeTick).isEqualTo(0)
         }
+
+    @Test
+    fun weather_dozeTimeTick_noAodTimeTick() =
+        testScope.runTest {
+            underTest = smartspaceViewModelFactory.create(SmartspaceViewModel.SURFACE_WEATHER_VIEW)
+
+            fakeKeyguardRepository.dozeTimeTick()
+            val dozeTimeTick = withTimeoutOrNull(100) { underTest.aodTimeTick.firstOrNull() }
+
+            assertThat(dozeTimeTick).isNull()
+        }
+
+    @Test
+    fun date_dozeTimeTick_noAodTimeTick() =
+        testScope.runTest {
+            underTest = smartspaceViewModelFactory.create(SmartspaceViewModel.SURFACE_DATE_VIEW)
+
+            fakeKeyguardRepository.dozeTimeTick()
+            val dozeTimeTick = withTimeoutOrNull(100) { underTest.aodTimeTick.firstOrNull() }
+
+            assertThat(dozeTimeTick).isNull()
+        }
 }

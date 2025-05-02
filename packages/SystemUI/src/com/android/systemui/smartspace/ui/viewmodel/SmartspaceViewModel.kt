@@ -37,7 +37,8 @@ constructor(
         powerInteractor.isAwake.filter { surfaceName != SURFACE_WEATHER_VIEW }
 
     /** Time tick flow */
-    val aodTimeTick: Flow<Long> = keyguardInteractor.dozeTimeTick
+    val aodTimeTick: Flow<Long> =
+        keyguardInteractor.dozeTimeTick.filter { surfaceName == SURFACE_GENERAL_VIEW }
 
     @AssistedFactory
     interface Factory {
