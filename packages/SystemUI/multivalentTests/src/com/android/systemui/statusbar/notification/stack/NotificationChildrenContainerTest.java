@@ -119,6 +119,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
         mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
@@ -127,6 +128,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
 
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
         mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
         mChildrenContainer.setChildrenExpanded(true);
@@ -135,6 +137,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
         mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
         mGroup.setUserLocked(true);
