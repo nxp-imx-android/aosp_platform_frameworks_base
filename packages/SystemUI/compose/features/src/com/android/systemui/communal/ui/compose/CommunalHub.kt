@@ -1270,7 +1270,7 @@ private fun ToolbarButton(
     ) {
         OutlinedButton(
             onClick = onClick,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onPrimaryContainer),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.primary),
             border = BorderStroke(width = 2.0.dp, color = colors.primary),
             contentPadding = Dimensions.ButtonPadding,
         ) {
