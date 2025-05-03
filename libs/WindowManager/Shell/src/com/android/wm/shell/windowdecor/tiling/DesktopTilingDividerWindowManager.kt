@@ -72,6 +72,7 @@ class DesktopTilingDividerWindowManager(
         )
     private var setTouchRegion = true
     private val maxRoundedCornerRadius = getMaxRoundedCornerRadius()
+    private var runningAnimator: ValueAnimator? = null
 
     /**
      * Gets bounds of divider window with screen based coordinate on the param Rect.
@@ -151,7 +152,7 @@ class DesktopTilingDividerWindowManager(
         getDividerBounds(tmpDividerBounds)
         dividerView.setup(this, tmpDividerBounds, handleRegionSize, isDarkMode)
         val dividerAnimatorT = transactionSupplier.get()
-        val dividerAnimator =
+        runningAnimator =
             ValueAnimator.ofFloat(0f, 1f).apply {
                 duration = DIVIDER_FADE_IN_ALPHA_DURATION
                 addUpdateListener {
@@ -174,12 +175,13 @@ class DesktopTilingDividerWindowManager(
 
                         override fun onAnimationEnd(animation: Animator) {
                             dividerAnimatorT.setAlpha(leash, 1f).apply()
-                            dividerShown = true
+                            runningAnimator = null
                         }
                     }
                 )
             }
-        dividerAnimator.start()
+        runningAnimator?.start()
+        dividerShown = true
         viewHost = surfaceControlViewHost
         tilingDividerView = dividerView
         updateTouchRegion()
@@ -201,15 +203,21 @@ class DesktopTilingDividerWindowManager(
         if (!dividerShown) {
             return
         }
+        cancelAnimation()
         val t = transactionSupplier.get()
         t.hide(leash)
         t.apply()
         dividerShown = false
     }
 
+    fun cancelAnimation() {
+        runningAnimator?.removeAllUpdateListeners()
+        runningAnimator?.cancel()
+        runningAnimator = null
+    }
     /** Shows the divider bar. */
     fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
-        if (dividerShown) return
+        if (dividerShown || runningAnimator != null) return
         val dividerAnimatorT = transactionSupplier.get()
         val dividerAnimDuration =
             if (isTilingVisibleAfterRecents) {
@@ -217,7 +225,7 @@ class DesktopTilingDividerWindowManager(
             } else {
                 DIVIDER_FADE_IN_ALPHA_DURATION
             }
-        val dividerAnimator =
+        runningAnimator =
             ValueAnimator.ofFloat(0f, 1f).apply {
                 duration = dividerAnimDuration
                 addUpdateListener {
@@ -231,12 +239,12 @@ class DesktopTilingDividerWindowManager(
 
                         override fun onAnimationEnd(animation: Animator) {
                             dividerAnimatorT.setAlpha(leash, 1f).apply()
-                            dividerShown = true
+                            runningAnimator = null
                         }
                     }
                 )
             }
-        dividerAnimator.start()
+        runningAnimator?.start()
         dividerShown = true
     }
 
@@ -302,6 +310,7 @@ class DesktopTilingDividerWindowManager(
      * hierarchy.y.
      */
     fun release() {
+        cancelAnimation()
         tilingDividerView = null
         viewHost.release()
         transactionSupplier.get().hide(leash).remove(leash).apply()

@@ -142,6 +142,31 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_removeDesk_invokesRemovalCallback() {
+        val transition = Binder()
+        val callback: () -> Unit = mock()
+        val removeTransition =
+            DeskTransition.RemoveDesk(
+                transition,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 5,
+                tasks = setOf(10, 11),
+                onDeskRemovedListener = null,
+                runOnTransitEnd = callback,
+            )
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(removeTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0),
+        )
+
+        verify(callback).invoke()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDesk_updatesRepository() {
         val transition = Binder()
         val change = Change(mock(), mock())

@@ -335,7 +335,6 @@ class DesktopTasksController(
                         RecentsTransitionStateListener.stateToString(state),
                     )
                     recentsTransitionState = state
-                    snapEventHandler.onOverviewAnimationStateChange(state)
                 }
             }
         )
@@ -498,8 +497,11 @@ class DesktopTasksController(
             returnToApp,
             activeDeskIdOnRecentsStart,
         )
+
         if (returnToApp) {
-            // Returning to the same desk, nothing to do.
+            // Returning to the same desk, notify the snap event handler of recents animation
+            // ending to the same desk.
+            snapEventHandler.onRecentsAnimationEndedToSameDesk()
             return
         }
         if (
@@ -692,6 +694,7 @@ class DesktopTasksController(
                                 deskId = deskId,
                                 tasks = emptySet(),
                                 onDeskRemovedListener = onDeskRemovedListener,
+                                runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                             )
                         )
                     } else {
@@ -739,6 +742,7 @@ class DesktopTasksController(
                             deskId = deskId,
                             tasks = emptySet(),
                             onDeskRemovedListener = onDeskRemovedListener,
+                            runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                         )
                     )
                     desksTransitionObserver.addPendingTransition(
@@ -3956,6 +3960,7 @@ class DesktopTasksController(
                     deskId = deskId,
                     tasks = tasksToRemove,
                     onDeskRemovedListener = onDeskRemovedListener,
+                    runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
                 )
             )
         }

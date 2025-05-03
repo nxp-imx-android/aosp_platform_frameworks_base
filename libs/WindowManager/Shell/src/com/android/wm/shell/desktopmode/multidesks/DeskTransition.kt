@@ -33,6 +33,22 @@ sealed interface DeskTransition {
         val tasks: Set<Int>,
         val onDeskRemovedListener: OnDeskRemovedListener?,
     ) : DeskTransition {
+        constructor(
+            token: IBinder,
+            displayId: Int,
+            deskId: Int,
+            tasks: Set<Int>,
+            onDeskRemovedListener: OnDeskRemovedListener?,
+            // TODO(b/415259520): Consolidate desk removed listeners and callback lambdas
+            // after verifying that the call order before and after repository does not matter
+            // for [DesktopDisplayEventHandler].
+            runOnTransitEnd: (() -> Unit)?,
+        ) : this(token, displayId, deskId, tasks, onDeskRemovedListener) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+
+        var runOnTransitEnd: (() -> Unit)? = null
+
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 

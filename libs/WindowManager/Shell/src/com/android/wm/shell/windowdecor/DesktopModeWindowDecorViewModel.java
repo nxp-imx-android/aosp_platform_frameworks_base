@@ -1005,9 +1005,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onOverviewAnimationStateChange(
-            @RecentsTransitionStateListener.RecentsTransitionState int state) {
-        mDesktopTilingDecorViewModel.onOverviewAnimationStateChange(state);
+    public void onRecentsAnimationEndedToSameDesk() {
+        mDesktopTilingDecorViewModel.onOverviewAnimationEndedToSameDesk();
     }
 
     @Override
@@ -1037,6 +1036,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             boolean desktopModeSupportedOnNewDisplay) {
         mDesktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId,
                 desktopModeSupportedOnNewDisplay);
+    }
+
+    @Override
+    public void onDeskRemoved(int deskId) {
+        mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
     }
 
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
