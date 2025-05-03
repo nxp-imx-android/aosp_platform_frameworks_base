@@ -133,25 +133,20 @@ fun NavBarPill(
                         contentDescription = action.label,
                         modifier = Modifier.size(16.dp).clip(CircleShape),
                     )
-                }
-
-                if (
-                    actions.size == 1 ||
-                        (actions.isNotEmpty() && actions.last().attribution != null)
-                ) {
-                    val lastAction = actions.last()
-                    Text(
-                        text = lastAction.label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = outlineColor,
-                    )
-                    if (lastAction.attribution != null) {
+                    if (actions.size == 1 || action.attribution != null) {
                         Text(
-                            text = lastAction.attribution,
+                            text = action.label,
                             style = MaterialTheme.typography.labelSmall,
                             color = outlineColor,
-                            modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
                         )
+                        if (action.attribution != null) {
+                            Text(
+                                text = action.attribution,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = outlineColor,
+                                modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
+                            )
+                        }
                     }
                 }
             }
