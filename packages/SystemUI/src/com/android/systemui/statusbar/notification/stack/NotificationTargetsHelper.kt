@@ -222,12 +222,7 @@ class NotificationTargetsHelper @Inject constructor() {
                 },
         )
 
-    private fun ExpandableView?.isValidMagneticBoundary(): Boolean =
-        when (this) {
-            is NotificationShelf,
-            is SectionHeaderView -> true
-            else -> false
-        }
+    private fun ExpandableView?.isValidMagneticBoundary(): Boolean = this is NotificationShelf
 
     private fun ExpandableView.isValidMagneticTargetForSwiped(
         viewSwiped: ExpandableView,
