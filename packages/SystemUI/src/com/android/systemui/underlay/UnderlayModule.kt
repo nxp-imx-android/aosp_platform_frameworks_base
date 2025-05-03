@@ -17,6 +17,8 @@
 package com.android.systemui.underlay
 
 import com.android.systemui.CoreStartable
+import com.android.systemui.underlay.data.repository.UnderlayRepository
+import com.android.systemui.underlay.data.repository.UnderlayRepositoryImpl
 import com.android.systemui.underlay.ui.startable.UnderlayCoreStartable
 import dagger.Binds
 import dagger.Module
@@ -30,4 +32,6 @@ interface UnderlayModule {
     @IntoMap
     @ClassKey(UnderlayCoreStartable::class)
     fun bindUnderlayCoreStartable(startable: UnderlayCoreStartable): CoreStartable
+
+    @Binds fun bindsUnderlayRepository(impl: UnderlayRepositoryImpl): UnderlayRepository
 }

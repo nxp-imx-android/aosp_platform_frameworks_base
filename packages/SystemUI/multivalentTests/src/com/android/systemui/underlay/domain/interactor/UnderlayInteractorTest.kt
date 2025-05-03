@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import android.content.applicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.collectLastValue
-import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
-import com.android.systemui.underlay.data.repository.UnderlayRepository
+import com.android.systemui.underlay.data.repository.fake
+import com.android.systemui.underlay.data.repository.underlayRepository
 import com.android.systemui.underlay.shared.model.ActionModel
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -42,13 +41,7 @@ class UnderlayInteractorTest : SysuiTestCase() {
     fun isUnderlayAttached_whenCreated_true() =
         kosmos.runTest {
             val isUnderlayAttached by collectLastValue(underlayInteractor.isUnderlayAttached)
-            runCurrent()
-
-            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
-                context,
-                Intent(UnderlayRepository.ACTION_CREATE_UNDERLAY),
-            )
-
+            underlayRepository.fake.setIsUnderlayAttached(true)
             assertThat(isUnderlayAttached).isTrue()
         }
 
@@ -56,13 +49,7 @@ class UnderlayInteractorTest : SysuiTestCase() {
     fun isUnderlayAttached_whenDestroyed_false() =
         kosmos.runTest {
             val isUnderlayAttached by collectLastValue(underlayInteractor.isUnderlayAttached)
-            runCurrent()
-
-            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
-                context,
-                Intent(UnderlayRepository.ACTION_DESTROY_UNDERLAY),
-            )
-
+            underlayRepository.fake.setIsUnderlayAttached(false)
             assertThat(isUnderlayAttached).isFalse()
         }
 
@@ -70,9 +57,7 @@ class UnderlayInteractorTest : SysuiTestCase() {
     fun isOverlayVisible_setTrue_true() =
         kosmos.runTest {
             val isOverlayVisible by collectLastValue(underlayInteractor.isOverlayVisible)
-
             underlayInteractor.setIsOverlayVisible(true)
-
             assertThat(isOverlayVisible).isTrue()
         }
 
@@ -80,9 +65,7 @@ class UnderlayInteractorTest : SysuiTestCase() {
     fun isOverlayVisible_setFalse_False() =
         kosmos.runTest {
             val isOverlayVisible by collectLastValue(underlayInteractor.isOverlayVisible)
-
             underlayInteractor.setIsOverlayVisible(false)
-
             assertThat(isOverlayVisible).isFalse()
         }
 
@@ -100,11 +83,10 @@ class UnderlayInteractorTest : SysuiTestCase() {
                             ),
                         label = "Sunday Morning",
                         attribution = null,
+                        intent = Intent(),
                     )
                 )
-
-            underlayInteractor.setActions(testActions)
-
+            underlayRepository.fake.setActions(testActions)
             assertThat(actions).isEqualTo(testActions)
         }
 }

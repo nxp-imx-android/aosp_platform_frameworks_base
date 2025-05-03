@@ -23,15 +23,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 class UnderlayInteractor @Inject constructor(private val repository: UnderlayRepository) {
-    val isUnderlayAttached: StateFlow<Boolean> = repository.isUnderlayAttached
-    val isOverlayVisible: StateFlow<Boolean> = repository.isOverlayVisible
+    val isUnderlayAttached: StateFlow<Boolean> = repository.isAttached
+    val isOverlayVisible: StateFlow<Boolean> = repository.isVisible
     val actions: StateFlow<List<ActionModel>> = repository.actions
 
     fun setIsOverlayVisible(visible: Boolean) {
-        repository.isOverlayVisible.update { visible }
-    }
-
-    fun setActions(actions: List<ActionModel>) {
-        repository.actions.update { actions }
+        repository.isVisible.update { visible }
     }
 }
