@@ -18,6 +18,11 @@ package com.android.server.biometrics.log;
 
 import static android.hardware.biometrics.BiometricFaceConstants.FACE_ACQUIRED_START;
 
+import static com.android.server.biometrics.log.BiometricFrameworkStatsLogger.actionToString;
+import static com.android.server.biometrics.log.BiometricFrameworkStatsLogger.authenticatedStateToString;
+import static com.android.server.biometrics.log.BiometricFrameworkStatsLogger.clientToString;
+import static com.android.server.biometrics.log.BiometricFrameworkStatsLogger.modalityToString;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -25,7 +30,9 @@ import android.hardware.SensorManager;
 import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricsProtoEnums;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -40,8 +47,8 @@ import java.util.Arrays;
  */
 public class BiometricLogger {
 
-    public static final String TAG = "BiometricLogger";
-    public static final boolean DEBUG = false;
+    private static final String TAG = "BiometricLogger";
+    private static final boolean VERBOSE = Build.IS_DEBUGGABLE && Log.isLoggable(TAG, Log.VERBOSE);
 
     private final Handler mHandler;
     private final int mStatsModality;
@@ -159,12 +166,12 @@ public class BiometricLogger {
                 mFirstAcquireTimeMs = System.currentTimeMillis();
             }
         }
-        if (DEBUG) {
-            Slog.v(TAG, "Acquired! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "Acquired! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
                     + ", IsCrypto: " + operationContext.isCrypto()
-                    + ", Action: " + mStatsAction
-                    + ", Client: " + mStatsClient
+                    + ", Action: " + actionAsString()
+                    + ", Client: " + clientAsString()
                     + ", AcquiredInfo: " + acquiredInfo
                     + ", VendorCode: " + vendorCode);
         }
@@ -189,17 +196,18 @@ public class BiometricLogger {
         final long latency = mFirstAcquireTimeMs != 0
                 ? (System.currentTimeMillis() - mFirstAcquireTimeMs) : -1;
 
-        if (DEBUG) {
-            Slog.v(TAG, "Error! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "Error! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
                     + ", IsCrypto: " + operationContext.isCrypto()
-                    + ", Action: " + mStatsAction
-                    + ", Client: " + mStatsClient
+                    + ", Action: " + actionAsString()
+                    + ", Client: " + clientAsString()
                     + ", Error: " + error
                     + ", VendorCode: " + vendorCode
                     + ", Latency: " + latency);
         } else {
-            Slog.v(TAG, "Error latency: " + latency);
+            Slog.d(TAG, "Error! Modality: " + modalityAsString()
+                    + ", latency: " + latency);
         }
 
         if (shouldSkipLogging()) {
@@ -242,17 +250,18 @@ public class BiometricLogger {
                 ? (System.currentTimeMillis() - mFirstAcquireTimeMs)
                 : -1;
 
-        if (DEBUG) {
-            Slog.v(TAG, "Authenticated! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "Authenticated! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
                     + ", IsCrypto: " + operationContext.isCrypto()
-                    + ", Client: " + mStatsClient
+                    + ", Client: " + clientAsString()
                     + ", RequireConfirmation: " + requireConfirmation
-                    + ", State: " + authState
+                    + ", State: " + authenticatedStateToString(authState)
                     + ", Latency: " + latency
                     + ", Lux: " + mALSProbe.getMostRecentLux());
         } else {
-            Slog.v(TAG, "Authentication latency: " + latency);
+            Slog.d(TAG, "Authenticated! Modality: " + modalityAsString()
+                    + ", latency: " + latency);
         }
 
         if (shouldSkipLogging()) {
@@ -272,16 +281,17 @@ public class BiometricLogger {
             return;
         }
 
-        if (DEBUG) {
-            Slog.v(TAG, "Enrolled! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "Enrolled! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
-                    + ", Client: " + mStatsClient
+                    + ", Client: " + clientAsString()
                     + ", Latency: " + latency
                     + ", Lux: " + mALSProbe.getMostRecentLux()
                     + ", Success: " + enrollSuccessful
                     + ", TemplateId: " + templateId);
         } else {
-            Slog.v(TAG, "Enroll latency: " + latency);
+            Slog.d(TAG, "Enrolled! Modality: " + modalityAsString()
+                    + ", latency: " + latency);
         }
 
         if (shouldSkipLogging()) {
@@ -299,11 +309,13 @@ public class BiometricLogger {
             return;
         }
 
-        if (DEBUG) {
-            Slog.v(TAG, "UnEnrolled! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "UnEnrolled! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
                     + ", reason: " + reason
                     + ", templateId: " + templateId);
+        } else {
+            Slog.d(TAG, "UnEnrolled! Modality: " + modalityAsString());
         }
 
         if (shouldSkipLogging()) {
@@ -320,8 +332,8 @@ public class BiometricLogger {
             return;
         }
 
-        if (DEBUG) {
-            Slog.v(TAG, "Enumerated! Modality: " + mStatsModality
+        if (VERBOSE) {
+            Slog.v(TAG, "Enumerated! Modality: " + modalityAsString()
                     + ", User: " + targetUserId
                     + ", result: " + result
                     + ", templateIdsHal: " + Arrays.toString(templateIdsHal)
@@ -376,5 +388,17 @@ public class BiometricLogger {
     @NonNull
     public CallbackWithProbe<Probe> getAmbientLightProbe(boolean startWithClient) {
         return new CallbackWithProbe<>(mALSProbe, startWithClient);
+    }
+
+    private String modalityAsString() {
+        return modalityToString(mStatsModality);
+    }
+
+    private String actionAsString() {
+        return actionToString(mStatsAction);
+    }
+
+    private String clientAsString() {
+        return clientToString(mStatsClient);
     }
 }
