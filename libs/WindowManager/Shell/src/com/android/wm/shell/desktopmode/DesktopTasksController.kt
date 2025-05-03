@@ -2828,10 +2828,20 @@ class DesktopTasksController(
         task: RunningTaskInfo,
         transition: IBinder,
     ): WindowContainerTransaction? {
-        logV("DesktopTasksController: handleHomeTaskLaunch")
-        val activeDeskId = taskRepository.getActiveDeskId(task.displayId) ?: return null
+        logV(
+            "DesktopTasksController: handleHomeTaskLaunch taskId=%s userId=%s currentUserId=%d",
+            task.taskId,
+            task.userId,
+            userId,
+        )
+        // On user-switches, the home task is launched and the request is dispatched before the
+        // user-switch is known by SysUI/Shell, so don't use the "current" repository.
+        val repository = userRepositories.getProfile(task.userId)
+        val activeDeskId = repository.getActiveDeskId(task.displayId) ?: return null
         val wct = WindowContainerTransaction()
         // TODO: b/393978539 - desktop-first displays may need to keep the desk active.
+        // TODO: b/415381304 - pass in the correct |userId| to |performDesktopExitCleanUp| to
+        //  ensure desk deactivation updates are applied to the right repository.
         val runOnTransitStart =
             performDesktopExitCleanUp(
                 wct = wct,

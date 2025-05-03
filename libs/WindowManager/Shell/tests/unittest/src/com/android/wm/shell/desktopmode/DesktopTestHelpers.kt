@@ -81,13 +81,16 @@ object DesktopTestHelpers {
             .setLastActiveTime(100)
             .build()
 
-    fun createHomeTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
+    fun createHomeTask(
+        displayId: Int = DEFAULT_DISPLAY,
+        userId: Int = DEFAULT_USER_ID,
+    ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_HOME)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
-            .setUserId(DEFAULT_USER_ID)
+            .setUserId(userId)
             .setLastActiveTime(100)
             .build()
 
