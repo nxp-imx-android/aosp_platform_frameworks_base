@@ -163,9 +163,9 @@ public final class MetricUtils {
     /**
      * Log device presence event changed.
      */
-    public static void logDevicePresenceEvent(Context context, String deviceProfileOrUuid,
-            String packageName, int event) {
-        int uid = getUidFromPackageName(context, packageName);
+    public static void logDevicePresenceEvent(int userId, Context context,
+            String deviceProfileOrUuid, String packageName, int event) {
+        int uid = getUidFromPackageName(userId, context, packageName);
         if (uid != PACKAGE_NOT_FOUND) {
             write(
                     DEVICE_PRESENCE_CHANGED,

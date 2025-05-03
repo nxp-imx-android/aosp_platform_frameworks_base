@@ -270,10 +270,11 @@ public final class PackageUtils {
     /**
      * Get UID from a packageName. Return -1 if the package is not found.
      */
-    public static int getUidFromPackageName(Context context, String packageName) {
+    public static int getUidFromPackageName(int userId, Context context, String packageName) {
         PackageManager packageManager = context.getPackageManager();
         try {
-            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, 0);
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfoAsUser(
+                    packageName, 0, userId);
             return applicationInfo.uid;
         } catch (PackageManager.NameNotFoundException e) {
             Slog.w(TAG, packageName + " is not found");
