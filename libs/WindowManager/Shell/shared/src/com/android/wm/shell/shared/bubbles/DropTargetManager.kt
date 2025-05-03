@@ -49,6 +49,7 @@ class DropTargetManager(
     private var morphRect: RectF = RectF(0f, 0f, 0f, 0f)
     private val isLayoutRtl = container.isLayoutRtl
     private val viewAnimatorsMap = mutableMapOf<View, ValueAnimator>()
+    private var onDropTargetsRemovedAction: Runnable? = null
 
     private companion object {
         const val MORPH_ANIM_DURATION = 250L
@@ -111,13 +112,27 @@ class DropTargetManager(
     /** Called when the drag ended. */
     fun onDragEnded() {
         val dropState = state ?: return
-        startFadeAnimation(dropTargetView, to = 0f) { container.removeView(dropTargetView) }
+        startFadeAnimation(dropTargetView, to = 0f) {
+            container.removeView(dropTargetView)
+            onDropTargetRemoved()
+        }
         startFadeAnimation(secondDropTargetView, to = 0f) {
             container.removeView(secondDropTargetView)
             secondDropTargetView = null
+            onDropTargetRemoved()
         }
         dragZoneChangedListener.onDragEnded(dropState.currentDragZone)
         state = null
+    }
+
+    /**
+     * Runs the provided action once all drop target views are removed from the container.
+     * If there are no drop target views currently present or being animated, the action will be
+     * executed immediately.
+     */
+    fun onDropTargetRemoved(action: Runnable) {
+        onDropTargetsRemovedAction = action
+        onDropTargetRemoved()
     }
 
     private fun updateDropTarget() {
@@ -189,6 +204,15 @@ class DropTargetManager(
         }
         viewAnimatorsMap[dropTargetView] = animator
         animator.start()
+    }
+
+    private fun onDropTargetRemoved() {
+        val action = onDropTargetsRemovedAction ?: return
+        if ((0 until container.childCount).any { container.getChildAt(it) is DropTargetView }) {
+            return
+        }
+        onDropTargetsRemovedAction = null
+        action.run()
     }
 
     /** Stores the current drag state. */
