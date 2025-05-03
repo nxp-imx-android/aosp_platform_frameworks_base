@@ -145,6 +145,7 @@ constructor(
         @VisibleForTesting const val AMBIENT_ACTION_FEATURE = 72
         // Surface that PCC wants to push cards into
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
+        // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
         private const val ACTION_CREATE_AMBIENT_CUE =
