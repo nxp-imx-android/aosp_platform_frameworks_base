@@ -17,6 +17,7 @@ package com.android.systemui.lowlightclock
 
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.os.Flags
 import android.os.UserHandle
 import com.android.dream.lowlight.LowLightDreamManager
 import com.android.internal.logging.UiEventLogger
@@ -28,6 +29,7 @@ import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
+import com.android.systemui.lowlight.AmbientLightModeMonitor
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
@@ -44,6 +46,7 @@ import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -87,34 +90,45 @@ constructor(
 
     /** Whether lowlight state is being forced to a specific value. */
     private val isLowLightForced: StateFlow<Boolean?> =
-        conflatedCallbackFlow {
-                commandRegistry.registerCommand(COMMAND_ROOT) { LowLightCommand { trySend(it) } }
-                awaitClose { commandRegistry.unregisterCommand(COMMAND_ROOT) }
-            }
-            .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = null)
+        if (Flags.lowLightDreamBehavior()) {
+            MutableStateFlow(null)
+        } else {
+            conflatedCallbackFlow {
+                    commandRegistry.registerCommand(COMMAND_ROOT) {
+                        LowLightCommand { trySend(it) }
+                    }
+                    awaitClose { commandRegistry.unregisterCommand(COMMAND_ROOT) }
+                }
+                .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = null)
+        }
 
     /** Whether the device is currently in a low-light environment. */
     private val isLowLightFromSensor =
-        conflatedCallbackFlow {
-                ambientLightModeMonitor.start { lowLightMode: Int -> trySend(lowLightMode) }
-                awaitClose { ambientLightModeMonitor.stop() }
-            }
-            .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
-            .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
-            .distinctUntilChanged()
-            .onEach { isLowLight ->
-                uiEventLogger.log(
-                    if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
-                    else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+        if (Flags.lowLightDreamBehavior()) {
+            MutableStateFlow(false)
+        } else {
+            conflatedCallbackFlow {
+                    ambientLightModeMonitor.start { lowLightMode: Int -> trySend(lowLightMode) }
+                    awaitClose { ambientLightModeMonitor.stop() }
+                }
+                .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
+                .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
+                .distinctUntilChanged()
+                .onEach { isLowLight ->
+                    uiEventLogger.log(
+                        if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
+                        else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+                    )
+                }
+                // AmbientLightModeMonitor only supports a single callback, so ensure this is
+                // re-used
+                // if there are multiple subscribers.
+                .stateIn(
+                    scope,
+                    started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                    initialValue = false,
                 )
-            }
-            // AmbientLightModeMonitor only supports a single callback, so ensure this is re-used
-            // if there are multiple subscribers.
-            .stateIn(
-                scope,
-                started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
-                initialValue = false,
-            )
+        }
 
     private val isLowLight: Flow<Boolean> =
         combine(isLowLightForced, isLowLightFromSensor) { forcedValue, sensorValue ->
@@ -139,6 +153,10 @@ constructor(
         )
 
     override fun start() {
+        if (Flags.lowLightDreamBehavior()) {
+            return
+        }
+
         scope.launch {
             if (lowLightDreamService != null) {
                 // Note that the dream service is disabled by default. This prevents the dream from
@@ -158,6 +176,7 @@ constructor(
             allOf(isScreenOn, dreamEnabled)
                 .flatMapLatestConflated { conditionsMet ->
                     if (conditionsMet) {
+                        // TODO(b/411522943): Re-evaluate if should be shown in direct-boot
                         // Force lowlight only if idle and in either direct-boot mode or in
                         // a lowlight environment.
                         allOf(

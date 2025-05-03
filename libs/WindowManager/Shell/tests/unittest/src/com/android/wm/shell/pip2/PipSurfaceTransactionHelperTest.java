@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
 import android.platform.test.annotations.EnableFlags;
@@ -62,6 +63,7 @@ public class PipSurfaceTransactionHelperTest {
     private static final int CORNER_RADIUS = 10;
     private static final int SHADOW_RADIUS = 20;
     private static final float MIRROR_OPACITY = 0.5f;
+    private static final Rect PIP_BOUNDS = new Rect(0, 0, 500, 500);
 
     private final BoxShadowSettings mLightBoxShadowSettings = new BoxShadowSettings();
     private final BorderSettings mLightBorderSettings = new BorderSettings();
@@ -222,5 +224,14 @@ public class PipSurfaceTransactionHelperTest {
         verify(mMockTransaction).setAlpha(eq(mTestLeash), eq(MIRROR_OPACITY));
         verify(mMockTransaction).setLayer(eq(mTestLeash), eq(Integer.MAX_VALUE));
         verify(mMockTransaction).show(eq(mTestLeash));
+    }
+
+    @Test
+    public void setPipTransformations_setsMatrixAndLayer() {
+        mPipSurfaceTransactionHelper.setPipTransformations(mTestLeash, mMockTransaction, PIP_BOUNDS,
+                PIP_BOUNDS, 0);
+
+        verify(mMockTransaction).setMatrix(eq(mTestLeash), any(), any());
+        verify(mMockTransaction).setLayer(eq(mTestLeash), eq(Integer.MAX_VALUE));
     }
 }

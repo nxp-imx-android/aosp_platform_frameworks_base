@@ -6628,8 +6628,18 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA);
         mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION);
 
+        // other userId also changed in the process
+        int alsoChangedUid = UserHandle.getUid(20, UserHandle.getAppId(UID_O));
+        mHelper.createReservedChannel(PKG_O, alsoChangedUid, TYPE_NEWS);
+
+        // Also create some for other users, same package; make sure those are not affected.
+        int otherUserUid = UserHandle.getUid(15, UserHandle.getAppId(UID_O));
+        mHelper.createReservedChannel(PKG_O, otherUserUid, TYPE_SOCIAL_MEDIA);
+
+
         // Ban news & social media types, leave recs as-is
-        mHelper.updateReservedChannels(List.of(TYPE_NEWS, TYPE_SOCIAL_MEDIA), false);
+        mHelper.updateReservedChannels(List.of(UserHandle.getUserId(UID_O), 20),
+                List.of(TYPE_NEWS, TYPE_SOCIAL_MEDIA), false);
 
         assertThat(
                 mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, true).isDeleted()).isTrue();
@@ -6637,11 +6647,20 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 true).isDeleted()).isTrue();
         assertThat(
                 mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, true).isDeleted()).isFalse();
+        assertThat(mHelper.getNotificationChannel(PKG_O, alsoChangedUid, NEWS_ID,
+                true).isDeleted()).isTrue();
+
+        // other user's channel unchanged
+        assertThat(mHelper.getNotificationChannel(PKG_O, otherUserUid, SOCIAL_MEDIA_ID,
+                true).isDeleted()).isFalse();
 
         // Enable news (re-enable) and promos (no existing channel; should do nothing)
-        mHelper.updateReservedChannels(List.of(TYPE_NEWS, TYPE_PROMOTION), true);
+        mHelper.updateReservedChannels(List.of(UserHandle.getUserId(UID_O), 20),
+                List.of(TYPE_NEWS, TYPE_PROMOTION), true);
         assertThat(
                 mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, true).isDeleted()).isFalse();
+        assertThat(mHelper.getNotificationChannel(PKG_O, alsoChangedUid, NEWS_ID,
+                true).isDeleted()).isFalse();
         assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, PROMOTIONS_ID, true)).isNull();
 
         // Other channels unaffected
@@ -6649,6 +6668,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 true).isDeleted()).isTrue();
         assertThat(
                 mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, true).isDeleted()).isFalse();
+        assertThat(mHelper.getNotificationChannel(PKG_O, otherUserUid, SOCIAL_MEDIA_ID,
+                true).isDeleted()).isFalse();
     }
 
     @Test

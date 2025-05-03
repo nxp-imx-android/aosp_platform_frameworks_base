@@ -120,6 +120,7 @@ import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
+import com.android.systemui.statusbar.data.repository.LightBarControllerStore;
 import com.android.systemui.statusbar.phone.AutoHideControllerStore;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.LightBarController;
@@ -213,7 +214,7 @@ public class NavigationBarTest extends SysuiTestCase {
     @Mock
     private LightBarController mLightBarController;
     @Mock
-    private LightBarController.Factory mLightBarcontrollerFactory;
+    private LightBarControllerStore mLightBarControllerStore;
     @Mock
     private WindowManager mWindowManager;
     @Mock
@@ -257,8 +258,7 @@ public class NavigationBarTest extends SysuiTestCase {
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        when(mLightBarcontrollerFactory.create(any(Context.class))).thenReturn(mLightBarController);
+        when(mLightBarControllerStore.forDisplay(anyInt())).thenReturn(mLightBarController);
         when(mNavigationBarView.getHomeButton()).thenReturn(mHomeButton);
         when(mNavigationBarView.getRecentsButton()).thenReturn(mRecentsButton);
         when(mNavigationBarView.getAccessibilityButton()).thenReturn(mAccessibilityButton);
@@ -706,8 +706,7 @@ public class NavigationBarTest extends SysuiTestCase {
                 mFakeExecutor,
                 mUiEventLogger,
                 mNavBarHelper,
-                mLightBarController,
-                mLightBarcontrollerFactory,
+                mLightBarControllerStore,
                 mAutoHideControllerStore,
                 Optional.of(mTelecomManager),
                 mInputMethodManager,

@@ -43,6 +43,7 @@ public class SettingsSpinnerPreference extends Preference
     private AdapterView.OnItemSelectedListener mListener;
     private int mPosition;
     private boolean mShouldPerformClick;
+    private int mOffset;
 
     /**
      * Perform inflation from XML and apply a class-specific base style.
@@ -104,6 +105,14 @@ public class SettingsSpinnerPreference extends Preference
             default -> R.layout.settings_spinner_preference;
         };
         setLayoutResource(layoutRes);
+
+        int size = switch (style) {
+            case 1, 4 -> R.dimen.settingslib_spinner_dropdown_vertical_offset_large;
+            case 2, 5 -> R.dimen.settingslib_spinner_dropdown_vertical_offset_full;
+            default -> R.dimen.settingslib_spinner_dropdown_vertical_offset_normal;
+        };
+        mOffset =  context.getResources().getDimensionPixelSize(size);
+
         a.recycle();
     }
 
@@ -153,6 +162,7 @@ public class SettingsSpinnerPreference extends Preference
         spinner.setSelection(mPosition);
         spinner.setOnItemSelectedListener(mOnSelectedListener);
         spinner.setLongClickable(false);
+        spinner.setDropDownVerticalOffset(mOffset);
         spinner.setAccessibilityDelegate(
                 new View.AccessibilityDelegate() {
                     @Override

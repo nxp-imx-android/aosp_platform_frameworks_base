@@ -1215,8 +1215,8 @@
         }
     </string>
 
-    <!-- Modes: title for when multiple modes are active.[CHAR LIMIT=20] -->
-    <string name="zen_modes_multiple_on_title">%s Modes</string>
+    <!-- Modes: title for when multiple modes are active; number is >= 2 [CHAR LIMIT=20] -->
+    <string name="zen_modes_multiple_on_title"><xliff:g id="number" example="3">%s</xliff:g> Modes</string>
 
     <!-- Modes: subtitle for when multiple modes are active. Plural. [CHAR LIMIT=20] -->
     <string name="zen_modes_multiple_on_status">On</string>
@@ -1765,7 +1765,7 @@
     <string name="keyguard_indication_after_adaptive_auth_lock">Device locked\nFailed authentication</string>
 
     <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
-    <string name="keyguard_indication_after_watch_disconnected">Locked out by your watch</string>
+    <string name="keyguard_indication_after_watch_disconnected">Locked by your watch</string>
 
     <!-- Accessibility string for current zen mode and selected exit condition. A template that simply concatenates existing mode string and the current condition description. [CHAR LIMIT=20] -->
     <string name="zen_mode_and_condition"><xliff:g id="zen_mode" example="Priority interruptions only">%1$s</xliff:g>. <xliff:g id="exit_condition" example="For one hour">%2$s</xliff:g></string>
@@ -2645,6 +2645,9 @@
     <!-- Accessibility description of action to remove QS tile on click. [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_remove_tile_action">Remove tile</string>
 
+    <!-- Accessibility description of action to place the QS tile on click. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_place_tile_action">Place tile</string>
+
     <!-- Accessibility description of action to select the QS tile to place on click. It will read as "Double-tap to toggle placement mode" in screen readers [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_toggle_placement_mode">toggle placement mode</string>
 
@@ -2653,6 +2656,9 @@
 
     <!-- Accessibility action of action to add QS tile to end. [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_tile_add_action">Add tile to the last position</string>
+
+    <!-- Accessibility action of action to add a named QS tile to the end. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_named_tile_add_action">Add <xliff:g id="name" example="Internet">%1$s</xliff:g> to the last position</string>
 
     <!-- Accessibility action for context menu to move QS tile [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_tile_start_move">Move tile</string>
@@ -3501,6 +3507,10 @@
     <string name="ongoing_call_content_description">Ongoing call</string>
     <!-- Content description for a chip in the status bar showing that the user currently has an ongoing activity. [CHAR LIMIT=NONE]-->
     <string name="ongoing_notification_extra_content_description">Ongoing</string>
+    <!-- Custom accessibility action text to tell that user that tapping on the status bar chip will show/expand the notification associated with that chip. [CHAR LIMIT=NONE]-->
+    <string name="status_bar_chip_custom_a11y_action_expand_notification">expand notification</string>
+    <!-- Custom accessibility action text to tell that user that tapping on the status bar chip will hide/collapse the notification associated with that chip. [CHAR LIMIT=NONE]-->
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification">collapse notification</string>
 
     <!-- Provider Model: Default title of the mobile network in the mobile layout. [CHAR LIMIT=50] -->
     <string name="mobile_data_settings_title">Mobile data</string>

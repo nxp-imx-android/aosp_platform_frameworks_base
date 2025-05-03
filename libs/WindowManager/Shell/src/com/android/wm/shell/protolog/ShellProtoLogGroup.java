@@ -59,6 +59,8 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
             Consts.TAG_WM_SHELL),
     WM_SHELL_DESKTOP_MODE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
             Consts.TAG_WM_DESKTOP_MODE),
+  WM_SHELL_WINDOW_DECORATION(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
+            Consts.TAG_WM_WINDOW_DECORATION),
     WM_SHELL_FLOATING_APPS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM_SHELL),
     WM_SHELL_FOLDABLE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
@@ -140,6 +142,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_STARTING_WINDOW = "ShellStartingWindow";
         private static final String TAG_WM_SPLIT_SCREEN = "ShellSplitScreen";
         private static final String TAG_WM_DESKTOP_MODE = "ShellDesktopMode";
+        private static final String TAG_WM_WINDOW_DECORATION = "ShellWindowDecoration";
         private static final String TAG_WM_COMPAT_UI = "CompatUi";
         private static final String TAG_WM_APP_COMPAT = "AppCompat";
         private static final String TAG_WM_BUBBLES = "Bubbles";

@@ -1714,7 +1714,7 @@
     <string name="wireless_display_route_description" msgid="8297563323032966831">"வயர்லெஸ் காட்சி"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"Cast"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"சாதனத்துடன் இணைக்கவும்"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"ஸ்கிரீனை சாதனத்தில் திரையிடு"</string>
+    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"ஸ்கிரீனை சாதனத்தில் அலைபரப்பு"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"சாதனங்களைத் தேடுகிறது..."</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"அமைப்புகள்"</string>
     <string name="media_route_controller_disconnect" msgid="7362617572732576959">"துண்டி"</string>
@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"மிகக் குறைவான வெளிச்சம்"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"செவித்துணைக் கருவிகள்"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ஆட்டோ கிளிக்"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"மவுஸ் பட்டன்கள்"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"இணைப்புநீக்கப்பட்டது"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"இணைக்கப்பட்டுள்ளது"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"செயலில் உள்ளது"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"நகர்த்தும்"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"அழுத்திப் பிடியுங்கள்"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"இடைநிறுத்து"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"நிலை"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"மேலே நகர்த்து"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"கீழே நகர்த்து"</string>

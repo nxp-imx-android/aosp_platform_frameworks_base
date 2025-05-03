@@ -192,7 +192,7 @@ constructor(
             scope.launch {
                 combine(
                         keyguardInteractor.isKeyguardOccluded,
-                        keyguardInteractor.isDreaming,
+                        keyguardInteractor.isAbleToDream,
                         ::Pair,
                     )
                     // Debounce signals since there is a race condition between the occluded and

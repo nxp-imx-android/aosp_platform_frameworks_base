@@ -47,6 +47,7 @@ import android.compat.annotation.EnabledAfter;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.os.Binder;
@@ -440,6 +441,25 @@ public class VirtualDeviceManagerService extends SystemService {
                     activityListener, soundEffectListener);
         }
 
+        @EnforcePermission(android.Manifest.permission.COMPUTER_CONTROL_ACCESS)
+        @Override // Binder call
+        public IVirtualDevice createLocalVirtualDevice(
+                IBinder token,
+                AttributionSource attributionSource,
+                @NonNull VirtualDeviceParams params,
+                @NonNull IVirtualDeviceActivityListener activityListener,
+                @NonNull IVirtualDeviceSoundEffectListener soundEffectListener) {
+            createLocalVirtualDevice_enforcePermission();
+            if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
+                throw new IllegalStateException("Cannot create VirtualDevice - flag disabled");
+            }
+            Objects.requireNonNull(activityListener);
+            Objects.requireNonNull(soundEffectListener);
+
+            return createVirtualDevice(token, attributionSource, null, params, activityListener,
+                    soundEffectListener);
+        }
+
         private IVirtualDevice createVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
@@ -447,7 +467,6 @@ public class VirtualDeviceManagerService extends SystemService {
                 @NonNull VirtualDeviceParams params,
                 @Nullable IVirtualDeviceActivityListener activityListener,
                 @Nullable IVirtualDeviceSoundEffectListener soundEffectListener) {
-            createVirtualDevice_enforcePermission();
             attributionSource.enforceCallingUid();
 
             final String packageName = attributionSource.getPackageName();
@@ -685,6 +704,12 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override
         public @NonNull VirtualDeviceManager.VirtualDevice createVirtualDevice(
                 @NonNull VirtualDeviceParams params) {
+            if (getContext().checkCallingOrSelfPermission(
+                    android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                throw new SecurityException("Missing CREATE_VIRTUAL_DEVICE permission");
+            }
+
             Objects.requireNonNull(params, "params must not be null");
             Objects.requireNonNull(params.getName(), "virtual device name must not be null");
             IVirtualDevice virtualDevice = mImpl.createVirtualDevice(

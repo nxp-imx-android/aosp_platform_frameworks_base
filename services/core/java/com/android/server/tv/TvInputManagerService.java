@@ -91,6 +91,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.text.TextUtils;
@@ -3219,6 +3220,14 @@ public final class TvInputManagerService extends SystemService {
                 }
             }
             mTvInputHardwareManager.dump(fd, writer, args);
+        }
+
+        @Override
+        public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
+                String[] args, ShellCallback callback, android.os.ResultReceiver resultReceiver)
+                throws RemoteException {
+            (new TvInputManagerShellCommand(TvInputManagerService.this)).exec(
+                    this, in, out, err, args, callback, resultReceiver);
         }
     }
 

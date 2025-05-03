@@ -59,7 +59,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -112,13 +111,15 @@ constructor(
      */
     val canShowEditMode =
         allOf(
-                keyguardTransitionInteractor.isFinishedIn(
-                    content = Scenes.Gone,
-                    stateWithoutSceneContainer = KeyguardState.GONE,
-                ),
-                communalInteractor.editModeOpen,
-            )
-            .filter { it }
+            keyguardTransitionInteractor.isFinishedIn(
+                content = Scenes.Gone,
+                stateWithoutSceneContainer = KeyguardState.GONE,
+            ),
+            communalInteractor.editModeOpen,
+        )
+
+    /** Emits when the hub has transitioned out, and edit mode is ready to transition in. */
+    val hubTransitionOut = canShowEditMode
 
     // Only widgets are editable.
     override val communalContent: Flow<List<CommunalContentModel>> =

@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.notification.collection
 
+import androidx.annotation.VisibleForTesting
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import java.util.Collections
@@ -27,8 +28,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
 
+    override val bucket: Int = spec.bucket
+
     /** The model used by UI. */
-    val bundleRepository = BundleRepository(spec.titleTextResId)
+    val bundleRepository = BundleRepository(spec.titleTextResId, spec.icon)
 
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     val isSensitive: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -47,16 +50,19 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
     @InternalNotificationsApi
     fun addChild(child: ListEntry) {
         _children.add(child)
+        updateTotalCount()
     }
 
     @InternalNotificationsApi
     fun removeChild(child: ListEntry) {
         _children.remove(child)
+        updateTotalCount()
     }
 
     @InternalNotificationsApi
     fun clearChildren() {
         _children.clear()
+        updateTotalCount()
     }
 
     override fun asListEntry(): ListEntry? {
@@ -74,4 +80,24 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
      */
     val isClearable: Boolean
         get() = _children.all { it.representativeEntry?.sbn?.isClearable != false }
+
+    /**
+     * The total count of [NotificationEntry]s within bundle. Notification updates trigger pipeline
+     * rebuilds, so updates to group children will be reflected in this count.
+     */
+    @VisibleForTesting
+    fun updateTotalCount() {
+        var count = 0
+        for (child in _children) {
+            when (child) {
+                is NotificationEntry -> {
+                    count++
+                }
+                is GroupEntry -> {
+                    count += child.getChildren().size
+                }
+            }
+        }
+        bundleRepository.numberOfChildren = count
+    }
 }

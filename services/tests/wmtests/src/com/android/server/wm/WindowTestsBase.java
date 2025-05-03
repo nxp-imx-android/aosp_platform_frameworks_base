@@ -632,8 +632,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     /** Creates a {@link TaskDisplayArea} right above the default one. */
     static TaskDisplayArea createTaskDisplayArea(DisplayContent displayContent,
             WindowManagerService service, String name, int displayAreaFeature) {
-        final TaskDisplayArea newTaskDisplayArea = new TaskDisplayArea(
-                displayContent, service, name, displayAreaFeature);
+        final TaskDisplayArea newTaskDisplayArea = new TaskDisplayArea(service, name,
+                displayAreaFeature, false /* createdByOrganizer */, true /* canHostHomeTask */);
         final TaskDisplayArea defaultTaskDisplayArea = displayContent.getDefaultTaskDisplayArea();
 
         // Insert the new TDA to the correct position.

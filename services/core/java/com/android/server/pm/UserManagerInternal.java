@@ -617,6 +617,14 @@ public abstract class UserManagerInternal {
     public abstract @UserIdInt int getBootUser(boolean waitUntilSet)
             throws UserManager.CheckedUserOperationException;
 
+    // NOTE: used only by HsumBootUserInitializer, ideally it should be package-protected, but it's
+    // located in a different package.
+    /**
+     * Same as {@link UserManager#setBootUser(android.os.UserHandle)}, but without checking
+     * permissions.
+     */
+    public abstract void setBootUserId(@UserIdInt int userId);
+
     /**
      * Returns the user id of the communal profile, or {@link android.os.UserHandle#USER_NULL}
      * if there is no such user.

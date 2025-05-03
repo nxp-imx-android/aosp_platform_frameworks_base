@@ -246,4 +246,21 @@ public class SupervisionManager {
         }
         return null;
     }
+
+    /**
+     * Returns whether supervision credentials are set up.
+     *
+     * @hide
+     */
+    @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
+    public boolean hasSupervisionCredentials() {
+        if (mService != null) {
+            try {
+                return mService.hasSupervisionCredentials();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return false;
+    }
 }

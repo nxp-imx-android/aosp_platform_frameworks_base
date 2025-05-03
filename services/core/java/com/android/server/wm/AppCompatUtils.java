@@ -191,6 +191,10 @@ final class AppCompatUtils {
         appCompatTaskInfo.setIsFromLetterboxDoubleTap(reachabilityOverrides.isFromDoubleTap());
 
         appCompatTaskInfo.topActivityAppBounds.set(getAppBounds(top));
+        appCompatTaskInfo.topNonResizableActivityAspectRatio =
+                top.getAppCompatDisplayInsets() != null
+                        ? top.getAppCompatDisplayInsets().mAspectRatio
+                        : TaskInfo.PROPERTY_VALUE_UNSET;
         final boolean isTopActivityLetterboxed = top.areBoundsLetterboxed();
         appCompatTaskInfo.setTopActivityLetterboxed(isTopActivityLetterboxed);
         if (isTopActivityLetterboxed) {
@@ -322,6 +326,7 @@ final class AppCompatUtils {
         info.topActivityLetterboxBounds = null;
         info.cameraCompatTaskInfo.freeformCameraCompatMode =
                 CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED;
+        info.topNonResizableActivityAspectRatio = TaskInfo.PROPERTY_VALUE_UNSET;
         info.clearTopActivityFlags();
     }
 }

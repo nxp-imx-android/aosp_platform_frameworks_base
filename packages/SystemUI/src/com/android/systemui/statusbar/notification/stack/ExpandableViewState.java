@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.statusbar.notification.row.ExpandableView.HEIGHT_PROPERTY;
 import static com.android.systemui.statusbar.notification.row.ExpandableView.TAG_ANIMATOR_HEIGHT;
 
@@ -24,15 +23,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
-import android.util.FloatProperty;
 import android.view.View;
-
-import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.notification.PhysicsProperty;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -415,5 +410,12 @@ public class ExpandableViewState extends ViewState {
         super.cancelAnimations(view);
         abortAnimation(view, TAG_ANIMATOR_HEIGHT);
         abortAnimation(view, TAG_ANIMATOR_TOP_INSET);
+    }
+
+    @Override
+    public void finishAnimations(View view) {
+        super.finishAnimations(view);
+        skipAnimationToEnd(view, TAG_ANIMATOR_HEIGHT);
+        skipAnimationToEnd(view, TAG_ANIMATOR_TOP_INSET);
     }
 }

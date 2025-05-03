@@ -51,6 +51,8 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.text.Annotation;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
@@ -81,6 +83,8 @@ import com.android.systemui.wmshell.BubblesManager;
 
 import java.lang.annotation.Retention;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The guts of a conversation notification revealed when performing a long press.
@@ -303,11 +307,52 @@ public class NotificationConversationInfo extends LinearLayout implements
         // Delegate
         bindDelegate();
     }
-
+    private boolean showSummarizationFeedback() {
+        return NmSummarizationUiFlag.isEnabled()
+                && !TextUtils.isEmpty(mRanking.getSummarization());
+    }
+    private static boolean isAnimatedReply(CharSequence choice) {
+        if (choice instanceof Spanned) {
+            Spanned spanned = (Spanned) choice;
+            Annotation[] annotations = spanned.getSpans(0, choice.length(), Annotation.class);
+            if (annotations != null) { // Add null check
+                for (Annotation annotation : annotations) {
+                    if ("isAnimatedReply".equals(annotation.getKey())
+                            && "1".equals(annotation.getValue())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    private boolean showAnimatedFeedback() {
+        boolean hasAnimatedSmartReplies = false;
+        boolean hasAnimatedSmartActions = false;
+        // Check for animated smart replies
+        List<CharSequence> smartReplies = mRanking.getSmartReplies();
+            for (CharSequence reply : smartReplies) {
+                if (isAnimatedReply(reply)) {
+                    hasAnimatedSmartReplies = true;
+                    break;
+                }
+            }
+        // Check for animated actions
+        List<Notification.Action> smartActions = mRanking.getSmartActions();
+            for (Notification.Action action : smartActions) {
+                if (action != null && action.getExtras() != null &&
+                        action.getExtras().getBoolean(Notification.Action.EXTRA_IS_ANIMATED,
+                                false)) {
+                    hasAnimatedSmartActions = true;
+                    break;
+                }
+            }
+        return com.android.systemui.Flags.notificationAnimatedActionsTreatment() &&
+                (hasAnimatedSmartActions || hasAnimatedSmartReplies);
+    }
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
-        if (!NmSummarizationUiFlag.isEnabled()
-                || TextUtils.isEmpty(mRanking.getSummarization())) {
+        if (!showSummarizationFeedback() && !showAnimatedFeedback()) {
             feedbackButton.setVisibility(GONE);
         } else {
             Intent intent = NotificationInfo.getAssistantFeedbackIntent(

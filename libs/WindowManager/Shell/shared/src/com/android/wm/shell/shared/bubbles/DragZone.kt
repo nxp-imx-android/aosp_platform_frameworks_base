@@ -35,6 +35,9 @@ sealed interface DragZone {
     /** The bounds of the drop target associated with this drag zone. */
     val dropTarget: DropTargetRect?
 
+    /** The bounds of the second drop target associated with this drag zone. */
+    val secondDropTarget: DropTargetRect?
+
     fun contains(x: Int, y: Int) = bounds.contains(x, y)
 
     sealed interface Bounds {
@@ -54,39 +57,45 @@ sealed interface DragZone {
     /** Represents the bubble drag area on the screen. */
     sealed class Bubble(
         override val bounds: Bounds.RectZone,
-        override val dropTarget: DropTargetRect
+        override val dropTarget: DropTargetRect,
     ) : DragZone {
         data class Left(
             override val bounds: Bounds.RectZone,
-            override val dropTarget: DropTargetRect
+            override val dropTarget: DropTargetRect,
+            override val secondDropTarget: DropTargetRect? = null,
         ) : Bubble(bounds, dropTarget)
 
         data class Right(
             override val bounds: Bounds.RectZone,
-            override val dropTarget: DropTargetRect
+            override val dropTarget: DropTargetRect,
+            override val secondDropTarget: DropTargetRect? = null,
         ) : Bubble(bounds, dropTarget)
     }
 
     /** Represents dragging to Desktop Window. */
     data class DesktopWindow(
         override val bounds: Bounds.RectZone,
-        override val dropTarget: DropTargetRect
+        override val dropTarget: DropTargetRect,
+        override val secondDropTarget: DropTargetRect? = null,
     ) : DragZone
 
     /** Represents dragging to Full Screen. */
     data class FullScreen(
         override val bounds: Bounds.RectZone,
-        override val dropTarget: DropTargetRect
+        override val dropTarget: DropTargetRect,
+        override val secondDropTarget: DropTargetRect? = null,
     ) : DragZone
 
     /** Represents dragging to dismiss. */
     data class Dismiss(override val bounds: Bounds.CircleZone) : DragZone {
         override val dropTarget: DropTargetRect? = null
+        override val secondDropTarget: DropTargetRect? = null
     }
 
     /** Represents dragging to enter Split or replace a Split app. */
     sealed class Split(override val bounds: Bounds.RectZone) : DragZone {
         override val dropTarget: DropTargetRect? = null
+        override val secondDropTarget: DropTargetRect? = null
 
         data class Left(override val bounds: Bounds.RectZone) : Split(bounds)
 

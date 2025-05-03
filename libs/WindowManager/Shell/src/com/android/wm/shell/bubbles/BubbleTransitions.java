@@ -21,12 +21,13 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.View.INVISIBLE;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;
@@ -297,29 +298,6 @@ public class BubbleTransitions {
         pluckT.addTransactionCommittedListener(mMainExecutor, onPlucked::run);
         fromView.getViewRootImpl().applyTransactionOnDraw(pluckT);
         fromView.setVisibility(INVISIBLE);
-    }
-
-    /**
-     * Returns a {@link WindowContainerTransaction} that includes the necessary operations of
-     * entering or leaving as Bubble.
-     */
-    private WindowContainerTransaction getBubbleTransaction(@NonNull WindowContainerToken token,
-            boolean toBubble) {
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setWindowingMode(token,
-                toBubble ? WINDOWING_MODE_MULTI_WINDOW : WINDOWING_MODE_UNDEFINED);
-        wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */);
-        wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */);
-        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-            wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */);
-        }
-        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(token, toBubble /* disablePip */);
-        }
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-            wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */);
-        }
-        return wct;
     }
 
     /**
@@ -1086,8 +1064,8 @@ public class BubbleTransitions {
             }
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
-            final WindowContainerTransaction wct = getBubbleTransaction(mTaskInfo.token,
-                    true /* toBubble */);
+            final WindowContainerTransaction wct = getEnterBubbleTransaction(
+                    mTaskInfo.token, true /* isAppBubble */);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
@@ -1295,8 +1273,7 @@ public class BubbleTransitions {
 
             mBubble.setPreparingTransition(this);
             final WindowContainerToken token = mTaskInfo.getToken();
-            final WindowContainerTransaction wct = getBubbleTransaction(token,
-                    false /* toBubble */);
+            final WindowContainerTransaction wct = getExitBubbleTransaction(token);
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
@@ -1455,8 +1432,7 @@ public class BubbleTransitions {
             mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
             final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
-            final WindowContainerTransaction wct = getBubbleTransaction(token,
-                    false /* toBubble */);
+            final WindowContainerTransaction wct = getExitBubbleTransaction(token);
             wct.reorder(token, /* onTop= */ true);
             if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
                 wct.setHidden(token, false);

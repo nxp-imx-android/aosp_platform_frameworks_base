@@ -273,6 +273,16 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_check_device_rotation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Whether to use display rotation to specify rotate-and-crop rotation."
+    bug: "395047103"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_camera_compat_for_desktop_windowing_opt_out"
     namespace: "lse_desktop_experience"
     description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
@@ -343,6 +353,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Whether to enable desktop windowing transition handler and observer instead of task listeners."
     bug: "332682201"
+}
+
+flag {
+    name: "enable_windowing_task_stack_order_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Reverses the order of TaskStackListener updates."
+    bug: "414808458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -563,6 +583,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_app_header_state_change_announcements"
+    namespace: "lse_desktop_experience"
+    description: "Enables desktop windowing state change announcements for Talkback"
+    bug: "398732993"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_move_to_next_display_shortcut"
     namespace: "lse_desktop_experience"
     description: "Add new keyboard shortcut of moving a task into next display"
@@ -644,10 +674,13 @@ flag {
 }
 
 flag {
-    name: "nested_tasks_with_independent_bounds"
+    name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
     bug: "402825303"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1057,6 +1090,13 @@ flag {
 }
 
 flag {
+    name: "enable_reject_home_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enable the reject home transition, which runs if home is invoked on a display which lacks a home."
+    bug: "378443899"
+}
+
+flag {
     name: "enable_request_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
@@ -1101,16 +1141,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_swipe_back_minimize_animation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enabling a minimize animation when a window is minimized via a swipe-back navigation gesture in Desktop Windowing mode."
-    bug: "359343764"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_close_task_animation_in_dtc_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle close task animation within DesktopTasksController."
@@ -1131,10 +1161,25 @@ flag {
 }
 
 flag {
+    name: "grant_manage_key_gestures_to_recents"
+    namespace: "lse_desktop_experience"
+    description: "Grant MANAGE_KEY_GESTURES permission to the recents holder."
+    bug: "406452076"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "enable_key_gesture_handler_for_recents"
     namespace: "lse_desktop_experience"
     description: "Enables the key gesture handler for listening to recents related key events, e.g. overview, all apps."
     bug: "406452076"
+}
+
+flag {
+    name: "enable_key_gesture_handler_for_sysui"
+    namespace: "lse_desktop_experience"
+    description: "Enables the key gesture handler for listening to SysUi interested key events."
+    bug: "406740557"
 }
 
 flag {
@@ -1176,6 +1221,16 @@ flag {
 }
 
 flag {
+    name: "enable_window_decoration_refactor"
+    namespace: "lse_desktop_experience"
+    description: "Utilizes the new WindowDecoration2."
+    bug: "409648813"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
@@ -1210,6 +1265,23 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Send onDisplay(Add|Remove)SystemDecorations callbacks via WM's IDisplayWindowListener."
     bug: "408503553"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_window_repositioning_api"
+    namespace: "lse_desktop_experience"
+    description: "Enables the API to allow default browsers to reposition their windows."
+    bug: "400407139"
+}
+
+flag {
+    name: "enable_empty_desk_on_minimize"
+    namespace: "lse_desktop_experience"
+    description: "Keep desktop open when the last window is minimized."
+    bug: "410493575"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

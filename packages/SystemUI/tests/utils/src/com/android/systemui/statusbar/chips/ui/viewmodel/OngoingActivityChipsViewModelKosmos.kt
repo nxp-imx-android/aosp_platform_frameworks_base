@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
@@ -37,7 +36,6 @@ val Kosmos.ongoingActivityChipsViewModel: OngoingActivityChipsViewModel by
             callChipViewModel = callChipViewModel,
             notifChipsViewModel = notifChipsViewModel,
             displayStateInteractor = displayStateInteractor,
-            configurationInteractor = configurationInteractor,
             logger = statusBarChipsLogger,
         )
     }

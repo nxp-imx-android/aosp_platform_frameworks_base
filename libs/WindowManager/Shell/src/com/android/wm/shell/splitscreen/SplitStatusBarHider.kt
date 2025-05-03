@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.splitscreen
 
+import android.os.Binder
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowInsets.Type.navigationBars
 import android.view.WindowInsets.Type.statusBars
@@ -68,6 +69,7 @@ class SplitStatusBarHider(
         SplitState.SplitStateChangeListener {
             updateStatusBarBehavior(it, isLeftRightSplit, isSplitVisible)
         }
+    private val systemBarVisibilityOverrideCaller = Binder()
 
     init {
         if (enableFlexibleTwoAppSplit()) {
@@ -146,10 +148,12 @@ class SplitStatusBarHider(
         val wct = WindowContainerTransaction()
         if (forceImmersive) {
             wct.setSystemBarVisibilityOverride(displayToken,
+                systemBarVisibilityOverrideCaller,
                 navigationBars() /*forciblyShowingTypes*/,
                 statusBars() /*forciblyHidingTypes*/)
         } else {
             wct.setSystemBarVisibilityOverride(displayToken,
+                systemBarVisibilityOverrideCaller,
                 0 /*forciblyShowingTypes*/,
                 0 /*forciblyHidingTypes*/)
         }

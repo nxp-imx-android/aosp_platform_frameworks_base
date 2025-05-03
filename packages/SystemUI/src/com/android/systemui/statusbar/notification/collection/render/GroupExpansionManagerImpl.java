@@ -33,9 +33,9 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -56,9 +56,9 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
      * NOTE: This should not be modified without notifying listeners, so prefer using
      * {@code setGroupExpanded} when making changes.
      */
-    private final Set<NotificationEntry> mExpandedGroups = new HashSet<>();
+    private final Set<NotificationEntry> mExpandedGroups = ConcurrentHashMap.newKeySet();
 
-    private final Set<EntryAdapter> mExpandedCollections = new HashSet<>();
+    private final Set<EntryAdapter> mExpandedCollections = ConcurrentHashMap.newKeySet();
 
     @Inject
     public GroupExpansionManagerImpl(DumpManager dumpManager,
@@ -123,7 +123,9 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     @Override
     public boolean isGroupExpanded(NotificationEntry entry) {
         NotificationBundleUi.assertInLegacyMode();
-        return mExpandedGroups.contains(mGroupMembershipManager.getGroupSummary(entry));
+        NotificationEntry groupSummary = mGroupMembershipManager.getGroupSummary(entry);
+        if (groupSummary == null) return false;
+        return mExpandedGroups.contains(groupSummary);
     }
 
     @Override
@@ -140,6 +142,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
             }
         }
 
+        if (groupSummary == null) return;
         boolean changed;
         if (expanded) {
             changed = mExpandedGroups.add(groupSummary);
@@ -165,7 +168,14 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
         NotificationBundleUi.unsafeAssertInNewMode();
         ExpandableNotificationRow parent = entry.getRow().getNotificationParent();
         return mExpandedCollections.contains(entry)
-                || (parent != null && mExpandedCollections.contains(parent.getEntryAdapter()));
+                || (parent != null
+                    // When the entry itself is a summary, we want only the first condition to be
+                    // checked (am I expanded?). We only defer the check to the parent for leaf
+                    // nodes.
+                    // We should avoid referring back to the ENR here but given the entry we
+                    // currently can't check if the entry is a summary row here.
+                    && !entry.getRow().isSummaryWithChildren()
+                    && mExpandedCollections.contains(parent.getEntryAdapter()));
     }
 
     @Override
@@ -200,11 +210,11 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     @Override
     public void collapseGroups() {
         if (NotificationBundleUi.isEnabled()) {
-            for (EntryAdapter entry : new ArrayList<>(mExpandedCollections)) {
+            for (EntryAdapter entry : mExpandedCollections) {
                 setGroupExpanded(entry, false);
             }
         } else {
-            for (NotificationEntry entry : new ArrayList<>(mExpandedGroups)) {
+            for (NotificationEntry entry : mExpandedGroups) {
                 setGroupExpanded(entry, false);
             }
         }

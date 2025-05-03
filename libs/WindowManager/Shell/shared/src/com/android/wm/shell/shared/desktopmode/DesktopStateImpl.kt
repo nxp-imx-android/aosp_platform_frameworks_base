@@ -27,7 +27,6 @@ import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
-import com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 
@@ -65,8 +64,12 @@ class DesktopStateImpl(context: Context) : DesktopState {
         DesktopModeFlags.isDesktopModeForcedEnabled() && canShowDesktopModeDevOption
 
     override val canEnterDesktopMode: Boolean = run {
+        val isEligibleForDesktopMode =
+            isDeviceEligibleForDesktopMode &&
+                    (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue ||
+                            canInternalDisplayHostDesktops)
         val desktopModeEnabled =
-            isDeviceEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
+            isEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
         desktopModeEnabled || isDesktopModeEnabledByDevOption
     }
 
@@ -85,18 +88,9 @@ class DesktopStateImpl(context: Context) : DesktopState {
     override val isDeviceEligibleForDesktopMode: Boolean
         get() {
             if (!enforceDeviceRestrictions) return true
-
-            // If projected display is enabled, [canInternalDisplayHostDesktops] is no longer a
-            // requirement.
-            val desktopModeSupported =
-                if (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
-                    isDesktopModeSupported
-                } else {
-                    isDesktopModeSupported && canInternalDisplayHostDesktops
-                }
             val desktopModeSupportedByDevOptions =
                 Flags.enableDesktopModeThroughDevOption() && isDesktopModeDevOptionSupported
-            return desktopModeSupported || desktopModeSupportedByDevOptions
+            return isDesktopModeSupported || desktopModeSupportedByDevOptions
         }
 
     override val enableMultipleDesktops: Boolean =
@@ -111,16 +105,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
         if (!canEnterDesktopMode) return false
         if (!enforceDeviceRestrictions) return true
         if (display.type == Display.TYPE_INTERNAL) return canInternalDisplayHostDesktops
-
-        // TODO (b/395014779): Change this to use WM API
-        if (
-            (display.type == Display.TYPE_EXTERNAL || display.type == Display.TYPE_OVERLAY) &&
-                enableDisplayContentModeManagement()
-        ) {
-            return windowManager?.isEligibleForDesktopMode(display.displayId) ?: false
-        }
-
-        return false
+        return windowManager?.isEligibleForDesktopMode(display.displayId) ?: false
     }
 
     override fun isProjectedMode(): Boolean {

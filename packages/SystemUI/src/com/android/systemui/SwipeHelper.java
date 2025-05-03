@@ -70,6 +70,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     private static final int DEFAULT_ESCAPE_ANIMATION_DURATION = 200; // ms
     private static final int MAX_ESCAPE_ANIMATION_DURATION = 400; // ms
     private static final int MAX_DISMISS_VELOCITY = 4000; // dp/sec
+    private static final int MIN_DISMISS_VELOCITY = 2000; // dp/sec
 
     public static final float SWIPE_PROGRESS_FADE_END = 0.6f; // fraction of thumbnail width
                                               // beyond which swipe progress->0
@@ -426,6 +427,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     public void dismissChild(final View animView, float velocity, final Consumer<Boolean> endAction,
             long delay, boolean useAccelerateInterpolator, long fixedDuration,
             boolean isDismissAll) {
+        if (magneticNotificationSwipes()) {
+            int direction = mCallback.getMagneticDetachDirection(animView);
+            velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
+        }
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
         float newPos;
         boolean isLayoutRtl = animView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
@@ -776,6 +781,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         return MAX_DISMISS_VELOCITY * mDensityScale;
     }
 
+    private float getMinDismissVelocity() {
+        return MIN_DISMISS_VELOCITY * mDensityScale;
+    }
+
     protected float getEscapeVelocity() {
         return getUnscaledEscapeVelocity() * mDensityScale;
     }
@@ -1000,6 +1009,14 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @return if the view is dismissible according to its magnetic logic.
          */
         boolean isMagneticViewDismissible(View view, float endVelocity);
+
+        /**
+         * Get the direction in which a magnetic view was detached.
+         *
+         * @return 1 if detached to the right, -1 if detached to the left, or 0 if the view hasn't
+         *  detached or if it is not being swiped magnetically
+         */
+        int getMagneticDetachDirection(View view);
 
         /**
          * Called when the child is long pressed and available to start drag and drop.

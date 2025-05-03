@@ -18,7 +18,9 @@ package com.android.systemui.topwindoweffects
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.annotation.DrawableRes
@@ -28,46 +30,50 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
+import com.android.systemui.topui.TopUiController
+import com.android.systemui.topui.TopUiControllerRefactor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.util.Optional
+import java.util.concurrent.Executor
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class TopLevelWindowEffects
 @Inject
 constructor(
     @Application private val context: Context,
-    @Main private val mainDispatcher: CoroutineDispatcher,
+    @Main private val mainExecutor: Executor,
     @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
-    private val keyEventInteractor: KeyEventInteractor,
     private val viewModelFactory: SqueezeEffectViewModel.Factory,
     // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
     private val notificationShadeWindowController: NotificationShadeWindowController,
+    private val topUiController: TopUiController,
     private val interactionJankMonitor: InteractionJankMonitor,
 ) : CoreStartable {
 
     private var root: EffectsWindowRoot? = null
 
+    // TODO(b/414267753): Make cleanup of window logic more robust
+    private var isInvocationEffectHappening = false
+
     override fun start() {
         topLevelWindowEffectsScope.launch {
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 if (enabled) {
-                    keyEventInteractor.isPowerButtonDown.collectLatest { down ->
+                    squeezeEffectInteractor.isPowerButtonDownAsSingleKeyGesture.collectLatest { down
+                        ->
                         if (down) {
                             val roundedCornerInfo =
                                 squeezeEffectInteractor.getRoundedCornersResourceId()
@@ -77,6 +83,8 @@ constructor(
                                 roundedCornerInfo.bottomResourceId,
                                 roundedCornerInfo.physicalPixelDisplaySizeRatio,
                             )
+                        } else if (root != null && !isInvocationEffectHappening) {
+                            removeWindow()
                         }
                     }
                 }
@@ -84,40 +92,60 @@ constructor(
         }
     }
 
-    private suspend fun addWindow(
+    private fun addWindow(
         @DrawableRes topRoundedCornerId: Int,
         @DrawableRes bottomRoundedCornerId: Int,
         physicalPixelDisplaySizeRatio: Float,
     ) {
-        if (root == null) {
-            root =
-                EffectsWindowRoot(
+        if (isInvocationEffectHappening) {
+            return
+        }
+
+        if (root != null) {
+            Log.i(TAG, "addWindow: remove previous window")
+            removeWindow()
+        }
+
+        root =
+            EffectsWindowRoot(
                     context = context,
                     viewModelFactory = viewModelFactory,
                     topRoundedCornerResourceId = topRoundedCornerId,
                     bottomRoundedCornerResourceId = bottomRoundedCornerId,
                     physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
-                    onEffectFinished = {
-                        if (root?.isAttachedToWindow == true) {
-                            windowManager.removeView(root)
-                            root = null
-                        }
-                        runOnMainThread {
-                            notificationShadeWindowController.setRequestTopUi(false, TAG)
-                        }
-                    },
+                    onEffectFinished = ::removeWindow,
                     appZoomOutOptional = appZoomOutOptional,
                     interactionJankMonitor = interactionJankMonitor,
+                    onEffectStarted = { isInvocationEffectHappening = true },
                 )
-            root?.let { rootView ->
-                runOnMainThread { notificationShadeWindowController.setRequestTopUi(true, TAG) }
-                windowManager.addView(rootView, getWindowManagerLayoutParams())
-            }
+                .apply { visibility = View.GONE }
+
+        root?.let { rootView ->
+            setRequestTopUi(true)
+            windowManager.addView(rootView, getWindowManagerLayoutParams())
+            rootView.post { rootView.visibility = View.VISIBLE }
         }
     }
 
-    private suspend fun runOnMainThread(block: () -> Unit) {
-        withContext(mainDispatcher) { block() }
+    private fun removeWindow() {
+        if (root != null) {
+            windowManager.removeView(root)
+            root = null
+        }
+
+        isInvocationEffectHappening = false
+
+        setRequestTopUi(false)
+    }
+
+    private fun setRequestTopUi(requestTopUi: Boolean) {
+        if (TopUiControllerRefactor.isEnabled) {
+            topUiController.setRequestTopUi(requestTopUi, TAG)
+        } else {
+            mainExecutor.execute {
+                notificationShadeWindowController.setRequestTopUi(requestTopUi, TAG)
+            }
+        }
     }
 
     private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {
@@ -142,7 +170,7 @@ constructor(
         lp.layoutInDisplayCutoutMode =
             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
 
-        lp.title = "TopLevelWindowEffects"
+        lp.title = TAG
         lp.fitInsetsTypes = WindowInsets.Type.systemOverlays()
         lp.gravity = Gravity.TOP
 

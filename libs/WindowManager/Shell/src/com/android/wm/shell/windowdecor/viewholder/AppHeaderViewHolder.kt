@@ -26,6 +26,7 @@ import android.graphics.LinearGradient
 import android.graphics.Rect
 import android.graphics.Shader
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewTreeObserver
@@ -72,6 +73,12 @@ import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.CLOSING
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.FOCUSED
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.MINIMIZING
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.NOT_FOCUSED
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.OPENING
+import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.UNKNOWN
 import kotlin.math.roundToInt
 
 /**
@@ -187,11 +194,21 @@ class AppHeaderViewHolder(
     private val a11yAnnounceTextRestore: String =
         context.getString(R.string.app_header_talkback_action_restore_button_text)
 
+    private val a11yAnnounceTextOpening: String =
+        context.getString(R.string.desktop_mode_talkback_state_opening)
+    private val a11yAnnounceTextMinimizing: String =
+        context.getString(R.string.desktop_mode_talkback_state_minimizing)
+    private val a11yAnnounceTextClosing: String =
+        context.getString(R.string.desktop_mode_talkback_state_closing)
+    private lateinit var a11yAnnounceTextFocused: String
+    private lateinit var a11yAnnounceTextNotFocused: String
+
     private lateinit var sizeToggleDirection: SizeToggleDirection
     private lateinit var a11yTextMaximize: String
     private lateinit var a11yTextRestore: String
-
     private lateinit var currentTaskInfo: RunningTaskInfo
+
+    private var a11yState = UNKNOWN
 
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
@@ -222,6 +239,7 @@ class AppHeaderViewHolder(
             context.getString(R.string.desktop_mode_a11y_action_maximize_restore)
         )
 
+        captionHandle.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
         captionHandle.accessibilityDelegate = object : View.AccessibilityDelegate() {
             override fun onInitializeAccessibilityNodeInfo(
                 host: View,
@@ -324,9 +342,10 @@ class AppHeaderViewHolder(
                 args: Bundle?
             ): Boolean {
                 when (action) {
-                    AccessibilityAction.ACTION_CLICK.id -> desktopModeUiEventLogger.log(
-                        currentTaskInfo, A11Y_APP_WINDOW_CLOSE_BUTTON
-                    )
+                    AccessibilityAction.ACTION_CLICK.id -> {
+                        setA11yStateTo(CLOSING)
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_APP_WINDOW_CLOSE_BUTTON)
+                    }
                 }
 
                 return super.performAccessibilityAction(host, action, args)
@@ -340,9 +359,12 @@ class AppHeaderViewHolder(
                 args: Bundle?
             ): Boolean {
                 when (action) {
-                    AccessibilityAction.ACTION_CLICK.id -> desktopModeUiEventLogger.log(
-                        currentTaskInfo, A11Y_APP_WINDOW_MINIMIZE_BUTTON
-                    )
+                    AccessibilityAction.ACTION_CLICK.id -> {
+                        setA11yStateTo(MINIMIZING)
+                        desktopModeUiEventLogger.log(
+                            currentTaskInfo, A11Y_APP_WINDOW_MINIMIZE_BUTTON
+                        )
+                    }
                 }
 
                 return super.performAccessibilityAction(host, action, args)
@@ -388,6 +410,16 @@ class AppHeaderViewHolder(
     /** Sets the app's name in the header. */
     fun setAppName(name: CharSequence) {
         appNameTextView.text = name
+        populateA11yStrings(name)
+
+        if (a11yState == OPENING) setA11yStateTo(FOCUSED)
+
+        updateMaximizeButtonContentDescription()
+        updateAppNameLayoutAndEffect()
+    }
+
+    /** Populates string variables from string templates which rely on app name */
+    private fun populateA11yStrings(name: CharSequence) {
         openMenuButton.contentDescription =
             context.getString(R.string.desktop_mode_app_header_chip_text, name)
 
@@ -397,9 +429,10 @@ class AppHeaderViewHolder(
 
         a11yTextMaximize = context.getString(R.string.maximize_button_text, name)
         a11yTextRestore = context.getString(R.string.restore_button_text, name)
-
-        updateMaximizeButtonContentDescription()
-        updateAppNameLayoutAndEffect()
+        a11yAnnounceTextFocused =
+            context.getString(R.string.desktop_mode_talkback_state_focused, name)
+        a11yAnnounceTextNotFocused =
+            context.getString(R.string.desktop_mode_talkback_state_not_focused, name)
     }
 
     private fun updateAppNameLayoutAndEffect() {
@@ -491,6 +524,20 @@ class AppHeaderViewHolder(
             )
         } else {
             bindDataLegacy(taskInfo, hasGlobalFocus, isCaptionVisible)
+        }
+
+        if (hasGlobalFocus) {
+            // app window is gaining focus
+            if (a11yState == UNKNOWN) {
+                // app window is opening from close or minimize
+                setA11yStateTo(OPENING)
+            } else if (a11yState == NOT_FOCUSED) {
+                // app window is being re-focused after being in background
+                setA11yStateTo(FOCUSED)
+            }
+        } else if (!hasGlobalFocus && a11yState == FOCUSED) {
+            // app window is losing focus and moving to background as another window gains focus
+            setA11yStateTo(NOT_FOCUSED)
         }
     }
 
@@ -915,6 +962,28 @@ class AppHeaderViewHolder(
     override fun close() {
         // Should not fire long press events after closing the window decoration.
         maximizeWindowButton.cancelLongPress()
+    }
+
+    private enum class A11yState {
+        UNKNOWN, OPENING, MINIMIZING, CLOSING, NOT_FOCUSED, FOCUSED
+    }
+
+    private fun setA11yStateTo(newState: A11yState) {
+        if (!DesktopExperienceFlags.ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue) {
+            Log.i(TAG, "no a11y state change due to missing " +
+                    "enable_desktop_windowing_app_header_state_change_announcements")
+            return
+        }
+        val newStateDesc = when (newState) {
+            OPENING -> a11yAnnounceTextOpening
+            MINIMIZING -> a11yAnnounceTextMinimizing
+            CLOSING -> a11yAnnounceTextClosing
+            NOT_FOCUSED -> a11yAnnounceTextNotFocused
+            FOCUSED -> a11yAnnounceTextFocused
+            else -> null
+        }
+        captionHandle.stateDescription = newStateDesc
+        a11yState = newState
     }
 
     companion object {

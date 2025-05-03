@@ -20,6 +20,7 @@ import android.graphics.RectF
 import android.view.SurfaceControl
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
+import com.android.wm.shell.shared.desktopmode.DesktopState
 
 /**
  * Controller to manage the indicators that show users the current position of the dragged window on
@@ -30,6 +31,7 @@ class MultiDisplayDragMoveIndicatorController(
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val indicatorSurfaceFactory: MultiDisplayDragMoveIndicatorSurface.Factory,
     @ShellDesktopThread private val desktopExecutor: ShellExecutor,
+    private val desktopState: DesktopState,
 ) {
     @ShellDesktopThread
     private val dragIndicators =
@@ -55,8 +57,12 @@ class MultiDisplayDragMoveIndicatorController(
     ) {
         desktopExecutor.execute {
             for (displayId in displayIds) {
-                if (displayId == startDisplayId) {
-                    // No need to render indicators on the original display where the drag started.
+                if (
+                    displayId == startDisplayId ||
+                        !desktopState.isDesktopModeSupportedOnDisplay(displayId)
+                ) {
+                    // No need to render indicators on the original display where the drag started,
+                    // or on displays that do not support desktop mode.
                     continue
                 }
                 val displayLayout = displayController.getDisplayLayout(displayId) ?: continue

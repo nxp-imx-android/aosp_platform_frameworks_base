@@ -28,6 +28,7 @@ import static android.print.PrintManager.PRINT_SPOOLER_PACKAGE_NAME;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import static com.android.systemui.Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT;
 import static com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_STANDARD;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -436,7 +437,11 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_NM_SUMMARIZATION, Flags.FLAG_NM_SUMMARIZATION_UI})
+    @DisableFlags({
+            Flags.FLAG_NM_SUMMARIZATION,
+            Flags.FLAG_NM_SUMMARIZATION_UI,
+            FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT
+    })
     public void testBindNotification_HidesFeedbackLink_flagOff() {
         doStandardBind();
         assertEquals(GONE, mNotificationInfo.findViewById(R.id.feedback).getVisibility());
@@ -479,7 +484,11 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_SUMMARIZATION, Flags.FLAG_NM_SUMMARIZATION_UI})
+    @EnableFlags({
+            Flags.FLAG_NM_SUMMARIZATION,
+            Flags.FLAG_NM_SUMMARIZATION_UI,
+            FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT
+    })
     public void testBindNotification_hidesFeedbackLink_ifSummaryNotInRanking() {
         doStandardBind();
 

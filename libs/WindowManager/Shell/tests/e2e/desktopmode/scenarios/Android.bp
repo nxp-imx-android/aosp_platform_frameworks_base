@@ -35,6 +35,7 @@ java_library {
         "WMShellTestUtils",
         "wm-shell-flicker-utils",
         "androidx.test.ext.junit",
+        "com_android_launcher3_flags_lib",
         "flickertestapplib",
         "flickerlib-helpers",
         "flickerlib-trace_processor_shell",

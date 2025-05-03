@@ -140,17 +140,26 @@ class DesktopRepositoryInitializerImpl(
                                     )
                                 }
 
-                                if (task.desktopTaskTilingState == DesktopTaskTilingState.LEFT) {
-                                    repository.addLeftTiledTask(
-                                        persistentDesktop.displayId,
-                                        task.taskId,
-                                    )
-                                } else if (
-                                    task.desktopTaskTilingState == DesktopTaskTilingState.RIGHT
+                                val tilingEnabled =
+                                    DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
+                                if (
+                                    tilingEnabled &&
+                                        task.desktopTaskTilingState == DesktopTaskTilingState.LEFT
                                 ) {
-                                    repository.addRightTiledTask(
+                                    repository.addLeftTiledTaskToDesk(
                                         persistentDesktop.displayId,
                                         task.taskId,
+                                        newDeskId,
+                                    )
+                                }
+                                if (
+                                    tilingEnabled &&
+                                        task.desktopTaskTilingState == DesktopTaskTilingState.RIGHT
+                                ) {
+                                    repository.addRightTiledTaskToDesk(
+                                        persistentDesktop.displayId,
+                                        task.taskId,
+                                        newDeskId,
                                     )
                                 }
                             }

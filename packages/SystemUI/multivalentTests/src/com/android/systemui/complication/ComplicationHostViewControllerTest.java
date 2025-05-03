@@ -17,6 +17,8 @@ package com.android.systemui.complication;
 
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -285,6 +287,29 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
                 captureComplicationViewModelsObserver();
         mController.onViewDetached();
         verify(mComplicationViewModelLiveData).removeObserver(eq(observer));
+    }
+
+    @Test
+    public void testComplicationsRemovedOnDestroy() {
+        mController.onViewAttached();
+        final Observer<Collection<ComplicationViewModel>> observer =
+                captureComplicationViewModelsObserver();
+
+        final HashSet<ComplicationViewModel> complications = new HashSet<>(
+                Collections.singletonList(mComplicationViewModel));
+        observer.onChanged(complications);
+
+        // Assert that the controller has 1 complication.
+        assertThat(mController.getComplicationCount()).isEqualTo(1);
+
+        // Destroy the controller.
+        mController.destroy();
+
+        // Assert that the controller has 0 complications.
+        assertThat(mController.getComplicationCount()).isEqualTo(0);
+
+        // Verify that the complication was removed from the layout engine.
+        verify(mLayoutEngine).removeComplication(mComplicationId);
     }
 
     private Observer<Collection<ComplicationViewModel>> captureComplicationViewModelsObserver() {

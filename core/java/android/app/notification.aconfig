@@ -176,16 +176,6 @@ flag {
 }
 
 flag {
-  name: "evenly_divided_call_style_action_layout"
-  namespace: "systemui"
-  description: "Evenly divides horizontal space for action buttons in CallStyle notifications."
-  bug: "268733030"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "sort_section_by_time"
   namespace: "systemui"
   description: "Changes notification sort order to be by time within a section"
@@ -245,6 +235,14 @@ flag {
   namespace: "systemui"
   description: "[RONs] Guards new RON-related APIs, including Notification.ProgressStyle"
   bug: "337261753"
+}
+
+flag {
+  name: "opt_in_rich_ongoing"
+  namespace: "systemui"
+  is_exported: true
+  description: "[RONs] v0.2 promotion logic: explicit opt-in and no colorization"
+  bug: "410621769"
 }
 
 flag {

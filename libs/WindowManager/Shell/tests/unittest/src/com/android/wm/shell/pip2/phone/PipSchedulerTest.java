@@ -335,7 +335,7 @@ public class PipSchedulerTest {
     public void scheduleMoveToDisplay_startsResizeTransition() {
         setMockPipTaskToken();
 
-        mPipScheduler.scheduleMoveToDisplay(DEFAULT_DISPLAY_ID, EXTERNAL_DISPLAY_ID);
+        mPipScheduler.scheduleMoveToDisplay(EXTERNAL_DISPLAY_ID, TEST_BOUNDS);
 
         verify(mMockPipTransitionController, times(1))
                 .startPipBoundsChangeTransition(mWctArgumentCaptor.capture(), anyInt());

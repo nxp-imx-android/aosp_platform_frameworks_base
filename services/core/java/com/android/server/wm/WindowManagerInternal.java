@@ -547,6 +547,13 @@ public abstract class WindowManagerInternal {
     public abstract boolean isKeyguardLocked();
 
     /**
+     * @return Whether the keyguard is showing, reported by WindowManager policy. This value matches
+     * the initial value reported by {@link android.app.KeyguardManager#isKeyguardLocked()}, for
+     * system_server internal use only.
+     */
+    public abstract boolean isKeyguardShowing();
+
+    /**
     * @return Whether the keyguard is showing and not occluded.
     */
     public abstract boolean isKeyguardShowingAndNotOccluded();

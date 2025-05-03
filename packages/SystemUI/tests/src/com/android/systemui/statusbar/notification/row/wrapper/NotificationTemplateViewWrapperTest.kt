@@ -171,6 +171,7 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
 
     @Test
     fun actionViewDetached_pendingIntentListenersDeregistered() {
+        ViewUtils.detachView(root)
         val pi =
             PendingIntent.getActivity(
                 mContext,
@@ -182,6 +183,9 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
         createActionWithPendingIntent(spy)
         val wrapper = NotificationTemplateViewWrapper(mContext, view, row)
         wrapper.onContentUpdated(row)
+        ViewUtils.attachView(root)
+        looper.processAllMessages()
+
         ViewUtils.detachView(root)
         looper.processAllMessages()
 

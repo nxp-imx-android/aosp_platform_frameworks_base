@@ -221,6 +221,20 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.COMPUTER_CONTROL_ACCESS)
+    @NonNull
+    public VirtualDevice createVirtualDevice(@NonNull VirtualDeviceParams params) {
+        Objects.requireNonNull(params, "params must not be null");
+        try {
+            return new VirtualDevice(mService, mContext, params);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the details of all available virtual devices.
      *
      * <p>The returned objects are read-only representations that expose the properties of all
@@ -571,6 +585,15 @@ public final class VirtualDeviceManager {
                 VirtualDeviceParams params) throws RemoteException {
             mVirtualDeviceInternal =
                     new VirtualDeviceInternal(service, context, associationId, params);
+        }
+
+        @RequiresPermission(Manifest.permission.COMPUTER_CONTROL_ACCESS)
+        private VirtualDevice(
+                IVirtualDeviceManager service,
+                Context context,
+                VirtualDeviceParams params) throws RemoteException {
+            mVirtualDeviceInternal =
+                    new VirtualDeviceInternal(service, context, params);
         }
 
         /** @hide */

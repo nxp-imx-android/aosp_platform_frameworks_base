@@ -23,7 +23,6 @@ import android.widget.RelativeLayout
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.animation.TextAnimator
 import com.android.systemui.log.core.Logger
-import com.android.systemui.monet.ColorScheme
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
 import com.android.systemui.plugins.clocks.ClockAxisStyle
@@ -34,7 +33,6 @@ import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
-import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.SimpleDigitalClockTextView
 import com.android.systemui.shared.clocks.view.VerticalAlignment
@@ -226,23 +224,10 @@ open class SimpleDigitalHandLayerController(
             }
 
             override fun onThemeChanged(theme: ThemeConfig) {
-                if (ambientAod()) {
-                    val aodColor =
-                        theme.seedColor?.let {
-                            val colorScheme =
-                                ColorScheme(
-                                    it,
-                                    false, // darkTheme is not used for palette generation
-                                )
-                            colorScheme.accent1.s100
-                        } ?: clockCtx.resources.getColor(android.R.color.system_accent1_100)
-                    view.updateColor(
-                        lockscreenColor = theme.getDefaultColor(clockCtx.context),
-                        aodColor = aodColor,
-                    )
-                } else {
-                    view.updateColor(lockscreenColor = theme.getDefaultColor(clockCtx.context))
-                }
+                view.updateColor(
+                    lockscreenColor = theme.getDefaultColor(clockCtx.context),
+                    aodColor = theme.getAodColor(clockCtx.context),
+                )
                 refreshTime()
             }
 

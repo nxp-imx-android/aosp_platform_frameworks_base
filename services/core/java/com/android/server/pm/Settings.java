@@ -2817,7 +2817,13 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
+    /** only for test */
     void writeLPr(@NonNull Computer computer, boolean sync) {
+        final List<UserInfo> activeUsers = getActiveUsers(UserManagerService.getInstance());
+        writeLPr(computer, activeUsers, sync);
+    }
+
+    void writeLPr(@NonNull Computer computer, List<UserInfo> users, boolean sync) {
         //Debug.startMethodTracing("/data/system/packageprof", 8 * 1024 * 1024);
 
         final long startTime = SystemClock.uptimeMillis();
@@ -2918,7 +2924,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 atomicFile.finishWrite(str);
 
                 writeKernelMappingLPr();
-                writePackageListLPr();
+                writePackageListLPr(users);
                 writeAllUsersPackageRestrictionsLPr(sync);
                 writeAllRuntimePermissionsLPr();
                 com.android.internal.logging.EventLogTags.writeCommitSysConfigFile(
@@ -3035,11 +3041,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
-    void writePackageListLPr() {
-        writePackageListLPr(-1);
+    void writePackageListLPr(List<UserInfo> users) {
+        writePackageListLPr(users, -1);
     }
 
-    void writePackageListLPr(int creatingUserId) {
+    void writePackageListLPr(List<UserInfo> users, int creatingUserId) {
         String filename = mPackageListFilename.getAbsolutePath();
         String ctx = SELinux.fileSelabelLookup(filename);
         if (ctx == null) {
@@ -3051,15 +3057,14 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             Slog.wtf(TAG, "Failed to set packages.list SELinux context");
         }
         try {
-            writePackageListLPrInternal(creatingUserId);
+            writePackageListLPrInternal(users, creatingUserId);
         } finally {
             SELinux.setFSCreateContext(null);
         }
     }
 
-    private void writePackageListLPrInternal(int creatingUserId) {
+    private void writePackageListLPrInternal(List<UserInfo> users, int creatingUserId) {
         // Only derive GIDs for active users (not dying)
-        final List<UserInfo> users = getActiveUsers(UserManagerService.getInstance(), true);
         int[] userIds = new int[users.size()];
         for (int i = 0; i < userIds.length; i++) {
             userIds[i] = users.get(i).id;
@@ -4820,7 +4825,13 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         t.traceEnd(); // createNewUser
     }
 
+    /** only for test */
     void removeUserLPw(int userId) {
+        final List<UserInfo> activeUsers = getActiveUsers(UserManagerService.getInstance());
+        removeUserLPw(activeUsers, userId);
+    }
+
+    void removeUserLPw(List<UserInfo> users, int userId) {
         Set<Entry<String, PackageSetting>> entries = mPackages.entrySet();
         for (Entry<String, PackageSetting> entry : entries) {
             entry.getValue().removeUser(userId);
@@ -4837,7 +4848,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         mRuntimePermissionsPersistence.onUserRemoved(userId);
         mDomainVerificationManager.clearUser(userId);
 
-        writePackageListLPr();
+        writePackageListLPr(users);
 
         // Inform kernel that the user was removed, so that packages are marked uninstalled
         // for sdcardfs
@@ -4872,11 +4883,12 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
     }
 
-    public VerifierDeviceIdentity getVerifierDeviceIdentityLPw(@NonNull Computer computer) {
+    public VerifierDeviceIdentity getVerifierDeviceIdentityLPw(@NonNull Computer computer,
+            List<UserInfo> users) {
         if (mVerifierDeviceIdentity == null) {
             mVerifierDeviceIdentity = VerifierDeviceIdentity.generate();
 
-            writeLPr(computer, /*sync=*/false);
+            writeLPr(computer, users, /*sync=*/false);
         }
 
         return mVerifierDeviceIdentity;
@@ -4951,13 +4963,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
      * Returns the list of users on the device, excluding pre-created ones.
      *
      * @param userManager UserManagerService instance
-     * @param excludeDying Indicates whether to exclude any users marked for deletion.
      *
      * @return the list of users
      */
-    private static List<UserInfo> getActiveUsers(UserManagerService userManager,
-            boolean excludeDying) {
-        return getUsers(userManager, excludeDying, /* excludePreCreated= */ true);
+    static List<UserInfo> getActiveUsers(UserManagerService userManager) {
+        return getUsers(userManager, /* excludeDying= */ true, /* excludePreCreated= */ true);
     }
 
     /**

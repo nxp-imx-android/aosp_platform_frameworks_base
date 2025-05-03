@@ -18,6 +18,12 @@ package com.android.systemui.statusbar.notification.row.data.repository
 
 import com.android.internal.R
 import com.android.systemui.statusbar.notification.collection.BundleSpec
+import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 
 val TEST_BUNDLE_SPEC =
-    BundleSpec(key = "Test Bundle", titleTextResId = R.string.recs_notification_channel_label)
+    BundleSpec(
+        key = "Test Bundle",
+        titleTextResId = R.string.recs_notification_channel_label,
+        icon = R.drawable.ic_settings,
+        bucket = BUCKET_RECS,
+    )

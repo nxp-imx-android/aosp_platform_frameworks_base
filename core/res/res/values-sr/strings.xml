@@ -1806,8 +1806,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Додатно затамни"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слушни апарати"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Аутоматски клик"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Тастери миша"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Веза је прекинута"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Повезано"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Активно"</string>
@@ -2046,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Промоције"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Друштвене мреже"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Вести"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Предложено"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Ви подешавате важност ових обавештења."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ово је важно због људи који учествују."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Прилагођено обавештење о апликацији"</string>
@@ -2278,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Скролујте"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Дуг притисак"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Паузирај"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Позиција"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Скролуј нагоре"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Скролуј надоле"</string>

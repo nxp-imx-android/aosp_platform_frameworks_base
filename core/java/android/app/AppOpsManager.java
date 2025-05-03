@@ -2489,6 +2489,8 @@ public class AppOpsManager {
      *
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // Exposing via @TestApi without associated new feature
     public static final String OPSTR_SYSTEM_EXEMPT_FROM_ACTIVITY_BG_START_RESTRICTION =
             "android:system_exempt_from_activity_bg_start_restriction";
 

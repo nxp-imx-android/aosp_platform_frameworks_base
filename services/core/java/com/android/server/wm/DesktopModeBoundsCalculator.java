@@ -119,7 +119,7 @@ public final class DesktopModeBoundsCalculator {
         if (updateOptionBoundsSize && captionHeight != 0) {
             outParams.mAppBounds.set(outParams.mBounds);
             outParams.mAppBounds.top += captionHeight;
-            logger.accept("excluding caption height from app bounds");
+            logger.accept("exclude-caption-height-from-app-bounds");
         }
     }
 

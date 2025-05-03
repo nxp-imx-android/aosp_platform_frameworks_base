@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
+import android.os.Flags;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.PowerManagerInternal;
@@ -138,8 +139,31 @@ class PowerManagerShellCommand extends ShellCommand {
 
         try {
             String token = getNextArgRequired();
-            boolean enabled = Boolean.parseBoolean(getNextArgRequired());
-            mService.suppressAmbientDisplay(token, enabled);
+            if (Flags.lowLightDreamBehavior()) {
+                int suppressFlags = PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
+                for (String command : getNextArgRequired().toLowerCase().split(",")) {
+                    switch (command) {
+                        case "true":
+                        case "all":
+                            suppressFlags |= PowerManager.FLAG_AMBIENT_SUPPRESSION_ALL;
+                            break;
+                        case "dream":
+                            suppressFlags |= PowerManager.FLAG_AMBIENT_SUPPRESSION_DREAM;
+                            break;
+                        case "aod":
+                            suppressFlags |= PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD;
+                            break;
+                        case "false":
+                        case "none":
+                            suppressFlags |= PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
+                            break;
+                    }
+                }
+                mService.suppressAmbientDisplayBehavior(token, suppressFlags);
+            } else {
+                boolean enabled = Boolean.parseBoolean(getNextArgRequired());
+                mService.suppressAmbientDisplay(token, enabled);
+            }
         } catch (RuntimeException ex) {
             pw.println("Error: " + ex.toString());
             return -1;
@@ -310,7 +334,11 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("    enables or disables fixed performance mode");
         pw.println("    note: this will affect system performance and should only be used");
         pw.println("          during development");
-        pw.println("  suppress-ambient-display <token> [true|false]");
+        if (Flags.lowLightDreamBehavior()) {
+            pw.println("  suppress-ambient-display <token> [none|all|dream|aod|true|false]");
+        } else {
+            pw.println("  suppress-ambient-display <token> [true|false]");
+        }
         pw.println("    suppresses the current ambient display configuration and disables");
         pw.println("    ambient display");
         pw.println("  list-ambient-display-suppression-tokens");

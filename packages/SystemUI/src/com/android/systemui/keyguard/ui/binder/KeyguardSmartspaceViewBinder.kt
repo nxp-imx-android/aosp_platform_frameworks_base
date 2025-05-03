@@ -175,8 +175,7 @@ object KeyguardSmartspaceViewBinder {
         clockViewModel: KeyguardClockViewModel,
     ) {
         // Visibility is controlled by updateTargetVisibility in CardPagerAdapter
-        val burnInLayer = keyguardRootView.requireViewById<Layer>(R.id.burn_in_layer)
-        burnInLayer.apply {
+        keyguardRootView.findViewById<Layer>(R.id.burn_in_layer)?.apply {
             val smartspaceView =
                 keyguardRootView.requireViewById<View>(sharedR.id.bc_smartspace_view)
             if (smartspaceView.visibility == View.VISIBLE) {
@@ -205,8 +204,7 @@ object KeyguardSmartspaceViewBinder {
         constraintLayout: ConstraintLayout,
         smartspaceViewModel: KeyguardSmartspaceViewModel,
     ) {
-        val burnInLayer = constraintLayout.requireViewById<Layer>(R.id.burn_in_layer)
-        burnInLayer.apply {
+        constraintLayout.findViewById<Layer>(R.id.burn_in_layer)?.apply {
             if (
                 smartspaceViewModel.isSmartspaceEnabled &&
                     smartspaceViewModel.isDateWeatherDecoupled
@@ -222,8 +220,7 @@ object KeyguardSmartspaceViewBinder {
         constraintLayout: ConstraintLayout,
         smartspaceViewModel: KeyguardSmartspaceViewModel,
     ) {
-        val burnInLayer = constraintLayout.requireViewById<Layer>(R.id.burn_in_layer)
-        burnInLayer.apply {
+        constraintLayout.findViewById<Layer>(R.id.burn_in_layer)?.apply {
             if (
                 smartspaceViewModel.isSmartspaceEnabled &&
                     smartspaceViewModel.isDateWeatherDecoupled

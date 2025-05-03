@@ -86,6 +86,8 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,6 +129,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock UserManager mUserManager;
     @Mock RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Mock private IActivityTaskManager activityTaskManager;
+    @Mock MSDLPlayer mMSDLPlayer;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
@@ -147,7 +150,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
-                mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager));
+                mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager, mMSDLPlayer));
     }
 
     @Test

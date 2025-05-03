@@ -50,7 +50,6 @@ import android.graphics.drawable.Icon;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.util.DisplayMetrics;
@@ -74,6 +73,7 @@ import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
@@ -286,6 +286,44 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         assertThat(group.getShowingLayout()).isSameInstanceAs(group.getPrivateLayout());
         assertThat(group.getIntrinsicHeight()).isGreaterThan(0);
         verify(listener).onHeightChanged(eq(group), eq(true));
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testGroupWithinGroupIntrinsicHeightCalculationWhenGroupExpanded() throws Exception {
+        // GIVEN a group within a group
+        Notification bundleNotif = new Notification.Builder(mContext, "channel")
+                .setSmallIcon(R.drawable.ic_menu)
+                .setGroupSummary(true)
+                .setGroup("group1")
+                .build();
+        NotificationEntry bundleEntry = new NotificationEntryBuilder()
+                .setNotification(bundleNotif)
+                .build();
+        ExpandableNotificationRow bundle = mKosmos.createRow(bundleEntry);
+        Notification groupNotif = new Notification.Builder(mContext, "channel")
+                .setSmallIcon(R.drawable.ic_menu)
+                .setGroupSummary(true)
+                .setGroup("group2")
+                .build();
+        NotificationEntry groupEntry = new NotificationEntryBuilder()
+                .setNotification(groupNotif)
+                .setParent(bundleEntry)
+                .build();
+
+        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
+        ExpandableNotificationRow child = mKosmos.createRow();
+        bundle.addChildNotification(group, 0);
+        group.addChildNotification(child, 0);
+
+        // WHEN group is expanded
+        group.expandNotification();
+        mKosmos.getGroupExpansionManager().setGroupExpanded(group.getEntryAdapter(), true);
+
+        // THEN group is expanded and has correct intrinsic height
+        assertThat(group.isGroupExpanded()).isEqualTo(true);
+        assertThat(group.getIntrinsicHeight())
+                .isEqualTo(group.getChildrenContainer().getIntrinsicHeight());
     }
 
     @Test

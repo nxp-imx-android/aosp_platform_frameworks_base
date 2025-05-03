@@ -192,8 +192,11 @@ public class HardwareRenderer {
     private @ActivityInfo.ColorMode int mColorMode = ActivityInfo.COLOR_MODE_DEFAULT;
     private float mDesiredSdrHdrRatio = 1f;
 
-    private final NotifyRendererRateLimiter mNotifyRendererWorkLoadRateLimiter =
-            createNotifyRendererRateLimiter();
+    private final NotifyRendererRateLimiter mNotifyExpensiveFrameRateLimiter =
+            createNotifyRendererRateLimiter("notifyExpensiveFrame", this::notifyExpensiveFrame);
+
+    private final NotifyRendererRateLimiter mNotifyGpuLoadUpRateLimiter =
+            createNotifyRendererRateLimiter("notifyGpuLoadUp", this::notifyGpuLoadUp);
 
     /**
      * A class for rate limiting of notifying renderer IPC invocation (e.g. notifyExpensiveFrame)
@@ -201,16 +204,32 @@ public class HardwareRenderer {
      */
     private static class NotifyRendererRateLimiter extends RateLimitingCache<Void> {
         private static final long DEFAULT_NOTIFY_PERIOD_MILLIS = 100;
+
         private final @NonNull RateLimitingCache.ValueFetcher<Void> mNotifyRendererRunnable;
+        private final @NonNull Runnable mRunnable;
 
         /** Counts when the rate limiter permits to notify the renderer */
         private int mNotifyCount;
         private @Nullable String mNotifyReason;
 
-        NotifyRendererRateLimiter(@NonNull RateLimitingCache.ValueFetcher<Void> runnable,
+        NotifyRendererRateLimiter(String reason, @NonNull Runnable runnable,
                 long periodMillis) {
             super(periodMillis);
-            mNotifyRendererRunnable = runnable;
+
+            mRunnable = runnable;
+            mNotifyRendererRunnable = () -> {
+                final String notifyReason = getNotifyReason();
+                final boolean logForReason = notifyReason != null && !notifyReason.isEmpty();
+                try {
+                    final String traceReason = logForReason ? reason + ":" + notifyReason : reason;
+                    Trace.traceBegin(Trace.TRACE_TAG_VIEW, traceReason);
+                    mRunnable.run();
+                } finally {
+                    Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+                }
+                incrementNotifyCount();
+                return null;
+            };
         }
 
         private int notifyIfAllow(String reason) {
@@ -228,24 +247,10 @@ public class HardwareRenderer {
         }
     }
 
-    private NotifyRendererRateLimiter getNotifyRendererRateLimiter() {
-        return mNotifyRendererWorkLoadRateLimiter;
-    }
-
-    private NotifyRendererRateLimiter createNotifyRendererRateLimiter() {
-        return new NotifyRendererRateLimiter(() -> {
-            final String notifyReason = getNotifyRendererRateLimiter().getNotifyReason();
-            final boolean logForReason = notifyReason != null && !notifyReason.isEmpty();
-            try {
-                final String traceReason = logForReason ? notifyReason : "notifyExpensiveFrame";
-                Trace.traceBegin(Trace.TRACE_TAG_VIEW, traceReason);
-                notifyExpensiveFrame();
-            } finally {
-                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
-            }
-            getNotifyRendererRateLimiter().incrementNotifyCount();
-            return null;
-        }, NotifyRendererRateLimiter.DEFAULT_NOTIFY_PERIOD_MILLIS);
+    private NotifyRendererRateLimiter createNotifyRendererRateLimiter(String reason,
+            Runnable runnable) {
+        return new NotifyRendererRateLimiter(reason, runnable,
+                NotifyRendererRateLimiter.DEFAULT_NOTIFY_PERIOD_MILLIS);
     }
 
     /**
@@ -1118,7 +1123,21 @@ public class HardwareRenderer {
      * @hide
      */
     public int notifyExpensiveFrameWithRateLimit(String reason) {
-        return mNotifyRendererWorkLoadRateLimiter.notifyIfAllow(reason);
+        return mNotifyExpensiveFrameRateLimiter.notifyIfAllow(reason);
+    }
+
+    /**
+     * Notifies the HardwareRenderer that upcoming frames need to increase the
+     * GPU work load for speedup the rendering.
+     *
+     * @hide
+     */
+    public int notifyRendererForGpuLoadUp(String reason) {
+        return mNotifyGpuLoadUpRateLimiter.notifyIfAllow(reason);
+    }
+
+    private void notifyGpuLoadUp() {
+        nNotifyGpuLoadUp(mNativeProxy);
     }
 
     /**
@@ -1720,4 +1739,6 @@ public class HardwareRenderer {
     private static native void nNotifyCallbackPending(long nativeProxy);
 
     private static native void nNotifyExpensiveFrame(long nativeProxy);
+
+    private static native void nNotifyGpuLoadUp(long nativeProxy);
 }

@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
@@ -26,12 +27,14 @@ import android.window.WindowContainerTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
+import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
-import com.google.common.truth.Truth.assertThat
-import org.junit.Assume.assumeTrue
+import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +45,13 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
-/** Unit tests for [BubbleTaskStackListener]. */
+/**
+ * Unit tests for [BubbleTaskStackListener].
+ *
+ * Build/Install/Run:
+ *  atest WMShellRobolectricTests:BubbleTaskStackListenerTest (on host)
+ *  atest WMShellMultivalentTestsOnDevice:BubbleTaskStackListenerTest (on device)
+ */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BubbleTaskStackListenerTest {
@@ -97,9 +106,13 @@ class BubbleTaskStackListenerTest {
     }
 
     @Test
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        FLAG_ENABLE_BUBBLE_ANYTHING,
+        FLAG_EXCLUDE_TASK_FROM_RECENTS,
+        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+    )
     fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
-
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         bubbleData.stub {
             on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
@@ -118,57 +131,7 @@ class BubbleTaskStackListenerTest {
             verify(taskOrganizer).applyTransaction(wctCaptor.capture())
             wctCaptor.lastValue
         }
-        assertThat(wct.changes).hasSize(1)
-        val chg = wct.changes.get(bubbleTaskToken.asBinder())
-        assertThat(chg).isNotNull()
-        assertThat(chg!!.forceExcludedFromRecents).isFalse()
-        verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
-        verify(taskViewTaskController).notifyTaskRemovalStarted(task)
-    }
-
-    @Test
-    fun onActivityRestartAttempt_overflowAppBubbleRestart_promotesFromOverflow() {
-        bubbleData.stub {
-            on { getOverflowBubbleWithTaskId(bubbleTaskId) } doReturn bubble
-        }
-
-        bubbleTaskStackListener.onActivityRestartAttempt(
-            task,
-            homeTaskVisible = false,
-            clearedTask = false,
-            wasVisible = false,
-        )
-
-        verify(bubbleController).promoteBubbleFromOverflow(bubble)
-        verify(bubbleData).setExpanded(true)
-    }
-
-    @Test
-    fun onActivityRestartAttempt_overflowAppBubbleToFullscreen_notifiesTaskRemoval() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
-
-        task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        bubbleData.stub {
-            on { getOverflowBubbleWithTaskId(bubbleTaskId) } doReturn bubble
-        }
-
-        bubbleTaskStackListener.onActivityRestartAttempt(
-            task,
-            homeTaskVisible = false,
-            clearedTask = false,
-            wasVisible = false,
-        )
-
-        val taskViewTaskController = bubble.taskView.controller
-        val taskOrganizer = taskViewTaskController.taskOrganizer
-        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
-            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
-            wctCaptor.lastValue
-        }
-        assertThat(wct.changes).hasSize(1)
-        val chg = wct.changes.get(bubbleTaskToken.asBinder())
-        assertThat(chg).isNotNull()
-        assertThat(chg!!.forceExcludedFromRecents).isFalse()
+        verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder())
         verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
     }

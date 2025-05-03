@@ -23,6 +23,7 @@ import android.content.Context;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Handler;
 import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -37,6 +38,8 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 
@@ -52,6 +55,8 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
 
     CarWindowDecoration(
             Context context,
+            @android.annotation.NonNull @ShellMainThread Handler handler,
+            @android.annotation.NonNull Transitions transitions,
             @android.annotation.NonNull Context userContext,
             DisplayController displayController,
             ShellTaskOrganizer taskOrganizer,
@@ -60,8 +65,8 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
             @ShellBackgroundThread ShellExecutor bgExecutor,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             View.OnClickListener clickListener) {
-        super(context, userContext, displayController, taskOrganizer, taskInfo, taskSurface,
-                windowDecorViewHostSupplier);
+        super(context, handler, transitions, userContext, displayController, taskOrganizer,
+                taskInfo, taskSurface, windowDecorViewHostSupplier);
         mBgExecutor = bgExecutor;
         mClickListener = clickListener;
     }

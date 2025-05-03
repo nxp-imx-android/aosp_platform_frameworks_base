@@ -18,6 +18,7 @@ package com.android.systemui.lowlightclock
 import android.content.ComponentName
 import android.content.packageManager
 import android.content.res.mainResources
+import android.platform.test.annotations.DisableFlags
 import android.provider.Settings
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -37,6 +38,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.lowlight.AmbientLightModeMonitor
 import com.android.systemui.lowlight.ambientLightModeMonitor
 import com.android.systemui.lowlight.fake
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -61,6 +63,7 @@ import org.mockito.kotlin.mock
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
+@DisableFlags(android.os.Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
 class LowLightMonitorTest : SysuiTestCase() {
     val kosmos =
         testKosmos()

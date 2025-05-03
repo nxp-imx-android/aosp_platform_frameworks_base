@@ -57,6 +57,7 @@ android_robolectric_test {
         "androidx.test.ext.junit",
         "flag-junit",
         "kotlinx_coroutines_test",
+        "mockito-robolectric-prebuilt", // mockito deps order matters
         "mockito-kotlin2",
         "settingslib_illustrationpreference_flags_lib",
         "settingslib_media_flags_lib",

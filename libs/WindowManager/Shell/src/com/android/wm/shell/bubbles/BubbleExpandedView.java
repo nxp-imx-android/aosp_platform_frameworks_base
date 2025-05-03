@@ -26,6 +26,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.wm.shell.bubbles.BubblePositioner.MAX_HEIGHT;
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.shared.TypefaceUtils.setTypeface;
 
@@ -62,7 +63,6 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.window.ScreenCapture;
-import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
@@ -305,17 +305,10 @@ public class BubbleExpandedView extends LinearLayout {
             }
 
             final TaskViewTaskController tvc = mTaskView.getController();
-            final WindowContainerToken token = tvc.getTaskToken();
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-                wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
-            }
-            if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-                wct.setDisablePip(token, true /* disablePip */);
-            }
-            if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-                wct.setDisableLaunchAdjacent(token, true);
-            }
+            final boolean isAppBubble = mBubble != null
+                    && (mBubble.isApp() || mBubble.isShortcut());
+            final WindowContainerTransaction wct = getEnterBubbleTransaction(
+                    tvc.getTaskToken(), isAppBubble);
             tvc.getTaskOrganizer().applyTransaction(wct);
 
             // With the task org, the taskAppeared callback will only happen once the task has

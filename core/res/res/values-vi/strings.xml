@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Siêu tối"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Thiết bị trợ thính"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Tự động nhấp"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Phím điều khiển chuột"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Đã ngắt kết nối"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Đã kết nối"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Đang hoạt động"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Cuộn"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Nhấn và giữ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Tạm dừng"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Vị trí"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Cuộn lên"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Cuộn xuống"</string>

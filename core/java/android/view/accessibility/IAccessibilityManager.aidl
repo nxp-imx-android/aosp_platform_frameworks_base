@@ -98,7 +98,7 @@ interface IAccessibilityManager {
     void performAccessibilityShortcut(int displayId, int shortcutType, String targetName);
 
     @EnforcePermission("MANAGE_ACCESSIBILITY")
-    List<String> getAccessibilityShortcutTargets(int shortcutType);
+    List<String> getAccessibilityShortcutTargets(int shortcutType, int userId);
 
     // System process only
     @RequiresNoPermission

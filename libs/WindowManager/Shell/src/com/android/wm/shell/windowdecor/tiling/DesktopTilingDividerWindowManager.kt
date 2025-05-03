@@ -29,7 +29,6 @@ import android.os.Binder
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.RoundedCorner
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
@@ -43,7 +42,6 @@ import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
 import android.view.WindowManager.LayoutParams.TYPE_DOCK_DIVIDER
 import android.view.WindowlessWindowManager
 import com.android.wm.shell.R
-import com.android.wm.shell.common.SyncTransactionQueue
 import java.util.function.Supplier
 
 /**
@@ -53,9 +51,7 @@ import java.util.function.Supplier
 class DesktopTilingDividerWindowManager(
     config: Configuration,
     private val windowName: String,
-    private val context: Context,
     private val leash: SurfaceControl,
-    private val syncQueue: SyncTransactionQueue,
     private val transitionHandler: DesktopTilingWindowDecoration,
     private val transactionSupplier: Supplier<SurfaceControl.Transaction>,
     private var dividerBounds: Rect,
@@ -67,11 +63,16 @@ class DesktopTilingDividerWindowManager(
     private var dividerShown = false
     private var handleRegionSize: Size =
         Size(
-            context.resources.getDimensionPixelSize(R.dimen.split_divider_handle_region_width),
-            context.resources.getDimensionPixelSize(R.dimen.split_divider_handle_region_height),
+            displayContext.resources.getDimensionPixelSize(
+                R.dimen.split_divider_handle_region_width
+            ),
+            displayContext.resources.getDimensionPixelSize(
+                R.dimen.split_divider_handle_region_height
+            ),
         )
     private var setTouchRegion = true
     private val maxRoundedCornerRadius = getMaxRoundedCornerRadius()
+    private var runningAnimator: ValueAnimator? = null
 
     /**
      * Gets bounds of divider window with screen based coordinate on the param Rect.
@@ -136,17 +137,22 @@ class DesktopTilingDividerWindowManager(
      */
     fun generateViewHost(relativeLeash: SurfaceControl) {
         val surfaceControlViewHost =
-            SurfaceControlViewHost(context, context.display, this, "DesktopTilingManager")
+            SurfaceControlViewHost(
+                displayContext,
+                displayContext.display,
+                this,
+                "DesktopTilingManager",
+            )
         val dividerView =
-            LayoutInflater.from(context).inflate(R.layout.tiling_split_divider, /* root= */ null)
-                as TilingDividerView
+            LayoutInflater.from(displayContext)
+                .inflate(R.layout.tiling_split_divider, /* root= */ null) as TilingDividerView
         val lp = getWindowManagerParams()
         surfaceControlViewHost.setView(dividerView, lp)
         val tmpDividerBounds = Rect()
         getDividerBounds(tmpDividerBounds)
         dividerView.setup(this, tmpDividerBounds, handleRegionSize, isDarkMode)
         val dividerAnimatorT = transactionSupplier.get()
-        val dividerAnimator =
+        runningAnimator =
             ValueAnimator.ofFloat(0f, 1f).apply {
                 duration = DIVIDER_FADE_IN_ALPHA_DURATION
                 addUpdateListener {
@@ -169,12 +175,13 @@ class DesktopTilingDividerWindowManager(
 
                         override fun onAnimationEnd(animation: Animator) {
                             dividerAnimatorT.setAlpha(leash, 1f).apply()
-                            dividerShown = true
+                            runningAnimator = null
                         }
                     }
                 )
             }
-        dividerAnimator.start()
+        runningAnimator?.start()
+        dividerShown = true
         viewHost = surfaceControlViewHost
         tilingDividerView = dividerView
         updateTouchRegion()
@@ -196,15 +203,21 @@ class DesktopTilingDividerWindowManager(
         if (!dividerShown) {
             return
         }
+        cancelAnimation()
         val t = transactionSupplier.get()
         t.hide(leash)
         t.apply()
         dividerShown = false
     }
 
+    fun cancelAnimation() {
+        runningAnimator?.removeAllUpdateListeners()
+        runningAnimator?.cancel()
+        runningAnimator = null
+    }
     /** Shows the divider bar. */
     fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
-        if (dividerShown) return
+        if (dividerShown || runningAnimator != null) return
         val dividerAnimatorT = transactionSupplier.get()
         val dividerAnimDuration =
             if (isTilingVisibleAfterRecents) {
@@ -212,7 +225,7 @@ class DesktopTilingDividerWindowManager(
             } else {
                 DIVIDER_FADE_IN_ALPHA_DURATION
             }
-        val dividerAnimator =
+        runningAnimator =
             ValueAnimator.ofFloat(0f, 1f).apply {
                 duration = dividerAnimDuration
                 addUpdateListener {
@@ -226,12 +239,12 @@ class DesktopTilingDividerWindowManager(
 
                         override fun onAnimationEnd(animation: Animator) {
                             dividerAnimatorT.setAlpha(leash, 1f).apply()
-                            dividerShown = true
+                            runningAnimator = null
                         }
                     }
                 )
             }
-        dividerAnimator.start()
+        runningAnimator?.start()
         dividerShown = true
     }
 
@@ -297,6 +310,7 @@ class DesktopTilingDividerWindowManager(
      * hierarchy.y.
      */
     fun release() {
+        cancelAnimation()
         tilingDividerView = null
         viewHost.release()
         transactionSupplier.get().hide(leash).remove(leash).apply()
@@ -339,14 +353,9 @@ class DesktopTilingDividerWindowManager(
     }
 
     private fun getMaxRoundedCornerRadius(): Int {
-        val display = displayContext.display
-        return listOf(
-                RoundedCorner.POSITION_TOP_LEFT,
-                RoundedCorner.POSITION_TOP_RIGHT,
-                RoundedCorner.POSITION_BOTTOM_RIGHT,
-                RoundedCorner.POSITION_BOTTOM_LEFT,
-            )
-            .maxOf { position -> display.getRoundedCorner(position)?.getRadius() ?: 0 }
+        return displayContext.resources.getDimensionPixelSize(
+            com.android.wm.shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius
+        )
     }
 
     companion object {

@@ -50,7 +50,6 @@ import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationResultType;
-import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
@@ -254,14 +253,10 @@ public class Utils {
         // Check if any of the non-biometric and non-credential bits are set. If so, this is
         // invalid.
         final int testBits;
-        if (Flags.mandatoryBiometrics()) {
-            testBits = ~(Authenticators.DEVICE_CREDENTIAL
-                    | Authenticators.BIOMETRIC_MIN_STRENGTH
-                    | Authenticators.IDENTITY_CHECK);
-        } else {
-            testBits = ~(Authenticators.DEVICE_CREDENTIAL
-                    | Authenticators.BIOMETRIC_MIN_STRENGTH);
-        }
+        testBits = ~(Authenticators.DEVICE_CREDENTIAL
+                | Authenticators.BIOMETRIC_MIN_STRENGTH
+                | Authenticators.IDENTITY_CHECK);
+
         if ((authenticators & testBits) != 0) {
             Slog.e(BiometricService.TAG, "Non-biometric, non-credential bits found."
                     + " Authenticators: " + authenticators);
@@ -322,9 +317,7 @@ public class Utils {
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT:
             case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT:
-                biometricManagerCode = Flags.mandatoryBiometrics()
-                        ? BiometricManager.BIOMETRIC_ERROR_LOCKOUT
-                        : BiometricManager.BIOMETRIC_SUCCESS;
+                biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_LOCKOUT;
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_SENSOR_PRIVACY_ENABLED:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
@@ -399,9 +392,7 @@ public class Utils {
             case MANDATORY_BIOMETRIC_UNAVAILABLE_ERROR:
                 return BiometricConstants.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE;
             case BIOMETRIC_NOT_ENABLED_FOR_APPS:
-                if (Flags.mandatoryBiometrics()) {
-                    return BiometricConstants.BIOMETRIC_ERROR_NOT_ENABLED_FOR_APPS;
-                }
+                return BiometricConstants.BIOMETRIC_ERROR_NOT_ENABLED_FOR_APPS;
             case BIOMETRIC_DISABLED_BY_DEVICE_POLICY:
             case BIOMETRIC_HARDWARE_NOT_DETECTED:
             default:

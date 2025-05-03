@@ -43,6 +43,8 @@ public class TouchLatencyActivity extends AppCompatActivity {
     private float mSliderPreferredRefreshRate;
     private DisplayManager mDisplayManager;
 
+    public static final String ACTION_MODE_ON_CREATE = "action_mode_on_create";
+
     private final DisplayManager.DisplayListener mDisplayListener =
             new DisplayManager.DisplayListener() {
         @Override
@@ -112,6 +114,15 @@ public class TouchLatencyActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_touch_latency, mMenu);
         updateOptionsMenu();
+        int initActionMode = getIntent().getIntExtra(ACTION_MODE_ON_CREATE, 0);
+        if (initActionMode < mTouchView.ACTION_MODES.length) {
+            MenuItem menuItem = mMenu.findItem(R.id.action_settings);
+            // Calling changeMode() cycles through the supported modes. So loop
+            // through the modes to get the request one.
+            for (int i = 0; i < initActionMode; i++) {
+                mTouchView.changeMode(menuItem);
+            }
+        }
         Trace.endSection();
         return true;
     }

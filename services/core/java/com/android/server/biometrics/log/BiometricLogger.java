@@ -25,6 +25,7 @@ import android.hardware.SensorManager;
 import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricsProtoEnums;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Handler;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -42,6 +43,7 @@ public class BiometricLogger {
     public static final String TAG = "BiometricLogger";
     public static final boolean DEBUG = false;
 
+    private final Handler mHandler;
     private final int mStatsModality;
     private final int mStatsAction;
     private final int mStatsClient;
@@ -52,9 +54,15 @@ public class BiometricLogger {
     private long mFirstAcquireTimeMs;
     private boolean mShouldLogMetrics = true;
 
-    /** Get a new logger with all unknown fields (for operations that do not require logs). */
-    public static BiometricLogger ofUnknown(@NonNull Context context) {
-        return new BiometricLogger(context, BiometricsProtoEnums.MODALITY_UNKNOWN,
+    /**
+     * Get a new logger with all unknown fields (for operations that do not require logs).
+     *
+     * @param context system_server context
+     * @param handler Handler for log events. This is not used for the public "log" methods, but
+     *                for internal data collection from SensorManager, etc.
+     */
+    public static BiometricLogger ofUnknown(@NonNull Context context, @NonNull Handler handler) {
+        return new BiometricLogger(context, handler, BiometricsProtoEnums.MODALITY_UNKNOWN,
                 BiometricsProtoEnums.ACTION_UNKNOWN, BiometricsProtoEnums.CLIENT_UNKNOWN,
                 null /* AuthenticationStatsCollector */);
     }
@@ -66,36 +74,39 @@ public class BiometricLogger {
      * {@link #swapAction(Context, int)}.
      *
      * @param context system_server context
+     * @param handler Handler for log events. This is not used for the public "log" methods, but
+     *                for internal data collection from SensorManager, etc.
      * @param statsModality One of {@link BiometricsProtoEnums} MODALITY_* constants.
      * @param statsAction One of {@link BiometricsProtoEnums} ACTION_* constants.
      * @param statsClient One of {@link BiometricsProtoEnums} CLIENT_* constants.
      */
-    public BiometricLogger(
-            @NonNull Context context, int statsModality, int statsAction, int statsClient,
+    public BiometricLogger(@NonNull Context context, @NonNull Handler handler,
+            int statsModality, int statsAction, int statsClient,
             @Nullable AuthenticationStatsCollector authenticationStatsCollector) {
-        this(statsModality, statsAction, statsClient,
+        this(handler, statsModality, statsAction, statsClient,
                 BiometricFrameworkStatsLogger.getInstance(),
                 authenticationStatsCollector,
                 context.getSystemService(SensorManager.class));
     }
 
     @VisibleForTesting
-    BiometricLogger(
+    BiometricLogger(@NonNull Handler handler,
             int statsModality, int statsAction, int statsClient,
             BiometricFrameworkStatsLogger logSink,
             @Nullable AuthenticationStatsCollector statsCollector,
             SensorManager sensorManager) {
+        mHandler = handler;
         mStatsModality = statsModality;
         mStatsAction = statsAction;
         mStatsClient = statsClient;
         mSink = logSink;
         mAuthenticationStatsCollector = statsCollector;
-        mALSProbe = new ALSProbe(sensorManager);
+        mALSProbe = new ALSProbe(sensorManager, handler);
     }
 
     /** Creates a new logger with the action replaced with the new action. */
     public BiometricLogger swapAction(@NonNull Context context, int statsAction) {
-        return new BiometricLogger(context, mStatsModality, statsAction, mStatsClient,
+        return new BiometricLogger(context, mHandler, mStatsModality, statsAction, mStatsClient,
                 null /* AuthenticationStatsCollector */);
     }
 

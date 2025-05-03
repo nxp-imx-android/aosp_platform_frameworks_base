@@ -210,8 +210,7 @@ class PreAuthInfo {
         final boolean isMandatoryBiometricsRequested =
                 (authenticators & BiometricManager.Authenticators.IDENTITY_CHECK)
                         == BiometricManager.Authenticators.IDENTITY_CHECK;
-        if (Flags.mandatoryBiometrics() && isMandatoryBiometricsEnabled
-                && isMandatoryBiometricsRequested) {
+        if (isMandatoryBiometricsEnabled && isMandatoryBiometricsRequested) {
             try {
                 final boolean isInSignificantPlace = trustManager.isInSignificantPlace();
                 return !isInSignificantPlace;
@@ -371,7 +370,7 @@ class PreAuthInfo {
             return hardwareNotDetected;
         }
 
-        if (Flags.mandatoryBiometrics() && biometricAppNotAllowed != null) {
+        if (biometricAppNotAllowed != null) {
             return biometricAppNotAllowed;
         }
 
@@ -459,8 +458,7 @@ class PreAuthInfo {
         } else if (credentialRequested) {
             modality |= TYPE_CREDENTIAL;
             status = credentialAvailable ? AUTHENTICATOR_OK : CREDENTIAL_NOT_ENROLLED;
-        } else if (Flags.mandatoryBiometrics() && mOnlyMandatoryBiometricsRequested
-                && !mIsMandatoryBiometricsAuthentication) {
+        } else if (mOnlyMandatoryBiometricsRequested && !mIsMandatoryBiometricsAuthentication) {
             status = MANDATORY_BIOMETRIC_UNAVAILABLE_ERROR;
         } else {
             // This should not be possible via the public API surface and is here mainly for

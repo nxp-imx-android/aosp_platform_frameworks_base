@@ -1922,6 +1922,33 @@ public final class AccessibilityManager {
      * @return The list of shortcut target names.
      * @hide
      */
+    @RequiresPermission(Manifest.permission.MANAGE_ACCESSIBILITY)
+    @NonNull
+    public List<String> getAccessibilityShortcutTargets(
+            @UserShortcutType int shortcutType, int userId) {
+        final IAccessibilityManager service;
+        synchronized (mLock) {
+            service = getServiceLocked();
+        }
+        if (service != null) {
+            try {
+                return service.getAccessibilityShortcutTargets(shortcutType, userId);
+            } catch (RemoteException re) {
+                re.rethrowFromSystemServer();
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns the list of shortcut target names currently assigned to the given shortcut.
+     * Use of {@link AccessibilityManager#getAccessibilityShortcutTargets(int, int)}
+     * is preferred.
+     *
+     * @param shortcutType The shortcut type.
+     * @return The list of shortcut target names.
+     * @hide
+     */
     @TestApi
     @RequiresPermission(Manifest.permission.MANAGE_ACCESSIBILITY)
     @NonNull
@@ -1933,7 +1960,8 @@ public final class AccessibilityManager {
         }
         if (service != null) {
             try {
-                return service.getAccessibilityShortcutTargets(shortcutType);
+                return service.getAccessibilityShortcutTargets(shortcutType,
+                        UserHandle.USER_CURRENT);
             } catch (RemoteException re) {
                 re.rethrowFromSystemServer();
             }

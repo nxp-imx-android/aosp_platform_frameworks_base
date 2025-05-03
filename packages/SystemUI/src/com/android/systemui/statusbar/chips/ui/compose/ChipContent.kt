@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -46,6 +47,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
 import java.text.NumberFormat
+import java.util.Locale
 import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -58,6 +60,7 @@ fun ChipContent(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val locale: Locale? = LocalConfiguration.current.locales[0]
     val textStyle = MaterialTheme.typography.labelLargeEmphasized
     val textColor = Color(colors.text(context))
     val maxTextWidth = dimensionResource(id = R.dimen.ongoing_activity_chip_max_text_width)
@@ -103,7 +106,7 @@ fun ChipContent(
                                 startPadding = startPadding,
                                 endPadding = endPadding,
                             )
-                            .neverDecreaseWidth(density),
+                            .neverDecreaseWidth(density, locale),
                 )
             }
         }
@@ -116,7 +119,7 @@ fun ChipContent(
                 color = textColor,
                 softWrap = false,
                 textAlign = TextAlign.Center,
-                modifier = modifier.neverDecreaseWidth(density),
+                modifier = modifier.neverDecreaseWidth(density, locale),
             )
         }
 
@@ -175,27 +178,27 @@ fun ChipContent(
 }
 
 /** A modifier that ensures the width of the content only increases and never decreases. */
-private fun Modifier.neverDecreaseWidth(density: Density): Modifier {
-    return this.then(NeverDecreaseWidthElement(density))
+private fun Modifier.neverDecreaseWidth(density: Density, locale: Locale?): Modifier {
+    return this.then(NeverDecreaseWidthElement(density, locale))
 }
 
-private data class NeverDecreaseWidthElement(val density: Density) :
+private data class NeverDecreaseWidthElement(val density: Density, val locale: Locale?) :
     ModifierNodeElement<NeverDecreaseWidthNode>() {
     override fun create(): NeverDecreaseWidthNode {
         return NeverDecreaseWidthNode()
     }
 
     override fun update(node: NeverDecreaseWidthNode) {
-        node.onDensityUpdated()
+        node.onDisplayParamsUpdated()
     }
 }
 
 private class NeverDecreaseWidthNode : Modifier.Node(), LayoutModifierNode {
     private var minWidth = 0
 
-    fun onDensityUpdated() {
-        // When the font or display size changes, we should re-determine what our minWidth is from
-        // scratch (e.g. if the font size decreased, we may be able to take *less* room).
+    fun onDisplayParamsUpdated() {
+        // When the font, display size, or locale changes, we should re-determine what our minWidth
+        // is from scratch (e.g. if the font size decreased, we may be able to take *less* room).
         // See b/395607413.
         minWidth = 0
     }

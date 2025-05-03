@@ -183,12 +183,12 @@ public class DesktopModeHelperTest {
 
     @DisableFlags(Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
     @Test
-    public void isDeviceEligibleForDesktopMode_configDEModeOffAndIntDispHostsDesktop_returnsFalse() {
+    public void isDeviceEligibleForDesktopMode_configDEModeOffAndIntDispHostsDesktop_returnsTrue() {
         doReturn(true).when(mMockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));
         doReturn(false).when(mMockResources)
                 .getBoolean(eq(R.bool.config_canInternalDisplayHostDesktops));
 
-        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isFalse();
+        assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isTrue();
     }
 
     @Test

@@ -3853,30 +3853,43 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         if (isPip2ExperimentEnabled()) {
-            // If PiP2 flag is on and request to enter PiP comes in,
-            // we request a direct transition TRANSIT_PIP from Shell to get the right entry bounds.
-            // So PiP activity isn't moved to a pinned task until after
-            // Shell calls back into Core with the entry bounds to be applied with startWCT.
-            final Transition enterPipTransition = new Transition(TRANSIT_PIP,
-                    0 /* flags */, getTransitionController(), mWindowManager.mSyncEngine);
-            r.setPictureInPictureParams(params);
-            enterPipTransition.setPipActivity(r);
-            r.mAutoEnteringPip = isAutoEnter;
+            final Runnable enterPipRunnable = () -> {
+                // If PiP2 flag is on and request to enter PiP comes in, we request a direct
+                // transition TRANSIT_PIP from Shell to get the right entry bounds.
+                // So PiP activity isn't moved to a pinned task until after
+                // Shell calls back into Core with the entry bounds to be applied with startWCT.
+                final Transition enterPipTransition = new Transition(TRANSIT_PIP,
+                        0 /* flags */, getTransitionController(), mWindowManager.mSyncEngine);
+                r.setPictureInPictureParams(params);
+                enterPipTransition.setPipActivity(r);
+                r.mAutoEnteringPip = isAutoEnter;
 
-            if (r.getTaskFragment() != null && r.getTaskFragment().isEmbeddedWithBoundsOverride()
-                    && enterPipTransition != null) {
-                enterPipTransition.addFlag(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY);
+                if (r.getTaskFragment() != null
+                        && r.getTaskFragment().isEmbeddedWithBoundsOverride()) {
+                    enterPipTransition.addFlag(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY);
+                }
+
+                getTransitionController().startCollectOrQueue(enterPipTransition, (deferred) -> {
+                    mChainTracker.start("enterPip2", enterPipTransition);
+                    // Collecting PiP activity explicitly to avoid stopping PiP activity while
+                    // Shell handles the request; see task supervisor's
+                    // processStoppingAndFinishingActivities.
+                    enterPipTransition.collect(r);
+                    getTransitionController().requestStartTransition(enterPipTransition,
+                            r.getTask(), null /* remoteTransition */, null /* displayChange */);
+                    mChainTracker.end();
+                });
+            };
+            if (r.isKeyguardLocked()) {
+                mActivityClientController.dismissKeyguard(r.token, new KeyguardDismissCallback() {
+                    @Override
+                    public void onDismissSucceeded() {
+                        enterPipRunnable.run();
+                    }
+                }, null /* message */);
+            } else {
+                enterPipRunnable.run();
             }
-
-            getTransitionController().startCollectOrQueue(enterPipTransition, (deferred) -> {
-                mChainTracker.start("enterPip2", enterPipTransition);
-                // Collecting PiP activity explicitly to avoid stopping PiP activity while Shell
-                // handles the request; see task supervisor's processStoppingAndFinishingActivities.
-                enterPipTransition.collect(r);
-                getTransitionController().requestStartTransition(enterPipTransition,
-                        r.getTask(), null /* remoteTransition */, null /* displayChange */);
-                mChainTracker.end();
-            });
             return true;
         }
 
@@ -5625,11 +5638,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     @Nullable
     ActivityRecord.WindowStyle getWindowStyle(String packageName, int theme, int userId) {
-        if (!com.android.window.flags.Flags.cacheWindowStyle()) {
-            final AttributeCache.Entry ent = AttributeCache.instance().get(packageName,
-                    theme, com.android.internal.R.styleable.Window, userId);
-            return ent != null ? new ActivityRecord.WindowStyle(ent.array) : null;
-        }
         return mWindowStyleCache.get(packageName, theme, userId);
     }
 
@@ -7441,12 +7449,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         @Override
         public boolean isNoDisplay(String packageName, int theme, int userId) {
-            if (!com.android.window.flags.Flags.cacheWindowStyle()) {
-                final AttributeCache.Entry ent = AttributeCache.instance()
-                        .get(packageName, theme, R.styleable.Window, userId);
-                return ent != null
-                        && ent.array.getBoolean(R.styleable.Window_windowNoDisplay, false);
-            }
             final ActivityRecord.WindowStyle style = getWindowStyle(packageName, theme, userId);
             return style != null && style.noDisplay();
         }

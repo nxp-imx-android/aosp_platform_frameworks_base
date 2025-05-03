@@ -2084,6 +2084,8 @@
   <java-symbol type="bool" name="config_glanceableHubEnabled" />
   <java-symbol type="integer" name="config_whenToStartHubModeDefault" />
   <java-symbol type="bool" name="config_onlyShowGlanceableHubWhenWirelessChargingDefault" />
+  <java-symbol type="bool" name="config_lowLightDisplayBehaviorEnabledDefault" />
+  <java-symbol type="integer" name="config_lowLightDisplayBehaviorDefault" />
   <java-symbol type="integer" name="config_keyguardDrawnTimeout" />
   <java-symbol type="bool" name="config_goToSleepOnButtonPressTheaterMode" />
   <java-symbol type="bool" name="config_supportLongPressPowerWhenNonInteractive" />
@@ -3821,6 +3823,7 @@
   <java-symbol type="string" name="reduce_bright_colors_feature_name" />
   <java-symbol type="string" name="config_defaultAccessibilityService" />
   <java-symbol type="string" name="config_defaultSelectToSpeakService" />
+  <java-symbol type="string" name="config_defaultVoiceAccessService" />
   <java-symbol type="string" name="config_defaultAccessibilityNotificationSound" />
   <java-symbol type="string" name="accessibility_shortcut_spoken_feedback" />
   <java-symbol type="array" name="config_trustedAccessibilityServices" />
@@ -5869,6 +5872,7 @@
   <java-symbol type="drawable" name="accessibility_autoclick_pause" />
   <java-symbol type="drawable" name="accessibility_autoclick_resume" />
   <java-symbol type="drawable" name="ic_accessibility_autoclick" />
+  <java-symbol type="drawable" name="ic_accessibility_mouse_keys" />
 
   <!-- Accessibility autoclick scroll panel related -->
   <java-symbol type="layout" name="accessibility_autoclick_scroll_panel" />

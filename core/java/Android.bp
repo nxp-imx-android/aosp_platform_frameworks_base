@@ -630,19 +630,14 @@ filegroup {
     ],
 }
 
-aidl_interface {
-    name: "android.os.statsbootstrap_aidl",
-    unstable: true,
+filegroup {
+    name: "android-os-statsbootstrap-aidl",
     srcs: [
         "android/os/IStatsBootstrapAtomService.aidl",
         "android/os/StatsBootstrapAtom.aidl",
         "android/os/StatsBootstrapAtomValue.aidl",
     ],
-    backend: {
-        cpp: {
-            enabled: true,
-        },
-    },
+    visibility: ["//frameworks/native/libs/binder"],
 }
 
 // utility classes statically linked into wifi-service

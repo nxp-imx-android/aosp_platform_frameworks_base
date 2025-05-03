@@ -16,123 +16,162 @@
 
 package com.android.systemui.statusbar.notification.row
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
+import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
-import android.graphics.drawable.Drawable
-import android.graphics.LinearGradient
-import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
-import com.android.systemui.res.R
-import com.android.wm.shell.shared.animation.Interpolators
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import com.android.systemui.res.R
+import com.android.wm.shell.shared.animation.Interpolators
 
 class AnimatedActionBackgroundDrawable(
     context: Context,
-) : RippleDrawable(
-    ContextCompat.getColorStateList(
-        context,
-        R.color.notification_ripple_untinted_color
-    ) ?: ColorStateList.valueOf(Color.TRANSPARENT),
-    createBaseDrawable(context), null
-) {
+    onAnimationStarted: () -> Unit,
+    onAnimationEnded: () -> Unit,
+    onAnimationCancelled: () -> Unit,
+) :
+    RippleDrawable(
+        ContextCompat.getColorStateList(context, R.color.notification_ripple_untinted_color)
+            ?: ColorStateList.valueOf(Color.TRANSPARENT),
+        createBaseDrawable(context, onAnimationStarted, onAnimationEnded, onAnimationCancelled),
+        null,
+    ) {
     companion object {
-        private fun createBaseDrawable(context: Context): Drawable {
-            return BaseBackgroundDrawable(context)
+        private fun createBaseDrawable(
+            context: Context,
+            onAnimationStarted: () -> Unit,
+            onAnimationEnded: () -> Unit,
+            onAnimationCancelled: () -> Unit,
+        ): Drawable {
+            return BaseBackgroundDrawable(
+                context,
+                onAnimationStarted,
+                onAnimationEnded,
+                onAnimationCancelled,
+            )
         }
     }
 }
 
 class BaseBackgroundDrawable(
     context: Context,
+    onAnimationStarted: () -> Unit,
+    onAnimationEnded: () -> Unit,
+    onAnimationCancelled: () -> Unit,
 ) : Drawable() {
 
     private val cornerRadius =
-        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_corner_radius)
+        context.resources
+            .getDimensionPixelSize(R.dimen.animated_action_button_corner_radius)
             .toFloat()
 
     // Stroke is clipped in draw() callback, so doubled in width here.
     private val outlineStrokeWidth =
-        2 * context.resources.getDimensionPixelSize(R.dimen.animated_action_button_outline_stroke_width)
-            .toFloat()
+        2 *
+            context.resources
+                .getDimensionPixelSize(R.dimen.animated_action_button_outline_stroke_width)
+                .toFloat()
     private val insetVertical =
-        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_inset_vertical)
+        context.resources
+            .getDimensionPixelSize(R.dimen.animated_action_button_inset_vertical)
             .toFloat()
 
     private val buttonShape = Path()
     // Color and style
     private val outlineStaticColor = context.getColor(R.color.animated_action_button_stroke_color)
-    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        val bgColor =
-            context.getColor(
-                com.android.internal.R.color.materialColorSurfaceContainerHigh
-            )
-        color = bgColor
-        style = Paint.Style.FILL
-    }
-    private val outlineGradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = outlineStaticColor
-        style = Paint.Style.STROKE
-        strokeWidth = outlineStrokeWidth
-    }
-    private val outlineSolidPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = outlineStaticColor
-        style = Paint.Style.STROKE
-        strokeWidth = outlineStrokeWidth
-    }
+    private val bgPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            val bgColor =
+                context.getColor(com.android.internal.R.color.materialColorSurfaceContainerHigh)
+            color = bgColor
+            style = Paint.Style.FILL
+        }
+    private val outlineGradientPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = outlineStaticColor
+            style = Paint.Style.STROKE
+            strokeWidth = outlineStrokeWidth
+        }
+    private val outlineSolidPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = outlineStaticColor
+            style = Paint.Style.STROKE
+            strokeWidth = outlineStrokeWidth
+        }
 
     private val outlineStartColor =
-        context.getColor(
-            com.android.internal.R.color.materialColorTertiaryContainer
-        )
+        boostChroma(context.getColor(com.android.internal.R.color.materialColorTertiaryContainer))
     private val outlineMiddleColor =
-        context.getColor(
-            com.android.internal.R.color.materialColorPrimaryFixedDim
-        )
+        boostChroma(context.getColor(com.android.internal.R.color.materialColorPrimaryFixedDim))
     private val outlineEndColor =
-        context.getColor(
-            com.android.internal.R.color.materialColorPrimary
-        )
+        boostChroma(context.getColor(com.android.internal.R.color.materialColorPrimary))
 
     // Animation
     private var gradientAnimator: ValueAnimator
     private var rotationAngle = 20f // Start rotation at 20 degrees
     private var fadeAnimator: ValueAnimator? = null
-    private var gradientAlpha = 255    // Fading out gradient
-    private var solidAlpha = 0         // Fading in solid color
+    private var gradientAlpha = 255 // Fading out gradient
+    private var solidAlpha = 0 // Fading in solid color
 
     init {
-        gradientAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 1500
-            interpolator = Interpolators.LINEAR
-            repeatCount = 0
-            addUpdateListener { animator ->
-                val animatedValue = animator.animatedValue as Float
-                rotationAngle = 20f + animatedValue * 360f // Rotate in a spiral
-                invalidateSelf()
+        gradientAnimator =
+            ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = 1750
+                startDelay = 1000
+                interpolator = Interpolators.LINEAR
+                repeatCount = 0
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationEnded()
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            onAnimationCancelled()
+                        }
+                    }
+                )
+                addUpdateListener { animator ->
+                    val animatedValue = animator.animatedValue as Float
+                    rotationAngle = 20f + animatedValue * 360f // Rotate in a spiral
+                    invalidateSelf()
+                }
+                start()
             }
-            start()
-        }
-        fadeAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 500
-            startDelay = 1000
-            addUpdateListener { animator ->
-                val progress = animator.animatedValue as Float
-                gradientAlpha = ((1 - progress) * 255).toInt()  // Fade out gradient
-                solidAlpha = (progress * 255).toInt()          // Fade in color
-                invalidateSelf()
+        fadeAnimator =
+            ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = 500
+                startDelay = 2250
+                addUpdateListener { animator ->
+                    val progress = animator.animatedValue as Float
+                    gradientAlpha = ((1 - progress) * 255).toInt() // Fade out gradient
+                    solidAlpha = (progress * 255).toInt() // Fade in color
+                    invalidateSelf()
+                }
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            onAnimationStarted()
+                        }
+                    }
+                )
+                start()
             }
-            start()
-        }
     }
 
     override fun draw(canvas: Canvas) {
@@ -147,13 +186,16 @@ class BaseBackgroundDrawable(
         canvas.drawPath(buttonShape, bgPaint)
 
         // Set up outline gradient
-        val gradientShader = LinearGradient(
-            boundsF.left, boundsF.top,
-            boundsF.right, boundsF.bottom,
-            intArrayOf(outlineStartColor, outlineMiddleColor, outlineEndColor),
-            null,
-            Shader.TileMode.CLAMP
-        )
+        val gradientShader =
+            LinearGradient(
+                boundsF.left,
+                boundsF.top,
+                boundsF.right,
+                boundsF.bottom,
+                intArrayOf(outlineStartColor, outlineMiddleColor, outlineEndColor),
+                floatArrayOf(0.2f, 0.5f, 0.8f),
+                Shader.TileMode.CLAMP,
+            )
         // Create a rotation matrix for the spiral effect
         val matrix = Matrix()
         matrix.setRotate(rotationAngle, boundsF.centerX(), boundsF.centerY())
@@ -190,4 +232,15 @@ class BaseBackgroundDrawable(
     }
 
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
+
+    private fun boostChroma(color: Int): Int {
+        val hctColor = FloatArray(3)
+        ColorUtils.colorToM3HCT(color, hctColor)
+        val chroma = hctColor[1]
+        return if (chroma < 5) {
+            color
+        } else {
+            ColorUtils.M3HCTToColor(hctColor[0], 120f, hctColor[2])
+        }
+    }
 }

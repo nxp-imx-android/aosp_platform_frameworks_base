@@ -233,9 +233,11 @@ public:
 
     static CanvasContext* getActiveContext();
 
-    void sendLoadResetHint();
+    void sendCpuLoadResetHint();
 
-    void sendLoadIncreaseHint();
+    void sendCpuLoadIncreaseHint();
+
+    void sendGpuLoadIncreaseHint();
 
     void setSyncDelayDuration(nsecs_t duration);
 

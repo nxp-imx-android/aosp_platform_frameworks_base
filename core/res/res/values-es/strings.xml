@@ -254,7 +254,7 @@
     <string name="shutdown_confirm" product="tv" msgid="7975942887313518330">"Tu dispositivo Android TV se apagará."</string>
     <string name="shutdown_confirm" product="watch" msgid="2977299851200240146">"El reloj se apagará."</string>
     <string name="shutdown_confirm" product="default" msgid="136816458966692315">"El teléfono se apagará."</string>
-    <string name="shutdown_confirm_question" msgid="796151167261608447">"¿Seguro que quieres apagar el teléfono?"</string>
+    <string name="shutdown_confirm_question" msgid="796151167261608447">"¿Seguro que quieres apagar el dispositivo?"</string>
     <string name="reboot_safemode_title" msgid="5853949122655346734">"Reiniciar en modo Seguro"</string>
     <string name="reboot_safemode_confirm" msgid="1658357874737219624">"¿Quieres reiniciar el sistema en modo Seguro? Se inhabilitarán todas las aplicaciones externas que hayas instalado. Esas aplicaciones se restaurarán la próxima vez que reinicies el sistema."</string>
     <string name="recent_tasks_title" msgid="8183172372995396653">"Reciente"</string>
@@ -1806,8 +1806,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuación extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Audífonos"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automático"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas de ratón"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Activo"</string>
@@ -2278,6 +2277,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desplazarse"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Mantener pulsado"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desplazarse hacia arriba"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desplazarse hacia abajo"</string>

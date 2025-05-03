@@ -134,7 +134,6 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         synchronized (this) {
             mEnergyConsumerStatsConfig = new EnergyConsumerStats.Config(supportedStandardBuckets,
                     customBucketNames, new int[0], new String[]{""});
-            mGlobalEnergyConsumerStats = new EnergyConsumerStats(mEnergyConsumerStatsConfig);
         }
     }
 

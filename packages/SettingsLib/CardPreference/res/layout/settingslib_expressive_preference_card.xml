@@ -28,7 +28,8 @@
         android:layout_height="wrap_content"
         android:baselineAligned="false"
         android:minHeight="@dimen/settingslib_expressive_space_large3"
-        android:paddingHorizontal="@dimen/settingslib_expressive_space_medium1"
+        android:paddingStart="@dimen/settingslib_expressive_space_small1"
+        android:paddingEnd="@dimen/settingslib_expressive_space_extrasmall6"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/settingslib_card_preference_background">
@@ -53,8 +54,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingHorizontal="@dimen/settingslib_expressive_space_small1"
-            android:paddingVertical="@dimen/settingslib_expressive_space_small2"
+            android:paddingStart="@dimen/settingslib_expressive_space_extrasmall6"
+            android:paddingVertical="@dimen/settingslib_expressive_space_small1"
             android:orientation="vertical">
             <TextView
                 android:id="@android:id/title"

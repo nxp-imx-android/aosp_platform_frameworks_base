@@ -32,7 +32,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
  */
 @Stable
 fun Modifier.sysuiResTag(resId: String): Modifier {
-    return this.testTag(resIdToTestTag(resId))
+    return this.testTag("com.android.systemui:id/$resId")
 }
 
 /** Mark this node as a container that contains one or more [sysuiResTag] descendants. */
@@ -40,11 +40,5 @@ fun Modifier.sysuiResTag(resId: String): Modifier {
 fun Modifier.sysUiResTagContainer(): Modifier {
     return this.then(TestTagAsResourceIdModifier)
 }
-
-/**
- * Converts a simple resource ID name string into a fully qualified resource name string, formatted
- * for use as a test tag within the Android SystemUI package.
- */
-fun resIdToTestTag(resId: String): String = "com.android.systemui:id/$resId"
 
 private val TestTagAsResourceIdModifier = Modifier.semantics { testTagsAsResourceId = true }

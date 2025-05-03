@@ -650,6 +650,19 @@ class Owners {
         }
     }
 
+    void markPermissionGrantStateMigrated() {
+        synchronized (mData) {
+            mData.mPermissionGrantStateMigrated = true;
+            mData.writeDeviceOwner();
+        }
+    }
+
+    boolean isPermissionGrantStateMigrated() {
+        synchronized (mData) {
+            return mData.mPermissionGrantStateMigrated;
+        }
+    }
+
     void markSetKeyguardDisabledFeaturesMigrated() {
         synchronized (mData) {
             mData.mSetKeyguardDisabledFeaturesMigrated = true;

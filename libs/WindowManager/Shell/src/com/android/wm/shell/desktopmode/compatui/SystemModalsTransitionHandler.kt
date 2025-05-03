@@ -99,7 +99,7 @@ class SystemModalsTransitionHandler(
         return false
     }
 
-    private fun animateSystemModal(
+    fun animateSystemModal(
         leash: SurfaceControl,
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction,

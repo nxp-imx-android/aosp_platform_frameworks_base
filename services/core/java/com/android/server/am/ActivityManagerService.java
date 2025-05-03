@@ -15916,8 +15916,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                     + android.Manifest.permission.SET_ACTIVITY_WATCHER);
         }
 
-        if (start && profileType == ProfilerInfo.PROFILE_TYPE_REGULAR
-                && (profilerInfo == null || profilerInfo.profileFd == null)) {
+        if (start
+                && (profilerInfo == null
+                        || (profileType == ProfilerInfo.PROFILE_TYPE_REGULAR
+                                && profilerInfo.profileFd == null))) {
             throw new IllegalArgumentException("null profile info or fd");
         }
 

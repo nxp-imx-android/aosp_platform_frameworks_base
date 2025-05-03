@@ -116,6 +116,9 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         `when`(blurUtils.blurRadiusOfRatio(anyFloat())).then { answer ->
             answer.arguments[0] as Float * maxBlur.toFloat()
         }
+        `when`(blurUtils.blurRadiusOfRatioForAod(anyFloat())).then { answer ->
+            answer.arguments[0] as Float * maxBlur.toFloat() / 2
+        }
         `when`(blurUtils.ratioOfBlurRadius(anyFloat())).then { answer ->
             answer.arguments[0] as Float / maxBlur.toFloat()
         }
@@ -332,7 +335,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         statusBarStateListener.onDozeAmountChanged(1f, 1f)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        verify(blurUtils).applyBlur(any(), eq(maxBlur), eq(false), anyFloat())
+        verify(blurUtils).applyBlur(any(), eq((maxBlur / 2f).toInt()), eq(false), anyFloat())
     }
 
     @Test
@@ -484,7 +487,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @DisableFlags(
         Flags.FLAG_BOUNCER_UI_REVAMP,
         Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK
+        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
+        Flags.FLAG_SPATIAL_MODEL_PUSHBACK_IN_SHADER
     )
     fun brightnessMirror_hidesShadeBlur() {
         // Brightness mirror is fully visible
@@ -499,12 +503,16 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
         verify(wallpaperController).setNotificationShadeZoom(eq(1f))
         verify(blurUtils).prepareBlur(any(), eq(0))
-        verify(blurUtils).applyBlur(eq(viewRootImpl), eq(0), eq(false), anyFloat())
+        verify(blurUtils).applyBlur(
+            eq(viewRootImpl),
+            eq(0),
+            eq(false),
+            eq(notificationShadeDepthController.zoomOutAsScale(0f)))
     }
 
     @Test
     @DisableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
-    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK, Flags.FLAG_SPATIAL_MODEL_PUSHBACK_IN_SHADER)
     fun brightnessMirror_hidesShadeBlur_withAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -518,12 +526,20 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
         verify(wallpaperController).setNotificationShadeZoom(eq(0f))
         verify(blurUtils).prepareBlur(any(), eq(0))
-        verify(blurUtils).applyBlur(eq(viewRootImpl), eq(0), eq(false), anyFloat())
+        verify(blurUtils).applyBlur(
+            eq(viewRootImpl),
+            eq(0),
+            eq(false),
+            eq(notificationShadeDepthController.zoomOutAsScale(0f))
+        )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP)
-    @DisableFlags(Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
+    @DisableFlags(
+        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
+        Flags.FLAG_SPATIAL_MODEL_PUSHBACK_IN_SHADER
+    )
     fun brightnessMirror_hidesShadeBlur_withWindowBlurFlag() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -536,11 +552,18 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
         verify(wallpaperController).setNotificationShadeZoom(eq(1f))
-        verify(windowRootViewBlurInteractor).requestBlurForShade(eq(0), eq(1f))
+        verify(windowRootViewBlurInteractor).requestBlurForShade(
+            eq(0),
+            eq(notificationShadeDepthController.zoomOutAsScale(1f))
+        )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
+    @EnableFlags(
+        Flags.FLAG_BOUNCER_UI_REVAMP,
+        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
+        Flags.FLAG_SPATIAL_MODEL_PUSHBACK_IN_SHADER
+    )
     fun brightnessMirror_hidesShadeBlur_withWindowBlurFlagAndAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -553,7 +576,10 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
         verify(wallpaperController).setNotificationShadeZoom(eq(0f))
-        verify(windowRootViewBlurInteractor).requestBlurForShade(eq(0), eq(1f))
+        verify(windowRootViewBlurInteractor).requestBlurForShade(
+            eq(0),
+            eq(notificationShadeDepthController.zoomOutAsScale(0f))
+        )
     }
 
     @Test

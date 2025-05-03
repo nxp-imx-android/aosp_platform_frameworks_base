@@ -16,8 +16,6 @@
 
 package com.android.internal.power;
 
-import static android.os.BatteryStats.POWER_DATA_UNAVAILABLE;
-
 import static com.android.internal.power.EnergyConsumerStats.NUMBER_STANDARD_POWER_BUCKETS;
 import static com.android.internal.power.EnergyConsumerStats.POWER_BUCKET_BLUETOOTH;
 import static com.android.internal.power.EnergyConsumerStats.POWER_BUCKET_CPU;
@@ -49,6 +47,8 @@ import java.util.Arrays;
  */
 @SmallTest
 public class EnergyConsumerStatsTest {
+    private static final long POWER_DATA_UNAVAILABLE = -1;
+
     @Rule
     public final RavenwoodRule mRavenwood = new RavenwoodRule();
 

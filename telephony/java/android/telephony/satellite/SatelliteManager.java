@@ -722,7 +722,7 @@ public final class SatelliteManager {
      * <p>
      * To get internet access, applications need to be modified to use the satellite data
      * optimized network. This can be done by setting the {@link #PROPERTY_SATELLITE_DATA_OPTIMIZED}
-     * property to {@code true} in the manifest.
+     * meta-data to <package-name> of the application in the manifest.
      * </p>
      *
      * @hide
@@ -828,19 +828,19 @@ public final class SatelliteManager {
             "android.telephony.METADATA_SATELLITE_MANUAL_CONNECT_P2P_SUPPORT";
 
     /**
-     * A boolean value indicating whether application is optimized to utilize low bandwidth
-     * satellite data.
      * The applications that are optimized for low bandwidth satellite data should set this
-     * property to {@code true} in the manifest to indicate to platform about the same.
+     * property to package name of the application in the manifest to indicate to platform
+     * about the same.
      * {@code
      * <application>
      *   <meta-data
      *     android:name="android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED"
-     *     android:value="true"/>
+     *     android:value=<package-name>/>
      * </application>
      * }
      * <p>
-     * When {@code true}, satellite data optimized network is available for applications.
+     * When this meta-data is set in application's manifest,
+     * satellite data optimized network is available for application to use.
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
     public static final String PROPERTY_SATELLITE_DATA_OPTIMIZED =

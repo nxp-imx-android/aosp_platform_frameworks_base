@@ -28,6 +28,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import java.util.function.Supplier
 import org.junit.Before
 import org.junit.Test
@@ -51,6 +52,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val displayController = mock<DisplayController>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
+    private val desktopState = FakeDesktopState()
+
     private val indicatorSurface0 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val indicatorSurface1 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
@@ -77,6 +80,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 rootTaskDisplayAreaOrganizer,
                 indicatorSurfaceFactory,
                 executor,
+                desktopState,
             )
 
         val spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
@@ -91,6 +95,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any())).thenReturn(indicatorSurface0)
         whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any())).thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
+        desktopState.canEnterDesktopMode = true
     }
 
     @Test
@@ -112,6 +117,22 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         controller.onDragMove(
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
             currentDisplayId = 0,
+            startDisplayId = 0,
+            taskInfo,
+            displayIds = setOf(0, 1),
+        ) { transaction }
+        executor.flushAll()
+
+        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
+    }
+
+    @Test
+    fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicator() {
+        desktopState.overrideDesktopModeSupportPerDisplay[1] = false
+
+        controller.onDragMove(
+            RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
+            currentDisplayId = 1,
             startDisplayId = 0,
             taskInfo,
             displayIds = setOf(0, 1),

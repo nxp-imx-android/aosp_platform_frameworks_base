@@ -22,6 +22,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
+import static com.android.wm.shell.bubbles.util.BubbleTestUtilsKt.verifyEnterBubbleTransaction;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -78,11 +79,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
 import java.util.Map;
 
 /**
  * Tests of {@link BubbleTransitions}.
+ *
+ * Build/Install/Run:
+ *  atest WMShellUnitTests:BubbleTransitionsTest
  */
 @SmallTest
 public class BubbleTransitionsTest extends ShellTestCase {
@@ -182,6 +185,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Test
     public void testConvertToBubble() {
         // Basic walk-through of convert-to-bubble transition stages
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
@@ -274,11 +278,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Verify that the WCT has the disallow-launch-adjacent hierarchy op
         final WindowContainerTransaction wct = wctCaptor.getValue();
-        final List<WindowContainerTransaction.HierarchyOp> ops = wct.getHierarchyOps();
-        final boolean hasLaunchAdjacentDisabled = ops.stream()
-                .filter((op) -> op.getContainer().equals(taskInfo.token.asBinder()))
-                .anyMatch((op) -> op.isLaunchAdjacentDisabled());
-        assertThat(hasLaunchAdjacentDisabled).isTrue();
+        verifyEnterBubbleTransaction(wct, taskInfo.token.asBinder(), true /* isAppBubble */);
     }
 
     @Test
@@ -319,6 +319,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     public void testConvertFromBubble() {
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
                 mBubble, taskInfo);
@@ -433,6 +434,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(bev.getViewRootImpl()).thenReturn(vri);
         when(mBubble.getBubbleBarExpandedView()).thenReturn(null);
         when(mBubble.getExpandedView()).thenReturn(bev);
+        when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(mock(IBinder.class));
 
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(

@@ -40,7 +40,6 @@ import android.view.KeyEvent.META_META_ON
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags.FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES
-import com.android.systemui.Flags.FLAG_APP_SHORTCUT_REMOVAL_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyboard.shared.model.ShortcutCustomizationRequestResult
@@ -320,7 +319,7 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES, FLAG_APP_SHORTCUT_REMOVAL_FIX)
+    @EnableFlags(FLAG_ENABLE_CUSTOMIZABLE_INPUT_GESTURES)
     fun removeAppCategoryShortcut_successfullyRetrievesGestureDataAndDeletesTheCorrectShortcut() {
         testScope.runTest {
             // We are collecting this because the flow is a cold flow but we need its value as a

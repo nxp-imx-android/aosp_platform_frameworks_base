@@ -72,4 +72,7 @@ oneway interface IAutoFillManager {
     void setAutofillIdsAttemptedForRefill(int sessionId, in List<AutofillId> ids, int userId);
     void notifyImeAnimationStart(int sessionId, long startTimeMs, int userId);
     void notifyImeAnimationEnd(int sessionId, long endTimeMs, int userId);
+    // For SystemUI to notify AutofillManager that a remote fill has occurred.
+    void autofillRemoteApp(IBinder activityToken, int taskId, in AutofillId id,
+        in AutofillValue value, int userId);
 }

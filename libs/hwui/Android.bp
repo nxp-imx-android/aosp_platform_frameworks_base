@@ -54,8 +54,6 @@ cc_defaults {
         "hwui_lto",
     ],
 
-    cpp_std: "experimental",
-
     cflags: [
         "-DEGL_EGLEXT_PROTOTYPES",
         "-DGL_GLEXT_PROTOTYPES",
@@ -442,6 +440,8 @@ cc_defaults {
         "liblog",
         "libminikin",
         "libz",
+        "libtracing_perfetto",
+        "libperfetto_c",
     ],
 
     static_libs: [

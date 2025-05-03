@@ -18,7 +18,6 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
-import static android.app.Flags.evenlyDividedCallStyleActionLayout;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
@@ -40,6 +39,7 @@ import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
 import android.annotation.IdRes;
 import android.annotation.IntDef;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -1729,6 +1729,13 @@ public class Notification implements Parcelable
     public static final String EXTRA_PROGRESS_END_ICON = "android.progressEndIcon";
 
     /**
+     * {@link #extras} key: If provided, should contain a boolean indicating
+     * whether the notification is requesting promoted treatment.
+     */
+    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+    public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing";
+
+    /**
      * @hide
      */
     public static final String EXTRA_BUILDER_APPLICATION_INFO = "android.appInfo";
@@ -1788,6 +1795,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public static final String EXTRA_SUMMARIZED_CONTENT = "android.summarization";
+
 
     @UnsupportedAppUsage
     private Icon mSmallIcon;
@@ -3302,14 +3310,25 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
-            return false;
+        if (Flags.optInRichOngoing()) {
+            return hasRequestedPromotedOngoing()
+                    && isOngoingEvent()
+                    && hasTitle()
+                    && hasPromotableStyle()
+                    && !isGroupSummary()
+                    && !containsCustomViews()
+                    && !isColorizedRequested();
+        } else {
+            // Original promotable specs:
+            if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
+                return false;
+            }
+            // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
+            if (isOngoingCallStyle()) {
+                return true;
+            }
+            return isColorizedRequested() && hasPromotableStyle();
         }
-        // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
-        if (isOngoingCallStyle()) {
-            return true;
-        }
-        return isColorizedRequested() && hasPromotableStyle();
     }
 
     /** Returns whether the notification is CallStyle.forOngoingCall(). */
@@ -5407,20 +5426,35 @@ public class Notification implements Parcelable
         /**
          * Set whether this is an "ongoing" notification.
          *
-         * Ongoing notifications cannot be dismissed by the user on locked devices, or by
-         * notification listeners, and some notifications (call, device management, media) cannot
-         * be dismissed on unlocked devices, so your application or service must take care of
-         * canceling them.
+         * <p>Ongoing notifications cannot be dismissed by the user on locked devices, or by
+         * notification listeners, and some notifications (call, device management, media) cannot be
+         * dismissed on unlocked devices, so your application or service must take care of canceling
+         * them.
          *
-         * They are typically used to indicate a background task that the user is actively engaged
-         * with (e.g., playing music) or is pending in some way and therefore occupying the device
-         * (e.g., a file download, sync operation, active network connection).
+         * <p>They are typically used to indicate a background task that the user is actively
+         * engaged with (e.g., playing music) or is pending in some way and therefore occupying the
+         * device (e.g., a file download, sync operation, active network connection).
          *
          * @see Notification#FLAG_ONGOING_EVENT
          */
         @NonNull
         public Builder setOngoing(boolean ongoing) {
             setFlag(FLAG_ONGOING_EVENT, ongoing);
+            return this;
+        }
+
+        /**
+         * Set whether this notification is requesting to be a promoted ongoing notification.
+         *
+         * <p>This is the first requirement of {@link Notification#hasPromotableCharacteristics()}.
+         *
+         * @see Notification#EXTRA_REQUEST_PROMOTED_ONGOING
+         * @see Notification#hasRequestedPromotedOngoing()
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+        public Builder setRequestPromotedOngoing(boolean requestPromotedOngoing) {
+            getExtras().putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, requestPromotedOngoing);
             return this;
         }
 
@@ -6646,12 +6680,10 @@ public class Notification implements Parcelable
                     contentView.setInt(R.id.actions, "setCollapsibleIndentDimen",
                             R.dimen.call_notification_collapsible_indent);
                 }
-                if (evenlyDividedCallStyleActionLayout()) {
-                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                        Log.d(TAG, "setting evenly divided mode on action list");
-                    }
-                    contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
+                if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                    Log.d(TAG, "setting evenly divided mode on action list");
                 }
+                contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
             }
             if (!notificationsRedesignTemplates()) {
                 contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
@@ -7127,7 +7159,7 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
-            if (mN.isPromotedOngoing()) {
+            if (mN.isPromotedOngoing() && !Flags.optInRichOngoing()) {
                 publicExtras.putBoolean(EXTRA_COLORIZED,
                         savedBundle.getBoolean(EXTRA_COLORIZED));
             }
@@ -7254,7 +7286,7 @@ public class Notification implements Parcelable
 
 
                 final CharSequence label = ensureColorSpanContrastOrStripStyling(title, p);
-                if (p.mCallStyleActions && evenlyDividedCallStyleActionLayout()) {
+                if (p.mCallStyleActions) {
                     if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
                         Log.d(TAG, "new action layout enabled, gluing instead of setting text");
                     }
@@ -7278,14 +7310,10 @@ public class Notification implements Parcelable
                 button.setColorStateList(R.id.action0, "setButtonBackground",
                         ColorStateList.valueOf(buttonFillColor));
                 if (p.mCallStyleActions) {
-                    if (evenlyDividedCallStyleActionLayout()) {
-                        if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                            Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
-                        }
-                        button.setIcon(R.id.action0, "glueIcon", action.getIcon());
-                    } else {
-                        button.setImageViewIcon(R.id.action0, action.getIcon());
+                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                        Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
                     }
+                    button.setIcon(R.id.action0, "glueIcon", action.getIcon());
                     boolean priority = action.getExtras().getBoolean(CallStyle.KEY_ACTION_PRIORITY);
                     button.setBoolean(R.id.action0, "setIsPriority", priority);
                     int minWidthDimen =
@@ -8148,14 +8176,25 @@ public class Notification implements Parcelable
     /**
      * Returns whether this notification is a promoted ongoing notification.
      *
-     * This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set
-     * (which may be true once the api_rich_ongoing feature flag is enabled),
-     * and requires that the ui_rich_ongoing feature flag is enabled.
+     * <p>This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set (which may be true
+     * once the api_rich_ongoing feature flag is enabled), and requires that the ui_rich_ongoing
+     * feature flag is enabled.
      *
      * @hide
      */
     public boolean isPromotedOngoing() {
         return Flags.uiRichOngoing() && (flags & Notification.FLAG_PROMOTED_ONGOING) != 0;
+    }
+
+    /**
+     * Returns whether this notification has requested to be a promoted ongoing notification.
+     *
+     * @see Notification#EXTRA_REQUEST_PROMOTED_ONGOING
+     * @see Notification.Builder#setRequestPromotedOngoing(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
+    public boolean hasRequestedPromotedOngoing() {
+        return extras.getBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, false);
     }
 
     /**
@@ -11574,6 +11613,11 @@ public class Notification implements Parcelable
             }
             if (segment.getLength() > 0) {
                 mProgressSegments.add(segment);
+                if (mProgressSegments.size() > MAX_PROGRESS_SEGMENT_LIMIT) {
+                  Log.w(TAG, "Progress segments limit ("
+                      + MAX_PROGRESS_SEGMENT_LIMIT +") is reached. "
+                      + "All segments will be merged into one segment.");
+                }
             } else {
                 Log.w(TAG, "Dropped the segment. The length is not a positive integer.");
             }
@@ -11648,6 +11692,7 @@ public class Notification implements Parcelable
          * Gets the progress value of the progress bar.
          * @see #setProgress
          */
+        @IntRange(from = 0)
         public int getProgress() {
             return mProgress;
         }
@@ -11659,7 +11704,7 @@ public class Notification implements Parcelable
         * The max progress value is the sum of all Segment lengths.
         * The default value is 0.
         */
-        public @NonNull ProgressStyle setProgress(int progress) {
+        public @NonNull ProgressStyle setProgress(@IntRange(from = 0) int progress) {
             mProgress = progress;
             return this;
         }
@@ -11668,6 +11713,7 @@ public class Notification implements Parcelable
          * Gets the sum of the lengths of all Segments in the style, which
          * defines the maximum progress. Defaults to 100 when segments are omitted.
          */
+        @IntRange(from = 0)
         public int getProgressMax() {
             final List<Segment> progressSegment = mProgressSegments;
             if (progressSegment == null || progressSegment.isEmpty()) {
@@ -12239,7 +12285,7 @@ public class Notification implements Parcelable
              * @param length
              * See {@link #getLength}
              */
-            public Segment(int length) {
+            public Segment(@IntRange(from = 1) int length) {
                 mLength = length;
             }
 
@@ -12248,6 +12294,7 @@ public class Notification implements Parcelable
              * This value has no units, it is just relative to the length of other segments,
              * and the value provided to {@link ProgressStyle#setProgress}.
              */
+            @IntRange(from = 1)
             public int getLength() {
                 return mLength;
             }
@@ -12263,6 +12310,7 @@ public class Notification implements Parcelable
 
             /**
              * Optional ID used to uniquely identify the element across updates.
+             * The default is 0.
              */
             public @NonNull Segment setId(int id) {
                 mId = id;
@@ -12314,7 +12362,7 @@ public class Notification implements Parcelable
         public static final class Point {
 
             private int mPosition;
-            private int mId;
+            private int mId = 0;
             @ColorInt
             private int mColor = Notification.COLOR_DEFAULT;
 
@@ -12325,7 +12373,7 @@ public class Notification implements Parcelable
              * @param position
              * See {@link #getPosition}
              */
-            public Point(int position) {
+            public Point(@IntRange(from = 1) int position) {
                 mPosition = position;
             }
 
@@ -12334,6 +12382,7 @@ public class Notification implements Parcelable
              * The position of this point on the progress bar
              * relative to {@link ProgressStyle#getProgressMax}.
              */
+            @IntRange(from = 1)
             public int getPosition() {
                 return mPosition;
             }
@@ -12348,6 +12397,7 @@ public class Notification implements Parcelable
 
             /**
              * Optional ID used to uniquely identify the element across updates.
+             * The default is 0.
              */
             public @NonNull Point setId(int id) {
                 mId = id;

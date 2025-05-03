@@ -38,6 +38,7 @@ import com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.mockito.mock
@@ -186,16 +187,9 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onAttachedToWindow_flagOff_updatesWindowHeight() {
-        view.onAttachedToWindow()
-
-        verify(windowController).refreshStatusBarHeight()
-    }
-
-    @Test
     @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onAttachedToWindow_flagOn_doesNotUpdateWindowHeight() {
+    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onAttachedToWindow_stopUpdatingHeightFlagOn_connectedDisplayFlagOff_doesNotUpdateWindowHeight() {
         view.onAttachedToWindow()
 
         verify(windowController, never()).refreshStatusBarHeight()
@@ -203,7 +197,24 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_flagOff_updatesWindowHeight() {
+    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onAttachedToWindow_stopUpdatingHeightFlagOff_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
+        view.onAttachedToWindow()
+
+        verify(windowController, never()).refreshStatusBarHeight()
+    }
+
+    @Test
+    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onAttachedToWindow_stopUpdatingHeightFlagOff_connectedDisplayFlagOff_updatesWindowHeight() {
+        view.onAttachedToWindow()
+
+        verify(windowController).refreshStatusBarHeight()
+    }
+
+    @Test
+    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onConfigurationChanged_stopUpdatingHeightFlagOff_connectedDisplayFlagOff_updatesWindowHeight() {
         view.onConfigurationChanged(Configuration())
 
         verify(windowController).refreshStatusBarHeight()
@@ -211,15 +222,15 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_flagOn_doesNotUpdateWindowHeight() {
+    fun onConfigurationChanged_stopUpdatingHeightFlagOn_doesNotUpdateWindowHeight() {
         view.onConfigurationChanged(Configuration())
 
         verify(windowController, never()).refreshStatusBarHeight()
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_multipleCalls_flagOff_updatesWindowHeightMultipleTimes() {
+    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onConfigurationChanged_multipleCalls_stopUpdatingHeightFlagOff_updatesWindowHeightMultipleTimes() {
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
@@ -230,7 +241,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_multipleCalls_flagOn_neverUpdatesWindowHeight() {
+    fun onConfigurationChanged_multipleCalls_stopUpdatingHeightFlagOn_neverUpdatesWindowHeight() {
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())

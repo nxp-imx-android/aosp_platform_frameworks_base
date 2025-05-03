@@ -49,7 +49,6 @@ import android.os.UserHandle;
 import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -73,8 +72,6 @@ import java.util.function.Predicate;
  * The children can be either {@link Task} or {@link TaskDisplayArea}.
  */
 final class TaskDisplayArea extends DisplayArea<WindowContainer> {
-
-    DisplayContent mDisplayContent;
 
     // Cached reference to some special tasks we tend to get a lot so we don't need to loop
     // through the list to find them.
@@ -158,23 +155,15 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     private final Configuration mTempConfiguration = new Configuration();
 
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature) {
-        this(displayContent, service, name, displayAreaFeature, false /* createdByOrganizer */,
-                true /* canHostHomeTask */);
-    }
-
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature, boolean createdByOrganizer) {
-        this(displayContent, service, name, displayAreaFeature, createdByOrganizer,
-                true /* canHostHomeTask */);
-    }
-
-    TaskDisplayArea(DisplayContent displayContent, WindowManagerService service, String name,
-                    int displayAreaFeature, boolean createdByOrganizer,
-                    boolean canHostHomeTask) {
+    /**
+     * @param createdByOrganizer    whether this TaskDisplayArea is created by a
+     *                              {@link android.window.WindowOrganizer}.
+     * @param canHostHomeTask       whether this TaskDisplayArea can have a home task child
+     *                              {@link WindowConfiguration#ACTIVITY_TYPE_HOME}
+     */
+    TaskDisplayArea(@NonNull WindowManagerService service, @NonNull String name,
+            int displayAreaFeature, boolean createdByOrganizer, boolean canHostHomeTask) {
         super(service, Type.ANY, name, displayAreaFeature);
-        mDisplayContent = displayContent;
         mRootWindowContainer = service.mRoot;
         mAtmService = service.mAtmService;
         mCreatedByOrganizer = createdByOrganizer;
@@ -425,14 +414,15 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
         if (!toTop) {
             if (t.mTaskId == mLastLeafTaskToFrontId) {
-                mLastLeafTaskToFrontId = INVALID_TASK_ID;
-
                 // If the previous front-most task is moved to the back, then notify of the new
                 // front-most task.
                 final ActivityRecord topMost = getTopNonFinishingActivity();
                 if (topMost != null) {
                     mAtmService.getTaskChangeNotificationController().notifyTaskMovedToFront(
                             topMost.getTask().getTaskInfo());
+                    mLastLeafTaskToFrontId = topMost.getTask().mTaskId;
+                } else {
+                    mLastLeafTaskToFrontId = INVALID_TASK_ID;
                 }
             }
             return;
@@ -1688,13 +1678,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 continue;
             }
             final Task task = mChildren.get(i).asTask();
-            if (task.inFreeformWindowingMode()
-                    && DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-                // TODO(b/391652399): Considerations for display areas that do not support
-                //  freeform tasks.
-                task.reparent(toDisplayArea, getReparentPosition(task));
-                lastReparentedRootTask = task;
-            } else if (destroyContentOnRemoval || !task.shouldReparentOnDisplayRemoval()) {
+            if (destroyContentOnRemoval || !task.shouldReparentOnDisplayRemoval()) {
                 // TODO: For root tasks created by organizer, consider reparenting children tasks
                 //  if the use case arises in the future.
                 task.remove(false /* withTransition */, "removeTaskDisplayArea");
@@ -1706,9 +1690,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                                         null /* options */,
                                         null /* sourceTask */,
                                         0 /* launchFlags */);
-
-                task.reparent(launchRoot == null ? toDisplayArea : launchRoot,
-                        getReparentPosition(task));
+                task.reparent(launchRoot == null ? toDisplayArea : launchRoot, POSITION_TOP);
 
                 // If the task is going to be reparented to the non-fullscreen root TDA and the task
                 // is set to FULLSCREEN explicitly, we keep the windowing mode as is. Otherwise, the
@@ -1737,16 +1719,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         }
 
         return lastReparentedRootTask;
-    }
-
-    private int getReparentPosition(Task task) {
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
-            return POSITION_TOP;
-        }
-        final boolean taskOnTopFocusedDisplay = task.getDisplayId()
-                == mRootWindowContainer.getTopFocusedDisplayContent().getDisplayId();
-        return taskOnTopFocusedDisplay && task.isFocusedRootTaskOnDisplay()
-                ? POSITION_TOP : POSITION_BOTTOM;
     }
 
     /**

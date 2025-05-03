@@ -21,19 +21,22 @@ import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
-import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
+import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.statusbar.NotificationShadeWindowController
+import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
-import com.android.systemui.topwindoweffects.data.repository.DEFAULT_INITIAL_DELAY_MILLIS
-import com.android.systemui.topwindoweffects.data.repository.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
+import com.android.systemui.topui.TopUiControllerRefactor
+import com.android.systemui.topui.mockTopUiController
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
@@ -41,7 +44,6 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import java.util.Optional
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,23 +65,25 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
     @Mock private lateinit var windowManager: WindowManager
 
-    @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
-
     @Mock private lateinit var viewModelFactory: SqueezeEffectViewModel.Factory
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             TopLevelWindowEffects(
                 context = mContext,
-                mainDispatcher = StandardTestDispatcher(testScope.testScheduler),
+                mainExecutor = kosmos.fakeExecutor,
                 topLevelWindowEffectsScope = testScope.backgroundScope,
                 windowManager = windowManager,
-                keyEventInteractor = keyEventInteractor,
                 viewModelFactory = viewModelFactory,
                 squeezeEffectInteractor =
-                    SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
+                    SqueezeEffectInteractor(
+                        squeezeEffectRepository = fakeSqueezeEffectRepository,
+                        keyEventInteractor = KeyEventInteractor(fakeKeyEventRepository),
+                        coroutineContext = testScope.testScheduler,
+                    ),
                 appZoomOutOptional = Optional.empty(),
-                notificationShadeWindowController = notificationShadeWindowController,
+                notificationShadeWindowController = kosmos.notificationShadeWindowController,
+                topUiController = kosmos.mockTopUiController,
                 interactionJankMonitor = kosmos.interactionJankMonitor,
             )
         }
@@ -115,6 +119,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -131,6 +136,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -147,6 +153,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -167,6 +174,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -188,6 +196,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -209,6 +218,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
 
             underTest.start()
 
@@ -222,9 +232,33 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             verifyAddViewAndTopUi(never())
         }
 
+    @Test
+    fun testNoWindowAddedIfPowerKeyInMultipleKeyCombination() {
+        kosmos.runTest {
+            val expectedDelay =
+                DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = true
+
+            underTest.start()
+
+            advanceTime((expectedDelay + 1).milliseconds)
+
+            verify(windowManager, never()).addView(any<View>(), any<WindowManager.LayoutParams>())
+        }
+    }
+
     private fun verifyAddViewAndTopUi(mode: VerificationMode) {
         verify(windowManager, mode).addView(any<View>(), any<WindowManager.LayoutParams>())
-        verify(notificationShadeWindowController, mode)
-            .setRequestTopUi(true, TopLevelWindowEffects.TAG)
+        if (TopUiControllerRefactor.isEnabled) {
+            verify(kosmos.mockTopUiController, mode)
+                .setRequestTopUi(true, TopLevelWindowEffects.TAG)
+        } else {
+            kosmos.fakeExecutor.runAllReady()
+            verify(kosmos.notificationShadeWindowController, mode)
+                .setRequestTopUi(true, TopLevelWindowEffects.TAG)
+        }
     }
 }

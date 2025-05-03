@@ -25,7 +25,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -34,6 +33,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -41,16 +41,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -60,8 +61,10 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.LayoutDirection
@@ -91,13 +94,10 @@ import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.onScrimDim
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingVertical
-import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.CollapsedHeight
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
-import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHighlight
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
@@ -126,19 +126,48 @@ object ShadeHeader {
     }
 
     object Dimensions {
-        val CollapsedHeight = 48.dp
+        @Deprecated(
+            "Approximation of the collapsed shade header height, used in legacy shade transitions.",
+            replaceWith = ReplaceWith("StatusBarHeight"),
+        )
+        val CollapsedHeightForTransitions = 48.dp
         val ExpandedHeight = 120.dp
         val ChipPaddingHorizontal = 6.dp
         val ChipPaddingVertical = 4.dp
-    }
 
-    object Colors {
-        val ColorScheme.onScrimDim: Color
-            get() = Color.DarkGray
+        val StatusBarHeight: Dp
+            // TODO(b/414737230): This is a temporary workaround, until we fix the zero padding
+            //  issue given by WindowInsets.statusBars.asPaddingValues().calculateTopPadding().
+            @Composable get() = dimensionResource(R.dimen.status_bar_height)
     }
 
     object TestTags {
         const val Root = "shade_header_root"
+    }
+
+    /** Represents the background highlighting of a header icons chip. */
+    sealed interface ChipHighlight {
+        val backgroundColor: Color
+            @Composable @ReadOnlyComposable get
+
+        val foregroundColor: Color
+            @Composable @ReadOnlyComposable get
+
+        data object Weak : ChipHighlight {
+            override val backgroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+
+            override val foregroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSurface
+        }
+
+        data object Strong : ChipHighlight {
+            override val backgroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.secondary
+
+            override val foregroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSecondary
+        }
     }
 }
 
@@ -165,7 +194,7 @@ fun ContentScope.CollapsedShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
-        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
+        modifier = modifier,
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -183,12 +212,7 @@ fun ContentScope.CollapsedShadeHeader(
         },
         endContent = {
             if (isPrivacyChipVisible) {
-                Box(
-                    modifier =
-                        Modifier.height(CollapsedHeight)
-                            .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding)
-                ) {
+                Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                     PrivacyChip(
                         viewModel = viewModel,
                         modifier = Modifier.align(Alignment.CenterEnd),
@@ -244,7 +268,7 @@ fun ContentScope.ExpandedShadeHeader(
 
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
         if (isPrivacyChipVisible) {
-            Box(modifier = Modifier.height(CollapsedHeight).fillMaxWidth()) {
+            Box(modifier = Modifier.height(ShadeHeader.Dimensions.StatusBarHeight).fillMaxWidth()) {
                 PrivacyChip(viewModel = viewModel, modifier = Modifier.align(Alignment.CenterEnd))
             }
         }
@@ -273,7 +297,7 @@ fun ContentScope.ExpandedShadeHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent),
+                modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent).fillMaxWidth(),
             ) {
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
@@ -309,6 +333,8 @@ fun ContentScope.ExpandedShadeHeader(
 @Composable
 fun ContentScope.OverlayShadeHeader(
     viewModel: ShadeHeaderViewModel,
+    notificationsHighlight: ShadeHeader.ChipHighlight,
+    quickSettingsHighlight: ShadeHeader.ChipHighlight,
     showClock: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -319,14 +345,13 @@ fun ContentScope.OverlayShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
-        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
+        modifier = modifier,
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                val chipHighlight = viewModel.notificationsChipHighlight
                 if (showClock) {
                     Clock(
                         onClick = viewModel::onClockClicked,
@@ -335,7 +360,7 @@ fun ContentScope.OverlayShadeHeader(
                 }
                 NotificationsChip(
                     onClick = viewModel::onNotificationIconChipClicked,
-                    backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
+                    backgroundColor = notificationsHighlight.backgroundColor,
                     modifier =
                         Modifier.bouncy(
                             isEnabled = viewModel.animateNotificationsChipBounce,
@@ -350,7 +375,7 @@ fun ContentScope.OverlayShadeHeader(
                     VariableDayDate(
                         longerDateText = viewModel.longerDateText,
                         shorterDateText = viewModel.shorterDateText,
-                        textColor = chipHighlight.foregroundColor(MaterialTheme.colorScheme),
+                        textColor = notificationsHighlight.foregroundColor,
                     )
                 }
             }
@@ -361,9 +386,8 @@ fun ContentScope.OverlayShadeHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                val chipHighlight = viewModel.quickSettingsChipHighlight
                 SystemIconChip(
-                    backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
+                    backgroundColor = quickSettingsHighlight.backgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
                     modifier =
                         Modifier.bouncy(
@@ -380,25 +404,22 @@ fun ContentScope.OverlayShadeHeader(
                         with(LocalDensity.current) {
                             (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
                         }
+                    val isHighlighted = quickSettingsHighlight is ShadeHeader.ChipHighlight.Strong
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = false,
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
+                        isHighlighted = isHighlighted,
                     )
                     BatteryIcon(
                         createBatteryMeterViewController =
                             viewModel.createBatteryMeterViewController,
                         useExpandedFormat = false,
-                        chipHighlight = chipHighlight,
+                        isHighlighted = isHighlighted,
                     )
                 }
                 if (isPrivacyChipVisible) {
-                    Box(
-                        modifier =
-                            Modifier.height(CollapsedHeight)
-                                .fillMaxWidth()
-                                .padding(horizontal = horizontalPadding)
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                         PrivacyChip(
                             viewModel = viewModel,
                             modifier = Modifier.align(Alignment.CenterEnd),
@@ -440,6 +461,7 @@ private fun CutoutAwareShadeHeader(
     val cutoutHeight = LocalDisplayCutout.current.height()
     val cutoutTop = LocalDisplayCutout.current.top
     val cutoutLocation = LocalDisplayCutout.current.location
+    val statusBarHeight = ShadeHeader.Dimensions.StatusBarHeight
 
     Layout(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
@@ -452,7 +474,7 @@ private fun CutoutAwareShadeHeader(
 
         val screenWidth = constraints.maxWidth
         val cutoutWidthPx = cutoutWidth.roundToPx()
-        val height = max(cutoutHeight + (cutoutTop * 2), CollapsedHeight).roundToPx()
+        val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight).roundToPx()
         val childConstraints = Constraints.fixed((screenWidth - cutoutWidthPx) / 2, height)
 
         val startMeasurable = measurables[0][0]
@@ -527,7 +549,7 @@ private fun BatteryIcon(
     createBatteryMeterViewController: (ViewGroup, StatusBarLocation) -> BatteryMeterViewController,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
-    chipHighlight: HeaderChipHighlight = HeaderChipHighlight.None,
+    isHighlighted: Boolean = false,
 ) {
     val localContext = LocalContext.current
     val themedContext =
@@ -536,6 +558,8 @@ private fun BatteryIcon(
         Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
     val inverseColor =
         Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
+
+    val cutoutLocation = LocalDisplayCutout.current.location
 
     AndroidView(
         factory = { context ->
@@ -555,17 +579,19 @@ private fun BatteryIcon(
             batteryIcon
         },
         update = { batteryIcon ->
-            // TODO(b/298525212): use MODE_ESTIMATE in collapsed view when the screen
-            //  has no center cutout. See [QsBatteryModeController.getBatteryMode]
             batteryIcon.setPercentShowMode(
-                if (useExpandedFormat) BatteryMeterView.MODE_ESTIMATE else BatteryMeterView.MODE_ON
+                if (useExpandedFormat || cutoutLocation != CutoutLocation.CENTER) {
+                    BatteryMeterView.MODE_ESTIMATE
+                } else {
+                    BatteryMeterView.MODE_ON
+                }
             )
             // TODO(b/397223606): Get the actual spec for this.
-            if (chipHighlight is HeaderChipHighlight.Strong) {
-                batteryIcon.updateColors(primaryColor, inverseColor, inverseColor)
-            } else if (chipHighlight is HeaderChipHighlight.Weak) {
-                batteryIcon.updateColors(primaryColor, inverseColor, primaryColor)
-            }
+            batteryIcon.updateColors(
+                primaryColor,
+                inverseColor,
+                if (isHighlighted) inverseColor else primaryColor,
+            )
         },
         modifier = modifier,
     )
@@ -646,6 +672,7 @@ private fun ContentScope.StatusIcons(
     viewModel: ShadeHeaderViewModel,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
+    isHighlighted: Boolean = false,
 ) {
     val localContext = LocalContext.current
     val themedContext =
@@ -676,11 +703,9 @@ private fun ContentScope.StatusIcons(
         viewModel.createTintedIconManager(iconContainer, StatusBarLocation.QS)
     }
 
-    val chipHighlight = viewModel.quickSettingsChipHighlight
-
     // TODO(408001821): Use composable system status icons here instead.
     AndroidView(
-        factory = { context ->
+        factory = {
             iconManager.setTint(primaryColor, inverseColor)
             viewModel.statusBarIconController.addIconGroup(iconManager)
 
@@ -716,9 +741,9 @@ private fun ContentScope.StatusIcons(
             }
 
             // TODO(b/397223606): Get the actual spec for this.
-            if (chipHighlight is HeaderChipHighlight.Strong) {
+            if (isHighlighted) {
                 iconManager.setTint(inverseColor, primaryColor)
-            } else if (chipHighlight is HeaderChipHighlight.Weak) {
+            } else {
                 iconManager.setTint(primaryColor, inverseColor)
             }
         },
@@ -730,7 +755,7 @@ private fun ContentScope.StatusIcons(
 private fun NotificationsChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Unspecified,
+    backgroundColor: Color,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -756,29 +781,16 @@ private fun SystemIconChip(
     onClick: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val hoverModifier =
-        with(MaterialTheme.colorScheme) {
-            Modifier.background(onScrimDim, RoundedCornerShape(CollapsedHeight / 4))
-        }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
+                .clip(RoundedCornerShape(25.dp))
+                .thenIf(onClick != null) { Modifier.clickable(onClick = { onClick?.invoke() }) }
                 .thenIf(backgroundColor != Color.Unspecified) {
-                    Modifier.background(backgroundColor, RoundedCornerShape(25.dp))
+                    Modifier.background(backgroundColor)
                         .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
-                }
-                .thenIf(onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { onClick?.invoke() },
-                    )
-                }
-                .thenIf(isHovered) { hoverModifier },
+                },
         content = content,
     )
 }

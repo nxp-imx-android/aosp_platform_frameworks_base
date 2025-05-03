@@ -381,14 +381,15 @@ public final class SurfaceControl implements Parcelable {
     public static final int BUFFER_TRANSFORM_ROTATE_90 = 0x04;
     /**
      * Rotate 180 degrees clock-wise. Cannot be combined with other transforms.
+     * Equivalent to ({@link #BUFFER_TRANSFORM_MIRROR_HORIZONTAL} |
+     *                {@link #BUFFER_TRANSFORM_MIRROR_VERTICAL}).
      */
-    public static final int BUFFER_TRANSFORM_ROTATE_180 =
-            BUFFER_TRANSFORM_MIRROR_HORIZONTAL | BUFFER_TRANSFORM_MIRROR_VERTICAL;
+    public static final int BUFFER_TRANSFORM_ROTATE_180 = 0x03;
     /**
      * Rotate 270 degrees clock-wise. Cannot be combined with other transforms.
+     * Equivalent to ({@link #BUFFER_TRANSFORM_ROTATE_180} | {@link #BUFFER_TRANSFORM_ROTATE_90}).
      */
-    public static final int BUFFER_TRANSFORM_ROTATE_270 =
-            BUFFER_TRANSFORM_ROTATE_180 | BUFFER_TRANSFORM_ROTATE_90;
+    public static final int BUFFER_TRANSFORM_ROTATE_270 = 0x07;
 
     /**
      * @hide

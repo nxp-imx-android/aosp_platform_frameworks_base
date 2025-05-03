@@ -250,7 +250,7 @@ public abstract class InfoMediaManager {
             @Nullable MediaSession.Token token) {
         MediaController mediaController = null;
 
-        if (Flags.usePlaybackInfoForRoutingControls() && token != null) {
+        if (token != null) {
             mediaController = new MediaController(context, token);
         }
 
@@ -490,7 +490,7 @@ public abstract class InfoMediaManager {
         RoutingSessionInfo activeSession = sessions.get(sessions.size() - 1);
 
         // Logic from MediaRouter2Manager#getRoutingSessionForMediaController
-        if (!Flags.usePlaybackInfoForRoutingControls() || mMediaController == null) {
+        if (mMediaController == null) {
             return activeSession;
         }
 

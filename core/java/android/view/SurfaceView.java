@@ -2287,11 +2287,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     protected void onProvideStructure(@NonNull ViewStructure structure,
             @ViewStructureType int viewFor, int flags) {
         super.onProvideStructure(structure, viewFor, flags);
-        if (android.app.contextualsearch.flags.Flags.reportSecureSurfacesInAssistStructure()) {
-            if ((mSurfaceFlags & SurfaceControl.SECURE) != 0) {
-                structure.getExtras().putBoolean(
-                        ViewStructure.EXTRA_CONTAINS_SECURE_LAYERS, true);
-            }
+        if ((mSurfaceFlags & SurfaceControl.SECURE) != 0) {
+            structure.getExtras().putBoolean(
+                    ViewStructure.EXTRA_CONTAINS_SECURE_LAYERS, true);
         }
     }
 

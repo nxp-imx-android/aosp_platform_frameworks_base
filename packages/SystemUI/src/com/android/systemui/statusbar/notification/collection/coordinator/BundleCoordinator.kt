@@ -20,6 +20,8 @@ import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
+import android.os.Build
+import android.os.SystemProperties
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -28,6 +30,7 @@ import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
+import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
@@ -109,7 +112,6 @@ constructor(
                 add(BundleSpec.SOCIAL_MEDIA)
                 add(BundleSpec.PROMOTIONS)
                 add(BundleSpec.RECOMMENDED)
-                if (debugBundleUi) add(BundleSpec.DEBUG)
             }
 
             private val bundleIds = this.bundleSpecs.map { it.key }
@@ -119,8 +121,8 @@ constructor(
              * ListEntry should not be bundled
              */
             override fun getBundleIdOrNull(entry: ListEntry): String? {
-                if (debugBundleUi && entry?.key?.contains("notify") == true) {
-                    return "notify"
+                if (isFromDebugApp(entry)) {
+                    return BundleSpec.RECOMMENDED.key
                 }
                 if (entry is GroupEntry) {
                     if (entry.children.isEmpty()) return null
@@ -131,6 +133,10 @@ constructor(
                     return getBundleIdForNotifEntry(summary)
                 }
                 return getBundleIdForNotifEntry(entry as NotificationEntry)
+            }
+
+            private fun isFromDebugApp(entry: ListEntry): Boolean {
+                return !debugBundleAppName.isNullOrEmpty() && entry.key.contains(debugBundleAppName)
             }
 
             private fun getBundleIdForNotifEntry(notifEntry: NotificationEntry): String? {
@@ -168,21 +174,40 @@ constructor(
             }
         }
 
+    private val bundleCountUpdater = OnBeforeRenderListListener { entries ->
+        entries.filterIsInstance<BundleEntry>().forEach(BundleEntry::updateTotalCount)
+    }
+
     override fun attach(pipeline: NotifPipeline) {
         if (NotificationBundleUi.isEnabled) {
             pipeline.setNotifBundler(bundler)
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
             pipeline.addFinalizeFilter(bundleFilter)
+            pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
         }
     }
 
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
-        @JvmField var debugBundleUi: Boolean = false
+
+        @JvmField var debugBundleLogs: Boolean = false
+
+        /**
+         * All notifications that contain this String in the key are bundled into the recommended
+         * bundle such that bundle code can be easily and deterministically tested.
+         *
+         * E.g. use this command to bundle all notifications from notify: `adb shell setprop
+         * persist.debug.notification_bundle_ui_debug_app_name com.google.cinek.notify && adb
+         * reboot`
+         */
+        val debugBundleAppName: String? =
+            if (Build.IS_USERDEBUG)
+                SystemProperties.get("persist.debug.notification_bundle_ui_debug_app_name")
+            else null
 
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
-            if (debugBundleUi) {
+            if (debugBundleLogs) {
                 android.util.Log.d(tag, stringLambda())
             }
         }

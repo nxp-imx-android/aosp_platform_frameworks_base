@@ -199,8 +199,6 @@ class TestPhoneWindowManager {
     private boolean mIsTalkBackEnabled;
     private boolean mIsTalkBackShortcutGestureEnabled;
 
-    private boolean mIsVoiceAccessEnabled;
-
     private Intent mBrowserIntent;
     private Intent mSmsIntent;
 
@@ -220,18 +218,6 @@ class TestPhoneWindowManager {
         @Override
         boolean isTalkBackShortcutGestureEnabled() {
             return mIsTalkBackShortcutGestureEnabled;
-        }
-    }
-
-    private class TestVoiceAccessShortcutController extends VoiceAccessShortcutController {
-        TestVoiceAccessShortcutController(Context context) {
-            super(context);
-        }
-
-        @Override
-        boolean toggleVoiceAccess(int currentUserId) {
-            mIsVoiceAccessEnabled = !mIsVoiceAccessEnabled;
-            return mIsVoiceAccessEnabled;
         }
     }
 
@@ -268,10 +254,6 @@ class TestPhoneWindowManager {
 
         TalkbackShortcutController getTalkbackShortcutController() {
             return new TestTalkbackShortcutController(mContext);
-        }
-
-        VoiceAccessShortcutController getVoiceAccessShortcutController() {
-            return new TestVoiceAccessShortcutController(mContext);
         }
 
         WindowWakeUpPolicy getWindowWakeUpPolicy() {
@@ -742,7 +724,13 @@ class TestPhoneWindowManager {
     }
 
     void assertCloseAllDialogs() {
-        verify(mContext).closeSystemDialogs();
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mContext).sendBroadcastAsUser(intentCaptor.capture(), any(), any(), any());
+        Assert.assertEquals(
+                Intent.ACTION_CLOSE_SYSTEM_DIALOGS,
+                intentCaptor.getValue().getAction());
+        // Reset verifier for next call.
+        Mockito.clearInvocations(mContext);
     }
 
     void assertDreamRequest() {
@@ -1013,11 +1001,6 @@ class TestPhoneWindowManager {
     void assertTalkBack(boolean expectEnabled) {
         mTestLooper.dispatchAll();
         Assert.assertEquals(expectEnabled, mIsTalkBackEnabled);
-    }
-
-    void assertVoiceAccess(boolean expectEnabled) {
-        mTestLooper.dispatchAll();
-        Assert.assertEquals(expectEnabled, mIsVoiceAccessEnabled);
     }
 
     void assertKeyGestureEventSentToKeyGestureController(int gestureType) {

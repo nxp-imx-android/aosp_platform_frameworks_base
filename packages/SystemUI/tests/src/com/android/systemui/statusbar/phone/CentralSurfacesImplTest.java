@@ -204,6 +204,7 @@ import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.FakeExecutor;
@@ -277,6 +278,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private KeyguardIndicationController mKeyguardIndicationController;
     @Mock private NotificationStackScrollLayout mStackScroller;
     @Mock private NotificationStackScrollLayoutController mStackScrollerController;
+    @Mock private TopUiController mTopUiController;
     @Mock private HeadsUpManager mHeadsUpManager;
     @Mock private NotificationPanelViewController mNotificationPanelViewController;
     @Mock private ShadeLogger mShadeLogger;
@@ -589,6 +591,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 configurationController,
                 mNotificationShadeWindowController,
                 mNotificationShadeWindowViewControllerLazy,
+                mTopUiController,
                 mStackScrollerController,
                 (Lazy<NotificationPresenter>) () -> mNotificationPresenter,
                 (Lazy<NotificationActivityStarter>) () -> mNotificationActivityStarter,

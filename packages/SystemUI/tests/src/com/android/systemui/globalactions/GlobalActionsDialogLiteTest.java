@@ -83,6 +83,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.telephony.TelephonyListenerManager;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor;
 import com.android.systemui.util.RingerModeLiveData;
@@ -129,6 +130,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private IStatusBarService mStatusBarService;
     @Mock private LightBarController mLightBarController;
     @Mock private NotificationShadeWindowController mNotificationShadeWindowController;
+    @Mock private TopUiController mTopUiController;
     @Mock private StatusBarWindowController mStatusBarWindowController;
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private IWindowManager mWindowManager;
@@ -195,6 +197,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mStatusBarService,
                 mLightBarController,
                 mNotificationShadeWindowController,
+                mTopUiController,
                 mStatusBarWindowControllerStore,
                 mWindowManager,
                 mBackgroundExecutor,

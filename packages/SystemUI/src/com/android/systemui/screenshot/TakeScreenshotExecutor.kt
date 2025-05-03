@@ -22,10 +22,11 @@ import android.util.Log
 import android.view.Display
 import android.view.WindowManager.ScreenshotSource
 import android.view.WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE
+import android.window.DesktopExperienceFlags
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.ScreenshotRequest
-import com.android.systemui.Flags.screenshotMultidisplayFocusChange
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -105,7 +106,7 @@ constructor(
         onSaved: (Uri?) -> Unit,
         requestCallback: RequestCallback,
     ) {
-        if (screenshotMultidisplayFocusChange()) {
+        if (SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE.isTrue) {
             val display = getDisplayToScreenshot(screenshotRequest)
             val screenshotHandler = getScreenshotController(display)
             dispatchToController(
@@ -340,6 +341,13 @@ constructor(
                 Display.TYPE_INTERNAL,
                 Display.TYPE_OVERLAY,
                 Display.TYPE_WIFI,
+            )
+
+        val SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE =
+            DesktopExperienceFlags.DesktopExperienceFlag(
+                Flags::screenshotMultidisplayFocusChange,
+                /* shouldOverrideByDevOption= */ true,
+                Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE,
             )
     }
 }

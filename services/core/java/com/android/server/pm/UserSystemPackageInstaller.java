@@ -379,7 +379,8 @@ class UserSystemPackageInstaller {
         final PackageManagerInternal pmInt = LocalServices.getService(PackageManagerInternal.class);
 
         // Check whether all system packages are indeed allowlisted.
-        final String logMessageFmt = "System package %s is not allowlisted using "
+        // NOTE: do NOT change it, as it's used by tests
+        final String logMessageFmt = "System package %s is not whitelisted using "
                 + "'install-in-user-type' in SystemConfig for any user types!";
         pmInt.forEachPackageState(packageState -> {
             var pkg = packageState.getAndroidPackage();

@@ -17,7 +17,6 @@
 package com.android.systemui.lowlight
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.lowlightclock.AmbientLightModeMonitor
 
 val Kosmos.ambientLightModeMonitor: AmbientLightModeMonitor by
     Kosmos.Fixture { FakeAmbientLightModeMonitor() }

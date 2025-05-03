@@ -20,9 +20,11 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.KeyguardSecurityModel
+import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -260,6 +262,17 @@ constructor(
             keyguardInteractor.isKeyguardGoingAway
                 .filterRelevantKeyguardStateAnd { isKeyguardGoingAway -> isKeyguardGoingAway }
                 .collect {
+                    val editModeState = communalSceneInteractor.editModeState.value
+                    if (
+                        Flags.hubEditModeTransition() && editModeState == EditModeState.STARTING ||
+                            editModeState == EditModeState.SHOWING
+                    ) {
+                        // If transitioning to hub edit mode, do nothing here. The keyguard state
+                        // change to GONE happens as a result of moving away from the communal
+                        // scene, which is triggered by the edit mode activity.
+                        return@collect
+                    }
+
                     val securityMode =
                         keyguardSecurityModel.getSecurityMode(
                             selectedUserInteractor.getSelectedUserId()

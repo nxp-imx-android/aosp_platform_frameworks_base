@@ -223,6 +223,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
     private boolean mAttachAgentDuringBind;  // Whether agent should be attached late.
     private int mClockType; // Whether we need thread cpu / wall clock / both.
     private int mProfilerOutputVersion; // The version of the profiler output.
+    private boolean mLongRunningMethods; // Whether we need to trace only long running methods
+    private long mDurationMicros; // duration in microseconds that specifies how long to trace.
     private int mDisplayId;
     private int mTaskDisplayAreaFeatureId;
     private int mWindowingMode;
@@ -608,6 +610,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
         mSamplingInterval = 0;
         mAutoStop = false;
         mStreaming = false;
+        mLongRunningMethods = false;
+        mDurationMicros = 0;
         mUserId = defUser;
         mDisplayId = INVALID_DISPLAY;
         mTaskDisplayAreaFeatureId = FEATURE_UNDEFINED;
@@ -808,9 +812,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
                         return 1;
                     }
                 }
-                profilerInfo =
-                        new ProfilerInfo(mProfileFile, fd, mSamplingInterval, mAutoStop, mStreaming,
-                                mAgent, mAttachAgentDuringBind, mClockType, mProfilerOutputVersion);
+                profilerInfo = new ProfilerInfo(mProfileFile, fd, mSamplingInterval, mAutoStop,
+                        mStreaming, mAgent, mAttachAgentDuringBind, mClockType,
+                        mProfilerOutputVersion, mLongRunningMethods, mDurationMicros);
             }
 
             pw.println("Starting: " + intent);
@@ -1173,6 +1177,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
         mSamplingInterval = 0;
         mStreaming = false;
         mClockType = ProfilerInfo.CLOCK_TYPE_DEFAULT;
+        mLongRunningMethods = false;
+        mDurationMicros = 0;
         mProfilerOutputVersion = ProfilerInfo.OUTPUT_VERSION_DEFAULT;
 
         String process = null;
@@ -1217,6 +1223,16 @@ final class ActivityManagerShellCommand extends ShellCommand {
             cmd = getNextArgRequired();
             if ("start".equals(cmd)) {
                 start = true;
+                String opt;
+                while ((opt = getNextOption()) != null) {
+                    if (opt.equals("--longrunning")) {
+                        mLongRunningMethods = true;
+                    } else if (opt.equals("--duration")) {
+                        // Convert milliseconds to micro seconds
+                        long milliToMicro = 1000;
+                        mDurationMicros = Long.parseLong(getNextArgRequired()) * milliToMicro;
+                    }
+                }
             } else if ("stop".equals(cmd)) {
                 start = false;
             } else {
@@ -1245,16 +1261,21 @@ final class ActivityManagerShellCommand extends ShellCommand {
         // For regular method tracing  profileFile should be provided with the start command. For
         // low overhead method tracing the profileFile is optional and provided with the stop
         // command.
-        if ((start && profileType == ProfilerInfo.PROFILE_TYPE_REGULAR)
-                || (profileType == ProfilerInfo.PROFILE_TYPE_LOW_OVERHEAD
-                  && !start && getRemainingArgsCount() > 0)) {
+        boolean hasFileArg = (profileType == ProfilerInfo.PROFILE_TYPE_REGULAR && start)
+                || (profileType == ProfilerInfo.PROFILE_TYPE_LOW_OVERHEAD && !start
+                        && getRemainingArgsCount() > 0);
+        if (hasFileArg) {
             profileFile = getNextArgRequired();
             fd = openFileForSystem(profileFile, "w");
             if (fd == null) {
                 return -1;
             }
+        }
+
+        if (start || hasFileArg) {
             profilerInfo = new ProfilerInfo(profileFile, fd, mSamplingInterval, false, mStreaming,
-                    null, false, mClockType, mProfilerOutputVersion);
+                    null, false, mClockType, mProfilerOutputVersion, mLongRunningMethods,
+                    mDurationMicros);
         }
 
         if (!mInterface.profileControl(process, userId, start, profilerInfo, profileType)) {
@@ -4842,6 +4863,19 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("      --user <USER_ID> | current: When supplying a process name,");
             pw.println("          specify user of process to profile; uses current user if not");
             pw.println("          specified.");
+            pw.println("  profile lowoverhead start [--longrunning --duration DURATION] <PROCESS>");
+            pw.println("      Starts a lowoverhead trace on a process. The given <PROCESS>");
+            pw.println("        argument may be either a process name or pid.  Options are:");
+            pw.println("      --longrunning: Traces methods that run longer than a specific");
+            pw.println("          threshold. This threshold is a build-time constant");
+            pw.println("      --duration DURATION: trace for the specified DURATION milliseconds.");
+            pw.println("          This argument only applies for long running traces. A default");
+            pw.println("          value is used when duration is not specified.");
+            pw.println("  profile lowoverhead stop <PROCESS> [<FILE>]");
+            pw.println("      Stops an ongoing lowoverhead trace on a process. The given");
+            pw.println("        <PROCESS> argument may be either a process name or pid.");
+            pw.println("        An optional <FILE> argument may be provided to dump the");
+            pw.println("        collected trace");
             pw.println("  dumpheap [--user <USER_ID> current] [-n] [-g] [-b <format>] ");
             pw.println("           <PROCESS> <FILE>");
             pw.println("      Dump the heap of a process.  The given <PROCESS> argument may");

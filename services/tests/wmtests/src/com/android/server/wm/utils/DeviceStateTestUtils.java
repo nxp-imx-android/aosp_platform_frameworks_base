@@ -26,16 +26,24 @@ public final class DeviceStateTestUtils {
     }
 
     // TODO: Update these with the correct properties
+    // Identifiers used to create device state objects
+    private static final int UNKNOWN_IDENTIFIER = 0;
+    private static final int FOLDED_IDENTIFIER = 1;
+    private static final int HALF_FOLDED_IDENTIFIER = 2;
+    private static final int OPEN_IDENTIFIER = 3;
+    private static final int REAR_IDENTIFIER = 4;
+    private static final int CONCURRENT_IDENTIFIER = 5;
+
     public static final DeviceState UNKNOWN = new DeviceState(
-            new DeviceState.Configuration.Builder(0, "UNKNOWN").build());
-    public static final DeviceState OPEN = new DeviceState(
-            new DeviceState.Configuration.Builder(1, "OPEN").build());
+            new DeviceState.Configuration.Builder(UNKNOWN_IDENTIFIER, "UNKNOWN").build());
     public static final DeviceState FOLDED = new DeviceState(
-            new DeviceState.Configuration.Builder(2, "FOLDED").build());
+            new DeviceState.Configuration.Builder(FOLDED_IDENTIFIER, "FOLDED").build());
     public static final DeviceState HALF_FOLDED = new DeviceState(
-            new DeviceState.Configuration.Builder(3, "HALF_FOLDED").build());
+            new DeviceState.Configuration.Builder(HALF_FOLDED_IDENTIFIER, "HALF_FOLDED").build());
+    public static final DeviceState OPEN = new DeviceState(
+            new DeviceState.Configuration.Builder(OPEN_IDENTIFIER, "OPEN").build());
     public static final DeviceState REAR = new DeviceState(
-            new DeviceState.Configuration.Builder(4, "REAR").build());
+            new DeviceState.Configuration.Builder(REAR_IDENTIFIER, "REAR").build());
     public static final DeviceState CONCURRENT = new DeviceState(
-            new DeviceState.Configuration.Builder(5, "CONCURRENT").build());
+            new DeviceState.Configuration.Builder(CONCURRENT_IDENTIFIER, "CONCURRENT").build());
 }

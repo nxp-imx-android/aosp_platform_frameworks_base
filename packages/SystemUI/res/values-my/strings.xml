@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ဘလူးတုသ်သုံးစက် သင်္ကေတ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"စက်အသေးစိတ်ကို စီစဉ်သတ်မှတ်ရန် နှိပ်ပါ"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>။ စက်အသေးစိတ်ကို စီစဉ်သတ်မှတ်နိုင်သည်"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> နှင့် အသံ စတင်မျှဝေရန်"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> နှင့် အသံမျှဝေခြင်းကို ရပ်ရန်"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"စက်အားလုံးကြည့်ရန်"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"စက်အသစ် တွဲချိတ်ရန်"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ဘက်ထရီရာခိုင်နှုန်းကို မသိပါ။"</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"သတ်မှတ်မထားပါ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ဆက်တင်များတွင် စီမံရန်"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{မုဒ် သုံးမနေပါ}=1{{mode} ကို သုံးနေသည်}other{မုဒ် # ခု သုံးနေသည်}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ဖွင့်"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"နှိုးစက်သံ၊ သတိပေးချက်အသံများ၊ ပွဲစဉ်သတိပေးသံများနှင့် သင်ခွင့်ပြုထားသူများထံမှ ဖုန်းခေါ်မှုများမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"နှိုးစက်သံမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"စိတ်ကြိုက် ပြုလုပ်ရန်"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"အခြား"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"အကွက်ငယ်၏ အရွယ်အစားကို ပြောင်းရန်"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"အကွက်ငယ်ကို ဖယ်ရှားရန်"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"နေရာချထားမှုမုဒ် ဖွင့်ရန်"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ရွေးချယ်မှု ပြောင်းရန်"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"နောက်ဆုံးနေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"အကွက်ငယ်ကို ရွှေ့ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ဆန္ဒရှိရာ နေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> သို့ ရွှေ့ရန်"</string>

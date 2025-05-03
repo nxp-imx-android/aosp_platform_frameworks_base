@@ -253,6 +253,12 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 )
                 .containsExactly(4)
                 .inOrder()
+            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getLeftTiledTask(DESKTOP_ID_2))
+                .isEqualTo(4)
+            assertThat(
+                    desktopUserRepositories.getProfile(USER_ID_1).getRightTiledTask(DESKTOP_ID_2)
+                )
+                .isEqualTo(5)
         }
 
     @Test
@@ -330,6 +336,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                     DesktopTask.newBuilder()
                         .setTaskId(4)
                         .setDesktopTaskState(DesktopTaskState.MINIMIZED)
+                        .setDesktopTaskTilingState(DesktopTaskTilingState.LEFT)
                         .build(),
                 )
                 .putTasksByTaskId(
@@ -337,6 +344,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                     DesktopTask.newBuilder()
                         .setTaskId(5)
                         .setDesktopTaskState(DesktopTaskState.VISIBLE)
+                        .setDesktopTaskTilingState(DesktopTaskTilingState.RIGHT)
                         .build(),
                 )
                 .build()

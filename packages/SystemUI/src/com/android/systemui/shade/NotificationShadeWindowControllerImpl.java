@@ -50,7 +50,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Dumpable;
 import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController;
-import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
 import com.android.systemui.dagger.SysUISingleton;
@@ -77,6 +76,8 @@ import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.topui.TopUiController;
+import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 
 import dagger.Lazy;
@@ -147,6 +148,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     private final NotificationShadeWindowState.Buffer mStateBuffer =
             new NotificationShadeWindowState.Buffer(MAX_STATE_CHANGES_BUFFER_SIZE);
 
+    private final TopUiController mTopUiController;
+
     @Inject
     public NotificationShadeWindowControllerImpl(
             @ShadeDisplayAware Context context,
@@ -170,7 +173,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             UserTracker userTracker,
             NotificationShadeWindowModel notificationShadeWindowModel,
             Lazy<CommunalInteractor> communalInteractor,
-            @ShadeDisplayAware LayoutParams shadeWindowLayoutParams) {
+            @ShadeDisplayAware LayoutParams shadeWindowLayoutParams,
+            TopUiController topUiController) {
         mContext = context;
         mWindowRootViewComponentFactory = windowRootViewComponentFactory;
         mWindowManager = windowManager;
@@ -221,6 +225,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         // know that we're not falsing (because we unlocked.)
         mKeyguardMaxRefreshRate = context.getResources()
                 .getInteger(R.integer.config_keyguardMaxRefreshRate);
+        mTopUiController = topUiController;
     }
 
     /**
@@ -364,18 +369,17 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             );
         }
 
-        if (!SceneContainerFlag.isEnabled()) {
+        if (SceneContainerFlag.isEnabled()) {
+            collectFlow(mWindowRootView, mNotificationShadeWindowModel.isBouncerShowing(),
+                    this::setBouncerShowing);
+            collectFlow(mWindowRootView, mNotificationShadeWindowModel.getDoesBouncerRequireIme(),
+                    this::setKeyguardNeedsInput);
+        } else {
             collectFlow(
                     mWindowRootView,
                     mNotificationShadeWindowModel.isKeyguardOccluded(),
                     this::setKeyguardOccluded
             );
-        }
-        if (ComposeBouncerFlags.INSTANCE.isComposeBouncerOrSceneContainerEnabled()) {
-            collectFlow(mWindowRootView, mNotificationShadeWindowModel.isBouncerShowing(),
-                    this::setBouncerShowing);
-            collectFlow(mWindowRootView, mNotificationShadeWindowModel.getDoesBouncerRequireIme(),
-                    this::setKeyguardNeedsInput);
         }
     }
 
@@ -641,7 +645,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         applyStatusBarColorSpaceAgnosticFlag(state);
         applyWindowLayoutParams();
 
-        if (mHasTopUi != mHasTopUiChanged) {
+        if (!TopUiControllerRefactor.isEnabled() && mHasTopUi != mHasTopUiChanged) {
             mHasTopUi = mHasTopUiChanged;
             mBackgroundExecutor.execute(() -> {
                 try {
@@ -649,7 +653,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 } catch (RemoteException e) {
                     Log.e(TAG, "Failed to call setHasTopUi", e);
                 }
-
             });
         }
         notifyStateChangedCallbacks();
@@ -727,8 +730,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void applyHasTopUi(NotificationShadeWindowState state) {
-        mHasTopUiChanged = !state.componentsForcingTopUi.isEmpty() || isExpanded(state)
-                || state.isSwitchingUsers;
+        if (TopUiControllerRefactor.isEnabled()) {
+            boolean shouldHaveTopUi = isExpanded(state) || state.isSwitchingUsers;
+            if (mHasTopUi != shouldHaveTopUi) {
+                mHasTopUi = shouldHaveTopUi;
+                mTopUiController.setRequestTopUi(mHasTopUi, TAG);
+            }
+        } else {
+            mHasTopUiChanged = !state.componentsForcingTopUi.isEmpty() || isExpanded(state)
+                    || state.isSwitchingUsers;
+        }
     }
 
     private void applyNotTouchable(NotificationShadeWindowState state) {
@@ -1085,6 +1096,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
      */
     @Override
     public void setRequestTopUi(boolean requestTopUi, String componentTag) {
+        TopUiControllerRefactor.assertInLegacyMode();
         if (requestTopUi) {
             mCurrentState.componentsForcingTopUi.add(componentTag);
         } else {

@@ -1344,18 +1344,19 @@ class UserController implements Handler.Callback {
 
     private void finishUserStopping(final int userId, final UserState uss,
             final boolean allowDelayedLocking) {
+        final UserInfo userInfo = getUserInfo(userId);
         EventLog.writeEvent(EventLogTags.UC_FINISH_USER_STOPPING, userId);
         synchronized (mLock) {
             if (uss.state != UserState.STATE_STOPPING) {
                 // Whoops, we are being started back up.  Abort, abort!
                 UserJourneySession session = mInjector.getUserJourneyLogger()
-                        .logUserJourneyFinishWithError(-1, getUserInfo(userId),
+                        .logUserJourneyFinishWithError(-1, userInfo,
                                 USER_JOURNEY_USER_STOP, ERROR_CODE_ABORTED);
                 if (session != null) {
                     mHandler.removeMessages(CLEAR_USER_JOURNEY_SESSION_MSG, session);
                 } else {
                     mInjector.getUserJourneyLogger()
-                            .logUserJourneyFinishWithError(-1, getUserInfo(userId),
+                            .logUserJourneyFinishWithError(-1, userInfo,
                                     USER_JOURNEY_USER_STOP, ERROR_CODE_INVALID_SESSION_ID);
                 }
                 return;
@@ -1441,7 +1442,7 @@ class UserController implements Handler.Callback {
                                     + userId + " callbacks:" + keyEvictedCallbacks);
                     allowDelayedLocking = false;
                 }
-                userIdToLock = updateUserToLockLU(userId, allowDelayedLocking);
+                userIdToLock = updateUserToLockLU(userInfo, allowDelayedLocking);
                 if (userIdToLock == UserHandle.USER_NULL) {
                     lockUser = false;
                 }
@@ -1581,10 +1582,11 @@ class UserController implements Handler.Callback {
      * @return user id to lock. UserHandler.USER_NULL will be returned if no user should be locked.
      */
     @GuardedBy("mLock")
-    private int updateUserToLockLU(@UserIdInt int userId, boolean allowDelayedLocking) {
+    private int updateUserToLockLU(UserInfo userInfo, boolean allowDelayedLocking) {
+        final int userId = userInfo.id;
         if (!canDelayDataLockingForUser(userId)
                 || !allowDelayedLocking
-                || getUserInfo(userId).isEphemeral()
+                || userInfo.isEphemeral()
                 || hasUserRestriction(UserManager.DISALLOW_RUN_IN_BACKGROUND, userId)) {
             return userId;
         }
@@ -2316,6 +2318,7 @@ class UserController implements Handler.Callback {
         synchronized (mLock) {
             if (targetUserId == currentUserId && mTargetUserId == UserHandle.USER_NULL) {
                 Slogf.i(TAG, "user #" + targetUserId + " is already the current user");
+                mHandler.post(this::endUserSwitch);
                 return true;
             }
             if (targetUserInfo == null) {
@@ -3616,6 +3619,7 @@ class UserController implements Handler.Callback {
             pw.println("  mCurrentProfileIds:" + Arrays.toString(mCurrentProfileIds));
             pw.println("  mCurrentUserId:" + mCurrentUserId);
             pw.println("  mTargetUserId:" + mTargetUserId);
+            pw.println("  mPendingTargetUserIds:" + mPendingTargetUserIds);
             pw.println("  mPendingLogoutTargetUser:" + mPendingLogoutTargetUser);
             pw.println("  mLastActiveUsersForDelayedLocking:" + mLastActiveUsersForDelayedLocking);
             pw.println("  mDelayUserDataLocking:" + mDelayUserDataLocking);

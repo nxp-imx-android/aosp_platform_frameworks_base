@@ -78,13 +78,13 @@ import com.android.systemui.statusbar.notification.row.shared.NotificationConten
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import kotlinx.coroutines.flow.MutableStateFlow;
 import kotlinx.coroutines.flow.StateFlow;
 import kotlinx.coroutines.flow.StateFlowKt;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a notification that the system UI knows about
@@ -853,14 +853,6 @@ public final class NotificationEntry extends ListEntry {
     }
 
     /**
-     * Returns whether the NotificationEntry is promoted ongoing.
-     */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
-    public boolean isOngoingPromoted() {
-        return mSbn.getNotification().isPromotedOngoing();
-    }
-
-    /**
      * Returns whether this row is considered blockable (i.e. it's not a system notif
      * or is not in an allowList).
      */
@@ -1102,7 +1094,7 @@ public final class NotificationEntry extends ListEntry {
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean isPromotedOngoing() {
-        return PromotedNotificationContentModel.isPromotedForStatusBarChip(mSbn.getNotification());
+        return mSbn.getNotification().isPromotedOngoing();
     }
 
     /**

@@ -87,6 +87,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.tests.R;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
@@ -159,6 +160,8 @@ public class WindowDecorationTests extends ShellTestCase {
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
     private Handler mMockHandler;
+    @Mock
+    private Transitions mTransitions;
 
     private final List<SurfaceControl.Transaction> mMockSurfaceControlTransactions =
             new ArrayList<>();
@@ -1261,11 +1264,11 @@ public class WindowDecorationTests extends ShellTestCase {
                 @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost>
                         windowDecorViewHostSupplier,
                 DesktopModeEventLogger desktopModeEventLogger) {
-            super(context, userContext, displayController, taskOrganizer, taskInfo,
-                    taskSurface, surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
-                    windowContainerTransactionSupplier, surfaceControlSupplier,
-                    surfaceControlViewHostFactory, windowDecorViewHostSupplier,
-                    desktopModeEventLogger);
+            super(context, mMockHandler, mTransitions, userContext, displayController,
+                    taskOrganizer, taskInfo, taskSurface, surfaceControlBuilderSupplier,
+                    surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
+                    surfaceControlSupplier, surfaceControlViewHostFactory,
+                    windowDecorViewHostSupplier, desktopModeEventLogger);
         }
 
         void relayout(ActivityManager.RunningTaskInfo taskInfo, boolean hasGlobalFocus) {

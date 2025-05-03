@@ -62,7 +62,7 @@ import platform.test.screenshot.Displays.FoldableInner
 @LargeTest
 @MotionTest
 class BouncerContentTest : SysuiTestCase() {
-    private val deviceSpec = DeviceEmulationSpec(FoldableInner)
+    private val deviceSpec = DeviceEmulationSpec(FoldableInner, isLandscape = true)
     private val kosmos = testKosmos()
 
     @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec)

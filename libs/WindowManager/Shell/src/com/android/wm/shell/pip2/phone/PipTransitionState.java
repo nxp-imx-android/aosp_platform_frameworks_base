@@ -207,9 +207,6 @@ public class PipTransitionState {
      * @param extra a bundle passed to the subscribed listeners to resolve/cache extra info.
      */
     public void setState(@TransitionState int state, @Nullable Bundle extra) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s setState from=%s to=%s",
-                TAG, stateToString(mState), stateToString(state));
         if (state == ENTERING_PIP || state == SWIPING_TO_PIP
                 || state == SCHEDULED_BOUNDS_CHANGE || state == CHANGING_PIP_BOUNDS) {
             // States listed above require extra bundles to be provided.
@@ -222,7 +219,9 @@ public class PipTransitionState {
                     TAG, stateToString(state), this);
             return;
         }
-
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "%s setState from=%s to=%s",
+                TAG, stateToString(mState), stateToString(state));
         if (mState != state) {
             final int prevState = mState;
             mState = state;

@@ -44,7 +44,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Slog;
 import android.util.SparseIntArray;
-import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -91,7 +90,8 @@ import java.util.stream.Collectors;
  */
 public class RecentTasksController implements TaskStackListenerCallback,
         RemoteCallable<RecentTasksController>, DesktopRepository.ActiveTasksListener,
-        TaskStackTransitionObserver.TaskStackTransitionObserverListener, UserChangeListener {
+        TaskStackTransitionObserver.TaskStackTransitionObserverListener, UserChangeListener,
+        DesktopRepository.DeskChangeListener {
     private static final String TAG = RecentTasksController.class.getSimpleName();
 
     // When the multiple desktops feature is disabled, all freeform tasks are lumped together into
@@ -203,8 +203,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
         mShellCommandHandler.addCommandCallback("recents", mRecentsShellCommandHandler, this);
         mUserId = ActivityManager.getCurrentUser();
         mDesktopUserRepositories.ifPresent(
-                desktopUserRepositories ->
-                        desktopUserRepositories.getCurrent().addActiveTaskListener(this));
+                desktopUserRepositories -> {
+                    desktopUserRepositories.getCurrent().addActiveTaskListener(this);
+                    if (mDesktopState.enableMultipleDesktops()) {
+                        desktopUserRepositories.getCurrent().addDeskChangeListener(this,
+                                mMainExecutor);
+                    }
+                });
         mTaskStackListener.addListener(this);
         mTaskStackTransitionObserver.addTaskStackTransitionObserverListener(this,
                 mMainExecutor);
@@ -580,10 +585,10 @@ public class RecentTasksController implements TaskStackListenerCallback,
      * displays, without adding any desk tasks. This is a preparation step so that tasks can be
      * added to these desks in `generateList()`.
      *
-     * This is needed since with the `ENABLE_MULTIPLE_DESKTOPS_BACKEND` flag, we want to include
-     * desk even if they're empty (i.e. have no tasks).
+     * This is needed since with the multiple-desktops flags, we want to include desk even if
+     * they're empty (i.e. have no tasks).
      *
-     * @param multipleDesktopsEnabled whether the multiple desktops backend feature is enabled.
+     * @param multipleDesktopsEnabled whether the multiple desktops feature is enabled.
      */
     private void initializeDesksMap(boolean multipleDesktopsEnabled) {
         mTmpDesks.clear();
@@ -610,8 +615,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private Desk getOrCreateDesk(int deskId) {
         var desk = mTmpDesks.get(deskId);
         if (desk == null) {
-            desk = new Desk(deskId,
-                    mDesktopUserRepositories.get().getCurrent().getDisplayForDesk(deskId));
+            final int displayId;
+            if (deskId == INVALID_DESK_ID) {
+                displayId = INVALID_DISPLAY;
+            } else {
+                displayId = mDesktopUserRepositories.get().getCurrent().getDisplayForDesk(deskId);
+            }
+            desk = new Desk(deskId, displayId);
             mTmpDesks.put(deskId, desk);
         }
         return desk;
@@ -644,8 +654,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
             ProtoLog.v(WM_SHELL_TASK_OBSERVER, "RecentTasksController.generateList(%s)", reason);
         }
 
-        final boolean multipleDesktopsEnabled =
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue();
+        final boolean multipleDesktopsEnabled = mDesktopState.enableMultipleDesktops();
         initializeDesksMap(multipleDesktopsEnabled);
 
         // When the multiple desktops feature is enabled, we include all desks even if they're
@@ -975,6 +984,26 @@ public class RecentTasksController implements TaskStackListenerCallback,
         if (previousUserRepository.getUserId() == currentUserRepository.getUserId()) return;
         previousUserRepository.removeActiveTasksListener(this);
         currentUserRepository.addActiveTaskListener(this);
+    }
+
+    @Override
+    public void onDeskAdded(int displayId, int deskId) {
+        notifyRecentTasksChanged();
+    }
+
+    @Override
+    public void onDeskRemoved(int displayId, int deskId) {
+        notifyRecentTasksChanged();
+    }
+
+    @Override
+    public void onActiveDeskChanged(int displayId, int newActiveDeskId, int oldActiveDeskId) {
+        // No-op for now, as only desk additions/removals affect the recent tasks list directly.
+    }
+
+    @Override
+    public void onCanCreateDesksChanged(boolean canCreateDesks) {
+        // No-op for now.
     }
 
     /**

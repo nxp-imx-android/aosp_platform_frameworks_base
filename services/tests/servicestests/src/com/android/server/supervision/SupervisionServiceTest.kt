@@ -21,6 +21,7 @@ import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
 import android.app.supervision.SupervisionRecoveryInfo
+import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
 import android.app.supervision.flags.Flags
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -403,15 +404,43 @@ class SupervisionServiceTest {
         assertThat(service.supervisionRecoveryInfo).isNull()
 
         val recoveryInfo =
-            SupervisionRecoveryInfo().apply {
-                email = "test_email"
-                id = "test_id"
-            }
+            SupervisionRecoveryInfo(
+                "email",
+                "default",
+                STATE_PENDING,
+                PersistableBundle().apply { putString("id", "id") },
+            )
         service.setSupervisionRecoveryInfo(recoveryInfo)
 
         assertThat(service.supervisionRecoveryInfo).isNotNull()
-        assertThat(service.supervisionRecoveryInfo.email).isEqualTo(recoveryInfo.email)
-        assertThat(service.supervisionRecoveryInfo.id).isEqualTo(recoveryInfo.id)
+        assertThat(service.supervisionRecoveryInfo.accountType).isEqualTo(recoveryInfo.accountType)
+        assertThat(service.supervisionRecoveryInfo.accountName).isEqualTo(recoveryInfo.accountName)
+        assertThat(service.supervisionRecoveryInfo.accountData.getString("id"))
+            .isEqualTo(recoveryInfo.accountData.getString("id"))
+        assertThat(service.supervisionRecoveryInfo.state).isEqualTo(recoveryInfo.state)
+    }
+
+    @Test
+    fun hasSupervisionCredentials() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
+
+        assertThat(service.hasSupervisionCredentials()).isTrue()
+    }
+
+    @Test
+    fun hasSupervisionCredentials_noSupervisingUser_returnsFalse() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
+
+        assertThat(service.hasSupervisionCredentials()).isFalse()
+    }
+
+    @Test
+    fun hasSupervisionCredentials_supervisingUserMissingSecureLock_returnsFalse() {
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
+
+        assertThat(service.hasSupervisionCredentials()).isFalse()
     }
 
     private val systemSupervisionPackage: String

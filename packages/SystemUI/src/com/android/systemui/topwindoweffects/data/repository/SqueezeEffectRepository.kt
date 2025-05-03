@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.Flow
 interface SqueezeEffectRepository {
     val isSqueezeEffectEnabled: Flow<Boolean>
 
+    val isPowerButtonDownInKeyCombination: Flow<Boolean>
+
     suspend fun getInvocationEffectInitialDelayMs(): Long
 
     suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo

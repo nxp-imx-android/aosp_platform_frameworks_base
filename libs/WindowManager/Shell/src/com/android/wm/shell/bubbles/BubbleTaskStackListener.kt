@@ -21,9 +21,9 @@ package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
-import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.util.getExitBubbleTransaction
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
@@ -64,14 +64,6 @@ class BubbleTaskStackListener(
             }
             return@onActivityRestartAttempt
         }
-
-        bubbleData.getOverflowBubbleWithTaskId(taskId)?.let { bubble ->
-            if (isBubbleToFullscreen(task)) {
-                moveCollapsedOverflowBubbleToFullscreen(bubble, task)
-            } else {
-                selectAndExpandOverflowBubble(bubble, task)
-            }
-        }
     }
 
     /** Selects and expands a bubble that is currently in the stack. */
@@ -103,36 +95,6 @@ class BubbleTaskStackListener(
         collapsedBubbleToFullscreenInternal(bubble, task)
     }
 
-    /** Selects and expands a bubble that is currently in the overflow. */
-    private fun selectAndExpandOverflowBubble(
-        bubble: Bubble,
-        task: ActivityManager.RunningTaskInfo,
-    ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "selectAndExpandOverflowBubble - taskId=%d selecting matching overflow bubble=%s",
-            task.taskId,
-            bubble.key,
-        )
-        bubbleController.promoteBubbleFromOverflow(bubble)
-        bubbleData.setExpanded(true)
-    }
-
-    /** Moves a collapsed overflow bubble to fullscreen. */
-    private fun moveCollapsedOverflowBubbleToFullscreen(
-        bubble: Bubble,
-        task: ActivityManager.RunningTaskInfo,
-    ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "moveCollapsedOverflowBubbleToFullscreen - taskId=%d " +
-                    "moving matching overflow bubble=%s to fullscreen",
-            task.taskId,
-            bubble.key,
-        )
-        collapsedBubbleToFullscreenInternal(bubble, task)
-    }
-
     /** Internal function to move a collapsed bubble to fullscreen task. */
     private fun collapsedBubbleToFullscreenInternal(
         bubble: Bubble,
@@ -145,15 +107,7 @@ class BubbleTaskStackListener(
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 
-        val wct = WindowContainerTransaction()
-        wct.setTaskForceExcludedFromRecents(task.token, false /* forceExcluded */)
-            .setLaunchNextToBubble(task.token, false /* launchNextToBubble */)
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-            wct.setDisableLaunchAdjacent(task.token, false)
-        }
-        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(task.token, false /* disablePip */)
-        }
+        val wct = getExitBubbleTransaction(task.token)
         taskOrganizer.applyTransaction(wct)
 
         taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)

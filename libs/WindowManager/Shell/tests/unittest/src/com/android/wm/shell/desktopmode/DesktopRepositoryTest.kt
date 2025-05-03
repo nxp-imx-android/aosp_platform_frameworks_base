@@ -28,7 +28,9 @@ import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopRepository.Companion.INVALID_DESK_ID
@@ -382,9 +384,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun leftTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
-            repo.addLeftTiledTask(displayId = DEFAULT_DISPLAY, taskId = 1)
+            repo.addLeftTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                // TODO(b/414589444): Swap with deskId when multi desk is more stable.
+                deskId = DEFAULT_DISPLAY,
+            )
 
-            assertThat(repo.getLeftTiledTask(displayId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -396,8 +403,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = null,
                 )
 
-            repo.removeRightTiledTask(displayId = DEFAULT_DISPLAY)
-            assertThat(repo.getRightTiledTask(displayId = DEFAULT_DISPLAY)).isNull()
+            repo.removeLeftTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
         }
     }
 
@@ -405,9 +413,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun rightTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
-            repo.addRightTiledTask(displayId = DEFAULT_DISPLAY, taskId = 1)
+            repo.addRightTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                deskId = DEFAULT_DISPLAY,
+            )
 
-            assertThat(repo.getRightTiledTask(displayId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -419,8 +431,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = 1,
                 )
 
-            repo.removeLeftTiledTask(displayId = DEFAULT_DISPLAY)
-            assertThat(repo.getLeftTiledTask(displayId = DEFAULT_DISPLAY)).isNull()
+            repo.removeRightTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
         }
     }
 
@@ -1179,21 +1191,25 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun setTaskIdAsTopTransparentFullscreenTaskId_savesTaskId() {
-        repo.setTopTransparentFullscreenTaskId(displayId = DEFAULT_DISPLAY, taskId = 1)
+    fun setTaskAsTopTransparentFullscreenTaskData_savesTaskData() {
+        val taskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(1).setToken(MockToken().token()).build()
+        repo.setTopTransparentFullscreenTaskData(DEFAULT_DESKTOP_ID, taskInfo)
+        val topTransparentTaskData = repo.getTopTransparentFullscreenTaskData(DEFAULT_DESKTOP_ID)
 
-        assertThat(repo.getTopTransparentFullscreenTaskId(DEFAULT_DISPLAY)).isEqualTo(1)
+        assertThat(topTransparentTaskData).isNotNull()
+        assertThat(topTransparentTaskData!!.taskId).isEqualTo(taskInfo.taskId)
+        assertThat(topTransparentTaskData.token).isEqualTo(taskInfo.token)
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun clearTaskIdAsTopTransparentFullscreenTaskId_clearsTaskId() {
-        repo.setTopTransparentFullscreenTaskId(displayId = DEFAULT_DISPLAY, taskId = 1)
+    fun clearTaskAsTopTransparentFullscreenTask_clearsTask() {
+        val taskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(1).setToken(MockToken().token()).build()
+        repo.setTopTransparentFullscreenTaskData(DEFAULT_DESKTOP_ID, taskInfo)
+        repo.clearTopTransparentFullscreenTaskData(DEFAULT_DESKTOP_ID)
 
-        repo.clearTopTransparentFullscreenTaskId(DEFAULT_DISPLAY)
-
-        assertThat(repo.getTopTransparentFullscreenTaskId(DEFAULT_DISPLAY)).isNull()
+        assertThat(repo.getTopTransparentFullscreenTaskData(DEFAULT_DESKTOP_ID)).isNull()
     }
 
     @Test

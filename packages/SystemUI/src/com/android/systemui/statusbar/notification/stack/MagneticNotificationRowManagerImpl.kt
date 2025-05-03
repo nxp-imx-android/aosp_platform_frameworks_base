@@ -22,6 +22,8 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.VibratorHelper
+import com.android.systemui.statusbar.notification.Roundable
+import com.android.systemui.statusbar.notification.TopBottomRoundness
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationRowLogger
 import com.android.systemui.util.time.SystemClock
@@ -65,8 +67,6 @@ constructor(
         SpringForce().setStiffness(DETACH_STIFFNESS).setDampingRatio(DETACH_DAMPING_RATIO)
     private val snapForce =
         SpringForce().setStiffness(SNAP_BACK_STIFFNESS).setDampingRatio(SNAP_BACK_DAMPING_RATIO)
-    private val attachForce =
-        SpringForce().setStiffness(ATTACH_STIFFNESS).setDampingRatio(ATTACH_DAMPING_RATIO)
 
     // Multiplier applied to the translation of a row while swiped
     val swipedRowMultiplier =
@@ -81,6 +81,18 @@ constructor(
     // Last time pulling haptics played, in milliseconds since boot
     // (see SystemClock.elapsedRealtime)
     private var lastVibrationTime = 0L
+
+    private val detachedRoundnessSet =
+        List(ROUNDNESS_MULTIPLIERS.size) { index ->
+            when (index) {
+                ROUNDNESS_MULTIPLIERS.size / 2 - 1 ->
+                    TopBottomRoundness(topRoundness = 0f, bottomRoundness = 1f)
+                ROUNDNESS_MULTIPLIERS.size / 2 -> TopBottomRoundness(roundness = 1f)
+                ROUNDNESS_MULTIPLIERS.size / 2 + 1 ->
+                    TopBottomRoundness(topRoundness = 1f, bottomRoundness = 0f)
+                else -> TopBottomRoundness(roundness = 0f)
+            }
+        }
 
     override fun setInfoProvider(
         swipeInfoProvider: MagneticNotificationRowManager.SwipeInfoProvider?
@@ -115,24 +127,24 @@ constructor(
         stackScrollLayout: NotificationStackScrollLayout,
         sectionsManager: NotificationSectionsManager,
     ) {
-        // Update roundable targets
-        notificationRoundnessManager.clear()
-        val currentRoundableTargets =
-            notificationTargetsHelper.findRoundableTargets(
-                expandableNotificationRow,
-                stackScrollLayout,
-                sectionsManager,
-            )
-        notificationRoundnessManager.setRoundableTargets(currentRoundableTargets)
-
-        // Update magnetic targets
-        val newListeners =
-            notificationTargetsHelper.findMagneticTargets(
+        // All targets
+        val newTargets =
+            notificationTargetsHelper.findMagneticRoundableTargets(
                 expandableNotificationRow,
                 stackScrollLayout,
                 sectionsManager,
                 MAGNETIC_TRANSLATION_MULTIPLIERS.size,
             )
+
+        // Update roundable targets
+        notificationRoundnessManager.clear()
+        notificationRoundnessManager.setRoundableTargets(newTargets.map { it.roundable })
+
+        val newListeners =
+            newTargets
+                // Remove the roundable boundaries
+                .filterIndexed { i, _ -> i > 0 && i < newTargets.size - 1 }
+                .map { it.magneticRowListener }
         newListeners.forEach {
             if (currentMagneticListeners.contains(it)) {
                 it?.cancelMagneticAnimations()
@@ -181,8 +193,18 @@ constructor(
 
     private fun updateRoundness(translation: Float, animate: Boolean = false) {
         val normalizedTranslation = abs(swipedRowMultiplier * translation) / magneticDetachThreshold
+        val cappedRoundness = normalizedTranslation.coerceIn(0f, MAX_PRE_DETACH_ROUNDNESS)
+        val roundnessSet =
+            ROUNDNESS_MULTIPLIERS.mapIndexed { i, multiplier ->
+                val roundness = multiplier * cappedRoundness
+                when (i) {
+                    0 -> TopBottomRoundness(bottomRoundness = roundness)
+                    ROUNDNESS_MULTIPLIERS.size - 1 -> TopBottomRoundness(topRoundness = roundness)
+                    else -> TopBottomRoundness(roundness)
+                }
+            }
         notificationRoundnessManager.setRoundnessForAffectedViews(
-            /* roundness */ normalizedTranslation.coerceIn(0f, MAX_PRE_DETACH_ROUNDNESS),
+            /* roundnessSet */ roundnessSet,
             animate,
         )
     }
@@ -285,7 +307,7 @@ constructor(
             startVelocity = direction * abs(velocity),
         )
         notificationRoundnessManager.setRoundnessForAffectedViews(
-            /* roundness */ 1f,
+            /* roundnessSet */ detachedRoundnessSet,
             /* animate */ true,
         )
         playThresholdHaptics()
@@ -384,6 +406,13 @@ constructor(
         }
     }
 
+    override fun getDetachDirection(row: ExpandableNotificationRow): Int =
+        if (row.isSwipedTarget()) {
+            detachDirectionEstimator.direction.toInt()
+        } else {
+            0
+        }
+
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {
@@ -403,10 +432,10 @@ constructor(
     private fun ExpandableNotificationRow.isSwipedTarget(): Boolean =
         magneticRowListener == currentMagneticListeners.swipedListener()
 
-    private fun NotificationRoundnessManager.clear() = setViewsAffectedBySwipe(null, null, null)
+    private fun NotificationRoundnessManager.clear() = setViewsAffectedBySwipe(listOf())
 
-    private fun NotificationRoundnessManager.setRoundableTargets(targets: RoundableTargets) =
-        setViewsAffectedBySwipe(targets.before, targets.swiped, targets.after)
+    private fun NotificationRoundnessManager.setRoundableTargets(targets: List<Roundable?>) =
+        setViewsAffectedBySwipe(targets)
 
     /**
      * A class to estimate the direction of a gesture translations with a moving average.
@@ -486,6 +515,13 @@ constructor(
          * of the swiped view.
          */
         private val MAGNETIC_TRANSLATION_MULTIPLIERS = listOf(0.04f, 0.12f, 0.5f, 0.12f, 0.04f)
+
+        /**
+         * Multipliers applied to roundable targets. Their structure mimic that of
+         * [MAGNETIC_TRANSLATION_MULTIPLIERS] but are only used to modify the roundness of current
+         * targets.
+         */
+        private val ROUNDNESS_MULTIPLIERS = listOf(0.5f, 0.7f, 0.9f, 1.0f, 0.9f, 0.7f, 0.5f)
 
         const val MAGNETIC_REDUCTION = 0.65f
 

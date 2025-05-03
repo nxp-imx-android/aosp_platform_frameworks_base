@@ -77,6 +77,12 @@ public class NotificationChildrenContainer extends ViewGroup
     private static final String TAG = "NotificationChildrenContainer";
 
     @VisibleForTesting
+    static final int NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED = 0;
+    @VisibleForTesting
+    static final int NUMBER_OF_CHILDREN_BUNDLE_SYSTEM_EXPANDED = 30;
+    @VisibleForTesting
+    static final int NUMBER_OF_CHILDREN_BUNDLE_EXPANDED = 50;
+    @VisibleForTesting
     static final int NUMBER_OF_CHILDREN_WHEN_COLLAPSED = 2;
     @VisibleForTesting
     static final int NUMBER_OF_CHILDREN_WHEN_SYSTEM_EXPANDED = 5;
@@ -234,7 +240,7 @@ public class NotificationChildrenContainer extends ViewGroup
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int childCount =
-                Math.min(mAttachedChildren.size(), NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED);
+                Math.min(mAttachedChildren.size(), getNumberOfChildrenWhenExpanded());
         for (int i = 0; i < childCount; i++) {
             View child = mAttachedChildren.get(i);
             // We need to layout all children even the GONE ones, such that the heights are
@@ -282,7 +288,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int dividerHeightSpec = MeasureSpec.makeMeasureSpec(mDividerHeight, MeasureSpec.EXACTLY);
         int height = mCollapsedHeaderMargin + mAdditionalExpandedHeaderMargin;
         int childCount =
-                Math.min(mAttachedChildren.size(), NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED);
+                Math.min(mAttachedChildren.size(), getNumberOfChildrenWhenExpanded());
         int collapsedChildren = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
         int overflowIndex = childCount > collapsedChildren ? collapsedChildren - 1 : -1;
         for (int i = 0; i < childCount; i++) {
@@ -828,7 +834,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int firstOverflowIndex = lastVisibleIndex + 1;
         float expandFactor = 0;
         boolean expandingToExpandedGroup = mUserLocked && !showingAsLowPriority();
-        if (mUserLocked) {
+        if (notificationsRedesignTemplates() || mUserLocked) {
             expandFactor = getGroupExpandFraction();
             firstOverflowIndex = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
         }
@@ -838,6 +844,9 @@ public class NotificationChildrenContainer extends ViewGroup
         int launchTransitionCompensation = 0;
         for (int i = 0; i < childCount; i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
+            if (NotificationBundleUi.isEnabled()) {
+                child.updateChildrenStates();
+            }
             if (!firstChild) {
                 if (expandingToExpandedGroup) {
                     yPosition += NotificationUtils.interpolate(mChildPadding, mDividerHeight,
@@ -963,6 +972,10 @@ public class NotificationChildrenContainer extends ViewGroup
         return viewState;
     }
 
+    boolean isBundle() {
+        return mBundleHeaderView != null;
+    }
+
     @VisibleForTesting
     int getMaxAllowedVisibleChildren() {
         return getMaxAllowedVisibleChildren(false /* likeCollapsed */);
@@ -972,15 +985,39 @@ public class NotificationChildrenContainer extends ViewGroup
     int getMaxAllowedVisibleChildren(boolean likeCollapsed) {
         if (!likeCollapsed && (mChildrenExpanded || mContainingNotification.isUserLocked())
                 && !showingAsLowPriority()) {
-            return NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED;
+            return getNumberOfChildrenWhenExpanded();
         }
         if (mIsMinimized
                 || (!mContainingNotification.isOnKeyguard() && mContainingNotification.isExpanded())
                 || (mContainingNotification.isHeadsUpState()
                 && mContainingNotification.canShowHeadsUp())) {
+            return getNumberOfChildrenWhenSystemExpanded();
+        }
+        return getNumberOfChildrenWhenCollapsed();
+    }
+
+    private int getNumberOfChildrenWhenExpanded() {
+        if (isBundle()) {
+            return NUMBER_OF_CHILDREN_BUNDLE_EXPANDED;
+        } else {
+            return NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED;
+        }
+    }
+
+    private int getNumberOfChildrenWhenCollapsed() {
+        if (isBundle()) {
+            return NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED;
+        } else {
+            return NUMBER_OF_CHILDREN_WHEN_COLLAPSED;
+        }
+    }
+
+    private int getNumberOfChildrenWhenSystemExpanded() {
+        if (isBundle()) {
+            return NUMBER_OF_CHILDREN_BUNDLE_SYSTEM_EXPANDED;
+        } else {
             return NUMBER_OF_CHILDREN_WHEN_SYSTEM_EXPANDED;
         }
-        return NUMBER_OF_CHILDREN_WHEN_COLLAPSED;
     }
 
     /**
@@ -1161,10 +1198,23 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null && mHeaderViewState != null) {
-            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
-            //  but mHeaderViewState is null.
-            mHeaderViewState.applyToView(mGroupHeader);
+        if (mGroupHeader != null) {
+            if (mHeaderViewState != null) {
+                // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+                //  but mHeaderViewState is null.
+                mHeaderViewState.applyToView(mGroupHeader);
+            }
+
+            // Only apply the special viewState for the header's children if we're not currently
+            // showing the minimized header.
+            if (notificationsRedesignTemplates() && !showingAsLowPriority()) {
+                if (mTopLineViewState != null) {
+                    mTopLineViewState.applyToView(mGroupHeader.getTopLineView());
+                }
+                if (mExpandButtonViewState != null) {
+                    mExpandButtonViewState.applyToView(mGroupHeader.getExpandButton());
+                }
+            }
         }
         updateChildrenClipping();
     }
@@ -1193,7 +1243,9 @@ public class NotificationChildrenContainer extends ViewGroup
         final int count = mAttachedChildren.size();
         for (int childIdx = 0; childIdx < count; childIdx++) {
             ExpandableNotificationRow child = mAttachedChildren.get(childIdx);
-            child.setChildrenExpanded(childrenExpanded);
+            if (!child.isSummaryWithChildren()) {
+                child.setChildrenExpanded(childrenExpanded);
+            }
         }
         updateHeaderTouchability();
     }
@@ -1233,6 +1285,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private void updateHeaderVisibility(boolean animate) {
+        if (isBundle()) return;
         ViewGroup desiredHeader;
         ViewGroup currentHeader = mCurrentHeader;
         desiredHeader = calculateDesiredHeader();
@@ -1395,7 +1448,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public void setActualHeight(int actualHeight) {
-        if (!mUserLocked) {
+        if (!notificationsRedesignTemplates() && !mUserLocked) {
             return;
         }
         mActualHeight = actualHeight;
@@ -1457,7 +1510,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public int getMinHeight() {
-        return getMinHeight(NUMBER_OF_CHILDREN_WHEN_COLLAPSED, false /* likeHighPriority */);
+        return getMinHeight(getNumberOfChildrenWhenCollapsed(), false /* likeHighPriority */);
     }
 
     public int getCollapsedHeight() {
@@ -1517,9 +1570,13 @@ public class NotificationChildrenContainer extends ViewGroup
                 firstChild = false;
             }
             ExpandableNotificationRow child = mAttachedChildren.get(i);
-            View singleLineView = child.getSingleLineView();
-            if (singleLineView != null) {
-                minExpandHeight += singleLineView.getHeight();
+
+            if (child.isSummaryWithChildren()) {
+                minExpandHeight += child.isExpanded(true /* allowOnKeyguard */)
+                        ? child.getMaxExpandHeight()
+                        : child.getShowingLayout().getMinHeight(true /* likeGroupExpanded */);
+            } else if (child.getSingleLineView() != null) {
+                minExpandHeight += child.getSingleLineView().getHeight();
             } else {
                 if (AsyncHybridViewInflation.isEnabled()) {
                     minExpandHeight += mMinSingleLineHeight;

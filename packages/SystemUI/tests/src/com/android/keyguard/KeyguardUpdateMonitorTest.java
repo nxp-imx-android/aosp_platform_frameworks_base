@@ -106,7 +106,6 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.dreams.IDreamManager;
@@ -495,25 +494,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SIM_PIN_USE_SLOT_ID)
-    public void testSimStateInitialized_flagDisabled() {
-        cleanupKeyguardUpdateMonitor();
-        final int subId = 3;
-        final int state = TelephonyManager.SIM_STATE_ABSENT;
-
-        when(mTelephonyManager.getActiveModemCount()).thenReturn(1);
-        when(mTelephonyManager.getSimState(anyInt())).thenReturn(state);
-        when(mSubscriptionManager.getSubscriptionIds(anyInt())).thenReturn(new int[]{subId});
-
-        KeyguardUpdateMonitor testKUM = new TestableKeyguardUpdateMonitor(mContext);
-
-        mTestableLooper.processAllMessages();
-
-        assertThat(testKUM.getSimState(subId)).isEqualTo(state);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SIM_PIN_USE_SLOT_ID)
     public void testSimStateInitialized_flagEnabled() {
         cleanupKeyguardUpdateMonitor();
         final int state = TelephonyManager.SIM_STATE_ABSENT;
@@ -1314,31 +1294,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SIM_PIN_USE_SLOT_ID)
-    public void testActiveSubscriptionBecomesInactive_flagDisabled() {
-        List<SubscriptionInfo> list = new ArrayList<>();
-        list.add(TEST_SUBSCRIPTION);
-        when(mSubscriptionManager.getCompleteActiveSubscriptionInfoList()).thenReturn(list);
-        mKeyguardUpdateMonitor.mPhoneStateListener.onActiveDataSubscriptionIdChanged(
-                TEST_SUBSCRIPTION.getSubscriptionId());
-        mTestableLooper.processAllMessages();
-        assertThat(mKeyguardUpdateMonitor.mSimDatas.get(TEST_SUBSCRIPTION.getSubscriptionId()))
-                .isNotNull();
-
-        when(mSubscriptionManager.getCompleteActiveSubscriptionInfoList())
-                .thenReturn(new ArrayList<>());
-        mKeyguardUpdateMonitor.mPhoneStateListener.onActiveDataSubscriptionIdChanged(
-                SubscriptionManager.INVALID_SUBSCRIPTION_ID);
-        mTestableLooper.processAllMessages();
-
-        assertThat(mKeyguardUpdateMonitor.mSimDatas.get(TEST_SUBSCRIPTION.getSubscriptionId()))
-                .isNull();
-        assertThat(mKeyguardUpdateMonitor.mSimDatas.get(
-                SubscriptionManager.INVALID_SUBSCRIPTION_ID)).isNull();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SIM_PIN_USE_SLOT_ID)
     public void testActiveSubscriptionBecomesInactive_flagEnabled() {
         List<SubscriptionInfo> list = new ArrayList<>();
         list.add(TEST_SUBSCRIPTION);

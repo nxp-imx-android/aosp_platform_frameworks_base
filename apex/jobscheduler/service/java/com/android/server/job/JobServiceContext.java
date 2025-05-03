@@ -498,6 +498,8 @@ public final class JobServiceContext implements ServiceConnection {
                     Slog.d(TAG, job.getServiceComponent().getShortClassName() + " unavailable.");
                 }
                 mContext.unbindService(this);
+                // Ensure this occurs while mRunningCallback is still set.
+                removeOpTimeOutLocked();
                 mRunningJob = null;
                 mRunningJobWorkType = WORK_TYPE_NONE;
                 mRunningCallback = null;
@@ -505,7 +507,6 @@ public final class JobServiceContext implements ServiceConnection {
                 mExecutionStartTimeElapsed = 0L;
                 mWakeLock.release();
                 mVerb = VERB_FINISHED;
-                removeOpTimeOutLocked();
                 return false;
             }
             mJobPackageTracker.noteActive(job);
@@ -1213,6 +1214,8 @@ public final class JobServiceContext implements ServiceConnection {
                             handleOpTimeoutLocked();
                         } else {
                             JobCallback jc = (JobCallback)message.obj;
+                            // This is an unknown JobCallback.  It may, or may not, have an
+                            // associated timer.
                             mAnrTimer.discard(jc);
                             StringBuilder sb = new StringBuilder(128);
                             sb.append("Ignoring timeout of no longer active job");
@@ -1765,6 +1768,8 @@ public final class JobServiceContext implements ServiceConnection {
         }
         final int workType = mRunningJobWorkType;
         mContext.unbindService(JobServiceContext.this);
+        // Ensure this occurs while mRunningCallback is still set.
+        removeOpTimeOutLocked();
         mWakeLock = null;
         mRunningJob = null;
         mRunningJobWorkType = WORK_TYPE_NONE;
@@ -1782,7 +1787,6 @@ public final class JobServiceContext implements ServiceConnection {
         mPendingInternalStopReason = 0;
         mPendingDebugStopReason = null;
         mPendingNetworkChange = null;
-        removeOpTimeOutLocked();
         if (completedJob.isUserVisibleJob()) {
             mService.informObserversOfUserVisibleJobChange(this, completedJob, false);
         }

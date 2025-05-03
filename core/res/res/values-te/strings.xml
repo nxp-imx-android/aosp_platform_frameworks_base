@@ -1714,7 +1714,7 @@
     <string name="wireless_display_route_description" msgid="8297563323032966831">"వైర్‌లెస్ డిస్‌ప్లే"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"ప్రసారం చేయండి"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"పరికరానికి కనెక్ట్ చేయండి"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"స్క్రీన్‌ను పరికరానికి ప్రసారం చేయండి"</string>
+    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"స్క్రీన్‌ను డివైజ్‌కు ప్రసారం చేయండి"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"డివైజ్‌ల కోసం వెతుకుతోంది…"</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"సెట్టింగ్‌లు"</string>
     <string name="media_route_controller_disconnect" msgid="7362617572732576959">"డిస్‌కనెక్ట్ చేయి"</string>
@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ఎక్స్‌ట్రా డిమ్"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"హియరింగ్ డివైజ్‌‌‌లు"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ఆటో-క్లిక్"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"మౌస్ కీలు"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"డిస్‌కనెక్ట్ అయింది"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"కనెక్ట్ చేయబడింది"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"యాక్టివ్"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"స్క్రోల్ చేయండి"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ఎక్కువసేపు నొక్కి, ఉంచండి"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"పాజ్ చేయండి"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"స్థానం"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"పైకి స్క్రోల్ చేయండి"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"కిందికి స్క్రోల్ చేయండి"</string>

@@ -231,11 +231,22 @@ class RootTaskDesksOrganizer(
         wct: WindowContainerTransaction,
         deskId: Int,
         task: RunningTaskInfo,
+        minimized: Boolean,
     ) {
-        logV("moveTaskToDesk task=${task.taskId} desk=$deskId")
+        logV("moveTaskToDesk task=${task.taskId} desk=$deskId minimized=$minimized")
         val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
         wct.setWindowingMode(task.token, WINDOWING_MODE_UNDEFINED)
-        wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
+        if (!minimized) {
+            wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
+        } else {
+            minimizeTaskInner(
+                wct = wct,
+                deskId = deskId,
+                task = task,
+                // It's ok to move a task directly into the minimization root.
+                enforceTaskInDesk = false,
+            )
+        }
     }
 
     override fun reorderTaskToFront(
@@ -263,6 +274,21 @@ class RootTaskDesksOrganizer(
 
     override fun minimizeTask(wct: WindowContainerTransaction, deskId: Int, task: RunningTaskInfo) {
         logV("minimizeTask task=${task.taskId} desk=$deskId")
+        minimizeTaskInner(wct, deskId, task, enforceTaskInDesk = true)
+    }
+
+    private fun minimizeTaskInner(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+        enforceTaskInDesk: Boolean = true,
+    ) {
+        logV(
+            "minimizeTaskInner task=%d desk=%d enforceTaskInDesk=%b",
+            task.taskId,
+            deskId,
+            enforceTaskInDesk,
+        )
         val deskRoot =
             checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         val minimizationRoot =
@@ -274,7 +300,7 @@ class RootTaskDesksOrganizer(
             logV("Task #$taskId is already minimized in desk #$deskId")
             return
         }
-        if (taskId !in deskRoot.children) {
+        if (enforceTaskInDesk && taskId !in deskRoot.children) {
             logE("Attempted to minimize task=${task.taskId} in desk=$deskId but it was not a child")
             return
         }
@@ -335,6 +361,11 @@ class RootTaskDesksOrganizer(
             deskMinimizationRootsByDeskId.values.find { root -> root.rootId == parentTaskId }
                 ?: return null
         return deskMinimizationRoot.deskId
+    }
+
+    override fun isMinimizedInDeskAtEnd(change: TransitionInfo.Change): Boolean {
+        val parentTaskId = change.taskInfo?.parentTaskId ?: return false
+        return deskMinimizationRootsByDeskId.values.any { root -> root.rootId == parentTaskId }
     }
 
     override fun isDeskActiveAtEnd(change: TransitionInfo.Change, deskId: Int): Boolean =

@@ -9,5 +9,12 @@
         "core/tests/coretests/src/com/android/internal/inputmethod/.*"
       ]
     }
+  ],
+  "wear-robolectric-postsubmit": [
+    {
+      "name": "ClockworkSettingsRoboTests",
+      "host": true
+    }
   ]
+
 }

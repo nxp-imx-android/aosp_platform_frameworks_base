@@ -136,6 +136,7 @@ import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.LightBarController;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
@@ -144,6 +145,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.telephony.TelephonyListenerManager;
+import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor;
 import com.android.systemui.util.EmergencyDialerConstants;
@@ -262,6 +264,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final IStatusBarService mStatusBarService;
     protected final LightBarController mLightBarController;
     protected final NotificationShadeWindowController mNotificationShadeWindowController;
+    protected final TopUiController mTopUiController;
     private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private final IWindowManager mIWindowManager;
     private final Executor mBackgroundExecutor;
@@ -397,6 +400,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             IStatusBarService statusBarService,
             LightBarController lightBarController,
             NotificationShadeWindowController notificationShadeWindowController,
+            TopUiController topUiController,
             StatusBarWindowControllerStore statusBarWindowControllerStore,
             IWindowManager iWindowManager,
             @Background Executor backgroundExecutor,
@@ -435,6 +439,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mStatusBarService = statusBarService;
         mLightBarController = lightBarController;
         mNotificationShadeWindowController = notificationShadeWindowController;
+        mTopUiController = topUiController;
         mStatusBarWindowControllerStore = statusBarWindowControllerStore;
         mIWindowManager = iWindowManager;
         mBackgroundExecutor = backgroundExecutor;
@@ -811,6 +816,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 mLightBarController,
                 mKeyguardStateController,
                 mNotificationShadeWindowController,
+                mTopUiController,
                 mStatusBarWindowControllerStore.forDisplay(context.getDisplayId()),
                 this::onRefresh,
                 mKeyguardShowing,
@@ -2453,6 +2459,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         protected final LightBarController mLightBarController;
         private final KeyguardStateController mKeyguardStateController;
         protected final NotificationShadeWindowController mNotificationShadeWindowController;
+        protected final TopUiController mTopUiController;
         private final StatusBarWindowController mStatusBarWindowController;
         private ListPopupWindow mOverflowPopup;
         private Dialog mPowerOptionsDialog;
@@ -2537,6 +2544,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 LightBarController lightBarController,
                 KeyguardStateController keyguardStateController,
                 NotificationShadeWindowController notificationShadeWindowController,
+                TopUiController topUiController,
                 StatusBarWindowController statusBarWindowController,
                 Runnable onRefreshCallback,
                 boolean keyguardShowing,
@@ -2558,6 +2566,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mLightBarController = lightBarController;
             mKeyguardStateController = keyguardStateController;
             mNotificationShadeWindowController = notificationShadeWindowController;
+            mTopUiController = topUiController;
             mStatusBarWindowController = statusBarWindowController;
             mOnRefreshCallback = onRefreshCallback;
             mKeyguardShowing = keyguardShowing;
@@ -2807,7 +2816,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         @Override
         public void show() {
             super.show();
-            mNotificationShadeWindowController.setRequestTopUi(true, TAG);
+            if (TopUiControllerRefactor.isEnabled()) {
+                mTopUiController.setRequestTopUi(true, TAG);
+            } else {
+                mNotificationShadeWindowController.setRequestTopUi(true, TAG);
+            }
 
             // By default this dialog windowAnimationStyle is null, and therefore windowAnimations
             // should be equal to 0 which means we need to animate the dialog in-window. If it's not
@@ -2904,8 +2917,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         public void dismiss() {
             dismissOverflow();
             dismissPowerOptions();
-
-            mNotificationShadeWindowController.setRequestTopUi(false, TAG);
+            if (TopUiControllerRefactor.isEnabled()) {
+                mTopUiController.setRequestTopUi(false, TAG);
+            } else {
+                mNotificationShadeWindowController.setRequestTopUi(false, TAG);
+            }
             super.dismiss();
         }
 

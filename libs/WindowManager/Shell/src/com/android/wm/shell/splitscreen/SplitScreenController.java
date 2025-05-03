@@ -116,6 +116,8 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -210,6 +212,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final IActivityTaskManager mActivityTaskManager;
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
     private final DesktopState mDesktopState;
+    private final MSDLPlayer mMSDLPlayer;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -243,7 +246,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             Handler mainHandler,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            IActivityTaskManager activityTaskManager,
+            MSDLPlayer msdlPlayer) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -271,6 +275,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mActivityTaskManager = activityTaskManager;
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
         mDesktopState = desktopState;
+        mMSDLPlayer = msdlPlayer;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -315,7 +320,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager);
+                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer);
     }
 
     @Override
@@ -465,6 +470,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public void prepareExitSplitScreen(WindowContainerTransaction wct,
             @StageType int stageToTop, @ExitReason int reason) {
         mStageCoordinator.prepareExitSplitScreen(stageToTop, wct, reason);
+        mStageCoordinator.setDividerVisibility(false, null);
         mStageCoordinator.clearSplitPairedInRecents(reason);
     }
 

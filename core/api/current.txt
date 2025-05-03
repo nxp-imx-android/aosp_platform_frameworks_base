@@ -6529,6 +6529,7 @@ package android.app {
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
+    method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean hasRequestedPromotedOngoing();
     method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
@@ -6599,6 +6600,7 @@ package android.app {
     field public static final String EXTRA_PROGRESS_MAX = "android.progressMax";
     field public static final String EXTRA_REMOTE_INPUT_DRAFT = "android.remoteInputDraft";
     field public static final String EXTRA_REMOTE_INPUT_HISTORY = "android.remoteInputHistory";
+    field @FlaggedApi("android.app.opt_in_rich_ongoing") public static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing";
     field @Deprecated public static final String EXTRA_SELF_DISPLAY_NAME = "android.selfDisplayName";
     field public static final String EXTRA_SHOW_BIG_PICTURE_WHEN_COLLAPSED = "android.showBigPictureWhenCollapsed";
     field public static final String EXTRA_SHOW_CHRONOMETER = "android.showChronometer";
@@ -6849,6 +6851,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setProgress(int, int, boolean);
     method @NonNull public android.app.Notification.Builder setPublicVersion(android.app.Notification);
     method @NonNull public android.app.Notification.Builder setRemoteInputHistory(CharSequence[]);
+    method @FlaggedApi("android.app.opt_in_rich_ongoing") @NonNull public android.app.Notification.Builder setRequestPromotedOngoing(boolean);
     method @NonNull public android.app.Notification.Builder setSettingsText(CharSequence);
     method @FlaggedApi("android.app.api_rich_ongoing") @NonNull public android.app.Notification.Builder setShortCriticalText(@Nullable String);
     method @NonNull public android.app.Notification.Builder setShortcutId(String);
@@ -6981,16 +6984,16 @@ package android.app {
     ctor public Notification.ProgressStyle();
     method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
     method @NonNull public android.app.Notification.ProgressStyle addProgressSegment(@NonNull android.app.Notification.ProgressStyle.Segment);
-    method public int getProgress();
+    method @IntRange(from=0) public int getProgress();
     method @Nullable public android.graphics.drawable.Icon getProgressEndIcon();
-    method public int getProgressMax();
+    method @IntRange(from=0) public int getProgressMax();
     method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Point> getProgressPoints();
     method @NonNull public java.util.List<android.app.Notification.ProgressStyle.Segment> getProgressSegments();
     method @Nullable public android.graphics.drawable.Icon getProgressStartIcon();
     method @Nullable public android.graphics.drawable.Icon getProgressTrackerIcon();
     method public boolean isProgressIndeterminate();
     method public boolean isStyledByProgress();
-    method @NonNull public android.app.Notification.ProgressStyle setProgress(int);
+    method @NonNull public android.app.Notification.ProgressStyle setProgress(@IntRange(from=0) int);
     method @NonNull public android.app.Notification.ProgressStyle setProgressEndIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.app.Notification.ProgressStyle setProgressIndeterminate(boolean);
     method @NonNull public android.app.Notification.ProgressStyle setProgressPoints(@NonNull java.util.List<android.app.Notification.ProgressStyle.Point>);
@@ -7001,19 +7004,19 @@ package android.app {
   }
 
   public static final class Notification.ProgressStyle.Point {
-    ctor public Notification.ProgressStyle.Point(int);
+    ctor public Notification.ProgressStyle.Point(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
-    method public int getPosition();
+    method @IntRange(from=1) public int getPosition();
     method @NonNull public android.app.Notification.ProgressStyle.Point setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Point setId(int);
   }
 
   public static final class Notification.ProgressStyle.Segment {
-    ctor public Notification.ProgressStyle.Segment(int);
+    ctor public Notification.ProgressStyle.Segment(@IntRange(from=1) int);
     method @ColorInt public int getColor();
     method public int getId();
-    method public int getLength();
+    method @IntRange(from=1) public int getLength();
     method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Segment setId(int);
   }
@@ -25275,13 +25278,13 @@ package android.media {
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") @NonNull public java.util.Map<java.lang.String,java.util.List<android.media.SuggestedDeviceInfo>> getDeviceSuggestions();
     method @NonNull public static android.media.MediaRouter2 getInstance(@NonNull android.content.Context);
     method @FlaggedApi("com.android.media.flags.enable_privileged_routing_for_media_routing_control") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MEDIA_CONTENT_CONTROL, android.Manifest.permission.MEDIA_ROUTING_CONTROL}) public static android.media.MediaRouter2 getInstance(@NonNull android.content.Context, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull Runnable);
-    method @FlaggedApi("com.android.media.flags.enable_rlp_callbacks_in_media_router2") @Nullable public android.media.RouteListingPreference getRouteListingPreference();
+    method @Nullable public android.media.RouteListingPreference getRouteListingPreference();
     method @NonNull public java.util.List<android.media.MediaRoute2Info> getRoutes();
     method @NonNull public android.media.MediaRouter2.RoutingController getSystemController();
     method public void registerControllerCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.ControllerCallback);
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void registerDeviceSuggestionsCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.DeviceSuggestionsCallback);
     method public void registerRouteCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.RouteCallback, @NonNull android.media.RouteDiscoveryPreference);
-    method @FlaggedApi("com.android.media.flags.enable_rlp_callbacks_in_media_router2") public void registerRouteListingPreferenceUpdatedCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
+    method public void registerRouteListingPreferenceUpdatedCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
     method public void registerTransferCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.MediaRouter2.TransferCallback);
     method @FlaggedApi("com.android.media.flags.enable_screen_off_scanning") @NonNull public android.media.MediaRouter2.ScanToken requestScan(@NonNull android.media.MediaRouter2.ScanRequest);
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void setDeviceSuggestions(@NonNull java.util.List<android.media.SuggestedDeviceInfo>);
@@ -25294,7 +25297,7 @@ package android.media {
     method public void unregisterControllerCallback(@NonNull android.media.MediaRouter2.ControllerCallback);
     method @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public void unregisterDeviceSuggestionsCallback(@NonNull android.media.MediaRouter2.DeviceSuggestionsCallback);
     method public void unregisterRouteCallback(@NonNull android.media.MediaRouter2.RouteCallback);
-    method @FlaggedApi("com.android.media.flags.enable_rlp_callbacks_in_media_router2") public void unregisterRouteListingPreferenceUpdatedCallback(@NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
+    method public void unregisterRouteListingPreferenceUpdatedCallback(@NonNull java.util.function.Consumer<android.media.RouteListingPreference>);
     method public void unregisterTransferCallback(@NonNull android.media.MediaRouter2.TransferCallback);
   }
 

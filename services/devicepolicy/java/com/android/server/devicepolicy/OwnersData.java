@@ -97,6 +97,8 @@ class OwnersData {
             "memoryTaggingMigrated";
     private static final String ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED =
             "setKeyguardDisabledFeaturesMigrated";
+    private static final String ATTR_PERMISSION_GRANT_STATE_MIGRATED =
+            "permissionGrantStateMigrated";
 
     private static final String ATTR_MIGRATED_POST_UPGRADE = "migratedPostUpgrade";
 
@@ -132,6 +134,7 @@ class OwnersData {
     boolean mResetPasswordWithTokenMigrated = false;
     boolean mMemoryTaggingMigrated = false;
     boolean mSetKeyguardDisabledFeaturesMigrated = false;
+    boolean mPermissionGrantStateMigrated = false;
 
     boolean mPoliciesMigratedPostUpdate = false;
 
@@ -439,6 +442,10 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED,
                         mSetKeyguardDisabledFeaturesMigrated);
             }
+            if (Flags.setPermissionGrantStateCoexistence() && Flags.dpeBasedOnAsyncApisEnabled()) {
+                out.attributeBoolean(null, ATTR_PERMISSION_GRANT_STATE_MIGRATED,
+                        mPermissionGrantStateMigrated);
+            }
             out.endTag(null, TAG_POLICY_ENGINE_MIGRATION);
 
         }
@@ -518,6 +525,11 @@ class OwnersData {
                             Flags.setKeyguardDisabledFeaturesCoexistence()
                                     && parser.getAttributeBoolean(null,
                                     ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED, false);
+                    mPermissionGrantStateMigrated =
+                            Flags.setPermissionGrantStateCoexistence()
+                                    && Flags.dpeBasedOnAsyncApisEnabled()
+                                    && parser.getAttributeBoolean(null,
+                                    ATTR_PERMISSION_GRANT_STATE_MIGRATED, false);
                     break;
                 default:
                     Slog.e(TAG, "Unexpected tag: " + tag);

@@ -1296,7 +1296,8 @@ public class Transitions implements RemoteCallable<Transitions>,
                 + "type=%s wct=%s handler=%s", transitTypeToString(type), wct, handler);
         if (DEBUG_START_TRANSITION) {
             Log.d(TAG, "startTransition: type=" + transitTypeToString(type)
-                    + " wct=" + wct + " handler=" + handler.getClass().getName(), new Throwable());
+                    + " wct=" + wct + " handler="
+                    + (handler != null ? handler.getClass().getName() : null), new Throwable());
         }
         final ActiveTransition active =
                 new ActiveTransition(mOrganizer.startNewTransition(type, wct));

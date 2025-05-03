@@ -19,7 +19,6 @@ package com.android.wm.shell.windowdecor.tiling
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
-import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 
 /** Interface for handling snap to half screen events. */
 interface SnapEventHandler {
@@ -43,8 +42,8 @@ interface SnapEventHandler {
     /** Notifies the tiling handler of user switch. */
     fun onUserChange(userId: Int)
 
-    /** Notifies the tiling handler of overview animation state change. */
-    fun onOverviewAnimationStateChange(@RecentsTransitionState state: Int)
+    /** Notifies the tiling handler of recents animation state change. */
+    fun onRecentsAnimationEndedToSameDesk()
 
     /** If a task is tiled, delegate moving to front to tiling infrastructure. */
     fun moveTaskToFrontIfTiled(taskInfo: RunningTaskInfo): Boolean
@@ -60,4 +59,28 @@ interface SnapEventHandler {
      * snapping bounds if no task is tiled.
      */
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect
+
+    /**
+     * Notifies the snap handler of a desk being de-activated.
+     */
+    fun onDeskDeactivated(deskId: Int)
+
+    /**
+     * Notifies the snap event handler of a display disconnect event.
+     *
+     * [desktopModeSupportedOnNewDisplay] is a boolean that indicates whether a display supports
+     * desktop mode after the external display disconnection, for example a tablet or a secondary
+     * display.
+     */
+    fun onDisplayDisconnected(disconnectedDisplayId: Int, desktopModeSupportedOnNewDisplay: Boolean)
+
+    /**
+     * Notifies the snap event handler of a desk being activated.
+     */
+    fun onDeskActivated(deskId: Int, displayId: Int)
+
+    /**
+     * Notifies the snap event handler of a desk being removed.
+     */
+    fun onDeskRemoved(deskId: Int)
 }

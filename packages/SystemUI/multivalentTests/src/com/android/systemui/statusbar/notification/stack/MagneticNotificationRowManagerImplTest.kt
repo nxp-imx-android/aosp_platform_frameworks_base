@@ -428,13 +428,78 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(underTest.currentState).isEqualTo(State.PULLING)
         }
 
+    @Test
+    fun getDetachDirection_whilePulling_returnsZero() =
+        kosmos.testScope.runTest {
+            // GIVEN a detach threshold
+            val threshold = 100f
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
+
+            // GIVEN the swiped row is being pulled
+            setTargets()
+            underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+
+            // THEN the detach direction is zero
+            val detachDirection = underTest.getDetachDirection(swipedRow)
+            assertThat(detachDirection).isEqualTo(0)
+        }
+
+    @Test
+    fun getDetachDirection_withoutSwipedRow_returnsZero() =
+        kosmos.testScope.runTest {
+            // GIVEN a detach threshold
+            val threshold = 100f
+            underTest.onDensityChange(
+                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+            )
+
+            // GIVEN the swiped row is being pulled
+            setTargets()
+            underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+
+            // THEN the detach direction for a non-swiped row is zero
+            val neighborIndex = childrenNumber / 2 - 1
+            val neighborRow = children.attachedChildren[neighborIndex]
+            val detachDirection = underTest.getDetachDirection(neighborRow)
+            assertThat(detachDirection).isEqualTo(0)
+        }
+
+    @Test
+    fun getDetachDirection_whenDetachedToTheRight_returnsCorrectDirection() =
+        kosmos.testScope.runTest {
+            // GIVEN that the swiped row is detached to the right
+            setDetachedState()
+
+            // THEN the detach direction is 1
+            val detachDirection = underTest.getDetachDirection(swipedRow)
+            assertThat(detachDirection).isEqualTo(1)
+        }
+
+    @Test
+    fun getDetachDirection_whenDetachedToTheLeft_returnsCorrectDirection() =
+        kosmos.testScope.runTest {
+            // GIVEN that the swiped row is detached to the left
+            setDetachedState(direction = -1)
+
+            // THEN the detach direction is -1
+            val detachDirection = underTest.getDetachDirection(swipedRow)
+            assertThat(detachDirection).isEqualTo(-1)
+        }
+
     @After
     fun tearDown() {
         // We reset the manager so that all MagneticRowListener can cancel all animations
         underTest.reset()
     }
 
-    private fun setDetachedState() {
+    /**
+     * Set the detached state towards a specific direction:
+     *
+     * 1 -> detached to the right, -1 -> detached to the left
+     */
+    private fun setDetachedState(direction: Int = 1) {
         val threshold = 100f
         underTest.onDensityChange(
             threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
@@ -442,10 +507,10 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
         // Set the pulling state
         setTargets()
-        underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+        underTest.setMagneticRowTranslation(swipedRow, translation = direction * 100f)
 
         // Set a translation that will fall above the threshold
-        val translation = 150f
+        val translation = direction * 150f
         underTest.setMagneticRowTranslation(swipedRow, translation)
 
         assertThat(underTest.currentState).isEqualTo(State.DETACHED)

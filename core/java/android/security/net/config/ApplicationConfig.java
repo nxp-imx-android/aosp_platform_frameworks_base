@@ -165,7 +165,7 @@ public final class ApplicationConfig {
     public boolean isCertificateTransparencyVerificationRequired(@NonNull String hostname) {
         return certificateTransparencyConfiguration()
                 ? getConfigForHostname(hostname).isCertificateTransparencyVerificationRequired()
-                : NetworkSecurityConfig.DEFAULT_CERTIFICATE_TRANSPARENCY_VERIFICATION_REQUIRED;
+                : NetworkSecurityConfig.certificateTransparencyVerificationRequiredDefault();
     }
 
     public void handleTrustStorageUpdate() {

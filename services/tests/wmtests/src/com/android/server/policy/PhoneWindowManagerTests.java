@@ -441,8 +441,10 @@ public class PhoneWindowManagerTests {
                 List.class);
         verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
                 any());
-        assertThat(registeredKeyGestureEvents.getValue()).doesNotContain(
-                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+        assertThat(registeredKeyGestureEvents.getValue()).containsNoneIn(
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
     }
 
     @Test
@@ -454,8 +456,36 @@ public class PhoneWindowManagerTests {
                 List.class);
         verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
                 any());
+        assertThat(registeredKeyGestureEvents.getValue()).containsAtLeastElementsIn(
+                List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    public void testKeyGestureEvents_sysuiKeyGesturesEventsEnabled_notRegistered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
+        assertThat(registeredKeyGestureEvents.getValue()).doesNotContain(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    public void testKeyGestureEvents_sysuiKeyGesturesEventsDisabled_registered() {
+        initPhoneWindowManager();
+
+        ArgumentCaptor<List<Integer>> registeredKeyGestureEvents = ArgumentCaptor.forClass(
+                List.class);
+        verify(mInputManager).registerKeyGestureEventHandler(registeredKeyGestureEvents.capture(),
+                any());
         assertThat(registeredKeyGestureEvents.getValue()).contains(
-                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
     }
 
     private void initPhoneWindowManager() {

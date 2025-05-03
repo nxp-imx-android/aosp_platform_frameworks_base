@@ -18,11 +18,11 @@ package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
 import android.util.PluralsMessageFormatter
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
-import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags
 import com.android.systemui.bouncer.shared.model.BouncerMessagePair
 import com.android.systemui.bouncer.shared.model.BouncerMessageStrings
 import com.android.systemui.bouncer.shared.model.primaryMessage
@@ -40,6 +40,7 @@ import com.android.systemui.deviceentry.shared.model.FingerprintFailureMessage
 import com.android.systemui.deviceentry.shared.model.FingerprintLockoutMessage
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import com.android.systemui.util.kotlin.Utils.Companion.sample
 import com.android.systemui.util.time.SystemClock
@@ -60,7 +61,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Holds UI state for the 2-line status message shown on the bouncer. */
 class BouncerMessageViewModel
@@ -93,7 +93,7 @@ constructor(
     val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(null)
 
     override suspend fun onActivated(): Nothing {
-        if (!ComposeBouncerFlags.isComposeBouncerOrSceneContainerEnabled()) {
+        if (!SceneContainerFlag.isEnabled) {
             return awaitCancellation()
         }
 
@@ -145,7 +145,7 @@ constructor(
                         lockoutMsg
                             ?: deviceEntryRestrictedReason.toMessage(
                                 authMethod,
-                                isFpAllowedInBouncer
+                                isFpAllowedInBouncer,
                             )
                     }
                 } else {
@@ -196,7 +196,7 @@ constructor(
                             MessageViewModel(
                                 text = defaultPrimaryMessage,
                                 secondaryText = faceMessage.message,
-                                isUpdateAnimated = true
+                                isUpdateAnimated = true,
                             )
                         is FaceLockoutMessage ->
                             if (isFaceAuthStrong)
@@ -204,20 +204,20 @@ constructor(
                             else
                                 BouncerMessageStrings.faceLockedOut(
                                         authMethod,
-                                        fingerprintAllowedOnBouncer
+                                        fingerprintAllowedOnBouncer,
                                     )
                                     .toMessage()
                         is FaceFailureMessage ->
                             BouncerMessageStrings.incorrectFaceInput(
                                     authMethod,
-                                    fingerprintAllowedOnBouncer
+                                    fingerprintAllowedOnBouncer,
                                 )
                                 .toMessage()
                         else ->
                             MessageViewModel(
                                 text = defaultPrimaryMessage,
                                 secondaryText = faceMessage.message,
-                                isUpdateAnimated = false
+                                isUpdateAnimated = false,
                             )
                     }
                 delay(MESSAGE_DURATION)
@@ -231,7 +231,7 @@ constructor(
         biometricMessageInteractor.fingerprintMessage
             .sample(
                 authenticationInteractor.authenticationMethod,
-                deviceEntryBiometricsAllowedInteractor.isFingerprintCurrentlyAllowedOnBouncer
+                deviceEntryBiometricsAllowedInteractor.isFingerprintCurrentlyAllowedOnBouncer,
             )
             .collectLatest { (fingerprintMessage, authMethod, isFingerprintAllowed) ->
                 val defaultPrimaryMessage =
@@ -248,7 +248,7 @@ constructor(
                             MessageViewModel(
                                 text = defaultPrimaryMessage,
                                 secondaryText = fingerprintMessage.message,
-                                isUpdateAnimated = false
+                                isUpdateAnimated = false,
                             )
                     }
                 delay(MESSAGE_DURATION)
@@ -270,13 +270,13 @@ constructor(
                     .sample(
                         authenticationInteractor.authenticationMethod,
                         deviceEntryBiometricsAllowedInteractor
-                            .isFingerprintCurrentlyAllowedOnBouncer
+                            .isFingerprintCurrentlyAllowedOnBouncer,
                     )
                     .collectLatest { (_, authMethod, isFingerprintAllowed) ->
                         message.emit(
                             BouncerMessageStrings.incorrectSecurityInput(
                                     authMethod,
-                                    isFingerprintAllowed
+                                    isFingerprintAllowed,
                                 )
                                 .toMessage()
                         )
@@ -311,14 +311,14 @@ constructor(
             DeviceEntryRestrictionReason.NonStrongBiometricsSecurityTimeout ->
                 BouncerMessageStrings.nonStrongAuthTimeout(
                     authMethod,
-                    isFingerprintAllowedOnBouncer
+                    isFingerprintAllowedOnBouncer,
                 )
             DeviceEntryRestrictionReason.TrustAgentDisabled ->
                 BouncerMessageStrings.trustAgentDisabled(authMethod, isFingerprintAllowedOnBouncer)
             DeviceEntryRestrictionReason.AdaptiveAuthRequest ->
                 BouncerMessageStrings.authRequiredAfterAdaptiveAuthRequest(
                     authMethod,
-                    isFingerprintAllowedOnBouncer
+                    isFingerprintAllowedOnBouncer,
                 )
             else -> BouncerMessageStrings.defaultMessage(authMethod, isFingerprintAllowedOnBouncer)
         }.toMessage()
@@ -351,7 +351,7 @@ constructor(
                                             )
                                         ),
                                     secondaryText = authLockedOutMsg.secondaryMessage.toResString(),
-                                    isUpdateAnimated = false
+                                    isUpdateAnimated = false,
                                 )
                             } else {
                                 null

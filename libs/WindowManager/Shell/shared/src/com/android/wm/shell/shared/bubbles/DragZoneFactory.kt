@@ -237,6 +237,10 @@ class DragZoneFactory(
                 }
                 dragZones.addAll(createBubbleHalfScreenDragZones(forBubbleBar = false))
             }
+            is DraggedObject.LauncherIcon -> {
+                val showSecondDropTarget = !draggedObject.bubbleBarHasBubbles
+                dragZones.addAll(createBubbleCornerDragZones(showSecondDropTarget))
+            }
         }
         return dragZones
     }
@@ -252,7 +256,7 @@ class DragZoneFactory(
         )
     }
 
-    private fun createBubbleCornerDragZones(): List<DragZone> {
+    private fun createBubbleCornerDragZones(showSecondDropTarget: Boolean = false): List<DragZone> {
         val dragZoneSize =
             if (deviceConfig.isSmallTablet) {
                 bubbleDragZoneFoldableSize
@@ -271,6 +275,7 @@ class DragZoneFactory(
                         ),
                     ),
                 dropTarget = expandedViewDropTargetLeft,
+                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetLeft else null
             ),
             DragZone.Bubble.Right(
                 bounds =
@@ -283,6 +288,7 @@ class DragZoneFactory(
                         ),
                     ),
                 dropTarget = expandedViewDropTargetRight,
+                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetRight else null
             )
         )
     }

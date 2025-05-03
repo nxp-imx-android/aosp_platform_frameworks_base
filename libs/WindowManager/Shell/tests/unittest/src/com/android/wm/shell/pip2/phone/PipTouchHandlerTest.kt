@@ -169,7 +169,8 @@ class PipTouchHandlerTest : ShellTestCase() {
 
         verify(mockPipDisplayTransferHandler).scheduleMovePipToDisplay(
             eq(ORIGIN_DISPLAY_ID),
-            eq(TARGET_DISPLAY_ID)
+            eq(TARGET_DISPLAY_ID),
+            eq(PIP_BOUNDS)
         )
     }
 

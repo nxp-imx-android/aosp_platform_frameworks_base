@@ -582,7 +582,7 @@ void CanvasContext::stopDrawing() {
 void CanvasContext::notifyFramePending() {
     ATRACE_CALL();
     mRenderThread.pushBackFrameCallback(this);
-    sendLoadResetHint();
+    sendCpuLoadResetHint();
 }
 
 Frame CanvasContext::getFrame() {
@@ -1182,12 +1182,16 @@ void CanvasContext::prepareSurfaceControlForWebview() {
     }
 }
 
-void CanvasContext::sendLoadResetHint() {
-    mHintSessionWrapper->sendLoadResetHint();
+void CanvasContext::sendCpuLoadResetHint() {
+    mHintSessionWrapper->sendCpuLoadResetHint();
 }
 
-void CanvasContext::sendLoadIncreaseHint() {
-    mHintSessionWrapper->sendLoadIncreaseHint();
+void CanvasContext::sendCpuLoadIncreaseHint() {
+    mHintSessionWrapper->sendCpuLoadIncreaseHint();
+}
+
+void CanvasContext::sendGpuLoadIncreaseHint() {
+    mHintSessionWrapper->sendGpuLoadIncreaseHint();
 }
 
 void CanvasContext::setSyncDelayDuration(nsecs_t duration) {

@@ -215,3 +215,19 @@ flag {
   bug: "355296926"
   is_exported: true
 }
+
+flag {
+  name: "use_fontation_by_default"
+  namespace: "text"
+  description: "Use Fontation(Skrifa) as a default text reader."
+  bug: "405267306"
+}
+
+flag {
+  name: "language_specific_extent"
+  namespace: "text"
+  description: "Use BASE table in OpenType for fixing vertical clipping."
+  bug: "400594036"
+  # Being read only because this is used in the performance critical path.
+  is_fixed_read_only: true
+}

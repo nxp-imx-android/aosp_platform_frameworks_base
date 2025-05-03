@@ -17,32 +17,49 @@
 package com.android.systemui.statusbar.notification.collection
 
 import android.app.NotificationChannel
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.internal.R
+import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
+import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
+import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
+import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
+import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
-data class BundleSpec(val key: String, @StringRes val titleTextResId: Int) {
+data class BundleSpec(
+    val key: String,
+    @StringRes val titleTextResId: Int,
+    @DrawableRes val icon: Int,
+    @PriorityBucket val bucket: Int,
+) {
     companion object {
         val PROMOTIONS =
             BundleSpec(
                 key = NotificationChannel.PROMOTIONS_ID,
                 titleTextResId = R.string.promotional_notification_channel_label,
+                icon = com.android.settingslib.R.drawable.ic_promotions,
+                bucket = BUCKET_PROMO,
             )
         val SOCIAL_MEDIA =
             BundleSpec(
                 key = NotificationChannel.SOCIAL_MEDIA_ID,
                 titleTextResId = R.string.social_notification_channel_label,
+                icon = com.android.settingslib.R.drawable.ic_social,
+                bucket = BUCKET_SOCIAL,
             )
         val NEWS =
             BundleSpec(
                 key = NotificationChannel.NEWS_ID,
                 titleTextResId = R.string.news_notification_channel_label,
+                icon = com.android.settingslib.R.drawable.ic_news,
+                bucket = BUCKET_NEWS,
             )
         val RECOMMENDED =
             BundleSpec(
                 key = NotificationChannel.RECS_ID,
                 titleTextResId = R.string.recs_notification_channel_label,
+                icon = com.android.settingslib.R.drawable.ic_recs,
+                bucket = BUCKET_RECS,
             )
-        val DEBUG =
-            BundleSpec(key = "notify", titleTextResId = R.string.notification_channel_developer)
     }
 }

@@ -24,11 +24,12 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -86,8 +88,12 @@ fun OngoingActivityChip(
             is OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification -> { _ ->
                     clickBehavior.onClick()
                 }
+            is OngoingActivityChipModel.ClickBehavior.HideHeadsUpNotification -> { _ ->
+                    clickBehavior.onClick()
+                }
             is OngoingActivityChipModel.ClickBehavior.None -> null
         }
+    val onClickLabel = model.clickBehavior.customOnClickLabel?.let { stringResource(it) }
     val isClickable = onClick != null
 
     val chipSidePaddingTotal = 20.dp
@@ -107,7 +113,7 @@ fun OngoingActivityChip(
             RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius)),
         modifier =
             modifier
-                .height(dimensionResource(R.dimen.ongoing_appops_chip_height))
+                .wrapContentSize()
                 .semantics {
                     if (contentDescription != null) {
                         this.contentDescription = contentDescription
@@ -139,6 +145,7 @@ fun OngoingActivityChip(
                 ),
         borderStroke = borderStroke,
         onClick = onClick,
+        onClickLabel = onClickLabel,
         useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,
         // Some chips like the 3-2-1 countdown chip should be very small, smaller than a
         // reasonable minimum size.
@@ -161,7 +168,7 @@ private fun ChipBody(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
-                .fillMaxHeight()
+                .heightIn(min = dimensionResource(R.dimen.ongoing_appops_chip_height))
                 // Set the minWidth here as well as on the Expandable so that the content within
                 // this row is still centered correctly horizontally
                 .widthIn(min = minWidth)

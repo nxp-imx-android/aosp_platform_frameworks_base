@@ -463,6 +463,12 @@ void RenderNode::handleForceDark(TreeInfo *info) {
 
     if (usage == UsageHint::Container) {
         mDisplayList.applyColorTransform(ColorTransform::Invert);
+    } else if (Properties().enableHighContrastText && usage == UsageHint::Foreground) {
+        // When high contrast text is enabled and ForceDarkType==FORCE_DARK,
+        // RecordingCanvas#colorTransformForOp<DrawTextBlob> will always draw white text.
+        // High contrast text also draws a backdrop behind text, so this backdrop needs to be
+        // dark to ensure contrast against the always-white text.
+        mDisplayList.applyColorTransform(ColorTransform::Dark);
     } else {
         mDisplayList.applyColorTransform(usage == UsageHint::Background ? ColorTransform::Dark
                                                                         : ColorTransform::Light);

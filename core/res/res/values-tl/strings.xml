@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extra dim"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Mga hearing device"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Autoclick"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Mga mouse key"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Nadiskonekta"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Nakakonekta"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktibo"</string>
@@ -2073,7 +2072,7 @@
     <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Magtakda ng lock ng screen"</string>
     <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Itakda ang lock ng screen"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Para gamitin ang iyong pribadong space, magtakda ng lock ng screen sa device na ito."</string>
-    <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Para mag-delete ng pribadong space, magtakda ng lock ng screen sa device na ito"</string>
+    <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Para mag-delete ng pribadong space, magtakda ng screen lock sa device na ito"</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"Hindi available ang app"</string>
     <string name="app_blocked_message" msgid="542972921087873023">"Hindi available sa ngayon ang <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="app_streaming_blocked_title" msgid="6090945835898766139">"Hindi available ang <xliff:g id="ACTIVITY">%1$s</xliff:g>"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Mag-scroll"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Pindutin nang matagal"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"I-pause"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posisyon"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Mag-scroll Pataas"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Mag-scroll Pababa"</string>

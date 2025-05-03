@@ -238,6 +238,16 @@ enum DebugLevel {
 
 #define PROPERTY_EARLY_PRELOAD_GL_CONTEXT "debug.hwui.early_preload_gl_context"
 
+/**
+ * Property for font reading library.
+ */
+#define PROPERTY_SKTYPEFACE_BACKEND "debug.hwui.text.backend"
+
+enum class SkTypefaceBackend {
+    kAuto = 0,
+    kFreeType = 1,
+    kFontation = 2,
+};
 ///////////////////////////////////////////////////////////////////////////////
 // Misc
 ///////////////////////////////////////////////////////////////////////////////

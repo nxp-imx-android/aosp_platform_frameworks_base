@@ -33,12 +33,14 @@ import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransition
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToDreamingTransitionViewModel
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 @SysUISingleton
@@ -106,4 +108,13 @@ constructor(
             step.transitionState == TransitionState.FINISHED ||
                 step.transitionState == TransitionState.CANCELED
         }
+
+    val transitioningFromOrToDream =
+        anyOf(
+                keyguardTransitionInteractor.startedKeyguardTransitionStep.map { step ->
+                    step.to == DREAMING
+                },
+                keyguardTransitionInteractor.isInTransition(Edge.create(from = DREAMING)),
+            )
+            .distinctUntilChanged()
 }

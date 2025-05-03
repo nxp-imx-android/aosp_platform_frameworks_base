@@ -420,11 +420,10 @@ public class SettingsProvider extends ContentProvider {
         SettingsState.cacheSystemPackageNamesAndSystemSignature(getContext());
         synchronized (mLock) {
             mSettingsRegistry.migrateAllLegacySettingsIfNeededLocked();
-            final List<Integer> deviceIds = getDeviceIds();
             for (UserInfo user : mUserManager.getAliveUsers()) {
-                for (int deviceId : deviceIds) {
-                    mSettingsRegistry.ensureSettingsForUserAndDeviceLocked(user.id, deviceId);
-                }
+                // Only the default device would be available during boot.
+                mSettingsRegistry.ensureSettingsForUserAndDeviceLocked(user.id,
+                        Context.DEVICE_ID_DEFAULT);
             }
             mSettingsRegistry.syncSsaidTableOnStartLocked();
         }
@@ -460,7 +459,8 @@ public class SettingsProvider extends ContentProvider {
                 Setting setting = getSecureSetting(name, requestingUserId, callingDeviceId);
                 // If any overridden setting is not available for a virtual device, return the
                 // setting corresponding to the default device.
-                if (setting == null || setting.isNull()) {
+                if (callingDeviceId != Context.DEVICE_ID_DEFAULT
+                        && (setting == null || setting.isNull())) {
                     setting = getSecureSetting(name, requestingUserId, Context.DEVICE_ID_DEFAULT);
                 }
                 return packageValueForCallResult(SETTINGS_TYPE_SECURE, name, requestingUserId,
@@ -470,7 +470,8 @@ public class SettingsProvider extends ContentProvider {
                 Setting setting = getSystemSetting(name, requestingUserId, callingDeviceId);
                 // If any overridden setting is not available for a virtual device, return the
                 // setting corresponding to the default device.
-                if (setting == null || setting.isNull()) {
+                if (callingDeviceId != Context.DEVICE_ID_DEFAULT
+                        && (setting == null || setting.isNull())) {
                     setting = getSystemSetting(name, requestingUserId, Context.DEVICE_ID_DEFAULT);
                 }
                 return packageValueForCallResult(SETTINGS_TYPE_SYSTEM, name, requestingUserId,
@@ -3191,7 +3192,7 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private int getDeviceId() {
-        return android.permission.flags.Flags.deviceAwarePermissionApisEnabled()
+        return android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
                 && canUidAccessDeviceAwareSettings(Binder.getCallingUid())
                 ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
     }
@@ -6361,9 +6362,8 @@ public class SettingsProvider extends ContentProvider {
                             // Do nothing. Leave the value as is.
                         }
                     }
+                    currentVersion = 223;
                 }
-
-                currentVersion = 223;
 
                 // Version 223: make charging constraint update criteria customizable.
                 if (currentVersion == 223) {

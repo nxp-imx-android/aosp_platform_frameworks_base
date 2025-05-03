@@ -21,6 +21,7 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
 
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 
 import android.app.ActivityOptions;
@@ -33,7 +34,6 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
@@ -200,18 +200,9 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         }
 
         final TaskViewTaskController tvc = mTaskView.getController();
-        final WindowContainerToken token = tvc.getTaskToken();
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setAlwaysOnTop(token, true /* alwaysOnTop */);
-        if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
-            wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
-        }
-        if (com.android.window.flags.Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(token, true /* disablePip */);
-        }
-        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
-            wct.setDisableLaunchAdjacent(token, true);
-        }
+        final boolean isAppBubble = mBubble != null && (mBubble.isApp() || mBubble.isShortcut());
+        final WindowContainerTransaction wct = getEnterBubbleTransaction(
+                tvc.getTaskToken(), isAppBubble);
         tvc.getTaskOrganizer().applyTransaction(wct);
 
         // With the task org, the taskAppeared callback will only happen once the task has

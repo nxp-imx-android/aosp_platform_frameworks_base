@@ -107,6 +107,8 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -155,6 +157,8 @@ public class StageCoordinatorTests extends ShellTestCase {
     private RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
     @Mock
     private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
+    @Mock
+    private MSDLPlayer mMSDLPlayer;
     private FakeDesktopState mDesktopState;
     private IActivityTaskManager mIActivityTaskManager;
 
@@ -198,7 +202,7 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mDisplayInsetsController, mSplitLayout, transitions, mTransactionPool,
                 mMainExecutor, mMainHandler, Optional.empty(), mLaunchAdjacentController,
                 Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager));
+                mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager, mMSDLPlayer));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);

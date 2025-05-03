@@ -34,7 +34,6 @@ import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD_OR_PIN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
 import static com.android.internal.widget.LockPatternUtils.CURRENT_LSKF_BASED_PROTECTOR_ID_KEY;
-import static com.android.internal.widget.LockPatternUtils.EscrowTokenStateChangeCallback;
 import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABLE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_LOCKOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE;
@@ -143,10 +142,7 @@ import com.android.internal.widget.ILockSettings;
 import com.android.internal.widget.IWeakEscrowTokenActivatedListener;
 import com.android.internal.widget.IWeakEscrowTokenRemovedListener;
 import com.android.internal.widget.LockPatternUtils;
-import com.android.internal.widget.LockSettingsInternal;
-import com.android.internal.widget.LockSettingsStateListener;
 import com.android.internal.widget.LockscreenCredential;
-import com.android.internal.widget.RebootEscrowListener;
 import com.android.internal.widget.VerifyCredentialResponse;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
@@ -3715,10 +3711,9 @@ public class LockSettingsService extends ILockSettings.Stub {
         @Override
         public boolean setLockCredentialWithToken(LockscreenCredential credential, long tokenHandle,
                 byte[] token, int userId) {
-        if (!mHasSecureLockScreen
-                && credential != null && credential.getType() != CREDENTIAL_TYPE_NONE) {
+            if (!mHasSecureLockScreen && credential.getType() != CREDENTIAL_TYPE_NONE) {
                 throw new UnsupportedOperationException(
-                        "This operation requires secure lock screen feature.");
+                        "This operation requires the lock screen feature.");
             }
             if (!LockSettingsService.this.setLockCredentialWithToken(
                     credential, tokenHandle, token, userId)) {

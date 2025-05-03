@@ -16,7 +16,6 @@
 
 package com.android.systemui.bouncer.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.KeyEvent.KEYCODE_0
 import android.view.KeyEvent.KEYCODE_4
@@ -33,7 +32,6 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.data.repository.fakeSimBouncerRepository
-import com.android.systemui.classifier.fakeFalsingCollector
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
@@ -47,7 +45,6 @@ import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
 import kotlin.random.Random
 import kotlin.random.nextInt
-import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.TestScope
@@ -484,18 +481,6 @@ class PinBouncerViewModelTest : SysuiTestCase() {
             underTest.onKeyEvent(KeyEventType.KeyUp, KEYCODE_NUMPAD_0 + expectedPin[3])
 
             assertThat(pin).containsExactly(*expectedPin)
-        }
-
-    @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_COMPOSE_BOUNCER)
-    @DisableFlags(com.android.systemui.Flags.FLAG_SCENE_CONTAINER)
-    fun onDigitButtonDown_avoidGesture_invoked() =
-        testScope.runTest {
-            lockDeviceAndOpenPinBouncer()
-
-            underTest.onDigitButtonDown(null)
-
-            assertTrue(kosmos.fakeFalsingCollector.wasLastGestureAvoided())
         }
 
     @Test

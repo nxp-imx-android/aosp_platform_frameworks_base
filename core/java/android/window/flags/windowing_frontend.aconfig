@@ -30,17 +30,6 @@ flag {
 }
 
 flag {
-  name: "cache_window_style"
-  namespace: "windowing_frontend"
-  description: "Cache common window styles"
-  bug: "350394503"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "respect_hierarchy_surface_visibility"
   namespace: "windowing_frontend"
   description: "Ensure consistent surface visibility with window hierarchy"
@@ -276,22 +265,22 @@ flag {
 }
 
 flag {
-  name: "use_visible_requested_for_process_tracker"
-  namespace: "windowing_frontend"
-  description: "Do not count closing activity as visible process"
-  bug: "396653764"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "ensure_keyguard_does_transition_starting"
   namespace: "windowing_frontend"
   description: "Ensure that keyguard is the one starting transitions, instead of delegating to Core"
   bug: "364930619"
   is_fixed_read_only: true
+}
+
+flag {
+  name: "fix_show_when_locked_sync_timeout"
+  namespace: "windowing_frontend"
+  description: "Prevent sync timeout from setShowWhenLocked(false) by setting the DisplayContent ready"
+  bug: "411544184"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {

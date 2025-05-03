@@ -878,10 +878,12 @@ public class WindowOrganizerTests extends WindowTestsBase {
         final WindowContainerToken displayToken =
                 mDisplayContent.mRemoteToken.toWindowContainerToken();
         final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final Binder caller = new Binder();
 
         WindowContainerTransaction t = new WindowContainerTransaction();
         t.setSystemBarVisibilityOverride(
                 displayToken,
+                caller,
                 0 /* forciblyShowingInsetsTypes */,
                 WindowInsets.Type.statusBars() /* forciblyHidingInsetsTypes */);
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
@@ -897,6 +899,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         t = new WindowContainerTransaction();
         t.setSystemBarVisibilityOverride(
                 displayToken,
+                caller,
                 WindowInsets.Type.statusBars() /* forciblyShowingInsetsTypes */,
                 0 /* forciblyHidingInsetsTypes */);
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
@@ -913,6 +916,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 IllegalArgumentException.class,
                 () -> new WindowContainerTransaction().setSystemBarVisibilityOverride(
                         displayToken,
+                        caller,
                         WindowInsets.Type.statusBars() /* forciblyShowingInsetsTypes */,
                         WindowInsets.Type.statusBars() /* forciblyHidingInsetsTypes */));
     }

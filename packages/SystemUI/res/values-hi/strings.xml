@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ब्लूटूथ डिवाइस का आइकॉन"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"डिवाइस की जानकारी कॉन्फ़िगर करने के लिए क्लिक करें"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. डिवाइस की जानकारी कॉन्फ़िगर करें"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"<xliff:g id="DEVICE_NAME">%s</xliff:g> के साथ ऑडियो शेयर करना शुरू करें"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"<xliff:g id="DEVICE_NAME">%s</xliff:g> के साथ ऑडियो शेयर करना बंद करें"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"सभी डिवाइस देखें"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"नया डिवाइस जोड़ें"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"इस बारे में जानकारी नहीं है कि अभी बैटरी कितने प्रतिशत चार्ज है."</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट नहीं है"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग में जाकर मैनेज करें"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोई मोड चालू नहीं है}=1{{mode} मोड चालू है}one{# मोड चालू है}other{# मोड चालू हैं}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"चालू है"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"आपको अलार्म, रिमाइंडर, इवेंट और चुनिंदा कॉल करने वालों के अलावा किसी और तरह से (आवाज़ करके और थरथरा कर ) परेशान नहीं किया जाएगा. आप फिर भी संगीत, वीडियो और गेम सहित अपना चुना हुआ सब कुछ सुन सकते हैं."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"आपको अलार्म छोड़कर दूसरी आवाज़ों और कंपनों से परेशान नहीं किया जाएगा. आपको अब भी संगीत, वीडियो और गेम सहित वह सब कुछ सुनाई देगा जो आपने चलाने के लिए चुना है."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"अपनी पसंद के मुताबिक बनाएं"</string>
@@ -607,7 +604,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"पूरी स्क्रीन को कास्ट करें"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> को कास्ट करें"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"पूरी स्क्रीन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट दूसरी स्क्रीन पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"किसी ऐप्लिकेशन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट या चल रहा मीडिया दूसरी स्क्रीन पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"किसी ऐप्लिकेशन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट या चल रहा मीडिया दूसरी स्क्रीन पर दिखता है. इसलिए पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"स्क्रीन कास्ट करें"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"कास्ट करने के लिए ऐप्लिकेशन चुनें"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"क्या मीडिया शेयर करना है?"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइल के साइज़ को टॉगल करने के लिए दो बार टैप करें"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"टाइल हटाएं"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड को टॉगल करें"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"चुने हुए हिस्से को टॉगल करें"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"आखिरी जगह पर टाइल जोड़ें"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल को किसी और पोज़िशन पर ले जाएं"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"अपनी पसंदीदा जगह पर टाइल जोड़ें"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"टाइल को <xliff:g id="POSITION">%1$d</xliff:g> पोज़िशन पर ले जाएं"</string>

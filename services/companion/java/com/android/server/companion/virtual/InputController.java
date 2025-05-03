@@ -720,7 +720,9 @@ class InputController {
                 private boolean isMatchingDevice(int deviceId) {
                     final InputDevice device = InputManagerGlobal.getInstance().getInputDevice(
                             deviceId);
-                    Objects.requireNonNull(device, "Newly added input device was null.");
+                    if (device == null) {
+                        return false;
+                    }
                     if (!device.getName().equals(deviceName)) {
                         return false;
                     }

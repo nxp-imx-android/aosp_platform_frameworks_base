@@ -5013,7 +5013,7 @@
     <string name="hearing_aids_feature_name">Hearing devices</string>
 
     <!-- Title of autoclick feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
-    <string name="autoclick_feature_name">Autoclick</string>
+    <string name="autoclick_feature_name">Autoclick (dwell timing)</string>
 
     <!-- Title of mouse keys feature, shown in the warning dialog about the mouse keys shortcut. [CHAR LIMIT=none] -->
     <string name="mouse_keys_feature_name">Mouse keys</string>
@@ -6217,35 +6217,35 @@
 
     <!-- Accessibility autoclick related strings -->
     <!-- Label for autoclick type settings panel [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_type_settings_panel_title">Autoclick type settings panel</string>
+    <string name="accessibility_autoclick_type_settings_panel_title">Autoclick options menu</string>
     <!-- Label for autoclick left click button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_left_click">Left click</string>
+    <string name="accessibility_autoclick_left_click">Left-click</string>
     <!-- Label for autoclick right click button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_right_click">Right click</string>
+    <string name="accessibility_autoclick_right_click">Right-click</string>
     <!-- Label for autoclick double click button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_double_click">Double click</string>
+    <string name="accessibility_autoclick_double_click">Double-click</string>
     <!-- Label for autoclick drag button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_drag">Drag</string>
     <!-- Label for autoclick scroll button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_scroll">Scroll</string>
     <!-- Label for autoclick drag button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_long_press">Long press</string>
+    <string name="accessibility_autoclick_long_press">Touch &amp; hold</string>
     <!-- Label for autoclick pause button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_pause">Pause</string>
     <!-- Label for autoclick resume button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_resume">Resume</string>
     <!-- Label for autoclick position button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_position">Position</string>
+    <string name="accessibility_autoclick_position">Change menu position</string>
     <!-- Label for autoclick scroll up button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_scroll_up">Scroll Up</string>
+    <string name="accessibility_autoclick_scroll_up">Scroll up</string>
     <!-- Label for autoclick scroll down button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_scroll_down">Scroll Down</string>
+    <string name="accessibility_autoclick_scroll_down">Scroll down</string>
     <!-- Label for autoclick scroll left button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_scroll_left">Scroll Left</string>
+    <string name="accessibility_autoclick_scroll_left">Scroll left</string>
     <!-- Label for autoclick scroll right button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_scroll_right">Scroll Right</string>
+    <string name="accessibility_autoclick_scroll_right">Scroll right</string>
     <!-- Label for autoclick scroll exit button [CHAR LIMIT=NONE] -->
-    <string name="accessibility_autoclick_scroll_exit">Exit Scroll Mode</string>
+    <string name="accessibility_autoclick_scroll_exit">Exit scroll mode</string>
     <!-- Label for autoclick scroll panel title [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_scroll_panel_title">Scroll Panel</string>
 

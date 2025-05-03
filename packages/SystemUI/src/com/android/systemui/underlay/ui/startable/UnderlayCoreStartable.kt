@@ -21,9 +21,9 @@ import android.view.WindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.underlay.UnderlayUtils
 import com.android.systemui.underlay.domain.interactor.UnderlayInteractor
 import com.android.systemui.underlay.shared.flag.UnderlayFlag
+import com.android.systemui.underlay.ui.view.UnderlayUtils
 import com.android.systemui.underlay.ui.view.UnderlayWindowRootView
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +43,7 @@ constructor(
     private val underlayWindowRootView: UnderlayWindowRootView,
     @Application private val mainScope: CoroutineScope,
 ) : CoreStartable {
+
     override fun start() {
         if (!UnderlayFlag.isEnabled) {
             Log.d(TAG, "Underlay flag is disabled, not starting.")

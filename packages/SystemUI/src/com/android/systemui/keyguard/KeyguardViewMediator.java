@@ -1340,6 +1340,12 @@ public class KeyguardViewMediator implements CoreStartable,
                                     .setTag("UNOCCLUDE"));
                     setOccluded(false /* isOccluded */, true /* animate */);
 
+                    // This is a noop if we are not currently in the dream state. However, its
+                    // important to trigger this here as there may be cases where WM doesn't provide
+                    // the apps targets, causing us to early exit below and get stuck in a dreaming
+                    // state.
+                    mDreamViewModel.get().startTransitionFromDream();
+
                     if (apps == null || apps.length == 0 || apps[0] == null) {
                         Log.d(TAG, "No apps provided to unocclude runner; "
                                 + "skipping animation and unoccluding.");
@@ -1352,7 +1358,6 @@ public class KeyguardViewMediator implements CoreStartable,
                             && apps[0].taskInfo.topActivityType
                             == WindowConfiguration.ACTIVITY_TYPE_DREAM);
 
-
                     final View localView = mKeyguardViewControllerLazy.get()
                             .getViewRootImpl().getView();
                     final SyncRtSurfaceTransactionApplier applier =
@@ -1364,13 +1369,17 @@ public class KeyguardViewMediator implements CoreStartable,
                         }
 
                         if (isDream || mShowCommunalWhenUnoccluding) {
+                            Log.d(TAG, "Start unocclude animation for dream.");
                             initAlphaForAnimationTargets(wallpapers);
-                            if (isDream) {
-                                mDreamViewModel.get().startTransitionFromDream();
-                            } else {
+                            if (!isDream) {
                                 mCommunalTransitionViewModel.get().snapToCommunal();
                             }
                             mUnoccludeFinishedCallback = finishedCallback;
+                            if (!mIsKeyguardStateRelevantToDream) {
+                                // If this is triggered later than the dream-exit transition is
+                                // complete, make sure to finish.
+                                finishUnoccludeAnimation();
+                            }
                             return;
                         }
 
@@ -1453,17 +1462,24 @@ public class KeyguardViewMediator implements CoreStartable,
         };
     }
 
+    private Consumer<TransitionStep> getFinishedCallbackConsumerForDream() {
+        mIsKeyguardStateRelevantToDream = false;
+        return getFinishedCallbackConsumer();
+    }
+
     private Consumer<TransitionStep> getFinishedCallbackConsumer() {
-        return (TransitionStep step) -> {
-            if (mUnoccludeFinishedCallback == null) return;
-            try {
-                mUnoccludeFinishedCallback.onAnimationFinished();
-                mUnoccludeFinishedCallback = null;
-            } catch (RemoteException e) {
-                Log.e(TAG, "Wasn't able to callback", e);
-            }
-            mInteractionJankMonitor.end(CUJ_LOCKSCREEN_OCCLUSION);
-        };
+        return (TransitionStep step) -> finishUnoccludeAnimation();
+    }
+
+    private void finishUnoccludeAnimation() {
+        if (mUnoccludeFinishedCallback == null) return;
+        try {
+            mUnoccludeFinishedCallback.onAnimationFinished();
+            mUnoccludeFinishedCallback = null;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Wasn't able to callback", e);
+        }
+        mInteractionJankMonitor.end(CUJ_LOCKSCREEN_OCCLUSION);
     }
 
     private DeviceConfigProxy mDeviceConfig;
@@ -1507,7 +1523,11 @@ public class KeyguardViewMediator implements CoreStartable,
      */
     private RemoteAnimationTarget mOccludingRemoteAnimationTarget;
     private boolean mShowCommunalWhenUnoccluding = false;
-
+    /**
+     * Either transitioning to dreaming, from dreaming, or currently in the dreaming state. If the
+     * transition away from dreaming ended, it's no longer relevant.
+     */
+    private boolean mIsKeyguardStateRelevantToDream = false;
     private final Lazy<WindowManagerLockscreenVisibilityManager> mWmLockscreenVisibilityManager;
 
     private WindowManagerOcclusionManager mWmOcclusionManager;
@@ -1780,7 +1800,9 @@ public class KeyguardViewMediator implements CoreStartable,
             mJavaAdapter.alwaysCollectFlow(dreamViewModel.getDreamAlpha(),
                     getRemoteSurfaceAlphaApplier());
             mJavaAdapter.alwaysCollectFlow(dreamViewModel.getTransitionEnded(),
-                    getFinishedCallbackConsumer());
+                    getFinishedCallbackConsumerForDream());
+            mJavaAdapter.alwaysCollectFlow(dreamViewModel.getTransitioningFromOrToDream(),
+                    (relevantToDream) -> mIsKeyguardStateRelevantToDream = relevantToDream);
             mJavaAdapter.alwaysCollectFlow(communalViewModel.getShowCommunalFromOccluded(),
                     (showCommunalFromOccluded) -> {
                         mShowCommunalWhenUnoccluding = showCommunalFromOccluded;
@@ -2417,10 +2439,14 @@ public class KeyguardViewMediator implements CoreStartable,
         }
     }
 
+    private void doKeyguardLocked(Bundle options) {
+        doKeyguardLocked(options, true /* resetState */);
+    }
+
     /**
      * Enable the keyguard if the settings are appropriate.
      */
-    private void doKeyguardLocked(Bundle options) {
+    private void doKeyguardLocked(Bundle options, boolean resetState) {
         // If the power button behavior requests to open the glanceable hub.
         if (options != null && options.getBoolean(EXTRA_TRIGGER_HUB)) {
             if (mCommunalSettingsInteractor.get().getAutoOpenEnabled().getValue()) {
@@ -2483,7 +2509,9 @@ public class KeyguardViewMediator implements CoreStartable,
                                     + "already showing, we're interactive, we were not "
                                     + "previously hiding. It should be safe to short-circuit "
                                     + "here.");
-                    resetStateLocked(/* hideBouncer= */ false);
+                    if (resetState) {
+                        resetStateLocked(/* hideBouncer= */ false);
+                    }
                     notifyLockNowCallback();
                     return;
                 }
@@ -2693,14 +2721,8 @@ public class KeyguardViewMediator implements CoreStartable,
         @Override
         public void onReceive(Context context, Intent intent) {
             if (DELAYED_KEYGUARD_ACTION.equals(intent.getAction())) {
-                final int sequence = intent.getIntExtra("seq", 0);
-                if (DEBUG) Log.d(TAG, "received DELAYED_KEYGUARD_ACTION with seq = "
-                        + sequence + ", mDelayedShowingSequence = " + mDelayedShowingSequence);
-                synchronized (KeyguardViewMediator.this) {
-                    if (mDelayedShowingSequence == sequence) {
-                        doKeyguardLocked(null);
-                    }
-                }
+                doDelayedKeyguardAction(intent.getIntExtra("seq", 0));
+
             } else if (DELAYED_LOCK_PROFILE_ACTION.equals(intent.getAction())) {
                 final int sequence = intent.getIntExtra("seq", 0);
                 int userId = intent.getIntExtra(Intent.EXTRA_USER_ID, 0);
@@ -2714,6 +2736,20 @@ public class KeyguardViewMediator implements CoreStartable,
             }
         }
     };
+
+    @VisibleForTesting
+    void doDelayedKeyguardAction(int sequence) {
+        if (DEBUG) {
+            Log.d(TAG, "received DELAYED_KEYGUARD_ACTION with seq = "
+                    + sequence + ", mDelayedShowingSequence = " + mDelayedShowingSequence);
+        }
+
+        synchronized (KeyguardViewMediator.this) {
+            if (mDelayedShowingSequence == sequence) {
+                doKeyguardLocked(null, !mUpdateMonitor.isDreaming());
+            }
+        }
+    }
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override

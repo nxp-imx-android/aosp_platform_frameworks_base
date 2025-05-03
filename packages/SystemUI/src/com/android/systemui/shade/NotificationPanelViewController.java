@@ -229,7 +229,7 @@ public final class NotificationPanelViewController implements
         ShadeSurface, Dumpable, BrightnessMirrorShowingInteractor {
 
     public static final String TAG = NotificationPanelView.class.getSimpleName();
-    private static final boolean DEBUG_LOGCAT = Compile.IS_DEBUG && Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG_LOGCAT = Compile.IS_DEBUG || Log.isLoggable(TAG, Log.DEBUG);
     private static final boolean DEBUG_DRAWABLE = false;
     /** The parallax amount of the quick settings translation when dragging down the panel. */
     public static final float QS_PARALLAX_AMOUNT = 0.175f;
@@ -988,7 +988,12 @@ public final class NotificationPanelViewController implements
 
     private void handleBouncerShowingChanged(Boolean isBouncerShowing) {
         if (!com.android.systemui.Flags.bouncerUiRevamp()) return;
-        if (isBouncerShowing && isExpanded()) {
+        boolean statusBarStateIsNotKeyguard = mStatusBarStateController.getState() != KEYGUARD;
+        boolean qsExpanded = mShadeRepository.getLegacyIsQsExpanded().getValue();
+        boolean shouldBlurShade = statusBarStateIsNotKeyguard || qsExpanded;
+        debugLog("statusBarStateIsNotKeyguard=" + statusBarStateIsNotKeyguard + ", qsExpanded="
+                + qsExpanded);
+        if (isBouncerShowing && shouldBlurShade) {
             if (mBlurRenderEffect == null) {
                 mBlurRenderEffect = RenderEffect.createBlurEffect(
                         mBlurConfig.getMaxBlurRadiusPx(),
@@ -996,9 +1001,12 @@ public final class NotificationPanelViewController implements
                         Shader.TileMode.CLAMP);
             }
             debugLog("Applying blur RenderEffect to shade.");
+            Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_APP, "ShadeBlurRenderEffect", "active",
+                    0);
             mView.setRenderEffect(mBlurRenderEffect);
         } else {
             debugLog("Resetting blur RenderEffect on shade.");
+            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_APP, "ShadeBlurRenderEffect", 0);
             mView.setRenderEffect(null);
         }
     }
@@ -3239,16 +3247,19 @@ public final class NotificationPanelViewController implements
             boolean isExpanded = isExpanded();
             mShadeExpansionStateManager.onPanelExpansionChanged(
                     mExpandedFraction, isExpanded, isTracking());
-            mQsController.setPanelExpanded(isExpanded);
+            mQsController.setPanelExpanded(isExpandedWithoutHeadsUp());
         }
         updateVisibility();
     }
 
     @Override
     public boolean isExpanded() {
+        return isExpandedWithoutHeadsUp() || isPanelVisibleBecauseOfHeadsUp();
+    }
+
+    private boolean isExpandedWithoutHeadsUp() {
         return mExpandedFraction > 0f
                 || mInstantExpanding
-                || isPanelVisibleBecauseOfHeadsUp()
                 || isTracking()
                 || mHeightAnimator != null
                 || isPanelVisibleBecauseScrimIsAnimatingOff()

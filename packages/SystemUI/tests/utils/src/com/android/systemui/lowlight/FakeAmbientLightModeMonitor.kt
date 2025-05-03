@@ -16,8 +16,6 @@
 
 package com.android.systemui.lowlight
 
-import com.android.systemui.lowlightclock.AmbientLightModeMonitor
-
 class FakeAmbientLightModeMonitor : AmbientLightModeMonitor {
     @AmbientLightModeMonitor.AmbientLightMode private var ambientLightMode: Int? = null
     private var callback: AmbientLightModeMonitor.Callback? = null

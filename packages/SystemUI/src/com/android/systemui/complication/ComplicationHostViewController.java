@@ -204,6 +204,19 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
                 mComplicationViewModelObserver);
     }
 
+    @Override
+    public void destroy() {
+        mComplications.forEach((id, viewHolder) ->
+                mLayoutEngine.removeComplication(id));
+        mComplications.clear();
+        super.destroy();
+    }
+
+    @VisibleForTesting
+    protected int getComplicationCount() {
+        return mComplications.size();
+    }
+
     /**
      * Exposes the associated {@link View}. Since this {@link View} is instantiated through dagger
      * in the {@link ComplicationHostViewController} constructor, the

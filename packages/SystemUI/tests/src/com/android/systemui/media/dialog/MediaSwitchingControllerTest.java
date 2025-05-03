@@ -63,7 +63,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
-import android.text.TextUtils;
 import android.view.View;
 
 import androidx.core.graphics.drawable.IconCompat;
@@ -1100,82 +1099,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void getGroupMediaDevices_differentDeviceOrder_showingSameOrder() {
-        final MediaDevice selectedMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectedMediaDevice2 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice2 = mock(MediaDevice.class);
-        final List<MediaDevice> selectedMediaDevices = new ArrayList<>();
-        final List<MediaDevice> selectableMediaDevices = new ArrayList<>();
-        when(selectedMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
-        when(selectedMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
-        when(selectableMediaDevice1.getId()).thenReturn(TEST_DEVICE_3_ID);
-        when(selectableMediaDevice2.getId()).thenReturn(TEST_DEVICE_4_ID);
-        selectedMediaDevices.add(selectedMediaDevice1);
-        selectedMediaDevices.add(selectedMediaDevice2);
-        selectableMediaDevices.add(selectableMediaDevice1);
-        selectableMediaDevices.add(selectableMediaDevice2);
-        doReturn(selectedMediaDevices).when(mLocalMediaManager).getSelectedMediaDevice();
-        doReturn(selectableMediaDevices).when(mLocalMediaManager).getSelectableMediaDevice();
-        final List<MediaDevice> groupMediaDevices =
-                mMediaSwitchingController.getGroupMediaDevices();
-        // Reset order
-        selectedMediaDevices.clear();
-        selectedMediaDevices.add(selectedMediaDevice2);
-        selectedMediaDevices.add(selectedMediaDevice1);
-        selectableMediaDevices.clear();
-        selectableMediaDevices.add(selectableMediaDevice2);
-        selectableMediaDevices.add(selectableMediaDevice1);
-        final List<MediaDevice> newDevices = mMediaSwitchingController.getGroupMediaDevices();
-
-        assertThat(newDevices.size()).isEqualTo(groupMediaDevices.size());
-        for (int i = 0; i < groupMediaDevices.size(); i++) {
-            assertThat(TextUtils.equals(groupMediaDevices.get(i).getId(),
-                    newDevices.get(i).getId())).isTrue();
-        }
-    }
-
-    @Test
-    public void getGroupMediaDevices_newDevice_verifyDeviceOrder() {
-        final MediaDevice selectedMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectedMediaDevice2 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice2 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice3 = mock(MediaDevice.class);
-        final List<MediaDevice> selectedMediaDevices = new ArrayList<>();
-        final List<MediaDevice> selectableMediaDevices = new ArrayList<>();
-        when(selectedMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
-        when(selectedMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
-        when(selectableMediaDevice1.getId()).thenReturn(TEST_DEVICE_3_ID);
-        when(selectableMediaDevice2.getId()).thenReturn(TEST_DEVICE_4_ID);
-        when(selectableMediaDevice3.getId()).thenReturn(TEST_DEVICE_5_ID);
-        selectedMediaDevices.add(selectedMediaDevice1);
-        selectedMediaDevices.add(selectedMediaDevice2);
-        selectableMediaDevices.add(selectableMediaDevice1);
-        selectableMediaDevices.add(selectableMediaDevice2);
-        doReturn(selectedMediaDevices).when(mLocalMediaManager).getSelectedMediaDevice();
-        doReturn(selectableMediaDevices).when(mLocalMediaManager).getSelectableMediaDevice();
-        final List<MediaDevice> groupMediaDevices =
-                mMediaSwitchingController.getGroupMediaDevices();
-        // Reset order
-        selectedMediaDevices.clear();
-        selectedMediaDevices.add(selectedMediaDevice2);
-        selectedMediaDevices.add(selectedMediaDevice1);
-        selectableMediaDevices.clear();
-        selectableMediaDevices.add(selectableMediaDevice3);
-        selectableMediaDevices.add(selectableMediaDevice2);
-        selectableMediaDevices.add(selectableMediaDevice1);
-        final List<MediaDevice> newDevices = mMediaSwitchingController.getGroupMediaDevices();
-
-        assertThat(newDevices.size()).isEqualTo(5);
-        for (int i = 0; i < groupMediaDevices.size(); i++) {
-            assertThat(TextUtils.equals(groupMediaDevices.get(i).getId(),
-                    newDevices.get(i).getId())).isTrue();
-        }
-        assertThat(newDevices.get(4).getId()).isEqualTo(TEST_DEVICE_5_ID);
-    }
-
-    @Test
     public void getNotificationLargeIcon_withoutPackageName_returnsNull() {
         mMediaSwitchingController =
                 new MediaSwitchingController(
@@ -1309,31 +1232,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         assertThat(mMediaSwitchingController.getDeviceIconCompat(mMediaDevice1))
                 .isInstanceOf(IconCompat.class);
-    }
-
-    @Test
-    public void resetGroupMediaDevices_clearGroupDevices() {
-        final MediaDevice selectedMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectedMediaDevice2 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice1 = mock(MediaDevice.class);
-        final MediaDevice selectableMediaDevice2 = mock(MediaDevice.class);
-        final List<MediaDevice> selectedMediaDevices = new ArrayList<>();
-        final List<MediaDevice> selectableMediaDevices = new ArrayList<>();
-        when(selectedMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
-        when(selectedMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
-        when(selectableMediaDevice1.getId()).thenReturn(TEST_DEVICE_3_ID);
-        when(selectableMediaDevice2.getId()).thenReturn(TEST_DEVICE_4_ID);
-        selectedMediaDevices.add(selectedMediaDevice1);
-        selectedMediaDevices.add(selectedMediaDevice2);
-        selectableMediaDevices.add(selectableMediaDevice1);
-        selectableMediaDevices.add(selectableMediaDevice2);
-        doReturn(selectedMediaDevices).when(mLocalMediaManager).getSelectedMediaDevice();
-        doReturn(selectableMediaDevices).when(mLocalMediaManager).getSelectableMediaDevice();
-        assertThat(mMediaSwitchingController.getGroupMediaDevices().isEmpty()).isFalse();
-
-        mMediaSwitchingController.resetGroupMediaDevices();
-
-        assertThat(mMediaSwitchingController.mGroupMediaDevices.isEmpty()).isTrue();
     }
 
     @Test

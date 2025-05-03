@@ -33,12 +33,39 @@ sealed interface DeskTransition {
         val tasks: Set<Int>,
         val onDeskRemovedListener: OnDeskRemovedListener?,
     ) : DeskTransition {
+        constructor(
+            token: IBinder,
+            displayId: Int,
+            deskId: Int,
+            tasks: Set<Int>,
+            onDeskRemovedListener: OnDeskRemovedListener?,
+            // TODO(b/415259520): Consolidate desk removed listeners and callback lambdas
+            // after verifying that the call order before and after repository does not matter
+            // for [DesktopDisplayEventHandler].
+            runOnTransitEnd: (() -> Unit)?,
+        ) : this(token, displayId, deskId, tasks, onDeskRemovedListener) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+
+        var runOnTransitEnd: (() -> Unit)? = null
+
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 
     /** A transition to activate a desk in its display. */
     data class ActivateDesk(override val token: IBinder, val displayId: Int, val deskId: Int) :
         DeskTransition {
+        constructor(
+            token: IBinder,
+            displayId: Int,
+            deskId: Int,
+            runOnTransitEnd: (() -> Unit)?,
+        ) : this(token, displayId, deskId) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+
+        var runOnTransitEnd: (() -> Unit)? = null
+
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 
@@ -49,11 +76,33 @@ sealed interface DeskTransition {
         val deskId: Int,
         val enterTaskId: Int,
     ) : DeskTransition {
+        constructor(
+            token: IBinder,
+            displayId: Int,
+            deskId: Int,
+            enterTaskId: Int,
+            runOnTransitEnd: (() -> Unit)?,
+        ) : this(token, displayId, deskId, enterTaskId) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+
+        var runOnTransitEnd: (() -> Unit)? = null
+
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 
     /** A transition to deactivate a desk. */
     data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition {
+        constructor(
+            token: IBinder,
+            deskId: Int,
+            runOnTransitEnd: (() -> Unit)?,
+        ) : this(token, deskId) {
+            this.runOnTransitEnd = runOnTransitEnd
+        }
+
+        var runOnTransitEnd: (() -> Unit)? = null
+
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }
 

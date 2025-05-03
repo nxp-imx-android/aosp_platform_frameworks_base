@@ -83,7 +83,6 @@ import static android.view.contentprotection.flags.Flags.createAccessibilityOver
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
-import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
@@ -104,6 +103,7 @@ import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
 import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
+import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
 import static com.android.window.flags.Flags.delegateBackGestureToShell;
 
 import android.accessibilityservice.AccessibilityService;
@@ -116,6 +116,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.ActivityTaskManager.RootTaskInfo;
 import android.app.AppOpsManager;
+import android.app.BroadcastOptions;
 import android.app.IActivityManager;
 import android.app.IUiModeManager;
 import android.app.NotificationManager;
@@ -485,8 +486,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mEnableBugReportKeyboardShortcut = false;
 
     private TalkbackShortcutController mTalkbackShortcutController;
-
-    private VoiceAccessShortcutController mVoiceAccessShortcutController;
 
     private WindowWakeUpPolicy mWindowWakeUpPolicy;
 
@@ -1498,8 +1497,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case LONG_PRESS_POWER_ASSISTANT:
                 mPowerKeyHandled = true;
-                performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
-                        "Power - Long Press - Go To Assistant");
+                if (!enableLppAssistInvocationHapticEffect()
+                        && !enableLppAssistInvocationEffect()) {
+                    performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
+                            "Power - Long Press - Go To Assistant");
+                }
                 final int powerKeyDeviceId = INVALID_INPUT_DEVICE_ID;
                 launchAssistAction(null, powerKeyDeviceId, eventTime,
                         AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS);
@@ -2258,10 +2260,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return new TalkbackShortcutController(mContext);
         }
 
-        VoiceAccessShortcutController getVoiceAccessShortcutController() {
-            return new VoiceAccessShortcutController(mContext);
-        }
-
         WindowWakeUpPolicy getWindowWakeUpPolicy() {
             return new WindowWakeUpPolicy(mContext);
         }
@@ -2499,7 +2497,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 com.android.internal.R.integer.config_keyguardDrawnTimeout);
         mKeyguardDelegate = injector.getKeyguardServiceDelegate();
         mTalkbackShortcutController = injector.getTalkbackShortcutController();
-        mVoiceAccessShortcutController = injector.getVoiceAccessShortcutController();
         mWindowWakeUpPolicy = injector.getWindowWakeUpPolicy();
         initSingleKeyGestureRules(injector.getLooper());
         initKeyGestures();
@@ -3378,14 +3375,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @SuppressLint("MissingPermission")
     private void initKeyGestures() {
         List<Integer> supportedGestures = new ArrayList<>(List.of(
-                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
@@ -3395,7 +3390,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP,
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
-                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
@@ -3412,13 +3406,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (enableTalkbackAndMagnifierKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
         }
-        if (enableVoiceAccessKeyGestures()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
-        }
         if (!com.android.window.flags.Flags.enableKeyGestureHandlerForRecents()) {
             // When enableKeyGestureHandlerForRecents is enabled, the event is handled in the
             // recents app.
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER);
+        }
+        if (!com.android.window.flags.Flags.enableKeyGestureHandlerForSysui()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
         }
         mInputManager.registerKeyGestureEventHandler(supportedGestures,
                 PhoneWindowManager.this::handleKeyGestureEvent);
@@ -3608,18 +3604,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                 if (complete) {
-                    mContext.closeSystemDialogs();
+                    closeSystemDialogsAsUser(UserHandle.CURRENT_OR_SELF);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
                 if (complete) {
                     mTalkbackShortcutController.toggleTalkback(mCurrentUserId,
                             TalkbackShortcutController.ShortcutSource.KEYBOARD);
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
-                if (complete) {
-                    mVoiceAccessShortcutController.toggleVoiceAccess(mCurrentUserId);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
@@ -4061,6 +4052,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             Slog.w(TAG, "Not launching app because "
                     + "the activity to launch intent: " + intent + " was not found");
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void closeSystemDialogsAsUser(UserHandle handle) {
+        final Intent intent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        final Bundle options = BroadcastOptions.makeBasic()
+                .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
+                .setDeferralPolicy(BroadcastOptions.DEFERRAL_POLICY_UNTIL_ACTIVE)
+                .toBundle();
+        mContext.sendBroadcastAsUser(
+                intent,
+                handle,
+                null /* receiverPermission */,
+                options);
     }
 
     private void preloadRecentApps() {

@@ -116,6 +116,7 @@ public:
     void notifyFramePending();
     void notifyCallbackPending();
     void notifyExpensiveFrame();
+    void notifyGpuLoadUp();
 
     void dumpProfileInfo(int fd, int dumpFlags);
     // Not exported, only used for testing

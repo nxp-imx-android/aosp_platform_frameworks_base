@@ -317,12 +317,10 @@ fun BrightnessSlider(
     val currentShowToast by rememberUpdatedState(showToast)
     // Showing the warning toast if the current running app window has controlled the
     // brightness value.
-    if (Flags.showToastWhenAppControlBrightness()) {
-        LaunchedEffect(interactionSource, overriddenByAppState) {
-            interactionSource.interactions.collect { interaction ->
-                if (interaction is DragInteraction.Start && overriddenByAppState) {
-                    currentShowToast()
-                }
+    LaunchedEffect(interactionSource, overriddenByAppState) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is DragInteraction.Start && overriddenByAppState) {
+                currentShowToast()
             }
         }
     }
@@ -354,12 +352,7 @@ fun BrightnessSliderContainer(
         viewModel.policyRestriction.collectAsStateWithLifecycle(
             initialValue = PolicyRestriction.NoRestriction
         )
-    val overriddenByAppState by
-        if (Flags.showToastWhenAppControlBrightness()) {
-            viewModel.brightnessOverriddenByWindow.collectAsStateWithLifecycle()
-        } else {
-            remember { mutableStateOf(false) }
-        }
+    val overriddenByAppState by viewModel.brightnessOverriddenByWindow.collectAsStateWithLifecycle()
 
     DisposableEffect(Unit) { onDispose { viewModel.setIsDragging(false) } }
 

@@ -23,7 +23,9 @@ import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
+import static android.service.notification.Adjustment.KEY_CONTEXTUAL_ACTIONS;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
+import static android.service.notification.Adjustment.KEY_TEXT_REPLIES;
 import static android.service.notification.Adjustment.KEY_TYPE;
 
 import static com.android.app.animation.Interpolators.FAST_OUT_SLOW_IN;
@@ -52,7 +54,9 @@ import android.os.RemoteException;
 import android.service.notification.NotificationAssistantService;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.text.Annotation;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
@@ -82,6 +86,7 @@ import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyl
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -310,7 +315,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         View automatic = findViewById(R.id.automatic);
         if (mShowAutomaticSetting) {
             mAutomaticDescriptionView.setText(Html.fromHtml(mContext.getText(
-                    mAssistantFeedbackController.getInlineDescriptionResource(mRanking))
+                            mAssistantFeedbackController.getInlineDescriptionResource(mRanking))
                     .toString()));
             automatic.setVisibility(VISIBLE);
             automatic.setOnClickListener(mOnAutomatic);
@@ -393,7 +398,9 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         View feedbackButton = findViewById(R.id.feedback);
         Intent intent = getAssistantFeedbackIntent(
                 mINotificationManager, mPm, mSbn.getKey(), mRanking);
-        if (!android.app.Flags.notificationClassificationUi() || intent == null) {
+        if ((!android.app.Flags.notificationClassificationUi() &&
+                !com.android.systemui.Flags.notificationAnimatedActionsTreatment())
+                 || intent == null) {
             feedbackButton.setVisibility(GONE);
         } else {
             feedbackButton.setVisibility(VISIBLE);
@@ -404,7 +411,21 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             });
         }
     }
-
+    private static boolean isAnimatedReply(CharSequence choice) {
+        if (choice instanceof Spanned) {
+            Spanned spanned = (Spanned) choice;
+            Annotation[] annotations = spanned.getSpans(0, choice.length(), Annotation.class);
+            if (annotations != null) { // Add null check
+                for (Annotation annotation : annotations) {
+                    if ("isAnimatedReply".equals(annotation.getKey())
+                            && "1".equals(annotation.getValue())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     public static Intent getAssistantFeedbackIntent(INotificationManager inm, PackageManager pm,
             String key, NotificationListenerService.Ranking ranking) {
         try {
@@ -428,6 +449,48 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_KEY, key);
             intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENT,
                     ranking.getSummarization() != null ? KEY_SUMMARIZATION : KEY_TYPE);
+            ArrayList<String> keys = new ArrayList<>();
+            NotificationChannel channel = ranking.getChannel(); // Get channel from ranking
+
+            // Check for summarization
+            if (!TextUtils.isEmpty(ranking.getSummarization())) {
+                keys.add(KEY_SUMMARIZATION);
+            }
+
+            // Check if it's a reserved system channel type
+            if (channel != null && SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+                keys.add(KEY_TYPE);
+            }
+
+            // Check for animated smart actions
+            List<Notification.Action> smartActions = ranking.getSmartActions();
+            if (smartActions != null) {
+                for (Notification.Action action : smartActions) {
+                    if (action != null && action.getExtras() != null &&
+                            action.getExtras().getBoolean(Notification.Action.EXTRA_IS_ANIMATED,
+                                    false)) {
+                        keys.add(KEY_CONTEXTUAL_ACTIONS);
+                        break;
+                    }
+                }
+            }
+
+            // Check for animated smart replies
+            List<CharSequence> smartReplies = ranking.getSmartReplies();
+            if (smartReplies != null) {
+                for (CharSequence reply : smartReplies) {
+                    if (isAnimatedReply(reply)) {
+                        keys.add(KEY_TEXT_REPLIES);
+                        break;
+                    }
+                }
+            }
+
+            if (!keys.isEmpty()) {
+                intent.putStringArrayListExtra(
+                        NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENTS, keys);
+            }
+
             return intent;
         } catch (Exception e) {
             Slog.d(TAG, "no assistant?", e);

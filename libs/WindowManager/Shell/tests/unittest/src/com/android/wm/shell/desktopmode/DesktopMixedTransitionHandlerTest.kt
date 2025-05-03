@@ -48,11 +48,13 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler.PendingMixedTransition
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
+import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -90,6 +92,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     @Mock lateinit var desktopMinimizationTransitionHandler: DesktopMinimizationTransitionHandler
     @Mock
     lateinit var desktopModeDragAndDropTransitionHandler: DesktopModeDragAndDropTransitionHandler
+    @Mock lateinit var systemModalsTransitionHandler: SystemModalsTransitionHandler
     @Mock lateinit var desktopImmersiveController: DesktopImmersiveController
     @Mock lateinit var interactionJankMonitor: InteractionJankMonitor
     @Mock lateinit var mockHandler: Handler
@@ -124,6 +127,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 desktopImmersiveController,
                 desktopMinimizationTransitionHandler,
                 desktopModeDragAndDropTransitionHandler,
+                Optional.of(systemModalsTransitionHandler),
                 interactionJankMonitor,
                 mockHandler,
                 shellInit,
@@ -492,6 +496,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 transition = transition,
                 launchingTask = launchingTask.taskId,
                 minimizingTask = null,
+                closingTopTransparentTask = null,
                 exitingImmersiveTask = null,
             )
         )
@@ -770,6 +775,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 transition = transition,
                 launchingTask = launchingTask.taskId,
                 minimizingTask = null,
+                closingTopTransparentTask = null,
                 exitingImmersiveTask = null,
             )
         )
@@ -800,6 +806,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 transition = transition,
                 launchingTask = launchingTask.taskId,
                 minimizingTask = minimizingTask.taskId,
+                closingTopTransparentTask = null,
                 exitingImmersiveTask = null,
             )
         )
@@ -862,6 +869,47 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         )
 
         assertThat(mixedHandler.pendingMixedTransitions).isEmpty()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
+    fun startAndAnimateLaunchTransition_withClosingTopTransTask_callsModalsTransitionHandler() {
+        val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
+        val closingTopTransparentTask = createTask(WINDOWING_MODE_FULLSCREEN)
+        val launchTaskChange = createChange(launchingTask)
+        val closingTopTransparentTaskChange = createChange(closingTopTransparentTask)
+        val transitionInfo =
+            createCloseTransitionInfo(
+                TRANSIT_OPEN,
+                listOf(launchTaskChange, closingTopTransparentTaskChange),
+            )
+        val transition = Binder()
+
+        mixedHandler.addPendingMixedTransition(
+            PendingMixedTransition.Launch(
+                transition = transition,
+                launchingTask = launchingTask.taskId,
+                minimizingTask = null,
+                closingTopTransparentTask = closingTopTransparentTask.taskId,
+                exitingImmersiveTask = null,
+            )
+        )
+        mixedHandler.startAnimation(
+            transition = transition,
+            info = transitionInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+            finishCallback = {},
+        )
+
+        verify(systemModalsTransitionHandler)
+            .animateSystemModal(
+                eq(closingTopTransparentTaskChange.leash),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
     }
 
     @Test

@@ -877,23 +877,46 @@ private fun LazyGridItemScope.TileGridCell(
                 selectionState::unSelect,
             )
 
+        val toggleSelectionLabel = stringResource(R.string.accessibility_qs_edit_toggle_selection)
+        val placeTileLabel = stringResource(R.string.accessibility_qs_edit_place_tile_action)
         Box(
             Modifier.fillMaxSize()
                 .clearAndSetSemantics {
                     this.stateDescription = stateDescription
                     contentDescription = cell.tile.label.text
-                    customActions =
-                        listOf(
-                            // TODO(b/367748260): Add final accessibility actions
-                            CustomAccessibilityAction(toggleSizeLabel) {
-                                onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
-                                true
-                            },
+
+                    val actions =
+                        mutableListOf(
                             CustomAccessibilityAction(togglePlacementModeLabel) {
                                 selectionState.togglePlacementMode(cell.tile.tileSpec)
                                 true
-                            },
+                            }
                         )
+
+                    if (selectionState.placementEnabled) {
+                        actions.add(
+                            CustomAccessibilityAction(placeTileLabel) {
+                                selectionState.placeTileAt(cell.tile.tileSpec)
+                                true
+                            }
+                        )
+                    } else {
+                        // Don't allow for resizing during placement mode
+                        actions.add(
+                            CustomAccessibilityAction(toggleSizeLabel) {
+                                onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
+                                true
+                            }
+                        )
+                        actions.add(
+                            CustomAccessibilityAction(toggleSelectionLabel) {
+                                selectionState.toggleSelection(cell.tile.tileSpec)
+                                true
+                            }
+                        )
+                    }
+
+                    customActions = actions
                 }
                 .selectableTile(cell.tile.tileSpec, selectionState)
                 .thenIf(isReadyToDrag) { draggableModifier }
@@ -948,6 +971,8 @@ private fun AvailableTileGridCell(
         onAddTile(cell.tileSpec)
         selectionState.select(cell.tileSpec)
     }
+    val clickLabel =
+        stringResource(id = R.string.accessibility_qs_edit_named_tile_add_action, cell.label.text)
 
     // Displays the tile as an icon tile with the label underneath
     Column(
@@ -956,7 +981,7 @@ private fun AvailableTileGridCell(
         modifier =
             modifier
                 .graphicsLayer { this.alpha = alpha }
-                .clickable(enabled = !cell.isCurrent, onClick = onClick)
+                .clickable(enabled = !cell.isCurrent, onClick = onClick, onClickLabel = clickLabel)
                 .semantics { stateDescription?.let { this.stateDescription = it } },
     ) {
         Box(Modifier.fillMaxWidth().height(TileHeight)) {
@@ -984,8 +1009,7 @@ private fun AvailableTileGridCell(
 
             StaticTileBadge(
                 icon = Icons.Default.Add,
-                contentDescription =
-                    stringResource(id = R.string.accessibility_qs_edit_tile_add_action),
+                contentDescription = clickLabel,
                 enabled = !cell.isCurrent,
                 onClick = onClick,
             )

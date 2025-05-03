@@ -413,7 +413,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
         mHandler.post(() -> {
             final InvalidationRequesterClient<Face> client =
                     new InvalidationRequesterClient<>(mContext, userId, sensorId,
-                            BiometricLogger.ofUnknown(mContext),
+                            BiometricLogger.ofUnknown(mContext, mHandler),
                             mBiometricContext,
                             mFaceSensors.get(sensorId).getFaceUtilsInstance());
             scheduleForSensor(sensorId, client);
@@ -708,7 +708,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
                     mFaceSensors.get(sensorId).getLazySession(), token,
                     new ClientMonitorCallbackConverter(receiver), userId,
                     mContext.getOpPackageName(), sensorId,
-                    BiometricLogger.ofUnknown(mContext), mBiometricContext,
+                    BiometricLogger.ofUnknown(mContext, mHandler), mBiometricContext,
                     feature, enabled, hardwareAuthToken);
             scheduleForSensor(sensorId, client);
         });
@@ -727,8 +727,8 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
             }
             final FaceGetFeatureClient client = new FaceGetFeatureClient(mContext,
                     mFaceSensors.get(sensorId).getLazySession(), token, callback, userId,
-                    mContext.getOpPackageName(), sensorId, BiometricLogger.ofUnknown(mContext),
-                    mBiometricContext, feature);
+                    mContext.getOpPackageName(), sensorId,
+                    BiometricLogger.ofUnknown(mContext, mHandler), mBiometricContext, feature);
             scheduleForSensor(sensorId, client);
         });
     }
@@ -771,7 +771,7 @@ public class FaceProvider implements IBinder.DeathRecipient, ServiceProvider {
 
     private BiometricLogger createLogger(int statsAction, int statsClient,
             AuthenticationStatsCollector authenticationStatsCollector) {
-        return new BiometricLogger(mContext, BiometricsProtoEnums.MODALITY_FACE,
+        return new BiometricLogger(mContext, mHandler, BiometricsProtoEnums.MODALITY_FACE,
                 statsAction, statsClient, authenticationStatsCollector);
     }
 

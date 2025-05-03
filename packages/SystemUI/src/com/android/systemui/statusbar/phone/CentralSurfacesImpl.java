@@ -198,6 +198,7 @@ import com.android.systemui.statusbar.PowerButtonReveal;
 import com.android.systemui.statusbar.PulseExpansionHandler;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarInitializer;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
@@ -226,6 +227,7 @@ import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
+import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -383,6 +385,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private final AuthRippleController mAuthRippleController;
     @WindowVisibleState private int mStatusBarWindowState = WINDOW_STATE_SHOWING;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
+    private final TopUiController mTopUiController;
     private final StatusBarInitializer mStatusBarInitializer;
     private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private final StatusBarModeRepositoryStore mStatusBarModeRepository;
@@ -657,6 +660,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             ConfigurationController configurationController,
             NotificationShadeWindowController notificationShadeWindowController,
             Lazy<NotificationShadeWindowViewController> notificationShadeWindowViewControllerLazy,
+            TopUiController topUiController,
             NotificationStackScrollLayoutController notificationStackScrollLayoutController,
             // Lazys due to b/298099682.
             Lazy<NotificationPresenter> notificationPresenterLazy,
@@ -763,6 +767,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mAssistManagerLazy = assistManagerLazy;
         mConfigurationController = configurationController;
         mNotificationShadeWindowController = notificationShadeWindowController;
+        mTopUiController = topUiController;
         mNotificationShadeWindowViewControllerLazy = notificationShadeWindowViewControllerLazy;
         mStackScrollerController = notificationStackScrollLayoutController;
         mStackScroller = mStackScrollerController.getView();
@@ -1092,9 +1097,15 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }, OverlayPlugin.class, true /* Allow multiple plugins */);
 
         mStartingSurfaceOptional.ifPresent(startingSurface -> startingSurface.setSysuiProxy(
-                (requestTopUi, componentTag) -> mMainExecutor.execute(() ->
-                        mNotificationShadeWindowController.setRequestTopUi(
-                                requestTopUi, componentTag))));
+                (requestTopUi, componentTag) -> mMainExecutor.execute(() -> {
+                            if (TopUiControllerRefactor.isEnabled()) {
+                                mTopUiController.setRequestTopUi(requestTopUi, componentTag);
+                            } else {
+                                mNotificationShadeWindowController.setRequestTopUi(requestTopUi,
+                                        componentTag);
+                            }
+                        }
+                )));
     }
 
     @VisibleForTesting
@@ -1706,12 +1717,20 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 new WirelessChargingAnimation.Callback() {
                     @Override
                     public void onAnimationStarting() {
-                        mNotificationShadeWindowController.setRequestTopUi(true, TAG);
+                        if (TopUiControllerRefactor.isEnabled()) {
+                            mTopUiController.setRequestTopUi(true, TAG);
+                        } else {
+                            mNotificationShadeWindowController.setRequestTopUi(true, TAG);
+                        }
                     }
 
                     @Override
                     public void onAnimationEnded() {
-                        mNotificationShadeWindowController.setRequestTopUi(false, TAG);
+                        if (TopUiControllerRefactor.isEnabled()) {
+                            mTopUiController.setRequestTopUi(false, TAG);
+                        } else {
+                            mNotificationShadeWindowController.setRequestTopUi(false, TAG);
+                        }
                     }
                 }, /* isDozing= */ false, RippleShape.CIRCLE,
                 sUiEventLogger, mWindowManager, mWindowManagerProvider).show(animationDelay);

@@ -143,7 +143,7 @@ public class BubbleBarLayerView extends FrameLayout
                         private DragZone mLastBubbleLocationDragZone = null;
                         private BubbleBarLocation mInitialLocation = null;
                         @Override
-                        public void onDragEnded(@NonNull DragZone zone) {
+                        public void onDragEnded(@Nullable DragZone zone) {
                             if (mExpandedBubble == null || !(mExpandedBubble instanceof Bubble)) {
                                 Log.w(TAG, "dropped invalid bubble: " + mExpandedBubble);
                                 return;
@@ -170,7 +170,7 @@ public class BubbleBarLayerView extends FrameLayout
                         }
 
                         @Override
-                        public void onInitialDragZoneSet(@NonNull DragZone dragZone) {
+                        public void onInitialDragZoneSet(@Nullable DragZone dragZone) {
                             mInitialLocation = dragZone instanceof DragZone.Bubble.Left
                                     ? BubbleBarLocation.LEFT
                                     : BubbleBarLocation.RIGHT;
@@ -179,7 +179,7 @@ public class BubbleBarLayerView extends FrameLayout
 
                         @Override
                         public void onDragZoneChanged(@NonNull DraggedObject draggedObject,
-                                @NonNull DragZone from, @NonNull DragZone to) {
+                                @Nullable DragZone from, @Nullable DragZone to) {
                             final boolean isBubbleLeft = to instanceof DragZone.Bubble.Left;
                             final boolean isBubbleRight = to instanceof DragZone.Bubble.Right;
                             if ((isBubbleLeft || isBubbleRight)

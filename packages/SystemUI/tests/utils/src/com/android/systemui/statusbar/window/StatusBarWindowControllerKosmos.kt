@@ -23,7 +23,7 @@ import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.fragments.fragmentService
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
-import com.android.systemui.statusbar.policy.statusBarConfigurationController
+import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import java.util.Optional
 
 val Kosmos.fakeStatusBarWindowController by Kosmos.Fixture { FakeStatusBarWindowController() }
@@ -34,7 +34,7 @@ val Kosmos.statusBarWindowControllerImpl by
             testableContext,
             statusBarWindowViewInflater,
             fakeWindowManager,
-            statusBarConfigurationController,
+            mockStatusBarConfigurationController,
             windowManagerService,
             statusBarContentInsetsProvider,
             fragmentService,

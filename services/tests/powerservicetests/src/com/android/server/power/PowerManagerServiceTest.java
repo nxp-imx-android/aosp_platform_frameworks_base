@@ -20,6 +20,11 @@ import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_RECEIVER;
 import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
+import static android.os.Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR;
+import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_ALL;
+import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD;
+import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_DREAM;
+import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
 import static android.os.PowerManager.SCREEN_TIMEOUT_KEEP_DISPLAY_ON;
 import static android.os.PowerManager.SCREEN_TIMEOUT_ACTIVE;
 import static android.os.PowerManager.USER_ACTIVITY_EVENT_BUTTON;
@@ -1420,6 +1425,7 @@ public class PowerManagerServiceTest {
 
     @SuppressWarnings("GuardedBy")
     @Test
+    @DisableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
     public void testAmbientSuppression_disablesDreamingAndWakesDevice() {
         Settings.Secure.putInt(mContextSpy.getContentResolver(),
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
@@ -1447,6 +1453,158 @@ public class PowerManagerServiceTest {
 
     @SuppressWarnings("GuardedBy")
     @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionBehavior_disablesDreamingAndWakesDevice() {
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
+
+        setDreamsDisabledByAmbientModeSuppressionConfig(true);
+        setMinimumScreenOffTimeoutConfig(10000);
+        createService();
+        startSystem();
+
+        doAnswer(inv -> {
+            when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
+            return null;
+        }).when(mDreamManagerInternalMock).startDream(anyBoolean(), anyString());
+
+        setPluggedIn(true);
+        // Allow asynchronous sandman calls to execute.
+        advanceTime(10000);
+
+        forceDream();
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
+        mService.getBinderServiceInstance().suppressAmbientDisplayBehavior("test",
+                FLAG_AMBIENT_SUPPRESSION_ALL);
+        advanceTime(50);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressionAllBehavior_dozesOnSleep() {
+        verifySuppressionBehaviorOnDreaming(FLAG_AMBIENT_SUPPRESSION_ALL, WAKEFULNESS_DOZING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressionDreamBehavior_dozesOnSleep() {
+        verifySuppressionBehaviorOnDreaming(FLAG_AMBIENT_SUPPRESSION_DREAM, WAKEFULNESS_DOZING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressionNoneBehavior_dreamsOnSleep() {
+        verifySuppressionBehaviorOnDreaming(FLAG_AMBIENT_SUPPRESSION_NONE, WAKEFULNESS_DREAMING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressionAODBehavior_dreamsOnSleep() {
+        verifySuppressionBehaviorOnDreaming(FLAG_AMBIENT_SUPPRESSION_AOD, WAKEFULNESS_DREAMING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressionAODAndDreamBehavior_dreamsOnSleep() {
+        verifySuppressionBehaviorOnDreaming(
+                FLAG_AMBIENT_SUPPRESSION_DREAM | FLAG_AMBIENT_SUPPRESSION_AOD,
+                WAKEFULNESS_DOZING);
+    }
+
+    private void verifySuppressionBehaviorOnDreaming(
+            @PowerManager.FlagAmbientSuppression int suppressionFlags,
+            int expectedWakefulnessDuringSuppression) {
+        setDreamsDisabledByAmbientModeSuppressionConfig(true);
+        when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
+        when(mBatteryManagerInternalMock.getPlugType()).thenReturn(
+                BatteryManager.BATTERY_PLUGGED_WIRELESS);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 1);
+
+        doAnswer(inv -> {
+            when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
+            return null;
+        }).when(mDreamManagerInternalMock).startDream(anyBoolean(), anyString());
+
+        setMinimumScreenOffTimeoutConfig(5);
+        createService();
+        startSystem();
+
+        final String suppressionTag = "test";
+
+        // Suppress everything
+        mService.getBinderServiceInstance().suppressAmbientDisplayBehavior(suppressionTag,
+                suppressionFlags);
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Assert enter dozing instead of dream
+        advanceTime(15000);
+        assertThat(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(expectedWakefulnessDuringSuppression);
+
+        // Unsuppress
+        mService.getBinderServiceInstance().suppressAmbientDisplayBehavior(suppressionTag,
+                FLAG_AMBIENT_SUPPRESSION_NONE);
+
+        // Assert enter dream from dozing
+        advanceTime(10);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
+    public void testAmbientSuppressionWithSuppressAod_dreamsOnSleep() {
+        when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
+        when(mBatteryManagerInternalMock.getPlugType()).thenReturn(
+                BatteryManager.BATTERY_PLUGGED_WIRELESS);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
+        Settings.Secure.putInt(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 1);
+
+        doAnswer(inv -> {
+            when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
+            return null;
+        }).when(mDreamManagerInternalMock).startDream(anyBoolean(), anyString());
+
+        setMinimumScreenOffTimeoutConfig(5);
+        createService();
+        startSystem();
+
+        final String suppressionTag = "test";
+
+        // Suppress everything
+        mService.getBinderServiceInstance().suppressAmbientDisplayBehavior(suppressionTag,
+                FLAG_AMBIENT_SUPPRESSION_AOD);
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Assert enter dozing instead of dream
+        advanceTime(15000);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
+
+        // Unsuppress
+        mService.getBinderServiceInstance().suppressAmbientDisplayBehavior(suppressionTag,
+                FLAG_AMBIENT_SUPPRESSION_NONE);
+
+        // make sure dreaming is not interrupted.
+        advanceTime(10);
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @DisableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
     public void testAmbientSuppressionDisabled_shouldNotWakeDevice() {
         Settings.Secure.putInt(mContextSpy.getContentResolver(),
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
@@ -1473,6 +1631,7 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(FLAG_LOW_LIGHT_DREAM_BEHAVIOR)
     public void testAmbientSuppression_doesNotAffectDreamForcing() {
         Settings.Secure.putInt(mContextSpy.getContentResolver(),
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);

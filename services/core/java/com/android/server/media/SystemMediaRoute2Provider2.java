@@ -43,6 +43,7 @@ import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.flags.Flags;
 import com.android.server.media.MediaRoute2ProviderServiceProxy.SystemMediaSessionCallback;
 
 import java.util.Collections;
@@ -60,7 +61,8 @@ import java.util.stream.Stream;
 
     private static final String UNIQUE_SYSTEM_ID_PREFIX = "SYSTEM";
     private static final String UNIQUE_SYSTEM_ID_SEPARATOR = "-";
-    private static final boolean FORCE_GLOBAL_ROUTING_SESSION = true;
+    private static final boolean FORCE_GLOBAL_ROUTING_SESSION =
+            !Flags.enablePerAppMirroringInMediaRouter2();
     private static final String PACKAGE_NAME_FOR_GLOBAL_SESSION = "";
 
     /**

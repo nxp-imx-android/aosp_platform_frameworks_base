@@ -34,8 +34,6 @@ import android.util.Printer;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
-import dalvik.annotation.optimization.CriticalNative;
-import dalvik.annotation.optimization.FastNative;
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.FileDescriptor;
@@ -129,29 +127,18 @@ public final class MessageQueue {
     private static Boolean sIsProcessAllowedToUseConcurrent = null;
 
     @RavenwoodRedirect
-    @FastNative
     private native static long nativeInit();
-
     @RavenwoodRedirect
-    @FastNative
     private native static void nativeDestroy(long ptr);
-
     @UnsupportedAppUsage
     @RavenwoodRedirect
-    // Not @FastNative since significant time is spent in the native code as it may invoke
-    // application callbacks.
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
 
     @RavenwoodRedirect
-    @CriticalNative
     private native static void nativeWake(long ptr);
-
     @RavenwoodRedirect
-    @CriticalNative
     private native static boolean nativeIsPolling(long ptr);
-
     @RavenwoodRedirect
-    @CriticalNative
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
     MessageQueue(boolean quitAllowed) {
@@ -801,10 +788,8 @@ public final class MessageQueue {
             if (found == null) {
                 if (getQuitting()) {
                     mNextPollTimeoutMillis = 0;
-                    // State change will be Active->Active, so can immediately return here.
-                    return null;
                 } else if (next == null) {
-                    /* No message to deliver, sleep indefinitely, unless quitting */
+                    /* No message to deliver, sleep indefinitely */
                     mNextPollTimeoutMillis = -1;
                     nextOp = sStackStateParked;
                     if (DEBUG) {

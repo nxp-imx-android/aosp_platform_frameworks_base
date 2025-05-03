@@ -18,13 +18,16 @@ package com.android.systemui.statusbar.chips.ui.model
 
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
+import android.annotation.StringRes
 import android.os.SystemClock
 import android.view.View
+import androidx.compose.ui.Modifier
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.ui.viewmodel.TimeSource
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -234,14 +237,32 @@ sealed class OngoingActivityChipModel {
 
     /** Defines the behavior of the chip when it is clicked. */
     sealed interface ClickBehavior {
+        /**
+         * Custom semantic / accessibility label for the onClick action. See [Modifier.clickable].
+         */
+        @get:StringRes val customOnClickLabel: Int?
+
         /** No specific click behavior. */
-        data object None : ClickBehavior
+        data object None : ClickBehavior {
+            override val customOnClickLabel = null
+        }
 
         /** The chip expands into a dialog or activity on click. */
-        data class ExpandAction(val onClick: (Expandable) -> Unit) : ClickBehavior
+        data class ExpandAction(val onClick: (Expandable) -> Unit) : ClickBehavior {
+            override val customOnClickLabel = null
+        }
 
         /** Clicking the chip will show the heads up notification associated with the chip. */
-        data class ShowHeadsUpNotification(val onClick: () -> Unit) : ClickBehavior
+        data class ShowHeadsUpNotification(val onClick: () -> Unit) : ClickBehavior {
+            override val customOnClickLabel =
+                R.string.status_bar_chip_custom_a11y_action_expand_notification
+        }
+
+        /** Clicking the chip will hide the heads up notification associated with the chip. */
+        data class HideHeadsUpNotification(val onClick: () -> Unit) : ClickBehavior {
+            override val customOnClickLabel =
+                R.string.status_bar_chip_custom_a11y_action_collapse_notification
+        }
     }
 
     /** Defines the behavior of the chip with respect to activity launch and return transitions. */

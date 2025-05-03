@@ -75,6 +75,7 @@ import android.os.BatteryManagerInternal;
 import android.os.BatterySaverPolicyConfig;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Flags;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
@@ -85,6 +86,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelDuration;
 import android.os.PowerManager;
+import android.os.PowerManager.FlagAmbientSuppression;
 import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.ServiceType;
 import android.os.PowerManager.WakeReason;
@@ -3593,6 +3595,27 @@ public final class PowerManagerService extends SystemService
     }
 
     @GuardedBy("mLock")
+    private void onDreamSuppressionChangedLocked(
+            @FlagAmbientSuppression final int suppressionFlags) {
+        if (!mDreamsDisabledByAmbientModeSuppressionConfig) {
+            return;
+        }
+
+        final boolean isSuppressed = suppressionFlags != PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE;
+
+        final PowerGroup defaultPowerGroup = mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP);
+        if (!isSuppressed && mIsPowered && mDreamsSupportedConfig && mDreamsEnabledSetting
+                && shouldNapAtBedTimeLocked(defaultPowerGroup)
+                && isItBedTimeYetLocked(defaultPowerGroup)) {
+            napInternal(SystemClock.uptimeMillis(), Process.SYSTEM_UID, /* allowWake= */ true);
+        } else if (isSuppressed) {
+            mDirty |= DIRTY_SETTINGS;
+            updatePowerStateLocked();
+        }
+    }
+
+    @Deprecated
+    @GuardedBy("mLock")
     private void onDreamSuppressionChangedLocked(final boolean isSuppressed) {
         if (!mDreamsDisabledByAmbientModeSuppressionConfig) {
             return;
@@ -5438,6 +5461,13 @@ public final class PowerManagerService extends SystemService
                         onDreamSuppressionChangedLocked(isSuppressed);
                     }
                 }
+
+                @Override
+                public void onSuppressionChanged(int suppressionState) {
+                    synchronized (mLock) {
+                        onDreamSuppressionChangedLocked(suppressionState);
+                    }
+                }
             };
 
     /**
@@ -7044,6 +7074,14 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         public void suppressAmbientDisplay(@NonNull String token, boolean suppress) {
+            if (Flags.lowLightDreamBehavior()) {
+                // Use flagged-based suppression if new behavior is available.
+                suppressAmbientDisplayBehavior(token, suppress
+                        ? PowerManager.FLAG_AMBIENT_SUPPRESSION_ALL
+                        : PowerManager.FLAG_AMBIENT_SUPPRESSION_NONE);
+                return;
+            }
+
             mContext.enforceCallingOrSelfPermission(
                     android.Manifest.permission.WRITE_DREAM_STATE, null);
 
@@ -7055,6 +7093,30 @@ public final class PowerManagerService extends SystemService
                 Binder.restoreCallingIdentity(ident);
             }
         }
+
+        @Override // Binder call
+        public void suppressAmbientDisplayBehavior(@NonNull String token,
+                @FlagAmbientSuppression int flags) {
+            if (!Flags.lowLightDreamBehavior()) {
+                throw new IllegalArgumentException("suppressAmbientDisplayBehavior should only"
+                        + "be called if lowLightDreamBehavior is enabled");
+            }
+
+            // sanitize the input to known flags.
+            flags &= PowerManager.FLAG_AMBIENT_SUPPRESSION_ALL;
+
+            mContext.enforceCallingOrSelfPermission(
+                    android.Manifest.permission.WRITE_DREAM_STATE, null);
+
+            final int uid = Binder.getCallingUid();
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                mAmbientDisplaySuppressionController.suppress(token, uid, flags);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
 
         @Override // Binder call
         public boolean isAmbientDisplaySuppressedForToken(@NonNull String token) {

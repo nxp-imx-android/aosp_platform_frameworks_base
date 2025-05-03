@@ -16,11 +16,11 @@
 
 package com.android.wm.shell.dagger;
 
+import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
-import static android.window.DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
 
@@ -38,6 +38,7 @@ import android.view.Choreographer;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import androidx.annotation.OptIn;
@@ -48,7 +49,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -110,6 +110,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.DisplayDisconnectTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
@@ -192,17 +193,20 @@ import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationToolt
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.google.android.msdl.domain.MSDLPlayer;
 
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
+
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.MainCoroutineDispatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -612,7 +616,8 @@ public abstract class WMShellModule {
             @ShellMainThread Handler mainHandler,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
-            IActivityTaskManager activityTaskManager) {
+            IActivityTaskManager activityTaskManager,
+            MSDLPlayer msdlPlayer) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -639,7 +644,8 @@ public abstract class WMShellModule {
                 mainHandler,
                 rootDisplayAreaOrganizer,
                 desktopState,
-                activityTaskManager);
+                activityTaskManager,
+                msdlPlayer);
     }
 
     //
@@ -1041,6 +1047,19 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static Optional<DisplayDisconnectTransitionHandler> provideDisplayDisconnectTransitionHandler(
+            ShellInit shellInit, Transitions transitions) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(
+                    new DisplayDisconnectTransitionHandler(transitions, shellInit)
+            );
+        }
+    }
+
+    @WMSingleton
+    @Provides
     static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
         return new DesktopWallpaperActivityTokenProvider();
     }
@@ -1077,7 +1096,7 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DesktopState desktopState) {
         if (desktopState.canEnterDesktopMode()
-                && (Flags.enableMoveToNextDisplayShortcut()
+                && (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
@@ -1163,11 +1182,12 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             MultiDisplayDragMoveIndicatorSurface.Factory
                 multiDisplayDragMoveIndicatorSurfaceFactory,
-            @ShellDesktopThread ShellExecutor desktopExecutor
+            @ShellDesktopThread ShellExecutor desktopExecutor,
+            DesktopState desktopState
     ) {
         return new MultiDisplayDragMoveIndicatorController(
                 displayController, rootTaskDisplayAreaOrganizer,
-                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor);
+                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor, desktopState);
     }
 
     @WMSingleton
@@ -1366,6 +1386,8 @@ public abstract class WMShellModule {
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
+            DesksOrganizer desksOrganizer,
+            Transitions transitions,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1375,6 +1397,8 @@ public abstract class WMShellModule {
                                         repository,
                                         desktopMixedTransitionHandler.get(),
                                         backAnimationController.get(),
+                                        desksOrganizer,
+                                        transitions,
                                         desktopState,
                                         shellInit)));
     }
@@ -1403,6 +1427,7 @@ public abstract class WMShellModule {
             Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopMinimizationTransitionHandler desktopMinimizationTransitionHandler,
             DesktopModeDragAndDropTransitionHandler desktopModeDragAndDropTransitionHandler,
+            Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
             InteractionJankMonitor interactionJankMonitor,
             @ShellMainThread Handler handler,
             ShellInit shellInit,
@@ -1423,6 +1448,7 @@ public abstract class WMShellModule {
                         desktopImmersiveController.get(),
                         desktopMinimizationTransitionHandler,
                         desktopModeDragAndDropTransitionHandler,
+                        systemModalsTransitionHandler,
                         interactionJankMonitor,
                         handler,
                         shellInit,
@@ -1774,6 +1800,7 @@ public abstract class WMShellModule {
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
             Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
+            Optional<DisplayDisconnectTransitionHandler> displayDisconnectTransitionHandler,
             Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler) {
         return new Object();

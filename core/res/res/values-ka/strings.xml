@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"დამატებითი დაბინდვა"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"სმენის აპარატები"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ავტოდაწკაპუნება"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"მაუსის კლავიშები"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"კავშირი გაწყვეტილია"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"დაკავშირებული"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"აქტიური"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"გადაადგილება"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ხანგრძლივი დაჭერა"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"პაუზა"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"პოზიცია"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ზემოთ გადაადგილება"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"ქვემოთ გადაადგილება"</string>

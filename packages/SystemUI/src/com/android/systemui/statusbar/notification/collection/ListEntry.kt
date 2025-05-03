@@ -16,6 +16,8 @@
 package com.android.systemui.statusbar.notification.collection
 
 import android.annotation.UptimeMillisLong
+import com.android.systemui.statusbar.notification.stack.BUCKET_ALERTING
+import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
 /**
  * Abstract superclass for top-level entries, i.e. things that can appear in the final notification
@@ -41,6 +43,8 @@ protected constructor(
      * also be NotificationEntries.
      */
     abstract val representativeEntry: NotificationEntry?
+
+    @get:PriorityBucket override var bucket: Int = BUCKET_ALERTING
 
     override fun asListEntry(): ListEntry? {
         return this

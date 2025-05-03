@@ -79,7 +79,7 @@ class DesktopConfigImpl(
         SystemProperties.getBoolean("persist.wm.debug.desktop_use_rounded_corners", true)
 
     override fun useWindowShadow(isFocusedWindow: Boolean): Boolean =
-        if (isFocusedWindow) USE_WINDOW_SHADOWS_FOCUSED_WINDOW else USE_WINDOW_SHADOWS
+        USE_WINDOW_SHADOWS || (isFocusedWindow && USE_WINDOW_SHADOWS_FOCUSED_WINDOW)
 
     override fun shouldSetBackground(taskInfo: TaskInfo): Boolean =
         taskInfo.isFreeform &&

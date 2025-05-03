@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.notification.collection
 
 import com.android.systemui.statusbar.notification.collection.ListAttachState.Companion.create
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection
-import com.android.systemui.statusbar.notification.stack.BUCKET_ALERTING
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 import com.android.systemui.util.ListenerSet
 
@@ -32,7 +31,8 @@ sealed class PipelineEntry(
     /** @return Previous state that ShadeListBuilder assigned to this PipelineEntry. */
     val previousAttachState: ListAttachState = create()
 
-    @get:PriorityBucket var bucket: Int = BUCKET_ALERTING
+    @get:PriorityBucket abstract val bucket: Int
+
     var isSeenInShade: Boolean = false
 
     @JvmField

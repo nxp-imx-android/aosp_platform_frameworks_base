@@ -32,4 +32,5 @@ interface ISupervisionManager {
     boolean shouldAllowBypassingSupervisionRoleQualification();
     oneway void setSupervisionRecoveryInfo(in SupervisionRecoveryInfo recoveryInfo);
     SupervisionRecoveryInfo getSupervisionRecoveryInfo();
+    boolean hasSupervisionCredentials();
 }

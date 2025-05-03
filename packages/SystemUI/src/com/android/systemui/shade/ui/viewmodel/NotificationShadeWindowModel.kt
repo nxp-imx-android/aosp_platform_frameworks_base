@@ -18,8 +18,6 @@ package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
-import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -47,7 +45,6 @@ constructor(
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     sceneInteractor: dagger.Lazy<SceneInteractor>,
     authenticationInteractor: dagger.Lazy<AuthenticationInteractor>,
-    primaryBouncerInteractor: PrimaryBouncerInteractor,
 ) {
     /**
      * Considered to be occluded if in OCCLUDED, DREAMING, GLANCEABLE_HUB/Communal, or transitioning
@@ -88,23 +85,15 @@ constructor(
     /**
      * Whether bouncer is currently showing or not.
      *
-     * Applicable only when either [SceneContainerFlag] or [ComposeBouncerFlags] are enabled,
-     * otherwise it throws an error.
+     * Applicable only when [SceneContainerFlag] is enabled, otherwise it throws an error.
      */
     val isBouncerShowing: Flow<Boolean> =
-        when {
-            SceneContainerFlag.isEnabled -> {
+        if (SceneContainerFlag.isEnabled) {
                 sceneInteractor.get().transitionState.map { it.isIdle(Overlays.Bouncer) }
+            } else {
+                flow { error("Consume this flow only when SceneContainerFlag is enabled") }
             }
-            ComposeBouncerFlags.isOnlyComposeBouncerEnabled() -> primaryBouncerInteractor.isShowing
-            else ->
-                flow {
-                    error(
-                        "Consume this flow only when SceneContainerFlag " +
-                            "or ComposeBouncerFlags are enabled"
-                    )
-                }
-        }.distinctUntilChanged()
+            .distinctUntilChanged()
 
     /** Whether we're on dream or transitioning to dream. */
     val isOnOrGoingToDream: Flow<Boolean> =
@@ -120,11 +109,10 @@ constructor(
      * Whether the bouncer currently require IME for device entry.
      *
      * This emits true when the authentication method is set to password and the bouncer is
-     * currently showing. Throws an error when this is used without either [SceneContainerFlag] or
-     * [ComposeBouncerFlags]
+     * currently showing. Throws an error when this is used without [SceneContainerFlag].
      */
     val doesBouncerRequireIme: Flow<Boolean> =
-        if (ComposeBouncerFlags.isComposeBouncerOrSceneContainerEnabled()) {
+        if (SceneContainerFlag.isEnabled) {
                 // This is required to make the window, where the bouncer resides,
                 // focusable. InputMethodManager allows IME to be shown only for views
                 // in windows that do not have the FLAG_NOT_FOCUSABLE flag.
@@ -135,12 +123,7 @@ constructor(
                         showing && authMethod == AuthenticationMethodModel.Password
                     }
             } else {
-                flow {
-                    error(
-                        "Consume this flow only when SceneContainerFlag " +
-                            "or ComposeBouncerFlags are enabled"
-                    )
-                }
+                flow { error("Consume this flow only when SceneContainerFlag is enabled") }
             }
             .distinctUntilChanged()
 }

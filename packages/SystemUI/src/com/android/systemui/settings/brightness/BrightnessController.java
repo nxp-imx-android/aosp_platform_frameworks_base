@@ -363,16 +363,13 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
         boolean starting = !mTrackingTouch && tracking;
         mTrackingTouch = tracking;
         if (starting) {
-            if (Flags.showToastWhenAppControlBrightness()) {
-                // Showing the warning toast if the current running app window has
-                // controlled the brightness value.
-                if (mIsBrightnessOverriddenByWindow) {
-                    mControl.showToast(R.string.quick_settings_brightness_unable_adjust_msg);
-                }
+            // Showing the warning toast if the current running app window has
+            // controlled the brightness value.
+            if (mIsBrightnessOverriddenByWindow) {
+                mControl.showToast(R.string.quick_settings_brightness_unable_adjust_msg);
             }
         }
-        if (mExternalChange
-                || (Flags.showToastWhenAppControlBrightness() && mIsBrightnessOverriddenByWindow)) {
+        if (mExternalChange || mIsBrightnessOverriddenByWindow) {
             return;
         }
 

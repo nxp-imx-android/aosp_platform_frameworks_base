@@ -312,8 +312,8 @@ public class PreferencesHelper implements RankingConfig {
                     } else if (TAG_PACKAGE.equals(tag)) {
                         String name = parser.getAttributeValue(null, ATT_NAME);
                         if (!TextUtils.isEmpty(name)) {
-                            restorePackage(parser, forRestore, userId, name, upgradeForBubbles,
-                                    migrateToPermission);
+                            restorePackageLocked(parser, forRestore, userId, name,
+                                    upgradeForBubbles, migrateToPermission);
                         }
                     }
                 }
@@ -321,8 +321,8 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @GuardedBy("mPackagePreferences")
-    private void restorePackage(TypedXmlPullParser parser, boolean forRestore,
+    @GuardedBy("mLock")
+    private void restorePackageLocked(TypedXmlPullParser parser, boolean forRestore,
             @UserIdInt int userId, String name, boolean upgradeForBubbles,
             boolean migrateToPermission) {
         try {
@@ -450,7 +450,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @GuardedBy("mPackagePreferences")
+    @GuardedBy("mLock")
     private void restoreChannel(TypedXmlPullParser parser, boolean forRestore,
             PackagePreferences r) {
         try {
@@ -483,7 +483,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @GuardedBy("mPackagePreferences")
+    @GuardedBy("mLock")
     private boolean hasUserConfiguredSettings(PackagePreferences p){
         boolean hasChangedChannel = false;
         for (NotificationChannel channel : p.channels.values()) {
@@ -515,11 +515,13 @@ public class PreferencesHelper implements RankingConfig {
         return true;
     }
 
+    @GuardedBy("mLock")
     private PackagePreferences getPackagePreferencesLocked(String pkg, int uid) {
         final String key = packagePreferencesKey(pkg, uid);
         return mPackagePreferences.get(key);
     }
 
+    @GuardedBy("mLock")
     private PackagePreferences getOrCreatePackagePreferencesLocked(String pkg,
             int uid) {
         // TODO (b/194833441): use permissionhelper instead of DEFAULT_IMPORTANCE
@@ -590,6 +592,7 @@ public class PreferencesHelper implements RankingConfig {
         return true;
     }
 
+    @GuardedBy("mLock")
     private boolean deleteDefaultChannelIfNeededLocked(PackagePreferences r) throws
             PackageManager.NameNotFoundException {
         if (!r.channels.containsKey(DEFAULT_CHANNEL_ID)) {
@@ -608,6 +611,7 @@ public class PreferencesHelper implements RankingConfig {
         return true;
     }
 
+    @GuardedBy("mLock")
     private boolean createDefaultChannelIfNeededLocked(PackagePreferences r) throws
             PackageManager.NameNotFoundException {
         if (r.uid == UNKNOWN_UID) {
@@ -647,6 +651,7 @@ public class PreferencesHelper implements RankingConfig {
         return true;
     }
 
+    @GuardedBy("mLock")
     private NotificationChannel addReservedChannelLocked(PackagePreferences p, String channelId) {
         String label = "";
         switch (channelId) {
@@ -716,7 +721,8 @@ public class PreferencesHelper implements RankingConfig {
         out.endTag(null, TAG_RANKING);
     }
 
-    public void writePackageXml(PackagePreferences r, TypedXmlSerializer out,
+    @GuardedBy("mLock")
+    private void writePackageXml(PackagePreferences r, TypedXmlSerializer out,
             ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> notifPermissions,
             boolean forBackup) throws
             IOException {
@@ -1218,6 +1224,8 @@ public class PreferencesHelper implements RankingConfig {
         return needsPolicyFileChange;
     }
 
+    @GuardedBy("mLock")
+    @VisibleForTesting
     void clearLockedFieldsLocked(NotificationChannel channel) {
         channel.unlockFields(channel.getUserLockedFields());
     }
@@ -1322,7 +1330,7 @@ public class PreferencesHelper implements RankingConfig {
      * Updates conversation channels after user changes to their parent channel. See
      * {@link #maybeUpdateChildConversationChannel}.
      */
-    @GuardedBy("mPackagePreferences")
+    @GuardedBy("mLock")
     private void updateChildrenConversationChannels(@NonNull PackagePreferences packagePreferences,
             @NonNull NotificationChannel oldParent, @NonNull NotificationChannel updatedParent) {
         if (oldParent.equals(updatedParent)) {
@@ -1350,7 +1358,7 @@ public class PreferencesHelper implements RankingConfig {
      *
      * <p>This will also log the change as if it was {@code fromUser=true}.
      */
-    @GuardedBy("mPackagePreferences")
+    @GuardedBy("mLock")
     private void maybeUpdateChildConversationChannel(String pkg, int uid,
             @NonNull NotificationChannel conversation, @NonNull NotificationChannel oldParent,
             @NonNull NotificationChannel updatedParent) {
@@ -1438,15 +1446,17 @@ public class PreferencesHelper implements RankingConfig {
             return null;
         }
         Objects.requireNonNull(pkg);
-        PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
-        if (r == null) {
-            return null;
+        synchronized (mLock) {
+            PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
+            if (r == null) {
+                return null;
+            }
+            String channelId = NotificationChannel.getChannelIdForBundleType(type);
+            if (channelId == null) {
+                return null;
+            }
+            return addReservedChannelLocked(r, channelId);
         }
-        String channelId = NotificationChannel.getChannelIdForBundleType(type);
-        if (channelId == null) {
-            return null;
-        }
-        return addReservedChannelLocked(r, channelId);
     }
 
     @Override
@@ -1543,6 +1553,7 @@ public class PreferencesHelper implements RankingConfig {
         return deletedChannel;
     }
 
+    @GuardedBy("mLock")
     private boolean deleteNotificationChannelLocked(NotificationChannel channel, String pkg,
             int uid) {
         if (!channel.isDeleted()) {
@@ -1600,7 +1611,8 @@ public class PreferencesHelper implements RankingConfig {
     // Update all reserved channels for the given adjustment type(s) when enabled or disabled.
     // If disabled, all relevant channels are marked as deleted until the type is re-enabled.
     @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
-    void updateReservedChannels(List<Integer> changedTypes, boolean enabled) {
+    void updateReservedChannels(List<Integer> userIds, List<Integer> changedTypes,
+            boolean enabled) {
         if (!notificationClassification()) {
             return;
         }
@@ -1608,13 +1620,15 @@ public class PreferencesHelper implements RankingConfig {
         boolean updated = false;
         synchronized (mLock) {
             for (PackagePreferences p : mPackagePreferences.values()) {
-                for (int type : changedTypes) {
-                    String channelId = NotificationChannel.getChannelIdForBundleType(type);
-                    NotificationChannel c = p.channels.get(channelId);
-                    if (c != null && c.isDeleted() != shouldBeDeleted) {
-                        c.setDeleted(shouldBeDeleted);
-                        c.setDeletedTimeMs(shouldBeDeleted ? System.currentTimeMillis() : -1);
-                        updated = true;
+                if (userIds.contains(UserHandle.getUserId(p.uid))) {
+                    for (int type : changedTypes) {
+                        String channelId = NotificationChannel.getChannelIdForBundleType(type);
+                        NotificationChannel c = p.channels.get(channelId);
+                        if (c != null && c.isDeleted() != shouldBeDeleted) {
+                            c.setDeleted(shouldBeDeleted);
+                            c.setDeletedTimeMs(shouldBeDeleted ? System.currentTimeMillis() : -1);
+                            updated = true;
+                        }
                     }
                 }
             }
@@ -1964,11 +1978,13 @@ public class PreferencesHelper implements RankingConfig {
     // without creating package preferences. For testing only, specifically to confirm the
     // notification channels of a removed/deleted package.
     protected List<NotificationChannel> getRemovedPkgNotificationChannels(String pkg, int uid) {
-        PackagePreferences r = getPackagePreferencesLocked(pkg, uid);
-        if (r == null || r.channels == null) {
-            return new ArrayList<>();
+        synchronized (mLock) {
+            PackagePreferences r = getPackagePreferencesLocked(pkg, uid);
+            if (r == null || r.channels == null) {
+                return new ArrayList<>();
+            }
+            return new ArrayList<>(r.channels.values());
         }
-        return new ArrayList<>(r.channels.values());
     }
 
     /**
@@ -2177,6 +2193,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
+    @GuardedBy("mLock")
     private boolean channelIsLiveLocked(PackagePreferences pkgPref, NotificationChannel channel) {
         // Channel is in a group that's blocked
         if (isGroupBlocked(pkgPref.pkg, pkgPref.uid, channel.getGroup())) {
@@ -2300,6 +2317,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
+    @GuardedBy("mLock")
     private void lockFieldsForUpdateLocked(NotificationChannel original,
             NotificationChannel update) {
         if (original.canBypassDnd() != update.canBypassDnd()) {
@@ -2455,6 +2473,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
+    @GuardedBy("mLock")
     private void dumpPackagePreferencesLocked(ProtoOutputStream proto, long fieldId,
             @NonNull NotificationManagerService.DumpFilter filter,
             ArrayMap<String, PackagePreferences> packagePreferences,
@@ -3055,11 +3074,13 @@ public class PreferencesHelper implements RankingConfig {
                 }
                 // Package upgrade
                 try {
-                    PackagePreferences fullPackagePreferences = getPackagePreferencesLocked(pkg,
-                            mPm.getPackageUidAsUser(pkg, changeUserId));
-                    if (fullPackagePreferences != null) {
-                        updated |= createDefaultChannelIfNeededLocked(fullPackagePreferences);
-                        updated |= deleteDefaultChannelIfNeededLocked(fullPackagePreferences);
+                    synchronized (mLock) {
+                        PackagePreferences fullPackagePreferences = getPackagePreferencesLocked(pkg,
+                                mPm.getPackageUidAsUser(pkg, changeUserId));
+                        if (fullPackagePreferences != null) {
+                            updated |= createDefaultChannelIfNeededLocked(fullPackagePreferences);
+                            updated |= deleteDefaultChannelIfNeededLocked(fullPackagePreferences);
+                        }
                     }
                 } catch (PackageManager.NameNotFoundException e) {
                 }

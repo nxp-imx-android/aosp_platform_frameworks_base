@@ -285,6 +285,7 @@ package android.app {
     field @FlaggedApi("android.service.notification.redact_sensitive_notifications_from_untrusted_listeners") public static final String OPSTR_RECEIVE_SENSITIVE_NOTIFICATIONS = "android:receive_sensitive_notifications";
     field public static final String OPSTR_RECORD_AUDIO_HOTWORD = "android:record_audio_hotword";
     field public static final String OPSTR_RESERVED_FOR_TESTING = "android:reserved_for_testing";
+    field public static final String OPSTR_SYSTEM_EXEMPT_FROM_ACTIVITY_BG_START_RESTRICTION = "android:system_exempt_from_activity_bg_start_restriction";
     field public static final String OPSTR_USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android:use_icc_auth_with_device_identifier";
     field public static final int OP_COARSE_LOCATION = 0; // 0x0
     field public static final int OP_RECORD_AUDIO = 27; // 0x1b
@@ -1965,8 +1966,14 @@ package android.media {
 
   public final class AudioAttributes implements android.os.Parcelable {
     method public static int[] getSdkUsages();
+    method public long getTestId();
     method @NonNull public static String usageToXsdString(int);
     method public static int xsdStringToUsage(@NonNull String);
+    field public static final long VALUE_TEST_ID_NONE = -9223372036854775808L; // 0x8000000000000000L
+  }
+
+  public static class AudioAttributes.Builder {
+    method @NonNull public android.media.AudioAttributes.Builder setTestId(long);
   }
 
   public final class AudioDeviceInfo {
@@ -3060,6 +3067,7 @@ package android.provider {
     field public static final String NOTIFICATION_BADGING = "notification_badging";
     field public static final String NOTIFICATION_BUBBLES = "notification_bubbles";
     field public static final String POWER_MENU_LOCKED_SHOW_CONTENT = "power_menu_locked_show_content";
+    field public static final String SCREEN_OFF_UNLOCK_UDFPS_ENABLED = "screen_off_udfps_enabled";
     field public static final String SELECTED_SPELL_CHECKER = "selected_spell_checker";
     field public static final String SELECTED_SPELL_CHECKER_SUBTYPE = "selected_spell_checker_subtype";
     field public static final String SHOW_FIRST_CRASH_DIALOG_DEV_OPTION = "show_first_crash_dialog_dev_option";

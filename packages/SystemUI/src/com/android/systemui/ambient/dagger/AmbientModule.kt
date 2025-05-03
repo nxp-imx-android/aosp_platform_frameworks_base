@@ -16,18 +16,20 @@
 
 package com.android.systemui.ambient.dagger
 
+import com.android.systemui.ambient.lowlight.dagger.AmbientLowLightModule
 import com.android.systemui.ambient.statusbar.dagger.AmbientStatusBarComponent
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.ambient.touch.dagger.InputSessionComponent
 import dagger.Module
 
 @Module(
+    includes = [AmbientLowLightModule::class],
     subcomponents =
         [
             AmbientStatusBarComponent::class,
             AmbientTouchComponent::class,
             InputSessionComponent::class,
-        ]
+        ],
 )
 interface AmbientModule {
     companion object {

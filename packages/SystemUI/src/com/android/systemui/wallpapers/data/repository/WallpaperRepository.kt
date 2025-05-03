@@ -134,9 +134,7 @@ constructor(
             .map {
                 val userEnabled =
                     secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1) == 1
-                userEnabled &&
-                    context.resources.getBoolean(R.bool.config_dozeSupportsAodWallpaper) &&
-                    ambientAod()
+                userEnabled && configEnabled() && ambientAod()
             }
             .flowOn(bgDispatcher)
 
@@ -196,6 +194,21 @@ constructor(
                 if (extendedWallpaperEffects()) SharingStarted.Eagerly else WhileSubscribed(),
                 initialValue = extendedWallpaperEffects(),
             )
+
+    private fun configEnabled(): Boolean {
+        // Some devices like foldables may only support AOD wallpaper on one screen. The override
+        // config adds the ability to specify general device support but allow per screen config
+        val sysuiOverride =
+            when (
+                context.resources.getInteger(SysUIR.integer.config_dozeSupportsAodWallpaperOverride)
+            ) {
+                0 -> false
+                1 -> true
+                else -> null
+            }
+        return if (sysuiOverride != null) sysuiOverride
+        else context.resources.getBoolean(R.bool.config_dozeSupportsAodWallpaper)
+    }
 
     private suspend fun getWallpaper(
         selectedUser: SelectedUserModel,

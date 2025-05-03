@@ -1379,15 +1379,9 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         enforceValidCallingUser();
 
         synchronized (mLock) {
-          if(STATUS_BAR_CONNECTED_DISPLAYS.isTrue()) {
-                IntArray displayIds = new IntArray();
-                for (int i = 0; i < mDisplayUiState.size(); i++) {
-                    displayIds.add(mDisplayUiState.keyAt(i));
-                }
-                disableAllDisplaysLocked(displayIds, userId, what, token, pkg, /* whichFlag= */ 1);
-            } else {
-                disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 1);
-            }
+            // TODO(b/409327478):- Call disableForAllDisplays if StatusBarConnectedDisplays
+            // flag is enabled.
+            disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 1);
         }
     }
 
@@ -1415,15 +1409,9 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         enforceStatusBar();
 
         synchronized (mLock) {
-            if (STATUS_BAR_CONNECTED_DISPLAYS.isTrue()) {
-                IntArray displayIds = new IntArray();
-                for (int i = 0; i < mDisplayUiState.size(); i++) {
-                    displayIds.add(mDisplayUiState.keyAt(i));
-                }
-                disableAllDisplaysLocked(displayIds, userId, what, token, pkg, /* whichFlag= */ 2);
-            } else {
-                disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 2);
-            }
+            // TODO(b/409327478):- Call disableForAllDisplays if StatusBarConnectedDisplays
+            // flag is enabled.
+            disableLocked(DEFAULT_DISPLAY, userId, what, token, pkg, /* whichFlag= */ 2);
         }
     }
 

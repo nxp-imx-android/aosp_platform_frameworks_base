@@ -445,6 +445,8 @@ cc_library_shared_for_libandroid_runtime {
                 "libutils",
                 "libwebp-decode",
                 "libwebp-encode",
+                "libperfetto_c",
+                "libtracing_perfetto",
                 "libwuffs_mirror_release_c",
                 "libz",
                 "libimage_io",

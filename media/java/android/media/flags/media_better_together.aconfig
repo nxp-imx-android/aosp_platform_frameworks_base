@@ -180,6 +180,16 @@ flag {
 }
 
 flag {
+    name: "enable_per_app_mirroring_in_media_router_2"
+    namespace: "media_better_together"
+    description: "Enables MediaRouter2 app-specific mirroring. Requires enable_mirroring_in_media_router_2."
+    bug: "413313659"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_prevention_of_keep_alive_route_providers"
     namespace: "media_solutions"
     description: "Enables mechanisms to prevent route providers from keeping malicious apps alive."

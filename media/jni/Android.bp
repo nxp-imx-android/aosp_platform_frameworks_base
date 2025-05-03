@@ -100,9 +100,9 @@ cc_library_shared {
         "libsonivox",
         "libstagefright",
         "libstagefright_foundation",
+        "libstagefright_persistentsurface",
         "libui",
         "libutils",
-        "server_configurable_flags",
     ],
 
     header_libs: [
@@ -113,7 +113,6 @@ cc_library_shared {
     static_libs: [
         "android.companion.virtualdevice.flags-aconfig-cc",
         "android.media.codec-aconfig-cc",
-        "android.media.playback.flags-aconfig-cc",
         "libgrallocusage",
         "libmedia_midiiowrapper",
     ],

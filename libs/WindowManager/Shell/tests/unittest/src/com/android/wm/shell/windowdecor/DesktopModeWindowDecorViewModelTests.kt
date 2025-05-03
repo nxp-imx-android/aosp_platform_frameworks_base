@@ -216,6 +216,14 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    fun overviewAnimationChanges_shouldNotifyTiling() {
+        desktopModeWindowDecorViewModel.onRecentsAnimationEndedToSameDesk()
+
+        verify(mockTilingWindowDecoration, times(1))
+            .onOverviewAnimationEndedToSameDesk()
+    }
+
+    @Test
     fun testBackEventHasRightDisplayId() {
         val secondaryDisplay = createVirtualDisplay() ?: return
         val secondaryDisplayId = secondaryDisplay.display.displayId
@@ -1186,6 +1194,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_INPUT_LAYER_TRANSITION_FIX)
     fun testRecentsTransitionStateListener_nonRunningState_setsTransitionNotRunning() {
         val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
         val decoration = setUpMockDecorationForTask(task)
@@ -1195,6 +1204,21 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
             RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING)
+
+        verify(decoration).setIsRecentsTransitionRunning(false)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX, Flags.FLAG_ENABLE_INPUT_LAYER_TRANSITION_FIX)
+    fun testRecentsTransitionStateListener_nonRunningState_setsTransitionStopRequested() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        val decoration = setUpMockDecorationForTask(task)
+        onTaskOpening(task, SurfaceControl())
+        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
+            RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED)
+
+        desktopModeRecentsTransitionStateListener.onTransitionStateChanged(
+            RecentsTransitionStateListener.TRANSITION_STATE_STOP_REQUESTED)
 
         verify(decoration).setIsRecentsTransitionRunning(false)
     }

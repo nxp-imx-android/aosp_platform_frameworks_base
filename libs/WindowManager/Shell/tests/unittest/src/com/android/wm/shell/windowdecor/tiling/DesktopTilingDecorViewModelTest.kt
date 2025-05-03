@@ -35,7 +35,6 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
-import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -54,6 +53,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.capture
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -129,6 +129,10 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         val task2 = createFreeformTask()
         task1.displayId = 1
         task2.displayId = 2
+        whenever(desktopRepository.getDeskIdForTask(task1.taskId)).thenReturn(1)
+        whenever(desktopRepository.getDeskIdForTask(task2.taskId)).thenReturn(2)
+        whenever(desktopRepository.getActiveDeskId(task1.displayId)).thenReturn(1)
+        whenever(desktopRepository.getActiveDeskId(task2.displayId)).thenReturn(2)
         desktopTilingDecorViewModel.currentUserId = 1
         desktopTilingDecorViewModel.snapToHalfScreen(
             task1,
@@ -136,14 +140,14 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
-        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.size()).isEqualTo(1)
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
         desktopTilingDecorViewModel.snapToHalfScreen(
             task2,
             desktopModeWindowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
-        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.get(1).size())
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.get(1).size())
             .isEqualTo(2)
     }
 
@@ -152,6 +156,8 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         val task1 = createFreeformTask()
         val task2 = createFreeformTask()
         task1.displayId = 1
+        whenever(desktopRepository.getActiveDeskId(1)).thenReturn(1)
+        whenever(desktopRepository.getActiveDeskId(2)).thenReturn(2)
         task2.displayId = 2
         val currentUser = 1
         desktopTilingDecorViewModel.currentUserId = currentUser
@@ -164,7 +170,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             BOUNDS,
         )
         // Assert only one user handler list is created.
-        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.size()).isEqualTo(1)
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
 
         // Snap task 2 on display 2.
         desktopTilingDecorViewModel.snapToHalfScreen(
@@ -175,12 +181,10 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         )
 
         // Assert that two handlers, one for each display is created.
-        assertThat(
-                desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.get(currentUser).size()
-            )
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.get(currentUser).size())
             .isEqualTo(2)
         // Assert only one user list exists.
-        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.size()).isEqualTo(1)
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
 
         val newUser = 2
         // Notify tiling of user change.
@@ -194,7 +198,46 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         )
 
         // Assert two handler lists exist now, one for each user.
-        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.size()).isEqualTo(2)
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(2)
+    }
+
+    @Test
+    fun deskSwitched_shouldCreateNewTilingHandlers() {
+        val task1 = createFreeformTask()
+        val task2 = createFreeformTask()
+        task1.displayId = 1
+        task2.displayId = 1
+        val currentUser = 1
+        desktopTilingDecorViewModel.currentUserId = currentUser
+        whenever(desktopRepository.getDeskIdForTask(task1.taskId)).thenReturn(1)
+        whenever(desktopRepository.getActiveDeskId(1)).thenReturn(1)
+        // Snap task 1 on display 1.
+        desktopTilingDecorViewModel.snapToHalfScreen(
+            task1,
+            desktopModeWindowDecorationMock,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+        )
+        // Assert only one user handler list is created.
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
+
+        whenever(desktopRepository.getDeskIdForTask(task2.taskId)).thenReturn(1)
+        // Active desk cn display 1 now changed to 2.
+        whenever(desktopRepository.getActiveDeskId(1)).thenReturn(2)
+
+        // Snap task 2 on desk2 2.
+        desktopTilingDecorViewModel.snapToHalfScreen(
+            task2,
+            desktopModeWindowDecorationMock,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+        )
+
+        // Assert that two handlers, one for each desk is created.
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId[currentUser].size())
+            .isEqualTo(2)
+        // Assert only one user list exists.
+        assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
     }
 
     @Test
@@ -204,11 +247,50 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         val task1 = createFreeformTask()
         task1.displayId = 1
         desktopTilingDecorViewModel.currentUserId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.put(1, decorationByDisplayId)
+        whenever(desktopRepository.getActiveDeskId(any())).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDisplayId)
 
         desktopTilingDecorViewModel.removeTaskIfTiled(task1.displayId, task1.taskId)
 
         verify(desktopTilingDecoration, times(1)).removeTaskIfTiled(any(), any(), any())
+    }
+
+    @Test
+    fun displayDisconnected_newDisplaySupportsTiling_shouldPersistTilingData() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        val secondTilingDecorationMock: DesktopTilingWindowDecoration = mock()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(3, secondTilingDecorationMock)
+        whenever(secondTilingDecorationMock.displayId).thenReturn(2)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDisplayDisconnected(
+            disconnectedDisplayId = 1,
+            desktopModeSupportedOnNewDisplay = true,
+        )
+
+        // Each tiling session should be reset.
+        verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
+        // Desk on a different display shouldn't be changed.
+        verify(secondTilingDecorationMock, never()).resetTilingSession(any())
+    }
+
+    @Test
+    fun displayDisconnected_newDisplayDoesntSupportTiling_shouldPersistTilingData() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDisplayDisconnected(
+            disconnectedDisplayId = 1,
+            desktopModeSupportedOnNewDisplay = false,
+        )
+
+        // Each tiling session should be reset.
+        verify(desktopTilingDecoration, times(2)).resetTilingSession(false)
     }
 
     @Test
@@ -217,7 +299,9 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         decorationByDisplayId.put(1, desktopTilingDecoration)
         val task1 = createFreeformTask()
         task1.displayId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.put(1, decorationByDisplayId)
+        whenever(desktopRepository.getDeskIdForTask(task1.taskId)).thenReturn(1)
+        whenever(desktopRepository.getActiveDeskId(task1.displayId)).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDisplayId)
         desktopTilingDecorViewModel.currentUserId = 1
 
         desktopTilingDecorViewModel.moveTaskToFrontIfTiled(task1)
@@ -227,25 +311,12 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     }
 
     @Test
-    fun overviewAnimationStarting_shouldNotifyAllDecorations() {
-        val decorationByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
-        decorationByDisplayId.put(1, desktopTilingDecoration)
-        decorationByDisplayId.put(2, desktopTilingDecoration)
-        desktopTilingDecorViewModel.currentUserId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.put(1, decorationByDisplayId)
-
-        desktopTilingDecorViewModel.onOverviewAnimationStateChange(TRANSITION_STATE_ANIMATING)
-
-        verify(desktopTilingDecoration, times(2)).onOverviewAnimationStateChange(any())
-    }
-
-    @Test
     fun userChange_tilingDividerHidden() {
         val decorationByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
         decorationByDisplayId.put(1, desktopTilingDecoration)
         decorationByDisplayId.put(2, desktopTilingDecoration)
         desktopTilingDecorViewModel.currentUserId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.put(1, decorationByDisplayId)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDisplayId)
 
         desktopTilingDecorViewModel.onUserChange(2)
 
@@ -253,16 +324,32 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     }
 
     @Test
-    fun displayOrientationChange_tilingForDisplayShouldBeDestroyed() {
-        val decorationByDisplayId = SparseArray<DesktopTilingWindowDecoration>()
-        decorationByDisplayId.put(1, desktopTilingDecoration)
-        decorationByDisplayId.put(2, desktopTilingDecoration)
+    fun deskDestroyed_tilingSessionEnded() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration)
         desktopTilingDecorViewModel.currentUserId = 1
-        desktopTilingDecorViewModel.tilingHandlerByUserAndDisplayId.put(1, decorationByDisplayId)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        desktopTilingDecorViewModel.onDeskRemoved(1)
+
+        // Reset tiling session only called once for the removed desk.
+        verify(desktopTilingDecoration, times(1)).resetTilingSession()
+        assertThat(decorationByDeskId.contains(1)).isFalse()
+    }
+
+    @Test
+    fun displayOrientationChange_tilingForDisplayShouldBeDestroyed() {
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.currentUserId = 1
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
 
         desktopTilingDecorViewModel.onDisplayChange(1, 1, 2, null, null)
 
-        verify(desktopTilingDecoration, times(1)).resetTilingSession()
+        verify(desktopTilingDecoration, times(2)).resetTilingSession()
         verify(shellInit, times(1))
             .addInitCallback(capture(callbackCaptor), eq(desktopTilingDecorViewModel))
 
@@ -273,7 +360,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
 
         desktopTilingDecorViewModel.onDisplayChange(1, 1, 3, null, null)
         // No extra calls after 180 degree change.
-        verify(desktopTilingDecoration, times(1)).resetTilingSession()
+        verify(desktopTilingDecoration, times(2)).resetTilingSession()
     }
 
     @Test

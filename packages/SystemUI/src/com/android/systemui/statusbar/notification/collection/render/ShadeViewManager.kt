@@ -73,6 +73,7 @@ constructor(
             dump("rootController", rootController)
             dump("specBuilder", specBuilder)
             dump("viewDiffer", viewDiffer)
+            dump("bundleBarn", bundleBarn)
         }
 
     private val viewRenderer =

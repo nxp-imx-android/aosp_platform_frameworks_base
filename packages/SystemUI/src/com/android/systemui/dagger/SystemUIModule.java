@@ -84,7 +84,8 @@ import com.android.systemui.keyguard.ui.composable.LockscreenContent;
 import com.android.systemui.log.dagger.LogModule;
 import com.android.systemui.log.dagger.MonitorLog;
 import com.android.systemui.log.table.TableLogBuffer;
-import com.android.systemui.lowlightclock.dagger.LowLightModule;
+import com.android.systemui.lowlight.dagger.LowLightModule;
+import com.android.systemui.lowlightclock.dagger.LowLightClockModule;
 import com.android.systemui.mediaprojection.MediaProjectionModule;
 import com.android.systemui.mediaprojection.appselector.MediaProjectionActivitiesModule;
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherModule;
@@ -158,6 +159,8 @@ import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;
 import com.android.systemui.telephony.data.repository.TelephonyRepositoryModule;
 import com.android.systemui.temporarydisplay.dagger.TemporaryDisplayModule;
+import com.android.systemui.topui.TopUiController;
+import com.android.systemui.topui.TopUiModule;
 import com.android.systemui.touchpad.TouchpadModule;
 import com.android.systemui.tuner.dagger.TunerModule;
 import com.android.systemui.user.UserModule;
@@ -284,6 +287,7 @@ import javax.inject.Named;
         TelephonyRepositoryModule.class,
         TemporaryDisplayModule.class,
         ShadeDisplayAwareModule.class,
+        TopUiModule.class,
         TouchpadModule.class,
         TunerModule.class,
         UserDomainLayerModule.class,
@@ -292,6 +296,7 @@ import javax.inject.Named;
         NoteTaskModule.class,
         WalletModule.class,
         LowLightModule.class,
+        LowLightClockModule.class,
         PerDisplayRepositoriesModule.class
 },
         subcomponents = {
@@ -410,6 +415,7 @@ public abstract class SystemUIModule {
     static Optional<BubblesManager> provideBubblesManager(Context context,
             Optional<Bubbles> bubblesOptional,
             NotificationShadeWindowController notificationShadeWindowController,
+            TopUiController topUiController,
             KeyguardStateController keyguardStateController,
             ShadeController shadeController,
             @Nullable IStatusBarService statusBarService,
@@ -430,6 +436,7 @@ public abstract class SystemUIModule {
         return Optional.ofNullable(BubblesManager.create(context,
                 bubblesOptional,
                 notificationShadeWindowController,
+                topUiController,
                 keyguardStateController,
                 shadeController,
                 statusBarService,

@@ -22,6 +22,7 @@ import static android.window.DesktopModeFlags.ToggleOverride.OVERRIDE_ON;
 import static android.window.DesktopModeFlags.ToggleOverride.OVERRIDE_UNSET;
 import static android.window.DesktopModeFlags.ToggleOverride.fromSetting;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_SHOW_DESKTOP_EXPERIENCE_DEV_OPTION;
 import static com.android.window.flags.Flags.FLAG_SHOW_DESKTOP_WINDOWING_DEV_OPTION;
@@ -67,6 +68,7 @@ import java.util.List;
 @SmallTest
 @Presubmit
 @RunWith(ParameterizedAndroidJunit4.class)
+@DisableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
 public class DesktopModeFlagsTest {
 
     @Parameters(name = "{0}")

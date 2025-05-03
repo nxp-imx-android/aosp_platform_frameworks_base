@@ -31,7 +31,6 @@ import android.media.session.MediaController.PlaybackInfo
 import android.media.session.MediaSession
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.FlagsParameterization
@@ -44,8 +43,6 @@ import com.android.settingslib.flags.Flags
 import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
-import com.android.settingslib.media.PhoneMediaDevice
-import com.android.settingslib.media.flags.Flags.FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS
 import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
@@ -487,20 +484,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(secondData.icon).isEqualTo(firstData.icon)
     }
 
-    @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @Test
-    fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession_setsDisabledDevice() {
-        // GIVEN that MR2Manager returns null for routing session
-        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
-        // WHEN a notification is added
-        // THEN the device is disabled and name is set to null
-        val data = loadMediaAndCaptureDeviceData()
-        assertThat(data.enabled).isFalse()
-        assertThat(data.name).isNull()
-    }
-
-    @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
     @Test
     fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession_returnsOtherDevice() {
         // GIVEN that MR2Manager returns null for routing session
@@ -515,7 +498,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
     fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession() {
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
         whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
@@ -528,27 +510,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(secondData.icon).isEqualTo(firstData.icon)
     }
 
-    @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @Test
-    fun onSelectedDeviceStateChanged_withRemotePlaybackInfo_noMatchingRoutingSession_setsDisabledDevice() {
-        // GIVEN a notif is added
-        loadMediaAndCaptureDeviceData()
-        reset(listener)
-        // AND MR2Manager returns null for routing session
-        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
-        // WHEN the selected device changes state
-        val deviceCallback = captureCallback()
-        deviceCallback.onSelectedDeviceStateChanged(device, 1)
-        fakeBgExecutor.runAllReady()
-        fakeFgExecutor.runAllReady()
-        // THEN the device is disabled and name is set to null
-        val data = captureDeviceData(KEY)
-        assertThat(data.enabled).isFalse()
-        assertThat(data.name).isNull()
-    }
-
-    @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
     @Test
     fun onSelectedDeviceStateChanged_withRemotePlaybackInfo_noMatchingRoutingSession_returnOtherDevice() {
         // GIVEN a notif is added
@@ -569,27 +530,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(data.icon).isEqualTo(OTHER_DEVICE_ICON_STUB)
     }
 
-    @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @Test
-    fun onDeviceListUpdate_withRemotePlaybackInfo_noMatchingRoutingSession_setsDisabledDevice() {
-        // GIVEN a notif is added
-        loadMediaAndCaptureDeviceData()
-        reset(listener)
-        // GIVEN that MR2Manager returns null for routing session
-        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
-        // WHEN the selected device changes state
-        val deviceCallback = captureCallback()
-        deviceCallback.onDeviceListUpdate(mutableListOf(device))
-        fakeBgExecutor.runAllReady()
-        fakeFgExecutor.runAllReady()
-        // THEN the device is disabled and name is set to null
-        val data = captureDeviceData(KEY)
-        assertThat(data.enabled).isFalse()
-        assertThat(data.name).isNull()
-    }
-
-    @RequiresFlagsEnabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
     @Test
     fun onDeviceListUpdate_withRemotePlaybackInfo_noMatchingRoutingSession_returnsOtherDevice() {
         // GIVEN a notif is added
@@ -608,41 +548,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(data.enabled).isFalse()
         assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
         assertThat(data.icon).isEqualTo(OTHER_DEVICE_ICON_STUB)
-    }
-
-    // With the flag enabled, MediaDeviceManager no longer gathers device name information directly.
-    @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @Test
-    fun mr2ReturnsSystemRouteWithNullName_isPhone_usePhoneName() {
-        // When the routing session name is null, and is a system session for a PhoneMediaDevice
-        val phoneDevice = mock(PhoneMediaDevice::class.java)
-        whenever(phoneDevice.iconWithoutBackground).thenReturn(icon)
-        whenever(lmm.currentConnectedDevice).thenReturn(phoneDevice)
-        whenever(routingSession.isSystemSession).thenReturn(true)
-
-        whenever(routingSession.name).thenReturn(null)
-        whenever(mr2.getSelectedRoutes(any())).thenReturn(listOf(selectedRoute))
-        whenever(selectedRoute.name).thenReturn(REMOTE_DEVICE_NAME)
-        whenever(selectedRoute.type).thenReturn(MediaRoute2Info.TYPE_BUILTIN_SPEAKER)
-
-        // Then the device name is the PhoneMediaDevice string
-        val data = loadMediaAndCaptureDeviceData()
-        assertThat(data.name).isEqualTo(PhoneMediaDevice.getMediaTransferThisDeviceName(context))
-    }
-
-    // With the flag enabled, MediaDeviceManager no longer gathers device name information directly.
-    @RequiresFlagsDisabled(FLAG_USE_PLAYBACK_INFO_FOR_ROUTING_CONTROLS)
-    @Test
-    fun mr2ReturnsSystemRouteWithNullName_useSelectedRouteName() {
-        // When the routing session does not have a name, and is a system session
-        whenever(routingSession.name).thenReturn(null)
-        whenever(mr2.getSelectedRoutes(any())).thenReturn(listOf(selectedRoute))
-        whenever(selectedRoute.name).thenReturn(REMOTE_DEVICE_NAME)
-        whenever(routingSession.isSystemSession).thenReturn(true)
-
-        // Then the device name is the selected route name
-        val data = loadMediaAndCaptureDeviceData()
-        assertThat(data.name).isEqualTo(REMOTE_DEVICE_NAME)
     }
 
     @Test

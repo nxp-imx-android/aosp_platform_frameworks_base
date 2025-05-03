@@ -33,6 +33,7 @@ import android.graphics.Color;
 import android.os.IBinder;
 import android.os.Trace;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.SurfaceControl;
@@ -63,6 +64,8 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
+
+import java.util.ArrayList;
 
 /**
  * Implementation to draw the starting window to an application, and remove the starting window
@@ -161,17 +164,20 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             if (!hasPendingRemoval()) {
                 return;
             }
-            final WindowRecord r = findRecord(transition);
-            if (r != null) {
+            final ArrayList<WindowRecord> records = findRecords(transition);
+            if (records != null) {
                 startTransaction.addTransactionCommittedListener(mShellMainExecutor, () -> {
-                    final WindowRecord wr = mWindowRecords.get(r.mTaskId);
-                    if (wr == null) {
-                        return;
+                    for (int i = records.size() - 1; i >= 0; --i) {
+                        final int taskId = records.get(i).mTaskId;
+                        final WindowRecord wr = mWindowRecords.get(taskId);
+                        if (wr == null) {
+                            return;
+                        }
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                                "RSO:Transaction applied for task=%d", taskId);
+                        wr.mTransactionApplied = true;
+                        executeRemovalIfPossible(wr);
                     }
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                            "RSO:Transaction applied for task=%d", r.mTaskId);
-                    wr.mTransactionApplied = true;
-                    executeRemovalIfPossible(wr);
                 });
                 return;
             }
@@ -201,23 +207,39 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                 return;
             }
             // Ensure nothing left.
-            final WindowRecord r = findRecord(transition);
-            if (r != null) {
-                r.mTransactionApplied = true;
-                executeRemovalIfPossible(r);
+            final ArrayList<WindowRecord> records = findRecords(transition);
+            if (records != null) {
+                for (int i = records.size() - 1; i >= 0; --i) {
+                    final WindowRecord r = records.get(i);
+                    r.mTransactionApplied = true;
+                    executeRemovalIfPossible(r);
+                }
             } else {
                 uncertainTrackComplete(transition);
             }
         }
 
-        void onAddingWindow(int taskId, IBinder transitionToken) {
-            mWindowRecords.put(taskId, new WindowRecord(taskId, transitionToken));
-            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                    "RSO:Start tracking for task=%d", taskId);
+        void onAddingWindow(int taskId, IBinder transitionToken, IBinder appToken) {
+            final WindowRecord wr = mWindowRecords.get(taskId);
+            if (wr != null) {
+                wr.addAppToken(appToken);
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                        "RSO:Start tracking appToken=%s for task=%d", appToken, taskId);
+            } else {
+                mWindowRecords.put(taskId, new WindowRecord(taskId, transitionToken, appToken));
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                        "RSO:Start tracking for task=%d", taskId);
+            }
         }
 
         // Stop tracking because the window is not created.
-        void forceRemoveWindow(int taskId) {
+        void forceRemoveWindow(int taskId, IBinder appToken) {
+            final WindowRecord wr = mWindowRecords.get(taskId);
+            if (wr == null || !wr.removeAppToken(appToken)) {
+                return;
+            }
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                    "RSO:Window wasn't created, removal record task=%d", taskId);
             mWindowRecords.remove(taskId);
         }
 
@@ -225,14 +247,18 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             return mWindowRecords.size() != 0;
         }
 
-        WindowRecord findRecord(IBinder transition) {
+        ArrayList<WindowRecord> findRecords(IBinder transition) {
+            ArrayList<WindowRecord> records = null;
             for (int i = mWindowRecords.size() - 1; i >= 0; --i) {
                 final WindowRecord record = mWindowRecords.valueAt(i);
                 if (record.mTransition == transition) {
-                    return record;
+                    if (records == null) {
+                        records = new ArrayList<>();
+                    }
+                    records.add(record);
                 }
             }
-            return null;
+            return records;
         }
 
         void requestRemoval(int taskId, StartingWindowRemovalInfo removalInfo) {
@@ -289,9 +315,21 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             boolean mTransactionApplied;
             StartingWindowRemovalInfo mStartingWindowRemovalInfo;
 
-            WindowRecord(int taskId, IBinder transition) {
+            final ArraySet<IBinder> mAppTokens = new ArraySet<>();
+
+            WindowRecord(int taskId, IBinder transition, IBinder appToken) {
                 mTaskId = taskId;
                 mTransition = transition;
+                addAppToken(appToken);
+            }
+
+            void addAppToken(IBinder token) {
+                mAppTokens.add(token);
+            }
+
+            boolean removeAppToken(IBinder token) {
+                mAppTokens.remove(token);
+                return mAppTokens.isEmpty();
             }
         }
     }
@@ -326,8 +364,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
      */
     public void addStartingWindow(StartingWindowInfo windowInfo) {
         if (Flags.removeStartingInTransition()) {
-            mShellMainExecutor.execute(() -> mRemoveStartingObserver
-                    .onAddingWindow(windowInfo.taskInfo.taskId, windowInfo.transitionToken));
+            mShellMainExecutor.execute(() -> mRemoveStartingObserver.onAddingWindow(
+                    windowInfo.taskInfo.taskId, windowInfo.transitionToken, windowInfo.appToken));
         }
         mSplashScreenExecutor.execute(() -> {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "addStartingWindow");
@@ -360,10 +398,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             }
             if (Flags.removeStartingInTransition()) {
                 if (!mStartingSurfaceDrawer.hasStartingWindow(taskId, isWindowless)) {
-                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                            "RSO:Window wasn't created, removal record task=%d", taskId);
                     mShellMainExecutor.execute(() ->
-                            mRemoveStartingObserver.forceRemoveWindow(taskId));
+                            mRemoveStartingObserver.forceRemoveWindow(taskId, windowInfo.appToken));
                 }
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);

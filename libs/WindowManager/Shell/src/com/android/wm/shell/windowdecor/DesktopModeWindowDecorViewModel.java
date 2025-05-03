@@ -650,9 +650,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     private void initializeTiling(RunningTaskInfo taskInfo) {
         DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
-        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(taskInfo.displayId);
-        Integer rightTiledTaskId = taskRepository.getRightTiledTask(taskInfo.displayId);
-        boolean tilingAndPersistenceEnabled = DesktopModeFlags.ENABLE_TILE_RESIZING.isTrue()
+        Integer deskId = taskRepository.getActiveDeskId(taskInfo.displayId);
+        if (deskId == null) {
+            return;
+        }
+        Integer leftTiledTaskId = taskRepository.getLeftTiledTask(deskId);
+        Integer rightTiledTaskId = taskRepository.getRightTiledTask(deskId);
+        boolean tilingAndPersistenceEnabled = DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
         if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
                 && tilingAndPersistenceEnabled) {
@@ -967,6 +971,30 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void onDeskActivated(int deskId, int displayId) {
+        if (!mDesktopTilingDecorViewModel.onDeskActivated(deskId)) {
+            return;
+        }
+
+        final DesktopRepository repository = mDesktopUserRepositories.getCurrent();
+        final Integer leftTaskId = repository.getLeftTiledTask(deskId);
+        final Integer rightTaskId =  repository.getRightTiledTask(deskId);
+        if (leftTaskId != null) {
+            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.get(leftTaskId);
+            final RunningTaskInfo taskInfo = decor.mTaskInfo;
+            final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
+            snapPersistedTaskToHalfScreen(taskInfo, currentBounds, SnapPosition.LEFT);
+        }
+
+        if (rightTaskId != null) {
+            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.get(rightTaskId);
+            final RunningTaskInfo taskInfo = decor.mTaskInfo;
+            final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
+            snapPersistedTaskToHalfScreen(taskInfo, currentBounds, SnapPosition.RIGHT);
+        }
+    }
+
+    @Override
     public void removeTaskIfTiled(int displayId, int taskId) {
         mDesktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId);
     }
@@ -977,9 +1005,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onOverviewAnimationStateChange(
-            @RecentsTransitionStateListener.RecentsTransitionState int state) {
-        mDesktopTilingDecorViewModel.onOverviewAnimationStateChange(state);
+    public void onRecentsAnimationEndedToSameDesk() {
+        mDesktopTilingDecorViewModel.onOverviewAnimationEndedToSameDesk();
     }
 
     @Override
@@ -997,6 +1024,23 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @NotNull
     public Rect getRightSnapBoundsIfTiled(int displayId) {
         return mDesktopTilingDecorViewModel.getRightSnapBoundsIfTiled(displayId);
+    }
+
+    @Override
+    public void onDeskDeactivated(int deskId) {
+        mDesktopTilingDecorViewModel.onDeskDeactivated(deskId);
+    }
+
+    @Override
+    public void onDisplayDisconnected(int disconnectedDisplayId,
+            boolean desktopModeSupportedOnNewDisplay) {
+        mDesktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId,
+                desktopModeSupportedOnNewDisplay);
+    }
+
+    @Override
+    public void onDeskRemoved(int deskId) {
+        mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
     }
 
     private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
@@ -1958,10 +2002,20 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         setIsRecentsTransitionRunningForTask(taskId, true);
                     }
                     return;
+                case RecentsTransitionStateListener.TRANSITION_STATE_STOP_REQUESTED:
+                    if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+                        // No Recents transition running - clean up window decorations
+                        for (int taskId : mAnimatingTaskIds) {
+                            setIsRecentsTransitionRunningForTask(taskId, false);
+                        }
+                    }
+                    return;
                 case RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING:
-                    // No Recents transition running - clean up window decorations
-                    for (int taskId : mAnimatingTaskIds) {
-                        setIsRecentsTransitionRunningForTask(taskId, false);
+                    if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+                        // No Recents transition running - clean up window decorations
+                        for (int taskId : mAnimatingTaskIds) {
+                            setIsRecentsTransitionRunningForTask(taskId, false);
+                        }
                     }
                     mAnimatingTaskIds.clear();
                     return;

@@ -41,9 +41,9 @@ class SegmentedButtonPreference @JvmOverloads constructor(
 
     // Data to be applied during onBindViewHolder
     private val buttonSetupData =
-        mutableListOf<Triple<Int, String, SegmentedButtonIcon>>() // (index, text, icon)
-    private val buttonVisibilityData = mutableListOf<Pair<Int, Boolean>>() // (index, visibility)
-    private val buttonEnableData = mutableListOf<Pair<Int, Boolean>>() // (index, enable)
+        mutableMapOf<Int, Pair<String, SegmentedButtonIcon>>() // (index, text, icon)
+    private val buttonVisibilityData = mutableMapOf<Int, Boolean>() // (index, visibility)
+    private val buttonEnableData = mutableMapOf<Int, Boolean>() // (index, enable)
 
     // Default checked button
     private var checkedIndex: Int = -1
@@ -67,9 +67,9 @@ class SegmentedButtonPreference @JvmOverloads constructor(
         applyButtonSetupData()
         applyButtonVisibilityData()
         applyButtonEnableData()
-        applyCheckIndex(checkedIndex)
         buttonGroup?.apply {
             clearOnButtonCheckedListeners()
+            applyCheckIndex(checkedIndex)
             buttonCheckedListener?.let { listener ->
                 addOnButtonCheckedListener(listener)
             }
@@ -77,53 +77,28 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     }
 
     fun setUpButton(index: Int, text: String, @DrawableRes icon: Int) {
-        if (buttonGroup == null) {
-            // Store data for later application
-            buttonSetupData.add(Triple(index, text, SegmentedButtonIcon.ResourceIcon(icon)))
-        } else {
-            // Apply data
-            applyButtonSetupData(index, text, SegmentedButtonIcon.ResourceIcon(icon))
-        }
+        buttonSetupData.put(index, Pair(text, SegmentedButtonIcon.ResourceIcon(icon)))
+        notifyChanged()
     }
 
     fun setUpButton(index: Int, text: String, icon: Drawable) {
-        if (buttonGroup == null) {
-            // Store data for later application
-            buttonSetupData.add(Triple(index, text, SegmentedButtonIcon.DrawableIcon(icon)))
-        } else {
-            // Apply data
-            applyButtonSetupData(index, text, SegmentedButtonIcon.DrawableIcon(icon))
-        }
+        buttonSetupData.put(index, Pair(text, SegmentedButtonIcon.DrawableIcon(icon)))
+        notifyChanged()
     }
 
     fun setButtonVisibility(index: Int, visible: Boolean) {
-        if (buttonGroup == null) {
-            // Store data for later application
-            buttonVisibilityData.add(Pair(index, visible))
-        } else {
-            // Apply data
-            applyButtonVisibilityData(index, visible)
-        }
+        buttonVisibilityData.put(index, visible)
+        notifyChanged()
     }
 
     fun setButtonEnabled(index: Int, enabled: Boolean) {
-        if (buttonGroup == null) {
-            // Store data for later application
-            buttonEnableData.add(Pair(index, enabled))
-        } else {
-            // Apply data
-            applyButtonEnableData(index, enabled)
-        }
+        buttonEnableData.put(index, enabled)
+        notifyChanged()
     }
 
     fun setCheckedIndex(index: Int) {
-        if (buttonGroup == null) {
-            // Store data for later application
-            checkedIndex = index
-        } else {
-            // Apply data
-            applyCheckIndex(index)
-        }
+        checkedIndex = index
+        notifyChanged()
     }
 
     fun getCheckedIndex(): Int {
@@ -142,44 +117,37 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     }
 
     private fun applyButtonSetupData() {
-        for (config in buttonSetupData) {
-            applyButtonSetupData(config.first, config.second, config.third)
+        for ((index, config) in buttonSetupData) {
+            applyButtonSetupData(index, config.first, config.second)
         }
-        buttonSetupData.clear() // Clear data after applying
     }
 
     private fun applyButtonVisibilityData() {
-        for (config in buttonVisibilityData) {
-            applyButtonVisibilityData(config.first, config.second)
+        for ((index, visible) in buttonVisibilityData) {
+            applyButtonVisibilityData(index, visible)
         }
-        buttonVisibilityData.clear() // Clear data after applying
     }
 
     private fun applyButtonEnableData() {
-        for (config in buttonEnableData) {
-            applyButtonEnableData(config.first, config.second)
+        for ((index, enable) in buttonEnableData) {
+            applyButtonEnableData(index, enable)
         }
-        buttonEnableData.clear() // Clear data after applying
     }
 
     private fun applyButtonSetupData(index: Int, text: String, icon: SegmentedButtonIcon) {
-        if (index in 0 until buttonLabels.size) {
-            when (icon) {
-                is SegmentedButtonIcon.ResourceIcon ->
-                    (buttonGroup?.getChildAt(index) as? MaterialButton)?.setIconResource(icon.resId)
+        when (icon) {
+            is SegmentedButtonIcon.ResourceIcon ->
+                (buttonGroup?.getChildAt(index) as? MaterialButton)?.setIconResource(icon.resId)
 
-                is SegmentedButtonIcon.DrawableIcon ->
-                    (buttonGroup?.getChildAt(index) as? MaterialButton)?.icon = icon.drawable
-            }
-            buttonLabels[index].text = text
+            is SegmentedButtonIcon.DrawableIcon ->
+                (buttonGroup?.getChildAt(index) as? MaterialButton)?.icon = icon.drawable
         }
+        buttonLabels[index].text = text
     }
 
     private fun applyButtonVisibilityData(index: Int, visible: Boolean) {
-        if (index in 0 until buttonLabels.size) {
-            buttonGroup?.getChildAt(index)?.isGone = !visible
-            buttonLabels[index].isGone = !visible
-        }
+        buttonGroup?.getChildAt(index)?.isGone = !visible
+        buttonLabels[index].isGone = !visible
     }
 
     private fun applyButtonEnableData(index: Int, enabled: Boolean) {

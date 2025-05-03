@@ -877,6 +877,15 @@ java_library {
     ],
 }
 
+// Targets that don't inherit framework aconfig libs (i.e., those that don't set
+// `platform_apis: true`) must manually link them.
+java_defaults {
+    name: "systemui-non-platform-apis-defaults",
+    static_libs: [
+        "android.os.flags-aconfig-java",
+    ],
+}
+
 android_robolectric_test {
     name: "SystemUiRoboTests",
     srcs: [
@@ -885,6 +894,7 @@ android_robolectric_test {
         ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent",
     ],
+    defaults: ["systemui-non-platform-apis-defaults"],
     static_libs: [
         "RoboTestLibraries",
         "androidx.compose.runtime_runtime",

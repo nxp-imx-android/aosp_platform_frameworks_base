@@ -31,8 +31,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.core.view.ViewKt;
-
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.AuthKeyguardMessageArea;
 import com.android.keyguard.KeyguardUnfoldTransition;
@@ -40,7 +38,6 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor;
-import com.android.systemui.bouncer.shared.flag.ComposeBouncerFlags;
 import com.android.systemui.bouncer.ui.binder.BouncerViewBinder;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.dagger.SysUISingleton;
@@ -52,7 +49,6 @@ import com.android.systemui.flags.Flags;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.Edge;
-import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
 import com.android.systemui.qs.flags.QSComposeFragment;
@@ -296,16 +292,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
     private void bindBouncer(BouncerViewBinder bouncerViewBinder) {
         mBouncerParentView = mView.findViewById(R.id.keyguard_bouncer_container);
         bouncerViewBinder.bind(mBouncerParentView);
-        if (ComposeBouncerFlags.INSTANCE.isOnlyComposeBouncerEnabled()) {
-            collectFlow(mView, mKeyguardTransitionInteractor.transition(
-                            new Edge.StateToState(KeyguardState.PRIMARY_BOUNCER, null)),
-                    this::onTransitionAwayFromBouncer);
-            collectFlow(mView, mKeyguardTransitionInteractor.transition(
-                            new Edge.StateToState(null, KeyguardState.PRIMARY_BOUNCER)),
-                    this::onTransitionToBouncer);
-            collectFlow(mView, mPrimaryBouncerInteractor.isShowing(),
-                    (showing) -> ViewKt.setVisible(mBouncerParentView, showing));
-        }
     }
 
     private void onTransitionToBouncer(TransitionStep transitionStep) {

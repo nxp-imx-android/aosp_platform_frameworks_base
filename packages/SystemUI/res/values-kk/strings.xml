@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth құрылғысы белгішесі"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Құрылғы деректерін конфигурациялау үшін басыңыз."</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Құрылғы мәліметтерін конфигурациялау"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Аудионы <xliff:g id="DEVICE_NAME">%s</xliff:g> құрылғысымен бөлісуді бастау"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Аудионы <xliff:g id="DEVICE_NAME">%s</xliff:g> құрылғысымен бөлісуді тоқтату"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Барлық құрылғыны көру"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Жаңа құрылғымен жұптау"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Батарея зарядының мөлшері белгісіз."</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Орнатылмаған"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"\"Параметрлер\" бөлімінде реттеу"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Қосулы режим жоқ}=1{{mode} қосулы}other{# режим қосулы}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Қосулы"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Оятқыш, еске салғыш, іс-шара мен өзіңіз көрсеткен контактілердің қоңырауларынан басқа дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойын сияқты медиафайлдарды қоссаңыз, оларды естисіз."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Дабылдардан басқа ешқандай дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойындар сияқты ойнатылатын контентті ести алатын боласыз."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Реттеу"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"Басқа"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"бөлшек өлшемін ауыстыру"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Бөлшекті өшіру"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"орналастыру режимін ауыстыру"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"таңдауды ауыстыру"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Бөлшекті соңына қосу"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Бөлшекті жылжыту"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Қалаған позицияға бөлшек қосу"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> орнына жылжыту"</string>

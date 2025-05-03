@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_APPEARED;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_CLICKED;
@@ -505,10 +506,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * Returns the home task surface, not for wide use.
      */
     @Nullable
-    public SurfaceControl getHomeTaskSurface() {
+    public SurfaceControl getHomeTaskSurface(int displayId) {
         for (int i = 0; i < mTasks.size(); i++) {
             final TaskAppearedInfo info = mTasks.valueAt(i);
-            if (info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+            if (info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME
+                    && info.getTaskInfo().displayId == displayId) {
                 return info.getLeash();
             }
         }
@@ -573,7 +575,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             mUnfoldAnimationController.onTaskAppeared(info.getTaskInfo(), info.getLeash());
         }
 
-        if (info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+        if (isHomeTaskOnDefaultDisplay(info.getTaskInfo())) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Adding overlay to home task");
             final SurfaceControl.Transaction t = new SurfaceControl.Transaction();
             t.setLayer(mHomeTaskOverlayContainer, Integer.MAX_VALUE);
@@ -675,7 +677,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             notifyCompatUI(taskInfo, null /* taskListener */);
             // Notify the recent tasks that a task has been removed
             mRecentTasks.ifPresent(recentTasks -> recentTasks.onTaskRemoved(taskInfo));
-            if (taskInfo.getActivityType() == ACTIVITY_TYPE_HOME) {
+            if (isHomeTaskOnDefaultDisplay(taskInfo)) {
                 SurfaceControl.Transaction t = new SurfaceControl.Transaction();
                 t.reparent(mHomeTaskOverlayContainer, null);
                 t.apply();
@@ -935,6 +937,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             default:
                 return "taskId#" + type;
         }
+    }
+
+    /**
+     * Return true if {@link RunningTaskInfo} is Home/Launcher activity type, plus it's the one on
+     * default display (rather than on external display). This is used to check if we need to
+     * reparent mHomeTaskOverlayContainer that is used for -1 screen on default display.
+     */
+    @VisibleForTesting
+    static boolean isHomeTaskOnDefaultDisplay(RunningTaskInfo taskInfo) {
+        return taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
+                && taskInfo.displayId == DEFAULT_DISPLAY;
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {

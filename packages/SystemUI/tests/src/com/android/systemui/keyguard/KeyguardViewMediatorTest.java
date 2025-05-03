@@ -251,6 +251,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 .thenReturn(mock(Flow.class));
         when(mDreamViewModel.getTransitionEnded())
                 .thenReturn(mock(Flow.class));
+        when(mDreamViewModel.getTransitioningFromOrToDream())
+                .thenReturn(mock(Flow.class));
         when(mCommunalTransitionViewModel.getShowCommunalFromOccluded())
                 .thenReturn(mock(Flow.class));
         when(mCommunalTransitionViewModel.getTransitionFromOccludedEnded())
@@ -279,7 +281,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mock(UserTracker.class),
                 mKosmos.getNotificationShadeWindowModel(),
                 mKosmos::getCommunalInteractor,
-                mKosmos.getShadeLayoutParams());
+                mKosmos.getShadeLayoutParams(),
+                mKosmos.getTopUiController());
         mFeatureFlags = new FakeFeatureFlags();
         mSetFlagsRule.disableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR);
 

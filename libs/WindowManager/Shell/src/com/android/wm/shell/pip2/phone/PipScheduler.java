@@ -16,9 +16,6 @@
 
 package com.android.wm.shell.pip2.phone;
 
-import static android.hardware.display.DisplayTopology.dpToPx;
-import static android.hardware.display.DisplayTopology.pxToDp;
-
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Rect;
@@ -220,10 +217,9 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     /**
      * Schedules moving PiP window to another display.
      *
-     * @param originDisplayId the origin display ID where the PiP window was dragged from.
      * @param targetDisplayId the target display ID where the PiP window should be parented to.
      */
-    public void scheduleMoveToDisplay(int originDisplayId, int targetDisplayId) {
+    public void scheduleMoveToDisplay(int targetDisplayId, Rect pipBounds) {
         WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
         DisplayAreaInfo displayAreaInfo =
                 mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
@@ -234,16 +230,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
 
         WindowContainerTransaction wct = new WindowContainerTransaction();
         WindowContainerToken displayToken = displayAreaInfo.token;
-        final int originDisplayDpi = mDisplayController.getDisplayLayout(
-                originDisplayId).densityDpi();
-        final int targetDisplayDpi = mDisplayController.getDisplayLayout(
-                targetDisplayId).densityDpi();
-        Rect pipBounds = mPipBoundsState.getBounds();
-        float newWidth = dpToPx(pxToDp(pipBounds.width(), originDisplayDpi), targetDisplayDpi);
-        float newHeight = dpToPx(pxToDp(pipBounds.height(), originDisplayDpi), targetDisplayDpi);
+        wct.setBounds(pipTaskToken, pipBounds);
         wct.reparent(pipTaskToken, displayToken, /* onTop= */ true);
-        Rect newSampleBounds = new Rect(0, 0, (int) newWidth, (int) newHeight);
-        wct.setBounds(pipTaskToken, newSampleBounds);
 
         mPipTransitionController.startPipBoundsChangeTransition(wct, DISPLAY_TRANSFER_DURATION_MS);
     }

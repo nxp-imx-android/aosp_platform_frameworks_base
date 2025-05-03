@@ -1120,6 +1120,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         mTransaction.requestFocusOnTaskFragment(token0);
         assertApplyTransactionAllowed(mTransaction);
 
+        waitHandlerIdle(mWm.mAtmService.mH);
         assertEquals(activityInOtherTask, mDisplayContent.mFocusedApp);
 
         // No effect if there is no resumed activity in the request TaskFragment.
@@ -1128,6 +1129,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         mDisplayContent.setFocusedApp(activity1);
         assertApplyTransactionAllowed(mTransaction);
 
+        waitHandlerIdle(mWm.mAtmService.mH);
         assertEquals(activity1, mDisplayContent.mFocusedApp);
 
         // Set focus to the request TaskFragment when the current focus is in the same Task, and it
@@ -1136,6 +1138,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         mDisplayContent.setFocusedApp(activity1);
         assertApplyTransactionAllowed(mTransaction);
 
+        waitHandlerIdle(mWm.mAtmService.mH);
         assertEquals(activity0, mDisplayContent.mFocusedApp);
     }
 

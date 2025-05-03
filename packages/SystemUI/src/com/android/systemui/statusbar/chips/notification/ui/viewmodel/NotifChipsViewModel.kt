@@ -162,21 +162,29 @@ constructor(
         // because information between the status bar chip and the app itself could be
         // out-of-sync (like a timer that's slightly off)
         val isHidden = this.isAppVisible
+
+        val isShowingHeadsUpFromChipTap =
+            headsUpState is TopPinnedState.Pinned &&
+                headsUpState.status == PinnedStatus.PinnedByUser &&
+                headsUpState.key == this.key
+
         val onClickListenerLegacy =
             View.OnClickListener {
                 StatusBarChipsModernization.assertInLegacyMode()
                 clickListener.invoke()
             }
         val clickBehavior =
-            OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification({
-                StatusBarChipsModernization.unsafeAssertInNewMode()
-                clickListener.invoke()
-            })
-
-        val isShowingHeadsUpFromChipTap =
-            headsUpState is TopPinnedState.Pinned &&
-                headsUpState.status == PinnedStatus.PinnedByUser &&
-                headsUpState.key == this.key
+            if (isShowingHeadsUpFromChipTap) {
+                OngoingActivityChipModel.ClickBehavior.HideHeadsUpNotification({
+                    /* check if */ StatusBarChipsModernization.isUnexpectedlyInLegacyMode()
+                    clickListener.invoke()
+                })
+            } else {
+                OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification({
+                    /* check if */ StatusBarChipsModernization.isUnexpectedlyInLegacyMode()
+                    clickListener.invoke()
+                })
+            }
 
         val content: OngoingActivityChipModel.Content =
             when {

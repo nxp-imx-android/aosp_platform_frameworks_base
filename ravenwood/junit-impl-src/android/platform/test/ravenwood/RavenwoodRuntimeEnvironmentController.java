@@ -590,6 +590,7 @@ public class RavenwoodRuntimeEnvironmentController {
         return outer;
     }
 
+    // TODO: use it to tolerate assert failures on the main thread
     static void dispatchMessage(Message msg) {
         try {
             msg.getTarget().dispatchMessage(msg);
@@ -611,13 +612,6 @@ public class RavenwoodRuntimeEnvironmentController {
      */
     public static void exitTestClass() {
         maybeThrowPendingRecoverableUncaughtException();
-    }
-
-    public static void logTestRunner(String label, Description description) {
-        // This message string carefully matches the exact format emitted by on-device tests, to
-        // aid developers in debugging raw text logs
-        Log.e("TestRunner", label + ": " + description.getMethodName()
-                + "(" + description.getTestClass().getName() + ")");
     }
 
     private static void maybeThrowPendingRecoverableUncaughtException() {

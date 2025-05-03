@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.os.IBinder
 import android.view.SurfaceControl
@@ -162,11 +163,7 @@ class DesktopTasksLimiter(
                         !taskRepository.isClosingTask(it)
                     }
                 logV("runOnIdle, expandedTasks=$expandedTaskIds, after transition=$transition")
-                val taskIdToMinimize =
-                    getTaskIdToMinimize(expandedTaskIds, /* launchingNewIntent= */ false)
-                if (taskIdToMinimize != null) {
-                    triggerMinimizeTransition(launchDetails.deskId, taskIdToMinimize)
-                }
+                triggerMinimizeTransition(launchDetails.deskId, expandedTaskIds)
             }
         }
 
@@ -178,7 +175,7 @@ class DesktopTasksLimiter(
             // markClosingTasks() is a workaround while
             // ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS is ramping up, so don't run this
             // logic when that flag has been enabled.
-            if (DesktopModeFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
+            if (DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
                 return
             }
             info.changes.forEach { change ->
@@ -194,8 +191,8 @@ class DesktopTasksLimiter(
             }
         }
 
-        private fun triggerMinimizeTransition(deskId: Int, taskIdToMinimize: Int) {
-            val task = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize) ?: return
+        private fun triggerMinimizeTransition(deskId: Int, expandedTaskIds: List<Int>) {
+            val task = getRunningTaskToMinimize(expandedTaskIds) ?: return
             logV("triggerMinimizeTransition, found running task -> start transition, %s", task)
             val wct = WindowContainerTransaction()
             addMinimizeChange(deskId, task, wct)
@@ -207,6 +204,26 @@ class DesktopTasksLimiter(
                 task.taskId,
                 MinimizeReason.TASK_LIMIT,
             )
+        }
+
+        private fun getRunningTaskToMinimize(expandedTaskIds: List<Int>): RunningTaskInfo? {
+            var taskIds = expandedTaskIds
+            for (i in 1..expandedTaskIds.size) {
+                val taskIdToMinimize =
+                    getTaskIdToMinimize(taskIds, /* launchingNewIntent= */ false) ?: return null
+                val task = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize)
+                if (task != null) {
+                    return task
+                } else {
+                    logW(
+                        "Tried to minimize non-running task#%s, Try next task instead.",
+                        taskIdToMinimize,
+                    )
+                }
+                // Ignore the non-existing task
+                taskIds = taskIds.minus(taskIdToMinimize)
+            }
+            return null
         }
 
         private fun handleMinimizeTransitionReady(
@@ -459,6 +476,10 @@ class DesktopTasksLimiter(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     private companion object {

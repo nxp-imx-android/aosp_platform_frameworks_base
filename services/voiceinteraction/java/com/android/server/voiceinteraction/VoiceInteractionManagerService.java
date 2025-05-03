@@ -16,6 +16,7 @@
 
 package com.android.server.voiceinteraction;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION;
@@ -81,7 +82,6 @@ import android.service.voice.IMicrophoneHotwordDetectionVoiceInteractionCallback
 import android.service.voice.IVisualQueryDetectionVoiceInteractionCallback;
 import android.service.voice.IVoiceInteractionSession;
 import android.service.voice.VoiceInteractionManagerInternal;
-import android.service.voice.VoiceInteractionManagerInternal.WearableHotwordDetectionCallback;
 import android.service.voice.VoiceInteractionService;
 import android.service.voice.VoiceInteractionServiceInfo;
 import android.service.voice.VoiceInteractionSession;
@@ -90,6 +90,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
+import android.window.DesktopExperienceFlags;
 import android.window.ScreenCapture;
 
 import com.android.internal.R;
@@ -2794,6 +2795,9 @@ public class VoiceInteractionManagerService extends SystemService {
             final ActivityOptions opts = ActivityOptions.makeCustomTaskAnimation(mContext,
                     /* enterResId= */ 0, /* exitResId= */ 0, null, null, null);
             opts.setDisableStartingWindow(true);
+            if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
+                opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+            }
             int resultCode = mAtmInternal.startActivityWithScreenshot(launchIntent,
                     mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                     opts.toBundle(), userId);

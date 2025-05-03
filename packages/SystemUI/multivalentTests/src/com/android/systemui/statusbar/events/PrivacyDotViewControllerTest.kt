@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.events
 
 import android.graphics.Point
 import android.graphics.Rect
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.DisplayAdjustments
@@ -26,15 +27,24 @@ import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.display
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
+import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.systemui.statusbar.FakeStatusBarStateController
+import com.android.systemui.statusbar.StatusBarState.SHADE
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomRight
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopRight
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.FakeConfigurationController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.leak.RotationUtils.ROTATION_LANDSCAPE
 import com.android.systemui.util.leak.RotationUtils.ROTATION_NONE
@@ -46,6 +56,7 @@ import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -54,6 +65,7 @@ import org.junit.runner.RunWith
 @RunWithLooper
 class PrivacyDotViewControllerTest : SysuiTestCase() {
 
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mockDisplay = createMockDisplay()
     private val context = getContext().createDisplayContext(mockDisplay)
 
@@ -62,6 +74,9 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
     private val statusBarStateController = FakeStatusBarStateController()
     private val configurationController = FakeConfigurationController()
     private val contentInsetsProvider = createMockContentInsetsProvider()
+    private val shadeDisplaysInteractor = kosmos.shadeDisplaysInteractor
+    private val shadeDisplaysRepository = kosmos.fakeShadeDisplaysRepository
+    private val shadeInteractor = kosmos.shadeInteractor
 
     private val topLeftView = initDotView()
     private val topRightView = initDotView()
@@ -81,8 +96,10 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
             configurationController,
             contentInsetsProvider,
             animationScheduler = mock<SystemStatusAnimationScheduler>(),
-            shadeInteractor = null,
+            shadeInteractor = shadeInteractor,
             uiExecutor = executor,
+            displayId = DISPLAY_ID,
+            shadeDisplaysInteractor = { shadeDisplaysInteractor },
         )
 
     @Test
@@ -298,6 +315,36 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun init_shadeExpandedOnDifferentDisplay_doesNotChangeShadeExpandedState() =
+        testScope.runTest {
+            shadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+            statusBarStateController.state = SHADE
+            statusBarStateController.expanded = true
+
+            val controller = createAndInitializeController()
+            shadeDisplaysRepository.setDisplayId(DISPLAY_ID + 1) // other display id
+            statusBarStateController.fakeShadeExpansionFullyChanged(true)
+
+            assertThat(controller.currentViewState.shadeExpanded).isEqualTo(false)
+        }
+
+    @Test
+    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun init_shadeExpandedOnThisDisplay_doesChangeShadeExpandedState() =
+        testScope.runTest {
+            shadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+            statusBarStateController.state = SHADE
+            statusBarStateController.expanded = false
+
+            val controller = createAndInitializeController()
+            shadeDisplaysRepository.setDisplayId(DISPLAY_ID)
+            statusBarStateController.fakeShadeExpansionFullyChanged(true)
+
+            assertThat(controller.currentViewState.shadeExpanded).isEqualTo(true)
+        }
+
+    @Test
     fun initialize_newViews_gravityIsUpdated() {
         val newTopLeftView = initDotView()
         val newTopRightView = initDotView()
@@ -341,6 +388,7 @@ private val CONTENT_AREA_ROTATION_SEASCAPE = Rect(left = 10, top = 40, right = 9
 private val CONTENT_AREA_ROTATION_NONE = Rect(left = 20, top = 30, right = 980, bottom = 100)
 private val CONTENT_AREA_ROTATION_LANDSCAPE = Rect(left = 30, top = 20, right = 970, bottom = 100)
 private val CONTENT_AREA_ROTATION_UPSIDE_DOWN = Rect(left = 40, top = 10, right = 960, bottom = 100)
+private const val DISPLAY_ID = 1
 
 private class InstantExecutor : DelayableExecutor {
     override fun execute(runnable: Runnable) {

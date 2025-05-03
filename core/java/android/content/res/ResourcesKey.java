@@ -165,7 +165,12 @@ public final class ResourcesKey {
         if (mDisplayId != peer.mDisplayId) {
             return false;
         }
-        if (!Objects.equals(mOverrideConfiguration, peer.mOverrideConfiguration)) {
+        if (android.content.res.Flags.ignoreNonPublicConfigDiffForResourcesKey()) {
+            // Do not compare the configuration fields that won't affect resources.
+            if (mOverrideConfiguration.diffPublicOnly(mOverrideConfiguration) != 0) {
+                return false;
+            }
+        } else if (!Objects.equals(mOverrideConfiguration, peer.mOverrideConfiguration)) {
             return false;
         }
         if (!Objects.equals(mCompatInfo, peer.mCompatInfo)) {

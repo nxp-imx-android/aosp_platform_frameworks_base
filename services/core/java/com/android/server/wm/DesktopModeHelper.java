@@ -16,8 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE;
-
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.SystemProperties;
@@ -84,15 +82,10 @@ public final class DesktopModeHelper {
         if (!shouldEnforceDeviceRestrictions()) {
             return true;
         }
-        // If projected display is enabled, #canInternalDisplayHostDesktops is no longer a
-        // requirement.
-        final boolean desktopModeSupported = ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue()
-                ? isDesktopModeSupported(context) : (isDesktopModeSupported(context)
-                && canInternalDisplayHostDesktops(context));
         final boolean desktopModeSupportedByDevOptions =
                 Flags.enableDesktopModeThroughDevOption()
                         && isDesktopModeDevOptionsSupported(context);
-        return desktopModeSupported || desktopModeSupportedByDevOptions;
+        return isDesktopModeSupported(context) || desktopModeSupportedByDevOptions;
     }
 
     /**
@@ -108,5 +101,10 @@ public final class DesktopModeHelper {
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
         return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()
                 && isDeviceEligibleForDesktopMode(context);
+    }
+
+    /** Returns {@code true} if the desktop experience developer option should be shown. */
+    public static boolean isDesktopExperienceDevOptionSupported(@NonNull Context context) {
+        return Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopMode(context);
     }
 }

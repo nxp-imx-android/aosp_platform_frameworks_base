@@ -658,7 +658,7 @@
     <string name="user_grant_admin_title" msgid="5157031020083343984">"¿Convertir a este usuario en administrador?"</string>
     <string name="user_grant_admin_message" msgid="1673791931033486709">"Los administradores tienen privilegios especiales que otros usuarios no tienen. Los administradores pueden gestionar todos los usuarios, actualizar o restablecer este dispositivo, modificar los ajustes, ver todas las aplicaciones instaladas y conceder o revocar privilegios de administrador a otros usuarios."</string>
     <string name="user_grant_admin_button" msgid="5441486731331725756">"Convertir en administrador"</string>
-    <string name="user_setup_dialog_title" msgid="8037342066381939995">"¿Configurar usuario ahora?"</string>
+    <string name="user_setup_dialog_title" msgid="8037342066381939995">"¿Configurar usuario?"</string>
     <string name="user_setup_dialog_message" msgid="269931619868102841">"Asegúrate de que la persona está disponible en este momento para usar el dispositivo y configurar su espacio."</string>
     <string name="user_setup_profile_dialog_message" msgid="4788197052296962620">"¿Quieres configurar un perfil ahora?"</string>
     <string name="user_setup_button_setup_now" msgid="1708269547187760639">"Configurar ahora"</string>

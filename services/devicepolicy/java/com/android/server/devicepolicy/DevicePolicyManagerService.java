@@ -532,7 +532,6 @@ import com.android.internal.util.JournaledFile;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.StatLogger;
 import com.android.internal.widget.LockPatternUtils;
-import com.android.internal.widget.LockSettingsInternal;
 import com.android.internal.widget.LockscreenCredential;
 import com.android.internal.widget.PasswordValidationError;
 import com.android.modules.utils.TypedXmlPullParser;
@@ -547,6 +546,7 @@ import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.net.NetworkPolicyManagerInternal;
 import com.android.server.pdb.PersistentDataBlockManagerInternal;
 import com.android.server.pm.DefaultCrossProfileIntentFilter;
@@ -6094,7 +6094,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     return false;
                 }
             } else {
-                if (!mLockPatternUtils.setLockCredentialWithToken(newCredential, tokenHandle,
+                if (!mLockSettingsInternal.setLockCredentialWithToken(newCredential, tokenHandle,
                         token, userHandle)) {
                     return false;
                 }
@@ -10293,7 +10293,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final DevicePolicyData policyData = getUserData(userId);
         policyData.mCurrentInputMethodSet = false;
         if (policyData.mPasswordTokenHandle != 0) {
-            mLockPatternUtils.removeEscrowToken(policyData.mPasswordTokenHandle, userId);
+            mLockSettingsInternal.removeEscrowToken(policyData.mPasswordTokenHandle, userId);
             policyData.mPasswordTokenHandle = 0;
         }
         saveSettingsLocked(userId);
@@ -13292,11 +13292,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Set<String> suspendedPackagesBefore = mDevicePolicyEngine.getResolvedPolicy(
                 PolicyDefinition.PACKAGES_SUSPENDED, caller.getUserId());
 
-        Set<String> currentPackages = mDevicePolicyEngine.getLocalPolicySetByAdmin(
+        Set<String> currentPackages = new ArraySet<>(mDevicePolicyEngine.getLocalPolicySetByAdmin(
                 PolicyDefinition.PACKAGES_SUSPENDED,
                 enforcingAdmin,
-                caller.getUserId());
-        if (currentPackages == null) currentPackages = new ArraySet<>();
+                caller.getUserId()));
         if (suspended) {
             currentPackages.addAll(packages);
         } else {
@@ -16507,13 +16506,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return getEnforcingAdminInternal(userId, identifier);
     }
 
-    @Override
-    public List<android.app.admin.EnforcingAdmin> getEnforcingAdminsForRestriction(
-            int userId, String restriction) {
-        Preconditions.checkCallAuthorization(isSystemUid(getCallerIdentity()));
-        return new ArrayList<>(getEnforcingAdminsForRestrictionInternal(userId, restriction));
-    }
-
     /**
      * @param restriction The restriction enforced by admin. It could be any user restriction or
      *                    policy like {@link DevicePolicyManager#POLICY_DISABLE_CAMERA} and
@@ -19330,14 +19322,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private long addEscrowToken(byte[] token, long currentPasswordTokenHandle, int userId) {
         resetEscrowToken(currentPasswordTokenHandle, userId);
-        return mInjector.binderWithCleanCallingIdentity(() -> mLockPatternUtils.addEscrowToken(
+        return mInjector.binderWithCleanCallingIdentity(() -> mLockSettingsInternal.addEscrowToken(
                 token, userId, /* EscrowTokenStateChangeCallback= */ null));
     }
 
     private boolean resetEscrowToken(long tokenHandle, int userId) {
         return mInjector.binderWithCleanCallingIdentity(() -> {
             if (tokenHandle != 0) {
-                return mLockPatternUtils.removeEscrowToken(tokenHandle, userId);
+                return mLockSettingsInternal.removeEscrowToken(tokenHandle, userId);
             }
             return false;
         });
@@ -19442,7 +19434,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private boolean isResetPasswordTokenActiveForUserLocked(
             long passwordTokenHandle, int userHandle) {
         return passwordTokenHandle != 0 && mInjector.binderWithCleanCallingIdentity(() ->
-                    mLockPatternUtils.isEscrowTokenActive(passwordTokenHandle, userHandle));
+                    mLockSettingsInternal.isEscrowTokenActive(passwordTokenHandle, userHandle));
     }
 
     @Override
@@ -24335,10 +24327,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 synchronized (getLockObject()) {
                     Slogf.i(LOG_TAG,
                             "Started device policies migration to the device policy engine.");
-                    // TODO(b/359188869): Move this to the current migration method.
-                    if (Flags.setPermissionGrantStateCoexistence()) {
-                        migratePermissionGrantStatePolicies();
-                    }
                     migratePermittedInputMethodsPolicyLocked();
                     migrateAccountManagementDisabledPolicyLocked();
                     migrateUserControlDisabledPackagesLocked();
@@ -24382,6 +24370,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Slogf.i(LOG_TAG, "Backup made: " + memoryTaggingBackupId);
         }
 
+        String permissionBackupId = "37.1.permission-support";
+        boolean permissionMigrated =
+                maybeMigratePermissionGrantStatePoliciesLocked(permissionBackupId);
+        if (permissionMigrated) {
+            Slogf.i(LOG_TAG, "Backup made: " + permissionBackupId);
+        }
+
         // Additional migration steps should repeat the pattern above with a new backupId.
     }
 
@@ -24417,53 +24412,63 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return true;
     }
 
-    private void migratePermissionGrantStatePolicies() {
+    private boolean maybeMigratePermissionGrantStatePoliciesLocked(String backupId) {
         Slogf.i(LOG_TAG, "Migrating PERMISSION_GRANT policy to device policy engine.");
-        for (UserInfo userInfo : mUserManager.getUsers()) {
-            ActiveAdmin admin = getMostProbableDPCAdminForLocalPolicy(userInfo.id);
-            if (admin == null) {
-                Slogf.i(LOG_TAG, "No admin found that can set permission grant state on user "
-                        + userInfo.id);
-                continue;
-            }
-            for (PackageInfo packageInfo : getInstalledPackagesOnUser(userInfo.id)) {
-                if (packageInfo.requestedPermissions == null) {
-                    continue;
-                }
-                for (String permission : packageInfo.requestedPermissions) {
-                    if (!isRuntimePermission(permission)) {
-                        continue;
-                    }
-                    int grantState = PERMISSION_GRANT_STATE_DEFAULT;
-                    try {
-                        grantState = getPermissionGrantStateForUser(
-                                packageInfo.packageName, permission,
-                                new CallerIdentity(
-                                        mInjector.binderGetCallingUid(),
-                                        admin.info.getComponent().getPackageName(),
-                                        admin.info.getComponent()),
-                                userInfo.id);
-                    } catch (RemoteException e) {
-                        Slogf.e(LOG_TAG, e, "Error retrieving permission grant state for %s "
-                                        + "and %s", packageInfo.packageName, permission);
-                    }
-                    if (grantState == PERMISSION_GRANT_STATE_DEFAULT) {
-                        // Not Controlled by a policy
-                        continue;
-                    }
-
-                    mDevicePolicyEngine.setLocalPolicy(
-                            PolicyDefinition.PERMISSION_GRANT(packageInfo.packageName,
-                                    permission),
-                            EnforcingAdmin.createEnterpriseEnforcingAdmin(
-                                    admin.info.getComponent(),
-                                    admin.getUserHandle().getIdentifier()),
-                            new IntegerPolicyValue(grantState),
-                            userInfo.id,
-                            /* skipEnforcePolicy= */ true);
-                }
-            }
+        if (!Flags.setPermissionGrantStateCoexistence() || !Flags.dpeBasedOnAsyncApisEnabled()) {
+            return false;
         }
+        if (mOwners.isPermissionGrantStateMigrated()) {
+            return false;
+        }
+        // Create backup if none exists
+        mDevicePolicyEngine.createBackup(backupId);
+        try {
+            iterateThroughDpcAdminsLocked((admin, enforcingAdmin) -> {
+                int userId = enforcingAdmin.getUserId();
+
+                for (PackageInfo packageInfo : getInstalledPackagesOnUser(userId)) {
+                    if (packageInfo.requestedPermissions == null) {
+                        continue;
+                    }
+                    for (String permission : packageInfo.requestedPermissions) {
+                        if (!isRuntimePermission(permission)) {
+                            continue;
+                        }
+                        int grantState = PERMISSION_GRANT_STATE_DEFAULT;
+                        try {
+                            grantState = getPermissionGrantStateForUser(
+                                    packageInfo.packageName, permission,
+                                    new CallerIdentity(
+                                            admin.getUid(),
+                                            admin.info.getComponent().getPackageName(),
+                                            admin.info.getComponent()),
+                                    userId);
+                        } catch (RemoteException e) {
+                            Slogf.e(LOG_TAG, e, "Error retrieving permission grant state for %s "
+                                    + "and %s", packageInfo.packageName, permission);
+                        }
+                        if (grantState == PERMISSION_GRANT_STATE_DEFAULT) {
+                            // Not Controlled by a policy
+                            continue;
+                        }
+
+                        var unused = mDevicePolicyEngine.setLocalPolicy(
+                                PolicyDefinition.PERMISSION_GRANT(packageInfo.packageName,
+                                        permission),
+                                enforcingAdmin,
+                                new IntegerPolicyValue(grantState),
+                                userId,
+                                /* skipEnforcePolicy= */ true);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Slog.wtf(LOG_TAG, "Failed to migrate Permission Grant State to policy engine", e);
+        }
+
+        Slog.i(LOG_TAG, "Marking Permission Grant State migration complete");
+        mOwners.markPermissionGrantStateMigrated();
+        return true;
     }
 
     private void migrateScreenCapturePolicyLocked() {

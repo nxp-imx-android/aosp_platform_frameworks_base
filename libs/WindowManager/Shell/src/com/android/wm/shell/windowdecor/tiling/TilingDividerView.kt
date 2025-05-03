@@ -25,7 +25,6 @@ import android.util.AttributeSet
 import android.util.Size
 import android.view.MotionEvent
 import android.view.PointerIcon
-import android.view.RoundedCorner
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
@@ -47,7 +46,6 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
     private lateinit var callback: DividerMoveCallback
     private lateinit var handle: DividerHandleView
     private lateinit var corners: DividerRoundedCorner
-    private var cornersRadius: Int = 0
     private var touchElevation = 0
 
     private var moving = false
@@ -103,8 +101,6 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
         corners.setup(/* isSplitScreen= */ false, paint.color)
         handleRegionHeight = handleRegionSize.height
         handleRegionWidth = handleRegionSize.width
-        cornersRadius =
-            context.display.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
         initHandleYCoordinates()
         dragDetector =
             DragDetector(

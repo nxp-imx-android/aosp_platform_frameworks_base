@@ -30,6 +30,8 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
 
     override val isSqueezeEffectEnabled = MutableStateFlow(false)
 
+    override val isPowerButtonDownInKeyCombination = MutableStateFlow(false)
+
     override suspend fun getInvocationEffectInitialDelayMs() = invocationEffectInitialDelayMs
 
     override suspend fun getRoundedCornersInfo() = roundedCornersInfo

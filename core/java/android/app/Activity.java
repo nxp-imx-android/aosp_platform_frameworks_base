@@ -155,6 +155,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.autofill.AutofillClientController;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager.AutofillClient;
+import android.view.autofill.AutofillValue;
 import android.view.contentcapture.ContentCaptureContext;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureManager.ContentCaptureClient;
@@ -10196,5 +10197,20 @@ public class Activity extends ContextThemeWrapper
         if (mJankTracker != null) {
             mJankTracker.disableAppJankTracking();
         }
+    }
+
+    final void autofillViewIfAvailable(
+            @NonNull AutofillId targetAutofillId, @NonNull AutofillValue autofillValue) {
+        if (false) Log.v(TAG, "autofill view in client app Activity, id: " + targetAutofillId);
+        runOnUiThread(
+                () -> {
+                    View view =
+                            getAutofillClientController()
+                                    .autofillClientFindViewByAutofillIdTraversal(targetAutofillId);
+                    if (view != null) {
+                        // TODO: b/410146465 support virtual views
+                        view.autofill(autofillValue);
+                    }
+                });
     }
 }

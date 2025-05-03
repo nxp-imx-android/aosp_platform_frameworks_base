@@ -1633,10 +1633,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void writeSettings(boolean sync) {
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
         synchronized (mLock) {
             mHandler.removeMessages(WRITE_SETTINGS);
             mBackgroundHandler.removeMessages(WRITE_DIRTY_PACKAGE_RESTRICTIONS);
-            writeSettingsLPrTEMP(sync);
+            writeSettingsLPrTEMP(activeUsers, sync);
             synchronized (mDirtyUsers) {
                 mDirtyUsers.clear();
             }
@@ -1644,9 +1645,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void writePackageList(int userId) {
+        List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
         synchronized (mLock) {
             mHandler.removeMessages(WRITE_PACKAGE_LIST);
-            mSettings.writePackageListLPr(userId);
+            mSettings.writePackageListLPr(activeUsers, userId);
         }
     }
 
@@ -2452,7 +2454,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             // can downgrade to reader
             t.traceBegin("write settings");
-            writeSettingsLPrTEMP();
+            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
+            writeSettingsLPrTEMP(activeUsers);
             t.traceEnd();
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY,
                     SystemClock.uptimeMillis());
@@ -4438,13 +4441,14 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     /** Called by UserManagerService */
     void cleanUpUser(UserManagerService userManager, @UserIdInt int userId) {
+        final List<UserInfo> activeUsers = Settings.getActiveUsers(userManager);
         synchronized (mLock) {
             synchronized (mDirtyUsers) {
                 mDirtyUsers.remove(userId);
             }
             mUserNeedsBadging.delete(userId);
             mDeletePackageHelper.removeUnusedPackagesLPw(userManager, userId);
-            mSettings.removeUserLPw(userId);
+            mSettings.removeUserLPw(activeUsers, userId);
             mPendingBroadcasts.remove(userId);
             mAppsFilter.onUserDeleted(snapshotComputer(), userId);
             mPermissionManager.onUserRemoved(userId);
@@ -5457,8 +5461,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         public VerifierDeviceIdentity getVerifierDeviceIdentity() throws RemoteException {
             getVerifierDeviceIdentity_enforcePermission();
 
+            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
             synchronized (mLock) {
-                return mSettings.getVerifierDeviceIdentityLPw(mLiveComputer);
+                return mSettings.getVerifierDeviceIdentityLPw(mLiveComputer, activeUsers);
             }
         }
 
@@ -7106,11 +7111,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         @Override
         public void writeSettings(boolean async) {
+            final List<UserInfo> activeUsers = Settings.getActiveUsers(mUserManager);
             synchronized (mLock) {
                 if (async) {
                     scheduleWriteSettings();
                 } else {
-                    writeSettingsLPrTEMP();
+                    writeSettingsLPrTEMP(activeUsers, /* sync= */ false);
                 }
             }
         }
@@ -7705,15 +7711,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      * TODO(b/182523293): This should be removed once we finish migration of permission storage.
      */
     @SuppressWarnings("GuardedBy")
-    void writeSettingsLPrTEMP(boolean sync) {
+    void writeSettingsLPrTEMP(List<UserInfo> users, boolean sync) {
         snapshotComputer(false);
         mPermissionManager.writeLegacyPermissionsTEMP(mSettings.mPermissions);
-        mSettings.writeLPr(mLiveComputer, sync);
+        mSettings.writeLPr(mLiveComputer, users, sync);
     }
 
     // Default async version.
-    void writeSettingsLPrTEMP() {
-        writeSettingsLPrTEMP(/*sync=*/false);
+    void writeSettingsLPrTEMP(List<UserInfo> users) {
+        writeSettingsLPrTEMP(users, /*sync=*/false);
     }
 
     @Override

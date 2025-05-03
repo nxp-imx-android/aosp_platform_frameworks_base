@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.ui.composable.row
 
 import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.animation.scene.ContentScope
@@ -65,13 +67,12 @@ object NotificationRowPrimitives {
 
     object Values {
         val ChevronRotation = ValueKey("NotificationChevronRotation")
-        val PillBackgroundColor = ValueKey("PillBackgroundColor")
     }
 }
 
 /** The Icon displayed at the start of any notification row. */
 @Composable
-fun ContentScope.BundleIcon(drawable: Drawable?, modifier: Modifier = Modifier) {
+fun ContentScope.BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
     val surfaceColor = notificationElementSurfaceColor()
     Box(
         modifier =
@@ -82,7 +83,7 @@ fun ContentScope.BundleIcon(drawable: Drawable?, modifier: Modifier = Modifier) 
                 .background(color = surfaceColor, shape = CircleShape)
     ) {
         if (drawable == null) return@Box
-        val painter = rememberDrawablePainter(drawable)
+        val painter = painterResource(drawable)
         Image(
             painter = painter,
             contentDescription = null,
@@ -118,16 +119,14 @@ fun PreviewIcon(drawable: Drawable, modifier: Modifier = Modifier) {
 @Composable
 fun ContentScope.ExpansionControl(
     collapsed: Boolean,
-    hasUnread: Boolean,
     numberToShow: Int?,
     modifier: Modifier = Modifier,
 ) {
-    val textColor =
-        if (hasUnread) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.onSurface
+    val textColor = MaterialTheme.colorScheme.onSurface
     Box(modifier = modifier) {
         // The background is a shared Element and therefore can't be the parent of a different
         // shared Element (the chevron), otherwise the child can't be animated.
-        PillBackground(hasUnread, modifier = Modifier.matchParentSize())
+        PillBackground(modifier = Modifier.matchParentSize())
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
@@ -148,26 +147,17 @@ fun ContentScope.ExpansionControl(
 }
 
 @Composable
-private fun ContentScope.PillBackground(hasUnread: Boolean, modifier: Modifier = Modifier) {
-    ElementWithValues(NotificationRowPrimitives.Elements.PillBackground, modifier) {
-        val bgColorNoUnread = notificationElementSurfaceColor()
-        val surfaceColor by
-            animateElementColorAsState(
-                if (hasUnread) MaterialTheme.colorScheme.tertiary else bgColorNoUnread,
-                NotificationRowPrimitives.Values.PillBackgroundColor,
-            )
-        content {
-            Box(
-                modifier =
-                    Modifier.drawBehind {
-                        drawRoundRect(
-                            color = surfaceColor,
-                            cornerRadius = CornerRadius(100.dp.toPx(), 100.dp.toPx()),
-                        )
-                    }
-            )
-        }
-    }
+private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
+    val surfaceColor = notificationElementSurfaceColor()
+    Box(
+        modifier =
+            Modifier.drawBehind {
+                drawRoundRect(
+                    color = surfaceColor,
+                    cornerRadius = CornerRadius(100.dp.toPx(), 100.dp.toPx()),
+                )
+            }
+    )
 }
 
 @Composable

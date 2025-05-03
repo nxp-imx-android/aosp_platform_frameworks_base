@@ -71,7 +71,9 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_RECENTS_ANIM;
+import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_SNAPSHOT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_SPLASH_SCREEN;
+import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_TIMEOUT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_WINDOWS_DRAWN;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
 import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
@@ -296,6 +298,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     boolean mPriorVisibilityMightBeDirty = false;
 
     final TransitionController.Logger mLogger = new TransitionController.Logger();
+
+    /** Whether the corresponding sync group is timed out. */
+    private boolean mIsTimedOut;
 
     /** Whether this transition was forced to play early (eg for a SLEEP signal). */
     private boolean mForcePlaying = false;
@@ -1185,7 +1190,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // Need to update layers on involved displays since they were all paused while
         // the animation played. This puts the layers back into the correct order.
         for (int i = participantDisplays.length - 1; i >= 0; --i) {
-            assignLayers(participantDisplays[i], t);
+            assignLayersForFinishTransaction(participantDisplays[i], t);
         }
 
         for (int i = 0; i < info.getRootCount(); ++i) {
@@ -1193,13 +1198,27 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
     }
 
-    /** Assigns the layers for the start or end state of transition. */
-    static void assignLayers(WindowContainer<?> wc, SurfaceControl.Transaction t) {
+    /** Assigns the layers for the start state of the transition. */
+    static void assignLayersForStartTransaction(WindowContainer<?> wc,
+            SurfaceControl.Transaction t) {
+        wc.mTransitionController.mBuildingTransitionLayers = true;
+        try {
+            wc.assignChildLayers(t);
+        } finally {
+            wc.mTransitionController.mBuildingTransitionLayers = false;
+        }
+    }
+
+    /** Assigns the layers for the end state of transition. */
+    static void assignLayersForFinishTransaction(WindowContainer<?> wc,
+            SurfaceControl.Transaction t) {
+        wc.mTransitionController.mBuildingTransitionLayers = true;
         wc.mTransitionController.mBuildingFinishLayers = true;
         try {
             wc.assignChildLayers(t);
         } finally {
             wc.mTransitionController.mBuildingFinishLayers = false;
+            wc.mTransitionController.mBuildingTransitionLayers = false;
         }
     }
 
@@ -2538,11 +2557,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             ActivityRecord r = mParticipants.valueAt(i).asActivityRecord();
             if (r == null || !r.isVisibleRequested()) continue;
+            if (mIsTimedOut) {
+                reasons.put(r, APP_TRANSITION_TIMEOUT);
+                continue;
+            }
             int transitionReason = APP_TRANSITION_WINDOWS_DRAWN;
             // At this point, r is "ready", but if it's not "ALL ready" then it is probably only
             // ready due to starting-window.
-            if (r.mStartingData instanceof SplashScreenStartingData && !r.mLastAllReadyAtSync) {
-                transitionReason = APP_TRANSITION_SPLASH_SCREEN;
+            if (r.mStartingData != null && !r.mLastAllReadyAtSync) {
+                transitionReason = r.mStartingData instanceof SplashScreenStartingData
+                        ? APP_TRANSITION_SPLASH_SCREEN
+                        : APP_TRANSITION_SNAPSHOT;
             } else if (r.isActivityTypeHomeOrRecents() && isTransientLaunch(r)) {
                 transitionReason = APP_TRANSITION_RECENTS_ANIM;
             }
@@ -2975,7 +3000,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             rootLeash.setUnreleasedWarningCallSite("Transition.calculateTransitionRoots");
             // Update layers to start transaction because we prevent assignment during collect, so
             // the layer of transition root can be correct.
-            assignLayers(dc, startT);
+            assignLayersForStartTransaction(dc, startT);
             startT.setLayer(rootLeash, leashReference.getLastLayer());
             outInfo.addRootLeash(endDisplayId, rootLeash,
                     ancestor.getBounds().left, ancestor.getBounds().top);
@@ -3453,14 +3478,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);
             final DisplayContent dc = wc.asDisplayContent();
-            if (dc == null || !mChanges.get(dc).hasChanged()) continue;
+            if (dc == null) continue;
+            final ChangeInfo displayChange = mChanges.get(dc);
             if (ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()
-                    && mChanges.get(dc) != null && mChanges.get(dc).mExistenceChanged) {
+                    && displayChange.mExistenceChanged) {
                 dc.remove();
                 affectsLifecycle = true;
                 mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(dc.mDisplayId);
                 continue;
             }
+            if (!displayChange.hasChanged()) continue;
             final boolean changed = dc.sendNewConfiguration();
             // Set to ready if no other change controls the ready state. But if there is, such as
             // if an activity is pausing, it will call setReady(ar, false) and wait for the next
@@ -3660,7 +3687,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
 
         boolean hasChanged() {
-            if (mExistenceChanged && ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return true;
             final boolean currVisible = mContainer.isVisibleRequested();
             // the task including transient launch must promote to root task
             if (currVisible && ((mFlags & ChangeInfo.FLAG_TRANSIENT_LAUNCH) != 0
@@ -3847,7 +3873,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     @Override
-    public void onReadyTimeout() {
+    public void onSyncGroupTimeout(boolean isReadinessTimeout) {
+        mIsTimedOut = true;
+        if (!isReadinessTimeout) {
+            return;
+        }
         if (!mController.useFullReadyTracking()) {
             Slog.e(TAG, "#" + mSyncId + " readiness timeout, used=" + mReadyTrackerOld.mUsed
                     + " deferReadyDepth=" + mReadyTrackerOld.mDeferReadyDepth

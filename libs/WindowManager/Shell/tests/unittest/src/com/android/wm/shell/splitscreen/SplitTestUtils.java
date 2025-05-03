@@ -23,7 +23,6 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_5
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import android.app.ActivityManager;
 import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.graphics.Rect;
@@ -50,6 +49,8 @@ import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
+
+import com.google.android.msdl.domain.MSDLPlayer;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -98,15 +99,14 @@ public class SplitTestUtils {
                 Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
                 Optional<DesktopTasksController> desktopTasksController,
                 RootTaskDisplayAreaOrganizer rootTDAOrganizer,
-                RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-                DesktopState desktopState,
-                IActivityTaskManager activityTaskManager) {
+                RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
+                IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
             super(context, displayId, syncQueue, taskOrganizer, mainStage,
                     sideStage, displayController, imeController, insetsController, splitLayout,
                     transitions, transactionPool, mainExecutor, mainHandler, recentTasks,
                     launchAdjacentController, windowDecorViewModel, splitState,
                     desktopTasksController, rootTDAOrganizer, rootDisplayAreaOrganizer,
-                    desktopState, activityTaskManager);
+                    desktopState, activityTaskManager, msdlPlayer);
 
             // Prepare root task for testing.
             mRootLeash = new SurfaceControl.Builder().setName("test").build();

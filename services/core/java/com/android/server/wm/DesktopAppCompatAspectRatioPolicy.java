@@ -73,9 +73,13 @@ public class DesktopAppCompatAspectRatioPolicy {
     float calculateAspectRatio(@NonNull Task task, boolean hasOrientationMismatch) {
         if (DesktopModeFlags.PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH.isTrue()
                 && task.inRecents && task.topRunningActivity() != null) {
+            final ActivityRecord top = task.topRunningActivity();
+            // If activity eligible for SCM, use original aspect ratio.
+            if (top.getAppCompatDisplayInsets() != null) {
+                return top.getAppCompatDisplayInsets().mAspectRatio;
+            }
             // If task in resents with running activity, inherit existing activity aspect ratio.
-            final WindowConfiguration windowConfiguration =
-                    task.topRunningActivity().getWindowConfiguration();
+            final WindowConfiguration windowConfiguration = top.getWindowConfiguration();
             final Rect existingBounds = windowConfiguration.getAppBounds() != null
                     ? windowConfiguration.getAppBounds() : windowConfiguration.getBounds();
             return AppCompatUtils.computeAspectRatio(existingBounds);

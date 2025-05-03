@@ -50,6 +50,8 @@ import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,6 +73,7 @@ public class SplitLayoutTests extends ShellTestCase {
     @Mock SplitState mSplitState;
     @Mock SplitStatusBarHider mStatusBarHider;
     @Mock Handler mHandler;
+    @Mock MSDLPlayer mMSDLPlayer;
     @Captor ArgumentCaptor<Runnable> mRunnableCaptor;
     private SplitLayout mSplitLayout;
     private FakeDesktopState mDesktopState;
@@ -92,7 +95,8 @@ public class SplitLayoutTests extends ShellTestCase {
                 mSplitState,
                 mHandler,
                 mStatusBarHider,
-                mDesktopState));
+                mDesktopState,
+                mMSDLPlayer));
     }
 
     @Test

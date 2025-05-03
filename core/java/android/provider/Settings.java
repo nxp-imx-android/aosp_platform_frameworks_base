@@ -10792,6 +10792,65 @@ public final class Settings {
                 "glanceable_hub_restrict_to_writeless_charging";
 
         /**
+         * Nothing should be done during low light
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NONE = 0;
+
+        /**
+         * The screen should turn completely off in low light.
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF = 1;
+
+        /**
+         * The screen should switch to a low light clock dream if dreaming is enabled in low light.
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM = 2;
+
+        /**
+         * The screen should not show dreams if enabled (AOD will be permitted).
+         *
+         * @hide
+         */
+        public static final int LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM = 3;
+
+        /** @hide */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef({
+                LOW_LIGHT_DISPLAY_BEHAVIOR_NONE,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_SCREEN_OFF,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_LOW_LIGHT_CLOCK_DREAM,
+                LOW_LIGHT_DISPLAY_BEHAVIOR_NO_DREAM,
+        })
+        public @interface LowLightDisplayBehavior {
+        }
+
+        /**
+         * Indicates display behavior in low light. Options are:
+         * 0: None
+         * 1: Keep screen off
+         * 2: Show low light clock dream
+         * 3: Disable dreaming
+         *
+         * @hide
+         */
+        public static final String LOW_LIGHT_DISPLAY_BEHAVIOR =
+                "low_light_display_behavior";
+
+        /**
+         * Indicates whether display behavior in low light is enabled.
+         *
+         * @hide
+         */
+        public static final String LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED =
+                "low_light_display_behavior_enabled";
+
+        /**
          * Whether home controls are enabled to be shown over the screensaver by the user.
          *
          * @hide
@@ -11592,6 +11651,9 @@ public final class Settings {
          * Whether or not the UDFPS device is enabling the screen off unlock settings.
          * @hide
          */
+        @TestApi
+        @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi without associated feature
         public static final String SCREEN_OFF_UNLOCK_UDFPS_ENABLED = "screen_off_udfps_enabled";
 
         /**
@@ -12959,6 +13021,22 @@ public final class Settings {
         @Readable
         public static final String ACCESSIBILITY_MOUSE_KEYS_ENABLED =
                 "accessibility_mouse_keys_enabled";
+
+        /**
+         * The current acceleration for mouse keys movement.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MOUSE_KEYS_ACCELERATION =
+                "accessibility_mouse_keys_acceleration";
+
+        /**
+         * The max speed as a factor of the minimum speed for mouse keys movement.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED =
+                "accessibility_mouse_keys_max_speed";
 
         /**
          * Whether the Adaptive connectivity option is enabled.

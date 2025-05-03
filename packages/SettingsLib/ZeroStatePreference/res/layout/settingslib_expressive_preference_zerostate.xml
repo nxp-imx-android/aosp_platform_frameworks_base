@@ -20,6 +20,7 @@
     android:layout_height="wrap_content"
     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:paddingBottom="@dimen/settingslib_expressive_space_small1"
     android:layout_gravity="center"
     android:gravity="center"
     android:orientation="vertical">
@@ -46,17 +47,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textAppearance="?android:attr/textAppearanceListItem"
-        android:layout_marginStart="@dimen/settingslib_expressive_space_medium1"
-        android:layout_marginEnd="@dimen/settingslib_expressive_space_medium1"
+        android:textAppearance="@style/TextAppearance.SettingsLib.TitleLarge.Emphasized"
+        android:textColor="@color/settingslib_text_color_primary"
+        android:layout_marginHorizontal="@dimen/settingslib_expressive_space_medium1"
         android:layout_marginTop="@dimen/settingslib_expressive_space_small4"/>
     <TextView
         android:id="@android:id/summary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_marginStart="@dimen/settingslib_expressive_space_medium1"
-        android:layout_marginEnd="@dimen/settingslib_expressive_space_medium1"
-        android:layout_marginBottom="@dimen/settingslib_expressive_space_small1"
-        android:textAppearance="?android:attr/textAppearanceListItemSecondary"/>
+        android:layout_marginHorizontal="@dimen/settingslib_expressive_space_medium1"
+        android:layout_marginTop="@dimen/settingslib_expressive_space_extrasmall2"
+        android:textAppearance="@style/TextAppearance.SettingsLib.BodyMedium"
+        android:textColor="@color/settingslib_text_color_primary"/>
 </LinearLayout>

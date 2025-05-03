@@ -34,12 +34,18 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionHandler
+import com.android.wm.shell.recents.RecentsTransitionStateListener
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
+import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -51,12 +57,14 @@ import org.mockito.kotlin.whenever
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
 class PipDesktopStateTest : ShellTestCase() {
     private val mockPipDisplayLayoutState = mock<PipDisplayLayoutState>()
+    private val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockDragToDesktopTransitionHandler = mock<DragToDesktopTransitionHandler>()
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockTaskInfo = mock<ActivityManager.RunningTaskInfo>()
     private lateinit var defaultTda: DisplayAreaInfo
+    private lateinit var recentsTransitionStateListener: RecentsTransitionStateListener
     private lateinit var pipDesktopState: PipDesktopState
 
     @Before
@@ -73,10 +81,16 @@ class PipDesktopStateTest : ShellTestCase() {
         pipDesktopState =
             PipDesktopState(
                 mockPipDisplayLayoutState,
+                mockRecentsTransitionHandler,
                 Optional.of(mockDesktopUserRepositories),
                 Optional.of(mockDragToDesktopTransitionHandler),
                 mockRootTaskDisplayAreaOrganizer
             )
+
+        val captor = argumentCaptor<RecentsTransitionStateListener>()
+        verify(mockRecentsTransitionHandler).addTransitionStateListener(captor.capture())
+        recentsTransitionStateListener = captor.firstValue
+        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING)
     }
 
     @Test
@@ -138,6 +152,14 @@ class PipDesktopStateTest : ShellTestCase() {
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
+    }
+
+    @Test
+    fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
+        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+
+        assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FULLSCREEN)
     }
 
     @Test

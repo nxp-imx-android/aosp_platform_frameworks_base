@@ -282,7 +282,6 @@ interface IDevicePolicyManager {
     Intent createAdminSupportIntent(in String restriction);
     Bundle getEnforcingAdminAndUserDetails(int userId, String restriction);
     EnforcingAdmin getEnforcingAdmin(int userId, String identifier);
-    List<EnforcingAdmin> getEnforcingAdminsForRestriction(int userId, String restriction);
     boolean setApplicationHidden(in ComponentName admin, in String callerPackage, in String packageName, boolean hidden, boolean parent);
     boolean isApplicationHidden(in ComponentName admin, in String callerPackage, in String packageName, boolean parent);
 

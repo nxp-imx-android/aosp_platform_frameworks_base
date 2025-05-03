@@ -17,15 +17,28 @@
 package com.android.systemui.topwindoweffects.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.shared.Flags
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 
-class SqueezeEffectViewModel @AssistedInject constructor(keyEventInteractor: KeyEventInteractor) :
-    ExclusiveActivatable() {
+class SqueezeEffectViewModel
+@AssistedInject
+constructor(
+    keyEventInteractor: KeyEventInteractor,
+    squeezeEffectHapticPlayerFactory: SqueezeEffectHapticPlayer.Factory,
+) : ExclusiveActivatable() {
     private val hydrator = Hydrator("SqueezeEffectViewModel.hydrator")
+    private val hapticPlayer: SqueezeEffectHapticPlayer? =
+        if (Flags.enableLppAssistInvocationHapticEffect()) {
+            squeezeEffectHapticPlayerFactory.create()
+        } else {
+            null
+        }
 
     val isPowerButtonPressed: Boolean by
         hydrator.hydratedStateOf(
@@ -40,15 +53,20 @@ class SqueezeEffectViewModel @AssistedInject constructor(keyEventInteractor: Key
         )
 
     override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+        coroutineScope {
+            if (hapticPlayer != null) {
+                launchTraced(spanName = "squeezeEffectHapticPlayer") { hapticPlayer.activate() }
+            }
+            hydrator.activate()
+        }
+    }
+
+    fun onSqueezeEffectEnd() {
+        hapticPlayer?.onSqueezeEffectEnd()
     }
 
     @AssistedFactory
     interface Factory {
         fun create(): SqueezeEffectViewModel
-    }
-
-    companion object {
-        const val ZOOM_OUT_SCALE = 0.05f
     }
 }

@@ -16,9 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.content.res.Configuration
 import android.graphics.RectF
-import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -49,7 +47,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -69,29 +66,8 @@ constructor(
     callChipViewModel: CallChipViewModel,
     notifChipsViewModel: NotifChipsViewModel,
     displayStateInteractor: DisplayStateInteractor,
-    configurationInteractor: ConfigurationInteractor,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) {
-    private val isLandscape: Flow<Boolean> =
-        configurationInteractor.configurationValues
-            .map { it.isLandscape }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
-    private val isScreenReasonablyLarge: Flow<Boolean> =
-        combine(isLandscape, displayStateInteractor.isLargeScreen) { isLandscape, isLargeScreen ->
-                isLandscape || isLargeScreen
-            }
-            .distinctUntilChanged()
-            .onEach {
-                logger.log(
-                    TAG,
-                    LogLevel.DEBUG,
-                    { bool1 = it },
-                    { "isScreenReasonablyLarge: $bool1" },
-                )
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
     private enum class ChipType {
         ScreenRecord,
         ShareToApp,
@@ -168,10 +144,10 @@ constructor(
                     notifs = notifs,
                 )
             }
-            // Some of the chips could have timers in them and we don't want the start time
-            // for those timers to get reset for any reason. So, as soon as any subscriber has
-            // requested the chip information, we maintain it forever by using
-            // [SharingStarted.Lazily]. See b/347726238.
+            // Some of the chips could have timers in them and we don't want the start time for
+            // those timers to get reset for any reason. So, as soon as any subscriber has requested
+            // the chip information, we maintain it forever by using [SharingStarted.Lazily].
+            // See b/347726238.
             .stateIn(scope, SharingStarted.Lazily, ChipBundle())
 
     private val internalChip: Flow<InternalChipModel> =
@@ -201,7 +177,7 @@ constructor(
     )
 
     private val internalChips: Flow<InternalMultipleOngoingActivityChipsModel> =
-        combine(incomingChipBundle, isScreenReasonablyLarge) { bundle, isScreenReasonablyLarge ->
+        combine(incomingChipBundle, displayStateInteractor.isWideScreen) { bundle, isWideScreen ->
             // First: Find the most important chip.
             val primaryChipResult = pickMostImportantChip(bundle)
             when (val primaryChip = primaryChipResult.mostImportantChip) {
@@ -217,7 +193,7 @@ constructor(
                     if (
                         secondaryChip is InternalChipModel.Active &&
                             PromotedNotificationUi.isEnabled &&
-                            !isScreenReasonablyLarge
+                            !isWideScreen
                     ) {
                         // If we have two showing chips and we don't have a ton of room
                         // (!isScreenReasonablyLarge), then we want to make both of them as small as
@@ -283,18 +259,18 @@ constructor(
         if (StatusBarChipsModernization.isEnabled) {
             combine(
                     incomingChipBundle.map { bundle -> rankChips(bundle) },
-                    isScreenReasonablyLarge,
-                ) { rankedChips, isScreenReasonablyLarge ->
+                    displayStateInteractor.isWideScreen,
+                ) { rankedChips, isWideScreen ->
                     if (
                         PromotedNotificationUi.isEnabled &&
-                            !isScreenReasonablyLarge &&
+                            !isWideScreen &&
                             rankedChips.active.filter { !it.isHidden }.size >= 2
                     ) {
                         // If we have at least two showing chips and we don't have a ton of room
-                        // (!isScreenReasonablyLarge), then we want to make both of them as small as
-                        // possible so that we have the highest chance of showing both chips (as
-                        // opposed to showing the first chip with a lot of text and completely
-                        // hiding the other chips).
+                        // (!isWideScreen), then we want to make both of them as small as possible
+                        // so that we have the highest chance of showing both chips (as opposed to
+                        // showing the first chip with a lot of text and completely hiding the other
+                        // chips).
                         val squishedActiveChips =
                             rankedChips.active.map {
                                 if (!it.isHidden && it.shouldSquish()) {
@@ -357,14 +333,7 @@ constructor(
             chips.map { it.active }
         } else {
             chipsLegacy.map {
-                val list = mutableListOf<OngoingActivityChipModel.Active>()
-                if (it.primary is OngoingActivityChipModel.Active) {
-                    list.add(it.primary)
-                }
-                if (it.secondary is OngoingActivityChipModel.Active) {
-                    list.add(it.secondary)
-                }
-                list
+                listOf(it.primary, it.secondary).filterIsInstance<OngoingActivityChipModel.Active>()
             }
         }
 
@@ -428,13 +397,7 @@ constructor(
         val inactiveChips = mutableListOf<OngoingActivityChipModel.Inactive>()
 
         val sortedChips =
-            mutableListOf(
-                    bundle.screenRecord,
-                    bundle.shareToApp,
-                    bundle.castToOtherDevice,
-                    bundle.call,
-                )
-                .apply { bundle.notifs.forEach { add(it) } }
+            with(bundle) { listOf(screenRecord, shareToApp, castToOtherDevice, call) + notifs }
 
         var shownSlotsRemaining = MAX_VISIBLE_CHIPS
         for (chip in sortedChips) {
@@ -581,9 +544,6 @@ constructor(
             OngoingActivityChipModel.Inactive()
         }
     }
-
-    private val Configuration.isLandscape: Boolean
-        get() = orientation == Configuration.ORIENTATION_LANDSCAPE
 
     companion object {
         private val TAG = "ChipsViewModel".pad()

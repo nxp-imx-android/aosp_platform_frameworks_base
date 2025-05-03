@@ -253,6 +253,10 @@ class BundleEntryAdapter(
     override fun isBundled(): Boolean {
         return false
     }
+
+    override fun isBundle(): Boolean {
+        return true
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

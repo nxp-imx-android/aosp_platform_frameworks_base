@@ -228,7 +228,6 @@ public final class AccessibilityTargetHelper {
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED);
         targets.add(autoclick);
 
-        // TODO(b/394683600): Update Icon with the mouse keys asset.
         final ToggleAllowListingFeatureTarget mouseKeys =
                 new ToggleAllowListingFeatureTarget(context,
                         shortcutType,
@@ -236,8 +235,8 @@ public final class AccessibilityTargetHelper {
                                 MOUSE_KEYS_COMPONENT_NAME.flattenToString()),
                         MOUSE_KEYS_COMPONENT_NAME.flattenToString(),
                         uid,
-                        context.getString(R.string.autoclick_feature_name),
-                        context.getDrawable(R.drawable.ic_accessibility_generic),
+                        context.getString(R.string.mouse_keys_feature_name),
+                        context.getDrawable(R.drawable.ic_accessibility_mouse_keys),
                         Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED);
         targets.add(mouseKeys);
 

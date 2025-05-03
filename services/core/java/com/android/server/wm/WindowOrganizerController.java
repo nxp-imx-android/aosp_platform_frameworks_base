@@ -72,7 +72,6 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ADJACENT_ROOTS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_EXCLUDE_INSETS_TYPES;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_IS_TRIMMABLE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_KEYGUARD_STATE;
@@ -948,6 +947,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.setDisablePip(c.getDisablePip());
         }
 
+        if ((c.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_DISABLE_LAUNCH_ADJACENT) != 0) {
+            tr.setLaunchAdjacentDisabled(c.getDisableLaunchAdjacent());
+        }
+
         final int childWindowingMode = c.getActivityWindowingMode();
         if (!ActivityTaskManagerService.isPip2ExperimentEnabled()
                 && tr.getWindowingMode() == WINDOWING_MODE_PINNED) {
@@ -1499,7 +1503,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 container.addLocalInsetsFrameProvider(
-                        hop.getInsetsFrameProvider(), hop.getInsetsFrameOwner());
+                        hop.getInsetsFrameProvider(), hop.getCaller());
                 break;
             }
             case HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER: {
@@ -1510,7 +1514,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 container.removeLocalInsetsFrameProvider(
-                        hop.getInsetsFrameProvider(), hop.getInsetsFrameOwner());
+                        hop.getInsetsFrameProvider(), hop.getCaller());
                 break;
             }
             case HIERARCHY_OP_TYPE_SET_ALWAYS_ON_TOP: {
@@ -1525,8 +1529,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             + container);
                     break;
                 }
+                if (container.isAlwaysOnTop() != hop.isAlwaysOnTop()) {
+                    effects |= TRANSACT_EFFECTS_LIFECYCLE;
+                }
                 container.setAlwaysOnTop(hop.isAlwaysOnTop());
-                effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 break;
             }
             case HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH: {
@@ -1557,17 +1563,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     break;
                 }
                 task.setTrimmableFromRecents(hop.isTrimmableFromRecents());
-                break;
-            }
-            case HIERARCHY_OP_TYPE_SET_DISABLE_LAUNCH_ADJACENT: {
-                final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
-                final Task task = container != null ? container.asTask() : null;
-                if (task == null || !task.isAttached()) {
-                    Slog.e(TAG, "Attempt to operate on unknown or detached container: "
-                            + container);
-                    break;
-                }
-                task.setLaunchAdjacentDisabled(hop.isLaunchAdjacentDisabled());
                 break;
             }
             case HIERARCHY_OP_TYPE_RESTORE_BACK_NAVIGATION: {
@@ -1605,6 +1600,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 if (container instanceof DisplayContent displayContent) {
                     displayContent.getDisplayPolicy().setSystemBarVisibilityOverride(
+                            hop.getCaller(),
                             hop.getForciblyShowingInsetsTypes(),
                             hop.getForciblyHidingInsetsTypes());
                 } else {
@@ -1783,21 +1779,28 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case OP_TYPE_REQUEST_FOCUS_ON_TASK_FRAGMENT: {
-                final ActivityRecord curFocus = taskFragment.getDisplayContent().mFocusedApp;
-                if (curFocus != null && curFocus.getTaskFragment() == taskFragment) {
-                    Slog.d(TAG, "The requested TaskFragment already has the focus.");
-                    break;
-                }
-                if (curFocus != null && curFocus.getTask() != taskFragment.getTask()) {
-                    Slog.d(TAG, "The Task of the requested TaskFragment doesn't have focus.");
-                    break;
-                }
-                final ActivityRecord targetFocus = taskFragment.getTopResumedActivity();
-                if (targetFocus == null) {
-                    Slog.d(TAG, "There is no resumed activity in the requested TaskFragment.");
-                    break;
-                }
-                taskFragment.getDisplayContent().setFocusedApp(targetFocus);
+                mService.mH.post(() -> {
+                    synchronized (mService.mGlobalLock) {
+                        final ActivityRecord curFocus =
+                                taskFragment.getDisplayContent().mFocusedApp;
+                        if (curFocus != null && curFocus.getTaskFragment() == taskFragment) {
+                            Slog.d(TAG, "The requested TaskFragment already has the focus.");
+                            return;
+                        }
+                        if (curFocus != null && curFocus.getTask() != taskFragment.getTask()) {
+                            Slog.d(TAG,
+                                    "The Task of the requested TaskFragment doesn't have focus.");
+                            return;
+                        }
+                        final ActivityRecord targetFocus = taskFragment.getTopResumedActivity();
+                        if (targetFocus == null) {
+                            Slog.d(TAG,
+                                    "There is no resumed activity in the requested TaskFragment.");
+                            return;
+                        }
+                        taskFragment.getDisplayContent().setFocusedApp(targetFocus);
+                    }
+                });
                 break;
             }
             case OP_TYPE_SET_COMPANION_TASK_FRAGMENT: {

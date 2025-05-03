@@ -217,6 +217,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillManager;
+import android.view.autofill.AutofillValue;
 import android.view.contentcapture.IContentCaptureManager;
 import android.view.contentcapture.IContentCaptureOptionsCallback;
 import android.view.translation.TranslationSpec;
@@ -4723,6 +4725,19 @@ public final class ActivityThread extends ClientTransactionHandler
                 resultCallback.sendResult(null);
                 return;
             }
+
+            if (actionId.equals(AutofillManager.DIRECT_ACTION_ID_REMOTE_AUTOFILL)) {
+                AutofillId autofillId =
+                        arguments.getParcelable(
+                                AutofillManager.EXTRA_REMOTE_AUTOFILL_ID, AutofillId.class);
+                AutofillValue autofillValue =
+                        arguments.getParcelable(
+                                AutofillManager.EXTRA_REMOTE_AUTOFILL_VALUE, AutofillValue.class);
+                if (autofillId != null && autofillValue != null) {
+                    r.activity.autofillViewIfAvailable(autofillId, autofillValue);
+                }
+            }
+
             final Bundle nonNullArguments = (arguments != null) ? arguments : Bundle.EMPTY;
             r.activity.onPerformDirectAction(actionId, nonNullArguments, cancellationSignal,
                     resultCallback::sendResult);
@@ -7250,7 +7265,14 @@ public final class ActivityThread extends ClientTransactionHandler
                         Slog.w(TAG, "Low overhead tracing feature is not enabled");
                         break;
                     }
-                    VMDebug.startLowOverheadTraceForAllMethods();
+
+                    if (profilerInfo.profileLongRunningMethods) {
+                        long microToNano = 1000;
+                        VMDebug.startLowOverheadTraceForLongRunningMethods(
+                                profilerInfo.durationMicros * microToNano);
+                    } else {
+                        VMDebug.startLowOverheadTraceForAllMethods();
+                    }
                     break;
                 default:
                     try {

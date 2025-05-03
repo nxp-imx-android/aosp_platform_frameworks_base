@@ -1805,8 +1805,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"കൂടുതൽ ഡിം ചെയ്യൽ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ശ്രവണ ഉപകരണങ്ങൾ"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"ഓട്ടോക്ലിക്ക്"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"മൗസ് കീകൾ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"വിച്‌ഛേദിച്ചു"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"കണക്റ്റ് ചെയ്‌തു"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"സജീവം"</string>
@@ -2277,6 +2276,8 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"സ്‌ക്രോൾ ചെയ്യുക"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ദീർഘനേരം അമർത്തുക"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"താൽക്കാലികമായി നിർത്തുക"</string>
+    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <skip />
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"സ്ഥാനം"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"മുകളിലേക്ക് സ്‌ക്രോൾ ചെയ്യുക"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"താഴേക്ക് സ്‌ക്രോൾ ചെയ്യുക"</string>

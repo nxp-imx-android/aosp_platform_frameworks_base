@@ -80,11 +80,11 @@ import android.util.Xml;
 import androidx.test.annotation.UiThreadTest;
 
 import com.android.dx.mockito.inline.extended.MockedVoidMethod;
-import com.android.internal.widget.LockSettingsInternal;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.LocalServices;
 import com.android.server.am.UserState;
+import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pm.UserManagerService.UserData;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 

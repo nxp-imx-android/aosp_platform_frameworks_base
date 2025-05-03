@@ -941,7 +941,7 @@ public class NotificationShelf extends ActivatableNotificationView {
 
         // Fade in icons at shelf start
         // This is important for conversation icons, which are badged and need x reset
-        iconState.setXTranslation(mShelfIcons.getActualPaddingStart());
+        iconState.setXTranslation(mShelfIcons.getLeftBound());
 
         final boolean stayingInShelf = row.isInShelf() && !row.isTransformingIntoShelf();
         if (stayingInShelf) {

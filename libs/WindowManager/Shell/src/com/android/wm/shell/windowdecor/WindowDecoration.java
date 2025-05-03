@@ -17,12 +17,11 @@
 package com.android.wm.shell.windowdecor;
 
 import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
-import static android.view.WindowInsets.Type.captionBar;
-import static android.view.WindowInsets.Type.mandatorySystemGestures;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -39,6 +38,7 @@ import android.graphics.Region;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.Trace;
 import android.view.Display;
 import android.view.InsetsSource;
@@ -53,7 +53,6 @@ import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.SurfaceSyncGroup;
 import android.window.TaskConstants;
-import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -61,6 +60,8 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.BoxShadowHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams.OccludingCaptionElement;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -68,9 +69,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -123,6 +122,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      * System-wide context. Only used to create context with overridden configurations.
      */
     final Context mContext;
+    private final @NonNull @ShellMainThread Handler mHandler;
+    private final @NonNull Transitions mTransitions;
     final @NonNull Context mUserContext;
     final @NonNull DisplayController mDisplayController;
     final @NonNull DesktopModeEventLogger mDesktopModeEventLogger;
@@ -174,13 +175,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
     WindowDecoration(
             Context context,
+            @NonNull @ShellMainThread Handler handler,
+            @NonNull Transitions transitions,
             @NonNull Context userContext,
             DisplayController displayController,
             ShellTaskOrganizer taskOrganizer,
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier) {
-        this(context, userContext, displayController, taskOrganizer, taskInfo,
+        this(context, handler, transitions, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
                 WindowContainerTransaction::new, SurfaceControl::new,
                 new SurfaceControlViewHostFactory() {}, windowDecorViewHostSupplier,
@@ -189,6 +192,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
     WindowDecoration(
             Context context,
+            @NonNull @ShellMainThread Handler handler,
+            @NonNull Transitions transitions,
             @NonNull Context userContext,
             @NonNull DisplayController displayController,
             ShellTaskOrganizer taskOrganizer,
@@ -203,6 +208,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             @NonNull DesktopModeEventLogger desktopModeEventLogger
     ) {
         mContext = context;
+        mHandler = handler;
+        mTransitions = transitions;
         mUserContext = userContext;
         mDisplayController = displayController;
         mTaskOrganizer = taskOrganizer;
@@ -757,7 +764,12 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         }
         final WindowContainerTransaction wct = mWindowContainerTransactionSupplier.get();
         releaseViews(wct);
-        mTaskOrganizer.applyTransaction(wct);
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue() && !wct.isEmpty()) {
+            mHandler.post(() -> mTransitions.startTransition(TRANSIT_CHANGE, wct,
+                    /* handler= */ null));
+        } else {
+            mTaskOrganizer.applyTransaction(wct);
+        }
         mTaskSurface.release();
         Trace.endSection();
     }
@@ -1003,71 +1015,6 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         default SurfaceControlViewHost create(Context c, Display d,
                 WindowlessWindowManager wmm, String callsite) {
             return new SurfaceControlViewHost(c, d, wmm, callsite);
-        }
-    }
-
-    private static class WindowDecorationInsets {
-        private static final int INDEX = 0;
-        private final WindowContainerToken mToken;
-        private final Binder mOwner;
-        private final Rect mFrame;
-        private final Rect mTaskFrame;
-        private final Rect[] mBoundingRects;
-        private final @InsetsSource.Flags int mFlags;
-        private final boolean mShouldAddCaptionInset;
-        private final boolean mExcludedFromAppBounds;
-
-        private WindowDecorationInsets(WindowContainerToken token, Binder owner, Rect frame,
-                Rect taskFrame, Rect[] boundingRects, @InsetsSource.Flags int flags,
-                boolean shouldAddCaptionInset, boolean excludedFromAppBounds) {
-            mToken = token;
-            mOwner = owner;
-            mFrame = frame;
-            mTaskFrame = taskFrame;
-            mBoundingRects = boundingRects;
-            mFlags = flags;
-            mShouldAddCaptionInset = shouldAddCaptionInset;
-            mExcludedFromAppBounds = excludedFromAppBounds;
-        }
-
-        void update(WindowContainerTransaction wct) {
-            if (mShouldAddCaptionInset) {
-                wct.addInsetsSource(mToken, mOwner, INDEX, captionBar(), mFrame, mBoundingRects,
-                        mFlags);
-                wct.addInsetsSource(mToken, mOwner, INDEX, mandatorySystemGestures(), mFrame,
-                        mBoundingRects, 0 /* flags */);
-                if (mExcludedFromAppBounds) {
-                    final Rect appBounds = new Rect(mTaskFrame);
-                    appBounds.top += mFrame.height();
-                    wct.setAppBounds(mToken, appBounds);
-                }
-            }
-        }
-
-        void remove(WindowContainerTransaction wct) {
-            wct.removeInsetsSource(mToken, mOwner, INDEX, captionBar());
-            wct.removeInsetsSource(mToken, mOwner, INDEX, mandatorySystemGestures());
-            if (mExcludedFromAppBounds) {
-                wct.setAppBounds(mToken, new Rect());
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof WindowDecoration.WindowDecorationInsets that)) return false;
-            return Objects.equals(mToken, that.mToken) && Objects.equals(mOwner,
-                    that.mOwner) && Objects.equals(mFrame, that.mFrame)
-                    && Objects.equals(mTaskFrame, that.mTaskFrame)
-                    && Objects.deepEquals(mBoundingRects, that.mBoundingRects)
-                    && mFlags == that.mFlags
-                    && mShouldAddCaptionInset == that.mShouldAddCaptionInset
-                    && mExcludedFromAppBounds == that.mExcludedFromAppBounds;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(mToken, mOwner, mFrame, Arrays.hashCode(mBoundingRects), mFlags);
         }
     }
 }

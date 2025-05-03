@@ -516,10 +516,10 @@
     <string name="power_charging" msgid="6727132649743436802">"<xliff:g id="LEVEL">%1$s</xliff:g> – <xliff:g id="STATE">%2$s</xliff:g>"</string>
     <string name="power_remaining_charging_duration_only" msgid="8085099012811384899">"<xliff:g id="TIME">%1$s</xliff:g> до полна батерија"</string>
     <string name="power_charging_duration" msgid="6127154952524919719">"<xliff:g id="LEVEL">%1$s</xliff:g> – <xliff:g id="TIME">%2$s</xliff:g> до полна батерија"</string>
-    <string name="power_charging_limited" msgid="4144004473976005214">"<xliff:g id="LEVEL">%1$s</xliff:g> – полнењето е паузирано за да се заштити батеријата"</string>
+    <string name="power_charging_limited" msgid="4144004473976005214">"<xliff:g id="LEVEL">%1$s</xliff:g> • Полнењето е паузирано за да се заштити батеријата"</string>
     <string name="power_charging_future_paused" msgid="1809543660923642799">"<xliff:g id="LEVEL">%1$s</xliff:g> – се полни"</string>
-    <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> – <xliff:g id="STATUS">%2$s</xliff:g> – Ќе се наполни целосно до <xliff:g id="TIME">%3$s</xliff:g>"</string>
-    <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> – Ќе се наполни целосно до <xliff:g id="TIME">%2$s</xliff:g>"</string>
+    <string name="power_fast_charging_duration_v2" msgid="3797735998640359490">"<xliff:g id="LEVEL">%1$s</xliff:g> • <xliff:g id="STATUS">%2$s</xliff:g> • Ќе се наполни целосно до <xliff:g id="TIME">%3$s</xliff:g>"</string>
+    <string name="power_charging_duration_v2" msgid="2938998284074003248">"<xliff:g id="LEVEL">%1$s</xliff:g> • Ќе се наполни целосно до <xliff:g id="TIME">%2$s</xliff:g>"</string>
     <string name="power_remaining_charging_duration_only_v2" msgid="5358176435722950193">"Ќе се наполни целосно до <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Ќе се наполни целосно до <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Непознато"</string>
@@ -670,7 +670,7 @@
     <string name="profile_info_settings_title" msgid="105699672534365099">"Информации за профил"</string>
     <string name="user_need_lock_message" msgid="4311424336209509301">"Пред да може да создадете ограничен профил, треба да поставите заклучување на екранот за да ги заштити вашите апликации и лични податоци."</string>
     <string name="user_set_lock_button" msgid="1427128184982594856">"Постави заклучување"</string>
-    <string name="user_switch_to_user" msgid="6975428297154968543">"Префрли на <xliff:g id="USER_NAME">%s</xliff:g>"</string>
+    <string name="user_switch_to_user" msgid="6975428297154968543">"Префрли се на <xliff:g id="USER_NAME">%s</xliff:g>"</string>
     <string name="creating_new_user_dialog_message" msgid="7232880257538970375">"Се создава нов корисник…"</string>
     <string name="creating_new_guest_dialog_message" msgid="1114905602181350690">"Се создава нов гостин…"</string>
     <string name="add_user_failed" msgid="4809887794313944872">"Не успеа да создаде нов корисник"</string>

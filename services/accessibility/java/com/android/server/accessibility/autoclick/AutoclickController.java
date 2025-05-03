@@ -38,6 +38,7 @@ import static com.android.server.accessibility.autoclick.AutoclickTypePanel.Clic
 import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityThread;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -289,14 +290,23 @@ public class AutoclickController extends BaseEventStreamTransformation {
      * click will happen. See {@code AutoclickIndicatorView} class.
      */
     private void initiateAutoclickIndicator(Handler handler) {
+        // Try to get the SystemUI context which has dynamic colors properly themed.
+        // Fall back to the regular context if it's not available (in tests).
+        Context uiContext;
+        if (!mContext.getClass().getSimpleName().contains("Testable")) {
+            // Use SystemUI context in production.
+            uiContext = ActivityThread.currentActivityThread().getSystemUiContext();
+        } else {
+            // Use the original context in test environments.
+            uiContext = mContext;
+        }
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
-        mAutoclickIndicatorView = new AutoclickIndicatorView(mContext);
-
+        mAutoclickIndicatorView = new AutoclickIndicatorView(uiContext);
         mWindowManager = mContext.getSystemService(WindowManager.class);
-        mAutoclickTypePanel =
-                new AutoclickTypePanel(mContext, mWindowManager, mUserId, clickPanelController);
-        mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager,
-                mScrollPanelController);
+        mAutoclickTypePanel = new AutoclickTypePanel(
+                uiContext, mWindowManager, mUserId, clickPanelController);
+        mAutoclickScrollPanel = new AutoclickScrollPanel(
+                uiContext, mWindowManager, mScrollPanelController);
 
         // Initialize continuous scroll handler and runnable.
         mContinuousScrollHandler = new Handler(handler.getLooper());
@@ -1189,7 +1199,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 default:
                     break;
             }
-            sendMotionEvent(actionButton);
+            sendMotionEventsForClick(actionButton);
         }
 
         /**
@@ -1239,7 +1249,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return true;
         }
 
-        private void sendMotionEvent(int actionButton) {
+        /**
+         * Sends a set of motion events consisting of downEvent, pressEvent, releaseEvent
+         * and downEvent for a specific action button.
+         */
+        private void sendMotionEventsForClick(int actionButton) {
             final long now = SystemClock.uptimeMillis();
             MotionEvent downEvent = buildMotionEvent(
                     now, now, actionButton, mLastMotionEvent);
@@ -1272,11 +1286,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
         private void sendDoubleClickEvent() {
             mHasOngoingDoubleClick = true;
-            sendMotionEvent(BUTTON_PRIMARY);
+            sendMotionEventsForClick(BUTTON_PRIMARY);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    sendMotionEvent(BUTTON_PRIMARY);
+                    sendMotionEventsForClick(BUTTON_PRIMARY);
                     mHasOngoingDoubleClick = false;
                     resetInternalState();
                 }

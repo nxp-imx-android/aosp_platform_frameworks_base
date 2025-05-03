@@ -482,6 +482,32 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
                 bounds.height(), 0.3f);
     }
 
+    @Test
+    public void snapToMovementBoundsEdge_boundsSnappedToLeft() {
+        final Rect bounds = new Rect(100, 100, 550, 480);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds are snapped to left edge of movement bounds",
+                bounds.left, mPipDisplayLayoutState.getInsetBounds().left);
+        assertEquals("Bounds top edge is unchanged",
+                bounds.top, originalBounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_boundsSnappedToRight() {
+        final Rect bounds = new Rect(700, 100, 900, 480);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds are snapped to right edge of movement bounds",
+                bounds.right, mPipDisplayLayoutState.getInsetBounds().right);
+        assertEquals("Bounds top edge is unchanged",
+                bounds.top, originalBounds.top);
+    }
+
     private void overrideDefaultAspectRatio(float aspectRatio) {
         final TestableResources res = mContext.getOrCreateTestableResources();
         res.addOverride(

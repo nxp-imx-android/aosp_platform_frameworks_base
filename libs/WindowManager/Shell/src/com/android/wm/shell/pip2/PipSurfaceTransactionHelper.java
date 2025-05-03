@@ -242,6 +242,7 @@ public class PipSurfaceTransactionHelper {
 
         round(outTransaction, leash, baseBounds, toBounds);
         outTransaction.setMatrix(leash, mTmpTransform, mTmpFloat9);
+        outTransaction.setLayer(leash, Integer.MAX_VALUE);
         return this;
     }
 

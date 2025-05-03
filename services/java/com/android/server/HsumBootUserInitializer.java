@@ -34,6 +34,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
+import java.util.Arrays;
+
 /**
  * Class responsible for booting the device in the proper user on headless system user mode.
  *
@@ -41,6 +43,8 @@ import com.android.server.utils.TimingsTraceAndSlog;
 final class HsumBootUserInitializer {
 
     private static final String TAG = HsumBootUserInitializer.class.getSimpleName();
+
+    private static final boolean DEBUG = false;
 
     private final UserManagerInternal mUmi;
     private final ActivityManagerService mAms;
@@ -65,49 +69,52 @@ final class HsumBootUserInitializer {
     /** Whether this device should always have a non-removable MainUser, including at first boot. */
     private final boolean mShouldAlwaysHaveMainUser;
 
+    /** Whether it should create an initial user, but without setting it as the main user. */
+    private final boolean mShouldCreateInitialUser;
+
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(ActivityManagerService am,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldAlwaysHaveMainUser) {
+            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
 
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
         return new HsumBootUserInitializer(
-                LocalServices.getService(UserManagerInternal.class),
-                am, pms, contentResolver,
-                shouldAlwaysHaveMainUser);
+                LocalServices.getService(UserManagerInternal.class), am, pms, contentResolver,
+                shouldAlwaysHaveMainUser, shouldCreateInitialUser);
     }
 
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerInternal umi, ActivityManagerService am,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldAlwaysHaveMainUser) {
+            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
         mUmi = umi;
         mAms = am;
         mPms = pms;
         mContentResolver = contentResolver;
         mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
+        mShouldCreateInitialUser = shouldCreateInitialUser;
+        if (DEBUG) {
+            Slogf.d(TAG, "HsumBootUserInitializer(): shouldAlwaysHaveMainUser=%b, "
+                    + "shouldCreateInitialUser=%b",
+                    shouldAlwaysHaveMainUser, shouldCreateInitialUser);
+        }
     }
 
-    /**
-     * Initialize this object, and create MainUser if needed.
-     *
-     * <p>Should be called before PHASE_SYSTEM_SERVICES_READY as services' setups may require
-     * MainUser, but probably after PHASE_LOCK_SETTINGS_READY since that may be needed for user
-     * creation.
-     */
-    public void init(TimingsTraceAndSlog t) {
-        Slogf.i(TAG, "init())");
+    // TODO(b/409650316): remove after flag's completely pushed
+    private void preCreateInitialUserFlagInit(TimingsTraceAndSlog t) {
+        Slogf.d(TAG, "preCreateInitialUserFlagInit())");
 
         if (mShouldAlwaysHaveMainUser) {
             t.traceBegin("createMainUserIfNeeded");
-            createMainUserIfNeeded();
+            preCreateInitialUserCreateMainUserIfNeeded();
             t.traceEnd();
         }
     }
 
-    private void createMainUserIfNeeded() {
+    // TODO(b/409650316): remove after flag's completely pushed
+    private void preCreateInitialUserCreateMainUserIfNeeded() {
         final int mainUser = mUmi.getMainUserId();
         if (mainUser != UserHandle.USER_NULL) {
             Slogf.d(TAG, "Found existing MainUser, userId=%d", mainUser);
@@ -131,6 +138,89 @@ final class HsumBootUserInitializer {
             }
         } catch (UserManager.CheckedUserOperationException e) {
             Slogf.wtf(TAG, "Initial bootable MainUser creation failed", e);
+        }
+    }
+
+    /**
+     * Initialize this object, and create MainUser if needed.
+     *
+     * <p>Should be called before PHASE_SYSTEM_SERVICES_READY as services' setups may require
+     * MainUser, but probably after PHASE_LOCK_SETTINGS_READY since that may be needed for user
+     * creation.
+     */
+    public void init(TimingsTraceAndSlog t) {
+        Slogf.i(TAG, "init())");
+
+        if (!android.multiuser.Flags.createInitialUser()) {
+            preCreateInitialUserFlagInit(t);
+            return;
+        }
+
+        if (mShouldAlwaysHaveMainUser) {
+            createMainUserIfNeeded(t);
+            return;
+        }
+
+        if (mShouldCreateInitialUser) {
+            createAdminUserIfNeeded(t);
+            return;
+        }
+        Slogf.d(TAG, "Not checking if initial user exists (should be handled externally)");
+    }
+
+    private void createMainUserIfNeeded(TimingsTraceAndSlog t) {
+        // Always tracing as it used to be done by the caller
+        t.traceBegin("createMainUserIfNeeded");
+        try {
+            int mainUserId = mUmi.getMainUserId();
+            if (mainUserId != UserHandle.USER_NULL) {
+                Slogf.d(TAG, "createMainUserIfNeeded(): found MainUser (userId=%d)", mainUserId);
+                return;
+            }
+            createInitialUser(/* isMainUser= */ true);
+        } finally {
+            t.traceEnd();
+        }
+    }
+
+    private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
+        t.traceBegin("createAdminUserIfNeeded");
+        try {
+            int[] userIds = mUmi.getUserIds();
+            if (userIds != null && userIds.length > 1) {
+                if (DEBUG) {
+                    Slogf.d(TAG, "createAdminUserIfNeeded(): already have more than 1 user (%s)",
+                            Arrays.toString(userIds));
+                }
+                return;
+            }
+            createInitialUser(/* isMainUser= */ false);
+        } finally {
+            t.traceEnd();
+        }
+    }
+
+    private void createInitialUser(boolean isMainUser) {
+        String logName;
+        int flags = UserInfo.FLAG_ADMIN;
+        if (isMainUser) {
+            flags |= UserInfo.FLAG_MAIN;
+            logName = "MainUser";
+        } else {
+            logName = "admin user";
+        }
+        Slogf.d(TAG, "Creating %s", logName);
+        try {
+            final UserInfo newInitialUser = mUmi.createUserEvenWhenDisallowed(
+                    /* name= */ null, // null will appear as "Owner" in on-demand localisation
+                    UserManager.USER_TYPE_FULL_SECONDARY,
+                    flags,
+                    /* disallowedPackages= */ null,
+                    /* token= */ null);
+            Slogf.i(TAG, "Successfully created %s, userId=%d", logName, newInitialUser.id);
+            mUmi.setBootUserId(newInitialUser.id);
+        } catch (UserManager.CheckedUserOperationException e) {
+            Slogf.wtf(TAG, e, "Initial bootable %s creation failed", logName);
         }
     }
 

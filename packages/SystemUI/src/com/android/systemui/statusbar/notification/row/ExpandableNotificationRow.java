@@ -3268,11 +3268,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return getActualHeight();
         } else if (mGuts != null && mGuts.isExposed()) {
             return mGuts.getIntrinsicHeight();
-        } else if ((isChildInGroup() && !isGroupExpanded())) {
+        } else if (!NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
             return mPrivateLayout.getMinHeight();
         } else if (mSensitive && mHideSensitiveForIntrinsicHeight) {
             return getMinHeight();
-        } else if (mIsSummaryWithChildren) {
+        } else if (NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
+            return mChildrenContainer.getIntrinsicHeight();
+        } else if (NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
+            return mPrivateLayout.getMinHeight();
+        } else if (!NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
             return mChildrenContainer.getIntrinsicHeight();
         } else if (canShowHeadsUp() && isHeadsUpState()) {
             if (isPinned() || mHeadsupDisappearRunning) {
@@ -4080,14 +4084,27 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         updateBackgroundForGroupState();
     }
 
+    /** @return whether a HUN expansion has completed outside the shade, with row transparency. */
+    private boolean isHUNGroupExpanded() {
+        return mIsHeadsUp
+                && isGroupExpanded()
+                && !isGroupExpansionChanging();
+    }
+
     /**
      * Updates the parent and children backgrounds in a group based on the expansion state.
      */
     public void updateBackgroundForGroupState() {
         if (mIsSummaryWithChildren) {
-            // Only when the group has finished expanding do we hide its background.
-            mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
-                    && !isGroupExpansionChanging() && !isUserLocked();
+            // When the group has finished expanding, we hide its background.
+            // Exception: when row transparency is enabled, and a HUN group is expanded,
+            // we want to preserve the background at the end of the expansion animation.
+            if (notificationRowTransparency() && isHUNGroupExpanded()) {
+                mShowNoBackground = false;
+            } else {
+                mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
+                        && !isGroupExpansionChanging() && !isUserLocked();
+            }
             mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
             List<ExpandableNotificationRow> children = mChildrenContainer.getAttachedChildren();
             for (int i = 0; i < children.size(); i++) {

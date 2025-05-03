@@ -247,10 +247,8 @@
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikon for Bluetooth-enheter"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klikk for å konfigurere enhetsdetaljer"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurer enhetsdetaljer"</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_plus_button_with_name (7437753009977623034) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_checkmark_with_name (3673227296687603429) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_plus_button_with_name" msgid="7437753009977623034">"Begynn å dele lyd med <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
+    <string name="accessibility_bluetooth_device_settings_checkmark_with_name" msgid="3673227296687603429">"Slutt å dele lyd med <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Se alle enheter"</string>
     <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Koble til en ny enhet"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Batteriprosenten er ukjent."</string>
@@ -484,10 +482,9 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ikke angitt"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Administrer i innstillingene"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Ingen aktive moduser}=1{{mode} er aktiv}other{# moduser er aktive}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (7876813862065005399) -->
+    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
     <skip />
-    <!-- no translation found for zen_modes_multiple_on_status (8120633422509269588) -->
-    <skip />
+    <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"På"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Du blir ikke forstyrret av lyder og vibrasjoner, med unntak av alarmer, påminnelser, aktiviteter og oppringere du angir. Du kan fremdeles høre alt du velger å spille av, for eksempel musikk, videoer og spill."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Du blir ikke forstyrret av lyder og vibrasjoner, med unntak av alarmer. Du kan fremdeles høre alt du velger å spille av, for eksempel musikk, videoer og spill."</string>
     <string name="zen_priority_customize_button" msgid="4119213187257195047">"Tilpass"</string>
@@ -1030,9 +1027,13 @@
     <string name="other" msgid="429768510980739978">"Annet"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"bytt størrelse på brikken"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Fjern brikken"</string>
+    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
+    <skip />
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"slå plasseringsmodusen av/på"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"slå valget av/på"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Legg til en brikke på den siste posisjonen"</string>
+    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytt infobrikken"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Legg til brikken på ønsket posisjon"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Flytt til <xliff:g id="POSITION">%1$d</xliff:g>"</string>

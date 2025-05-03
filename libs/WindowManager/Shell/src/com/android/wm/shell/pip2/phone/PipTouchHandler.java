@@ -968,7 +968,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     if (mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()
                             && mDisplayIdOnDown != displayIdOnUp) {
                         mPipDisplayTransferHandler.scheduleMovePipToDisplay(mDisplayIdOnDown,
-                                displayIdOnUp);
+                                displayIdOnUp, getPossiblyMotionBounds());
                     } else {
                         mMotionHelper.flingToSnapTarget(vel.x, vel.y,
                                 this::flingEndAction /* endAction */);
