@@ -222,6 +222,10 @@ class ResizingEffectPolicy {
         }
     }
 
+    /**
+     * Called on every frame while the user is dragging the divider to dismiss an app or move it
+     * offscreen. Sets alpha and visibility on the two provided dim layers.
+     */
     void adjustDimSurface(SurfaceControl.Transaction t,
             SurfaceControl dimLayer1, SurfaceControl dimLayer2) {
         SurfaceControl targetDimLayer;
