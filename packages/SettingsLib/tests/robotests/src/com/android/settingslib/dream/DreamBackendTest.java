@@ -245,6 +245,22 @@ public final class DreamBackendTest {
         assertThat(mBackend.getRestrictToWirelessCharging()).isTrue();
     }
 
+    @Test
+    public void testLowLightDisplayBehavior() {
+        mBackend.setLowLightDisplayBehavior(100);
+        assertThat(mBackend.getLowLightDisplayBehavior()).isEqualTo(100);
+    }
+
+
+    @Test
+    public void testLowLightDisplayBehaviorEnabled() {
+        mBackend.setLowLightDisplayBehaviorEnabled(false);
+        assertThat(mBackend.getLowLightDisplayBehaviorEnabled()).isFalse();
+
+        mBackend.setLowLightDisplayBehaviorEnabled(true);
+        assertThat(mBackend.getLowLightDisplayBehaviorEnabled()).isTrue();
+    }
+
     private void setControlsEnabledOnLockscreen(boolean enabled) {
         Settings.Secure.putInt(
                 mContext.getContentResolver(),
