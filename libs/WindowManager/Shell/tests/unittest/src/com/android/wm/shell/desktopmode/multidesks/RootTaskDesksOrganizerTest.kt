@@ -491,6 +491,23 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testActivateDesk_skipReorder() = runTest {
+        val desk = createDeskSuspending()
+
+        val wct = WindowContainerTransaction()
+        organizer.activateDesk(wct, desk.deskRoot.deskId, skipReorder = true)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.type == HierarchyOp.HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.container == desk.deskRoot.taskInfo.token.asBinder()
+                }
+            )
+            .isFalse()
+    }
+
+    @Test
     fun testMoveTaskToDesk() = runTest {
         val desk = createDeskSuspending()
 
@@ -644,6 +661,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 }
             )
             .isTrue()
+    }
+
+    @Test
+    fun deactivateDesk_skipReorder() = runTest {
+        val wct = WindowContainerTransaction()
+        val desk = createDeskSuspending()
+        organizer.activateDesk(wct, desk.deskRoot.deskId)
+
+        organizer.deactivateDesk(wct, desk.deskRoot.deskId, skipReorder = true)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        !hop.toTop &&
+                        hop.container == desk.deskRoot.taskInfo.token.asBinder()
+                }
+            )
+            .isFalse()
     }
 
     @Test

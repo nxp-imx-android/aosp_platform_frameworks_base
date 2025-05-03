@@ -2969,7 +2969,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_TO_FRONT)
         assertNotNull(wct)
-        verify(desksOrganizer, never()).activateDesk(eq(wct), any())
+        verify(desksOrganizer, never()).activateDesk(eq(wct), any(), any())
     }
 
     @Test
@@ -3735,7 +3735,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         verify(desksOrganizer).moveTaskToDesk(any(), eq(targetDeskId), eq(task), eq(false))
-        verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
+        verify(desksOrganizer).activateDesk(any(), eq(targetDeskId), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 DeskTransition.ActivateDeskWithTask(
@@ -3770,7 +3770,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         controller.moveToNextDisplay(task.taskId)
 
-        verify(desksOrganizer).deactivateDesk(any(), eq(sourceDeskId))
+        verify(desksOrganizer).deactivateDesk(any(), eq(sourceDeskId), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 DeskTransition.DeactivateDesk(token = transition, deskId = sourceDeskId)
@@ -4167,7 +4167,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         minimizePipTask(task)
 
-        verify(desksOrganizer).deactivateDesk(any(), eq(deskId))
+        verify(desksOrganizer).deactivateDesk(any(), eq(deskId), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(DeskTransition.DeactivateDesk(transition, deskId))
     }
@@ -5948,7 +5948,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_CLOSE))
 
-        verify(desksOrganizer).deactivateDesk(any(), /* deskId= */ eq(0))
+        verify(desksOrganizer).deactivateDesk(any(), /* deskId= */ eq(0), skipReorder = eq(false))
     }
 
     @Test
@@ -6098,7 +6098,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val transition = Binder()
         controller.handleRequest(transition, createTransition(task, type = TRANSIT_TO_BACK))
 
-        verify(desksOrganizer, never()).deactivateDesk(any(), deskId = eq(0))
+        verify(desksOrganizer, never())
+            .deactivateDesk(any(), deskId = eq(0), skipReorder = eq(false))
         verify(desksTransitionsObserver, never())
             .addPendingTransition(
                 argThat {
@@ -6547,7 +6548,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activateDesk(activatingDeskId, RemoteTransition(TestRemoteTransition()))
 
-        verify(desksOrganizer).deactivateDesk(any(), eq(previouslyActiveDeskId))
+        verify(desksOrganizer)
+            .deactivateDesk(any(), eq(previouslyActiveDeskId), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
@@ -6570,7 +6572,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activatePreviousDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer).activateDesk(any(), eq(1))
+        verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
 
     @Test
@@ -6585,7 +6587,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activateNextDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer).activateDesk(any(), eq(2))
+        verify(desksOrganizer).activateDesk(any(), eq(2), skipReorder = eq(false))
     }
 
     @Test
@@ -6598,7 +6600,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activatePreviousDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer, never()).activateDesk(any(), any())
+        verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
 
     @Test
@@ -6612,7 +6614,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activateNextDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer, never()).activateDesk(any(), any())
+        verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
 
     @Test
@@ -6625,7 +6627,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activatePreviousDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer, never()).activateDesk(any(), any())
+        verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
 
     @Test
@@ -6638,7 +6640,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activateNextDesk(DEFAULT_DISPLAY)
 
-        verify(desksOrganizer, never()).activateDesk(any(), any())
+        verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
 
     @Test
@@ -6658,7 +6660,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activatePreviousDesk(INVALID_DISPLAY)
 
-        verify(desksOrganizer).activateDesk(any(), eq(1))
+        verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
 
     @Test
@@ -6678,7 +6680,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.activateNextDesk(INVALID_DISPLAY)
 
-        verify(desksOrganizer).activateDesk(any(), eq(4))
+        verify(desksOrganizer).activateDesk(any(), eq(4), skipReorder = eq(false))
     }
 
     @Test
@@ -9218,7 +9220,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
-        verify(desksOrganizer).deactivateDesk(any(), eq(DISCONNECTED_DESK_ID))
+        verify(desksOrganizer)
+            .deactivateDesk(any(), eq(DISCONNECTED_DESK_ID), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
@@ -9260,7 +9263,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
-        verify(desksOrganizer).activateDesk(any(), eq(DISCONNECTED_DESK_ID))
+        verify(desksOrganizer)
+            .activateDesk(any(), eq(DISCONNECTED_DESK_ID), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 argThat {
@@ -9429,7 +9433,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             displayId = DEFAULT_DISPLAY,
         )
 
-        verify(desksOrganizer).activateDesk(any(), eq(inactiveDesk))
+        verify(desksOrganizer).activateDesk(any(), eq(inactiveDesk), skipReorder = eq(false))
         verify(desksTransitionsObserver)
             .addPendingTransition(
                 DeskTransition.ActivateDesk(

@@ -22,6 +22,7 @@ import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
@@ -42,7 +43,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -83,7 +87,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 desktopState,
                 desktopConfig,
             )
-        observer = DesksTransitionObserver(desktopUserRepositories, mockDesksOrganizer)
+        observer = DesksTransitionObserver(desktopUserRepositories, mockDesksOrganizer, mock())
     }
 
     @Test
@@ -182,6 +186,25 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(5)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDesk_noDoubleActivation() {
+        val transition = Binder()
+        val change = Change(mock(), mock())
+        whenever(mockDesksOrganizer.isDeskActiveAtEnd(change, deskId = 5)).thenReturn(true)
+        val activateTransition =
+            DeskTransition.ActivateDesk(transition, displayId = DEFAULT_DISPLAY, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0).apply { addChange(change) },
+        )
+
+        verify(mockDesksOrganizer, never()).activateDesk(any(), deskId = eq(5), skipReorder = any())
     }
 
     @Test
@@ -300,6 +323,26 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_deactivateDesk_noDoubleDeactivation() {
+        val transition = Binder()
+        val deskChange = Change(mock(), mock())
+        whenever(mockDesksOrganizer.isDeskChange(deskChange, deskId = 5)).thenReturn(true)
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply { addChange(deskChange) },
+        )
+
+        verify(mockDesksOrganizer, never())
+            .deactivateDesk(any(), deskId = eq(5), skipReorder = any())
     }
 
     @Test
@@ -494,6 +537,54 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(repository.getDeskIds(SECOND_DISPLAY_ID)).isEmpty()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_independentDeskActivation_activatesSkippingReorder() {
+        val deskId = 5
+
+        observer.onTransitionReady(
+            transition = Binder(),
+            info =
+                TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
+                    addChange(
+                        Change(mock(), mock())
+                            .apply { mode = TRANSIT_TO_FRONT }
+                            .also {
+                                whenever(mockDesksOrganizer.isDeskChange(it)).thenReturn(true)
+                                whenever(mockDesksOrganizer.getDeskIdFromChange(it))
+                                    .thenReturn(deskId)
+                            }
+                    )
+                },
+        )
+
+        verify(mockDesksOrganizer).activateDesk(any(), deskId = eq(5), skipReorder = eq(true))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_independentDeskDeactivation_activates() {
+        val deskId = 5
+
+        observer.onTransitionReady(
+            transition = Binder(),
+            info =
+                TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
+                    addChange(
+                        Change(mock(), mock())
+                            .apply { mode = TRANSIT_TO_BACK }
+                            .also {
+                                whenever(mockDesksOrganizer.isDeskChange(it)).thenReturn(true)
+                                whenever(mockDesksOrganizer.getDeskIdFromChange(it))
+                                    .thenReturn(deskId)
+                            }
+                    )
+                },
+        )
+
+        verify(mockDesksOrganizer).deactivateDesk(any(), deskId = eq(5), skipReorder = eq(true))
     }
 
     companion object {
