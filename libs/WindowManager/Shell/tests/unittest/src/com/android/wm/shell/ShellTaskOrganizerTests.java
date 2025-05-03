@@ -35,6 +35,7 @@ import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIO
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -701,6 +702,17 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
                 /* taskId= */ 1, ACTIVITY_TYPE_RECENTS, /* displayId= */ 3);
 
         assertFalse(isHomeTaskOnDefaultDisplay(taskInfo));
+    }
+
+    @Test
+    public void testGetHomeTaskSurface() {
+        RunningTaskInfo taskInfo = createTaskInfo(
+                /* taskId= */ 1, ACTIVITY_TYPE_HOME, /* displayId= */ 2);
+        SurfaceControl taskLeash = new SurfaceControl.Builder()
+                .setName("home_task").build();
+        mOrganizer.onTaskAppeared(taskInfo, taskLeash);
+        assertNull(mOrganizer.getHomeTaskSurface(/* displayId= */ 0));
+        assertEquals(mOrganizer.getHomeTaskSurface(/* displayId= */ 2), taskLeash);
     }
 
     private static RunningTaskInfo createTaskInfo(int taskId, int windowingMode) {
