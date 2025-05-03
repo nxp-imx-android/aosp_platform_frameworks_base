@@ -1259,12 +1259,6 @@ public class BubbleData {
                 b.getIconView() != null && b.getIconView().equals(view));
     }
 
-    /** @return the overflow bubble that matches the provided taskId. */
-    @Nullable
-    Bubble getOverflowBubbleWithTaskId(int taskId) {
-        return getBubbleWithPredicate(mOverflowBubbles, b -> b.getTaskId() == taskId);
-    }
-
     /** @return the overflow bubble that matches the provided key. */
     @Nullable
     public Bubble getOverflowBubbleWithKey(String key) {

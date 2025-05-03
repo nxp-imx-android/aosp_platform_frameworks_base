@@ -670,6 +670,7 @@ public class Bubble implements BubbleViewProvider {
             mBubbleTaskView.cleanup();
             mBubbleTaskView = null;
         }
+        mTaskId = INVALID_TASK_ID;
     }
 
     /**

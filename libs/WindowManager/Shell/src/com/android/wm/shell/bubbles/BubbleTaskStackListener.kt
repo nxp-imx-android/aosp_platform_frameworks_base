@@ -64,14 +64,6 @@ class BubbleTaskStackListener(
             }
             return@onActivityRestartAttempt
         }
-
-        bubbleData.getOverflowBubbleWithTaskId(taskId)?.let { bubble ->
-            if (isBubbleToFullscreen(task)) {
-                moveCollapsedOverflowBubbleToFullscreen(bubble, task)
-            } else {
-                selectAndExpandOverflowBubble(bubble, task)
-            }
-        }
     }
 
     /** Selects and expands a bubble that is currently in the stack. */
@@ -99,36 +91,6 @@ class BubbleTaskStackListener(
                     "moving matching bubble=%s to fullscreen",
             task.taskId,
             bubble.key
-        )
-        collapsedBubbleToFullscreenInternal(bubble, task)
-    }
-
-    /** Selects and expands a bubble that is currently in the overflow. */
-    private fun selectAndExpandOverflowBubble(
-        bubble: Bubble,
-        task: ActivityManager.RunningTaskInfo,
-    ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "selectAndExpandOverflowBubble - taskId=%d selecting matching overflow bubble=%s",
-            task.taskId,
-            bubble.key,
-        )
-        bubbleController.promoteBubbleFromOverflow(bubble)
-        bubbleData.setExpanded(true)
-    }
-
-    /** Moves a collapsed overflow bubble to fullscreen. */
-    private fun moveCollapsedOverflowBubbleToFullscreen(
-        bubble: Bubble,
-        task: ActivityManager.RunningTaskInfo,
-    ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES,
-            "moveCollapsedOverflowBubbleToFullscreen - taskId=%d " +
-                    "moving matching overflow bubble=%s to fullscreen",
-            task.taskId,
-            bubble.key,
         )
         collapsedBubbleToFullscreenInternal(bubble, task)
     }
