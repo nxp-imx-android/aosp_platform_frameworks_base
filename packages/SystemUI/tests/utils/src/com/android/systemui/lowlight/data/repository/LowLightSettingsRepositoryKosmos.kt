@@ -16,7 +16,7 @@
 
 package com.android.systemui.lowlight.data.repository
 
-import android.content.res.mainResources
+import android.content.res.mockResources
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -26,6 +26,6 @@ val Kosmos.lowLightSettingsRepository by Fixture {
     LowLightSettingsRepositoryImpl(
         bgDispatcher = testDispatcher,
         secureSettings = fakeSettings,
-        resources = mainResources,
+        resources = mockResources,
     )
 }
