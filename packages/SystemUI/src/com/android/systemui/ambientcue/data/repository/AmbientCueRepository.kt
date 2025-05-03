@@ -102,7 +102,7 @@ constructor(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
                                             ?: applicationContext.getDrawable(
-                                                R.drawable.clipboard
+                                                R.drawable.ic_content_paste_spark
                                             )!!,
                                     intent = chip.intent,
                                     label = chip.title.toString(),

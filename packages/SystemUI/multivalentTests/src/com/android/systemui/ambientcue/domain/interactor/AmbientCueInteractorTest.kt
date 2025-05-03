@@ -78,7 +78,7 @@ class AmbientCueInteractorTest : SysuiTestCase() {
                     ActionModel(
                         icon =
                             applicationContext.resources.getDrawable(
-                                R.drawable.clipboard,
+                                R.drawable.ic_content_paste_spark,
                                 applicationContext.theme,
                             ),
                         label = "Sunday Morning",
