@@ -20,7 +20,7 @@ import android.app.ActivityManager
 import android.app.WindowConfiguration
 import android.view.Display
 import android.view.WindowManager
-import android.window.DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY
+import android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
@@ -58,7 +58,7 @@ class AppHandleAndHeaderVisibilityHelper (
             return true
         }
 
-        if (!ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
+        if (!ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
             return allowedForTask(taskInfo, display)
         }
         return allowedForTask(taskInfo, display) && allowedForDisplay(display)
@@ -74,7 +74,7 @@ class AppHandleAndHeaderVisibilityHelper (
         }
 
         // TODO (b/382023296): Remove once we no longer rely on
-        //  Flags.enableBugFixesForSecondaryDisplay as it is taken care of in #allowedForDisplay
+        //  DesktopModeFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE as it is taken care of in #allowedForDisplay
         val isOnLargeScreen =
             display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
         if (!desktopState.canEnterDesktopMode
