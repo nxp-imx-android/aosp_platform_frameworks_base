@@ -11,6 +11,16 @@ flag {
 }
 
 flag {
+    name: "clean_up_dead_router_records_after_unbinding"
+    namespace: "media_better_together"
+    description: "Fixes a bug of notifying unbound router records that causes DeadObjectException."
+    bug: "414836668"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_set_bluetooth_ad2p_on_calls"
     namespace: "media_better_together"
     description: "Prevents calls to AudioService.setBluetoothA2dpOn(), known to cause incorrect audio routing to the built-in speakers."
