@@ -25,6 +25,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.android.media.performance.flags.Flags;
+
 /**
  * A simple set of metadata for a media item suitable for display. This can be
  * created using the Builder or retrieved from existing metadata using
@@ -353,7 +355,7 @@ public class MediaDescription implements Parcelable {
          * @return this
          */
         public Builder setIconBitmap(@Nullable Bitmap icon) {
-            mIcon = icon;
+            mIcon = (icon != null && Flags.mediaDescriptionAshmemBitmap()) ? icon.asShared() : icon;
             return this;
         }
 
@@ -397,14 +399,8 @@ public class MediaDescription implements Parcelable {
          * @return a new media description.
          */
         public MediaDescription build() {
-            if (com.android.media.performance.flags.Flags.mediaDescriptionAshmemBitmap()) {
-                Bitmap icon = mIcon != null ? mIcon.asShared() : null;
-                return new MediaDescription(mMediaId, mTitle, mSubtitle, mDescription, icon,
+            return new MediaDescription(mMediaId, mTitle, mSubtitle, mDescription, mIcon,
                         mIconUri, mExtras, mMediaUri);
-            } else {
-                return new MediaDescription(mMediaId, mTitle, mSubtitle, mDescription, mIcon,
-                        mIconUri, mExtras, mMediaUri);
-            }
         }
     }
 }
