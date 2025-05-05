@@ -275,6 +275,7 @@ public class NavigationBarTest extends SysuiTestCase {
         when(mNavigationBarView.getResources()).thenReturn(mResources);
         when(mNavigationBarView.getViewRootImpl()).thenReturn(mViewRootImpl);
         when(mEdgeBackGestureHandlerFactory.create(any())).thenReturn(mEdgeBackGestureHandler);
+        when(mLauncherProxyService.isSystemOrVisibleBgUser()).thenReturn(true);
         setupSysuiDependency();
         // This class inflates views that call Dependency.get, thus these injections are still
         // necessary.

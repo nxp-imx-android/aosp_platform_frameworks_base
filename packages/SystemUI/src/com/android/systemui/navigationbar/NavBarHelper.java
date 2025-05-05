@@ -47,7 +47,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -214,7 +213,7 @@ public final class NavBarHelper implements
             @Main Executor mainExecutor,
             @Background Handler bgHandler) {
         // b/319489709: This component shouldn't be running for a non-primary user
-        if (!Process.myUserHandle().equals(UserHandle.SYSTEM)) {
+        if (!launcherProxyService.isSystemOrVisibleBgUser()) {
             Log.wtf(TAG, "Unexpected initialization for non-primary user", new Throwable());
         }
         mContext = context;
