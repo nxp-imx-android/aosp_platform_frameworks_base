@@ -1688,7 +1688,7 @@ class DesktopTasksController(
                 context,
                 /* requestCode= */ 0,
                 intent,
-                PendingIntent.FLAG_IMMUTABLE,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
                 /* options= */ null,
                 UserHandle.of(userId),
             )
@@ -2745,7 +2745,7 @@ class DesktopTasksController(
                 context,
                 /* requestCode= */ 0,
                 fillIn,
-                PendingIntent.FLAG_IMMUTABLE,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT,
                 /* options= */ null,
                 userHandle,
             )
