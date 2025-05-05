@@ -742,12 +742,12 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"يتعذّر إنشاء نموذج الوجه. يُرجى إعادة المحاولة."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ساطع للغاية. يُرجى تجربة مستوى سطوع أقلّ"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"الإضاءة غير كافية"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"يُرجى إبعاد الهاتف عنك."</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"يُرجى إبعاد الهاتف عن وجهك قليلاً"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"يُرجى تقريب الهاتف منك"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"ارفع الهاتف للأعلى"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"خفّض الهاتف للأسفل"</string>
-    <string name="face_acquired_too_right" msgid="6245286514593540859">"حرِّك الهاتف لجهة اليسار"</string>
-    <string name="face_acquired_too_left" msgid="9201762240918405486">"حرِّك الهاتف لجهة اليمين"</string>
+    <string name="face_acquired_too_high" msgid="8278815780046368576">"يُرجى رفع الهاتف للأعلى"</string>
+    <string name="face_acquired_too_low" msgid="4075391872960840081">"يُرجى خفّض الهاتف للأسفل"</string>
+    <string name="face_acquired_too_right" msgid="6245286514593540859">"يُرجى تحريك الهاتف لجهة اليسار"</string>
+    <string name="face_acquired_too_left" msgid="9201762240918405486">"يُرجى تحريك الهاتف لجهة اليمين"</string>
     <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"يُرجى النظر إلى جهازك مباشرة أكثر."</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ارفع هاتفك إلى مستوى العينَين لأنّه تتعذّر رؤية وجهك"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"حركة أكثر من اللازم. يُرجى حمل الهاتف بثبات."</string>
@@ -2048,8 +2048,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"العروض الترويجية"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"التواصل الاجتماعي"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"الأخبار"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"الاقتراحات"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"لقد عيَّنت أهمية هذه الإشعارات."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"هذه الرسالة مهمة نظرًا لأهمية الأشخاص المعنيين."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"إشعار تطبيق مخصّص"</string>
@@ -2280,8 +2279,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"الانتقال للأسفل أو للأعلى"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"الضغط مع الاستمرار"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"إيقاف مؤقت"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"استئناف"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"تعديل الموضع"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"الانتقال للأعلى"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"الانتقال للأسفل"</string>

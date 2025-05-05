@@ -288,7 +288,7 @@
     <string name="global_action_settings" msgid="4671878836947494217">"Cilësimet"</string>
     <string name="global_action_assist" msgid="2517047220311505805">"Ndihma"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Ndihma zanore"</string>
-    <string name="global_action_lockdown" msgid="2475471405907902963">"Blloko"</string>
+    <string name="global_action_lockdown" msgid="2475471405907902963">"Bllokimi"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Përgjigju"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Njoftim i ri"</string>
@@ -738,7 +738,7 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Modeli i fytyrës nuk krijohet. Provo sërish."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Me shumë ndriçim. Provo një ndriçim më të butë."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Nuk ka dritë të mjaftueshme"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Lëvize telefonin më larg"</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Largoje më shumë telefonin"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"Lëvize telefonin më afër"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Ngrije telefonin më lart"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Ule telefonin më poshtë"</string>

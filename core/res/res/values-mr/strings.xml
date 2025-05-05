@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"फेस मॉडेल तयार करू शकत नाही. पुन्हा प्रयत्न करा."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"गडद चष्मा डिटेक्ट केला. तुमचा चेहरा पूर्णपणे दृश्यमान असणे आवश्यक आहे."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"चेहर्‍यावरील आच्छादन डिटेक्ट केले. तुमचा चेहरा पूर्णपणे दृश्यमान असणे आवश्यक आहे."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"चेहरा झाकलेला असल्याचे डिटेक्ट केले. तुमचा चेहरा पूर्णपणे दृश्यमान असणे आवश्यक आहे."</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"चेहरा पडताळू शकत नाही. हार्डवेअर उपलब्ध नाही."</string>
@@ -1972,7 +1972,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ओके"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिज्युअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिज्युअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"डेटाचा वापर कमी करण्यात मदत करण्यासाठी काही अ‍ॅप्सना बॅकग्राउंडमध्ये डेटा पाठवण्यास किंवा मिळवण्यास डेटा सर्व्हर प्रतिबंध करतो. तुम्ही सध्या वापरत असलेले अ‍ॅप डेटा अ‍ॅक्सेस करू शकते, पण तसे खूप कमी वेळा होते. याचाच अर्थ असा, की तुम्ही इमेजवर टॅप करेपर्यंत त्या डिस्प्ले होणार नाहीत असे होऊ शकते."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"डेटाचा वापर कमी करण्यात मदत करण्यासाठी काही अ‍ॅप्सना बॅकग्राउंडमध्ये डेटा पाठवण्यास किंवा मिळवण्यास डेटा सर्व्हर प्रतिबंध करते. तुम्ही सध्या वापरत असलेले अ‍ॅप डेटा अ‍ॅक्सेस करू शकते, पण तसे खूप कमी वेळा होते. याचाच अर्थ असा, की तुम्ही इमेजवर टॅप करेपर्यंत त्या डिस्प्ले होणार नाहीत."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा सेव्हर सुरू करायचे?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"सुरू करा"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{एका मिनिटासाठी ({formattedTime} पर्यंत)}other{# मिनिटांसाठी ({formattedTime} पर्यंत)}}"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"प्रमोशन"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"सोशल"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"बातम्या"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"सुचवलेले"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"तुम्ही या सूचनांचे महत्त्व सेट केले."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"सामील असलेल्या लोकांमुळे हे महत्वाचे आहे."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"कस्टम ॲप सूचना"</string>
@@ -2276,8 +2275,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"स्क्रोल करा"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"प्रेस करून ठेवा"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"थांबवा"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"पुन्हा सुरू करा"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"स्थिती"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"वर स्क्रोल करा"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"खाली स्क्रोल करा"</string>

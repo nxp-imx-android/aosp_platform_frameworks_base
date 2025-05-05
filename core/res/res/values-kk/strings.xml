@@ -738,8 +738,8 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Бет үлгісі жасалмады. Қайталап көріңіз."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Тым ашық. Күңгірттеу жарық керек."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Жарық жеткіліксіз"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Телефонды алшақ ұстаңыз."</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"Телефонды жақынырақ ұстаңыз."</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Телефонды алшақ ұстаңыз"</string>
+    <string name="face_acquired_too_far" msgid="2922278214231064859">"Телефонды жақынырақ ұстаңыз"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Телефонды жоғарырақ ұстаңыз"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Телефонды төменірек ұстаңыз"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Телефонды солға қарай жылжытыңыз"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Промонауқандар"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Әлеуметтік желі"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Жаңалықтар"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Ұсынылған"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Сіз осы хабарландырулардың маңыздылығын орнатасыз."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Қатысты адамдарға байланысты бұл маңызды."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Арнаулы қолданба хабарландыруы"</string>
@@ -2276,8 +2275,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Айналдыру"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Басып тұру"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Кідірту"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Жалғастыру"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Орналастыру"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Жоғары айналдыру"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Төменге айналдыру"</string>

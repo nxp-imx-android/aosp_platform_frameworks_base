@@ -2046,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Akcijos"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Socialiniai tinklai"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Naujienos"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Siūloma"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Galite nustatyti šių pranešimų svarbą."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Tai svarbu dėl susijusių žmonių."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Tinkintas programos pranešimas"</string>
@@ -2278,8 +2277,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Slinkti"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Ilgai paspausti"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pristabdyti"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Tęsti"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozicija"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Slinkti aukštyn"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Slinkti žemyn"</string>

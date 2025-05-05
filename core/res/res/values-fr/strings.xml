@@ -2045,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promotions"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Réseaux sociaux"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Actualités"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Suggestions"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Vous définissez l\'importance de ces notifications."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ces notifications sont importantes en raison des participants."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notification d\'application personnalisée"</string>

@@ -1789,7 +1789,7 @@
     <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"၎င်းသည် သင်နှင့် အက်ပ်တစ်ခု (သို့) အာရုံခံကိရိယာအကြား ပြန်လှန်တုံ့ပြန်မှုများကို မှတ်သားနိုင်ပြီး သင့်ကိုယ်စား အက်ပ်များနှင့် ပြန်လှန်တုံ့ပြန်နိုင်သည်။"</string>
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"ခွင့်ပြုရန်"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"ပယ်ရန်"</string>
-    <string name="accessibility_dialog_button_uninstall" msgid="2952465517671708108">"ပရိုဂရမ်ကို ဖယ်ရှားရန်"</string>
+    <string name="accessibility_dialog_button_uninstall" msgid="2952465517671708108">"ဖြုတ်ရန်"</string>
     <string name="accessibility_dialog_touch_filtered_warning" msgid="3741940116597822451">"အက်ပ်တစ်ခုသည် ခွင့်ပြုချက်တောင်းဆိုမှုကို ပိတ်နေသဖြင့် သင့်တုံ့ပြန်မှုကို စိစစ်၍မရပါ။"</string>
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ဝန်ဆောင်မှုကို စတင်အသုံးပြုရန် တို့ပါ−"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"အများသုံးနိုင်မှု ခလုတ်ဖြင့် အသုံးပြုရန် ဝန်ဆောင်မှုများကို ရွေးပါ"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ပရိုမိုးရှင်းများ"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"လူမှုရေး"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"သတင်း"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"အကြံပြုထားသည်များ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"ဤသတိပေးချက်များ၏ အရေးပါမှုကိုသတ်မှတ်ပြီးပါပြီ။"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ပါဝင်သည့်လူများကြောင့် အရေးပါပါသည်။"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"စိတ်ကြိုက်အက်ပ် အကြောင်းကြားချက်"</string>

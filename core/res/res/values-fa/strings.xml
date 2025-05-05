@@ -1092,7 +1092,7 @@
     <string name="keyguard_accessibility_unlock_area_expanded" msgid="7768634718706488951">"منطقه بازگشایی گسترده شد."</string>
     <string name="keyguard_accessibility_unlock_area_collapsed" msgid="4729922043778400434">"منطقه بازگشایی کوچک شد."</string>
     <string name="keyguard_accessibility_widget" msgid="6776892679715699875">"ابزاره <xliff:g id="WIDGET_INDEX">%1$s</xliff:g>."</string>
-    <string name="keyguard_accessibility_user_selector" msgid="1466067610235696600">"انتخابگر کاربر"</string>
+    <string name="keyguard_accessibility_user_selector" msgid="1466067610235696600">"انتخاب‌گر کاربر"</string>
     <string name="keyguard_accessibility_status" msgid="6792745049712397237">"وضعیت"</string>
     <string name="keyguard_accessibility_camera" msgid="7862557559464986528">"دوربین"</string>
     <string name="keygaurd_accessibility_media_controls" msgid="2267379779900620614">"کنترل‌های رسانه"</string>
@@ -1239,7 +1239,7 @@
     <string name="error_handwriting_unsupported_password" msgid="5095401146106891087">"در فیلدهای گذرواژه از دست‌نویسی پشتیبانی نمی‌شود"</string>
     <string name="input_method_nav_back_button_desc" msgid="3655838793765691787">"برگشتن"</string>
     <string name="input_method_ime_switch_button_desc" msgid="2736542240252198501">"تغییر روش ورودی"</string>
-    <string name="input_method_ime_switch_long_click_action_desc" msgid="3161942124116646998">"باز کردن انتخابگر روش ورودی"</string>
+    <string name="input_method_ime_switch_long_click_action_desc" msgid="3161942124116646998">"باز کردن انتخاب‌گر روش ورودی"</string>
     <string name="input_method_switcher_settings_button" msgid="5609835654697108485">"تنظیمات"</string>
     <string name="low_internal_storage_view_title" msgid="9024241779284783414">"فضای ذخیره‌سازی درحال پر شدن است"</string>
     <string name="low_internal_storage_view_text" msgid="8172166728369697835">"برخی از عملکردهای سیستم ممکن است کار نکنند"</string>
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"تبلیغات ویژه"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"اجتماعی"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"اخبار"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"پیشنهادی"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"شما اهمیت این اعلان‌ها را تنظیم می‌کنید."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"به دلیل افراد درگیر مهم است."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"اعلان برنامه سفارشی"</string>
@@ -2567,5 +2566,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>
-    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"برای بازنگری نکات مربوط به بهبود تجربه قفل‌گشایی، تک‌ضرب بزنید"</string>
+    <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"برای بازبینی نکات مربوط به بهبود تجربه قفل‌گشایی، تک‌ضرب بزنید"</string>
 </resources>

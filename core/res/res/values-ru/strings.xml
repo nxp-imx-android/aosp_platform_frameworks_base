@@ -763,7 +763,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"Невозможно создать модель лица. Повторите попытку."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"Обнаружены темные очки. Лицо должно быть полностью видно"</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Часть лица закрыта. Оно должно быть полностью видно."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Часть лица закрыта. Оно должно быть полностью видно"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Не удалось распознать лицо. Сканер недоступен."</string>
@@ -2046,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Промоакции"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Общение"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Новости"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Рекомендации"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Вы определяете важность этих уведомлений."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Важное (люди)"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Уведомление пользовательского приложения"</string>
@@ -2278,8 +2277,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Прокрутить"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Долгое нажатие"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Приостановить"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Продолжить"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Положение"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Прокрутка вверх"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Прокрутка вниз"</string>

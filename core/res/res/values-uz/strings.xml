@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promoaksiyalar"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Ijtimoiy"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Yangiliklar"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Tavsiya etiladi"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Siz ushbu bildirishnomalarning muhimligini belgilagansiz."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Bu odamlar siz uchun muhim."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Maxsus ilova bildirishnomasi"</string>
@@ -2276,8 +2275,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Aylantirish"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Bosib turish"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pauza"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Davom etish"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Joylashuvi"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Tepaga varaqlash"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Pastga varaqlash"</string>

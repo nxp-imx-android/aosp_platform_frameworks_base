@@ -1827,7 +1827,7 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Можете да користите микрофон слушног апарата за хендсфри позивање. Тиме се микрофон мења само током позива."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Промени"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Подешавања"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Пребацивање на <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Пребацивање на: <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Одјављује се <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Власник"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гост"</string>
@@ -2276,8 +2276,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Скролујте"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Дуг притисак"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Паузирај"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Настави"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Позиција"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Скролуј нагоре"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Скролуј надоле"</string>

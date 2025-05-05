@@ -739,7 +739,7 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"No es pot crear el model facial. Torna-ho a provar."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Massa brillant Prova una il·luminació més suau."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"No hi ha prou llum"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Allunya\'t del telèfon"</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Allunya el telèfon"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"Apropa el telèfon"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Apuja el telèfon"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Abaixa el telèfon"</string>
@@ -762,7 +762,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"No es pot crear el model facial. Torna-ho a provar."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"S\'han detectat ulleres fosques. La cara ha de veure\'s sencera."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Tens la cara tapada. La cara ha de veure\'s sencera."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Tens la cara tapada. S\'ha de veure sencera."</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"No es pot verificar la cara. Maquinari no disponible."</string>
@@ -1806,8 +1806,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuació extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Audiòfons"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automàtic"</string>
-    <!-- no translation found for mouse_keys_feature_name (3362643216513384542) -->
-    <skip />
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Tecles del ratolí"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconnectat"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connectat"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Actiu"</string>
@@ -2046,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocions"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Social"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Notícies"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Suggeriments"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Has definit la importància d\'aquestes notificacions."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Aquest missatge és important per les persones implicades."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notificació d\'aplicació personalitzada"</string>
@@ -2278,8 +2276,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desplaça"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Mantén premut"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Posa en pausa"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Reprèn"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posició"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desplaça\'t cap amunt"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desplaça\'t cap avall"</string>
@@ -2294,7 +2291,7 @@
     <string name="conversation_title_fallback_group_chat" msgid="456073374993104303">"Conversa de grup"</string>
     <string name="unread_convo_overflow" msgid="920517615597353833">"<xliff:g id="MAX_UNREAD_COUNT">%1$d</xliff:g>+"</string>
     <string name="resolver_personal_tab" msgid="2051260504014442073">"Personal"</string>
-    <string name="resolver_work_tab" msgid="2690019516263167035">"Feina"</string>
+    <string name="resolver_work_tab" msgid="2690019516263167035">"Treball"</string>
     <string name="resolver_personal_tab_accessibility" msgid="5739524949153091224">"Visualització personal"</string>
     <string name="resolver_work_tab_accessibility" msgid="4753168230363802734">"Visualització de treball"</string>
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"Bloquejat per l\'administrador de TI"</string>

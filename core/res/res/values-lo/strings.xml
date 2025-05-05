@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ໂປຣໂມຊັນ"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"ສັງຄົມ"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ຂ່າວ"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"ແນະນຳ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"ທ່ານຕັ້ງຄວາມສຳຄັນຂອງການແຈ້ງເຕືອນເຫຼົ່ານີ້."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ຂໍ້ຄວາມນີ້ສຳຄັນເນື່ອງຈາກບຸກຄົນທີ່ກ່ຽວຂ້ອງ."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ການແຈ້ງເຕືອນແອັບແບບກຳນົດເອງ"</string>
@@ -2276,8 +2275,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ເລື່ອນ"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ກົດຄ້າງໄວ້"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ຢຸດຊົ່ວຄາວ"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"ສືບຕໍ່"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ຕຳແໜ່ງ"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ເລື່ອນຂຶ້ນ"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"ເລື່ອນລົງ"</string>
@@ -2292,7 +2290,7 @@
     <string name="conversation_title_fallback_group_chat" msgid="456073374993104303">"ການສົນທະນາກຸ່ມ"</string>
     <string name="unread_convo_overflow" msgid="920517615597353833">"<xliff:g id="MAX_UNREAD_COUNT">%1$d</xliff:g>+"</string>
     <string name="resolver_personal_tab" msgid="2051260504014442073">"ສ່ວນຕົວ"</string>
-    <string name="resolver_work_tab" msgid="2690019516263167035">"ວຽກ"</string>
+    <string name="resolver_work_tab" msgid="2690019516263167035">"ບ່ອນເຮັດວຽກ"</string>
     <string name="resolver_personal_tab_accessibility" msgid="5739524949153091224">"ມຸມມອງສ່ວນຕົວ"</string>
     <string name="resolver_work_tab_accessibility" msgid="4753168230363802734">"ມຸມມອງວຽກ"</string>
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"ຖືກບລັອກໄວ້ໂດຍຜູ້ເບິ່ງແຍງໄອທີຂອງທ່ານ"</string>

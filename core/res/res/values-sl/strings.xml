@@ -740,7 +740,7 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Modela obraza ni mogoče ustvariti. Poskusite znova."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Presvetlo. Poskusite z blažjo osvetlitvijo."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Premalo svetlobe"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Telefon nekoliko odmaknite."</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Telefon nekoliko odmaknite"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"Bolj približajte telefon."</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Telefon premaknite višje"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Telefon premaknite nižje"</string>
@@ -2046,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocije"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Družbeno"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Novice"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Predlagano"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Vi določite raven pomembnosti teh obvestil."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Pomembno zaradi udeleženih ljudi."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Obvestilo po meri iz aplikacije"</string>
@@ -2278,8 +2277,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Drsenje"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Dolg pritisk"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Začasna zaustavitev"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Nadaljuj"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Položaj"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Pomik gor"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Pomik dol"</string>

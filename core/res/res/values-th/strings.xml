@@ -750,9 +750,9 @@
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"โปรดลงทะเบียนใบหน้าอีกครั้ง"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"ไม่รู้จักใบหน้า โปรดลองอีกครั้ง"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"เปลี่ยนตำแหน่งของศีรษะเล็กน้อย"</string>
-    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"โปรดมองตรงมาที่โทรศัพท์"</string>
-    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"โปรดมองตรงมาที่โทรศัพท์"</string>
-    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"โปรดมองตรงมาที่โทรศัพท์"</string>
+    <string name="face_acquired_pan_too_extreme" msgid="5417928604710621088">"มองตรงมาที่โทรศัพท์"</string>
+    <string name="face_acquired_tilt_too_extreme" msgid="5715715666540716620">"มองตรงมาที่โทรศัพท์"</string>
+    <string name="face_acquired_roll_too_extreme" msgid="8261939882838881194">"มองตรงมาที่โทรศัพท์"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"เอาสิ่งที่ปิดบังใบหน้าออก"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"ทำความสะอาดด้านบนของหน้าจอ รวมถึงแถบสีดำ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -2044,8 +2044,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"โปรโมชัน"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"โซเชียล"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ข่าว"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"แนะนำ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"คุณตั้งค่าความสำคัญของการแจ้งเตือนเหล่านี้"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ข้อความนี้สำคัญเนื่องจากบุคคลที่เกี่ยวข้อง"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"การแจ้งเตือนที่กำหนดเองของแอป"</string>

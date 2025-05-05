@@ -2045,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promoțiii"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Rețele sociale"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Știri"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Sugestii"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Tu setezi importanța acestor notificări."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Notificarea este importantă având în vedere persoanele implicate."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notificare de aplicație personalizată"</string>

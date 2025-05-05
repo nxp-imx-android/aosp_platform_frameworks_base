@@ -1828,7 +1828,7 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Możesz używać mikrofonu w aparacie słuchowym, aby dzwonić bez użycia rąk. Mikrofon zostanie przełączony tylko na czas połączenia."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Przełącz"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ustawienia"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Przełączam na użytkownika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Przełączam na użytkownika: <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Wylogowuję użytkownika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Właściciel"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gość"</string>
@@ -2046,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocje"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Społecznościowe"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Wiadomości"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Sugerowane"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Ustawiłeś ważność tych powiadomień."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Ta wiadomość jest ważna ze względu na osoby uczestniczące w wątku."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Niestandardowe powiadomienie z aplikacji"</string>

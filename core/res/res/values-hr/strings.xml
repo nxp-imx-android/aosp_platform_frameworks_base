@@ -741,8 +741,8 @@
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Nema dovoljno svjetla"</string>
     <string name="face_acquired_too_close" msgid="4453646176196302462">"Udaljite telefon"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"Približite telefon"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"Pomaknite telefon prema gore"</string>
-    <string name="face_acquired_too_low" msgid="4075391872960840081">"Pomaknite telefon prema dolje"</string>
+    <string name="face_acquired_too_high" msgid="8278815780046368576">"Pomaknite telefon više"</string>
+    <string name="face_acquired_too_low" msgid="4075391872960840081">"Pomaknite telefon niže"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Pomaknite telefon ulijevo"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Pomaknite telefon udesno"</string>
     <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"Gledajte izravnije prema uređaju."</string>
@@ -1827,7 +1827,7 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mikrofon slušnog pomagala možete koristiti za pozivanje bez upotrebe ruku. Mikrofon se koristi samo tijekom poziva."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Prebaci"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Postavke"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Prebacivanje na korisnika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Prebacivanje na: <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Odjavljivanje korisnika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Vlasnik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gost"</string>
@@ -2045,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promocije"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Društvene mreže"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Vijesti"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Predloženo"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Postavili ste važnost tih obavijesti."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Važno je zbog uključenih osoba."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Prilagođena obavijest aplikacije"</string>
@@ -2066,7 +2065,7 @@
     <string name="app_suspended_title" msgid="888873445010322650">"Aplikacija nije dostupna"</string>
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Aplikacija <xliff:g id="APP_NAME_0">%1$s</xliff:g> trenutačno nije dostupna. Ovime upravlja aplikacija <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Saznajte više"</string>
-    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Prekini pauzu aplikacije"</string>
+    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Prestani pauzirati aplikaciju"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Pokrenuti poslovne aplikacije?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Ponovno pokreni"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Hitni slučaj"</string>
@@ -2277,8 +2276,7 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Pomakni se"</string>
     <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Dugi pritisak"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pauziraj"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
-    <skip />
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Nastavi"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Pozicija"</string>
     <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Pomakni prema gore"</string>
     <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Pomakni prema dolje"</string>
@@ -2299,7 +2297,7 @@
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"Blokirao vaš IT administrator"</string>
     <string name="resolver_cant_share_with_work_apps_explanation" msgid="9071442683080586643">"Taj se sadržaj ne može dijeliti pomoću poslovnih aplikacija"</string>
     <string name="resolver_cant_access_work_apps_explanation" msgid="1129960195389373279">"Taj se sadržaj ne može otvoriti pomoću poslovnih aplikacija"</string>
-    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Taj se sadržaj ne može dijeliti pomoću osobnih aplikacija"</string>
+    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"Taj se sadržaj ne može dijeliti s osobnim aplikacijama"</string>
     <string name="resolver_cant_access_personal_apps_explanation" msgid="1679399548862724359">"Taj se sadržaj ne može otvoriti pomoću osobnih aplikacija"</string>
     <string name="resolver_turn_on_work_apps" msgid="1535946298236678122">"Poslovne aplikacije su pauzirane"</string>
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"Ponovno pokreni"</string>
