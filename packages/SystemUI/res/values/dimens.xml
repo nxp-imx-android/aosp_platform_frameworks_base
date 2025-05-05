@@ -2265,6 +2265,7 @@
     <dimen name="tile_details_entry_gap">2dp</dimen>
     <dimen name="tile_details_bottom_padding">14dp</dimen>
     <dimen name="tile_details_horizontal_padding">14dp</dimen>
+    <dimen name="tile_details_vertical_padding">8dp</dimen>
     <!-- Tile Details end -->
 
 </resources>
