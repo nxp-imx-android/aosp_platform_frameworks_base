@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -77,13 +78,7 @@ abstract class BaseSettingsProviderTest {
     }
 
     protected void setStringViaFrontEndApiSetting(int type, String name, String value, int userId) {
-        setStringViaFrontEndApiSetting(type, name, value, userId, Context.DEVICE_ID_DEFAULT);
-    }
-
-    protected void setStringViaFrontEndApiSetting(int type, String name, String value, int userId,
-            int deviceId) {
-        ContentResolver contentResolver =
-                getContext().createDeviceContext(deviceId).getContentResolver();
+        ContentResolver contentResolver = getContext().getContentResolver();
 
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
@@ -105,13 +100,7 @@ abstract class BaseSettingsProviderTest {
     }
 
     protected String getStringViaFrontEndApiSetting(int type, String name, int userId) {
-        return getStringViaFrontEndApiSetting(type, name, userId, Context.DEVICE_ID_DEFAULT);
-    }
-
-    protected String getStringViaFrontEndApiSetting(int type, String name, int userId,
-            int deviceId) {
-        ContentResolver contentResolver = getContext().createDeviceContext(deviceId)
-                .getContentResolver();
+        ContentResolver contentResolver = getContext().getContentResolver();
 
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
@@ -134,12 +123,6 @@ abstract class BaseSettingsProviderTest {
 
     protected Uri insertStringViaProviderApi(int type, String name, String value,
             boolean withTableRowUri) {
-        return insertStringViaProviderApi(type, name, value, withTableRowUri,
-                Context.DEVICE_ID_DEFAULT);
-    }
-
-    protected Uri insertStringViaProviderApi(int type, String name, String value,
-            boolean withTableRowUri, int deviceId) {
         Uri uri = getBaseUriForType(type);
         if (withTableRowUri) {
             uri = Uri.withAppendedPath(uri, name);
@@ -148,7 +131,7 @@ abstract class BaseSettingsProviderTest {
         values.put(Settings.NameValueTable.NAME, name);
         values.put(Settings.NameValueTable.VALUE, value);
 
-        return getContext().createDeviceContext(deviceId).getContentResolver().insert(uri, values);
+        return getContext().getContentResolver().insert(uri, values);
     }
 
     protected int deleteStringViaProviderApi(int type, String name) {
@@ -307,30 +290,70 @@ abstract class BaseSettingsProviderTest {
         }
     }
 
+    protected static String getSettingViaShell(int type, String name, int userId, int deviceId)
+            throws Exception {
+        byte[] result;
+        switch (type) {
+            case SETTING_TYPE_GLOBAL: {
+                result = executeShellCommand("settings get --user " + userId + " --deviceId "
+                        + deviceId + " global " + name);
+
+            } break;
+
+            case SETTING_TYPE_SECURE: {
+                result = executeShellCommand("settings get --user " + userId + " --deviceId "
+                        + deviceId + " secure " + name);
+            } break;
+
+            case SETTING_TYPE_SYSTEM: {
+                result = executeShellCommand("settings get --user " + userId + " --deviceId "
+                        + deviceId + " system " + name);
+            } break;
+
+            default: {
+                throw new IllegalArgumentException("Invalid type: " + type);
+            }
+        }
+        // Remove trailing line breaks from the output.
+        return new String(result, StandardCharsets.UTF_8).replaceAll("\n", "");
+    }
+
     protected static void setSettingViaShell(int type, String name, String value,
             boolean makeDefault) throws IOException {
-        setSettingViaShell(type, name, value, null, makeDefault);
+        setSettingViaShell(type, name, value, null /* token */, makeDefault);
     }
 
     protected static void setSettingViaShell(int type, String name, String value,
             String token, boolean makeDefault) throws IOException {
+        setSettingViaShell(type, name, value, token, makeDefault, UserHandle.USER_SYSTEM,
+                Context.DEVICE_ID_DEFAULT);
+    }
+
+    protected static void setSettingViaShell(int type, String name, String value,
+            int userId, int deviceId) throws Exception {
+        setSettingViaShell(type, name, value, null /* token */, true /* makeDefault */, userId,
+                deviceId);
+    }
+
+    protected static void setSettingViaShell(int type, String name, String value,
+            String token, boolean makeDefault, int userId, int deviceId) throws IOException {
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
-                executeShellCommand("settings put global " + name + " "
-                        + value + (token != null ? " " + token : "")
+                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
+                        + " global " + name + " " + value + (token != null ? " " + token : "")
                         + (makeDefault ? " default" : ""));
 
             } break;
 
             case SETTING_TYPE_SECURE: {
-                executeShellCommand("settings put secure " + name + " "
-                        + value + (token != null ? " " + token : "")
+                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
+                        + " secure " + name + " " + value + (token != null ? " " + token : "")
                         + (makeDefault ? " default" : ""));
             } break;
 
             case SETTING_TYPE_SYSTEM: {
-                executeShellCommand("settings put system " + name + " "
-                        + value + (token != null ? " " + token : "")
+                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
+                        + " system " + name + " " + value + (token != null ? " " + token : "")
                         + (makeDefault ? " default" : ""));
             } break;
 
@@ -384,9 +407,9 @@ abstract class BaseSettingsProviderTest {
         }
     }
 
-    protected static void executeShellCommand(String command) throws IOException {
+    private static byte[] executeShellCommand(String command) throws IOException {
         InputStream is = new FileInputStream(InstrumentationRegistry.getInstrumentation()
                 .getUiAutomation().executeShellCommand(command).getFileDescriptor());
-        Streams.readFully(is);
+        return Streams.readFully(is);
     }
 }
