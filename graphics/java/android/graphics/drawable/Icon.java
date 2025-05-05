@@ -20,6 +20,7 @@ import static android.content.Context.CONTEXT_INCLUDE_CODE;
 import static android.content.Context.CONTEXT_RESTRICTED;
 
 import static com.android.graphics.flags.Flags.iconLoadDrawableReturnNullWhenUriDecodeFails;
+import static com.android.graphics.flags.Flags.useResourcesFromContextToCreateDrawableIcons;
 
 import android.annotation.ColorInt;
 import android.annotation.DrawableRes;
@@ -459,7 +460,13 @@ public final class Icon implements Parcelable {
                         resPackage = context.getPackageName();
                     }
                     if ("android".equals(resPackage)) {
-                        mObj1 = Resources.getSystem();
+                        if (useResourcesFromContextToCreateDrawableIcons()) {
+                            // Gets display aware resources from the context, that is already
+                            // supposed to be associated with the display the icon will be shown in.
+                            mObj1 = context.getResources();
+                        } else {
+                            mObj1 = Resources.getSystem();
+                        }
                     } else {
                         final PackageManager pm = context.getPackageManager();
                         try {
