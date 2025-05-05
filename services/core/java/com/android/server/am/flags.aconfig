@@ -9,13 +9,6 @@ flag {
 }
 
 flag {
-    name: "fgs_boot_completed"
-    namespace: "backstage_power"
-    description: "Disable BOOT_COMPLETED broadcast FGS start for certain types"
-    bug: "296558535"
-}
-
-flag {
     name: "fgs_disable_saw"
     namespace: "backstage_power"
     description: "Disable System Alert Window FGS start"
