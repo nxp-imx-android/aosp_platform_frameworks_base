@@ -5462,6 +5462,7 @@
   <java-symbol type="integer" name="config_batteryHistoryStorageSize" />
   <java-symbol type="integer" name="config_batteryHistoryDumpWindowSize" />
   <java-symbol type="integer" name="config_batteryHistoryDumpCheckinWindowSize" />
+  <java-symbol type="integer" name="config_batteryHistoryDumpRealCheckinWindowSize" />
 
   <!--Dynamic Tokens-->
   <java-symbol name="system_accent1_0_light" type="color"/>
