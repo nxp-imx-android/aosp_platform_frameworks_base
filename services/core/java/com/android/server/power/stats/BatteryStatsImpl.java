@@ -131,8 +131,6 @@ import com.android.internal.os.PowerProfile;
 import com.android.internal.os.PowerStats;
 import com.android.internal.os.RailStats;
 import com.android.internal.os.RpmStats;
-import com.android.internal.power.EnergyConsumerStats;
-import com.android.internal.power.EnergyConsumerStats.StandardPowerBucket;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.XmlUtils;
@@ -191,7 +189,7 @@ public class BatteryStatsImpl extends BatteryStats {
     // TODO: remove "tcp" from network methods, since we measure total stats.
 
     // Current on-disk Parcel version. Must be updated when the format of the parcelable changes
-    public static final int VERSION = 215;
+    public static final int VERSION = 216;
 
     // The maximum number of names wakelocks we will keep track of
     // per uid; once the limit is reached, we batch the remaining wakelocks
@@ -520,13 +518,6 @@ public class BatteryStatsImpl extends BatteryStats {
     public LongSparseArray<SamplingTimer> getKernelMemoryStats() {
         return mKernelMemoryStats;
     }
-
-    private static final int[] SUPPORTED_PER_PROCESS_STATE_STANDARD_ENERGY_BUCKETS = {
-            EnergyConsumerStats.POWER_BUCKET_CPU,
-            EnergyConsumerStats.POWER_BUCKET_MOBILE_RADIO,
-            EnergyConsumerStats.POWER_BUCKET_WIFI,
-            EnergyConsumerStats.POWER_BUCKET_BLUETOOTH,
-    };
 
     // TimeInState counters need NUM_PROCESS_STATE states in order to accommodate
     // Uid.PROCESS_STATE_NONEXISTENT, which is outside the range of legitimate proc states.
@@ -1706,10 +1697,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
     int mWifiRadioPowerState = DataConnectionRealTimeInfo.DC_POWER_STATE_LOW;
 
-    // TODO
-    @GuardedBy("this")
-    @VisibleForTesting
-    protected @Nullable EnergyConsumerStats.Config mEnergyConsumerStatsConfig;
+    private @NonNull String[] mCustomEnergyConsumerNames = new String[0];
 
     /**
      * These provide time bases that discount the time the device is plugged
@@ -7761,18 +7749,7 @@ public class BatteryStatsImpl extends BatteryStats {
      */
     @Override
     public @NonNull String[] getCustomEnergyConsumerNames() {
-        synchronized (this) {
-            if (mEnergyConsumerStatsConfig == null) {
-                return new String[0];
-            }
-            final String[] names = mEnergyConsumerStatsConfig.getCustomBucketNames();
-            for (int i = 0; i < names.length; i++) {
-                if (TextUtils.isEmpty(names[i])) {
-                    names[i] = "CUSTOM_" + BatteryConsumer.FIRST_CUSTOM_POWER_COMPONENT_ID + i;
-                }
-            }
-            return names;
-        }
+        return mCustomEnergyConsumerNames;
     }
 
     @Override
@@ -10416,11 +10393,6 @@ public class BatteryStatsImpl extends BatteryStats {
                             elapsedRealtimeMs);
                 }
 
-//                final EnergyConsumerStats energyStats =
-//                        getOrCreateEnergyConsumerStatsIfSupportedLocked();
-//                if (energyStats != null) {
-//                    energyStats.setState(batteryConsumerProcessState, elapsedRealtimeMs);
-//                }
                 maybeScheduleExternalStatsSync(prevBatteryConsumerProcessState,
                         batteryConsumerProcessState);
             }
@@ -13386,6 +13358,13 @@ public class BatteryStatsImpl extends BatteryStats {
                 mPowerStatsCollectorEnabled.get(BatteryConsumer.POWER_COMPONENT_ANY));
         mCustomEnergyConsumerPowerStatsCollector.schedule();
 
+        mHandler.post(() -> {
+            synchronized (BatteryStatsImpl.this) {
+                noteCustomEnergyConsumerNamesLocked(
+                        mCustomEnergyConsumerPowerStatsCollector.getCustomEnergyConsumerNames());
+            }
+        });
+
         mSystemReady = true;
     }
 
@@ -14455,45 +14434,21 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    /**
-     * Initialize the EnergyConsumer stats data structures.
-     *
-     * @param supportedStandardBuckets boolean array indicating which {@link StandardPowerBucket}s
-     *                                 are currently supported. If null, none are supported
-     *                                 (regardless of customBucketNames).
-     * @param customBucketNames        names of custom (OTHER) EnergyConsumers on this device
-     */
+    @VisibleForTesting
     @GuardedBy("this")
-    public void initEnergyConsumerStatsLocked(@Nullable boolean[] supportedStandardBuckets,
-            String[] customBucketNames) {
-        if (supportedStandardBuckets != null) {
-            final EnergyConsumerStats.Config config = new EnergyConsumerStats.Config(
-                    supportedStandardBuckets, customBucketNames,
-                    SUPPORTED_PER_PROCESS_STATE_STANDARD_ENERGY_BUCKETS,
-                    getBatteryConsumerProcessStateNames());
-
-            if (mEnergyConsumerStatsConfig != null
-                    &&  !mEnergyConsumerStatsConfig.isCompatible(config)) {
-                // Supported power buckets changed since last boot.
-                // Save accumulated battery usage stats before resetting
-                saveBatteryUsageStatsOnNewSession();
-                // Existing data is no longer reliable.
-                resetAllStatsLocked(SystemClock.uptimeMillis(), SystemClock.elapsedRealtime(),
-                        RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
-            }
-
-            mEnergyConsumerStatsConfig = config;
-        } else {
-            if (mEnergyConsumerStatsConfig != null) {
-                // EnergyConsumer no longer supported
-                // Save accumulated battery usage stats before resetting
-                saveBatteryUsageStatsOnNewSession();
-                // Wipe out the current battery session data.
-                resetAllStatsLocked(SystemClock.uptimeMillis(), SystemClock.elapsedRealtime(),
-                        RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
-            }
-            mEnergyConsumerStatsConfig = null;
+    protected void noteCustomEnergyConsumerNamesLocked(@NonNull String[] names) {
+        if (Arrays.equals(names, mCustomEnergyConsumerNames)) {
+            return;
         }
+
+        // Some EnergyConsumer got added or are no longer supported
+        // Save accumulated battery usage stats before resetting
+        saveBatteryUsageStatsOnNewSession();
+        // Wipe out the current battery session data.
+        resetAllStatsLocked(SystemClock.uptimeMillis(), SystemClock.elapsedRealtime(),
+                RESET_REASON_ENERGY_CONSUMER_BUCKETS_CHANGE);
+
+        mCustomEnergyConsumerNames = Arrays.copyOf(names, names.length);
     }
 
     @NonNull
@@ -15104,20 +15059,13 @@ public class BatteryStatsImpl extends BatteryStats {
         mNextMaxDailyDeadlineMs = in.readLong();
         mBatteryTimeToFullSeconds = in.readLong();
 
-        final EnergyConsumerStats.Config config = EnergyConsumerStats.Config.createFromParcel(in);
-
-        // Read and ignore
-        EnergyConsumerStats.createAndReadSummaryFromParcel(mEnergyConsumerStatsConfig, in);
-
-        if (config != null && Arrays.equals(config.getStateNames(),
-                getBatteryConsumerProcessStateNames())) {
-            /**
-             * WARNING: Supported buckets may have changed across boots. Bucket mismatch is handled
-             *          later when {@link #initEnergyConsumerStatsLocked} is called.
-             */
-            mEnergyConsumerStatsConfig = config;
+        String[] stateNames = in.readStringArray();
+        if (!Arrays.equals(stateNames, getBatteryConsumerProcessStateNames())) {
+            throw new ParcelFormatException("Incompatible proc state name change. Saved names: "
+                            + Arrays.toString(stateNames));
         }
 
+        mCustomEnergyConsumerNames = in.readStringArray();
         mStartCount++;
 
         mScreenState = Display.STATE_UNKNOWN;
@@ -15449,9 +15397,6 @@ public class BatteryStatsImpl extends BatteryStats {
                 u.mWifiRadioApWakeupCount = null;
             }
 
-            // Read and ignore.
-            EnergyConsumerStats.createAndReadSummaryFromParcel(mEnergyConsumerStatsConfig, in);
-
             int NW = in.readInt();
             if (NW > (MAX_WAKELOCKS_PER_UID+1)) {
                 throw new ParcelFormatException("File corrupt: too many wake locks " + NW);
@@ -15623,8 +15568,8 @@ public class BatteryStatsImpl extends BatteryStats {
         out.writeLong(mNextMaxDailyDeadlineMs);
         out.writeLong(mBatteryTimeToFullSeconds);
 
-        EnergyConsumerStats.Config.writeToParcel(mEnergyConsumerStatsConfig, out);
-        out.writeInt(0);        // RESERVED
+        out.writeStringArray(getBatteryConsumerProcessStateNames());
+        out.writeStringArray(mCustomEnergyConsumerNames);
 
         mScreenOnTimer.writeSummaryFromParcelLocked(out, nowRealtime);
         mScreenDozeTimer.writeSummaryFromParcelLocked(out, nowRealtime);
@@ -15974,8 +15919,6 @@ public class BatteryStatsImpl extends BatteryStats {
             } else {
                 out.writeInt(0);
             }
-
-            out.writeInt(0);        // RESERVED
 
             final ArrayMap<String, Uid.Wakelock> wakeStats = u.mWakelockStats.getMap();
             int NW = wakeStats.size();

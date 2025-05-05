@@ -38,14 +38,12 @@ import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidUserSysTimeRea
 import com.android.internal.os.KernelSingleUidTimeReader;
 import com.android.internal.os.MonotonicClock;
 import com.android.internal.os.PowerProfile;
-import com.android.internal.power.EnergyConsumerStats;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Queue;
 
 /**
@@ -125,16 +123,6 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         PowerProfile powerProfile = mock(PowerProfile.class);
         when(powerProfile.getNumDisplays()).thenReturn(1);
         return powerProfile;
-    }
-
-    public void initMeasuredEnergyStats(String[] customBucketNames) {
-        final boolean[] supportedStandardBuckets =
-                new boolean[EnergyConsumerStats.NUMBER_STANDARD_POWER_BUCKETS];
-        Arrays.fill(supportedStandardBuckets, true);
-        synchronized (this) {
-            mEnergyConsumerStatsConfig = new EnergyConsumerStats.Config(supportedStandardBuckets,
-                    customBucketNames, new int[0], new String[]{""});
-        }
     }
 
     public TimeBase getOnBatteryTimeBase() {
