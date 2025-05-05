@@ -276,21 +276,32 @@ public class CollapsingToolbarDelegate {
         layout.onItemSelected(itemList);
     }
 
+    private @Nullable ScrollableToolbarItemLayout getToolbarItemsLayout() {
+        if (mFloatingToolbarLayout == null) {
+            return null;
+        }
+        return mFloatingToolbarLayout.findViewById(R.id.floating_toolbar_items);
+    }
+
     /**
      * Sets the item selected listener for the floating toolbar.
      */
     public void setOnItemSelectedListener(
             ScrollableToolbarItemLayout.OnItemSelectedListener listener) {
-        if (mFloatingToolbarLayout == null) {
-            return;
+        var layout = getToolbarItemsLayout();
+        if (layout != null) {
+            layout.setOnItemSelectedListener(listener);
         }
-        ScrollableToolbarItemLayout layout = mFloatingToolbarLayout.findViewById(
-                R.id.floating_toolbar_items);
-        if (layout == null) {
-            return;
-        }
+    }
 
-        layout.setOnItemSelectedListener(listener);
+    /**
+     * Sets the selected toolbar item by its zero-based index.
+     */
+    public void setSelectedItem(int position) {
+        var layout = getToolbarItemsLayout();
+        if (layout != null) {
+            layout.setSelectedItem(position);
+        }
     }
 
     private void initSupportActionBar(@NonNull LayoutInflater inflater) {
