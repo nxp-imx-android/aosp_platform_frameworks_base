@@ -44,14 +44,14 @@ android_robolectric_test {
     // TODO(b/323188766): Include BubbleStackViewTest once the robolectric issue is fixed.
     exclude_srcs: ["src/com/android/wm/shell/bubbles/BubbleStackViewTest.kt"],
     static_libs: [
-        "WMShellTests-utils",
         "junit",
         "androidx.core_core-animation-testing",
         "androidx.test.runner",
         "androidx.test.rules",
         "androidx.test.ext.junit",
-        "mockito-robolectric-prebuilt",
+        "mockito-robolectric-prebuilt", // mockito deps order matters!
         "mockito-kotlin2",
+        "WMShellTests-utils", // order matters because it depends on mockito-kotlin2
         "platform-parametric-runner-lib",
         "truth",
         "flag-junit-base",
