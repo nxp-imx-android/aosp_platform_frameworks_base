@@ -384,6 +384,14 @@ final class PolicyDefinition<V> {
             DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY,
             DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY);
 
+    static PolicyDefinition<Set<String>> CROSS_PROFILE_WIDGET_PROVIDER =
+            new PolicyDefinition<>(
+                    new NoArgsPolicyKey(
+                            DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY),
+                    new StringSetIntersection(),
+                    PolicyEnforcerCallbacks::setCrossProfileWidgetProviderPolicy,
+                    new PackageSetPolicySerializer());
+
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
     private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
@@ -437,6 +445,9 @@ final class PolicyDefinition<V> {
         POLICY_DEFINITIONS.put(DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY,
                 MEMORY_TAGGING);
         POLICY_DEFINITIONS.put(DevicePolicyIdentifiers.AUTO_TIME_POLICY, AUTO_TIME);
+        POLICY_DEFINITIONS.put(
+                DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY,
+                CROSS_PROFILE_WIDGET_PROVIDER);
 
         // User Restriction Policies
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_MODIFY_ACCOUNTS, /* flags= */ 0);
@@ -545,6 +556,7 @@ final class PolicyDefinition<V> {
                 UserManager.DISALLOW_SIM_GLOBALLY,
                 POLICY_FLAG_GLOBAL_ONLY_POLICY);
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_ASSIST_CONTENT, /* flags= */ 0);
+
         if (com.android.net.thread.platform.flags.Flags.threadUserRestrictionEnabled()) {
             USER_RESTRICTION_FLAGS.put(
                     UserManager.DISALLOW_THREAD_NETWORK, POLICY_FLAG_GLOBAL_ONLY_POLICY);

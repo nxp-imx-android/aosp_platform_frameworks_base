@@ -99,6 +99,8 @@ class OwnersData {
             "setApplicationRestrictionsMigrated";
     private static final String ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED =
             "setKeyguardDisabledFeaturesMigrated";
+    private static final String ATTR_CROSS_PROFILE_WIDGET_PROVIDER_MIGRATED =
+            "crossProfileWidgetProviderMigrated";
     private static final String ATTR_PERMISSION_GRANT_STATE_MIGRATED =
             "permissionGrantStateMigrated";
 
@@ -136,6 +138,7 @@ class OwnersData {
     boolean mResetPasswordWithTokenMigrated = false;
     boolean mMemoryTaggingMigrated = false;
     boolean mSetApplicationRestrictionsMigrated = false;
+    boolean mCrossProfileWidgetProviderMigrated = false;
     boolean mSetKeyguardDisabledFeaturesMigrated = false;
     boolean mPermissionGrantStateMigrated = false;
 
@@ -453,6 +456,10 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_PERMISSION_GRANT_STATE_MIGRATED,
                         mPermissionGrantStateMigrated);
             }
+            if (Flags.crossProfileWidgetProviderBulkApis()) {
+                out.attributeBoolean(null, ATTR_CROSS_PROFILE_WIDGET_PROVIDER_MIGRATED,
+                        mCrossProfileWidgetProviderMigrated);
+            }
             out.endTag(null, TAG_POLICY_ENGINE_MIGRATION);
 
         }
@@ -541,6 +548,9 @@ class OwnersData {
                                     && Flags.dpeBasedOnAsyncApisEnabled()
                                     && parser.getAttributeBoolean(null,
                                     ATTR_PERMISSION_GRANT_STATE_MIGRATED, false);
+                    mCrossProfileWidgetProviderMigrated = Flags.crossProfileWidgetProviderBulkApis()
+                            && parser.getAttributeBoolean(null,
+                            ATTR_CROSS_PROFILE_WIDGET_PROVIDER_MIGRATED, false);
                     break;
                 default:
                     Slog.e(TAG, "Unexpected tag: " + tag);

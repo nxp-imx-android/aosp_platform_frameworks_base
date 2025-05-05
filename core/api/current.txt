@@ -8277,6 +8277,7 @@ package android.app.admin {
     field public static final String BACKUP_SERVICE_POLICY = "backupService";
     field public static final String CAMERA_DISABLED_POLICY = "cameraDisabled";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
+    field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
@@ -8295,7 +8296,7 @@ package android.app.admin {
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method public void acknowledgeDeviceCompliant();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public void addCrossProfileIntentFilter(@Nullable android.content.ComponentName, android.content.IntentFilter, int);
-    method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
+    method @Deprecated @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
     method public int addOverrideApn(@NonNull android.content.ComponentName, @NonNull android.telephony.data.ApnSetting);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK, conditional=true) public void addPersistentPreferredActivity(@Nullable android.content.ComponentName, android.content.IntentFilter, @NonNull android.content.ComponentName);
     method public void addUserRestriction(@Nullable android.content.ComponentName, String);
@@ -8464,7 +8465,7 @@ package android.app.admin {
     method public int logoutUser(@NonNull android.content.ComponentName);
     method public void reboot(@NonNull android.content.ComponentName);
     method public void removeActiveAdmin(@NonNull android.content.ComponentName);
-    method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean removeCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
+    method @Deprecated @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean removeCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_CERTIFICATES, conditional=true) public boolean removeKeyPair(@Nullable android.content.ComponentName, @NonNull String);
     method public boolean removeOverrideApn(@NonNull android.content.ComponentName, int);
     method public boolean removeUser(@NonNull android.content.ComponentName, @NonNull android.os.UserHandle);
@@ -8501,6 +8502,7 @@ package android.app.admin {
     method @Deprecated public void setCrossProfileCallerIdDisabled(@NonNull android.content.ComponentName, boolean);
     method @Deprecated public void setCrossProfileContactsSearchDisabled(@NonNull android.content.ComponentName, boolean);
     method public void setCrossProfilePackages(@NonNull android.content.ComponentName, @NonNull java.util.Set<java.lang.String>);
+    method @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public void setCrossProfileWidgetProviders(@NonNull java.util.Set<java.lang.String>);
     method public void setDefaultDialerApplication(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_DEFAULT_SMS, conditional=true) public void setDefaultSmsApplication(@Nullable android.content.ComponentName, @NonNull String);
     method public void setDelegatedScopes(@NonNull android.content.ComponentName, @NonNull String, @NonNull java.util.List<java.lang.String>);

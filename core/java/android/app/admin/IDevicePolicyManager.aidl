@@ -371,6 +371,8 @@ interface IDevicePolicyManager {
             in ComponentName agent, int userId, boolean parent);
 
     boolean addCrossProfileWidgetProvider(in ComponentName admin, String callerPackageName, String packageName);
+    void setCrossProfileWidgetProviders(String callerPackageName, in List<String> packageNames);
+
     boolean removeCrossProfileWidgetProvider(in ComponentName admin, String callerPackageName, String packageName);
     List<String> getCrossProfileWidgetProviders(in ComponentName admin, String callerPackageName);
 

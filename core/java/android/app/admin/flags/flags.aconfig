@@ -469,3 +469,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "cross_profile_widget_provider_bulk_apis"
+  namespace: "enterprise"
+  description: "Add bulk APIs for cross profile widget providers"
+  bug: "421053737"
+}

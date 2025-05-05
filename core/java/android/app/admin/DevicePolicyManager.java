@@ -58,6 +58,7 @@ import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIM
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
 import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
@@ -13889,8 +13890,12 @@ public class DevicePolicyManager {
      * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_PROFILE_INTERACTION}.
      * @see #removeCrossProfileWidgetProvider(android.content.ComponentName, String)
      * @see #getCrossProfileWidgetProviders(android.content.ComponentName)
+     * @deprecated While this API still works to mutate the current allowlist, please consider
+     * switching to {@link #setCrossProfileWidgetProviders} for better performance.
      */
+    @Deprecated
     @RequiresPermission(value = MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional = true)
+    @FlaggedApi(FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS)
     public boolean addCrossProfileWidgetProvider(@Nullable ComponentName admin,
             String packageName) {
         throwIfParentInstance("addCrossProfileWidgetProvider");
@@ -13903,6 +13908,42 @@ public class DevicePolicyManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Called by the profile owner of a managed profile or a holder of the permission
+     * {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_PROFILE_INTERACTION} to enable
+     * widget providers from packages to be available in the parent profile. As a result the
+     * user will be able to add widgets from the allowlisted package running under the profile to a
+     * widget host which runs under the parent profile, for example the home screen. Note that a
+     * package may have zero or more provider components, where each component provides a different
+     * widget type.
+     * <p>
+     * <strong>Note:</strong> By default no widget provider package is allowlisted.
+     *
+     * <p>
+     * <strong>Note:</strong> This API updates the entire allowlist in one-go, overriding any
+     * previous allowlist. This is more efficient than using {@link #addCrossProfileWidgetProvider}
+     * and {@link #removeCrossProfileWidgetProvider} to update the allowlist one package a time,
+     * especially if the allowlist consists of many packages.
+     *
+     * @param packageNames The packages from which widget providers are allowlisted.
+     * @throws SecurityException if {@code admin} is not a profile owner and not a holder of the
+     * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_PROFILE_INTERACTION}.
+     * @see #getCrossProfileWidgetProviders(android.content.ComponentName)
+     */
+    @RequiresPermission(value = MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional = true)
+    @FlaggedApi(FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS)
+    public void setCrossProfileWidgetProviders(@NonNull Set<String> packageNames) {
+        throwIfParentInstance("addCrossProfileWidgetProviders");
+        if (mService != null) {
+            try {
+                mService.setCrossProfileWidgetProviders(
+                        mContext.getPackageName(), List.copyOf(packageNames));
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
+            }
+        }
     }
 
     /**
@@ -13922,8 +13963,12 @@ public class DevicePolicyManager {
      * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_PROFILE_INTERACTION}.
      * @see #addCrossProfileWidgetProvider(android.content.ComponentName, String)
      * @see #getCrossProfileWidgetProviders(android.content.ComponentName)
+     * @deprecated While this API still works to mutate the current allowlist, please consider
+     * switching to {@link #setCrossProfileWidgetProviders} for better performance.
      */
+    @Deprecated
     @RequiresPermission(value = MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional = true)
+    @FlaggedApi(FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS)
     public boolean removeCrossProfileWidgetProvider(@Nullable ComponentName admin,
             String packageName) {
         throwIfParentInstance("removeCrossProfileWidgetProvider");
