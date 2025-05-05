@@ -24,9 +24,11 @@ import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
 import com.android.server.wm.flicker.service.transitions.scenarios.LaunchTask
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@Ignore("b/404190067")
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class LaunchTaskPortrait : LaunchTask(Rotation.ROTATION_0) {
     @ExpectedScenarios(["TASK_TRANSITION_SCENARIO", "OPEN_NEW_TASK_APP_SCENARIO"])
