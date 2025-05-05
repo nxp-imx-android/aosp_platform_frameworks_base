@@ -816,13 +816,6 @@ flag {
 }
 
 flag {
-   name: "smartspace_lockscreen_viewmodel"
-   namespace: "systemui"
-   description: "Indicate Smartspace lockscreen viewmodel"
-   bug: "331451011"
-}
-
-flag {
     name: "smartspace_viewpager2"
     namespace: "systemui"
     description: "Use viewpager2 in Smartspace"
