@@ -226,6 +226,12 @@ public class PasswordTextView extends BasePasswordTextView {
 
     @Override
     protected void onDelete(int index) {
+        if (index >= mTextChars.size()) {
+            // An inconsistency was detected. The parent class deleted a char which is not present
+            // in this one. call reset() to restart
+            reset(false, false);
+            return;
+        }
         CharState charState = mTextChars.get(index);
         charState.startRemoveAnimation(0, 0);
     }
