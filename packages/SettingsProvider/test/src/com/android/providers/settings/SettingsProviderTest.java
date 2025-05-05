@@ -191,6 +191,42 @@ public class SettingsProviderTest extends BaseSettingsProviderTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
+    public void testSystemSettingClearedOnVirtualDeviceRemovalForSystemUser() throws Exception {
+        verifySettingsClearedOnVirtualDeviceRemoval(SETTING_TYPE_SYSTEM, UserHandle.USER_SYSTEM);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
+    public void testSecureSettingClearedOnVirtualDeviceRemovalForSystemUser() throws Exception {
+        verifySettingsClearedOnVirtualDeviceRemoval(SETTING_TYPE_SECURE, UserHandle.USER_SYSTEM);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
+    public void testSystemSettingClearedOnVirtualDeviceRemovalForNonSystemUser() throws Exception {
+        final int secondaryUserId = getSecondaryUserId();
+        if (secondaryUserId == UserHandle.USER_SYSTEM) {
+            Log.w(LOG_TAG, "No secondary user. Skipping "
+                    + "testSystemSettingClearedOnVirtualDeviceRemovalForNonSystemUser");
+            return;
+        }
+        verifySettingsClearedOnVirtualDeviceRemoval(SETTING_TYPE_SYSTEM, secondaryUserId);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
+    public void testSecureSettingClearedOnVirtualDeviceRemovalForNonSystemUser() throws Exception {
+        final int secondaryUserId = getSecondaryUserId();
+        if (secondaryUserId == UserHandle.USER_SYSTEM) {
+            Log.w(LOG_TAG, "No secondary user. Skipping "
+                    + "testSecureSettingClearedOnVirtualDeviceRemovalForNonSystemUser");
+            return;
+        }
+        verifySettingsClearedOnVirtualDeviceRemoval(SETTING_TYPE_SECURE, secondaryUserId);
+    }
+
+    @Test
     public void testSelectAllGlobalViaProviderApi() throws Exception {
         setSettingViaProviderApiAndAssertSuccessfulChange(SETTING_TYPE_GLOBAL,
                 FAKE_SETTING_NAME, FAKE_SETTING_VALUE, false);
@@ -674,19 +710,8 @@ public class SettingsProviderTest extends BaseSettingsProviderTest {
     private void performSetAndGetSettingTestViaShell(int type, int userId, int deviceId)
             throws Exception {
         try {
-            // Change the setting and assert a successful change.
-            setSettingAndAssertSuccessfulChange(
-                    () -> {
-                        try {
-                            setSettingViaShell(type, FAKE_SETTING_NAME, FAKE_SETTING_VALUE, userId,
-                                    deviceId);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
-                    BaseSettingsProviderTest::getSettingViaShell, type, FAKE_SETTING_NAME,
-                    FAKE_SETTING_VALUE, userId,
-                    deviceId);
+            setSettingViaShellAndAssertSuccessfulChange(type, FAKE_SETTING_NAME, FAKE_SETTING_VALUE,
+                    userId, deviceId);
         } finally {
             // Remove the setting.
             setSettingViaShell(type, FAKE_SETTING_NAME, null /* value */, userId, deviceId);
@@ -735,6 +760,22 @@ public class SettingsProviderTest extends BaseSettingsProviderTest {
         }
     }
 
+    private void verifySettingsClearedOnVirtualDeviceRemoval(int type, int userId)
+            throws Exception {
+        VirtualDeviceManager.VirtualDevice virtualDevice = mRule.createManagedVirtualDevice();
+        int deviceId = virtualDevice.getDeviceId();
+        // Change the setting and assert a successful change.
+        setSettingViaShellAndAssertSuccessfulChange(type, FAKE_SETTING_NAME, FAKE_SETTING_VALUE,
+                userId, deviceId);
+
+        virtualDevice.close();
+
+        // Wait for settings cleanup in SettingsProvider.
+        SystemClock.sleep(2000L);
+        String value = getSettingViaShell(type, FAKE_SETTING_NAME, userId, deviceId);
+        assertNull(value);
+    }
+
     private void setSettingViaFrontEndApiAndAssertSuccessfulChange(final int type,
             final String name, final String value, final int userId) {
         setSettingAndAssertSuccessfulChangeViaFrontEndApi(() ->
@@ -748,6 +789,20 @@ public class SettingsProviderTest extends BaseSettingsProviderTest {
                         insertStringViaProviderApi(type, name, value, withTableRowUri),
                 type,
                 name, value, getContext().getUserId());
+    }
+
+    private void setSettingViaShellAndAssertSuccessfulChange(final int type, final String name,
+            final String value, final int userId, final int deviceId) {
+        setSettingAndAssertSuccessfulChange(
+                () -> {
+                    try {
+                        setSettingViaShell(type, name, value, userId, deviceId);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                BaseSettingsProviderTest::getSettingViaShell, type, name, value, userId,
+                deviceId);
     }
 
     private void setSettingAndAssertSuccessfulChangeViaFrontEndApi(Runnable setCommand,
