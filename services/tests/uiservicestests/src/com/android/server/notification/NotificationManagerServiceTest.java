@@ -6855,7 +6855,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Clone", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_CLONE;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        // the parent ID needs to be different from the profile ID to identify it as a profile
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
@@ -6882,7 +6883,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Work", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_MANAGED;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
@@ -6911,7 +6912,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Private", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_PRIVATE;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
