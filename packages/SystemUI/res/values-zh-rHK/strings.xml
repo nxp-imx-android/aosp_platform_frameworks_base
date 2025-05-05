@@ -143,7 +143,7 @@
     <string name="share_to_app_stop_dialog_title_generic" msgid="9079161538135843648">"要停止分享嗎？"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen_with_host_app" msgid="522823522115375414">"你正與「<xliff:g id="HOST_APP_NAME">%1$s</xliff:g>」分享整個螢幕畫面"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen" msgid="5090115386271179270">"你正與一個應用程式分享整個螢幕畫面"</string>
-    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"你正在分享「<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>」"</string>
+    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"你現正分享「<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>」"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"你正在分享一個應用程式"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"你正與一個應用程式分享內容"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"停止分享"</string>
@@ -811,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"如要將鍵盤連接至平板電腦，請先開啟藍牙。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"開啟"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"已開啟 - 根據面孔偵測"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"設定為靜音並分類"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"減價、新功能和其他"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"焦點新聞、社論和其他"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"讚好、貼文和其他"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"通訊、推薦媒體和其他"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"套用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"關閉"</string>
@@ -1356,6 +1351,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"停播動畫"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"通話中"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"進行中"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"流動數據"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"已連線"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"已暫時連線"</string>

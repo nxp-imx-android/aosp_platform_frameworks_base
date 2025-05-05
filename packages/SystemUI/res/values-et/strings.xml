@@ -143,8 +143,8 @@
     <string name="share_to_app_stop_dialog_title_generic" msgid="9079161538135843648">"Kas lõpetada jagamine?"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen_with_host_app" msgid="522823522115375414">"Jagate praegu kogu oma ekraanikuva rakendusega <xliff:g id="HOST_APP_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen" msgid="5090115386271179270">"Jagate praegu kogu oma ekraanikuva rakendusega"</string>
-    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Jagate praegu rakenduse <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> kuva"</string>
-    <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Jagate praegu rakenduse kuva"</string>
+    <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Jagate praegu rakenduse <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> kuva."</string>
+    <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Jagate praegu rakenduse kuva."</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Jagate praegu rakendusega"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Lõpeta jagamine"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Ekraanikuva ülekandmine"</string>
@@ -309,7 +309,7 @@
     <string name="quick_settings_modes_label" msgid="879156359479504244">"Režiimid"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"Bluetooth"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"Ühtegi seotud seadet pole saadaval"</string>
-    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Puudutage seadme ühendamiseks või ühenduse katkestamiseks"</string>
+    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Puudutage seadme ühendamiseks või ühenduse katkestamiseks."</string>
     <string name="pair_new_bluetooth_devices" msgid="4601767620843349645">"Uue seadme sidumine"</string>
     <string name="see_all_bluetooth_devices" msgid="1761596816620200433">"Kuva kõik"</string>
     <string name="turn_on_bluetooth" msgid="5681370462180289071">"Kasuta Bluetoothi"</string>
@@ -811,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Klaviatuuri ühendamiseks tahvelarvutiga peate esmalt Bluetoothi sisse lülitama."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Lülita sisse"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Sees – näopõhine"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Vaigistamine ja koondamine"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Soodusmüügid, uued funktsioonid ja muu"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Kõige populaarsemad lood, juhtkirjad ja muu"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Meeldivaks märkimised, postitused ja muu"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Uudiskirjad, soovitatud meedia ja muu"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Valmis"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Rakenda"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Lülita välja"</string>
@@ -1356,6 +1351,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"Peata animatsioon"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Käimasolev kõne"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Pooleli"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiilne andmeside"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Ühendatud"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Ajutiselt ühendatud"</string>

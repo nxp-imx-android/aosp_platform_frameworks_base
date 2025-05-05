@@ -482,8 +482,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未設定"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"設定で管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{アクティブなモードはありません}=1{{mode} がアクティブです}other{# 個のモードがアクティブです}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> モード"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ON"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"アラーム、リマインダー、予定、指定した人からの着信以外の音やバイブレーションに煩わされることはありません。音楽、動画、ゲームなど再生対象として選択したコンテンツは引き続き再生されます。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"アラーム以外の音やバイブレーションに煩わされることはありません。音楽、動画、ゲームなど再生対象として選択したコンテンツは引き続き再生されます。"</string>
@@ -530,7 +529,7 @@
     <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"このスペースでのウィジェットの追加、削除、並べ替え"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"ウィジェットの追加"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"長押ししてウィジェットをカスタマイズ"</string>
-    <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"ウィジェットのカスタマイズ"</string>
+    <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"ウィジェットをカスタマイズ"</string>
     <string name="unlock_reason_to_customize_widgets" msgid="5011909432460546033">"ウィジェットをカスタマイズするにはロックを解除してください"</string>
     <string name="icon_description_for_disabled_widget" msgid="4693151565003206943">"無効なウィジェットのアプリアイコン"</string>
     <string name="icon_description_for_pending_widget" msgid="8413816401868001755">"インストール中のウィジェットのアプリアイコン"</string>
@@ -545,7 +544,7 @@
     <string name="work_mode_off_title" msgid="5794818421357835873">"仕事用アプリの停止解除"</string>
     <string name="work_mode_turn_on" msgid="907813741770247267">"停止解除"</string>
     <string name="accessibility_action_label_close_communal_hub" msgid="6790396569621032333">"ロック画面のウィジェットを閉じる"</string>
-    <string name="accessibility_action_label_edit_widgets" msgid="3821868581348322346">"ウィジェットのカスタマイズ"</string>
+    <string name="accessibility_action_label_edit_widgets" msgid="3821868581348322346">"ウィジェットをカスタマイズ"</string>
     <string name="accessibility_content_description_for_communal_hub" msgid="1670220840599380118">"ロック画面のウィジェット"</string>
     <string name="accessibility_action_label_select_widget" msgid="8897281501387398191">"ウィジェットを選択"</string>
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"ウィジェットを削除"</string>
@@ -1022,13 +1021,11 @@
     <string name="other" msgid="429768510980739978">"その他"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"タイルのサイズを切り替えます"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"タイルを削除する"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"タイルを配置する"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"配置モードを切り替える"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"選択を切り替える"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"タイルを最後の位置に追加する"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> を最後の位置に追加する"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"タイルを移動"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"タイルを目的の位置に追加する"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> に移動"</string>
@@ -1351,6 +1348,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"アニメーションを一時停止"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"通話中"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"実行中"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"モバイルデータ"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"接続済み"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"一時的に接続されています"</string>

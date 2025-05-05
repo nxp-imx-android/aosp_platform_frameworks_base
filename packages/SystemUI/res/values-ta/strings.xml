@@ -811,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"உங்கள் டேப்லெட்டுடன் கீபோர்டை இணைக்க, முதலில் புளூடூத்தை இயக்க வேண்டும்."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"இயக்கு"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ஆன் - முகம் அடிப்படையிலானது"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ஒலியடக்குதல் மற்றும் தொகுப்பு"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"விற்பனை, புதிய அம்சங்கள் மற்றும் பல"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"முதன்மைச் செய்திகள், சிறப்புக் கட்டுரைகள் மற்றும் பல"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"விருப்பங்கள், பதிவுகள் மற்றும் பல"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"செய்திமடல்கள், பரிந்துரைக்கப்படும் மீடியா மற்றும் பல"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"முடிந்தது"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"பயன்படுத்து"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ஆஃப் செய்"</string>
@@ -1356,6 +1351,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"அனிமேஷனை இடைநிறுத்தும்"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"செயலில் உள்ள அழைப்பு"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"செயலிலுள்ளது"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"மொபைல் டேட்டா"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"இணைக்கப்பட்டது"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"தற்காலிகமாக இணைக்கப்பட்டுள்ளது"</string>

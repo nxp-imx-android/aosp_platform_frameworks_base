@@ -482,8 +482,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"സജ്ജീകരിച്ചിട്ടില്ല"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ക്രമീകരണത്തിൽ മാനേജ് ചെയ്യുക"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{സജീവ മോഡുകൾ ഒന്നുമില്ല}=1{{mode} സജീവമാണ്}other{# മോഡുകൾ സജീവമാണ്}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> മോഡുകൾ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ഓണാണ്"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"നിങ്ങൾ സജ്ജീകരിച്ച അലാറങ്ങൾ, റിമൈൻഡറുകൾ, ഇവന്റുകൾ, കോളർമാർ എന്നിവയിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"അലാറങ്ങളിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
@@ -811,16 +810,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"നിങ്ങളുടെ ടാബ്‌ലെറ്റുമായി കീബോർഡ് കണക്റ്റുചെയ്യുന്നതിന്, ആദ്യം Bluetooth ഓണാക്കേണ്ടതുണ്ട്."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"നിശബ്‌ദമാക്കലും ബണ്ടിൽ ചെയ്യലും"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"സെയിൽസും പുതിയ ഫീച്ചറുകളും മറ്റും"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"പ്രധാന വാർത്തകളും എഡിറ്റോറിയലുകളും മറ്റും"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"ലൈക്കുകളും പോസ്റ്റുകളും മറ്റും"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
@@ -1027,13 +1021,11 @@
     <string name="other" msgid="429768510980739978">"മറ്റുള്ളവ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ടൈലിന്റെ വലുപ്പം മാറ്റുക"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ടൈൽ നീക്കം ചെയ്യുക"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ടൈൽ പ്ലേസ് ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"പ്ലേസ്‌മെന്റ് മോഡ് ടോഗിൾ ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"തിരഞ്ഞെടുത്തത് ടോഗിൾ ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"അവസാന ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> എന്നത് അവസാനം ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ടൈൽ നീക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ഇഷ്ടമുള്ള ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> എന്നതിലേക്ക് നീക്കുക"</string>
@@ -1356,6 +1348,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"ആനിമേഷൻ താൽക്കാലികമായി നിർത്തുക"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"കോളിലാണ്"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"നടന്നുകൊണ്ടിരിക്കുന്നവ"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"മൊബൈൽ ഡാറ്റ"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"കണക്റ്റ് ചെയ്തു"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"താൽക്കാലികമായി കണക്റ്റ് ചെയ്തിരിക്കുന്നു"</string>

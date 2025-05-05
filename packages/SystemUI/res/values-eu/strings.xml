@@ -405,7 +405,7 @@
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Hasi"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Gelditu"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Akatsen txostena"</string>
-    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Gailuaren erabileraren zer alderdiri eragin dio?"</string>
+    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Gailuaren erabileraren zein alderdiri eragin dio?"</string>
     <string name="qs_record_issue_dropdown_prompt" msgid="2526949919167046219">"Hautatu arazo mota"</string>
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Pantaila-grabaketa"</string>
     <string name="performance" msgid="6552785217174378320">"Errendimendua"</string>
@@ -811,16 +811,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Teklatua tabletara konektatzeko, Bluetooth eginbidea aktibatu behar duzu."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktibatu"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aktibatuta: aurpegian oinarrituta"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Desaktibatu audioa eta multzokatu"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Beherapena duten produktuak, eginbide berriak eta abar"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Albiste nagusiak, editorialak eta abar"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Gustatu izanaren adierazpenak, argitalpenak eta abar"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Buletinak, gomendatutako multimedia-elementuak eta abar"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Eginda"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplikatu"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desaktibatu"</string>
@@ -1356,6 +1351,10 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pausatu animazioa"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Deia abian"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Abian"</string>
+    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
+    <skip />
+    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
+    <skip />
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Datu-konexioa"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Konektatuta"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Aldi baterako konektatuta"</string>
