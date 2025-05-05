@@ -1659,7 +1659,7 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     public void expandStackAndSelectBubble(ActivityManager.RunningTaskInfo taskInfo,
             @Nullable BubbleTransitions.DragData dragData) {
-        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return;
+        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - taskId=%s", taskInfo.taskId);
         BubbleBarLocation location = null;
@@ -1692,7 +1692,7 @@ public class BubbleController implements ConfigurationChangeListener,
             @NonNull ActivityManager.RunningTaskInfo taskInfo,
             @NonNull IBinder transition,
             Consumer<Transitions.TransitionHandler> onInflatedCallback) {
-        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) return null;
+        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return null;
 
         // Create a new bubble and show it
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
