@@ -17,7 +17,7 @@
 package android.window
 
 import android.os.Parcel
-import android.os.Parcelable
+import android.os.test.recreateFromParcel
 import android.platform.test.annotations.Presubmit
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.ConfigurationChangeSetting.SETTING_TYPE_UNKNOWN
@@ -42,6 +42,8 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 /**
+ * Unit tests for [ConfigurationChangeSetting].
+ *
  * Build/Install/Run:
  * atest FrameworksCoreTests:ConfigurationChangeSettingTest
  */
@@ -84,7 +86,7 @@ class ConfigurationChangeSettingTest {
     fun densitySettingParcelable_appClient_recreatesSucceeds() {
         val setting = ConfigurationChangeSetting.DensitySetting(DEFAULT_DISPLAY, TEST_DENSITY)
 
-        val recreated = setting.recreateFromParcel()
+        val recreated = setting.recreateFromParcel(DEFAULT_CREATOR)
 
         verify(mMockConfigurationChangeSettingInternal, never()).createImplFromParcel(any(), any())
         assertThat(recreated).isEqualTo(setting)
@@ -111,7 +113,7 @@ class ConfigurationChangeSettingTest {
     fun fontScaleSettingParcelable_appClient_recreatesSucceeds() {
         val setting = ConfigurationChangeSetting.FontScaleSetting(TEST_FONT_SCALE)
 
-        val recreated = setting.recreateFromParcel()
+        val recreated = setting.recreateFromParcel(DEFAULT_CREATOR)
 
         verify(mMockConfigurationChangeSettingInternal, never()).createImplFromParcel(any(), any())
         assertThat(recreated).isEqualTo(setting)
@@ -144,18 +146,5 @@ class ConfigurationChangeSettingTest {
 
         private fun tearDownLocalService() =
             LocalServices.removeServiceForTest(ConfigurationChangeSettingInternal::class.java)
-
-        private fun ConfigurationChangeSetting.recreateFromParcel(
-            creator: Parcelable.Creator<ConfigurationChangeSetting> = DEFAULT_CREATOR,
-        ): ConfigurationChangeSetting {
-            val parcel = Parcel.obtain()
-            try {
-                writeToParcel(parcel, 0)
-                parcel.setDataPosition(0)
-                return creator.createFromParcel(parcel)
-            } finally {
-                parcel.recycle()
-            }
-        }
     }
 }

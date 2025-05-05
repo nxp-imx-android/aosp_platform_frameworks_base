@@ -17,10 +17,12 @@
 package com.android.wm.shell.transition
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager
+import android.window.ActivityTransitionInfo
 import android.window.TransitionInfo
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -56,30 +58,38 @@ class TransitionInfoBuilder @JvmOverloads constructor(
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         @TransitionInfo.ChangeFlags flags: Int = TransitionInfo.FLAG_NONE,
-    ) = addChange(mode, flags, activityComponent = null, taskInfo = null)
+    ) = addChange(mode, flags, activityTransitionInfo = null, taskInfo = null)
 
     /** Adds a change to the [TransitionInfo] for task transition with [flags]. */
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         @TransitionInfo.ChangeFlags flags: Int,
         taskInfo: ActivityManager.RunningTaskInfo?,
-    ) = addChange(mode, flags, activityComponent = null, taskInfo = taskInfo)
+    ) = addChange(mode, flags, activityTransitionInfo = null, taskInfo = taskInfo)
 
     /** Adds a change to the [TransitionInfo] for task transition. */
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         taskInfo: ActivityManager.RunningTaskInfo?,
-    ) = addChange(mode, activityComponent = null, taskInfo = taskInfo)
+    ) = addChange(mode, activityTransitionInfo = null, taskInfo = taskInfo)
 
     /** Adds a change to the [TransitionInfo] for activity transition. */
+    fun addChange(
+        @WindowManager.TransitionType mode: Int,
+        activityTransitionInfo: ActivityTransitionInfo?,
+    ) = addChange(mode, activityTransitionInfo = activityTransitionInfo, taskInfo = null)
+
+    /** Adds a change to the [TransitionInfo] for activity transition without task id. */
     fun addChange(@WindowManager.TransitionType mode: Int, activityComponent: ComponentName?) =
-        addChange(mode, activityComponent = activityComponent, taskInfo = null)
+        addChange(mode, activityTransitionInfo = activityComponent?.let { component ->
+            ActivityTransitionInfo(component, INVALID_TASK_ID)
+        })
 
     /** Add a change to the [TransitionInfo] for task fragment. */
     fun addChange(@WindowManager.TransitionType mode: Int, taskFragmentToken: IBinder?) =
         addChange(
             mode,
-            activityComponent = null,
+            activityTransitionInfo = null,
             taskInfo = null,
             taskFragmentToken = taskFragmentToken,
         )
@@ -89,7 +99,8 @@ class TransitionInfoBuilder @JvmOverloads constructor(
      *
      * @param mode the mode of the change. See [WindowManager.TransitionType].
      * @param flags the flags for this change. See [TransitionInfo.ChangeFlags].
-     * @param activityComponent the component associated with this change for activity transition.
+     * @param activityTransitionInfo the activity transition info associated with this change for
+     *        activity transition.
      * @param taskInfo the task info associated with this change for task transition.
      * @param taskFragmentToken the task fragment token associated with this change.
      * @return this [TransitionInfoBuilder] instance for chaining.
@@ -97,7 +108,7 @@ class TransitionInfoBuilder @JvmOverloads constructor(
     private fun addChange(
         @WindowManager.TransitionType mode: Int,
         @TransitionInfo.ChangeFlags flags: Int = TransitionInfo.FLAG_NONE,
-        activityComponent: ComponentName? = null,
+        activityTransitionInfo: ActivityTransitionInfo? = null,
         taskInfo: ActivityManager.RunningTaskInfo? = null,
         taskFragmentToken: IBinder? = null,
     ): TransitionInfoBuilder {
@@ -106,7 +117,7 @@ class TransitionInfoBuilder @JvmOverloads constructor(
         val change = TransitionInfo.Change(container, leash).apply {
             setMode(mode)
             setFlags(flags)
-            setActivityComponent(activityComponent)
+            setActivityTransitionInfo(activityTransitionInfo)
             setTaskInfo(taskInfo)
             setTaskFragmentToken(taskFragmentToken)
         }
