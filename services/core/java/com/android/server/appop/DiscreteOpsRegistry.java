@@ -128,18 +128,17 @@ abstract class DiscreteOpsRegistry {
     static final long DEFAULT_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(7).toMillis();
     static final long MAXIMUM_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(30).toMillis();
     // The duration for which the data is kept, default is 7 days and max 30 days enforced.
-    static long sDiscreteHistoryCutoff;
+    static long sDiscreteHistoryCutoff = DEFAULT_DISCRETE_HISTORY_CUTOFF;
 
     static final long DEFAULT_DISCRETE_HISTORY_QUANTIZATION = Duration.ofMinutes(1).toMillis();
     // discrete ops are rounded up to quantization time, meaning we record one op per time bucket
     // in case of duplicate op events.
-    static long sDiscreteHistoryQuantization;
+    static long sDiscreteHistoryQuantization = DEFAULT_DISCRETE_HISTORY_QUANTIZATION;
 
     static int[] sDiscreteOps = new int[0];
-    static int sDiscreteFlags;
-
     static final int OP_FLAGS_DISCRETE = OP_FLAG_SELF | OP_FLAG_TRUSTED_PROXIED
             | OP_FLAG_TRUSTED_PROXY;
+    static int sDiscreteFlags = OP_FLAGS_DISCRETE;
 
     boolean mDebugMode = false;
 
