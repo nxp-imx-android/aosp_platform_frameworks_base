@@ -2041,8 +2041,10 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString("stream_status", newStatus);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                current.getParameters());
+                                currentProfileParameters);
                     } else {
                         // handle SDR status
                         if (isSdr(profileStatus)) {
@@ -2075,8 +2077,11 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString(
+                                "stream_status", PictureProfile.STATUS_SDR);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                current.getParameters());
+                                currentProfileParameters);
                     }
                 }
             });
