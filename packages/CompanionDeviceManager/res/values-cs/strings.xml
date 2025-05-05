@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> žádá jménem zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> o oprávnění streamovat aplikace a systémové funkce z vašeho zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"Povolte aplikaci &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; přístup k těmto informacím z vašeho telefonu"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za vaše zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění k přístupu k fotkám, médiím a oznámením na zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat aplikace na zařízení typu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> do zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"Aplikace <xliff:g id="APP_NAME_0">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME_2">%1$s</xliff:g> bude moct streamovat aplikace do zařízení typu <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>, dokud přístup k tomuto oprávnění neodeberete."</string>
