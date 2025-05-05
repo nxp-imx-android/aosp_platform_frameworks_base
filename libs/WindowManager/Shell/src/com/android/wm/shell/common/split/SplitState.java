@@ -73,6 +73,11 @@ public class SplitState {
         return getLayout(mState);
     }
 
+    /** Returns whether a given Rect is partially offscreen on the current display. */
+    boolean isOffscreen(Rect rect) {
+        return mSplitSpec.isOffscreen(rect);
+    }
+
     /** @return {@code true} if at least one app is partially offscreen in the current layout. */
     public boolean currentStateSupportsOffscreenApps() {
         return mState == SNAP_TO_2_10_90

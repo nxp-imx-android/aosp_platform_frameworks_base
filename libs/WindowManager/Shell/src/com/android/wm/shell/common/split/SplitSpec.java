@@ -53,6 +53,8 @@ public class SplitSpec {
     public static final float MIDDLE_RATIO = 0.5f;
 
     private final boolean mIsLeftRightSplit;
+    /** The physical size of the display. */
+    private final Rect mDisplayBounds;
     /** The usable display area, considering insets that affect split bounds. */
     private final RectF mUsableArea;
     /** Half the divider size. */
@@ -65,6 +67,7 @@ public class SplitSpec {
     public SplitSpec(Rect displayBounds, int dividerSize, boolean isLeftRightSplit,
             Rect pinnedTaskbarInsets) {
         mIsLeftRightSplit = isLeftRightSplit;
+        mDisplayBounds = new Rect(displayBounds);
         mUsableArea = new RectF(displayBounds);
         mUsableArea.left += pinnedTaskbarInsets.left;
         mUsableArea.top += pinnedTaskbarInsets.top;
@@ -179,5 +182,10 @@ public class SplitSpec {
     /** Returns the layout associated with a given split state. */
     List<RectF> getSpec(@SplitScreenState int state) {
         return mLayouts.get(state);
+    }
+
+    /** Returns whether a given Rect is partially offscreen on the current display. */
+    boolean isOffscreen(Rect rect) {
+        return !mDisplayBounds.contains(rect);
     }
 }

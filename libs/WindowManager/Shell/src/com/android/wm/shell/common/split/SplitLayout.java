@@ -1086,6 +1086,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         final SurfaceControl leash = isApp ? stage.getRootLeash() : getDividerLeash();
         final ActivityManager.RunningTaskInfo taskInfo = isApp ? stage.getRunningTaskInfo() : null;
         final SplitDecorManager decorManager = isApp ? stage.getDecorManager() : null;
+        final SurfaceControl dimLayer =  isApp ? stage.getDimLayer() : null;
+        boolean goingOffscreen = Flags.enableFlexibleTwoAppSplit()
+                ? !mSplitState.isOffscreen(start) && mSplitState.isOffscreen(end) : false;
+        boolean comingOnscreen = Flags.enableFlexibleTwoAppSplit()
+                ? mSplitState.isOffscreen(start) && !mSplitState.isOffscreen(end) : false;
 
         Rect tempStart = new Rect(start);
         Rect tempEnd = new Rect(end);
@@ -1207,6 +1212,25 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                             taskInfo, mTempRect, t, isGoingBehind, leash, diffOffsetX, diffOffsetY);
                 }
             }
+
+            // App surfaces are dimmed when offscreen. So if the app is moving from onscreen to
+            // offscreen or vice versa, we set the dim layer's alpha on every frame for a smooth
+            // transition.
+            if (Flags.enableFlexibleTwoAppSplit()
+                    && mSplitState.currentStateSupportsOffscreenApps()
+                    && dimLayer != null) {
+                float instantaneousAlpha = 0f;
+                if (goingOffscreen) {
+                    instantaneousAlpha = moveProgress * ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
+                }
+                if (comingOnscreen) {
+                    instantaneousAlpha =
+                            (1f - moveProgress) * ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
+                }
+                t.setAlpha(dimLayer, instantaneousAlpha);
+                t.setVisibility(dimLayer, instantaneousAlpha > 0.001f);
+            }
+
             t.apply();
         });
         return animator;
