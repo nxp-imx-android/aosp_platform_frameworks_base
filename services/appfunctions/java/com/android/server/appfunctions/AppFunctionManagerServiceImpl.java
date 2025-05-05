@@ -26,6 +26,7 @@ import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FU
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.WorkerThread;
+import android.app.appfunctions.AppFunctionAccessServiceInterface;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
@@ -103,8 +104,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     // Not Guarded by lock since this is only accessed in main thread.
     private final SparseArray<PackageMonitor> mPackageMonitors = new SparseArray<>();
 
+    private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
+
     public AppFunctionManagerServiceImpl(
-            @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal) {
+            @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal,
+            @NonNull AppFunctionAccessServiceInterface appFunctionAccessServiceInterface) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -113,7 +117,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 new AppFunctionsLoggerWrapper(context),
-                packageManagerInternal);
+                packageManagerInternal,
+                appFunctionAccessServiceInterface);
     }
 
     @VisibleForTesting
@@ -124,7 +129,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             ServiceHelper appFunctionInternalServiceHelper,
             ServiceConfig serviceConfig,
             AppFunctionsLoggerWrapper loggerWrapper,
-            PackageManagerInternal packageManagerInternal) {
+            PackageManagerInternal packageManagerInternal,
+            AppFunctionAccessServiceInterface appFunctionAccessServiceInterface) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -132,6 +138,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mServiceConfig = serviceConfig;
         mLoggerWrapper = loggerWrapper;
         mPackageManagerInternal = Objects.requireNonNull(packageManagerInternal);
+        mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessServiceInterface);
     }
 
     /** Called when the user is unlocked. */

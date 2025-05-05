@@ -15,6 +15,7 @@
  */
 package com.android.server.appfunctions
 
+import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
@@ -72,6 +73,7 @@ class AppFunctionsLoggingTest {
             ServiceConfigImpl(),
             mAppFunctionsLoggerWrapper,
             mock<PackageManagerInternal>(),
+            mock<AppFunctionAccessServiceInterface>(),
         )
 
     private val mRequestInternal =

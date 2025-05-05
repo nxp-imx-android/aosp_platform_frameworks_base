@@ -17,6 +17,7 @@
 package com.android.server.permission.access
 
 import android.content.pm.PermissionGroupInfo
+import android.content.pm.SignedPackage
 import com.android.server.SystemConfig
 import com.android.server.permission.access.immutable.* // ktlint-disable no-wildcard-imports
 import com.android.server.permission.access.permission.Permission
@@ -107,6 +108,7 @@ sealed class ExternalState(
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
     isSystemReady: Boolean,
+    agentAllowlist: List<SignedPackage>,
 ) : Immutable<MutableExternalState> {
     val userIds: IntSet
         get() = userIdsReference.get()
@@ -143,6 +145,9 @@ sealed class ExternalState(
     var isSystemReady: Boolean = isSystemReady
         protected set
 
+    var agentAllowlist: List<SignedPackage> = agentAllowlist
+        protected set
+
     override fun toMutable(): MutableExternalState = MutableExternalState(this)
 }
 
@@ -159,6 +164,7 @@ private constructor(
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
     isSystemReady: Boolean,
+    agentAllowlist: List<SignedPackage>,
 ) :
     ExternalState(
         userIdsReference,
@@ -172,6 +178,7 @@ private constructor(
         permissionAllowlist,
         implicitToSourcePermissions,
         isSystemReady,
+        agentAllowlist,
     ) {
     constructor() :
         this(
@@ -186,6 +193,7 @@ private constructor(
             PermissionAllowlist(),
             MutableIndexedMap(),
             false,
+            emptyList(),
         )
 
     internal constructor(
@@ -202,6 +210,7 @@ private constructor(
         externalState.permissionAllowlist,
         externalState.implicitToSourcePermissions,
         externalState.isSystemReady,
+        externalState.agentAllowlist,
     )
 
     fun mutateUserIds(): MutableIntSet = userIdsReference.mutate()
@@ -255,6 +264,11 @@ private constructor(
     @JvmName("setSystemReadyPublic")
     fun setSystemReady(isSystemReady: Boolean) {
         this.isSystemReady = isSystemReady
+    }
+
+    @JvmName("setAgentAllowlistPublic")
+    fun setAgentAllowlist(agentAllowlist: List<SignedPackage>) {
+        this.agentAllowlist = agentAllowlist
     }
 }
 
@@ -347,6 +361,15 @@ typealias MutableAppIdPermissionFlags =
 private typealias AppIdPermissionFlagsReference =
     MutableReference<AppIdPermissionFlags, MutableAppIdPermissionFlags>
 
+// TODO b/413093675: create IntInt map
+typealias AppIdAppFunctionAccessFlags = IntReferenceMap<IntMap<Int>, MutableIntMap<Int>>
+
+typealias MutableAppIdAppFunctionAccessFlags =
+    MutableIntReferenceMap<IntMap<Int>, MutableIntMap<Int>>
+
+private typealias AppIdAppFunctionAccessFlagsReference =
+    MutableReference<AppIdAppFunctionAccessFlags, MutableAppIdAppFunctionAccessFlags>
+
 typealias DevicePermissionFlags =
     IndexedReferenceMap<String, IndexedMap<String, Int>, MutableIndexedMap<String, Int>>
 
@@ -385,6 +408,7 @@ sealed class UserState(
     internal val appIdDevicePermissionFlagsReference: AppIdDevicePermissionFlagsReference,
     internal val appIdAppOpModesReference: AppIdAppOpModesReference,
     internal val packageAppOpModesReference: PackageAppOpModesReference,
+    internal val appIdAppFunctionAccessFlagsReference: AppIdAppFunctionAccessFlagsReference,
     defaultPermissionGrantFingerprint: String?,
     writeMode: Int,
 ) : WritableState, Immutable<MutableUserState> {
@@ -403,6 +427,9 @@ sealed class UserState(
     val packageAppOpModes: PackageAppOpModes
         get() = packageAppOpModesReference.get()
 
+    val appIdAppFunctionAccessFlags: AppIdAppFunctionAccessFlags
+        get() = appIdAppFunctionAccessFlagsReference.get()
+
     var defaultPermissionGrantFingerprint: String? = defaultPermissionGrantFingerprint
         protected set
 
@@ -419,6 +446,7 @@ private constructor(
     appIdDevicePermissionFlagsReference: AppIdDevicePermissionFlagsReference,
     appIdAppOpModesReference: AppIdAppOpModesReference,
     packageAppOpModesReference: PackageAppOpModesReference,
+    appIdAppFunctionAccessFlagsReference: AppIdAppFunctionAccessFlagsReference,
     defaultPermissionGrantFingerprint: String?,
     writeMode: Int,
 ) :
@@ -428,6 +456,7 @@ private constructor(
         appIdDevicePermissionFlagsReference,
         appIdAppOpModesReference,
         packageAppOpModesReference,
+        appIdAppFunctionAccessFlagsReference,
         defaultPermissionGrantFingerprint,
         writeMode,
     ),
@@ -439,6 +468,7 @@ private constructor(
             AppIdDevicePermissionFlagsReference(MutableAppIdDevicePermissionFlags()),
             AppIdAppOpModesReference(MutableAppIdAppOpModes()),
             PackageAppOpModesReference(MutablePackageAppOpModes()),
+            AppIdAppFunctionAccessFlagsReference(MutableAppIdAppFunctionAccessFlags()),
             null,
             WriteMode.NONE,
         )
@@ -451,6 +481,7 @@ private constructor(
         userState.appIdDevicePermissionFlagsReference.toImmutable(),
         userState.appIdAppOpModesReference.toImmutable(),
         userState.packageAppOpModesReference.toImmutable(),
+        userState.appIdAppFunctionAccessFlagsReference.toImmutable(),
         userState.defaultPermissionGrantFingerprint,
         WriteMode.NONE,
     )
@@ -466,6 +497,9 @@ private constructor(
     fun mutateAppIdAppOpModes(): MutableAppIdAppOpModes = appIdAppOpModesReference.mutate()
 
     fun mutatePackageAppOpModes(): MutablePackageAppOpModes = packageAppOpModesReference.mutate()
+
+    fun mutateAppIdAppFunctionAccessFlags(): MutableAppIdAppFunctionAccessFlags =
+        appIdAppFunctionAccessFlagsReference.mutate()
 
     @JvmName("setDefaultPermissionGrantFingerprintPublic")
     fun setDefaultPermissionGrantFingerprint(defaultPermissionGrantFingerprint: String?) {
@@ -491,6 +525,8 @@ interface MutableWritableState : WritableState {
     fun requestWriteMode(writeMode: Int)
 }
 
+// Two wrapper classes that allow us to avoid passing state variables. Policies define extension
+// function on them
 open class GetStateScope(val state: AccessState)
 
 class MutateStateScope(val oldState: AccessState, val newState: MutableAccessState) :

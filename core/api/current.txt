@@ -8954,6 +8954,9 @@ package android.app.appfunctions {
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_GRANTED = 0; // 0x0
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_UNREQUESTABLE = 2; // 0x2
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_AGENT_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_AGENT_APP_FUNCTION_ACCESS";
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_APP_FUNCTION_ACCESS";
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_TARGET_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";

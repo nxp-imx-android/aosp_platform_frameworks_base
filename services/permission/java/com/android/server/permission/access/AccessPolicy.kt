@@ -16,10 +16,12 @@
 
 package com.android.server.permission.access
 
+import android.content.pm.SignedPackage
 import android.util.Slog
 import com.android.modules.utils.BinaryXmlPullParser
 import com.android.modules.utils.BinaryXmlSerializer
 import com.android.server.SystemConfig
+import com.android.server.permission.access.appfunction.AppIdAppFunctionAccessPolicy
 import com.android.server.permission.access.appop.AppIdAppOpPolicy
 import com.android.server.permission.access.appop.PackageAppOpPolicy
 import com.android.server.permission.access.collection.* // ktlint-disable no-wildcard-imports
@@ -53,6 +55,7 @@ private constructor(
                 addPolicy(DevicePermissionPolicy())
                 addPolicy(AppIdAppOpPolicy())
                 addPolicy(PackageAppOpPolicy())
+                addPolicy(AppIdAppFunctionAccessPolicy())
             } as IndexedMap<String, IndexedMap<String, SchemePolicy>>
         )
 
@@ -270,6 +273,11 @@ private constructor(
         forEachSchemePolicy { with(it) { onPackageUninstalled(packageName, appId, userId) } }
     }
 
+    fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
+        newState.mutateExternalState().apply { setAgentAllowlist(agentAllowlist) }
+        forEachSchemePolicy { with(it) { onAgentAllowlistChanged(agentAllowlist) } }
+    }
+
     fun MutateStateScope.onSystemReady() {
         newState.mutateExternalState().setSystemReady(true)
         forEachSchemePolicy { with(it) { onSystemReady() } }
@@ -472,6 +480,8 @@ abstract class SchemePolicy {
     open fun MutateStateScope.onPackageInstalled(packageState: PackageState, userId: Int) {}
 
     open fun MutateStateScope.onPackageUninstalled(packageName: String, appId: Int, userId: Int) {}
+
+    open fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {}
 
     open fun MutateStateScope.onSystemReady() {}
 

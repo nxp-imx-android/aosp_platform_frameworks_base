@@ -9129,6 +9129,17 @@
         android:protectionLevel="signature"
         android:featureFlag="android.permission.flags.supervision_role_enabled" />
 
+    <!-- @SystemApi
+        @FlaggedApi(android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+        This permission is required to set the access state flags on an agent, to access
+        AppFunctions of other apps.
+        <p> Protection level: signature|installer
+        @hide
+    -->
+    <permission android:name="android.permission.MANAGE_APP_FUNCTION_ACCESS"
+        android:protectionLevel="signature|installer"
+        android:featureFlag="android.permission.flags.app_function_access_api_enabled"/>
+
     <!-- Allows an application to programmatically move and resize its tasks when the system is in
         a state that allows such operations, e.g. in a desktop-like environment. It is only
         extended to the {@link android.app.role.RoleManager#ROLE_BROWSER default browser}.
