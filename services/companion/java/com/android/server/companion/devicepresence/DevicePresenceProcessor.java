@@ -830,7 +830,8 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             Slog.e(TAG, "Package is NOT bound.");
             return;
         }
-        logDevicePresenceEvent(mContext, deviceProfileOrUuid, packageName, event.getEvent());
+        logDevicePresenceEvent(
+                userId, mContext, deviceProfileOrUuid, packageName, event.getEvent());
 
         primaryServiceConnector.postOnDevicePresenceEvent(event);
     }
