@@ -969,6 +969,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         );
         mDividerFlingAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                mParentContainerCallbacks.onSplitLayoutAnimating(true /*animating*/);
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 if (flingFinishedCallback != null) {
                     flingFinishedCallback.run();
@@ -976,11 +982,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 mInteractionJankMonitor.end(
                         CUJ_SPLIT_SCREEN_RESIZE);
                 mDividerFlingAnimator = null;
+                mParentContainerCallbacks.onSplitLayoutAnimating(false /*animating*/);
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
                 mDividerFlingAnimator = null;
+                mParentContainerCallbacks.onSplitLayoutAnimating(false /*animating*/);
             }
         });
         mDividerFlingAnimator.start();
