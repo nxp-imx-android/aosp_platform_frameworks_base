@@ -36,4 +36,13 @@ object ViewUtils {
 
     val View.measuredSize: VPointF
         get() = VPointF(measuredWidth, measuredHeight)
+
+    fun View.animateToAlpha(float: Float) {
+        this.animate()
+            .alpha(float)
+            .setDuration(
+                this.resources.getInteger(android.R.integer.config_mediumAnimTime).toLong()
+            )
+            .start()
+    }
 }
