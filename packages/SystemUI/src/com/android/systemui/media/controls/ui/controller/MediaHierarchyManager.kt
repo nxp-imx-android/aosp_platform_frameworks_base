@@ -46,6 +46,8 @@ import com.android.systemui.dreams.DreamOverlayStateController
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dream.MediaDreamComplication
@@ -113,6 +115,7 @@ constructor(
     private val keyguardViewController: KeyguardViewController,
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val keyguardInteractor: KeyguardInteractor,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     communalTransitionViewModel: CommunalTransitionViewModel,
     @ShadeDisplayAware configurationController: ConfigurationController,
     wakefulnessLifecycle: WakefulnessLifecycle,
@@ -450,6 +453,9 @@ constructor(
     /** Is either shade or QS fully expanded */
     private var isAnyShadeFullyExpanded: Boolean = false
 
+    /** Is lockscreen visible */
+    private var isOnLockscreen: Boolean = false
+
     /** Is the communal UI showing and not dreaming */
     private var onCommunalNotDreaming: Boolean = false
 
@@ -597,6 +603,16 @@ constructor(
             shadeInteractor.isAnyFullyExpanded.collect {
                 isAnyShadeFullyExpanded = it
                 updateUserVisibility()
+            }
+        }
+
+        coroutineScope.launch {
+            keyguardTransitionInteractor.currentKeyguardState.collect {
+                val currentState = it == KeyguardState.LOCKSCREEN
+                if (isOnLockscreen != currentState) {
+                    isOnLockscreen = currentState
+                    updateUserVisibility()
+                }
             }
         }
 
@@ -1321,7 +1337,6 @@ constructor(
     private fun updateUserVisibility() {
         val shadeVisible =
             isLockScreenVisibleToUser() ||
-                isLockScreenShadeVisibleToUser() ||
                 isHomeScreenShadeVisibleToUser() ||
                 isGlanceableHubVisibleToUser()
         val mediaVisible = qsExpanded || hasActiveMedia
@@ -1334,19 +1349,7 @@ constructor(
     }
 
     private fun isLockScreenVisibleToUser(): Boolean {
-        return !statusBarStateController.isDozing &&
-            !keyguardViewController.isBouncerShowing &&
-            statusBarStateController.state == StatusBarState.KEYGUARD &&
-            allowMediaPlayerOnLockScreen &&
-            statusBarStateController.isExpanded &&
-            !qsExpanded
-    }
-
-    private fun isLockScreenShadeVisibleToUser(): Boolean {
-        return !statusBarStateController.isDozing &&
-            !keyguardViewController.isBouncerShowing &&
-            (statusBarStateController.state == StatusBarState.SHADE_LOCKED ||
-                (statusBarStateController.state == StatusBarState.KEYGUARD && qsExpanded))
+        return isOnLockscreen && allowMediaPlayerOnLockScreen
     }
 
     private fun isHomeScreenShadeVisibleToUser(): Boolean {
