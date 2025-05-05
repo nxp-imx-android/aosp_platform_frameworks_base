@@ -4026,8 +4026,8 @@ public class AudioService extends IAudioService.Stub
             if (DEBUG_VOL) Log.d(TAG, "Volume controller suppressed adjustment");
         }
 
-        adjustStreamVolume(streamType, direction, flags, callingPackage, caller, uid, pid,
-                null, hasModifyAudioSettings, keyEventMode);
+        adjustStreamVolume(streamType, direction, flags, /*ada=*/null, callingPackage, caller, uid,
+                pid, /*attributionTag=*/null, hasModifyAudioSettings, keyEventMode);
     }
 
     private boolean notifyExternalVolumeController(int direction) {
@@ -4079,14 +4079,14 @@ public class AudioService extends IAudioService.Stub
         if (isMuteAdjust(direction)) {
             sMuteLogger.enqueue(evt);
         }
-        adjustStreamVolume(streamType, direction, flags, callingPackage, callingPackage,
-                Binder.getCallingUid(), Binder.getCallingPid(), attributionTag,
+        adjustStreamVolume(streamType, direction, flags, /*ada=*/null, callingPackage,
+                callingPackage, Binder.getCallingUid(), Binder.getCallingPid(), attributionTag,
                 callingHasAudioSettingsPermission(), AudioDeviceVolumeManager.ADJUST_MODE_NORMAL);
     }
 
     protected void adjustStreamVolume(int streamType, int direction, int flags,
-            String callingPackage, String caller, int uid, int pid, String attributionTag,
-            boolean hasModifyAudioSettings, int keyEventMode) {
+            AudioDeviceAttributes ada, String callingPackage, String caller, int uid, int pid,
+            String attributionTag, boolean hasModifyAudioSettings, int keyEventMode) {
         if (mUseFixedVolume) {
             return;
         }
@@ -4139,8 +4139,9 @@ public class AudioService extends IAudioService.Stub
 
         VolumeStreamState streamState = getVssForStreamOrDefault(streamTypeAlias);
 
-        final AudioDeviceAttributes deviceAttr = getDeviceAttributesForStream(streamTypeAlias,
-                flagsContainsAbsoluteDevices(flags));
+
+        final AudioDeviceAttributes deviceAttr = ada != null ? ada : getDeviceAttributesForStream(
+                streamTypeAlias, flagsContainsAbsoluteDevices(flags));
         final int deviceType = deviceAttr.getInternalType();
 
         int aliasIndex = streamState.getIndex(deviceType);
@@ -4722,20 +4723,21 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    @Override
-    @android.annotation.EnforcePermission(anyOf = {
-            MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
-    /** @see AudioDeviceVolumeManager#setDeviceVolume(VolumeInfo, AudioDeviceAttributes)
+    /**
+     * @see AudioDeviceVolumeManager#setDeviceVolume(VolumeInfo, AudioDeviceAttributes)
      * Part of service interface, check permissions and parameters here
      * Note calling package is for logging purposes only, not to be trusted
      */
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
     public void setDeviceVolume(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada,
             @NonNull String callingPackage) {
         super.setDeviceVolume_enforcePermission();
         Objects.requireNonNull(ada);
         Objects.requireNonNull(callingPackage);
 
-        if (!isVolumeInfoValid(vi)) {
+        if (!isVolumeInfoValid(vi, /*forAdjust=*/false)) {
             return;
         }
 
@@ -4757,7 +4759,8 @@ public class AudioService extends IAudioService.Stub
 
         AudioService.sVolumeLogger.enqueue(
                 new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada,
-                        currDevAttr.getInternalType(), callingPackage, skipping));
+                        currDevAttr.getInternalType(), callingPackage, skipping, /*event=*/
+                        "setDeviceVolume"));
 
         if (skipping) {
             // setDeviceVolume was called on a device currently being used or stream state is null
@@ -4768,13 +4771,78 @@ public class AudioService extends IAudioService.Stub
                 "setDeviceVolume");
     }
 
-    @Override
-    @android.annotation.EnforcePermission(anyOf = {MODIFY_AUDIO_SETTINGS_PRIVILEGED,
-            BLUETOOTH_PRIVILEGED})
-    /** @see AudioDeviceVolumeManager#notifyAbsoluteVolumeChanged(VolumeInfo, AudioDeviceAttributes)
+    /**
+     * @see AudioDeviceVolumeManager#setVolumeForDevice(VolumeInfo, AudioDeviceAttributes)
      * Part of service interface, check permissions and parameters here
      * Note calling package is for logging purposes only, not to be trusted
      */
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public void setVolumeForDevice(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada,
+            @NonNull String callingPackage) {
+        super.setVolumeForDevice_enforcePermission();
+        Objects.requireNonNull(ada);
+        Objects.requireNonNull(callingPackage);
+
+        if (!isVolumeInfoValid(vi, /*forAdjust=*/false)) {
+            return;
+        }
+
+        int streamType = replaceBtScoStreamWithVoiceCall(vi.getStreamType(), "setVolumeForDevice");
+
+        AudioService.sVolumeLogger.enqueue(
+                new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada, /*deviceForStream=*/-1,
+                        callingPackage, /*skipping=*/false, /*event=*/"setVolumeForDevice"));
+
+        final VolumeStreamState vss = getVssForStream(streamType);
+        if (vss == null) {
+            Log.e(TAG, "VSS for stream type " + streamType + " is null");
+            return;
+        }
+        setDeviceVolumeInt(vi, vss, ada, callingPackage, /*flags=*/0, /*changeMute=*/false,
+                "setVolumeForDevice");
+    }
+
+    /**
+     * @see AudioDeviceVolumeManager#adjustVolumeForDevice(VolumeInfo, int, AudioDeviceAttributes)
+     * Part of service interface, check permissions and parameters here
+     * Note calling package is for logging purposes only, not to be trusted
+     */
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public void adjustVolumeForDevice(@NonNull VolumeInfo vi, int direction,
+            @NonNull AudioDeviceAttributes ada, @NonNull String callingPackage) {
+        super.adjustVolumeForDevice_enforcePermission();
+        Objects.requireNonNull(ada);
+        Objects.requireNonNull(callingPackage);
+
+        if (!isVolumeInfoValid(vi, /*forAdjust=*/true)) {
+            return;
+        }
+
+        int streamType = replaceBtScoStreamWithVoiceCall(vi.getStreamType(),
+                "adjustVolumeForDevice");
+        AudioService.sVolumeLogger.enqueue(
+                new DeviceVolumeEvent(streamType, direction, ada, /*deviceForStream=*/-1,
+                        callingPackage, /*skipped=*/false, /*event=*/"adjustVolumeForDevice"));
+
+
+        adjustStreamVolume(streamType, direction, /*flags=*/0, ada, callingPackage,
+                "adjustVolumeForDevice", Binder.getCallingUid(), Binder.getCallingPid(),
+                /*attributionTag=*/null, /*hasModifyAudioSettings=*/true,
+                AudioDeviceVolumeManager.ADJUST_MODE_NORMAL);
+    }
+
+    /**
+     * @see AudioDeviceVolumeManager#notifyAbsoluteVolumeChanged(VolumeInfo, AudioDeviceAttributes)
+     * Part of service interface, check permissions and parameters here
+     * Note calling package is for logging purposes only, not to be trusted
+     */
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            BLUETOOTH_PRIVILEGED})
     public void notifyAbsoluteVolumeChanged(@NonNull VolumeInfo vi,
             @NonNull AudioDeviceAttributes ada,
             @NonNull String callingPackage) {
@@ -4782,7 +4850,7 @@ public class AudioService extends IAudioService.Stub
         Objects.requireNonNull(ada);
         Objects.requireNonNull(callingPackage);
 
-        if (!isVolumeInfoValid(vi)) {
+        if (!isVolumeInfoValid(vi, /*forAdjust=*/false)) {
             return;
         }
         if (!isAbsoluteVolumeDevice(ada.getInternalType())) {
@@ -4811,7 +4879,7 @@ public class AudioService extends IAudioService.Stub
                 "notifyAbsoluteVolumeChanged");
     }
 
-    private static boolean isVolumeInfoValid(VolumeInfo vi) {
+    private static boolean isVolumeInfoValid(VolumeInfo vi, boolean forAdjust) {
         Objects.requireNonNull(vi);
 
         // TODO(b/409634289): for now we only allow stream volume info commands, this needs to be
@@ -4823,7 +4891,7 @@ public class AudioService extends IAudioService.Stub
 
         int index = vi.getVolumeIndex();
         boolean hasMuteState = deviceVolumeApis() ? vi.hasMuteState() : vi.hasMuteCommand();
-        if (index == VolumeInfo.INDEX_NOT_SET && !hasMuteState) {
+        if (index == VolumeInfo.INDEX_NOT_SET && !hasMuteState && !forAdjust) {
             throw new IllegalArgumentException(
                     "changing device volume requires a volume index or mute command");
         }
@@ -7154,8 +7222,8 @@ public class AudioService extends IAudioService.Stub
                     .toString()));
         }
 
-        adjustStreamVolume(streamType, direction, flags, packageName, packageName, uid, pid,
-                null, hasAudioSettingsPermission(uid, pid),
+        adjustStreamVolume(streamType, direction, flags, /*ada=*/null, packageName, packageName,
+                uid, pid, null, hasAudioSettingsPermission(uid, pid),
                 AudioDeviceVolumeManager.ADJUST_MODE_NORMAL);
     }
 

@@ -7461,11 +7461,13 @@ package android.media {
   }
 
   public class AudioDeviceVolumeManager {
+    method @FlaggedApi("android.media.audio.device_volume_apis") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void adjustVolumeForDevice(@NonNull android.media.VolumeInfo, int, @NonNull android.media.AudioDeviceAttributes);
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public android.media.VolumeInfo getDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
     method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.BLUETOOTH_PRIVILEGED}) public void notifyAbsoluteVolumeChanged(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes, int);
+    method @FlaggedApi("android.media.audio.device_volume_apis") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setVolumeForDevice(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
     field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE = 3; // 0x3
     field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY = 5; // 0x5
     field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE = 4; // 0x4
