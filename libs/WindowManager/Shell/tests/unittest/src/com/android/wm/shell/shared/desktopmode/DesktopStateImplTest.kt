@@ -148,6 +148,21 @@ class DesktopStateImplTest : ShellTestCase() {
         assertThat(desktopState.canEnterDesktopMode).isTrue()
     }
 
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION,
+    )
+    @Test
+    fun canEnterDesktopMode_DWFlagDisabled_deviceNotEligible_forceNotUsingDevOption_returnsFalse() {
+        mContext
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_isDesktopModeDevOptionSupported, true)
+        setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_OFF)
+        val desktopState = DesktopStateImpl(context)
+
+        assertThat(desktopState.canEnterDesktopMode).isFalse()
+    }
+
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @Test
@@ -231,6 +246,21 @@ class DesktopStateImplTest : ShellTestCase() {
         val desktopState = DesktopStateImpl(context)
 
         assertThat(desktopState.canEnterDesktopMode).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION
+    )
+    @Test
+    fun canEnterDesktopMode_DWFlagEnabled_deviceNotEligible_forceNotUsingDevOption_returnsFalse() {
+        mContext
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_isDesktopModeDevOptionSupported, true)
+        setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_OFF)
+        val desktopState = DesktopStateImpl(context)
+
+        assertThat(desktopState.canEnterDesktopMode).isFalse()
     }
 
     @Test
@@ -439,29 +469,36 @@ class DesktopStateImplTest : ShellTestCase() {
     }
 
     private fun resetDesktopModeFlagsCache() {
-        val cachedToggleOverride1 =
-            DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
-        cachedToggleOverride1.isAccessible = true
-        cachedToggleOverride1.set(null, null)
+        val cachedRawToggleOverride =
+            DesktopModeFlags::class.java.getDeclaredField("sCachedRawToggleOverride")
+        cachedRawToggleOverride.isAccessible = true
+        cachedRawToggleOverride.set(null, null)
 
-        val cachedToggleOverride2 =
-            DesktopExperienceFlags::class.java.getDeclaredField("sCachedToggleOverride")
-        cachedToggleOverride2.isAccessible = true
-        cachedToggleOverride2.set(null, null)
-    }
-
-    private fun setFlagOverride(override: DesktopModeFlags.ToggleOverride) {
-        // Override for DesktopModeFlags can be on/off/unset
         val cachedToggleOverride =
             DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
         cachedToggleOverride.isAccessible = true
-        cachedToggleOverride.set(null, override)
+        cachedToggleOverride.set(null, null)
+
+        val cachedDEToggleOverride =
+            DesktopExperienceFlags::class.java.getDeclaredField("sCachedToggleOverride")
+        cachedDEToggleOverride.isAccessible = true
+        cachedDEToggleOverride.set(null, null)
+    }
+
+    private fun setFlagOverride(override: DesktopModeFlags.ToggleOverride) {
+        resetDesktopModeFlagsCache()
+
+        // Override for DesktopModeFlags can be on/off/unset
+        val cachedRawToggleOverride =
+            DesktopModeFlags::class.java.getDeclaredField("sCachedRawToggleOverride")
+        cachedRawToggleOverride.isAccessible = true
+        cachedRawToggleOverride.set(null, override)
 
         // Override for DesktopExperienceFlags can be true or flags
-        val cachedToggleOverride2 =
+        val cachedDEToggleOverride =
             DesktopExperienceFlags::class.java.getDeclaredField("sCachedToggleOverride")
-        cachedToggleOverride2.isAccessible = true
-        cachedToggleOverride2.set(null, override == DesktopModeFlags.ToggleOverride.OVERRIDE_ON)
+        cachedDEToggleOverride.isAccessible = true
+        cachedDEToggleOverride.set(null, override == DesktopModeFlags.ToggleOverride.OVERRIDE_ON)
     }
 
     private fun setDeviceEligibleForDesktopMode(eligible: Boolean) {

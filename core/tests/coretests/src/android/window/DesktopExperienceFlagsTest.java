@@ -23,7 +23,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.FlagsParameterization;
@@ -34,6 +39,7 @@ import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.R;
 import com.android.window.flags.Flags;
 
 import org.junit.After;
@@ -79,7 +85,10 @@ public class DesktopExperienceFlagsTest {
 
     private static final String OVERRIDE_OFF_SETTING = "0";
     private static final String OVERRIDE_ON_SETTING = "1";
-    private Map<String, String> mInitialSyspropValues = null;
+    private Map<String, String> mInitialSyspropValues = new HashMap<>();
+
+    private Context mMockContext;
+    private Resources mMockResources;
 
     public DesktopExperienceFlagsTest(FlagsParameterization flags) {
         mSetFlagsRule = new SetFlagsRule(flags);
@@ -87,7 +96,19 @@ public class DesktopExperienceFlagsTest {
 
     @Before
     public void setUp() throws Exception {
-        mInitialSyspropValues = new HashMap<>();
+        mInitialSyspropValues.clear();
+
+        mMockResources = mock(Resources.class);
+        mMockContext = mock(Context.class);
+        when(mMockContext.getResources()).thenReturn(mMockResources);
+        setDesktopModeSupported(false);
+
+        // Set the application context to the mock one
+        Field cachedToggleOverride =
+                DesktopExperienceFlags.class.getDeclaredField("sApplicationContext");
+        cachedToggleOverride.setAccessible(true);
+        cachedToggleOverride.set(null, mMockContext);
+
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, null);
     }
@@ -128,6 +149,7 @@ public class DesktopExperienceFlagsTest {
     @Test
     public void isTrue_devOptionEnabled_overrideOn_featureFlagOff() throws Exception {
         assumeTrue(Flags.showDesktopExperienceDevOption());
+        setDesktopModeSupported(true);
         mLocalFlagValue = false;
         setSysProp(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME, OVERRIDE_ON_SETTING);
 
@@ -169,5 +191,10 @@ public class DesktopExperienceFlagsTest {
                 DesktopExperienceFlags.class.getDeclaredField("sCachedToggleOverride");
         cachedToggleOverride.setAccessible(true);
         cachedToggleOverride.set(null, null);
+    }
+
+    private void setDesktopModeSupported(boolean isSupported) {
+        when(mMockResources.getBoolean(eq(R.bool.config_isDesktopModeSupported))).thenReturn(
+                isSupported);
     }
 }

@@ -22,10 +22,13 @@ import static com.android.server.display.feature.flags.Flags.enableDisplayConten
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityThread;
+import android.content.Context;
 import android.os.SystemProperties;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.android.internal.R;
 import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
@@ -202,6 +205,25 @@ public enum DesktopExperienceFlags {
     // go/keep-sorted end
     ;
 
+    /** Whether the desktop experience developer option is supported. */
+    static boolean isDesktopExperienceDevOptionSupported() {
+        if (!Flags.showDesktopExperienceDevOption()) {
+            return false;
+        }
+        boolean shouldEnforceDeviceRestrictions = SystemProperties.getBoolean(
+                "persist.wm.debug.desktop_mode_enforce_device_restrictions", true);
+        if (!shouldEnforceDeviceRestrictions) {
+            return true;
+        }
+        final Context context = getApplicationContext();
+        if (context == null) {
+            return false;
+        }
+        // Simplified version of DesktopModeHelper.isDeviceEligibleForDesktopMode, as the
+        // developer option cannot be considered when we check eligibility.
+        return context.getResources().getBoolean(R.bool.config_isDesktopModeSupported);
+    }
+
     /**
      * Flag class, to be used in case the enum cannot be used because the flag is not accessible.
      *
@@ -271,6 +293,10 @@ public enum DesktopExperienceFlags {
     @Nullable
     private static Boolean sCachedToggleOverride;
 
+    // Local cache for the application context.
+    @Nullable
+    private static Context sApplicationContext;
+
     /**
      * Local cache of dynamically defined flag, organised by name.
      *
@@ -319,9 +345,7 @@ public enum DesktopExperienceFlags {
 
     private static boolean isFlagTrue(
             BooleanSupplier flagFunction, boolean shouldOverrideByDevOption) {
-        if (Flags.showDesktopExperienceDevOption()
-                && shouldOverrideByDevOption
-                && getToggleOverride()) {
+        if (shouldOverrideByDevOption && getToggleOverride()) {
             return true;
         }
         return flagFunction.getAsBoolean();
@@ -357,14 +381,38 @@ public enum DesktopExperienceFlags {
         }
 
         // Otherwise, fetch and cache it
-        boolean override = getToggleOverrideFromSystem();
+        boolean override = isToggleOverriddenBySystem();
         sCachedToggleOverride = override;
         Log.d(TAG, "Toggle override initialized to: " + override);
         return override;
     }
 
-    /** Returns the {@link ToggleOverride} from the system property.. */
-    private static boolean getToggleOverrideFromSystem() {
+    static Context getApplicationContext() {
+        if (sApplicationContext == null) {
+            final Context application = ActivityThread.currentApplication();
+            if (application == null) {
+                Log.w(TAG, "Could not get the current application.");
+                return null;
+            }
+            sApplicationContext = application;
+        }
+        return sApplicationContext;
+    }
+
+    /** Returns whether the toggle is overridden by the relevant system property.. */
+    private static boolean isToggleOverriddenBySystem() {
+        // We never override if display content mode management is enabled.
+        if (enableDisplayContentModeManagement()) {
+            return false;
+        }
+        final Context context = getApplicationContext();
+        if (context == null) {
+            return false;
+        }
+        // If the developer option is not supported, we don't override.
+        if (!isDesktopExperienceDevOptionSupported()) {
+            return false;
+        }
         return SystemProperties.getBoolean(SYSTEM_PROPERTY_NAME, false);
     }
 }
