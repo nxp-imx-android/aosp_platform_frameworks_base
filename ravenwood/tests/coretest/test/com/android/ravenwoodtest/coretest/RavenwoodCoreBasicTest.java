@@ -33,6 +33,18 @@ public class RavenwoodCoreBasicTest {
         }
     }
 
+    // Use it for manual testing -- "run-ravenwood-tests.sh -s" should skip it.
+    @Test
+    @android.platform.test.annotations.LargeTest
+    public void testLargeTest1() {
+    }
+
+    // Use it for manual testing -- "run-ravenwood-tests.sh -s" should skip it.
+    @Test
+    @androidx.test.filters.LargeTest
+    public void testLargeTest2() {
+    }
+
     @Test
     public void testDataFilesExist() throws Exception {
         assertEquals("datafile1", readFile("data/datafile1.txt"));
