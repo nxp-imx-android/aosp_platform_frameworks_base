@@ -16,6 +16,8 @@
 
 package com.android.systemui.dreams.dagger;
 
+import static android.os.Flags.lowLightDreamBehavior;
+
 import android.annotation.Nullable;
 import android.app.DreamManager;
 import android.app.Service;
@@ -26,7 +28,6 @@ import android.content.res.Resources;
 
 import com.android.dream.lowlight.dagger.LowLightDreamComponent;
 import com.android.settingslib.dream.DreamBackend;
-import com.android.systemui.Flags;
 import com.android.systemui.ambient.touch.scrim.dagger.ScrimModule;
 import com.android.systemui.complication.dagger.RegisteredComplicationsModule;
 import com.android.systemui.dagger.SysUISingleton;
@@ -257,7 +258,7 @@ public interface DreamModule {
     @Named(LOW_LIGHT_DREAM_SERVICE)
     static ComponentName providesLowLightDreamService(Context context,
             @Named(LOW_LIGHT_CLOCK_DREAM) ComponentName clockDream) {
-        if (Flags.lowLightClockDream()) {
+        if (lowLightDreamBehavior()) {
             return clockDream;
         }
 
