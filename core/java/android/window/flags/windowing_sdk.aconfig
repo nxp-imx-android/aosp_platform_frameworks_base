@@ -237,3 +237,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "fallback_to_focused_display"
+    description: "Use the focused display as the fallback"
+    bug: "406967985"
+    is_fixed_read_only: true
+}

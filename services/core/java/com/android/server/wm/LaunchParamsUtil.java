@@ -401,7 +401,7 @@ class LaunchParamsUtil {
      *     <li>The display area of the top activity from the launching process will be used</li>
      *     <li>The display area of the top activity from the real launching process will be used
      *     </li>
-     *     <li>Default display area from the associated root window container.</li>
+     *     <li>The default display area of the current focused display will be used.</li>
      * </ol>
      * @param activityRecord the activity being started
      * @param request optional {@link ActivityStarter.Request} made to start the activity record
@@ -452,9 +452,17 @@ class LaunchParamsUtil {
             }
         }
 
-        final TaskDisplayArea defaultTaskDisplayArea =
-                supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-        logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
-        return defaultTaskDisplayArea;
+        if (com.android.window.flags.Flags.fallbackToFocusedDisplay()) {
+            // Select the TDA from the top focused display.
+            final TaskDisplayArea defaultTaskDisplayArea = supervisor.mRootWindowContainer
+                    .getTopFocusedDisplayContent().getDefaultTaskDisplayArea();
+            logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
+            return defaultTaskDisplayArea;
+        } else {
+            final TaskDisplayArea defaultTaskDisplayArea =
+                    supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
+            logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
+            return defaultTaskDisplayArea;
+        }
     }
 }
