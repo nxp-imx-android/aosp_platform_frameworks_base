@@ -167,7 +167,8 @@ public final class ResourcesKey {
         }
         if (android.content.res.Flags.ignoreNonPublicConfigDiffForResourcesKey()) {
             // Do not compare the configuration fields that won't affect resources.
-            if (mOverrideConfiguration.diffPublicOnly(mOverrideConfiguration) != 0) {
+            if (mOverrideConfiguration.diff(peer.mOverrideConfiguration,
+                    true /* compareUndefined */, true /* publicOnly */) != 0) {
                 return false;
             }
         } else if (!Objects.equals(mOverrideConfiguration, peer.mOverrideConfiguration)) {
