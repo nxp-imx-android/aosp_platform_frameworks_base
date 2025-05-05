@@ -1186,7 +1186,7 @@ class TransitionController {
             // to report it as a no-op.
             ProtoLog.w(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                     "Formerly queued #%d force-reported as no-op", queued.mTransition.getSyncId());
-            queued.mTransition.setAllReady();
+            queued.mTransition.playNow();
         } else {
             // Post this so that the now-playing transition logic isn't interrupted.
             mAtm.mH.post(() -> {
