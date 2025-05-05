@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.popups.shared.model
+package com.android.systemui.statusbar.featurepods.popups.ui.model
 
 import com.android.systemui.common.shared.model.Icon
 
@@ -33,7 +33,7 @@ data class ChipIcon(val icon: Icon, val onClick: (() -> Unit)? = null)
 
 /** Defines the behavior of the chip when hovered over. */
 sealed interface HoverBehavior {
-    /** No specific hover behavior. The default icons will be shown. */
+    /** No specific hover behavior. The default icon will be shown. */
     data object None : HoverBehavior
 
     /** Shows a list of buttons on hover with the given [icons] */
@@ -55,6 +55,8 @@ sealed class PopupChipModel {
         /** Icons shown on the chip when no specific hover behavior. */
         val icons: List<ChipIcon>,
         val chipText: String,
+        /** Determines the colors used for the chip. Defaults to system themed colors. */
+        val colors: ColorsModel = ColorsModel.SystemTheme,
         val isPopupShown: Boolean = false,
         val showPopup: () -> Unit = {},
         val hidePopup: () -> Unit = {},

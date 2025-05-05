@@ -31,8 +31,8 @@ import androidx.compose.ui.window.PopupProperties
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.media.ui.compose.MediaControlPopup
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.vc.ui.compose.AvControlsChipPopup
 
 /**

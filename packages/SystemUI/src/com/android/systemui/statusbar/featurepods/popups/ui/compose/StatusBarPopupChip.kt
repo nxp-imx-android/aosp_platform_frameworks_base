@@ -30,10 +30,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,9 +57,10 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.featurepods.popups.shared.model.ChipIcon
-import com.android.systemui.statusbar.featurepods.popups.shared.model.HoverBehavior
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ColorsModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.HoverBehavior
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip
@@ -68,6 +69,7 @@ import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipM
  */
 @Composable
 fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Modifier) {
+    val colors = viewModel.colors
     val hasHoverBehavior = viewModel.hoverBehavior !is HoverBehavior.None
     val interactionSource = remember { MutableInteractionSource() }
     val hoveredState by interactionSource.collectIsHoveredAsState()
@@ -77,11 +79,7 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
     val chipShape =
         RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
     val chipBackgroundColor =
-        if (isPopupShown) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.surfaceDim
-        }
+        colors.chipBackground(isPopupShown = isPopupShown, colorScheme = MaterialTheme.colorScheme)
 
     // Use a Box with `fillMaxHeight` to create a larger click surface for the chip. The visible
     // height of the chip is determined by the height of the background of the Row below. The
@@ -106,24 +104,29 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
                     .background(chipBackgroundColor)
                     .border(
                         width = dimensionResource(id = R.dimen.ongoing_activity_chip_outline_width),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color =
+                            colors.chipOutline(
+                                isPopupShown = isPopupShown,
+                                colorScheme = MaterialTheme.colorScheme,
+                            ),
                         shape = chipShape,
                     )
                     .indication(interactionSource, indication)
                     .padding(start = 4.dp, end = 8.dp),
         ) {
-            val iconColor =
-                if (isHovered) chipBackgroundColor else contentColorFor(chipBackgroundColor)
             val hoverBehavior = viewModel.hoverBehavior
-            val iconBackgroundColor = contentColorFor(chipBackgroundColor)
-            val iconInteractionSource = remember { MutableInteractionSource() }
-
             val chipIcons =
                 when {
                     isHovered && hoverBehavior is HoverBehavior.Buttons -> hoverBehavior.icons
                     else -> viewModel.icons
                 }
-            ChipIcons(chipIcons = chipIcons)
+
+            ChipIcons(
+                chipIcons = chipIcons,
+                colors = colors,
+                isPopupShown = isPopupShown,
+                isHovered = isHovered,
+            )
 
             val text = viewModel.chipText
             val textStyle = MaterialTheme.typography.labelLarge
@@ -134,6 +137,11 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
                 text = text,
                 style = textStyle,
                 softWrap = false,
+                color =
+                    colors.chipContent(
+                        isPopupShown = isPopupShown,
+                        colorScheme = MaterialTheme.colorScheme,
+                    ),
                 modifier =
                     Modifier.widthIn(
                             max =
@@ -168,14 +176,36 @@ fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Mod
 }
 
 @Composable
-private fun ChipIcons(chipIcons: List<ChipIcon>) {
+private fun ChipIcons(
+    chipIcons: List<ChipIcon>,
+    colors: ColorsModel,
+    isPopupShown: Boolean,
+    isHovered: Boolean,
+) {
+    val iconHoverBackgroundColor =
+        colors.iconBackgroundOnHover(
+            isPopupShown = isPopupShown,
+            colorScheme = MaterialTheme.colorScheme,
+        )
+    val iconColor =
+        colors.icon(
+            isPopupShown = isPopupShown,
+            isHovered = isHovered,
+            colorScheme = MaterialTheme.colorScheme,
+        )
     for (chipIcon in chipIcons) {
         Icon(
             icon = chipIcon.icon,
             modifier =
-                Modifier.size(20.dp).thenIf(chipIcon.onClick != null) {
-                    Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
-                },
+                Modifier.size(20.dp)
+                    .thenIf(chipIcon.onClick != null) {
+                        Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
+                    }
+                    .thenIf(isHovered && iconHoverBackgroundColor != Color.Unspecified) {
+                        Modifier.background(color = iconHoverBackgroundColor, shape = CircleShape)
+                            .padding(2.dp)
+                    },
+            tint = iconColor,
         )
     }
 }

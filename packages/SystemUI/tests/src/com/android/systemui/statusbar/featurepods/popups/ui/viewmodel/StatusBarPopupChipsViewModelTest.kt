@@ -28,7 +28,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before

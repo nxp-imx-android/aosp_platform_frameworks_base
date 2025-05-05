@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.featurepods.vc.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
 import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractor
 
 private val Kosmos.avControlsChipViewModel: AvControlsChipViewModel by

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.ui.viewmodel
+package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.statusbar.featurepods.popups.shared.model.ChipIcon
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
