@@ -2049,13 +2049,17 @@ public class DreamService extends Service implements Window.Callback {
         private final IBinder mActivityDreamToken;
         private WeakReference<DreamService> mService;
 
-        DreamActivityCallbacks(IBinder token, WeakReference<DreamService> service)  {
+        public DreamActivityCallbacks(IBinder token, WeakReference<DreamService> service)  {
             mActivityDreamToken = token;
             mService = service;
         }
 
         /** Callback when the {@link DreamActivity} has been created */
         public void onActivityCreated(DreamActivity activity) {
+            if (mService == null) {
+                return;
+            }
+
             final DreamService service = mService.get();
 
             if (service == null) {
@@ -2067,6 +2071,10 @@ public class DreamService extends Service implements Window.Callback {
 
         /** Callback when the {@link DreamActivity} has been destroyed */
         public void onActivityDestroyed() {
+            if (mService == null) {
+                return;
+            }
+
             final DreamService service = mService.get();
 
             if (service == null) {

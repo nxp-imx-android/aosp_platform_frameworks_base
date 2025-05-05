@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +34,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.content.res.TypedArray;
+import android.os.Binder;
+import android.os.IBinder;
 import android.os.Looper;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -51,6 +55,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+
+import java.lang.ref.WeakReference;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -208,6 +214,20 @@ public class DreamServiceTest {
         environment.resetClientInvocations();
         environment.advance(TestDreamEnvironment.DREAM_STATE_WOKEN);
         verify(environment.getDreamOverlayClient()).onWakeRequested();
+    }
+
+    @Test
+    public void testCallbackInvalidAfterDestroy() {
+        final IBinder binder = new Binder();
+        final DreamService service = Mockito.mock(DreamService.class);
+        final WeakReference<DreamService> serviceRef = new WeakReference<>(service);
+        DreamService.DreamActivityCallbacks callbacks = new DreamService.DreamActivityCallbacks(
+                binder, serviceRef);
+        callbacks.onActivityDestroyed();
+        assertThat(mockingDetails(service).getInvocations().size()).isNotEqualTo(0);
+        clearInvocations(service);
+        callbacks.onActivityDestroyed();
+        assertThat(mockingDetails(service).getInvocations().size()).isEqualTo(0);
     }
 
     @Test
