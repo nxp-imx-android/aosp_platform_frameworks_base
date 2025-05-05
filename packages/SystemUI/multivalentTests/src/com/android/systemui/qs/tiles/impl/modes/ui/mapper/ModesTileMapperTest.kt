@@ -83,7 +83,7 @@ class ModesTileMapperTest : SysuiTestCase() {
         val model =
             ModesTileModel(
                 isActivated = true,
-                activeModes = listOf("DND"),
+                activeModes = activeModesList("DND"),
                 icon = icon,
                 quickMode = TestModeBuilder.MANUAL_DND,
             )
@@ -102,7 +102,7 @@ class ModesTileMapperTest : SysuiTestCase() {
         val model =
             ModesTileModel(
                 isActivated = true,
-                activeModes = listOf("Mode 1", "Mode 2", "Mode 3"),
+                activeModes = activeModesList("Mode 1", "Mode 2", "Mode 3"),
                 icon = icon,
                 quickMode = TestModeBuilder.MANUAL_DND,
             )
@@ -141,7 +141,7 @@ class ModesTileMapperTest : SysuiTestCase() {
         val model =
             ModesTileModel(
                 isActivated = true,
-                activeModes = listOf("DND"),
+                activeModes = activeModesList("DND"),
                 icon = icon,
                 quickMode = TestModeBuilder.MANUAL_DND,
             )
@@ -161,7 +161,7 @@ class ModesTileMapperTest : SysuiTestCase() {
         val model =
             ModesTileModel(
                 isActivated = true,
-                activeModes = listOf("Mode 1", "Mode 2", "Mode 3"),
+                activeModes = activeModesList("Mode 1", "Mode 2", "Mode 3"),
                 icon = icon,
                 quickMode = TestModeBuilder.MANUAL_DND,
             )
@@ -188,5 +188,14 @@ class ModesTileMapperTest : SysuiTestCase() {
         val state = underTest.map(config, model)
 
         assertThat(state.icon).isEqualTo(icon)
+    }
+
+    private fun activeModesList(vararg modeIdsAndNames: String): List<ModesTileModel.ActiveMode> {
+        return modeIdsAndNames.map {
+            // For testing purposes, we use the same value for id and name, but replicate
+            // the flagged behavior of the DataInteractor.
+            if (Flags.modesUiTileReactivatesLast()) ModesTileModel.ActiveMode(it, it)
+            else ModesTileModel.ActiveMode(null, it)
+        }
     }
 }

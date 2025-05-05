@@ -23,6 +23,7 @@ import android.app.AutomaticZenRule.TYPE_OTHER
 import android.app.Flags
 import android.app.NotificationManager.Policy
 import android.media.AudioManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.provider.Settings.Secure.ZEN_DURATION
@@ -308,6 +309,7 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST) // getActiveModes will be deleted
     fun getActiveModes_computesMainActiveMode() =
         kosmos.runTest {
             zenModeRepository.addMode(id = "Bedtime", type = AutomaticZenRule.TYPE_BEDTIME)

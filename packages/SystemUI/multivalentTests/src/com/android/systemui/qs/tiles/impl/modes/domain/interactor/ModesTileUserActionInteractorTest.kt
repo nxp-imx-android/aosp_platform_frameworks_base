@@ -59,6 +59,7 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
     private val mockDialogDelegate = kosmos.mockModesDialogDelegate
     private val zenModeRepository = kosmos.zenModeRepository
     private val zenModeInteractor = kosmos.zenModeInteractor
+    private val tileDataInteractor = kosmos.modesTileDataInteractor
 
     private val underTest =
         ModesTileUserActionInteractor(
@@ -66,6 +67,7 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
             inputHandler,
             mockDialogDelegate,
             zenModeInteractor,
+            tileDataInteractor,
             kosmos.modesDialogEventLogger,
         )
 
@@ -183,12 +185,18 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
 
     private fun modelOf(
         isActivated: Boolean,
-        activeModeNames: List<String>,
+        activeModeIdsAndNames: List<String>,
         quickMode: ZenMode? = MANUAL_DND,
     ): ModesTileModel {
         return ModesTileModel(
             isActivated,
-            activeModeNames,
+            activeModeIdsAndNames.map {
+                // For testing purposes, we use the same value for id and name, but replicate
+                // the flagged behavior of the DataInteractor.
+                if (android.app.Flags.modesUiTileReactivatesLast())
+                    ModesTileModel.ActiveMode(it, it)
+                else ModesTileModel.ActiveMode(null, it)
+            },
             TestStubDrawable("icon").asIcon(res = 123),
             quickMode,
         )

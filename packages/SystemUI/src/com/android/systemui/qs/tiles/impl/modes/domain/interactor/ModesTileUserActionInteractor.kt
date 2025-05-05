@@ -46,6 +46,7 @@ constructor(
     // TODO(b/353896370): The domain layer should not have to depend on the UI layer.
     private val dialogDelegate: ModesDialogDelegate,
     private val zenModeInteractor: ZenModeInteractor,
+    private val dataInteractor: ModesTileDataInteractor,
     private val dialogEventLogger: ModesDialogEventLogger,
 ) : QSTileUserActionInteractor<ModesTileModel> {
     val longClickIntent = Intent(Settings.ACTION_ZEN_MODE_SETTINGS)
@@ -99,6 +100,9 @@ constructor(
                 activateMode(dnd)
             }
         } else {
+            if (Flags.modesUiTileReactivatesLast()) {
+                dataInteractor.setQuickModeOverride(modesTileModel.activeModes.mapNotNull { it.id })
+            }
             zenModeInteractor.deactivateAllModes()
         }
     }
