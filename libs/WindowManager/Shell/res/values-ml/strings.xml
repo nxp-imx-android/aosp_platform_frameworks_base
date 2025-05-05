@@ -140,6 +140,16 @@
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"സ്‌ക്രീൻ വലുതാക്കുക"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"വലുപ്പം മാറ്റുക"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ആപ്പ് ഇവിടേക്ക് നീക്കാനാകില്ല"</string>
+    <!-- no translation found for desktop_mode_talkback_state_opening (8505494249513712682) -->
+    <skip />
+    <!-- no translation found for desktop_mode_talkback_state_closing (3583809798015406611) -->
+    <skip />
+    <!-- no translation found for desktop_mode_talkback_state_minimizing (7406911785134757827) -->
+    <skip />
+    <!-- no translation found for desktop_mode_talkback_state_focused (6287982923335568236) -->
+    <skip />
+    <!-- no translation found for desktop_mode_talkback_state_not_focused (4640618691603218929) -->
+    <skip />
     <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"ഇമേഴ്‌സീവ്"</string>
     <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"പുനഃസ്ഥാപിക്കുക"</string>
     <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"വലുതാക്കുക"</string>
