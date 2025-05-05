@@ -41,6 +41,7 @@ import com.android.keyguard.domain.interactor.KeyguardKeyboardInteractor
 import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.FaceAuthAccessibilityDelegate
+import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants
 import com.android.systemui.classifier.FalsingA11yDelegate
@@ -161,6 +162,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
     @Mock private lateinit var postureController: DevicePostureController
     @Mock private lateinit var devicePolicyManager: DevicePolicyManager
     @Mock private lateinit var mUserActivityNotifier: UserActivityNotifier
+    @Mock private lateinit var bouncerInteractor: BouncerInteractor
 
     @Captor
     private lateinit var swipeListenerArgumentCaptor:
@@ -291,6 +293,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 executor,
                 { deviceEntryInteractor },
                 { kosmos.windowRootViewBlurInteractor },
+                { bouncerInteractor },
             )
     }
 
@@ -306,6 +309,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -345,6 +349,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
 
         // Update rotation. Should trigger update
@@ -358,6 +363,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -399,6 +405,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -415,6 +422,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -431,6 +439,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -447,6 +456,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -463,6 +473,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 eq(userSwitcherController),
                 any(),
                 eq(falsingA11yDelegate),
+                any(),
             )
     }
 
@@ -472,7 +483,15 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
         val captor = ArgumentCaptor.forClass(UserSwitcherCallback::class.java)
         setupGetSecurityView(SecurityMode.Password)
         verify(view)
-            .initMode(anyInt(), any(), any(), any(), captor.capture(), eq(falsingA11yDelegate))
+            .initMode(
+                anyInt(),
+                any(),
+                any(),
+                any(),
+                captor.capture(),
+                eq(falsingA11yDelegate),
+                any(),
+            )
         captor.value.showUnlockToContinueMessage()
         viewControllerImmediately
         verify(keyguardPasswordViewControllerMock)
