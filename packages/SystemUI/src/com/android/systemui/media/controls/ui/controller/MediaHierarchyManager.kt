@@ -1328,6 +1328,9 @@ constructor(
         logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         val carouselVisible = shadeVisible && mediaVisible
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = carouselVisible
+        if (carouselVisible) {
+            mediaCarouselController.onCarouselVisibleToUser()
+        }
     }
 
     private fun isLockScreenVisibleToUser(): Boolean {

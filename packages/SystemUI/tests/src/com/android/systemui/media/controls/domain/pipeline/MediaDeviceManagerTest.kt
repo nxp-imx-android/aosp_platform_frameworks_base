@@ -347,6 +347,32 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         assertThat(data.icon).isEqualTo(icon)
     }
 
+    @RequiresFlagsEnabled(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun suggestedDeviceUpdateWithRepeatedValue() {
+        val suggestedDeviceName = "suggested_device_name"
+        val connectionState = 123
+        whenever(suggestedDeviceInfo.getDeviceDisplayName()).thenReturn(suggestedDeviceName)
+        whenever(suggestedDeviceState.getSuggestedDeviceInfo()).thenReturn(suggestedDeviceInfo)
+        whenever(suggestedDeviceState.getIcon(any())).thenReturn(icon)
+        whenever(suggestedDeviceState.getConnectionState()).thenReturn(connectionState)
+        // Need to load media data to load LocalMediaManager the first time
+        manager.onMediaDataLoaded(KEY, null, mediaData)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+        clearInvocations(listener)
+        val deviceCallback = captureCallback()
+        // Load initial suggestion data
+        deviceCallback.onSuggestedDeviceUpdated(suggestedDeviceState)
+        assertThat(fakeBgExecutor.runAllReady()).isEqualTo(1)
+        assertThat(fakeFgExecutor.runAllReady()).isEqualTo(1)
+        clearInvocations(listener)
+        // Reload device suggestion and verify no work on foreground
+        deviceCallback.onSuggestedDeviceUpdated(suggestedDeviceState)
+        assertThat(fakeBgExecutor.runAllReady()).isEqualTo(1)
+        assertThat(fakeFgExecutor.runAllReady()).isEqualTo(0)
+    }
+
     @Test
     fun selectedDeviceStateChanged() {
         manager.onMediaDataLoaded(KEY, null, mediaData)

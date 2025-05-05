@@ -799,6 +799,39 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         assertThat(mediaCarouselScrollHandler.visibleToUser).isFalse()
     }
 
+    @Test
+    fun testStatusBarOnStateChanged_carouselVisibleToUser() {
+        goToLockedShade()
+
+        statusBarCallback.value.onStateChanged(StatusBarState.SHADE_LOCKED)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    @Test
+    fun testStatusBarOnDozingChanged_carouselVisibleToUser() {
+        goToLockscreen()
+
+        statusBarCallback.value.onDozingChanged(false)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    @Test
+    fun testStatusBarOnExpandedChanged_carouselVisibleToUser() {
+        setHomeScreenShadeVisibleToUser()
+
+        statusBarCallback.value.onExpandedChanged(true)
+
+        verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    private fun setHomeScreenShadeVisibleToUser() {
+        whenever(statusBarStateController.isDozing).thenReturn(false)
+        whenever(statusBarStateController.state).thenReturn(StatusBarState.SHADE)
+        whenever(statusBarStateController.isExpanded).thenReturn(true)
+    }
+
     private fun enableSplitShade() {
         context
             .getOrCreateTestableResources()
@@ -808,6 +841,9 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
 
     private fun goToLockscreen() {
         whenever(statusBarStateController.state).thenReturn(StatusBarState.KEYGUARD)
+        whenever(statusBarStateController.isDozing).thenReturn(false)
+        whenever(statusBarStateController.isExpanded).thenReturn(true)
+        whenever(keyguardViewController.isBouncerShowing).thenReturn(false)
         settings.putInt(Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN, 1)
         statusBarCallback.value.onStatePreChange(StatusBarState.SHADE, StatusBarState.KEYGUARD)
         whenever(dreamOverlayStateController.isOverlayActive).thenReturn(false)

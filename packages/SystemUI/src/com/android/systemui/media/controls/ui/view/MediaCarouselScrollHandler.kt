@@ -64,6 +64,7 @@ class MediaCarouselScrollHandler(
     private var seekBarUpdateListener: (visibleToUser: Boolean) -> Unit,
     private val closeGuts: (immediate: Boolean) -> Unit,
     private val falsingManager: FalsingManager,
+    private val onCarouselVisibleToUser: () -> Unit,
     private val logger: MediaUiEventLogger,
 ) {
     /** Trace state logger for media carousel visibility */
@@ -545,6 +546,7 @@ class MediaCarouselScrollHandler(
             val visible = (i == visibleMediaIndex) || ((i == (visibleMediaIndex + 1)) && scrolledIn)
             view.visibility = if (visible) View.VISIBLE else View.INVISIBLE
         }
+        onCarouselVisibleToUser()
     }
 
     /**
