@@ -85,8 +85,9 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * This class takes the functions from IStatusBar that come in on
@@ -198,7 +199,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final String SHOW_IME_SWITCHER_KEY = "showImeSwitcherKey";
 
     private final Object mLock = new Object();
-    private final ArrayList<Callbacks> mCallbacks = new ArrayList<>();
+    private final List<Callbacks> mCallbacks = new CopyOnWriteArrayList<Callbacks>();
     private final Handler mHandler = new H(Looper.getMainLooper());
     /** A map of display id - disable flag pair */
     private final SparseArray<Pair<Integer, Integer>> mDisplayDisabled = new SparseArray<>();
