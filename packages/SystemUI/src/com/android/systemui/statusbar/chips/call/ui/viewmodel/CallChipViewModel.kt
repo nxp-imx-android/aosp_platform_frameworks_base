@@ -210,45 +210,38 @@ constructor(
         val instanceId = state.notificationInstanceId
 
         // This block mimics OngoingCallController#updateChip.
-        if (state.startTimeMs <= 0L) {
-            // If the start time is invalid, don't show a timer and show just an icon.
-            // See b/192379214.
-            return OngoingActivityChipModel.Active(
-                key = key,
-                icon = icon,
-                content = OngoingActivityChipModel.Content.IconOnly,
-                colors = colors,
-                onClickListenerLegacy = getOnClickListener(intent, instanceId),
-                clickBehavior = getClickBehavior(intent, instanceId),
-                isHidden = isHidden,
-                transitionManager = getTransitionManager(state, transitionState),
-                instanceId = instanceId,
-            )
-        } else {
-            val startTimeInElapsedRealtime =
-                state.startTimeMs - systemClock.currentTimeMillis() + systemClock.elapsedRealtime()
-            return OngoingActivityChipModel.Active(
-                key = key,
-                icon = icon,
-                colors = colors,
-                content =
-                    OngoingActivityChipModel.Content.Timer(
-                        startTimeMs = startTimeInElapsedRealtime
-                    ),
-                onClickListenerLegacy = getOnClickListener(intent, instanceId),
-                clickBehavior = getClickBehavior(intent, instanceId),
-                isHidden = isHidden,
-                transitionManager = getTransitionManager(state, transitionState),
-                instanceId = instanceId,
-            )
-        }
+        val content =
+            if (state.startTimeMs <= 0L) {
+                // If the start time is invalid, don't show a timer and show just an icon.
+                // See b/192379214.
+                OngoingActivityChipModel.Content.IconOnly
+            } else {
+                val startTimeInElapsedRealtime =
+                    state.startTimeMs - systemClock.currentTimeMillis() +
+                        systemClock.elapsedRealtime()
+                OngoingActivityChipModel.Content.Timer(startTimeMs = startTimeInElapsedRealtime)
+            }
+
+        return OngoingActivityChipModel.Active(
+            key = key,
+            icon = icon,
+            content = content,
+            colors = colors,
+            onClickListenerLegacy = getOnClickListener(intent, instanceId),
+            clickBehavior = getClickBehavior(intent, instanceId),
+            isHidden = isHidden,
+            transitionManager = getTransitionManager(state, transitionState),
+            instanceId = instanceId,
+        )
     }
 
     private fun getOnClickListener(
         intent: PendingIntent?,
         instanceId: InstanceId?,
     ): View.OnClickListener? {
-        if (intent == null) return null
+        if (intent == null) {
+            return null
+        }
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
 
@@ -273,40 +266,40 @@ constructor(
     private fun getClickBehavior(
         intent: PendingIntent?,
         instanceId: InstanceId?,
-    ): OngoingActivityChipModel.ClickBehavior =
+    ): OngoingActivityChipModel.ClickBehavior {
         if (intent == null) {
-            OngoingActivityChipModel.ClickBehavior.None
-        } else {
-            OngoingActivityChipModel.ClickBehavior.ExpandAction(
-                onClick = { expandable ->
-                    StatusBarChipsModernization.unsafeAssertInNewMode()
-
-                    logger.i({ "Chip clicked" }) {}
-                    uiEventLogger.logChipTapToShow(instanceId)
-
-                    // TODO(b/414830065): Tapping the call chip should show the notification instead
-                    // of launching the activity.
-                    val animationController =
-                        if (
-                            !StatusBarChipsReturnAnimations.isEnabled ||
-                                transitionControllerFactory == null
-                        ) {
-                            expandable.activityTransitionController(
-                                Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
-                            )
-                        } else {
-                            transitionState.value = TransitionState.LaunchRequested
-                            // When return animations are enabled, we use a long-lived registration
-                            // with controllers created on-demand by the animation library instead
-                            // of explicitly creating one at the time of the click. By not passing
-                            // a controller here, we let the framework do its work. Otherwise, the
-                            // explicit controller would take precedence and override the other one.
-                            null
-                        }
-                    activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
-                }
-            )
+            return OngoingActivityChipModel.ClickBehavior.None
         }
+        return OngoingActivityChipModel.ClickBehavior.ExpandAction(
+            onClick = { expandable ->
+                StatusBarChipsModernization.unsafeAssertInNewMode()
+
+                logger.i({ "Chip clicked" }) {}
+                uiEventLogger.logChipTapToShow(instanceId)
+
+                // TODO(b/414830065): Tapping the call chip should show the notification instead
+                // of launching the activity.
+                val animationController =
+                    if (
+                        !StatusBarChipsReturnAnimations.isEnabled ||
+                            transitionControllerFactory == null
+                    ) {
+                        expandable.activityTransitionController(
+                            Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
+                        )
+                    } else {
+                        transitionState.value = TransitionState.LaunchRequested
+                        // When return animations are enabled, we use a long-lived registration
+                        // with controllers created on-demand by the animation library instead
+                        // of explicitly creating one at the time of the click. By not passing
+                        // a controller here, we let the framework do its work. Otherwise, the
+                        // explicit controller would take precedence and override the other one.
+                        null
+                    }
+                activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
+            }
+        )
+    }
 
     private fun getContentDescription(appName: String): ContentDescription {
         val ongoingCallDescription = context.getString(R.string.ongoing_call_content_description)
