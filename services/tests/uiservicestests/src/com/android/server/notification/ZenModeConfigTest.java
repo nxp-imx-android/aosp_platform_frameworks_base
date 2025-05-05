@@ -627,6 +627,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                         .setShouldMinimizeRadioUsage(false)
                         .setShouldMaximizeDoze(true)
                         .setShouldUseNightLight(true)
+                        .setBrightnessPercentageCap(50f)
                         .setExtraEffects(ImmutableSet.of("one", "two"))
                         .build();
         rule.creationTime = CREATION_TIME;

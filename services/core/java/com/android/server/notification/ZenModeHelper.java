@@ -1425,6 +1425,7 @@ public class ZenModeHelper {
                             .setShouldMinimizeRadioUsage(oldEffects.shouldMinimizeRadioUsage())
                             .setShouldMaximizeDoze(oldEffects.shouldMaximizeDoze())
                             .setShouldUseNightLight(oldEffects.shouldUseNightLight())
+                            .setBrightnessPercentageCap(oldEffects.getBrightnessPercentageCap())
                             .setExtraEffects(oldEffects.getExtraEffects())
                             .build();
         }
@@ -1467,6 +1468,12 @@ public class ZenModeHelper {
             }
             if (oldEffects.shouldUseNightLight() != newEffects.shouldUseNightLight()) {
                 userModifiedFields |= ZenDeviceEffects.FIELD_NIGHT_LIGHT;
+            }
+            if (android.service.notification.Flags.applyBrightnessClampingForModes()
+                    && !Objects.equals(
+                            oldEffects.getBrightnessPercentageCap(),
+                            newEffects.getBrightnessPercentageCap())) {
+                userModifiedFields |= ZenDeviceEffects.FIELD_BRIGHTNESS_CAP;
             }
             if (!Objects.equals(oldEffects.getExtraEffects(), newEffects.getExtraEffects())) {
                 userModifiedFields |= ZenDeviceEffects.FIELD_EXTRA_EFFECTS;
