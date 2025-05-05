@@ -168,6 +168,124 @@ class BundleCoordinatorTest : SysuiTestCase() {
             .containsExactly(AppData(pkg1, user1), AppData(pkg2, user2))
     }
 
+    @Test
+    fun testTotalCount_initial_isZero() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(0)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_addNotif() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+        bundle.addChild(NotificationEntryBuilder().build())
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(1)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_addGroup() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+        val groupEntry = GroupEntry("groupKey1", 0L)
+        groupEntry.rawChildren.add(NotificationEntryBuilder().build())
+        groupEntry.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry)
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(2)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_addMultipleGroups() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+
+        val groupEntry1 = GroupEntry("groupKey1", 0L)
+        groupEntry1.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry1)
+
+        val groupEntry2 = GroupEntry("groupKey2", 0L)
+        groupEntry2.rawChildren.add(NotificationEntryBuilder().build())
+        groupEntry2.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry2)
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(3)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_addNotifAndGroup() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+
+        val groupEntry1 = GroupEntry("groupKey1", 0L)
+        groupEntry1.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry1)
+        bundle.addChild(NotificationEntryBuilder().build())
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(2)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_removeNotif() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+
+        val directNotifChild = NotificationEntryBuilder().build()
+        bundle.addChild(directNotifChild)
+
+        val groupEntry1 = GroupEntry("groupKey1", 0L)
+        groupEntry1.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry1)
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(2)
+
+        bundle.removeChild(directNotifChild)
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(1)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_removeGroupChild() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+        val groupEntry1 = GroupEntry("key", 0)
+        groupEntry1.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry1)
+        bundle.addChild(NotificationEntryBuilder().build())
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(2)
+
+        groupEntry1.rawChildren.clear()
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(1)
+    }
+
+    @OptIn(InternalNotificationsApi::class)
+    @Test
+    fun testTotalCount_clearChildren() {
+        val bundle = BundleEntry(TEST_BUNDLE_SPEC)
+        val groupEntry1 = GroupEntry("groupKey1", 0L)
+        groupEntry1.rawChildren.add(NotificationEntryBuilder().build())
+        bundle.addChild(groupEntry1)
+        bundle.addChild(NotificationEntryBuilder().build())
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(2)
+
+        bundle.clearChildren()
+
+        coordinator.bundleCountUpdater.onBeforeRenderList(listOf(bundle))
+        assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(0)
+    }
+
     private fun makeEntryOfChannelType(
         type: String,
         buildBlock: NotificationEntryBuilder.() -> Unit = {},

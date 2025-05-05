@@ -153,11 +153,7 @@ constructor(
         }
 
     private fun inflateAllBundleEntries(entries: List<PipelineEntry>) {
-        for (entry in entries) {
-            if (entry is BundleEntry) {
-                bundleBarn.inflateBundleEntry(entry)
-            }
-        }
+        entries.forEachBundleEntry { bundleBarn.inflateBundleEntry(it) }
     }
 
     private val bundleFilter: NotifFilter =
@@ -177,11 +173,25 @@ constructor(
             }
         }
 
-    private val bundleCountUpdater = OnBeforeRenderListListener { entries ->
-        for (entry in entries) {
-            if (entry is BundleEntry) {
-                entry.updateTotalCount()
+    /** Updates the total count of [NotificationEntry]s within each bundle. */
+    @get:VisibleForTesting
+    val bundleCountUpdater = OnBeforeRenderListListener { entries ->
+        entries.forEachBundleEntry { bundleEntry ->
+            var count = 0
+            for (child in bundleEntry.children) {
+                when (child) {
+                    is NotificationEntry -> {
+                        count++
+                    }
+
+                    is GroupEntry -> {
+                        count += child.children.size
+                    }
+
+                    else -> error("Unexpected ListEntry type: ${child::class.simpleName}")
+                }
             }
+            bundleEntry.bundleRepository.numberOfChildren = count
         }
     }
 
@@ -191,10 +201,9 @@ constructor(
      */
     @get:VisibleForTesting
     val bundleAppDataUpdater = OnBeforeRenderListListener { entries ->
-        for (entry in entries) {
-            if (entry !is BundleEntry) continue
+        entries.forEachBundleEntry { bundleEntry ->
             val newAppDataList: List<AppData> =
-                entry.children.flatMap { listEntry ->
+                bundleEntry.children.flatMap { listEntry ->
                     when (listEntry) {
                         is NotificationEntry -> {
                             listOf(AppData(listEntry.sbn.packageName, listEntry.sbn.user))
@@ -206,7 +215,7 @@ constructor(
                                 listOf(AppData(summary.sbn.packageName, summary.sbn.user))
                             } else {
                                 error(
-                                    "BundleEntry (key: ${entry.key}) contains GroupEntry " +
+                                    "BundleEntry (key: ${bundleEntry.key}) contains GroupEntry " +
                                         "(key: ${listEntry.key}) with no summary."
                                 )
                             }
@@ -215,7 +224,7 @@ constructor(
                         else -> error("Unexpected ListEntry type: ${listEntry::class.simpleName}")
                     }
                 }
-            entry.bundleRepository.appDataList = newAppDataList
+            bundleEntry.bundleRepository.appDataList = newAppDataList
         }
     }
 
@@ -226,6 +235,14 @@ constructor(
             pipeline.addFinalizeFilter(bundleFilter)
             pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
             pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
+        }
+    }
+
+    private fun List<PipelineEntry>.forEachBundleEntry(block: (BundleEntry) -> Unit) {
+        for (entry in this) {
+            if (entry is BundleEntry) {
+                block(entry)
+            }
         }
     }
 
