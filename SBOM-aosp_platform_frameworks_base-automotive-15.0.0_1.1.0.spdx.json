@@ -1,0 +1,126 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-04-15T05:00:08Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.20"
+  },
+  "name": "aosp_platform_frameworks_base-automotive-15.0.0_1.1.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/cfe46638-d1cc-497e-8ab2-829265161f51",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51",
+      "name": "aosp_platform_frameworks_base",
+      "versionInfo": "automotive-15.0.0_1.1.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-imx-android/aosp_platform_frameworks_base",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-package-2a1fdd31-6386-4cc5-b13b-7a1874119c32",
+      "name": "android-tools-fastboot",
+      "versionInfo": "35.0.1",
+      "licenseConcluded": "(Apache-2.0 AND MIT)",
+      "licenseDeclared": "(Apache-2.0 AND MIT)",
+      "homepage": "http://developer.android.com/guide/developing/tools/adb.html",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: centos",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:rpm/centos/android-tools@35.0.1-1.el9iv?arch=x86_64&epoch=1",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "11849f8b-0d2e-4589-9278-4bce9cc44ddf",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-28a58fad-ce96-4510-b95e-68d41f0699c8",
+      "name": "Google Android android-policy Library",
+      "versionInfo": "15-robolectric-12650502",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://source.android.com/",
+      "downloadLocation": "https://repo1.maven.org/maven2/org/robolectric/android-all/15-robolectric-12650502/",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "supplier": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-package-1021ddfa-272c-4576-950c-125bed77f056",
+      "name": "platform_frameworks_base",
+      "versionInfo": "android-15.0.0_r9",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://github.com/android/platform_frameworks_base",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: android",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "aca4f313-f3b7-4b95-84ac-44f9856552b5",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/android/platform_frameworks_base@android-15.0.0_r9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9c946e06-d20d-4642-ab69-4fc6079bdb98",
+      "name": "platform-sdk",
+      "versionInfo": "android-15.0.0_r9",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false,
+      "supplier": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-1021ddfa-272c-4576-950c-125bed77f056"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-28a58fad-ce96-4510-b95e-68d41f0699c8"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-2a1fdd31-6386-4cc5-b13b-7a1874119c32"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-cfe46638-d1cc-497e-8ab2-829265161f51",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-9c946e06-d20d-4642-ab69-4fc6079bdb98"
+    }
+  ]
+}
