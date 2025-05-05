@@ -913,9 +913,11 @@ constructor(
 
             initAndRun(onFailure = { finishCallback?.invoke(info) }) {
                 performAnimation(delegate) { delegate ->
-                    // TODO(b/397180418): pass the transition here and use it instead of creating a
-                    //   new one.
-                    delegate.onAnimationStart(info, finishCallback)
+                    delegate.onAnimationStart(
+                        info,
+                        startTransaction = startTransaction,
+                        onAnimationFinished = { finishCallback?.invoke(info) },
+                    )
                 }
             }
         }
@@ -940,7 +942,12 @@ constructor(
 
             initAndRun(onFailure = { finishCallback?.invoke(info) }) {
                 performAnimation(delegate) { delegate ->
-                    delegate.takeOverAnimation(info, startTransaction, finishCallback, states)
+                    delegate.takeOverAnimation(
+                        info,
+                        startTransaction = startTransaction,
+                        onAnimationFinished = { finishCallback?.invoke(info) },
+                        states,
+                    )
                 }
             }
         }
@@ -1445,12 +1452,13 @@ constructor(
         @UiThread
         fun onAnimationStart(
             info: TransitionInfo,
-            finishCallback: IRemoteTransitionFinishedCallback?,
+            startTransaction: SurfaceControl.Transaction,
+            onAnimationFinished: () -> Unit,
         ) {
-            val finishTransaction = SurfaceControl.Transaction()
             impl.onAnimationStart(
                 resolveAnimatedWindow = { resolveAnimatedWindow(info) },
-                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+                startTransaction,
+                onAnimationFinished,
             )
         }
 
@@ -1458,14 +1466,13 @@ constructor(
         fun takeOverAnimation(
             info: TransitionInfo,
             startTransaction: SurfaceControl.Transaction,
-            finishCallback: IRemoteTransitionFinishedCallback?,
+            onAnimationFinished: () -> Unit,
             states: Array<out WindowAnimationState>,
         ) {
-            val finishTransaction = SurfaceControl.Transaction()
             impl.takeOverAnimation(
                 resolveAnimatedWindow = { resolveAnimatedWindow(info, states) },
-                startTransaction = startTransaction,
-                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+                startTransaction,
+                onAnimationFinished,
             )
         }
 
@@ -1529,16 +1536,6 @@ constructor(
             }
 
             return candidate?.let { AnimatedWindow.fromTransitionInfo(candidate, state) }
-        }
-
-        private fun IRemoteTransitionFinishedCallback.invoke(
-            finishTransaction: SurfaceControl.Transaction
-        ) {
-            try {
-                onTransitionFinished(null, finishTransaction)
-            } catch (e: RemoteException) {
-                e.printStackTrace()
-            }
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
@@ -1840,15 +1837,20 @@ constructor(
         @UiThread
         fun onAnimationStart(
             resolveAnimatedWindow: () -> AnimatedWindow?,
+            startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
         ) {
             val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
-                startAnimation(window, onAnimationFinished = onAnimationFinished)
+                startAnimation(
+                    window,
+                    startTransaction = startTransaction,
+                    onAnimationFinished = onAnimationFinished,
+                )
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
-                takeOverAnimationInternal(window, startTransaction = null, onAnimationFinished)
+                takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
             }
         }
 
@@ -2047,11 +2049,14 @@ constructor(
                             // check above and the call below. For this reason, we still need to
                             // wrap the transaction in a try/catch and set the value of [reparent]
                             // accordingly.
-                            // TODO(b/397180418): re-use the start transaction once the
-                            //  RemoteAnimation wrapper is cleaned up.
                             try {
-                                SurfaceControl.Transaction().use {
-                                    it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                                if (startTransaction != null) {
+                                    startTransaction.reparent(window.leash, viewRoot.surfaceControl)
+                                    startTransaction.apply()
+                                } else {
+                                    SurfaceControl.Transaction().use {
+                                        it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                                    }
                                 }
                                 reparent = true
                             } catch (e: IllegalStateException) {
