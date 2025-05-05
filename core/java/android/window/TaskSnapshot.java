@@ -32,7 +32,6 @@ import android.hardware.HardwareBuffer;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.SurfaceControl;
@@ -43,6 +42,7 @@ import com.android.internal.policy.TransitionAnimation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.util.function.Consumer;
 
 /**
@@ -52,8 +52,8 @@ import java.util.function.Consumer;
 public class TaskSnapshot implements Parcelable {
     // Identifier of this snapshot
     private final long mId;
-    // The elapsed real time (in nanoseconds) when this snapshot was captured, not intended for use outside the
-    // process in which the snapshot was taken (ie. this is not parceled)
+    // The elapsed real time (in nanoseconds) when this snapshot was captured or loaded from disk
+    // since boot.
     private final long mCaptureTime;
     // Top activity in task when snapshot was taken
     private final ComponentName mTopActivityComponent;
@@ -86,6 +86,7 @@ public class TaskSnapshot implements Parcelable {
     private int mInternalReferences;
     private int mWriteToParcelCount;
     private Consumer<HardwareBuffer> mSafeSnapshotReleaser;
+    private WeakReference<TaskSnapshotManager.SnapshotTracker> mSnapshotTracker;
 
     /** Keep in cache, doesn't need reference. */
     public static final int REFERENCE_NONE = 0;
@@ -141,7 +142,6 @@ public class TaskSnapshot implements Parcelable {
 
     private TaskSnapshot(Parcel source) {
         mId = source.readLong();
-        mCaptureTime = SystemClock.elapsedRealtimeNanos();
         mTopActivityComponent = ComponentName.readFromParcel(source);
         mSnapshot = source.readTypedObject(HardwareBuffer.CREATOR);
         int colorSpaceId = source.readInt();
@@ -162,6 +162,7 @@ public class TaskSnapshot implements Parcelable {
         mUiMode = source.readInt();
         int densityDpi = source.readInt();
         mDensityDpi = densityDpi > 0 ? densityDpi : DisplayMetrics.DENSITY_DEVICE_STABLE;
+        mCaptureTime = source.readLong();
     }
 
     /**
@@ -268,6 +269,13 @@ public class TaskSnapshot implements Parcelable {
      */
     public void closeBuffer() {
         if (isBufferValid()) {
+            if (mSnapshotTracker != null) {
+                final TaskSnapshotManager.SnapshotTracker tracker = mSnapshotTracker.get();
+                if (tracker != null) {
+                    TaskSnapshotManager.getInstance().removeTracker(tracker);
+                    mSnapshotTracker.clear();
+                }
+            }
             mSnapshot.close();
         }
     }
@@ -440,6 +448,7 @@ public class TaskSnapshot implements Parcelable {
         dest.writeBoolean(mHasImeSurface);
         dest.writeInt(mUiMode);
         dest.writeInt(mDensityDpi);
+        dest.writeLong(mCaptureTime);
         synchronized (this) {
             if ((mInternalReferences & REFERENCE_WRITE_TO_PARCEL) != 0) {
                 mWriteToParcelCount--;
@@ -482,6 +491,10 @@ public class TaskSnapshot implements Parcelable {
                 + " mWriteToParcelCount=" + mWriteToParcelCount
                 + " mUiMode=" + Integer.toHexString(mUiMode)
                 + " mDensityDpi=" + mDensityDpi;
+    }
+
+    void setSnapshotTracker(TaskSnapshotManager.SnapshotTracker tracker) {
+        mSnapshotTracker = new WeakReference<>(tracker);
     }
 
     /**

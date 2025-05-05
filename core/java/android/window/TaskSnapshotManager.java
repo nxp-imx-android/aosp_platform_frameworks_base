@@ -21,11 +21,21 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
 import android.os.RemoteException;
+import android.system.SystemCleaner;
+import android.util.AndroidRuntimeException;
 import android.util.Singleton;
 import android.util.Slog;
+import android.util.SparseArray;
 
+import com.android.internal.annotations.GuardedBy;
+
+import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.Cleaner;
+import java.lang.ref.WeakReference;
+import java.util.Comparator;
+import java.util.TreeSet;
 
 /**
  * Retrieve or request app snapshots in system.
@@ -64,6 +74,10 @@ public class TaskSnapshotManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Resolution {}
 
+    private final Object mLock = new Object();
+    @GuardedBy("mLock")
+    private final GlobalSnapshotTracker mGlobalSnapshotTracker = new GlobalSnapshotTracker();
+    static final Cleaner sCleaner = SystemCleaner.cleaner();
     private static final TaskSnapshotManager sInstance = new TaskSnapshotManager();
     private TaskSnapshotManager() { }
 
@@ -83,11 +97,30 @@ public class TaskSnapshotManager {
     public TaskSnapshot getTaskSnapshot(int taskId, @Resolution int retrieveResolution)
             throws RemoteException {
         final TaskSnapshot t;
+        final long captureTime;
+        final TaskSnapshot previousSnapshot;
+        validateResolution(retrieveResolution);
+        synchronized (mLock) {
+            // Gets the latest snapshot from the local cache. This can be used to prevent the system
+            // server from returning another snapshot that is the same as the local one.
+            final SnapshotTracker st = mGlobalSnapshotTracker.peekLatestSnapshot(
+                    taskId, retrieveResolution);
+            // Create a temporary reference so the snapshot won't be cleared during IPC call.
+            previousSnapshot = st != null ? st.mSnapshot.get() : null;
+            captureTime = previousSnapshot != null ? st.mCaptureTime : -1;
+        }
         try {
-            t = ISnapshotManagerSingleton.get().getTaskSnapshot(taskId, retrieveResolution);
+            t = ISnapshotManagerSingleton.get().getTaskSnapshot(taskId,
+                    captureTime, retrieveResolution);
         } catch (RemoteException r) {
             Slog.e(TAG, "getTaskSnapshot fail: " + r);
             throw r;
+        }
+        if (t == null) {
+            return previousSnapshot;
+        }
+        synchronized (mLock) {
+            mGlobalSnapshotTracker.createTracker(taskId, t);
         }
         return t;
     }
@@ -109,8 +142,13 @@ public class TaskSnapshotManager {
         try {
             t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache);
         } catch (RemoteException r) {
-            Slog.e(TAG, "getTaskSnapshot fail: " + r);
+            Slog.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;
+        }
+        if (t != null) {
+            synchronized (mLock) {
+                mGlobalSnapshotTracker.createTracker(taskId, t);
+            }
         }
         return t;
     }
@@ -151,4 +189,195 @@ public class TaskSnapshotManager {
                     }
                 }
             };
+
+    void removeTracker(SnapshotTracker tracker) {
+        synchronized (mLock) {
+            mGlobalSnapshotTracker.removeTracker(tracker);
+        }
+    }
+
+    /**
+     * Dump snapshot usage in the process.
+     */
+    public void dump(PrintWriter pw) {
+        synchronized (mLock) {
+            mGlobalSnapshotTracker.dump(pw);
+        }
+    }
+
+    /**
+     * Util method, validate requested resolution.
+     */
+    public static void validateResolution(int resolution) {
+        switch (resolution) {
+            case RESOLUTION_ANY:
+            case RESOLUTION_HIGH:
+            case RESOLUTION_LOW:
+                return;
+            default:
+                throw new IllegalArgumentException("Invalidate resolution=" + resolution);
+        }
+    }
+
+    private static class GlobalSnapshotTracker {
+        final SparseArray<SingleTaskTracker> mSnapshotTrackers = new SparseArray<>();
+
+        void createTracker(int taskId, TaskSnapshot snapshot) {
+            SingleTaskTracker taskTracker = mSnapshotTrackers.get(taskId);
+            if (taskTracker == null) {
+                taskTracker = new SingleTaskTracker();
+                mSnapshotTrackers.put(taskId, taskTracker);
+            }
+            final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot);
+            taskTracker.addTracker(tracker);
+            sCleaner.register(snapshot, () -> removeTracker(tracker));
+        }
+
+        void removeTracker(SnapshotTracker tracker) {
+            if (tracker == null) {
+                return;
+            }
+            final int taskId = tracker.mTaskId;
+            final SingleTaskTracker taskTracker = mSnapshotTrackers.get(taskId);
+            if (taskTracker == null) {
+                return;
+            }
+            taskTracker.stopTrack(tracker);
+            if (taskTracker.isEmpty()) {
+                mSnapshotTrackers.remove(taskId);
+            }
+        }
+
+        SnapshotTracker peekLatestSnapshot(int taskId, @Resolution int resolution) {
+            final SingleTaskTracker stt = mSnapshotTrackers.get(taskId);
+            if (stt == null) {
+                // shouldn't happen
+                return null;
+            }
+            return stt.peekLatestSnapshot(resolution);
+        }
+
+        /**
+         * Dump snapshot usage in the process.
+         */
+        void dump(PrintWriter pw) {
+            if (mSnapshotTrackers.size() == 0) {
+                return;
+            }
+            pw.println("");
+            pw.println("Task Snapshot Usage:");
+            for (int i = mSnapshotTrackers.size() - 1; i >= 0; --i) {
+                mSnapshotTrackers.valueAt(i).dump(pw);
+            }
+        }
+
+        static class SingleTaskTracker {
+            final TreeSet<SnapshotTracker> mHighResSortedTrackers = new TreeSet<>(TRACKER_ORDER);
+            final TreeSet<SnapshotTracker> mLowResSortedTrackers  = new TreeSet<>(TRACKER_ORDER);
+
+            static final Comparator<SnapshotTracker> TRACKER_ORDER = new Comparator<>() {
+                @Override
+                public int compare(SnapshotTracker s1, SnapshotTracker s2) {
+                    if (s1.mCaptureTime < s2.mCaptureTime) {
+                        return 1;
+                    } else if (s1.mCaptureTime > s2.mCaptureTime) {
+                        return -1;
+                    }
+                    return 0;
+                }
+            };
+
+            void addTracker(@NonNull SnapshotTracker tracker) {
+                final TreeSet<SnapshotTracker> targetingSet = tracker.mIsLowResolution
+                        ? mLowResSortedTrackers : mHighResSortedTrackers;
+                targetingSet.add(tracker);
+            }
+
+            SnapshotTracker peekLatestSnapshot(@Resolution int resolution) {
+                if (resolution == RESOLUTION_ANY) {
+                    final SnapshotTracker hFirst = peekFirst(mHighResSortedTrackers);
+                    final SnapshotTracker lFirst = peekFirst(mLowResSortedTrackers);
+                    if (hFirst != null && lFirst != null) {
+                        return hFirst.mCaptureTime > lFirst.mCaptureTime ? hFirst : lFirst;
+                    } else {
+                        return hFirst != null ? hFirst : lFirst;
+                    }
+                }
+                final TreeSet<SnapshotTracker> targetingSet = resolution == RESOLUTION_LOW
+                        ? mLowResSortedTrackers : mHighResSortedTrackers;
+                return peekFirst(targetingSet);
+            }
+
+            private static SnapshotTracker peekFirst(TreeSet<SnapshotTracker> targetingSet) {
+                return targetingSet.isEmpty() ? null : targetingSet.getFirst();
+            }
+
+            void stopTrack(SnapshotTracker tracker) {
+                final TreeSet<SnapshotTracker> targetingSet = tracker.mIsLowResolution
+                        ? mLowResSortedTrackers : mHighResSortedTrackers;
+                targetingSet.remove(tracker);
+            }
+
+            boolean isEmpty() {
+                return mHighResSortedTrackers.isEmpty() && mLowResSortedTrackers.isEmpty();
+            }
+
+            void dump(PrintWriter pw) {
+                for (SnapshotTracker highResSortedTracker : mHighResSortedTrackers) {
+                    highResSortedTracker.dump(pw);
+                }
+                for (SnapshotTracker lowResSortedTracker : mLowResSortedTrackers) {
+                    lowResSortedTracker.dump(pw);
+                }
+            }
+        }
+    }
+
+    // Tracking the snapshot usage, call getStackTrace() to know where it was created.
+    static class SnapshotTracker extends AndroidRuntimeException {
+        private static final int ROOT_STACK_TRACE_COUNT = 4;
+        final int mTaskId;
+        final long mSnapshotId;
+        final long mCaptureTime;
+        final boolean mIsLowResolution;
+        final WeakReference<TaskSnapshot> mSnapshot;
+
+        SnapshotTracker(int taskId, TaskSnapshot snapshot) {
+            super();
+            mTaskId = taskId;
+            mSnapshotId = snapshot.getId();
+            mCaptureTime = snapshot.getCaptureTime();
+            mIsLowResolution = snapshot.isLowResolution();
+            snapshot.setSnapshotTracker(this);
+            mSnapshot = new WeakReference<>(snapshot);
+        }
+
+        @Override
+        public String getMessage() {
+            return "SnapshotTracker: @" + hashCode()
+                    + " {TaskId=" + mTaskId + ", SnapshotId=" + mSnapshotId + " mCaptureTime="
+                    + mCaptureTime + ", isLowResolution=" + mIsLowResolution + "}";
+        }
+
+        void dump(PrintWriter pw) {
+            final StringBuilder builder = buildDumpString(this);
+            pw.println("  taskId=" + mTaskId + ", SnapshotID=" + mSnapshotId
+                    + ", isLowResolution=" + mIsLowResolution);
+            pw.println("   Get from=" + builder);
+            pw.println("");
+        }
+
+        static StringBuilder buildDumpString(AndroidRuntimeException dump) {
+            final StackTraceElement[] stackTrace = dump.getStackTrace();
+            final int count = Math.min(stackTrace.length, ROOT_STACK_TRACE_COUNT);
+            final StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < count; ++i) {
+                builder.append(stackTrace[i]);
+                if (i + 1 < count) {
+                    builder.append(" ");
+                }
+            }
+            return builder;
+        }
+    }
 }
