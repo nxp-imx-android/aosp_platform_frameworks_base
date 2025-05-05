@@ -261,6 +261,12 @@ public final class CompanionDeviceManager {
      */
     public static final int MESSAGE_REQUEST_CONTEXT_SYNC = 0x63678883; // ?CXS
     /**
+     * Message header assigned to task continuity messages.
+     *
+     * @hide
+     */
+    public static final int MESSAGE_TASK_CONTINUITY = 0x63678884; // ?TSK
+    /**
      * Message header assigned to the permission restore request.
      *
      * @hide
