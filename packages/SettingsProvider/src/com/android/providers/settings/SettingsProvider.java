@@ -3215,7 +3215,9 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private static boolean canUidAccessDeviceAwareSettings(int uid) {
-        return uid == SYSTEM_UID || uid == SHELL_UID;
+        // Allow root, system and shell (for testing) to access device-aware settings (i.e.,
+        // settings for virtual devices).
+        return uid == ROOT_UID || uid == SYSTEM_UID || uid == SHELL_UID;
     }
 
     final class SettingsRegistry {
