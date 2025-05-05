@@ -1824,7 +1824,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
             // Check that secondary display registered callback
             assertEquals(secondaryDisplayRotation.mDefaultDisplayRotationChangedCallback,
-                    coordinator.mDefaultDisplayRotationChangedCallback);
+                    coordinator.mDefaultDisplayRotationChangedCallbacks.get(
+                            secondaryDisplayContent.getDisplayId()));
 
             // Set the default display to a known orientation. This may be a zero or non-zero
             // rotation since mDisplayInfo.logicalWidth/Height depends on the DUT's default display
@@ -1863,9 +1864,9 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Create secondary non-internal displays
         createSecondaryDisplayContent(Display.TYPE_EXTERNAL, deviceStateController);
-        assertNull(coordinator.mDefaultDisplayRotationChangedCallback);
+        assertEquals(0, coordinator.mDefaultDisplayRotationChangedCallbacks.size());
         createSecondaryDisplayContent(Display.TYPE_VIRTUAL, deviceStateController);
-        assertNull(coordinator.mDefaultDisplayRotationChangedCallback);
+        assertEquals(0, coordinator.mDefaultDisplayRotationChangedCallbacks.size());
     }
 
     private DisplayContent createSecondaryDisplayContent(int displayType,
