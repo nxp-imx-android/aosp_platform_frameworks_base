@@ -17,3 +17,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "boost_cpu_load_for_long_text_rendering"
+  namespace: "text"
+  description: "Use ADPF APIs to boost cpu when processing long text layout"
+  bug: "380088697"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
