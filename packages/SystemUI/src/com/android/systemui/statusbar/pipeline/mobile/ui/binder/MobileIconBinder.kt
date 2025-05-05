@@ -38,6 +38,7 @@ import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.StatusBarIconView.STATE_HIDDEN
+import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModel
@@ -71,6 +72,7 @@ object MobileIconBinder {
         val mobileDrawable = SignalDrawable(view.context)
         val roamingView = view.requireViewById<ImageView>(R.id.mobile_roaming)
         val roamingSpace = view.requireViewById<Space>(R.id.mobile_roaming_space)
+        val endSideRoamingView = view.requireViewById<ImageView>(R.id.mobile_roaming_updated)
         val dotView = view.requireViewById<StatusBarIconView>(R.id.status_bar_dot)
 
         view.isVisible = viewModel.isVisible.value
@@ -211,8 +213,12 @@ object MobileIconBinder {
                     // Set the roaming indicator
                     launch {
                         viewModel.roaming.distinctUntilChanged().collect { isRoaming ->
-                            roamingView.isVisible = isRoaming
-                            roamingSpace.isVisible = isRoaming
+                            if (NewStatusBarIcons.isEnabled) {
+                                endSideRoamingView.isVisible = isRoaming
+                            } else {
+                                roamingView.isVisible = isRoaming
+                                roamingSpace.isVisible = isRoaming
+                            }
                         }
                     }
 
@@ -263,6 +269,7 @@ object MobileIconBinder {
                             }
 
                             roamingView.imageTintList = tint
+                            endSideRoamingView.imageTintList = tint
                             activityIn.imageTintList = tint
                             activityOut.imageTintList = tint
                             dotView.setDecorColor(colors.tint)
