@@ -4148,8 +4148,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     void setInputMethodWindowLocked(WindowState win) {
         mInputMethodWindow = win;
-        mInsetsStateController.getImeSourceProvider().setWindowContainer(win,
-                mDisplayPolicy.getImeSourceFrameProvider(), null);
+        mInsetsStateController.getImeSourceProvider().setWindow(win,
+                mDisplayPolicy.getImeSourceFrameProvider(), null /* overrideFrameProviders */);
         computeImeLayeringTarget(true /* update */);
         updateImeControlTarget(false /* forceUpdateImeParent */);
     }

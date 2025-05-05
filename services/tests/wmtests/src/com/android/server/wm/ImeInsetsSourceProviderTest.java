@@ -72,7 +72,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testTransparentControlTargetWindowCanShowIme() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
 
         final WindowState appWin = newWindowBuilder("app", TYPE_APPLICATION).build();
         final WindowState popup = newWindowBuilder("popup", TYPE_APPLICATION).setParent(
@@ -94,7 +94,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testScheduleShowIme() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
 
         final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
         mDisplayContent.setImeLayeringTarget(target);
@@ -129,7 +129,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
 
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
 
         mDisplayContent.setImeLayeringTarget(target);
         mDisplayContent.updateImeInputAndControlTarget(target);
@@ -150,7 +150,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testScheduleShowIme_delayedAfterPrepareSurfaces() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
 
         final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
         mDisplayContent.setImeLayeringTarget(target);
@@ -183,7 +183,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testScheduleShowIme_delayedSurfacePlacement() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
 
         final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
         mDisplayContent.setImeLayeringTarget(target);
@@ -208,7 +208,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testSetFrozen() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
         mImeProvider.setServerVisible(true);
         mImeProvider.setClientVisible(true);
         mImeProvider.updateVisibility();
@@ -231,7 +231,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testUpdateControlForTarget_remoteInsetsControlTarget() throws RemoteException {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
         mImeProvider.setServerVisible(true);
         mImeProvider.setClientVisible(true);
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
@@ -257,7 +257,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     public void testUpdateControlForTarget_remoteInsetsControlTargetUnchanged()
             throws RemoteException {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
         final var displayWindowInsetsController = spy(createDisplayWindowInsetsController());
         mDisplayContent.setRemoteInsetsController(displayWindowInsetsController);
@@ -294,11 +294,12 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
         makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
         mImeProvider.setServerVisible(true);
         mImeProvider.setClientVisible(true);
         mImeProvider.updateVisibility();
-        mImeProvider.updateControlForTarget(inputTarget, true /* force */, null /* statsToken */);
+        mImeProvider.updateControlForTarget(inputTarget, true /* force */,
+                ImeTracker.Token.empty());
 
         // Calling onPostLayout, as the drawn state is initially false.
         mImeProvider.onPostLayout();
@@ -328,7 +329,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
         makeWindowVisibleAndDrawn(ime);
 
-        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setWindow(ime, null, null);
         mImeProvider.setServerVisible(true);
         mImeProvider.updateControlForTarget(target, true /* force */, ImeTracker.Token.empty());
 
@@ -338,7 +339,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         assertTrue("IME showing is true after onPostLayout", mImeProvider.isImeShowing());
 
         // Removing the window container will set server visibility to false.
-        mImeProvider.setWindowContainer(null, null, null);
+        mImeProvider.setWindow(null, null, null);
         assertFalse("Server visibility is false after removing window container",
                 mImeProvider.isServerVisible());
         assertTrue("IME showing is still true before onPostLayout", mImeProvider.isImeShowing());
@@ -351,9 +352,9 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
-    public void testUpdateControlForTarget_differentControlTarget() throws RemoteException {
+    public void testUpdateControlForTarget_differentControlTarget() {
         final WindowState oldTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
-        final WindowState newTarget = newWindowBuilder("newapp", TYPE_APPLICATION).build();
+        final WindowState newTarget = newWindowBuilder("newApp", TYPE_APPLICATION).build();
 
         oldTarget.setRequestedVisibleTypes(
                 WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
@@ -361,7 +362,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mDisplayContent.setImeInputTarget(newTarget);
 
         // Having a null windowContainer will early return in updateControlForTarget
-        mImeProvider.setWindowContainer(null, null, null);
+        mImeProvider.setWindow(null, null, null);
 
         clearInvocations(mDisplayContent);
         mImeProvider.updateControlForTarget(newTarget, false /* force */, ImeTracker.Token.empty());

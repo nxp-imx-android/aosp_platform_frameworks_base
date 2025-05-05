@@ -702,6 +702,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     private boolean mIsDimming = false;
 
+    @Nullable
+    private InsetsSourceProvider mControllableInsetProvider;
+
+    /**
+     * The {@link InsetsSourceProvider}s provided by this window container.
+     */
+    @Nullable
+    private SparseArray<InsetsSourceProvider> mInsetsSourceProviders = null;
+
     private @InsetsType int mRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
     private @InsetsType int mAnimatingTypes = 0;
@@ -1986,6 +1995,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     void onMovedByResize() {
         ProtoLog.d(WM_DEBUG_RESIZE, "onMovedByResize: Moving %s", this);
         mMovedByResize = true;
+        if (mControllableInsetProvider != null) {
+            mControllableInsetProvider.onWindowBoundsChanged();
+        }
         super.onMovedByResize();
     }
 
@@ -2037,6 +2049,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mHasSurface && !isGoneForLayout() && !resizingWindows.contains(this)) {
             ProtoLog.d(WM_DEBUG_RESIZE, "onResize: Resizing %s", this);
             resizingWindows.add(this);
+        }
+        if (mControllableInsetProvider != null) {
+            mControllableInsetProvider.onWindowBoundsChanged();
         }
 
         super.onResize();
@@ -5425,6 +5440,43 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     void resetContentChanged() {
         mWindowFrames.setContentChanged(false);
+    }
+
+    /**
+     * Sets an {@link InsetsSourceProvider} to be associated with this window, but only if the
+     * provider itself is controllable, as one window can be the provider of more than one inset
+     * type (i.e. gesture insets). If this window is controllable, all its animations must be
+     * controlled by its control target, and the visibility of this window should be taken account
+     * into the state of the control target.
+     *
+     * @param insetProvider the provider which should not be visible to the client.
+     * @see WindowState#getInsetsState()
+     */
+    void setControllableInsetProvider(@Nullable InsetsSourceProvider insetProvider) {
+        mControllableInsetProvider = insetProvider;
+    }
+
+    @Nullable
+    InsetsSourceProvider getControllableInsetProvider() {
+        return mControllableInsetProvider;
+    }
+
+    /**
+     * Returns {@code true} if this node provides insets.
+     */
+    boolean hasInsetsSourceProvider() {
+        return mInsetsSourceProviders != null;
+    }
+
+    /**
+     * Returns {@link InsetsSourceProvider}s provided by this node.
+     */
+    @NonNull
+    SparseArray<InsetsSourceProvider> getInsetsSourceProviders() {
+        if (mInsetsSourceProviders == null) {
+            mInsetsSourceProviders = new SparseArray<>();
+        }
+        return mInsetsSourceProviders;
     }
 
     private final class MoveAnimationSpec implements AnimationSpec {

@@ -511,7 +511,7 @@ class WindowStateAnimator {
             }
         }
 
-        if (mWin.mControllableInsetProvider != null) {
+        if (mWin.getControllableInsetProvider() != null) {
             // All our animations should be driven by the insets control target.
             return false;
         }
