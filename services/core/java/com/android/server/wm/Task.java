@@ -107,7 +107,6 @@ import static com.android.server.wm.TaskProto.SURFACE_WIDTH;
 import static com.android.server.wm.TaskProto.TASK_FRAGMENT;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT;
@@ -3322,7 +3321,8 @@ class Task extends TaskFragment {
         // have enough information until we finish shell transitions.
         // In the mean time we do an easy fix here.
         final boolean visible = isVisible();
-        final boolean show = visible || isAnimating(TRANSITION | PARENTS | CHILDREN);
+        final boolean show = visible || isAnimating(PARENTS | CHILDREN,
+                SurfaceAnimator.ANIMATION_TYPE_ALL);
         if (mSurfaceControl != null) {
             if (show != mLastSurfaceShowing) {
                 t.setVisibility(mSurfaceControl, show);

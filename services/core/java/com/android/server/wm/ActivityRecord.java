@@ -223,7 +223,6 @@ import static com.android.server.wm.TaskPersister.DEBUG;
 import static com.android.server.wm.TaskPersister.IMAGE_EXTENSION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.ACTIVITY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_CONFIGURATION;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_STARTING_WINDOW_VERBOSE;
@@ -4348,8 +4347,7 @@ final class ActivityRecord extends WindowToken {
 
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS,
                 "Removing app %s delayed=%b animation=%s animating=%b", this, delayed,
-                getAnimation(),
-                isAnimating(TRANSITION | PARENTS, ANIMATION_TYPE_APP_TRANSITION));
+                getAnimation(), inTransition());
 
         ProtoLog.v(WM_DEBUG_ADD_REMOVE, "removeAppToken: %s"
                 + " delayed=%b Callers=%s", this, delayed, Debug.getCallers(4));
@@ -6585,16 +6583,12 @@ final class ActivityRecord extends WindowToken {
 
         if (!allDrawn && w.mightAffectAllDrawn()) {
             if (DEBUG_VISIBILITY || WM_DEBUG_ORIENTATION.isLogToLogcat()) {
-                final boolean isAnimationSet = isAnimating(TRANSITION | PARENTS,
-                        ANIMATION_TYPE_APP_TRANSITION);
-                Slog.v(TAG, "Eval win " + w + ": isDrawn=" + w.isDrawn()
-                        + ", isAnimationSet=" + isAnimationSet);
+                Slog.v(TAG, "Eval win " + w + ": isDrawn=" + w.isDrawn());
                 if (!w.isDrawn()) {
                     Slog.v(TAG, "Not displayed: s=" + winAnimator.mSurfaceControl
                             + " pv=" + w.isVisibleByPolicy()
                             + " mDrawState=" + winAnimator.drawStateToString()
-                            + " ph=" + w.isParentWindowHidden() + " th=" + mVisibleRequested
-                            + " a=" + isAnimationSet);
+                            + " ph=" + w.isParentWindowHidden() + " th=" + mVisibleRequested);
                 }
             }
 
@@ -9125,7 +9119,7 @@ final class ActivityRecord extends WindowToken {
         writeNameToProto(proto, NAME);
         super.dumpDebug(proto, WINDOW_TOKEN, logLevel);
         proto.write(LAST_SURFACE_SHOWING, mLastSurfaceShowing);
-        proto.write(IS_ANIMATING, isAnimating(TRANSITION | PARENTS | CHILDREN,
+        proto.write(IS_ANIMATING, isAnimating(PARENTS | CHILDREN,
                 ANIMATION_TYPE_APP_TRANSITION | ANIMATION_TYPE_WINDOW_ANIMATION));
         proto.write(FILLS_PARENT, fillsParent());
         proto.write(APP_STOPPED, mAppStopped);
