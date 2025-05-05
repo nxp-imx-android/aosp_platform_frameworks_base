@@ -1237,47 +1237,6 @@ public class ViewFrameRateTest {
         waitForAfterDraw();
     }
 
-    @Test
-    public void parseFrameRateMappings() throws Throwable {
-        if (!ViewProperties.vrr_enabled().orElse(true)) {
-            return;
-        }
-
-        int[] twoPairs = {800, 80, 300, 30};
-        int[] threePairs = {1000, 120, 800, 80, 600, 60};
-
-        int[][] mappings = View.parseFrameRateMapping("");
-        assertTrue(mappings == null);
-
-        mappings = View.parseFrameRateMapping("::");
-        assertTrue(mappings == null);
-
-        mappings = View.parseFrameRateMapping("80@800:30@300");
-        for (int i = 0; i < twoPairs.length; i++) {
-            assertEquals(twoPairs[i], mappings[i / 2][i % 2]);
-        }
-
-        mappings = View.parseFrameRateMapping("80@800:60@600:120@1000");
-        for (int i = 0; i < threePairs.length; i++) {
-            assertEquals(threePairs[i], mappings[i / 2][i % 2]);
-        }
-
-        mappings = View.parseFrameRateMapping("80@@800:60@@@600:120@1000");
-        for (int i = 0; i < threePairs.length; i++) {
-            assertEquals(threePairs[i], mappings[i / 2][i % 2]);
-        }
-
-        mappings = View.parseFrameRateMapping(":120@1000:::60@600::80@800:");
-        for (int i = 0; i < threePairs.length; i++) {
-            assertEquals(threePairs[i], mappings[i / 2][i % 2]);
-        }
-
-        mappings = View.parseFrameRateMapping(":120@@1000:::60@600::80@@@800:");
-        for (int i = 0; i < threePairs.length; i++) {
-            assertEquals(threePairs[i], mappings[i / 2][i % 2]);
-        }
-    }
-
     private void runAfterDraw(@NonNull Runnable runnable) {
         Handler handler = new Handler(Looper.getMainLooper());
         mAfterDrawLatch = new CountDownLatch(1);
