@@ -105,8 +105,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         mTransitionHandler = new DefaultTransitionHandler(
                 mContext, mShellInit, mDisplayController, mDisplayInsetsController,
                 mTransactionPool, mMainExecutor, mMainHandler, mAnimExecutor,
-                mock(Handler.class), mRootTaskDisplayAreaOrganizer,
-                mock(InteractionJankMonitor.class));
+                mRootTaskDisplayAreaOrganizer, mock(InteractionJankMonitor.class));
         mShellInit.init();
     }
 
