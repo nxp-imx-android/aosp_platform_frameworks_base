@@ -95,7 +95,6 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -115,7 +114,6 @@ import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 import com.android.server.wm.utils.MockTracker;
-import com.android.wm.shell.Flags;
 
 import org.junit.After;
 import org.junit.Before;
@@ -1796,7 +1794,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         assertEquals(ActivityRecord.LAUNCH_SOURCE_TYPE_HOME, baseActivity.mLaunchSourceType);
     }
 
-    @EnableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
     @Test
     public void launchActivity_reusesBubbledTask() {
         final ActivityStarter starter = prepareStarter(0, false);
@@ -1813,7 +1810,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         assertEquals(bubbledActivity.getTask(), targetRecord.getTask());
     }
 
-    @EnableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
     @Test
     public void launchActivity_nullSourceRecord_doesNotReuseBubbledTask() {
         final ActivityStarter starter = prepareStarter(0, false);
@@ -1833,7 +1829,6 @@ public class ActivityStarterTests extends WindowTestsBase {
         assertNotEquals(bubbledActivity.getTask(), targetRecord.getTask());
     }
 
-    @EnableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
     @Test
     public void launchActivity_nonBubbledSourceRecord_doesNotReuseBubbledTask() {
         final ActivityStarter starter = prepareStarter(0, false);
@@ -1858,44 +1853,6 @@ public class ActivityStarterTests extends WindowTestsBase {
                 null /* inTask */, null /* inTaskFragment*/);
 
         assertNotEquals(bubbledActivity.getTask(), targetRecord.getTask());
-    }
-
-    @DisableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
-    @Test
-    public void launchActivity_nullSourceRecord_flagDisabled_reusesBubbledTask() {
-        final ActivityStarter starter = prepareStarter(0, false);
-        final ActivityRecord bubbledActivity = createBubbledActivity();
-
-        // create the target activity to be launched
-        final ActivityRecord targetRecord =
-                new ActivityBuilder(mAtm)
-                        .setLaunchMode(LAUNCH_SINGLE_TASK)
-                        .setComponent(ActivityBuilder.getDefaultComponent()).build();
-        starter.getIntent().setComponent(bubbledActivity.mActivityComponent);
-
-        // pass null as the source record
-        startActivityInner(starter, targetRecord, null, null /* options */,
-                null /* inTask */, null /* inTaskFragment */);
-
-        assertEquals(bubbledActivity.getTask(), targetRecord.getTask());
-    }
-
-    @DisableFlags(Flags.FLAG_ONLY_REUSE_BUBBLED_TASK_WHEN_LAUNCHED_FROM_BUBBLE)
-    @Test
-    public void launchActivity_fromBubble_flagDisabled_reusesBubbledTask() {
-        final ActivityStarter starter = prepareStarter(0, false);
-        final ActivityRecord bubbledActivity = createBubbledActivity();
-
-        // create the target activity to be launched with the same component as the bubbled activity
-        final ActivityRecord targetRecord =
-                new ActivityBuilder(mAtm)
-                        .setLaunchMode(LAUNCH_SINGLE_TASK)
-                        .setComponent(ActivityBuilder.getDefaultComponent()).build();
-        starter.getIntent().setComponent(bubbledActivity.mActivityComponent);
-        startActivityInner(starter, targetRecord, bubbledActivity, null /* options */,
-                null /* inTask */, null /* inTaskFragment */);
-
-        assertEquals(bubbledActivity.getTask(), targetRecord.getTask());
     }
 
     private ActivityRecord createBubbledActivity() {
