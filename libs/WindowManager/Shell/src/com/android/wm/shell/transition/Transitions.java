@@ -64,6 +64,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ITransitionPlayer;
 import android.window.RemoteTransition;
+import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentOrganizer;
 import android.window.TransitionFilter;
 import android.window.TransitionInfo;
@@ -1281,6 +1282,10 @@ public class Transitions implements RemoteCallable<Transitions>,
         mPendingTransitions.add(0, active);
     }
 
+    void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
+        mOrganizer.removeStartingWindow(removalInfo);
+    }
+
     /**
      * Start a new transition directly.
      * @param handler if null, the transition will be dispatched to the registered set of transition
@@ -1648,6 +1653,11 @@ public class Transitions implements RemoteCallable<Transitions>,
         public void requestStartTransition(IBinder iBinder,
                 TransitionRequestInfo request) throws RemoteException {
             mMainExecutor.execute(() -> Transitions.this.requestStartTransition(iBinder, request));
+        }
+
+        @Override
+        public void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
+            mMainExecutor.execute(() -> Transitions.this.removeStartingWindow(removalInfo));
         }
     }
 

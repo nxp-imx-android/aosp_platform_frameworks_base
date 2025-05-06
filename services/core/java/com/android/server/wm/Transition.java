@@ -76,6 +76,7 @@ import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_S
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_TIMEOUT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_WINDOWS_DRAWN;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
+import static com.android.server.wm.StartingData.AFTER_TRANSACTION_REMOVE_DIRECTLY;
 import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
@@ -109,6 +110,7 @@ import android.view.Display;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ScreenCapture;
+import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionInfo;
 import android.window.WindowContainerTransaction;
@@ -2102,6 +2104,32 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mLogger.mInfo != null) {
             mLogger.logOnSendAsync(mController.mLoggerHandler);
             mController.mTransitionTracer.logSentTransition(this, mTargets);
+        }
+        removeStartingWindowIfAny();
+    }
+
+    private void removeStartingWindowIfAny() {
+        if (!Flags.removeStartingInTransition()) {
+            return;
+        }
+        for (int i = mParticipants.size() - 1; i >= 0; --i) {
+            final ActivityRecord ar = mParticipants.valueAt(i).asActivityRecord();
+            if (ar == null || ar.mStartingData == null || ar.mStartingSurface == null
+                    || ar.mStartingData.mRemoveAfterTransaction
+                    != AFTER_TRANSACTION_REMOVE_DIRECTLY) {
+                continue;
+            }
+            final StartingWindowRemovalInfo removalInfo = ar.getStartingWindowInfo();
+            if (removalInfo != null) {
+                try {
+                    ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                            "Remove Starting Window after transition: %s", ar);
+                    mController.getTransitionPlayer().removeStartingWindow(removalInfo);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Unable to remove starting window after transition");
+                }
+                ar.cleanUpStartingInfo();
+            }
         }
     }
 
