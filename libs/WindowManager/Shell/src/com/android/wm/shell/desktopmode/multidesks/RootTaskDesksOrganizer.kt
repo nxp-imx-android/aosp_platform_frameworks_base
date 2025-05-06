@@ -202,22 +202,32 @@ class RootTaskDesksOrganizer(
         wct.setWindowingMode(minimizationRoot.token, WINDOWING_MODE_FREEFORM)
     }
 
-    override fun activateDesk(wct: WindowContainerTransaction, deskId: Int) {
+    override fun activateDesk(wct: WindowContainerTransaction, deskId: Int, skipReorder: Boolean) {
         logV("activateDesk %d", deskId)
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
-        wct.reorder(root.token, /* onTop= */ true)
+        if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
         updateLaunchRoot(wct, deskId, enabled = true)
     }
 
-    override fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int) {
+    override fun deactivateDesk(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        skipReorder: Boolean,
+    ) {
         logV("deactivateDesk %d", deskId)
+        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
     }
 
     private fun updateLaunchRoot(wct: WindowContainerTransaction, deskId: Int, enabled: Boolean) {
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        if (root.isLaunchRootRequested == enabled) {
+            logD("updateLaunchRoot desk=%d launch root already set to enabled=%b", deskId, enabled)
+            return
+        }
         root.isLaunchRootRequested = enabled
-        logD("updateLaunchRoot deskId=%d enabled=%b", deskId, enabled)
+        logD("updateLaunchRoot changing desk=%d launch root to enabled=%b", deskId, enabled)
         if (enabled) {
             wct.setLaunchRoot(
                 /* container= */ root.taskInfo.token,
@@ -230,7 +240,6 @@ class RootTaskDesksOrganizer(
                 /* windowingModes= */ null,
                 /* activityTypes= */ null,
             )
-            wct.reorder(root.taskInfo.token, /* onTop= */ false)
         }
     }
 

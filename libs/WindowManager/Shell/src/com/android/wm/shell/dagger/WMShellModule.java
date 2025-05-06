@@ -1407,11 +1407,13 @@ public abstract class WMShellModule {
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer,
+            @NonNull Transitions transitions,
             DesktopState desktopState
     ) {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
-                    new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
+                    new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
+                            transitions));
         }
         return Optional.empty();
     }
