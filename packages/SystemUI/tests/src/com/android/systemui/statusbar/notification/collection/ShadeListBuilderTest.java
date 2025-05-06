@@ -1049,6 +1049,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_childrenAssignedSection() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1336,6 +1337,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_filterOutNotif() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1358,6 +1360,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_filterOutGroupChild() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1386,6 +1389,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneIncompleteGroup() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1406,6 +1410,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneEmptyBundle() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
