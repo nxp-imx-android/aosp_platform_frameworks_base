@@ -151,6 +151,7 @@ constructor(
          * controlled by this controller.
          */
         // TODO(b/252723237): Make this non-nullable
+        @Deprecated("Jank should be measured in the dialog's window, not the origin view's")
         fun jankConfigurationBuilder(): InteractionJankMonitor.Configuration.Builder?
 
         companion object {
@@ -576,16 +577,18 @@ private class AnimatedDialog(
     private var hasInstrumentedJank = false
 
     fun start() {
-        val cuj = controller.cuj
-        if (cuj != null) {
-            val config = controller.jankConfigurationBuilder()
-            if (config != null) {
-                if (cuj.tag != null) {
-                    config.setTag(cuj.tag)
-                }
+        if (!Flags.fixDialogLaunchAnimationJankLogging()) {
+            val cuj = controller.cuj
+            if (cuj != null) {
+                val config = controller.jankConfigurationBuilder()
+                if (config != null) {
+                    if (cuj.tag != null) {
+                        config.setTag(cuj.tag)
+                    }
 
-                interactionJankMonitor.begin(config)
-                hasInstrumentedJank = true
+                    interactionJankMonitor.begin(config)
+                    hasInstrumentedJank = true
+                }
             }
         }
 
@@ -782,6 +785,16 @@ private class AnimatedDialog(
     private fun maybeStartLaunchAnimation() {
         if (!isSourceDrawnInDialog || !isOriginalDialogViewLaidOut) {
             return
+        }
+
+        if (Flags.fixDialogLaunchAnimationJankLogging()) {
+            controller.cuj?.let { cuj ->
+                val config =
+                    InteractionJankMonitor.Configuration.Builder.withView(cuj.cujType, decorView)
+                if (cuj.tag != null) config.setTag(cuj.tag)
+                interactionJankMonitor.begin(config)
+                hasInstrumentedJank = true
+            }
         }
 
         // Show the background dim.
