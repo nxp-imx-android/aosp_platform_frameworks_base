@@ -4734,16 +4734,20 @@ public class HdmiControlService extends SystemService {
             return;
         }
 
+        // Determine if the selected System Audio output is a TV.
+        // Unlike amplifiers, TVs are not mandated to send <Report Audio Status> even in HDMI 2.0.
+        // To avoid these problems, we only allow absolute volume when an amplifier is being used
+        // as the system audio device.
+        if (mAvbDisabled && systemAudioDeviceInfo.getDeviceType() == HdmiDeviceInfo.DEVICE_TV) {
+            switchToFullVolumeBehavior();
+            return;
+        }
+
         // Condition 5: The System Audio device supports <Set Audio Volume Level>
         switch (systemAudioDeviceInfo.getDeviceFeatures().getSetAudioVolumeLevelSupport()) {
             case DeviceFeatures.FEATURE_SUPPORTED:
                 if (currentVolumeBehavior
                         != AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_ABSOLUTE) {
-                    // Switch to full volume behavior for playback devices due to b/406050353
-                    if (mAvbDisabled && isPlaybackDevice()) {
-                        switchToFullVolumeBehavior();
-                        return;
-                    }
                     // Keep using AVB for other cases
                     // Start an action that will call enableAbsoluteVolumeBehavior
                     // once the System Audio device sends <Report Audio Status>
