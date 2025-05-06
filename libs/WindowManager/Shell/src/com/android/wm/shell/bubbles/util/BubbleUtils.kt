@@ -39,7 +39,9 @@ private fun getBubbleTransaction(
         else
             WindowConfiguration.WINDOWING_MODE_UNDEFINED,
     )
-    wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
+    if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+        wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
+    }
     if (!toBubble || isAppBubble) {
         // We only set launch next to Bubble for App Bubble, since new Task opened from Chat
         // Bubble should be launched in fullscreen.

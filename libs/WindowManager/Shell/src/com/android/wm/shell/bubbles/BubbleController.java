@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_DELETED;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_UPDATED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
@@ -231,6 +232,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleData mBubbleData;
     @Nullable private BubbleStackView mStackView;
     @Nullable private BubbleBarLayerView mLayerView;
+    @Nullable private ActivityManager.RunningTaskInfo mAppBubbleRootTaskInfo;
     private BubbleIconFactory mBubbleIconFactory;
     private final BubblePositioner mBubblePositioner;
     private Bubbles.SysuiProxy mSysuiProxy;
@@ -562,6 +564,25 @@ public class BubbleController implements ConfigurationChangeListener,
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
             }
+        }
+
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            // Create a root-task in WM Core. The app bubble tasks will be positioned as the leaf
+            // tasks under this root-task.
+            // The app bubble should be dismissed with proper transition (such as need to convert
+            // it to fullscreen) if the bubble task is no longer be a leaf task under this leaf
+            // task.
+            mTaskOrganizer.createRootTask(mContext.getDisplayId(), WINDOWING_MODE_MULTI_WINDOW,
+                    new ShellTaskOrganizer.TaskListener() {
+                        @Override
+                        public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo,
+                                SurfaceControl leash) {
+                            if (mAppBubbleRootTaskInfo != null) {
+                                return;
+                            }
+                            mAppBubbleRootTaskInfo = taskInfo;
+                        }
+                    });
         }
     }
 
@@ -2721,6 +2742,11 @@ public class BubbleController implements ConfigurationChangeListener,
     @Nullable
     public BubbleBarLayerView getLayerView() {
         return mLayerView;
+    }
+
+    @Nullable
+    public ActivityManager.RunningTaskInfo getAppBubbleRootTaskInfo() {
+        return mAppBubbleRootTaskInfo;
     }
 
     /**

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles
 
+import android.window.WindowContainerToken
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import java.util.Collections
 
@@ -51,4 +52,8 @@ class FakeBubbleExpandedViewManager(var bubbleBar: Boolean = false, var expanded
     override fun hideCurrentInputMethod() {}
 
     override fun updateBubbleBarLocation(location: BubbleBarLocation, source: Int) {}
+
+    override fun getAppBubbleRootTaskToken(): WindowContainerToken? {
+        return null
+    }
 }

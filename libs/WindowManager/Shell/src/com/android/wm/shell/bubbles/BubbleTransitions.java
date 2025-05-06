@@ -755,7 +755,13 @@ public class BubbleTransitions {
                 opts.setLaunchCookie(mLaunchCookie);
                 opts.setTaskAlwaysOnTop(true);
                 opts.setReparentLeafTaskToTda(true);
-                opts.setLaunchNextToBubble(true);
+                final ActivityManager.RunningTaskInfo rootInfo =
+                        mBubbleController.getAppBubbleRootTaskInfo();
+                if (rootInfo != null) {
+                    opts.setLaunchRootTask(rootInfo.token);
+                } else {
+                    opts.setLaunchNextToBubble(true);
+                }
                 opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
                 opts.setLaunchBounds(launchBounds);
                 if (mBubble.isShortcut()) {
