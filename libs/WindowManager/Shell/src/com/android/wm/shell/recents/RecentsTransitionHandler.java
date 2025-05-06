@@ -80,10 +80,10 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
@@ -1517,7 +1517,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "RecentsController.finishInner: PiP transaction %s merged",
                                 mPipTransaction);
-                        if (PipUtils.isPip2ExperimentEnabled()) {
+                        if (PipFlags.isPip2ExperimentEnabled()) {
                             // If this path is triggered, we are in auto-enter PiP flow in gesture
                             // navigation mode, which means "Recents" transition should be followed
                             // by a TRANSIT_PIP. Hence, we take the WCT was about to be sent

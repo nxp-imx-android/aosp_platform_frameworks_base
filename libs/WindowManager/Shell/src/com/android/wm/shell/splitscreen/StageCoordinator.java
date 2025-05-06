@@ -147,7 +147,6 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.LaunchAdjacentController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.common.split.OffscreenTouchZone;
 import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
@@ -159,6 +158,7 @@ import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.shared.split.SplitBounds;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitIndex;
@@ -3125,7 +3125,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             return true;
         }
 
-        if (PipUtils.isPip2ExperimentEnabled()
+        if (PipFlags.isPip2ExperimentEnabled()
                 && request.getPipChange() != null && getSplitPosition(
                 request.getPipChange().getTaskInfo().taskId) != SPLIT_POSITION_UNDEFINED) {
             // In PiP2, PiP-able task can also come in through the pip change request field.
