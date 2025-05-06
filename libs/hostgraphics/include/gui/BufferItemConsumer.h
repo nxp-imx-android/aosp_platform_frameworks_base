@@ -22,6 +22,7 @@
 #include <gui/ConsumerBase.h>
 #include <gui/IGraphicBufferConsumer.h>
 #include <gui/Surface.h>
+#include <ui/GraphicBuffer.h>
 #include <utils/RefBase.h>
 
 namespace android {
@@ -86,6 +87,10 @@ public:
     void abandon() {}
 
     status_t detachBuffer(int slot) {
+        return OK;
+    }
+
+    status_t detachBuffer(const sp<GraphicBuffer>& buffer) {
         return OK;
     }
 
