@@ -1865,10 +1865,15 @@ class SyntheticPasswordManager {
      */
     private void savePasswordMetrics(LockscreenCredential credential, SyntheticPassword sp,
             long protectorId, int userId) {
-        final byte[] encrypted = SyntheticPasswordCrypto.encrypt(sp.deriveMetricsKey(),
-                /* personalization= */ new byte[0],
-                new VersionedPasswordMetrics(credential).serialize());
-        saveState(PASSWORD_METRICS_NAME, encrypted, protectorId, userId);
+        final byte[] metricsKey = sp.deriveMetricsKey();
+        try {
+            final byte[] encrypted = SyntheticPasswordCrypto.encrypt(metricsKey,
+                    /* personalization= */ new byte[0],
+                    new VersionedPasswordMetrics(credential).serialize());
+            saveState(PASSWORD_METRICS_NAME, encrypted, protectorId, userId);
+        } finally {
+            ArrayUtils.zeroize(metricsKey);
+        }
     }
 
     @VisibleForTesting
