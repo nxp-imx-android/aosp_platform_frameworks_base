@@ -247,16 +247,6 @@ flag {
 }
 
 flag {
-    name: "manager_package_monitor_logic_fix"
-    namespace: "accessibility"
-    description: "Corrects the return values of the HandleForceStop function"
-    bug: "337392123"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "pointer_up_motion_event_in_touch_exploration"
     namespace: "accessibility"
     description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
