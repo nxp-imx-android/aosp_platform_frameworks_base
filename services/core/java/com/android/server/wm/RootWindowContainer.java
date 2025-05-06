@@ -1856,8 +1856,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (DesktopModeFlags.ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING.isTrue()) {
             final IntArray visibleRootTasks = new IntArray();
             forAllRootTasks(rootTask -> {
-                if ((mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
-                        && rootTask.isVisible()) {
+                final boolean restoreTask;
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                    // If the task is visible, it should have activities that are visible to
+                    // the current user, so don't check for task's user id since it is
+                    // redundant and might accidentally exclude a non-leaf tasks that
+                    // aren't associated with one particular user.
+                    restoreTask = rootTask.isVisible();
+                } else {
+                    restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
+                            && rootTask.isVisible();
+                }
+                if (restoreTask) {
                     visibleRootTasks.add(rootTask.getRootTaskId());
                 }
             }, /* traverseTopToBottom */ false);
