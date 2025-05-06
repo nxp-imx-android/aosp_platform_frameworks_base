@@ -1514,7 +1514,12 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private void unlockKeystore(int userId, SyntheticPassword sp) {
-        mKeyStoreAuthorization.onDeviceUnlocked(userId, sp.deriveKeyStorePassword());
+        final byte[] password = sp.deriveKeyStorePassword();
+        try {
+            mKeyStoreAuthorization.onDeviceUnlocked(userId, password);
+        } finally {
+            ArrayUtils.zeroize(password);
+        }
     }
 
     @VisibleForTesting /** Note: this method is overridden in unit tests */
