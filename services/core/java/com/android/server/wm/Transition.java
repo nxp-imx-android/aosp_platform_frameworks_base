@@ -2627,22 +2627,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         return wc.getWindowType() == TYPE_INPUT_METHOD;
     }
 
-    private static boolean occludesKeyguard(WindowContainer wc) {
-        final ActivityRecord ar = wc.asActivityRecord();
-        if (ar != null) {
-            return ar.canShowWhenLocked();
-        }
-        final Task t = wc.asTask();
-        if (t != null) {
-            // Get the top activity which was visible (since this is going away, it will remain
-            // client visible until the transition is finished).
-            // skip hidden (or about to hide) apps
-            final ActivityRecord top = t.getActivity(WindowToken::isClientVisible);
-            return top != null && top.canShowWhenLocked();
-        }
-        return false;
-    }
-
     private static boolean isTranslucent(@NonNull WindowContainer wc) {
         final TaskFragment taskFragment = wc.asTaskFragment();
         if (taskFragment == null) {
