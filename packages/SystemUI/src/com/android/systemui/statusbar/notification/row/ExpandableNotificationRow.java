@@ -1365,6 +1365,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (mExpandedWhenPinned) {
             setUserExpanded(true);
         }
+
+        // With row transparency, when the shade is expanded while a HUN is pinned,
+        // that HUN will become unpinned, so it must update its bg (opaque --> transparent)
+        if (notificationRowTransparency() && !isPinned()) {
+            updateBackgroundColors();
+        }
+
         setChronometerRunning(mLastChronometerRunning);
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -4084,22 +4091,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         updateBackgroundForGroupState();
     }
 
-    /** @return whether a HUN expansion has completed outside the shade, with row transparency. */
-    private boolean isHUNGroupExpanded() {
-        return mIsHeadsUp
-                && isGroupExpanded()
-                && !isGroupExpansionChanging();
-    }
-
     /**
      * Updates the parent and children backgrounds in a group based on the expansion state.
      */
     public void updateBackgroundForGroupState() {
         if (mIsSummaryWithChildren) {
-            // When the group has finished expanding, we hide its background.
-            // Exception: when row transparency is enabled, and a HUN group is expanded,
-            // we want to preserve the background at the end of the expansion animation.
-            if (notificationRowTransparency() && isHUNGroupExpanded()) {
+            // With row transparency, a pinned notification should not hide its background.
+            if (notificationRowTransparency() && isPinned()) {
                 mShowNoBackground = false;
             } else {
                 mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
@@ -4806,6 +4804,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     protected boolean usesTransparentBackground() {
         // Row background should be opaque when it's displayed as a heads-up notification or
         // displayed on keyguard.
-        return super.usesTransparentBackground() && !mIsHeadsUp && !mOnKeyguard;
+        // Also, for an unpinned HUN on the unlocked shade, the row bg should be transparent.
+        return (super.usesTransparentBackground() && !isPinned() && !mOnKeyguard);
     }
 }
