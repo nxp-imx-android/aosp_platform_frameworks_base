@@ -63,13 +63,6 @@ flag {
 }
 
 flag {
-   name: "priority_people_section"
-   namespace: "systemui"
-   description: "Add a new section for priority people (aka important conversations)."
-   bug: "340294566"
-}
-
-flag {
   name: "notifications_redesign_footer_view"
   namespace: "systemui"
   description: "Notifications Redesign: Update the look of the notifications footer."
