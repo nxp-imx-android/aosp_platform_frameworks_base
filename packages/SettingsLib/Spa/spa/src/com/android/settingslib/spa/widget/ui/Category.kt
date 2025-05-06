@@ -154,7 +154,6 @@ fun LazyCategory(
                     bottom = bottomPadding,
                 )
             )
-            .clip(SettingsShape.CornerMedium2)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
