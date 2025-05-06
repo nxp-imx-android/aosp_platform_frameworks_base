@@ -26,7 +26,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -52,13 +52,19 @@ constructor(
      */
     val dismissFling: StateFlow<FlingInfo?> =
         shadeRepository.currentFling
-            .filter { flingInfo ->
-                flingInfo != null &&
-                    !flingInfo.expand &&
-                    keyguardInteractor.statusBarState.value != StatusBarState.SHADE_LOCKED &&
-                    transitionInteractor.startedKeyguardTransitionStep.value.to ==
-                        KeyguardState.LOCKSCREEN &&
-                    keyguardInteractor.isKeyguardDismissible.value
+            .map { flingInfo ->
+                if (
+                    flingInfo != null &&
+                        !flingInfo.expand &&
+                        keyguardInteractor.statusBarState.value != StatusBarState.SHADE_LOCKED &&
+                        transitionInteractor.startedKeyguardTransitionStep.value.to ==
+                            KeyguardState.LOCKSCREEN &&
+                        keyguardInteractor.isKeyguardDismissible.value
+                ) {
+                    flingInfo
+                } else {
+                    null
+                }
             }
             .stateIn(backgroundScope, SharingStarted.Eagerly, null)
 }
