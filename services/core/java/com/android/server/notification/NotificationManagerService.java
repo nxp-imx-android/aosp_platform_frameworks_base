@@ -3171,7 +3171,7 @@ public class NotificationManagerService extends SystemService {
                 if (notificationClassificationUi()) {
                     mPreferencesHelper.pullPackagePreferencesStats(data,
                             getAllUsersNotificationPermissions(),
-                            new ArrayMap<>());
+                            mAssistants.getDeniedKeysForUsersAndPackages());
                 } else {
                     mPreferencesHelper.pullPackagePreferencesStats(data,
                             getAllUsersNotificationPermissions());
@@ -3184,7 +3184,8 @@ public class NotificationManagerService extends SystemService {
                 mPreferencesHelper.pullPackageChannelGroupPreferencesStats(data);
                 break;
             case NOTIFICATION_ADJUSTMENT_PREFERENCES:
-                if (notificationClassification() && notificationClassificationUi()) {
+                if ((notificationClassification() && notificationClassificationUi())
+                        || nmSummarization() || nmSummarizationUi()) {
                     mAssistants.pullAdjustmentPreferencesStats(data);
                 }
                 break;
@@ -12457,6 +12458,28 @@ public class NotificationManagerService extends SystemService {
                     mAdjustmentKeyDeniedPackages.get(userId).get(key).add(pkg);
                 }
             }
+        }
+
+        // For logging preferences: get a map of user id -> package name -> list of denied keys
+        // This is essentially a reconfiguration of the contents of mAdjustmentKeyDeniedPackages.
+        @NonNull Map<Integer, Map<String, List<String>>> getDeniedKeysForUsersAndPackages() {
+            Map<Integer, Map<String, List<String>>> out = new ArrayMap<>();
+            synchronized (mLock) {
+                for (int userId : mAdjustmentKeyDeniedPackages.keySet()) {
+                    Map<String, Set<String>> pkgsByType = mAdjustmentKeyDeniedPackages.get(userId);
+                    if (!pkgsByType.isEmpty()) {
+                        out.putIfAbsent(userId, new ArrayMap<>());
+                        Map<String, List<String>> pkgMapForUser = out.get(userId);
+                        for (String keyType : pkgsByType.keySet()) {
+                            for (String pkgName : pkgsByType.get(keyType)) {
+                                pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
+                                pkgMapForUser.get(pkgName).add(keyType);
+                            }
+                        }
+                    }
+                }
+            }
+            return out;
         }
 
         protected void onNotificationsSeenLocked(ArrayList<NotificationRecord> records) {

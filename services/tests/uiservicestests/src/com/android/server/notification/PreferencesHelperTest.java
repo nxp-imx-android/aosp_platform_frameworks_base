@@ -138,6 +138,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
+import android.service.notification.Adjustment;
 import android.service.notification.ConversationChannelWrapper;
 import android.service.notification.nano.RankingHelperProto;
 import android.testing.TestableContentResolver;
@@ -6290,8 +6291,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         ArrayList<StatsEvent> events = new ArrayList<>();
 
-        mHelper.pullPackagePreferencesStats(events, appPermissions,
-                new ArrayMap<String, Set<Integer>>());
+        mHelper.pullPackagePreferencesStats(events, appPermissions, new ArrayMap<>());
 
         // expected output. format: uid -> importance, as only uid (and not package name)
         // is in PackageNotificationPreferences
@@ -6327,6 +6327,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel channelC = new NotificationChannel("c", "c", IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_P, UID_P, channelC, true, false, UID_P, false);
 
+        // one app for a different user + one channel
+        int otherUserId = UserHandle.getUserId(UID_P) + 1;
+        int otherUid = UserHandle.getUid(otherUserId, UserHandle.getAppId(UID_P));
+        NotificationChannel channelOther = new NotificationChannel("d", "d", IMPORTANCE_DEFAULT);
+        mHelper.createNotificationChannel(PKG_P, otherUid, channelOther, true, false, otherUid,
+                false);
+
         // build a collection of app permissions that should be passed in and used
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> pkgPermissions = new ArrayMap<>();
         pkgPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
@@ -6336,50 +6343,73 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.canShowBadge(PKG_O, UID_O);
         mHelper.canShowBadge(PKG_P, UID_P);
 
-        // Sets bundles_allowed to true for these packages.
-        ArrayMap<String, Set<Integer>> packageSpecificAdjustmentKeyTypes = new ArrayMap<>();
-        Set<Integer> nMr1BundlesSet = new ArraySet<Integer>();
-        nMr1BundlesSet.add(TYPE_NEWS);
-        nMr1BundlesSet.add(TYPE_SOCIAL_MEDIA);
-        packageSpecificAdjustmentKeyTypes.put(PKG_N_MR1, nMr1BundlesSet);
-        Set<Integer> pBundlesSet = new ArraySet<Integer>();
-        packageSpecificAdjustmentKeyTypes.put(PKG_P, pBundlesSet);
+        // Sets denied types for packages.
+        ArrayMap<Integer, Map<String, List<String>>> deniedAdjustments = new ArrayMap<>();
+        ArrayMap<String, List<String>> deniedByPkg = new ArrayMap<>();
+        List<String> nMr1DeniedAdjustments = new ArrayList<>();
+        nMr1DeniedAdjustments.add(Adjustment.KEY_TYPE);
+        deniedByPkg.put(PKG_N_MR1, nMr1DeniedAdjustments);
+        List<String> pDeniedAdjustments = new ArrayList<>();
+        pDeniedAdjustments.add(Adjustment.KEY_SUMMARIZATION);
+        deniedByPkg.put(PKG_P, pDeniedAdjustments);
+        deniedAdjustments.put(UserHandle.getUserId(UID_O), deniedByPkg);
+
+        List<String> otherDeniedAdjustments = new ArrayList<>();
+        otherDeniedAdjustments.add(Adjustment.KEY_TYPE);
+        otherDeniedAdjustments.add(Adjustment.KEY_SUMMARIZATION);
+        ArrayMap<String, List<String>> otherUserPackage = new ArrayMap<>();
+        otherUserPackage.put(PKG_P, otherDeniedAdjustments);
+        deniedAdjustments.put(otherUserId, otherUserPackage);
 
         ArrayList<StatsEvent> events = new ArrayList<>();
 
         mHelper.pullPackagePreferencesStats(events, pkgPermissions,
-                packageSpecificAdjustmentKeyTypes);
+                deniedAdjustments);
 
-        assertEquals("total number of packages", 3, events.size());
+        assertEquals("total number of packages", 4, events.size());
 
-        AtomsProto.Atom atom0 = StatsEventTestUtils.convertToAtom(events.get(0));
-        assertTrue(atom0.hasPackageNotificationPreferences());
-        PackageNotificationPreferences p0 = atom0.getPackageNotificationPreferences();
-        assertThat(p0.getUid()).isEqualTo(UID_O);
+        // Convert resulting atoms into a map to confirm existence of logs independent of order,
+        // verifying their type along the way.
+        // Map is of uid -> associated atom
+        Map<Integer, PackageNotificationPreferences> results = new ArrayMap<>();
+        for (int i = 0; i < 4; i++) {
+            AtomsProto.Atom atom = StatsEventTestUtils.convertToAtom(events.get(i));
+            assertTrue(atom.hasPackageNotificationPreferences());
+            PackageNotificationPreferences p = atom.getPackageNotificationPreferences();
+            results.put(p.getUid(), p);
+        }
+
+        assertThat(results.containsKey(UID_O)).isTrue();
+        PackageNotificationPreferences p0 = results.get(UID_O);
         assertThat(p0.getImportance()).isEqualTo(IMPORTANCE_NONE); // banned by permissions
         assertThat(p0.getUserSetImportance()).isTrue();
-        assertThat(p0.getAllowedBundleTypesList()).hasSize(0);
+        assertThat(p0.getDeniedAdjustmentsList()).hasSize(0);
 
-        AtomsProto.Atom atom1 = StatsEventTestUtils.convertToAtom(events.get(1));
-        assertTrue(atom1.hasPackageNotificationPreferences());
-        PackageNotificationPreferences p1 = atom1.getPackageNotificationPreferences();
-        assertThat(p1.getUid()).isEqualTo(UID_N_MR1);
+        assertThat(results.containsKey(UID_N_MR1)).isTrue();
+        PackageNotificationPreferences p1 = results.get(UID_N_MR1);
         assertThat(p1.getImportance()).isEqualTo(IMPORTANCE_DEFAULT);
         assertThat(p1.getUserSetImportance()).isFalse();
-        assertThat(p1.getAllowedBundleTypesList()).hasSize(2);
+        assertThat(p1.getDeniedAdjustmentsList()).hasSize(1);
+        assertThat(p1.getDeniedAdjustments(0).getNumber()).isEqualTo(
+                NotificationProtoEnums.KEY_TYPE);
 
-        assertThat(p1.getAllowedBundleTypes(0).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_SOCIAL_MEDIA);
-        assertThat(p1.getAllowedBundleTypes(1).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_NEWS);
-
-        AtomsProto.Atom atom2 = StatsEventTestUtils.convertToAtom(events.get(2));
-        assertTrue(atom2.hasPackageNotificationPreferences());
-        PackageNotificationPreferences p2 = atom2.getPackageNotificationPreferences();
-        assertThat(p2.getUid()).isEqualTo(UID_P);
+        assertThat(results.containsKey(UID_P)).isTrue();
+        PackageNotificationPreferences p2 = results.get(UID_P);
         assertThat(p2.getImportance()).isEqualTo(IMPORTANCE_UNSPECIFIED); // default: unspecified
         assertThat(p2.getUserSetImportance()).isFalse();
-        assertThat(p2.getAllowedBundleTypesList()).hasSize(0);
+        assertThat(p2.getDeniedAdjustmentsList()).hasSize(1);
+        assertThat(p2.getDeniedAdjustments(0).getNumber()).isEqualTo(
+                NotificationProtoEnums.KEY_SUMMARIZATION);
+
+        assertThat(results.containsKey(otherUid)).isTrue();
+        PackageNotificationPreferences p3 = results.get(otherUid);
+        assertThat(p3.getImportance()).isEqualTo(IMPORTANCE_UNSPECIFIED); // default: unspecified
+        assertThat(p3.getUserSetImportance()).isFalse();
+        assertThat(p3.getDeniedAdjustmentsList()).hasSize(2);
+        assertThat(p3.getDeniedAdjustments(0).getNumber()).isEqualTo(
+                NotificationProtoEnums.KEY_TYPE);
+        assertThat(p3.getDeniedAdjustments(1).getNumber()).isEqualTo(
+                NotificationProtoEnums.KEY_SUMMARIZATION);
     }
 
     @Test
