@@ -94,6 +94,7 @@ import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.Looper;
@@ -3861,6 +3862,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     void deferTransitionReady() {
         ++mReadyTrackerOld.mDeferReadyDepth;
+
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                "deferTransitionReady deferReadyDepth=%d stack=%s",
+                mReadyTrackerOld.mDeferReadyDepth, Debug.getCallers(5));
+
         // Make sure it wait until #continueTransitionReady() is called.
         mSyncEngine.setReady(mSyncId, false);
     }
@@ -3868,6 +3874,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     /** This undoes one call to {@link #deferTransitionReady}. */
     void continueTransitionReady() {
         --mReadyTrackerOld.mDeferReadyDepth;
+
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                "continueTransitionReady deferReadyDepth=%d stack=%s",
+                mReadyTrackerOld.mDeferReadyDepth, Debug.getCallers(5));
+
         // Apply ready in case it is waiting for the previous defer call.
         applyReady();
     }
