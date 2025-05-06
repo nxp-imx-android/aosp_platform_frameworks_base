@@ -515,8 +515,9 @@ class MenuAnimationController {
         mHandler.removeCallbacksAndMessages(/* token= */ null);
     }
 
-    void startTuckedAnimationPreview() {
+    Animation startTuckedAnimationPreview() {
         fadeInNowIfEnabled();
+        mMenuView.clearAnimation();
 
         final float toXValue = isOnLeftSide()
                 ? -ANIMATION_TO_X_VALUE
@@ -529,10 +530,10 @@ class MenuAnimationController {
         animation.setDuration(ANIMATION_DURATION_MS);
         animation.setRepeatMode(Animation.REVERSE);
         animation.setInterpolator(new OvershootInterpolator());
-        animation.setRepeatCount(Animation.INFINITE);
         animation.setStartOffset(ANIMATION_START_OFFSET_MS);
 
         mMenuView.startAnimation(animation);
+        return animation;
     }
 
     private Handler createUiHandler() {
