@@ -349,7 +349,7 @@ public final class XmlBlock implements AutoCloseable {
                 throw new XmlPullParserException("Corrupt XML binary file");
             }
 
-            if (useLayoutReadwrite() && mUsesFeatureFlags && ev == START_TAG) {
+            if (Flags.layoutReadwriteFlags() && mUsesFeatureFlags && ev == START_TAG) {
                 FlagInfo flag = nativeGetFlagInfo(mParseState);
                 if (flag != null && flag.mNameIndex > 0) {
                     AconfigFlags flags = ParsingPackageUtils.getAconfigFlags();
@@ -394,17 +394,6 @@ public final class XmlBlock implements AutoCloseable {
                 close();
             }
             return ev;
-        }
-
-        // Until ravenwood supports AconfigFlags, we just don't do layoutReadwriteFlags().
-        @android.ravenwood.annotation.RavenwoodReplace(
-                bug = 396458006, blockedBy = AconfigFlags.class)
-        private static boolean useLayoutReadwrite() {
-            return Flags.layoutReadwriteFlags();
-        }
-
-        private static boolean useLayoutReadwrite$ravenwood() {
-            return false;
         }
 
         public void require(int type, String namespace, String name) throws XmlPullParserException,IOException {

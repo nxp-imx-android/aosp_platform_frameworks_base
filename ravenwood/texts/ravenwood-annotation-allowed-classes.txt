@@ -2,6 +2,13 @@
 
 com.android.internal.ravenwood.*
 
+android.aconfig.*
+android.os.flagging.*
+android.internal.aconfig.*
+
+com.android.internal.pm.pkg.parsing.ParsingPackageUtils
+com.android.internal.pm.pkg.component.AconfigFlags
+
 # android.app.ActivityThread is partially allowlited.
 android.app.ActivityThread_ravenwood
 

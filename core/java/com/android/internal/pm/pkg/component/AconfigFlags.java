@@ -56,6 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * own copy of the code here.
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class AconfigFlags {
     private static final boolean DEBUG = false;
     private static final String LOG_TAG = "AconfigFlags";
