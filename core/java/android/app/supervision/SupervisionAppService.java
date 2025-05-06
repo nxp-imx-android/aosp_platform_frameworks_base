@@ -45,16 +45,15 @@ public class SupervisionAppService extends Service {
     public static final String ACTION_SUPERVISION_APP_SERVICE =
             "android.app.action.SUPERVISION_APP_SERVICE";
 
-    private final ISupervisionAppService mBinder =
-            new ISupervisionAppService.Stub() {
+    private final ISupervisionListener mBinder =
+            new ISupervisionListener.Stub() {
                 @Override
-                public void onEnabled() {
-                    SupervisionAppService.this.onEnabled();
-                }
-
-                @Override
-                public void onDisabled() {
-                    SupervisionAppService.this.onDisabled();
+                public void onSetSupervisionEnabled(int userId, boolean enabled) {
+                    if (enabled) {
+                        SupervisionAppService.this.onEnabled();
+                    } else {
+                        SupervisionAppService.this.onDisabled();
+                    }
                 }
             };
 
