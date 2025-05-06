@@ -3363,8 +3363,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (enableTalkbackAndMagnifierKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
         }
-        if (!com.android.window.flags.Flags.enableKeyGestureHandlerForRecents()) {
-            // When enableKeyGestureHandlerForRecents is enabled, the event is handled in the
+        if (!com.android.window.flags.Flags.grantManageKeyGesturesToRecents()) {
+            // When grantManageKeyGesturesToRecents is enabled, the event is handled in the
             // recents app.
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS);
