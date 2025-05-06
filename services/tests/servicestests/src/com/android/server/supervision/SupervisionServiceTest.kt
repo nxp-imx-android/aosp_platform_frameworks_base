@@ -400,6 +400,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo() {
         assertThat(service.supervisionRecoveryInfo).isNull()
 

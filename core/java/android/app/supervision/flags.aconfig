@@ -88,3 +88,12 @@ flag {
   description: "Enables usage of lock task feature to enable Quick Settings on LockTask mode"
   bug: "401576820"
 }
+
+
+flag {
+  name: "persistent_supervision_settings"
+  is_exported: false
+  namespace: "supervision"
+  description: "Saves supervision user data and recovery info into a binary xml file"
+  bug: "406449915"
+}
