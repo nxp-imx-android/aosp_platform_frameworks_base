@@ -103,3 +103,10 @@ flag {
   bug: "364655296"
   is_exported: true
 }
+
+flag {
+  name: "remote_document_features_2025q4"
+  namespace: "app_widgets"
+  description: "Remote document features in Q4 2025 release"
+  bug: "412684851"
+}
