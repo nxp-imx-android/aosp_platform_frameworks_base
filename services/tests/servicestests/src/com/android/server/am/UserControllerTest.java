@@ -85,6 +85,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.content.pm.UserInfo.UserInfoFlag;
+import android.media.AudioManagerInternal;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -826,6 +827,36 @@ public class UserControllerTest {
         assertAndProcessScheduledStopBackgroundUser(false, null);
         verify(mInjector.mAlarmManagerInternal, never())
                 .getNextAlarmTriggerTimeForUser(eq(SYSTEM_USER_ID));
+    }
+
+    /** Test scheduling stopping of background users - reschedule if user is sounding audio. */
+    @Test
+    public void testScheduleStopOfBackgroundUser_rescheduleIfAudio() throws Exception {
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
+        assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
+
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ 2);
+
+        setUpAndStartUserInBackground(TEST_USER_ID);
+        setUpAndStartUserInBackground(TEST_USER_ID1);
+        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1),
+                new HashSet<>(mUserController.getRunningUsersLU()));
+
+        when(mInjector.mAudioManagerInternal
+                .isUserPlayingAudio(eq(TEST_USER_ID))).thenReturn(true);
+        when(mInjector.mAudioManagerInternal
+                .isUserPlayingAudio(eq(TEST_USER_ID1))).thenReturn(false);
+
+        assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
+        assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
+
+        // TEST_USER_ID1 should be stopped. But TEST_USER_ID shouldn't, since it was playing audio.
+        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID),
+                new HashSet<>(mUserController.getRunningUsersLU()));
     }
 
     /**
@@ -1849,6 +1880,7 @@ public class UserControllerTest {
         private final WindowManagerService mWindowManagerMock;
         private final PowerManagerInternal mPowerManagerInternal;
         private final AlarmManagerInternal mAlarmManagerInternal;
+        private final AudioManagerInternal mAudioManagerInternal;
         private final KeyguardManager mKeyguardManagerMock;
         private final LockPatternUtils mLockPatternUtilsMock;
 
@@ -1871,6 +1903,7 @@ public class UserControllerTest {
             mStorageManagerMock = mock(IStorageManager.class);
             mPowerManagerInternal = mock(PowerManagerInternal.class);
             mAlarmManagerInternal = mock(AlarmManagerInternal.class);
+            mAudioManagerInternal = mock(AudioManagerInternal.class);
             mKeyguardManagerMock = mock(KeyguardManager.class);
             when(mKeyguardManagerMock.isDeviceSecure(anyInt())).thenReturn(true);
             mLockPatternUtilsMock = mock(LockPatternUtils.class);
@@ -1938,6 +1971,11 @@ public class UserControllerTest {
         @Override
         AlarmManagerInternal getAlarmManagerInternal() {
             return mAlarmManagerInternal;
+        }
+
+        @Override
+        AudioManagerInternal getAudioManagerInternal() {
+            return mAudioManagerInternal;
         }
 
         @Override

@@ -87,6 +87,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackagePartitions;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
+import android.media.AudioManagerInternal;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.Bundle;
@@ -2637,11 +2638,19 @@ class UserController implements Handler.Callback {
 
         if (avoidStoppingUserDueToUpcomingAlarm(userId)) {
             // We want this user running soon for alarm-purposes, so don't stop it now. Reschedule.
+            Slogf.d(TAG, "User %d will fire an alarm soon, so reschedule bg stopping", userId);
+            scheduleStopOfBackgroundUser(userId);
+            return;
+        }
+        if (mInjector.getAudioManagerInternal().isUserPlayingAudio(userId)) {
+            // User is audible (even if invisibly, e.g. via an alarm), so don't stop it. Reschedule.
+            Slogf.d(TAG, "User %d is playing audio, so reschedule bg stopping", userId);
             scheduleStopOfBackgroundUser(userId);
             return;
         }
         synchronized (mLock) {
             if (getCurrentOrTargetUserIdLU() == userId) {
+                // User is (somehow) already in the foreground, or we're currently switching to it.
                 return;
             }
             if (mPendingTargetUserIds.contains(userIdInteger)) {
@@ -4105,6 +4114,10 @@ class UserController implements Handler.Callback {
                 mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
             }
             return mPowerManagerInternal;
+        }
+
+        AudioManagerInternal getAudioManagerInternal() {
+            return LocalServices.getService(AudioManagerInternal.class);
         }
 
         AlarmManagerInternal getAlarmManagerInternal() {
