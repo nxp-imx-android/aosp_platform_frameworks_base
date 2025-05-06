@@ -29,16 +29,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _actions = MutableStateFlow(emptyList<ActionModel>())
     override val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
 
-    private val _isAttached = MutableStateFlow(false)
-    override val isAttached: StateFlow<Boolean> = _isAttached.asStateFlow()
-
     override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
-    }
-
-    fun setIsAttached(isAttached: Boolean) {
-        _isAttached.value = isAttached
     }
 }

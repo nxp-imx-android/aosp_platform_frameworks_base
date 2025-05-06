@@ -20,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,6 +31,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 fun AmbientCueContainer(
     modifier: Modifier = Modifier,
     ambientCueViewModelFactory: AmbientCueViewModel.Factory,
+    onShouldInterceptTouches: (Boolean) -> Unit,
 ) {
     val viewModel = rememberViewModel("AmbientCueContainer") { ambientCueViewModelFactory.create() }
 
@@ -40,7 +42,13 @@ fun AmbientCueContainer(
     // TODO: b/414507396 - Replace with the height of the navbar
     val chipsBottomPadding = 46.dp
 
-    Box(modifier.clickable(expanded) { viewModel.collapse() }) {
+    LaunchedEffect(expanded) { onShouldInterceptTouches(expanded) }
+
+    Box(
+        modifier.clickable(enabled = expanded, indication = null, interactionSource = null) {
+            viewModel.collapse()
+        }
+    ) {
         BackgroundGlow(visible, Modifier.align(Alignment.BottomCenter))
         NavBarPill(
             actions = actions,

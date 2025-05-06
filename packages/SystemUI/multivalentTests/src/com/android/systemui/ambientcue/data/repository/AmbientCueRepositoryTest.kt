@@ -27,7 +27,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_ACTION_FEATURE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
-import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
@@ -57,28 +56,29 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     private val underTest =
         AmbientCueRepositoryImpl(
             backgroundScope = kosmos.backgroundScope,
-            broadcastDispatcher = kosmos.broadcastDispatcher,
             smartSpaceManager = smartSpaceManager,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
         )
 
     @Test
-    fun isAttached_whenHasActions_true() =
+    fun isVisible_whenHasActions_true() =
         kosmos.runTest {
-            val isAttached by collectLastValue(underTest.isAttached)
+            val actions by collectLastValue(underTest.actions)
+            val isVisible by collectLastValue(underTest.isVisible)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(allTargets)
             advanceUntilIdle()
-            assertThat(isAttached).isTrue()
+            assertThat(isVisible).isTrue()
         }
 
     @Test
-    fun isAttached_whenNoActions_false() =
+    fun isVisible_whenNoActions_false() =
         kosmos.runTest {
-            val isAttached by collectLastValue(underTest.isAttached)
+            val actions by collectLastValue(underTest.actions)
+            val isVisible by collectLastValue(underTest.isVisible)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
@@ -86,7 +86,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                 listOf(invalidTarget1, invalidTarget2)
             )
             advanceUntilIdle()
-            assertThat(isAttached).isFalse()
+            assertThat(isVisible).isFalse()
         }
 
     @Test

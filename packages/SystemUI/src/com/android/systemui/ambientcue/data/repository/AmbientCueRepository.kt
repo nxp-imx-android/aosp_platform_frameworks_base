@@ -20,11 +20,9 @@ import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.content.Context
-import android.content.IntentFilter
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.ambientcue.shared.model.ActionModel
-import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -34,21 +32,17 @@ import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
 /** Source of truth for ambient actions and visibility of their system space. */
 interface AmbientCueRepository {
     /** Chips that should be visible on the UI. */
     val actions: StateFlow<List<ActionModel>>
-
-    /** If window should be added to the navbar area or not. */
-    val isAttached: StateFlow<Boolean>
 
     /** If hint (or chips list) should be visible. */
     val isVisible: MutableStateFlow<Boolean>
@@ -59,25 +53,10 @@ class AmbientCueRepositoryImpl
 @Inject
 constructor(
     @Background private val backgroundScope: CoroutineScope,
-    broadcastDispatcher: BroadcastDispatcher,
     private val smartSpaceManager: SmartspaceManager?,
     @Background executor: Executor,
     @Application applicationContext: Context,
 ) : AmbientCueRepository {
-    private val debugBroadcastFlow: Flow<Boolean> =
-        if (DEBUG) {
-            broadcastDispatcher.broadcastFlow(
-                filter =
-                    IntentFilter().apply {
-                        addAction(ACTION_CREATE_AMBIENT_CUE)
-                        addAction(ACTION_DESTROY_AMBIENT_CUE)
-                    }
-            ) { intent, _ ->
-                intent.action == ACTION_CREATE_AMBIENT_CUE
-            }
-        } else {
-            MutableStateFlow(false).asStateFlow()
-        }
 
     override val actions: StateFlow<List<ActionModel>> =
         conflatedCallbackFlow {
@@ -111,8 +90,8 @@ constructor(
                             }
                     if (DEBUG) {
                         Log.d(TAG, "SmartSpace OnTargetsAvailableListener $targets")
-                        Log.d(TAG, "SmartSpace actions $actions")
                     }
+                    Log.v(TAG, "SmartSpace actions $actions")
                     trySend(actions)
                 }
 
@@ -122,20 +101,11 @@ constructor(
                     session.close()
                 }
             }
+            .onEach { actions -> isVisible.update { actions.isNotEmpty() } }
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
-            )
-
-    override val isAttached: StateFlow<Boolean> =
-        combine(actions, debugBroadcastFlow) { actions, createdViaBroadcast ->
-                actions.isNotEmpty() || createdViaBroadcast
-            }
-            .stateIn(
-                scope = backgroundScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
             )
 
     override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -148,9 +118,5 @@ constructor(
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
-        private const val ACTION_CREATE_AMBIENT_CUE =
-            "com.systemui.ambientcue.action.CREATE_AMBIENT_CUE"
-        private const val ACTION_DESTROY_AMBIENT_CUE =
-            "com.systemui.ambientcue.action.DESTROY_AMBIENT_CUE"
     }
 }

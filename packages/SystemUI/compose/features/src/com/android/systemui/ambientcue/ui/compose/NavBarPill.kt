@@ -137,12 +137,14 @@ fun NavBarPill(
                         Text(
                             text = action.label,
                             style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
                             color = outlineColor,
                         )
                         if (action.attribution != null) {
                             Text(
                                 text = action.attribution,
                                 style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
                                 color = outlineColor,
                                 modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
                             )

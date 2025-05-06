@@ -27,6 +27,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -51,9 +52,10 @@ constructor(
         }
 
         Log.d(TAG, "start!")
+        mainScope.launch { ambientCueInteractor.actions.collect() }
         mainScope.launch {
-            ambientCueInteractor.isAttached.collect { isAttached ->
-                if (isAttached) {
+            ambientCueInteractor.isVisible.collect { isVisible ->
+                if (isVisible) {
                     createAmbientCueView()
                 } else {
                     destroyAmbientCueView()
@@ -66,11 +68,7 @@ constructor(
         if (!ambientCueWindowRootView.isAttachedToWindow) {
             windowManager.addView(
                 ambientCueWindowRootView,
-                AmbientCueUtils.getAmbientCueLayoutParams(
-                    width = WindowManager.LayoutParams.MATCH_PARENT,
-                    height = WindowManager.LayoutParams.WRAP_CONTENT,
-                    readyToShow = false,
-                ),
+                AmbientCueUtils.getAmbientCueLayoutParams(spyTouches = true),
             )
         }
     }

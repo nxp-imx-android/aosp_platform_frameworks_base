@@ -38,22 +38,6 @@ class AmbientCueInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
-    fun isAttached_whenCreated_true() =
-        kosmos.runTest {
-            val isAttached by collectLastValue(ambientCueInteractor.isAttached)
-            ambientCueRepository.fake.setIsAttached(true)
-            assertThat(isAttached).isTrue()
-        }
-
-    @Test
-    fun isAttached_whenDestroyed_false() =
-        kosmos.runTest {
-            val isAttached by collectLastValue(ambientCueInteractor.isAttached)
-            ambientCueRepository.fake.setIsAttached(false)
-            assertThat(isAttached).isFalse()
-        }
-
-    @Test
     fun isVisible_setTrue_true() =
         kosmos.runTest {
             val isVisible by collectLastValue(ambientCueInteractor.isVisible)
