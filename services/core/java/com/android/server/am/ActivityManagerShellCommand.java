@@ -4755,7 +4755,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("      --windowingMode <WINDOWING_MODE>: The windowing mode to launch the activity into.");
             pw.println("      --activityType <ACTIVITY_TYPE>: The activity type to launch the activity as.");
             pw.println("      --display <DISPLAY_ID>: The display to launch the activity into.");
-            pw.println("      --splashscreen-icon: Show the splash screen icon on launch.");
+            pw.println("      --splashscreen-show-icon: Show the splash screen icon on launch.");
             pw.println("  start-in-vsync");
             pw.println("      Start an Activity with vsync aligned. See `start-activity` for the");
             pw.println("      possible options.");
