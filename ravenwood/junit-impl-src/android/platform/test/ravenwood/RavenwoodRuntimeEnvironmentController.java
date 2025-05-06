@@ -82,7 +82,6 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -120,9 +119,6 @@ public class RavenwoodRuntimeEnvironmentController {
 
     private static final String ANDROID_LOG_TAGS = "ANDROID_LOG_TAGS";
     private static final String RAVENWOOD_ANDROID_LOG_TAGS = "RAVENWOOD_" + ANDROID_LOG_TAGS;
-
-    static volatile Thread sTestThread;
-    static volatile Thread sMainThread;
 
     /**
      * When enabled, attempt to dump all thread stacks just before we hit the
@@ -213,11 +209,18 @@ public class RavenwoodRuntimeEnvironmentController {
     private static final String DEFAULT_INSTRUMENTATION_CLASS =
             "androidx.test.runner.AndroidJUnitRunner";
 
+    static volatile Thread sTestThread;
+    static volatile HandlerThread sMainThread;
+
     private static final int sMyPid = new Random().nextInt(100, 32768);
     private static int sTargetSdkLevel;
+
     private static String sTestPackageName;
     private static String sTargetPackageName;
     private static String sInstrumentationClass;
+
+    static volatile RavenwoodContext sInstContext;
+    static volatile RavenwoodContext sTargetContext;
     private static Instrumentation sInstrumentation;
     private static final long sCallingIdentity =
             packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
@@ -381,20 +384,20 @@ public class RavenwoodRuntimeEnvironmentController {
             };
         }
 
-        var instContext = new RavenwoodContext(
+        sInstContext = new RavenwoodContext(
                 sTestPackageName, main, instResourcesLoader);
-        var targetContext = new RavenwoodContext(
+        sTargetContext = new RavenwoodContext(
                 sTargetPackageName, main, targetResourcesLoader);
 
         // Set up app context.
         var appContext = new RavenwoodContext(sTargetPackageName, main, targetResourcesLoader);
         appContext.setApplicationContext(appContext);
         if (isSelfInstrumenting) {
-            instContext.setApplicationContext(appContext);
-            targetContext.setApplicationContext(appContext);
+            sInstContext.setApplicationContext(appContext);
+            sTargetContext.setApplicationContext(appContext);
         } else {
             // When instrumenting into another APK, the test context doesn't have an app context.
-            targetContext.setApplicationContext(appContext);
+            sTargetContext.setApplicationContext(appContext);
         }
 
         // Set up ActivityThread.currentSystemContext(), which is technically a different
@@ -422,7 +425,7 @@ public class RavenwoodRuntimeEnvironmentController {
                 }
             }
 
-            sInstrumentation.basicInit(instContext, targetContext, null);
+            initInstrumentation();
             sInstrumentation.onCreate(instArgs);
         });
         InstrumentationRegistry.registerInstance(sInstrumentation, instArgs);
@@ -463,15 +466,17 @@ public class RavenwoodRuntimeEnvironmentController {
         }
     }
 
+    private static void initInstrumentation() {
+        // We need to recreate the mocks for each test class, because sometimes tests
+        // will call Mockito.framework().clearInlineMocks() after execution.
+        sInstrumentation.basicInit(sInstContext, sTargetContext, createMockUiAutomation());
+    }
+
     /**
      * Partially reset and initialize before each test class invocation
      */
     public static void initForRunner() {
-        var targetContext = sInstrumentation.getTargetContext();
-        var instContext = sInstrumentation.getContext();
-        // We need to recreate the mock UiAutomation for each test class, because sometimes tests
-        // will call Mockito.framework().clearInlineMocks() after execution.
-        sInstrumentation.basicInit(instContext, targetContext, createMockUiAutomation());
+        initInstrumentation();
 
         // Reset some global state
         Process_ravenwood.reset();
