@@ -286,6 +286,8 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mInfoItem = createPromotedItem(mContext);
         }  else if (android.app.Flags.notificationClassificationUi() && isBundled) {
             mInfoItem = createBundledInfoItem(mContext);
+        } else if (mParent.isBundle()) {
+            mInfoItem = createBundleHeaderInfoItem(mContext);
         } else {
             mInfoItem = createInfoItem(mContext);
         }
@@ -767,6 +769,15 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         BundledNotificationInfo infoContent =
                 (BundledNotificationInfo) LayoutInflater.from(context).inflate(
                         layoutId, null, false);
+        return new NotificationMenuItem(context, infoDescription, infoContent,
+                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+    }
+
+    static NotificationMenuItem createBundleHeaderInfoItem(Context context) {
+        BundleHeaderGutsContent infoContent = new BundleHeaderGutsContent(context);
+        // TODO(b/409748420): correct infoDescription?
+        String infoDescription =
+                context.getResources().getString(R.string.notification_menu_gear_description);
         return new NotificationMenuItem(context, infoDescription, infoContent,
                 NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }

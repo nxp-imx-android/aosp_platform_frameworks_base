@@ -151,7 +151,13 @@ private fun ContentScope.BundleHeaderContent(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(vertical = 16.dp),
     ) {
-        BundleIcon(viewModel.bundleIcon, modifier = Modifier.padding(horizontal = 16.dp))
+        BundleIcon(
+            viewModel.bundleIcon,
+            modifier =
+                Modifier.padding(horizontal = 16.dp)
+                    // Has to be a shared element because we may have a semi-transparent background
+                    .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
+        )
         Text(
             text = stringResource(viewModel.titleTextResId),
             style = MaterialTheme.typography.titleMediumEmphasized,
