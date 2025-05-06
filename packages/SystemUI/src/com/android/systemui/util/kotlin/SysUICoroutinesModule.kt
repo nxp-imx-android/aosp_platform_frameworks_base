@@ -130,13 +130,8 @@ class SysUICoroutinesModule {
     @NotifInflation
     @SysUISingleton
     fun notifInflationCoroutineDispatcher(
-        @NotifInflation notifInflationExecutor: Executor,
-        @Background bgCoroutineDispatcher: CoroutineDispatcher,
+        @NotifInflation notifInflationExecutor: Executor
     ): CoroutineDispatcher {
-        if (com.android.systemui.Flags.useNotifInflationThreadForFooter()) {
-            return notifInflationExecutor.asCoroutineDispatcher()
-        } else {
-            return bgCoroutineDispatcher
-        }
+        return notifInflationExecutor.asCoroutineDispatcher()
     }
 }
