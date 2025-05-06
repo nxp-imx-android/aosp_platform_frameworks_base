@@ -110,7 +110,14 @@ class RootTaskDesksOrganizer(
         val unassignedRequest = createDeskRootRequests.firstOrNull { it.userId == null }
         if (unassignedRequest != null) {
             createDeskRootRequests.remove(unassignedRequest)
-            createDeskRootRequests += unassignedRequest.copy(userId = userId)
+            createDeskRootRequests +=
+                unassignedRequest.copy(
+                    userId = userId,
+                    onCreateCallback = { deskId ->
+                        unassignedRequest.onCreateCallback.onCreated(deskId)
+                        callback.onCreated(deskId)
+                    },
+                )
             return
         }
         // Must request a new root.

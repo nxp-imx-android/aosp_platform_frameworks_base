@@ -246,6 +246,20 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testCreateDesk_warmUpInProgress_appliesCallback() = runTest {
+        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        var callbackApplied = false
+
+        organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
+        organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) { _ ->
+            callbackApplied = true
+        }
+        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+
+        assertThat(callbackApplied).isTrue()
+    }
+
+    @Test
     fun testCreateDesk_twice_warmUpInProgress_usesWarmedUpDeskAndCreatesOne() = runTest {
         val displayId = DEFAULT_DISPLAY
         organizer.warmUpDefaultDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY)
