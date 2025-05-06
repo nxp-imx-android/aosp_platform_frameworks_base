@@ -4844,7 +4844,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 public void run() {
                     mHandler.removeCallbacks(this);
                     final boolean succeeded;
-                    try (PackageFreezer freezer = freezePackage(packageName, USER_ALL,
+                    try (PackageFreezer freezer = freezePackage(packageName, userId,
                             "clearApplicationUserData",
                             ApplicationExitInfo.REASON_USER_REQUESTED, null /* request */,
                             /* waitAppKilled= */ true)) {
