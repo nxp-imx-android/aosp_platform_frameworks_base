@@ -56,14 +56,18 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     private static final String TAG = "RouterInfoMediaManager";
 
     private final MediaRouter2 mRouter;
-    private final MediaRouter2Manager mRouterManager;
+    @VisibleForTesting
+    MediaRouter2Manager mRouterManager;
 
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
-
-    private final RouteCallback mRouteCallback = new RouteCallback();
-    private final TransferCallback mTransferCallback = new TransferCallback();
-    private final ControllerCallback mControllerCallback = new ControllerCallback();
-    private final Consumer<RouteListingPreference> mRouteListingPreferenceCallback =
+    @VisibleForTesting
+    final RouteCallback mRouteCallback = new RouteCallback();
+    @VisibleForTesting
+    final TransferCallback mTransferCallback = new TransferCallback();
+    @VisibleForTesting
+    final ControllerCallback mControllerCallback = new ControllerCallback();
+    @VisibleForTesting
+    final Consumer<RouteListingPreference> mRouteListingPreferenceCallback =
             (preference) -> {
                 notifyRouteListingPreferenceUpdated(preference);
                 refreshDevices();
@@ -351,7 +355,8 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         return mRouter.getController(sessionInfo.getId());
     }
 
-    private final class RouteCallback extends MediaRouter2.RouteCallback {
+    @VisibleForTesting
+    final class RouteCallback extends MediaRouter2.RouteCallback {
         @Override
         public void onRoutesUpdated(@NonNull List<MediaRoute2Info> routes) {
             refreshDevices();
@@ -363,7 +368,8 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         }
     }
 
-    private final class TransferCallback extends MediaRouter2.TransferCallback {
+    @VisibleForTesting
+    final class TransferCallback extends MediaRouter2.TransferCallback {
         @Override
         public void onTransfer(
                 @NonNull RoutingController oldController,
@@ -388,7 +394,8 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         }
     }
 
-    private final class ControllerCallback extends MediaRouter2.ControllerCallback {
+    @VisibleForTesting
+    final class ControllerCallback extends MediaRouter2.ControllerCallback {
         @Override
         public void onControllerUpdated(@NonNull RoutingController controller) {
             refreshDevices();
