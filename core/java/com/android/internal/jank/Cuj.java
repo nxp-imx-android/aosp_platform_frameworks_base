@@ -347,58 +347,9 @@ public class Cuj {
      */
     public static final int CUJ_LPP_ASSIST_INVOCATION_EFFECT = 132;
 
-    /**
-     * Track wear tiles carousel jank.
-     *
-     * <p>The Tile Carousel is a UI module that hosts a watch face overlay and individual tile
-     * surfaces, or an empty state placeholder tile if no tiles are configured to be shown. Swiping
-     * horizontally from the watch face will cycle through all available tiles and eventually land
-     * back on the watch face.
-     *
-     * <p>Tracking starts when the user scrolls the watch carousel. Tracking ends when the carousel
-     * stops moving. This includes scrolling from watchface to a tile, and between tiles. A scroll
-     * is any gesture that causes the carousel to move (regardless of speed and velocity).
-     *
-     * <p>A scroll event is always logged, alongside either a swipe or a fling event.
-     */
-    public static final int CUJ_WEAR_CAROUSEL_SCROLL_JANK = 133;
-
-    /**
-     * Track wear tiles carousel jank.
-     *
-     * <p>The Tile Carousel is a UI module that hosts a watch face overlay and individual tile
-     * surfaces, or an empty state placeholder tile if no tiles are configured to be shown. Swiping
-     * horizontally from the watch face will cycle through all available tiles and eventually land
-     * back on the watch face.
-     *
-     * <p>Tracking starts when the user scrolls the watch carousel. Tracking ends when the carousel
-     * stops moving. This includes scrolling from watchface to a tile, and between tiles.
-     *
-     * <p>A fling is any gesture that lasts less than a certain threshold
-     * (http://google3/java/com/google/android/clockwork/sysui/mainui/module/carousel/HorizontalCarouselController.java;l=105;rcl=750121574).
-     * A scroll event is always logged alongside this event.
-     */
-    public static final int CUJ_WEAR_CAROUSEL_FLING_JANK = 134;
-
-    /**
-     * Track wear tiles carousel jank.
-     *
-     * <p>The Tile Carousel is a UI module that hosts a watch face overlay and individual tile
-     * surfaces, or an empty state placeholder tile if no tiles are configured to be shown. Swiping
-     * horizontally from the watch face will cycle through all available tiles and eventually land
-     * back on the watch face.
-     *
-     * <p>Tracking starts when the user scrolls the watch carousel. Tracking ends when the carousel
-     * stops moving. This includes scrolling from watchface to a tile, and between tiles.
-     *
-     * <p>A swipe is any gesture that lasts more than a certain threshold
-     * (http://google3/java/com/google/android/clockwork/sysui/mainui/module/carousel/HorizontalCarouselController.java;l=105;rcl=750121574).
-     * A scroll event is always logged alongside this event.
-     */
-    public static final int CUJ_WEAR_CAROUSEL_SWIPE_JANK = 135;
 
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_WEAR_CAROUSEL_SWIPE_JANK;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_LPP_ASSIST_INVOCATION_EFFECT;
 
     /** @hide */
     @IntDef({
@@ -522,9 +473,7 @@ public class Cuj {
             CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY,
             CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP,
             CUJ_NOTIFICATIONS_ANIMATED_ACTION,
-            CUJ_WEAR_CAROUSEL_SCROLL_JANK,
-            CUJ_WEAR_CAROUSEL_FLING_JANK,
-            CUJ_WEAR_CAROUSEL_SWIPE_JANK
+            CUJ_LPP_ASSIST_INVOCATION_EFFECT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -658,9 +607,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_NOTIFICATIONS_ANIMATED_ACTION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__NOTIFICATIONS_ANIMATED_ACTION;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_SCROLL_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_SCROLL_JANK;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_FLING_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_FLING_JANK;
-        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_SWIPE_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_SWIPE_JANK;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LPP_ASSIST_INVOCATION_EFFECT] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LPP_ASSIST_INVOCATION_EFFECT;
     }
 
     private Cuj() {
@@ -919,12 +866,8 @@ public class Cuj {
                 return "STATUS_BAR_APP_RETURN_TO_CALL_CHIP";
             case CUJ_NOTIFICATIONS_ANIMATED_ACTION:
                 return "NOTIFICATIONS_ANIMATED_ACTION";
-            case CUJ_WEAR_CAROUSEL_SCROLL_JANK:
-                return "WEAR_CAROUSEL_SCROLL_JANK";
-            case CUJ_WEAR_CAROUSEL_FLING_JANK:
-                return "WEAR_CAROUSEL_FLING_JANK";
-            case CUJ_WEAR_CAROUSEL_SWIPE_JANK:
-                return "WEAR_CAROUSEL_SWIPE_JANK";
+            case CUJ_LPP_ASSIST_INVOCATION_EFFECT:
+                return "LPP_ASSIST_INVOCATION_EFFECT";
         }
         return "UNKNOWN";
     }
