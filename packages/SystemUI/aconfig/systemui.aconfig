@@ -451,17 +451,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_stop_updating_window_height"
-    namespace: "systemui"
-    description: "Don't have PhoneStatusBarView manually trigger an update of the height in "
-        "StatusBarWindowController"
-    bug: "360115167"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_popup_chips"
     namespace: "systemui"
     description: "Show rich ongoing processes as chips in the status bar"
