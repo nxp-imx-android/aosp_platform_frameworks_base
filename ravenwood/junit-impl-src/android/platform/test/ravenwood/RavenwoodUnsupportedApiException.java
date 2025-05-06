@@ -16,6 +16,10 @@
 package android.platform.test.ravenwood;
 
 public class RavenwoodUnsupportedApiException extends UnsupportedOperationException {
+    public RavenwoodUnsupportedApiException(String message) {
+        super(message);
+    }
+
     public RavenwoodUnsupportedApiException() {
         super("This method is not yet supported under the Ravenwood deviceless testing "
                 + "environment; consider requesting support from the API owner or "

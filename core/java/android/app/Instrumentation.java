@@ -49,6 +49,7 @@ import android.os.SystemProperties;
 import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -196,7 +197,7 @@ public class Instrumentation {
      * @param arguments Any additional arguments that were supplied when the 
      *                  instrumentation was started.
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public void onCreate(Bundle arguments) {
     }
 
@@ -205,6 +206,7 @@ public class Instrumentation {
      * thread will call to {@link #onStart} where you can implement the
      * instrumentation.
      */
+    @RavenwoodIgnore(reason = "Ravenwood has its own test thread")
     public void start() {
         if (mRunner != null) {
             throw new RuntimeException("Instrumentation already started");
@@ -346,6 +348,7 @@ public class Instrumentation {
      * 
      * @return Returns the complete component name for this instrumentation.
      */
+    @RavenwoodKeep
     public ComponentName getComponentName() {
         return mComponent;
     }

@@ -64,8 +64,8 @@ public class RavenwoodBaseContext extends Context {
         // Only usable by ravenwood.
     }
 
-    private static RuntimeException notSupported() {
-        return new RuntimeException("This Context API is not yet supported under"
+    private static RavenwoodUnsupportedApiException notSupported() {
+        return new RavenwoodUnsupportedApiException("This Context API is not yet supported under"
                 + " the Ravenwood deviceless testing environment. Contact g/ravenwood");
     }
 
