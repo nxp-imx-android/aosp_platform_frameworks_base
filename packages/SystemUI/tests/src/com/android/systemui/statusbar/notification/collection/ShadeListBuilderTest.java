@@ -969,6 +969,35 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_multipleBundles() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        addNotif(0, PACKAGE_1, BUNDLE_1);
+        addNotif(1, PACKAGE_1, BUNDLE_2);
+        addGroupChild(2, PACKAGE_2, GROUP_1, BUNDLE_2);
+        addGroupChild(3, PACKAGE_2, GROUP_1, BUNDLE_2);
+        addGroupSummary(4, PACKAGE_2, GROUP_1, BUNDLE_2);
+        dispatchBuild();
+
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_2,
+                        notif(1),
+                        group(
+                                summary(4),
+                                child(2),
+                                child(3)
+                        )
+                ),
+                bundle(
+                        BUNDLE_1,
+                        notif(0)
+                )
+        );
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_notifNotPromoted() {
         final int promotableId = 123;
 
@@ -3199,13 +3228,17 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     private static final String GROUP_1 = "group_1";
     private static final String GROUP_2 = "group_2";
     private static final String BUNDLE_1 = "bundle_1";
+    private static final String BUNDLE_2 = "bundle_2";
 }
 
 class TestBundler extends NotifBundler {
 
     public static final TestBundler INSTANCE = new TestBundler();
 
-    List<BundleSpec> mBundleSpecs = List.of(new BundleSpec("bundle_1",0, 0, 0));
+    List<BundleSpec> mBundleSpecs = List.of(
+            new BundleSpec("bundle_1", 0, 0, 0),
+            new BundleSpec("bundle_2", 0, 0, 0)
+    );
 
     List<String> mBundleIds = this.mBundleSpecs.stream()
             .map(BundleSpec::getKey)
