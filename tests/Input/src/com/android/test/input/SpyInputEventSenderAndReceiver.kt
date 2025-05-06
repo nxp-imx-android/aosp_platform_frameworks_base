@@ -24,8 +24,10 @@ import android.view.InputEventReceiver
 import android.view.InputEventSender
 import android.view.KeyEvent
 import android.view.MotionEvent
+import com.android.cts.input.BlockingQueueEventVerifier
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import org.hamcrest.Matcher
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -39,10 +41,11 @@ private fun <T> assertNoEvents(queue: LinkedBlockingQueue<T>) {
     assertNull(queue.poll(100L, TimeUnit.MILLISECONDS))
 }
 
-class SpyInputEventReceiver(channel: InputChannel, looper: Looper) :
+open class SpyInputEventReceiver(channel: InputChannel, looper: Looper) :
     InputEventReceiver(channel, looper) {
 
     private val inputEvents = LinkedBlockingQueue<InputEvent>()
+    private val verifier = BlockingQueueEventVerifier(inputEvents)
 
     override fun onInputEvent(event: InputEvent) {
         addInputEvent(event)
@@ -57,12 +60,12 @@ class SpyInputEventReceiver(channel: InputChannel, looper: Looper) :
         }
     }
 
-    fun getInputEvent(): InputEvent? {
-        return getEvent(inputEvents)
-    }
-
     fun assertNoEvents() {
         assertNoEvents(inputEvents)
+    }
+
+    fun assertReceivedKey(matcher: Matcher<KeyEvent>) {
+        verifier.assertReceivedKey(matcher)
     }
 }
 
