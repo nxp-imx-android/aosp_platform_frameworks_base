@@ -64,15 +64,15 @@ constructor(
      */
     private val notificationChipsWithPrunedContent: Flow<List<PrunedNotificationChipModel>> =
         notifChipsInteractor.allNotificationChips
-            .map { chips -> chips.filterByPackagePerUser().map { it.toPrunedModel() } }
+            .map { chips -> chips.filterByPackage().map { it.toPrunedModel() } }
             .distinctUntilChanged()
 
     /**
-     * Filters all the chips down to just the most important chip per package per user so we don't
-     * show multiple chips for the same app.
+     * Filters all the chips down to just the most important chip per package so we don't show
+     * multiple chips for the same app.
      */
-    private fun List<NotificationChipModel>.filterByPackagePerUser(): List<NotificationChipModel> {
-        return this.groupBy { Pair(it.packageName, it.uid) }.map { (_, chips) -> chips[0] }
+    private fun List<NotificationChipModel>.filterByPackage(): List<NotificationChipModel> {
+        return this.groupBy { it.packageName }.map { (_, chips) -> chips[0] }
     }
 
     private fun NotificationChipModel.toPrunedModel(): PrunedNotificationChipModel {
