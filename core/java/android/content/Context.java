@@ -760,8 +760,7 @@ public abstract class Context {
      */
     public static final long BIND_REDUCTION_FLAGS =
             Context.BIND_ALLOW_OOM_MANAGEMENT | Context.BIND_WAIVE_PRIORITY
-                    | Context.BIND_NOT_PERCEPTIBLE | Context.BIND_NOT_VISIBLE
-                    | Context.BIND_ALLOW_FREEZE;
+                    | Context.BIND_NOT_PERCEPTIBLE | Context.BIND_NOT_VISIBLE;
 
     /** @hide */
     @IntDef(flag = true, prefix = { "RECEIVER_VISIBLE" }, value = {
