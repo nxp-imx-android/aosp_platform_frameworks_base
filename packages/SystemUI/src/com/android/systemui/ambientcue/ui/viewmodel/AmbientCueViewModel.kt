@@ -16,29 +16,36 @@
 
 package com.android.systemui.ambientcue.ui.viewmodel
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class AmbientCueViewModel
 @AssistedInject
 constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
     private val hydrator = Hydrator("OverlayViewModel.hydrator")
 
-    val isOverlayVisible: Boolean by
+    val isVisible: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isOverlayVisible",
+            traceName = "isVisible",
             initialValue = false,
             source = ambientCueInteractor.isVisible,
         )
 
-    var isOverlayExpanded: Boolean by mutableStateOf(false)
+    var isExpanded: Boolean by mutableStateOf(false)
         private set
 
     val actions: List<ActionViewModel> by
@@ -55,24 +62,37 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
 
     fun show() {
         ambientCueInteractor.setIsVisible(true)
-        isOverlayExpanded = false
+        isExpanded = false
     }
 
     fun expand() {
-        isOverlayExpanded = true
+        isExpanded = true
     }
 
     fun collapse() {
-        isOverlayExpanded = false
+        isExpanded = false
     }
 
     fun hide() {
         ambientCueInteractor.setIsVisible(false)
-        isOverlayExpanded = false
+        isExpanded = false
     }
 
     override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+        coroutineScopeTraced("AmbientCueViewModel") {
+            launch { hydrator.activate() }
+            launch {
+                // Hide the UI if the user doesn't interact with it after N seconds
+                ambientCueInteractor.isVisible.collectLatest { isVisible ->
+                    if (!isVisible) return@collectLatest
+                    delay(AMBIENT_CUE_TIMEOUT_SEC)
+                    if (!isExpanded) {
+                        ambientCueInteractor.setIsVisible(false)
+                    }
+                }
+            }
+            awaitCancellation()
+        }
     }
 
     @AssistedFactory
@@ -81,6 +101,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
     }
 
     companion object {
-        private const val TAG = "OverlayViewModel"
+        private const val TAG = "AmbientCueViewModel"
+        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 15.seconds
     }
 }

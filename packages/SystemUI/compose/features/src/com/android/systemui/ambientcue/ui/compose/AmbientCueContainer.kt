@@ -33,8 +33,8 @@ fun AmbientCueContainer(
 ) {
     val viewModel = rememberViewModel("AmbientCueContainer") { ambientCueViewModelFactory.create() }
 
-    val visible = viewModel.isOverlayVisible
-    val expanded = viewModel.isOverlayExpanded
+    val visible = viewModel.isVisible
+    val expanded = viewModel.isExpanded
     val actions = viewModel.actions
 
     // TODO: b/414507396 - Replace with the height of the navbar
