@@ -1236,7 +1236,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             WindowContainerTransaction wct,
             RemoteTransition remoteTransition) {
         Bundle optionsToLaunch = options != null ? options : new Bundle();
-        addActivityOptions(optionsToLaunch, null);
+        addActivityOptions(optionsToLaunch, null, WINDOWING_MODE_FULLSCREEN);
         wct.sendPendingIntent(pendingIntent, fillInIntent, optionsToLaunch);
         mSplitTransitions.startFullscreenTransition(wct, remoteTransition);
     }
@@ -1999,6 +1999,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
         opts.putAll(options.toBundle());
+    }
+
+    private void addActivityOptions(Bundle opts, @Nullable StageTaskListener launchTarget,
+            int targetWindowingMode) {
+        ActivityOptions options = ActivityOptions.fromBundle(opts);
+        options.setLaunchWindowingMode(targetWindowingMode);
+        opts.putAll(options.toBundle());
+        addActivityOptions(opts, launchTarget);
     }
 
     void updateActivityOptions(Bundle opts, @SplitPosition int position) {
