@@ -81,6 +81,9 @@ constructor(
 
     val currentClockId: Flow<ClockId> = keyguardClockRepository.currentClockId
 
+    val currentClockFontAxesWidth: Float?
+        get() = keyguardClockRepository.currentClockFontAxesWidth
+
     val currentClock: StateFlow<ClockController?> = keyguardClockRepository.currentClock
 
     val clockEventController: ClockEventController = keyguardClockRepository.clockEventController
