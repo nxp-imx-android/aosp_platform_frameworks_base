@@ -929,14 +929,10 @@ class DesktopRepository(
      *
      * TODO: b/389960283 - consider using [removeTaskFromDesk] instead.
      */
-    fun removeTask(displayId: Int, taskId: Int) {
+    fun removeTask(taskId: Int) {
         logD("Removes freeform task: taskId=%d", taskId)
-        if (displayId == INVALID_DISPLAY) {
-            // Removes the original display id of the task.
-            getDisplayIdForTask(taskId)?.let { removeTaskFromDisplay(it, taskId) }
-        } else {
-            removeTaskFromDisplay(displayId, taskId)
-        }
+        // Removes the original display id of the task.
+        getDisplayIdForTask(taskId)?.let { removeTaskFromDisplay(it, taskId) }
     }
 
     /** Removes given task from a valid [displayId] and updates the repository state. */

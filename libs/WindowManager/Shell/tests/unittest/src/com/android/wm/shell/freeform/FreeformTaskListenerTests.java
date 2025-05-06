@@ -245,8 +245,7 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         task.displayId = INVALID_DISPLAY;
         mFreeformTaskListener.onTaskVanished(task);
 
-        verify(mDesktopUserRepositories.getCurrent(), never()).removeTask(task.displayId,
-                task.taskId);
+        verify(mDesktopUserRepositories.getCurrent(), never()).removeTask(task.taskId);
     }
 
     @Test
@@ -268,8 +267,7 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         verify(mDesktopUserRepositories.getCurrent(), never())
                 .minimizeTask(task.displayId, task.taskId);
         verify(mDesktopUserRepositories.getCurrent()).removeClosingTask(task.taskId);
-        verify(mDesktopUserRepositories.getCurrent())
-                .removeTask(task.displayId, task.taskId);
+        verify(mDesktopUserRepositories.getCurrent()).removeTask(task.taskId);
     }
 
     @Test
@@ -285,8 +283,7 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
                 .minimizeTask(task.displayId, task.taskId);
         verify(mDesktopUserRepositories.getCurrent(), never())
                 .removeClosingTask(task.taskId);
-        verify(mDesktopUserRepositories.getCurrent(), never())
-                .removeTask(task.displayId, task.taskId);
+        verify(mDesktopUserRepositories.getCurrent(), never()).removeTask(task.taskId);
     }
 
     @Test
