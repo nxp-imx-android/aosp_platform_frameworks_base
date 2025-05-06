@@ -3910,6 +3910,10 @@ class DesktopTasksController(
 
     /** Removes the given desk. */
     fun removeDesk(deskId: Int, desktopRepository: DesktopRepository = taskRepository) {
+        if (!desktopRepository.getAllDeskIds().contains(deskId)) {
+            logW("Request to remove desk=%d but desk not found for user=%d", deskId, userId)
+            return
+        }
         val displayId = desktopRepository.getDisplayForDesk(deskId)
         removeDesk(displayId = displayId, deskId = deskId, desktopRepository = desktopRepository)
     }
