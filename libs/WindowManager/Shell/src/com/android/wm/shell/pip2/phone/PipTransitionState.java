@@ -169,6 +169,8 @@ public class PipTransitionState {
 
     private boolean mInFixedRotation = false;
 
+    private boolean mIsPipBoundsChangingWithDisplay = false;
+
     /**
      * An interface to track state updates as we progress through PiP transitions.
      */
@@ -375,6 +377,25 @@ public class PipTransitionState {
     }
 
     /**
+     * @return true if a display change is ungoing with a PiP bounds change.
+     */
+    public boolean isPipBoundsChangingWithDisplay() {
+        return mIsPipBoundsChangingWithDisplay;
+    }
+
+    /**
+     * Sets the PiP bounds change with display change flag.
+     */
+    public void setIsPipBoundsChangingWithDisplay(boolean isPipBoundsChangingWithDisplay) {
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "%s: Set mIsPipBoundsChangingWithDisplay=%b", TAG, isPipBoundsChangingWithDisplay);
+        mIsPipBoundsChangingWithDisplay = isPipBoundsChangingWithDisplay;
+        if (!isPipBoundsChangingWithDisplay) {
+            maybeRunOnIdlePipTransitionStateCallback();
+        }
+    }
+
+    /**
      * @return true if in swipe PiP to home. Note that this is true until overlay fades if used too.
      */
     public boolean isInSwipePipToHomeTransition() {
@@ -439,13 +460,16 @@ public class PipTransitionState {
 
     public boolean isPipStateIdle() {
         // This needs to be a valid in-PiP state that isn't a transient state.
-        return (mState == ENTERED_PIP || mState == CHANGED_PIP_BOUNDS) && !isInFixedRotation();
+        return (mState == ENTERED_PIP || mState == CHANGED_PIP_BOUNDS)
+                && !isInFixedRotation() && !isPipBoundsChangingWithDisplay();
     }
 
     @Override
     public String toString() {
-        return String.format("PipTransitionState(mState=%s, mInSwipePipToHomeTransition=%b)",
-                stateToString(mState), mInSwipePipToHomeTransition);
+        return String.format("PipTransitionState(mState=%s, mInSwipePipToHomeTransition=%b, "
+                + "mIsPipBoundsChangingWithDisplay=%b, mInFixedRotation=%b",
+                stateToString(mState), mInSwipePipToHomeTransition, mIsPipBoundsChangingWithDisplay,
+                        mInFixedRotation);
     }
 
     /** Dumps internal state. */
@@ -453,5 +477,8 @@ public class PipTransitionState {
         final String innerPrefix = prefix + "  ";
         pw.println(prefix + TAG);
         pw.println(innerPrefix + "mState=" + stateToString(mState));
+        pw.println(innerPrefix + "mInFixedRotation=" + mInFixedRotation);
+        pw.println(innerPrefix + "mIsPipBoundsChangingWithDisplay="
+                + mIsPipBoundsChangingWithDisplay);
     }
 }
