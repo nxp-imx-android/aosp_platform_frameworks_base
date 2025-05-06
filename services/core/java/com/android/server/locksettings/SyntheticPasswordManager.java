@@ -1972,12 +1972,16 @@ class SyntheticPasswordManager {
     }
 
     private byte[] stretchedLskfToWeaverKey(byte[] stretchedLskf) {
-        byte[] key = SyntheticPasswordCrypto.personalizedHash(PERSONALIZATION_WEAVER_KEY,
+        final byte[] key = SyntheticPasswordCrypto.personalizedHash(PERSONALIZATION_WEAVER_KEY,
                 stretchedLskf);
-        if (key.length < mWeaverConfig.keySize) {
-            throw new IllegalArgumentException("weaver key length too small");
+        try {
+            if (key.length < mWeaverConfig.keySize) {
+                throw new IllegalArgumentException("weaver key length too small");
+            }
+            return Arrays.copyOf(key, mWeaverConfig.keySize);
+        } finally {
+            ArrayUtils.zeroize(key);
         }
-        return Arrays.copyOf(key, mWeaverConfig.keySize);
     }
 
     @VisibleForTesting
