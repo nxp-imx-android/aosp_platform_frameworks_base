@@ -760,13 +760,6 @@ flag {
 }
 
 flag {
-    name: "screenshot_ui_controller_refactor"
-    namespace: "systemui"
-    description: "Simplify and refactor ScreenshotController"
-    bug: "354711957"
-}
-
-flag {
     name: "screenshot_multidisplay_focus_change"
     namespace: "systemui"
     description: "Only capture a single display when screenshotting"
