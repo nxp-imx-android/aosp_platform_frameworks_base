@@ -7787,7 +7787,7 @@ public abstract class BatteryStats {
     // This is called from BatteryStatsService.
     @SuppressWarnings("unused")
     public void dumpCheckin(Context context, PrintWriter pw, List<ApplicationInfo> apps, int flags,
-            long histStart, BatteryStatsDumpHelper dumpHelper) {
+            long histStart, BatteryStatsDumpHelper dumpHelper, long monotonicCheckinStartTime) {
         synchronized (this) {
             prepareForDumpLocked();
 
@@ -7797,7 +7797,7 @@ public abstract class BatteryStats {
         }
 
         if ((flags & (DUMP_INCLUDE_HISTORY | DUMP_HISTORY_ONLY)) != 0) {
-            dumpHistory(pw, flags, histStart, true, 0);
+            dumpHistory(pw, flags, histStart, true, monotonicCheckinStartTime);
         }
 
         if ((flags & DUMP_HISTORY_ONLY) != 0) {
