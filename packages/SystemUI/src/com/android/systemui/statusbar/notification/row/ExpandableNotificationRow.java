@@ -1359,6 +1359,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (intrinsicHeight != getIntrinsicHeight()) {
             notifyHeightChanged(/* needsAnimation= */ false);
         }
+        if (Flags.notificationsHunAccessibilityRefactor() && !pinnedStatus.isPinned()) {
+            setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_NONE);
+        }
         if (pinnedStatus.isPinned()) {
             setAnimationRunning(true);
             mExpandedWhenPinned = false;
@@ -3794,6 +3797,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     protected void onAppearAnimationStarted(boolean isAppear) {
         mLogger.logAppearAnimationStarted(mLoggingKey, /* isAppear = */ isAppear);
+
+        if (Flags.notificationsHunAccessibilityRefactor() && !isAppear) {
+            // Stop using a live region as soon as a disappear animation starts so that we don't
+            // re-announce the notification as it's animating away.
+            setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_NONE);
+        }
         super.onAppearAnimationStarted(isAppear);
     }
 
@@ -3810,6 +3819,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 /* isAppear = */ wasAppearing,
                 /* cancelled = */ cancelled
         );
+        if (Flags.notificationsHunAccessibilityRefactor()
+                && PromotedNotificationUi.isEnabled()
+                && !cancelled
+                && wasAppearing
+                && mPinnedStatus == PinnedStatus.PinnedByUser) {
+            // Announce pinned-by-user HUNs once they're done animating in.
+            // For some reason, the default HUN accessibility announcement isn't triggering for
+            // pinned-by-user HUNS and we also need a live region for the HUN to be announced.
+            // See b/397507681.
+            setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+        }
         super.onAppearAnimationFinished(wasAppearing, cancelled);
         if (wasAppearing) {
             // During the animation the visible view might have changed, so let's make sure all
