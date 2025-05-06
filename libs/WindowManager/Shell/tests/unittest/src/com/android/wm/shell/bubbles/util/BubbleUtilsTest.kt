@@ -22,7 +22,7 @@ import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
-import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -47,7 +47,7 @@ class BubbleUtilsTest : ShellTestCase() {
     }
 
     @EnableFlags(
-        FLAG_ENABLE_BUBBLE_ANYTHING,
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
         FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
@@ -59,7 +59,7 @@ class BubbleUtilsTest : ShellTestCase() {
     }
 
     @EnableFlags(
-        FLAG_ENABLE_BUBBLE_ANYTHING,
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
         FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )

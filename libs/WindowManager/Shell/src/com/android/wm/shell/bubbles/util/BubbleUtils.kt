@@ -54,7 +54,7 @@ private fun getBubbleTransaction(
     if (Flags.disallowBubbleToEnterPip()) {
         wct.setDisablePip(token, toBubble /* disablePip */)
     }
-    if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+    if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
         wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
     }
     return wct
