@@ -27,6 +27,7 @@ import static android.view.flags.Flags.FLAG_TOOLKIT_INITIAL_TOUCH_BOOST;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
+import static android.view.flags.Flags.toolkitScrollMaxFrameRate;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -415,9 +416,22 @@ public class ViewFrameRateTest {
         });
         waitForFrameRateCategoryToSettle();
         mActivityRule.runOnUiThread(() -> {
+            Display display = mMovingView.getDisplay();
+            boolean has80Hz = false;
+            if (display != null) {
+                for (float rate : display.getSupportedRefreshRates()) {
+                    if (Math.abs(rate - 80.0f) < 0.1f) {
+                        has80Hz = true;
+                        break;
+                    }
+                }
+            }
+            float expectedFrameRate = (toolkitScrollMaxFrameRate() && !has80Hz) ? 120f : 60f;
+
             mMovingView.setFrameContentVelocity(1f);
             mMovingView.invalidate();
-            runAfterDraw(() -> assertEquals(60f, mViewRoot.getLastPreferredFrameRate(), 0f));
+            runAfterDraw(() -> assertEquals(expectedFrameRate,
+                    mViewRoot.getLastPreferredFrameRate(), 0f));
         });
         waitForAfterDraw();
     }
@@ -436,11 +450,23 @@ public class ViewFrameRateTest {
         });
         waitForFrameRateCategoryToSettle();
         mActivityRule.runOnUiThread(() -> {
+            Display display = mMovingView.getDisplay();
+            boolean has80Hz = false;
+            if (display != null) {
+                for (float rate : display.getSupportedRefreshRates()) {
+                    if (Math.abs(rate - 80.0f) < 0.1f) {
+                        has80Hz = true;
+                        break;
+                    }
+                }
+            }
+            float expectedFrameRate = (toolkitScrollMaxFrameRate() && !has80Hz) ? 120f : 80f;
             float midSpeed =
                     200f * mMovingView.getContext().getResources().getDisplayMetrics().density;
             mMovingView.setFrameContentVelocity(midSpeed);
             mMovingView.invalidate();
-            runAfterDraw(() -> assertEquals(80f, mViewRoot.getLastPreferredFrameRate(), 0f));
+            runAfterDraw(() -> assertEquals(expectedFrameRate,
+                    mViewRoot.getLastPreferredFrameRate(), 0f));
         });
         waitForAfterDraw();
     }
@@ -464,10 +490,23 @@ public class ViewFrameRateTest {
         });
         waitForFrameRateCategoryToSettle();
         mActivityRule.runOnUiThread(() -> {
+            Display display = mMovingView.getDisplay();
+            boolean has80Hz = false;
+            if (display != null) {
+                for (float rate : display.getSupportedRefreshRates()) {
+                    if (Math.abs(rate - 80.0f) < 0.1f) {
+                        has80Hz = true;
+                        break;
+                    }
+                }
+            }
+            float expectedFrameRate = (toolkitScrollMaxFrameRate() && !has80Hz) ? 120f : 60f;
+
             frameLayout.setFrameContentVelocity(1f);
             mMovingView.offsetTopAndBottom(100);
             frameLayout.invalidate();
-            runAfterDraw(() -> assertEquals(60f, mViewRoot.getLastPreferredFrameRate(), 0f));
+            runAfterDraw(() -> assertEquals(expectedFrameRate,
+                    mViewRoot.getLastPreferredFrameRate(), 0f));
         });
         waitForAfterDraw();
     }
