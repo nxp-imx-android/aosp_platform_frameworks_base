@@ -73,4 +73,20 @@ class AmbientCueInteractorTest : SysuiTestCase() {
             ambientCueRepository.fake.setActions(testActions)
             assertThat(actions).isEqualTo(testActions)
         }
+
+    @Test
+    fun isImeVisible_setTrue_true() =
+        kosmos.runTest {
+            val isImeVisible by collectLastValue(ambientCueInteractor.isImeVisible)
+            ambientCueInteractor.setIsImeVisible(true)
+            assertThat(isImeVisible).isTrue()
+        }
+
+    @Test
+    fun isImeVisible_setFalse_false() =
+        kosmos.runTest {
+            val isImeVisible by collectLastValue(ambientCueInteractor.isImeVisible)
+            ambientCueInteractor.setIsImeVisible(false)
+            assertThat(isImeVisible).isFalse()
+        }
 }
