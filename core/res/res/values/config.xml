@@ -2864,6 +2864,8 @@
     <bool name="config_dreamsOnlyEnabledForDockUser">false</bool>
     <!-- Whether dreams are disabled when ambient mode is suppressed. -->
     <bool name="config_dreamsDisabledByAmbientModeSuppressionConfig">false</bool>
+    <!-- Whether to restrict dreams to wireless charging. -->
+    <bool name="config_onlyDreamWhenWirelessChargingDefault">false</bool>
 
     <!-- The default for the setting that controls when to auto-start hub mode.
           0 means "never" -->

@@ -2362,6 +2362,7 @@
   <java-symbol type="string" name="config_dreamsDefaultComponent" />
   <java-symbol type="bool" name="config_dreamsDisabledByAmbientModeSuppressionConfig" />
   <java-symbol type="bool" name="config_dreamsOnlyEnabledForDockUser" />
+  <java-symbol type="bool" name="config_onlyDreamWhenWirelessChargingDefault" />
   <java-symbol type="integer" name="config_dreamOpenAnimationDuration" />
   <java-symbol type="integer" name="config_dreamCloseAnimationDuration" />
   <java-symbol type="array" name="config_supportedDreamComplications" />
