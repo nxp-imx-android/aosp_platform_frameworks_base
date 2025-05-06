@@ -207,16 +207,6 @@ flag {
 }
 
 flag {
-    name: "manager_avoid_receiver_timeout"
-    namespace: "accessibility"
-    description: "Register receivers on background handler so they have more time to complete"
-    bug: "333890389"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "manager_lifecycle_user_change"
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."
