@@ -91,6 +91,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     private fun createAppHandleViewHolder(): AppHandleViewHolder {
         return AppHandleViewHolder(
             mockView,
+            mContext,
             mockOnTouchListener,
             mockOnClickListener,
             mockWindowManagerWrapper,
