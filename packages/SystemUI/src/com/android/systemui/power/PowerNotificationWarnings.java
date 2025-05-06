@@ -547,7 +547,7 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
             return;
         }
 
-        final SystemUIDialog d = new SystemUIDialog(mContext, R.style.Theme_SystemUI_Dialog_Alert);
+        final SystemUIDialog d = mSystemUIDialogFactory.create();
         d.setCancelable(false);
         d.setIconAttribute(android.R.attr.alertDialogIcon);
         d.setTitle(R.string.high_temp_alarm_title);
