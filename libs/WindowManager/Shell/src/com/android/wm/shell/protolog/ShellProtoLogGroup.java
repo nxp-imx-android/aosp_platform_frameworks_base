@@ -36,6 +36,8 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
             Consts.TAG_WM_SHELL),
     WM_SHELL_TRANSITIONS(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
             Consts.TAG_WM_SHELL),
+    WM_SHELL_IME_CONTROLLER(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
+            "ShellIme"),
     WM_SHELL_RECENTS_TRANSITION(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,
             "ShellRecents"),
     WM_SHELL_DRAG_AND_DROP(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, true,

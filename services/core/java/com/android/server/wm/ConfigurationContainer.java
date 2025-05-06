@@ -41,6 +41,7 @@ import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
 import static com.android.server.wm.ConfigurationContainerProto.FULL_CONFIGURATION;
 import static com.android.server.wm.ConfigurationContainerProto.MERGED_OVERRIDE_CONFIGURATION;
 import static com.android.server.wm.ConfigurationContainerProto.OVERRIDE_CONFIGURATION;
@@ -58,6 +59,7 @@ import android.util.proto.ProtoOutputStream;
 import android.view.DisplayInfo;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -224,6 +226,7 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
         if (rotation == ROTATION_UNDEFINED && !hasFixedRotationTransform) {
             rotation = displayContent.getRotation();
         }
+
         if (!optsOutEdgeToEdge && (!useOverrideInsetsForConfig
                 || hasCompatDisplayInsets
                 || rotation == ROTATION_UNDEFINED)) {
@@ -236,9 +239,14 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
             // Floating window won't have any insets affect configuration. Skip the override.
             return;
         }
+        ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                "Applying configuration size overrides, optsOutEdgeToEdge=%b overrideInsets=%b "
+                        + "compatDisplayInsets=%b rotation=%d",
+                optsOutEdgeToEdge, useOverrideInsetsForConfig, hasCompatDisplayInsets, rotation);
         // Make sure the orientation related fields will be updated by the override insets, because
         // fixed rotation has assigned the fields from display's configuration.
         if (hasFixedRotationTransform) {
+            ProtoLog.v(WM_DEBUG_CONFIGURATION, "\tHas fixed rotation transform");
             inOutConfig.windowConfiguration.setAppBounds(null);
             inOutConfig.screenWidthDp = Configuration.SCREEN_WIDTH_DP_UNDEFINED;
             inOutConfig.screenHeightDp = Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
@@ -263,11 +271,17 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
                     newParentConfiguration.windowConfiguration.getBounds());
             outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
             outConfigBounds.set(outAppBounds);
+            ProtoLog.v(WM_DEBUG_CONFIGURATION, "\tInitial bounds app=%s config=%s",
+                    outAppBounds, outConfigBounds);
             if (task != null) {
                 task = task.getCreatedByOrganizerTask();
                 if (task != null && (task.mOffsetYForInsets != 0 || task.mOffsetXForInsets != 0)) {
                     outAppBounds.offset(task.mOffsetXForInsets, task.mOffsetYForInsets);
                     outConfigBounds.offset(task.mOffsetXForInsets, task.mOffsetYForInsets);
+                    ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                            "\tApplying task offsets for task=%s x=%d y=%d app=%s config=%s",
+                            task, task.mOffsetXForInsets, task.mOffsetYForInsets,
+                            outAppBounds, outConfigBounds);
                 }
             }
             final DisplayPolicy.DecorInsets.Info decor =
@@ -280,17 +294,35 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
                 if (inOutConfig.windowConfiguration.getWindowingMode()
                         == WINDOWING_MODE_MULTI_WINDOW) {
                     outAppBounds.inset(decor.mOverrideNonDecorInsets);
+                    ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                            "\tInsetting app bounds by override non-decor insets=%s",
+                            decor.mOverrideConfigInsets);
                 }
+            } else {
+                ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                        "\tApp bounds intersects with override non-decor frame=%s bounds=%s",
+                        decor.mOverrideNonDecorFrame, outAppBounds);
             }
             if (!outConfigBounds.intersect(decor.mOverrideConfigFrame)) {
                 if (inOutConfig.windowConfiguration.getWindowingMode()
                         == WINDOWING_MODE_MULTI_WINDOW) {
                     outConfigBounds.inset(decor.mOverrideConfigInsets);
+                    ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                            "\tInsetting config bounds by override config insets=%s",
+                            decor.mOverrideConfigInsets);
                 }
+            } else {
+                ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                        "\tConfig bounds intersects with override config frame=%s bounds=%s",
+                        decor.mOverrideConfigFrame, outConfigBounds);
             }
             if (task != null && (task.mOffsetYForInsets != 0 || task.mOffsetXForInsets != 0)) {
                 outAppBounds.offset(-task.mOffsetXForInsets, -task.mOffsetYForInsets);
                 outConfigBounds.offset(-task.mOffsetXForInsets, -task.mOffsetYForInsets);
+                ProtoLog.v(WM_DEBUG_CONFIGURATION,
+                        "\tApplying inverse task offsets for x=%d y=%d app=%s config=%s",
+                        -task.mOffsetXForInsets, -task.mOffsetYForInsets,
+                        outAppBounds, outConfigBounds);
             }
         }
         float density = inOutConfig.densityDpi;
@@ -322,6 +354,7 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
                     ? ORIENTATION_PORTRAIT
                     : ORIENTATION_LANDSCAPE;
         }
+        ProtoLog.v(WM_DEBUG_CONFIGURATION, "\tComputed size override config=%s", inOutConfig);
     }
 
     /** Returns {@code true} if requested override override configuration is not empty. */
