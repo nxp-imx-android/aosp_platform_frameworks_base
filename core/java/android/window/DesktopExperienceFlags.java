@@ -193,7 +193,12 @@ public enum DesktopExperienceFlags {
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
-            Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
+            Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
+    USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS(
+            com.android.graphics.flags.Flags::useResourcesFromContextToCreateDrawableIcons,
+            true,
+            com.android.graphics.flags.Flags
+                    .FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     // go/keep-sorted end
     ;
 
