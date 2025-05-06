@@ -13,14 +13,14 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<configuration description="Runs ProtologPerfTests metric instrumentation.">
+<configuration description="Runs UiTracingPerfTests metric instrumentation.">
     <option name="config-descriptor:metadata" key="test-type" value="performance" />
 
     <option name="test-suite-tag" value="apct" />
     <option name="test-suite-tag" value="apct-metric-instrumentation" />
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="cleanup-apks" value="true" />
-        <option name="test-file-name" value="ProtologPerfTests.apk" />
+        <option name="test-file-name" value="UiTracingPerfTests.apk" />
     </target_preparer>
 
     <target_preparer class="com.android.tradefed.targetprep.DeviceSetup">
@@ -40,7 +40,7 @@
     <option name="isolated-storage" value="false" />
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
-        <option name="package" value="com.android.perftests.protolog" />
+        <option name="package" value="android.tracing.perftests" />
         <option name="hidden-api-checks" value="false"/>
 
         <!-- Listener related args for collecting the traces and waiting for the device to stabilize. -->
