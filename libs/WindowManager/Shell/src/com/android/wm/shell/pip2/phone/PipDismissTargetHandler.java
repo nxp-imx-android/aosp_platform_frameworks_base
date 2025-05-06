@@ -23,7 +23,6 @@ import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -87,7 +86,7 @@ public class PipDismissTargetHandler implements ViewTreeObserver.OnPreDrawListen
     private SurfaceControl mTaskLeash;
     private boolean mHasDismissTargetSurface;
 
-    private final Context mContext;
+    private Context mContext;
     private final PipMotionHelper mMotionHelper;
     private final PipUiEventLogger mPipUiEventLogger;
     private WindowManager mWindowManager;
@@ -331,8 +330,10 @@ public class PipDismissTargetHandler implements ViewTreeObserver.OnPreDrawListen
             return;
         }
         mWindowManagerDisplayId = pipDisplayId;
-        Display display = mDisplayController.getDisplay(mWindowManagerDisplayId);
-        Context uiContext = mContext.createWindowContext(display, WINDOW_TYPE, null);
-        mWindowManager = uiContext.getSystemService(WindowManager.class);
+        mContext = mPipDisplayLayoutState.getCurrentUiContext();
+        mWindowManager = mContext.getSystemService(WindowManager.class);
+        // TODO(b/414864788): Utilize display-id change callback for updating UI
+        // If the displayId has changed, reset the UI for the current display
+        init();
     }
 }

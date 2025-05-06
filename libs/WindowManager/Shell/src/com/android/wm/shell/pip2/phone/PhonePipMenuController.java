@@ -196,7 +196,8 @@ public class PhonePipMenuController implements PipMenuController,
         if (mPipMenuView != null) {
             detachPipMenuView();
         }
-        mPipMenuView = new PipMenuView(mContext, this, mMainExecutor, mMainHandler,
+        final Context uiContext = mPipDisplayLayoutState.getCurrentUiContext();
+        mPipMenuView = new PipMenuView(uiContext, this, mMainExecutor, mMainHandler,
                 mPipUiEventLogger);
         mPipMenuView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
@@ -229,7 +230,7 @@ public class PhonePipMenuController implements PipMenuController,
         });
 
         mSystemWindows.addView(mPipMenuView,
-                getPipMenuLayoutParams(mContext, MENU_WINDOW_TITLE, 0 /* width */, 0 /* height */),
+                getPipMenuLayoutParams(uiContext, MENU_WINDOW_TITLE, 0 /* width */, 0 /* height */),
                 mPipDisplayLayoutState.getDisplayId(), SHELL_ROOT_LAYER_PIP);
         setShellRootAccessibilityWindow();
 

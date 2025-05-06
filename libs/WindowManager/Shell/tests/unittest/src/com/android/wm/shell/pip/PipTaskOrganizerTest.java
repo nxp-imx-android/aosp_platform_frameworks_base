@@ -103,6 +103,7 @@ public class PipTaskOrganizerTest extends ShellTestCase {
     @Mock private ShellTaskOrganizer mMockShellTaskOrganizer;
     @Mock private PipParamsChangedForwarder mMockPipParamsChangedForwarder;
     @Mock private ShellExecutor mMockExecutor;
+    @Mock private DisplayController mDisplayController;
     private PipBoundsState mPipBoundsState;
     private PipTransitionState mPipTransitionState;
     private PipBoundsAlgorithm mPipBoundsAlgorithm;
@@ -121,7 +122,7 @@ public class PipTaskOrganizerTest extends ShellTestCase {
         }).when(mMockExecutor).execute(any());
         mComponent1 = new ComponentName(mContext, "component1");
         mComponent2 = new ComponentName(mContext, "component2");
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
         mPipTransitionState = new PipTransitionState();

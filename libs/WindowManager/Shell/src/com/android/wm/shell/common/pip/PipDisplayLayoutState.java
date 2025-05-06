@@ -26,11 +26,14 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Size;
+import android.view.Display;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
 import com.android.wm.shell.R;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.dagger.WMSingleton;
 
@@ -48,13 +51,15 @@ public class PipDisplayLayoutState {
     private Context mContext;
     private int mDisplayId;
     @NonNull private DisplayLayout mDisplayLayout;
+    @NonNull private final DisplayController mDisplayController;
     private Point mScreenEdgeInsets = null;
     private Insets mNavigationBarsInsets = Insets.NONE;
 
     @Inject
-    public PipDisplayLayoutState(Context context) {
+    public PipDisplayLayoutState(Context context, @NonNull DisplayController displayController) {
         mContext = context;
         mDisplayLayout = new DisplayLayout();
+        mDisplayController = displayController;
         reloadResources();
     }
 
@@ -136,6 +141,13 @@ public class PipDisplayLayoutState {
     /** Set the current display id for the associated display layout. */
     public void setDisplayId(int displayId) {
         mDisplayId = displayId;
+    }
+
+    /** Returns the context associated with the current display. */
+    public Context getCurrentUiContext() {
+        Display display = mDisplayController.getDisplay(mDisplayId);
+        return mContext.createWindowContext(display,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL, /* options= */null);
     }
 
     /** Set the navigationBars side and widthOrHeight. */
