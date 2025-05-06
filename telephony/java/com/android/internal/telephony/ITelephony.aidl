@@ -3666,4 +3666,12 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                       + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
     int getSatelliteDataSupportMode(in int subId);
+
+    /**
+     * This API can be used by only CTS to ignore plmn list from storage.
+     *
+     * @param enabled Whether to enable boolean config.
+     * @return {@code true} if the value is set successfully, {@code false} otherwise.
+     */
+    boolean setSatelliteIgnorePlmnListFromStorage(in boolean enabled);
 }
