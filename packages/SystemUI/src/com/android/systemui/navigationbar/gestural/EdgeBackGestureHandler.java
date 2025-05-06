@@ -99,8 +99,8 @@ import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
-import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.phone.LightBarController;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.util.concurrency.BackPanelUiThread;
 import com.android.systemui.util.concurrency.UiThreadContext;
@@ -725,10 +725,11 @@ public class EdgeBackGestureHandler {
     }
 
     private DisplayBackGestureHandler createDisplayBackGestureHandler(Display display) {
-        Context windowContext = mContext.createWindowContext(display,
-                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL, null);
+        Context windowContext = mContext;
         WindowManager displayWindowManager = mDefaultWindowManager;
         if (display.getDisplayId() != mMainDisplayId) {
+            windowContext = mContext.createWindowContext(display,
+                    WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL, null);
             displayWindowManager = windowContext.getSystemService(WindowManager.class);
             if (displayWindowManager == null) {
                 displayWindowManager = mDefaultWindowManager;
