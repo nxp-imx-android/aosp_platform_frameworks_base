@@ -349,8 +349,12 @@ enum class Visibility {
     }
 }
 
+fun isEnum(access: Int): Boolean {
+    return (access and Opcodes.ACC_ENUM) != 0
+}
+
 fun ClassNode.isEnum(): Boolean {
-    return (this.access and Opcodes.ACC_ENUM) != 0
+    return isEnum(this.access)
 }
 
 fun ClassNode.isAnnotation(): Boolean {
