@@ -473,7 +473,8 @@
 
     <!-- Dimensions related to screenshots -->
 
-
+    <!-- Fade out the screenshot UI over this distance when dismissing -->
+    <dimen name="dismissal_max_distance_fadeout">250dp</dimen>
     <dimen name="screenshot_crop_handle_thickness">3dp</dimen>
     <dimen name="long_screenshot_action_bar_top_margin">4dp</dimen>
 

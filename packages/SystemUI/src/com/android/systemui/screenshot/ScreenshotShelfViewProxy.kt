@@ -33,12 +33,14 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.window.DesktopExperienceFlags
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.Flags.screenshotAnnounceLiveRegion
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
@@ -187,20 +189,29 @@ constructor(
             return
         }
         event?.let { logger.log(it, 0, packageName) }
-        val animator = animationController.getSwipeDismissAnimation(velocity)
-        animator.addListener(
-            object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animator: Animator) {
-                    isDismissing = true
-                }
 
-                override fun onAnimationEnd(animator: Animator) {
-                    isDismissing = false
-                    callbacks?.onDismiss()
-                }
+        if (SCREENSHOT_DISMISSAL_SPRING.isTrue()) {
+            animationController.startDismissal(velocity) {
+                isDismissing = false
+                callbacks?.onDismiss()
             }
-        )
-        animator.start()
+            isDismissing = true
+        } else {
+            val animator = animationController.getSwipeDismissAnimation(velocity)
+            animator.addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animator: Animator) {
+                        isDismissing = true
+                    }
+
+                    override fun onAnimationEnd(animator: Animator) {
+                        isDismissing = false
+                        callbacks?.onDismiss()
+                    }
+                }
+            )
+            animator.start()
+        }
     }
 
     fun prepareScrollingTransition(
@@ -360,6 +371,15 @@ constructor(
                 WindowInsets.Type.systemGestures()
             )
         )
+    }
+
+    companion object {
+        val SCREENSHOT_DISMISSAL_SPRING =
+            DesktopExperienceFlags.DesktopExperienceFlag(
+                Flags::screenshotDismissalSpring,
+                /* shouldOverrideByDevOption= */ true,
+                Flags.FLAG_SCREENSHOT_DISMISSAL_SPRING,
+            )
     }
 
     @AssistedFactory
