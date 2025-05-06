@@ -7972,37 +7972,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public void removeAllUsers() {
-            if (UserHandle.USER_SYSTEM == getCurrentUserId()) {
-                // Remove the non-system users straight away.
-                removeAllUsersExceptSystemAndPermanentAdminMain();
-            } else {
-                // Switch to the system user first and then remove the other users.
-                BroadcastReceiver userSwitchedReceiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        int userId =
-                                intent.getIntExtra(Intent.EXTRA_USER_HANDLE, UserHandle.USER_NULL);
-                        if (userId != UserHandle.USER_SYSTEM) {
-                            return;
-                        }
-                        mContext.unregisterReceiver(this);
-                        removeAllUsersExceptSystemAndPermanentAdminMain();
-                    }
-                };
-                IntentFilter userSwitchedFilter = new IntentFilter();
-                userSwitchedFilter.addAction(Intent.ACTION_USER_SWITCHED);
-                mContext.registerReceiver(
-                        userSwitchedReceiver, userSwitchedFilter, null, mHandler);
-
-                // Switch to the system user.
-                ActivityManager am =
-                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-                am.switchUser(UserHandle.USER_SYSTEM);
-            }
-        }
-
-        @Override
         public void onEphemeralUserStop(@UserIdInt int userId) {
             synchronized (mUsersLock) {
                UserInfo userInfo = getUserInfoLU(userId);
@@ -8484,23 +8453,6 @@ public class UserManagerService extends IUserManager.Stub {
             throws UserManager.CheckedUserOperationException {
         Slog.e(LOG_TAG, message);
         throw new UserManager.CheckedUserOperationException(message, userOperationResult);
-    }
-
-    /* Remove all the users except the system and permanent admin main.*/
-    private void removeAllUsersExceptSystemAndPermanentAdminMain() {
-        ArrayList<UserInfo> usersToRemove = new ArrayList<>();
-        synchronized (mUsersLock) {
-            final int userSize = mUsers.size();
-            for (int i = 0; i < userSize; i++) {
-                UserInfo ui = mUsers.valueAt(i).info;
-                if (ui.id != UserHandle.USER_SYSTEM && !isNonRemovableMainUser(ui)) {
-                    usersToRemove.add(ui);
-                }
-            }
-        }
-        for (UserInfo ui: usersToRemove) {
-            removeUser(ui.id);
-        }
     }
 
     private static void debug(String message) {
