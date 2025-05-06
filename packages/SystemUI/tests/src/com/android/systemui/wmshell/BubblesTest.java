@@ -106,6 +106,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.annotations.SlowerThanOneSecond;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor;
@@ -1548,6 +1549,7 @@ public class BubblesTest extends SysuiTestCase {
      * Verifies that when the user changes, the bubbles in the overflow list is cleared. Doesn't
      * test the loading from the repository which would be a nice thing to add.
      */
+    @SlowerThanOneSecond
     @Test
     public void testOnUserChanged_overflowState() {
         int firstUserId = mBubbleEntry.getStatusBarNotification().getUser().getIdentifier();
