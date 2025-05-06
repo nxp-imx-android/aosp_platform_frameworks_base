@@ -40,6 +40,15 @@ class SplitMultiDisplayHelper(private val displayManager: DisplayManager) {
     private val displayTaskMap: MutableMap<Int, SplitTaskHierarchy> = mutableMapOf()
 
     /**
+     * A list of all currently connected display ids.
+     * This is saved to avoid repeatedly querying the display manager. Display ids here does not
+     * support disconnect/reconnect update at the moment.
+     *
+     * TODO: b/415861490 - support updating displayIds for split screen when connecting/disconnecting
+     */
+    private var displayIds: ArrayList<Int>? = null
+
+    /**
      * SplitTaskHierarchy is a class that encapsulates the components required
      * for managing split-screen functionality on a specific display.
      */
@@ -52,16 +61,21 @@ class SplitMultiDisplayHelper(private val displayManager: DisplayManager) {
     )
 
     /**
-     * Returns a list of all currently connected display IDs.
+     * Returns a cached list of all currently connected display IDs if available, otherwise query
+     * the system for the latest display ids.
      *
      * @return An ArrayList of display IDs.
      */
-    fun getDisplayIds(): ArrayList<Int> {
-        val displayIds = ArrayList<Int>()
-        displayManager.displays?.forEach { display ->
-            displayIds.add(display.displayId)
+    fun getCachedOrSystemDisplayIds(): ArrayList<Int> {
+        if (displayIds == null) {
+            val ids = ArrayList<Int>()
+            displayManager.displays?.forEach { display ->
+                ids.add(display.displayId)
+            }
+            displayIds = ids
         }
-        return displayIds
+
+        return checkNotNull(displayIds)
     }
 
     /**
