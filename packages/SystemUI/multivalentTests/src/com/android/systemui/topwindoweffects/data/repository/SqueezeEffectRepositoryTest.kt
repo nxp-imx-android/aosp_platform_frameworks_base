@@ -146,7 +146,7 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         userIndex: Int,
         assistantName: String,
     ) {
-        underTest // "poke" class to ensure it's initialized
+        collectLastValue(underTest.isSqueezeEffectEnabled) //  ensure flow is started
         userRepository.setUserInfos(userInfos)
         userRepository.setSelectedUserInfo(userInfos[userIndex])
         verify(roleManager)
