@@ -120,6 +120,11 @@ class CollapsableTextView @JvmOverloads constructor(
         }
     }
 
+    override fun onMeasure(p0: Int, p1: Int) {
+        super.onMeasure(p0, p1)
+        updateView()
+    }
+
     /**
      * Sets the text content of the CollapsableTextView.
      * @param text The text to display.
@@ -243,7 +248,8 @@ class CollapsableTextView @JvmOverloads constructor(
                 titleTextView.ellipsize = TextUtils.TruncateAt.END
             }
         }
-        collapseButton.visibility = if (isCollapsable) VISIBLE else GONE
+        collapseButton.visibility =
+            if (isCollapsable && titleTextView.lineCount > minLines) VISIBLE else GONE
         learnMoreTextView.visibility = if (isLearnMoreEnabled && !isCollapsed) VISIBLE else GONE
     }
 
