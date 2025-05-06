@@ -210,7 +210,7 @@ class TestPhoneWindowManager {
         }
 
         @Override
-        boolean toggleTalkback(int currentUserId, ShortcutSource source) {
+        boolean toggleTalkback(int currentUserId) {
             mIsTalkBackEnabled = !mIsTalkBackEnabled;
             return mIsTalkBackEnabled;
         }

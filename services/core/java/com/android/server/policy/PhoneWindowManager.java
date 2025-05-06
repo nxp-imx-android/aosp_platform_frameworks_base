@@ -79,7 +79,6 @@ import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
-import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_UNCOVERED;
@@ -1654,8 +1653,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case TRIPLE_PRESS_PRIMARY_NOTHING:
                 break;
             case TRIPLE_PRESS_PRIMARY_TOGGLE_ACCESSIBILITY:
-                mTalkbackShortcutController.toggleTalkback(mCurrentUserId,
-                        TalkbackShortcutController.ShortcutSource.GESTURE);
+                mTalkbackShortcutController.toggleTalkback(mCurrentUserId);
                 if (mTalkbackShortcutController.isTalkBackShortcutGestureEnabled()) {
                     performHapticFeedback(HapticFeedbackConstants.CONFIRM,
                             "Stem primary - Triple Press - Toggle Accessibility");
@@ -3360,9 +3358,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (!delegateBackGestureToShell()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
         }
-        if (enableTalkbackAndMagnifierKeyGestures()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
-        }
         if (!com.android.window.flags.Flags.grantManageKeyGesturesToRecents()) {
             // When grantManageKeyGesturesToRecents is enabled, the event is handled in the
             // recents app.
@@ -3547,12 +3542,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                 if (complete) {
                     closeSystemDialogsAsUser(UserHandle.CURRENT_OR_SELF);
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
-                if (complete) {
-                    mTalkbackShortcutController.toggleTalkback(mCurrentUserId,
-                            TalkbackShortcutController.ShortcutSource.KEYBOARD);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
