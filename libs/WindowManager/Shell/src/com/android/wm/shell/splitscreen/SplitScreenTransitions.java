@@ -501,7 +501,7 @@ class SplitScreenTransitions {
 
             mPendingEnter.onConsumed(aborted);
             mPendingEnter = null;
-            mStageCoordinator.notifySplitAnimationFinished();
+            mStageCoordinator.notifySplitAnimationStatus(false /*animationRunning*/);
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTransitionConsumed for enter transition");
         } else if (isPendingDismiss(transition)) {
             mPendingDismiss.onConsumed(aborted);
