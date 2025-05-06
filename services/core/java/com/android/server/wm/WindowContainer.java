@@ -288,6 +288,12 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      */
     RemoteToken mRemoteToken = null;
 
+    /**
+     * This indicates whether this Container can hold tasks that can be repositioned on screen
+     * using the {@link android.app.ActivityManager.AppTask#moveTaskTo} method.
+     */
+    private boolean mIsTaskMoveAllowed = false;
+
     /** This isn't participating in a sync. */
     public static final int SYNC_STATE_NONE = 0;
 
@@ -3248,6 +3254,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (mSafeRegionBounds != null) {
             pw.println(prefix + "mSafeRegionBounds=" + mSafeRegionBounds);
         }
+        pw.println(prefix + "mIsTaskMoveAllowed=" + mIsTaskMoveAllowed);
     }
 
     final void updateSurfacePositionNonOrganized() {
@@ -3900,5 +3907,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
     int getSyncTransactionCommitCallbackDepth() {
         return mSyncTransactionCommitCallbackDepth;
+    }
+
+    void setIsTaskMoveAllowed(boolean isTaskMoveAllowed) {
+        mIsTaskMoveAllowed = isTaskMoveAllowed;
+    }
+
+    boolean getIsTaskMoveAllowed() {
+        return mIsTaskMoveAllowed;
     }
 }

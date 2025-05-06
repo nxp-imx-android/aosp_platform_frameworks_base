@@ -19,6 +19,7 @@ package android.app;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
@@ -52,6 +53,46 @@ public class TaskInfo {
      * @hide
      */
     public static final int PROPERTY_VALUE_UNSET = -1;
+
+    /**
+     * Self-movable state is not set.
+     *
+     * @hide
+     */
+    public static final int SELF_MOVABLE_UNSET = -1;
+
+    /**
+     * Self-movable state is not defined. WM core uses freeform windowing mode to decide.
+     *
+     * @hide
+     */
+    public static final int SELF_MOVABLE_DEFAULT = 0;
+
+    /**
+     * Self-moving is allowed. Note that there are permission checks in addition to this flag for
+     * apps calling {@link android.app.ActivityManager.AppTask#moveTaskToFront}.
+     *
+     * @hide
+     */
+    public static final int SELF_MOVABLE_ALLOWED = 1;
+
+    /**
+     * Self-moving is denied.
+     *
+     * @hide
+     */
+    public static final int SELF_MOVABLE_DENIED = 2;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"SELF_MOVABLE_"},
+            value = {
+                SELF_MOVABLE_UNSET,
+                SELF_MOVABLE_DEFAULT,
+                SELF_MOVABLE_ALLOWED,
+                SELF_MOVABLE_DENIED,
+            })
+    public @interface SelfMovable {}
 
     /**
      * The id of the user the task was running as if this is a leaf task. The id of the current
