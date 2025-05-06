@@ -397,9 +397,16 @@ constructor(
                         .map { it.isTransitioning(to = Scenes.Gone) || it.isIdle(Scenes.Gone) }
                         .isFalse()
                 } else {
-                    keyguardRepository.isKeyguardGoingAway.isFalse()
+                    (keyguardTransitionInteractor.isFinishedIn(KeyguardState.GONE)
+                        .or(
+                            keyguardTransitionInteractor.isInTransition(
+                                Edge.create(to = Scenes.Gone),
+                                Edge.create(to = KeyguardState.GONE)
+                            )
+                        )
+                    ).isFalse()
                 },
-                "keyguardNotGoingAway",
+                "keyguardNotGoneOrTransitioningToGone",
             ),
             Pair(
                 keyguardTransitionInteractor
