@@ -2198,6 +2198,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             throw new IllegalStateException("Failed to protect CE key for user " + userId, e);
         } finally {
             Binder.restoreCallingIdentity(callingId);
+            ArrayUtils.zeroize(secret);
         }
     }
 
