@@ -1805,7 +1805,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Mode Une main"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Réduction supplémentaire de la luminosité"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Appareils auditifs"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatique"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Touches de souris"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Déconnecté"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connecté"</string>
@@ -2268,22 +2269,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Pavé directionnel – gauche"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Pavé directionnel – droite"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Pavé directionnel – centre"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Panneau de configuration des paramètres de type clic automatique"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Clic gauche"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Clic droit"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Double-cliquer"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Glisser"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Faire défiler"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Appui prolongé"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pause"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Position"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Faire défiler vers le haut"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Faire défiler vers le bas"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Faire défiler vers la gauche"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Faire défiler vers la droite"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Sortir du mode de défilement"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pause"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Reprendre"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Panneau de défilement"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> a été placé dans le compartiment RESTREINT"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g> :"</string>
