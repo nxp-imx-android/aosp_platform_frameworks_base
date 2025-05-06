@@ -46,3 +46,11 @@ flag {
      bug: "403599628"
      is_fixed_read_only: true
 }
+
+flag {
+     namespace: "backstage_power"
+     name: "real_checkin_history_start_time"
+     description: "Add duration limit to battery stats real check in (csv) format"
+     bug: "403599628"
+     is_fixed_read_only: true
+}
