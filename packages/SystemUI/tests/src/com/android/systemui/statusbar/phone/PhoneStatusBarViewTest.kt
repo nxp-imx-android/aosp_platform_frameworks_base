@@ -33,7 +33,6 @@ import android.view.View
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT
 import com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.SysuiTestCase
@@ -187,61 +186,35 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_stopUpdatingHeightFlagOn_connectedDisplayFlagOff_doesNotUpdateWindowHeight() {
+    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeight() {
         view.onAttachedToWindow()
 
-        verify(windowController, never()).refreshStatusBarHeight()
+        verify(windowController).refreshStatusBarHeight()
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_stopUpdatingHeightFlagOff_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
+    fun onAttachedToWindow_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
         view.onAttachedToWindow()
 
         verify(windowController, never()).refreshStatusBarHeight()
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_stopUpdatingHeightFlagOff_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.onAttachedToWindow()
+    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onConfigurationChanged_connectedDisplayFlagOff_updatesWindowHeight() {
+    view.onConfigurationChanged(Configuration())
+    view.onConfigurationChanged(Configuration())
+    view.onConfigurationChanged(Configuration())
+    view.onConfigurationChanged(Configuration())
 
-        verify(windowController).refreshStatusBarHeight()
+    verify(windowController, times(4)).refreshStatusBarHeight()
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onConfigurationChanged_stopUpdatingHeightFlagOff_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.onConfigurationChanged(Configuration())
-
-        verify(windowController).refreshStatusBarHeight()
-    }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_stopUpdatingHeightFlagOn_doesNotUpdateWindowHeight() {
-        view.onConfigurationChanged(Configuration())
-
-        verify(windowController, never()).refreshStatusBarHeight()
-    }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT, FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onConfigurationChanged_multipleCalls_stopUpdatingHeightFlagOff_updatesWindowHeightMultipleTimes() {
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-
-        verify(windowController, times(4)).refreshStatusBarHeight()
-    }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_STOP_UPDATING_WINDOW_HEIGHT)
-    fun onConfigurationChanged_multipleCalls_stopUpdatingHeightFlagOn_neverUpdatesWindowHeight() {
+    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
+    fun onConfigurationChanged_connectedDisplayFlagOn_neverUpdatesWindowHeight() {
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())

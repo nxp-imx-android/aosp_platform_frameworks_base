@@ -338,9 +338,6 @@ public class PhoneStatusBarView extends FrameLayout {
     }
 
     private void updateWindowHeight() {
-        if (Flags.statusBarStopUpdatingWindowHeight()) {
-            return;
-        }
         if (StatusBarConnectedDisplays.isEnabled()) {
             // Handled directly from StatusBarWindowControllerImpl (for each display)
             return;
