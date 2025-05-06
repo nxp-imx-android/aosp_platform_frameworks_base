@@ -223,7 +223,7 @@ public final class VirtualDeviceManager {
     /**
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.COMPUTER_CONTROL_ACCESS)
+    @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
     @NonNull
     public VirtualDevice createVirtualDevice(@NonNull VirtualDeviceParams params) {
         Objects.requireNonNull(params, "params must not be null");
@@ -587,7 +587,7 @@ public final class VirtualDeviceManager {
                     new VirtualDeviceInternal(service, context, associationId, params);
         }
 
-        @RequiresPermission(Manifest.permission.COMPUTER_CONTROL_ACCESS)
+        @RequiresPermission(Manifest.permission.ACCESS_COMPUTER_CONTROL)
         private VirtualDevice(
                 IVirtualDeviceManager service,
                 Context context,

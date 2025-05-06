@@ -7240,7 +7240,7 @@
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
          permission for computer control access. The digest should be computed over the
          DER encoding of the trusted certificate using the SHA-256 digest algorithm. -->
-    <string-array name="config_computerControlAccessKnownSigners">
+    <string-array name="config_accessComputerControlKnownSigners">
     </string-array>
 
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
