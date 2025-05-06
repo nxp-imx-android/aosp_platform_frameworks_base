@@ -74,16 +74,12 @@ import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
-import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD;
-import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
-import static android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
-import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_UNCOVERED;
@@ -175,7 +171,6 @@ import android.os.Trace;
 import android.os.UEventObserver;
 import android.os.UserHandle;
 import android.os.Vibrator;
-import android.provider.DeviceConfig;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
@@ -376,7 +371,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     static public final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
     static public final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
     static public final String SYSTEM_DIALOG_REASON_ASSIST = "assist";
-    static public final String SYSTEM_DIALOG_REASON_SCREENSHOT = "screenshot";
     static public final String SYSTEM_DIALOG_REASON_GESTURE_NAV = "gestureNav";
 
     public static final String TRACE_WAIT_FOR_ALL_WINDOWS_DRAWN_METHOD = "waitForAllWindowsDrawn";
@@ -667,10 +661,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // Whether to go to sleep entering theater mode from power button
     private boolean mGoToSleepOnButtonPressTheaterMode;
 
-    // Screenshot trigger states
-    // Increase the chord delay when taking a screenshot from the keyguard
-    private static final float KEYGUARD_SCREENSHOT_CHORD_DELAY_MULTIPLIER = 2.5f;
-
     // Ringer toggle should reuse timing and triggering from screenshot power and a11y vol up
     int mRingerToggleChord = VOLUME_HUSH_OFF;
 
@@ -722,7 +712,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int MSG_HIDE_BOOT_MESSAGE = 11;
     private static final int MSG_LAUNCH_VOICE_ASSIST_WITH_WAKE_LOCK = 12;
     private static final int MSG_SHOW_PICTURE_IN_PICTURE_MENU = 15;
-    private static final int MSG_SCREENSHOT_CHORD = 16;
     private static final int MSG_BUGREPORT_TV = 18;
     private static final int MSG_DISPATCH_BACK_KEY_TO_AUTOFILL = 20;
     private static final int MSG_SYSTEM_KEY_PRESS = 21;
@@ -803,9 +792,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 case MSG_RINGER_TOGGLE_CHORD:
                     handleRingerChordGesture();
-                    break;
-                case MSG_SCREENSHOT_CHORD:
-                    handleScreenShot(msg.arg1);
                     break;
                 case MSG_SWITCH_KEYBOARD_LAYOUT:
                     SwitchKeyboardLayoutMessageObject object =
@@ -1774,38 +1760,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 || defaultShortPressOnStemPrimaryBehavior != SHORT_PRESS_PRIMARY_NOTHING;
     }
 
-    private void interceptScreenshotChord(int source, long pressDelay) {
-        mHandler.removeMessages(MSG_SCREENSHOT_CHORD);
-        // arg2 is unused, but necessary to insure we call the correct method signature
-        // since the screenshot source is read from message.arg1
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SCREENSHOT_CHORD, source, 0),
-                pressDelay);
-    }
-
     private void interceptRingerToggleChord() {
         mHandler.removeMessages(MSG_RINGER_TOGGLE_CHORD);
         mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_RINGER_TOGGLE_CHORD),
                 getRingerToggleChordDelay());
     }
 
-    private long getScreenshotChordLongPressDelay() {
-        long delayMs = DeviceConfig.getLong(
-                DeviceConfig.NAMESPACE_SYSTEMUI, SCREENSHOT_KEYCHORD_DELAY,
-                ViewConfiguration.get(mContext).getScreenshotChordKeyTimeout());
-        if (mKeyguardDelegate.isShowing()) {
-            // Double the time it takes to take a screenshot from the keyguard
-            return (long) (KEYGUARD_SCREENSHOT_CHORD_DELAY_MULTIPLIER * delayMs);
-        }
-        return delayMs;
-    }
-
     private long getRingerToggleChordDelay() {
         // Always timeout like a tap
         return ViewConfiguration.getTapTimeout();
-    }
-
-    private void cancelPendingScreenshotChordAction() {
-        mHandler.removeMessages(MSG_SCREENSHOT_CHORD);
     }
 
     private void cancelPendingRingerToggleChordAction() {
@@ -1821,10 +1784,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             showGlobalActionsInternal();
         }
     };
-
-    private void handleScreenShot(@WindowManager.ScreenshotSource int source) {
-        mDefaultDisplayPolicy.takeScreenshot(TAKE_SCREENSHOT_FULLSCREEN, source);
-    }
 
     @Override
     public void showGlobalActions() {
@@ -3381,7 +3340,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
-                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE,
@@ -3395,7 +3353,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
-                KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD,
                 KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD,
                 KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT
@@ -3477,11 +3434,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL:
                 if (complete) {
                     toggleNotificationPanel();
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT:
-                if (complete) {
-                    interceptScreenshotChord(SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT:
@@ -3566,16 +3518,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (complete) {
                     int direction = (modifierState & KeyEvent.META_SHIFT_MASK) != 0 ? -1 : 1;
                     sendSwitchKeyboardLayout(displayId, focusedToken, direction);
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD:
-                if (start) {
-                    // Screenshot chord is pressed: Wait for long press delay before taking
-                    // screenshot
-                    interceptScreenshotChord(SCREENSHOT_KEY_CHORD,
-                            getScreenshotChordLongPressDelay());
-                } else {
-                    cancelPendingScreenshotChordAction();
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:

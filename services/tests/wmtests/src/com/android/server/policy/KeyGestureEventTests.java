@@ -260,12 +260,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureScreenshot() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT);
-        mPhoneWindowManager.assertTakeScreenshotCalled();
-    }
-
-    @Test
     public void testKeyGestureTriggerBugReport() throws RemoteException {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT);
         mPhoneWindowManager.assertTakeBugreport(true);
@@ -346,21 +340,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     public void testKeyGestureLaunchSearch() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH);
         mPhoneWindowManager.assertLaunchSearch();
-    }
-
-    @Test
-    public void testKeyGestureScreenshotChord() {
-        sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.moveTimeForward(500);
-        sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.assertTakeScreenshotCalled();
-    }
-
-    @Test
-    public void testKeyGestureScreenshotChordCancelled() {
-        sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.assertTakeScreenshotNotCalled();
     }
 
     @Test

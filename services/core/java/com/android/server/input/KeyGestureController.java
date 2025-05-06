@@ -20,9 +20,12 @@ import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.os.UserManager.isVisibleBackgroundUsersEnabled;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD;
+import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
 import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 
 import android.annotation.BinderThread;
 import android.annotation.MainThread;
@@ -52,6 +55,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
@@ -63,12 +67,15 @@ import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.ViewConfiguration;
+import android.view.WindowManager;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.IShortcutService;
+import com.android.internal.util.ScreenshotHelper;
+import com.android.internal.util.ScreenshotRequest;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 
@@ -106,6 +113,7 @@ final class KeyGestureController {
     private static final int MSG_PERSIST_CUSTOM_GESTURES = 2;
     private static final int MSG_LOAD_CUSTOM_GESTURES = 3;
     private static final int MSG_ACCESSIBILITY_SHORTCUT = 4;
+    private static final int MSG_SCREENSHOT_SHORTCUT = 5;
 
     // must match: config_settingsKeyBehavior in config.xml
     private static final int SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY = 0;
@@ -123,12 +131,17 @@ final class KeyGestureController {
     static final int POWER_VOLUME_UP_BEHAVIOR_MUTE = 1;
     static final int POWER_VOLUME_UP_BEHAVIOR_GLOBAL_ACTIONS = 2;
 
+    // Screenshot trigger states
+    // Increase the chord delay when taking a screenshot from the keyguard
+    private static final float KEYGUARD_SCREENSHOT_CHORD_DELAY_MULTIPLIER = 2.5f;
+
     private final Context mContext;
     private InputManagerService.WindowManagerCallbacks mWindowManagerCallbacks;
     private final Handler mHandler;
     private final Handler mIoHandler;
     private final int mSystemPid;
     private final KeyCombinationManager mKeyCombinationManager;
+    private final ScreenshotHelper mScreenshotHelper;
     private final SettingsObserver mSettingsObserver;
     private final AppLaunchShortcutManager mAppLaunchShortcutManager;
     @VisibleForTesting
@@ -196,6 +209,7 @@ final class KeyGestureController {
         mIoHandler = new Handler(ioLooper, this::handleIoMessage);
         mSystemPid = Process.myPid();
         mKeyCombinationManager = new KeyCombinationManager(mHandler);
+        mScreenshotHelper = injector.getScreenshotHelper(mContext);
         mSettingsObserver = new SettingsObserver(mHandler);
         mAppLaunchShortcutManager = new AppLaunchShortcutManager(mContext);
         mInputGestureManager = new InputGestureManager(mContext);
@@ -454,7 +468,9 @@ final class KeyGestureController {
         InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
         im.registerKeyGestureEventHandler(
                 List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT),
+                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD),
                 new LocalKeyGestureEventHandler());
     }
 
@@ -1083,6 +1099,10 @@ final class KeyGestureController {
             case MSG_ACCESSIBILITY_SHORTCUT:
                 mAccessibilityShortcutController.performAccessibilityShortcut();
                 break;
+            case MSG_SCREENSHOT_SHORTCUT:
+                takeScreenshot(msg.arg1, msg.arg2);
+                break;
+
         }
         return true;
     }
@@ -1454,6 +1474,25 @@ final class KeyGestureController {
         }
     }
 
+    private void takeScreenshot(int source, int displayId) {
+        ScreenshotRequest request =
+                new ScreenshotRequest.Builder(WindowManager.TAKE_SCREENSHOT_FULLSCREEN, source)
+                        .setDisplayId(displayId)
+                        .build();
+        mScreenshotHelper.takeScreenshot(request, mHandler, null /* completionConsumer */);
+    }
+
+    private long getScreenshotChordLongPressDelay() {
+        long delayMs = DeviceConfig.getLong(
+                DeviceConfig.NAMESPACE_SYSTEMUI, SCREENSHOT_KEYCHORD_DELAY,
+                ViewConfiguration.get(mContext).getScreenshotChordKeyTimeout());
+        if (mWindowManagerCallbacks.isKeyguardLocked(DEFAULT_DISPLAY)) {
+            // Double the time it takes to take a screenshot from the keyguard
+            return (long) (KEYGUARD_SCREENSHOT_CHORD_DELAY_MULTIPLIER * delayMs);
+        }
+        return delayMs;
+    }
+
     public void dump(IndentingPrintWriter ipw) {
         ipw.println("KeyGestureController:");
         ipw.increaseIndent();
@@ -1510,6 +1549,10 @@ final class KeyGestureController {
                 Handler handler) {
             return new AccessibilityShortcutController(context, handler, UserHandle.USER_SYSTEM);
         }
+
+        ScreenshotHelper getScreenshotHelper(Context context) {
+            return new ScreenshotHelper(context);
+        }
     }
 
     private class LocalKeyGestureEventHandler implements InputManager.KeyGestureEventHandler {
@@ -1532,6 +1575,22 @@ final class KeyGestureController {
                 case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
                     if (complete) {
                         mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT));
+                    }
+                    break;
+                case KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT:
+                    if (complete) {
+                        mHandler.sendMessage(mHandler.obtainMessage(MSG_SCREENSHOT_SHORTCUT,
+                                SCREENSHOT_KEY_OTHER, event.getDisplayId()));
+                    }
+                    break;
+                case KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD:
+                    mHandler.removeMessages(MSG_SCREENSHOT_SHORTCUT);
+                    if (start) {
+                        mHandler.sendMessageDelayed(
+                                mHandler.obtainMessage(MSG_SCREENSHOT_SHORTCUT,
+                                        SCREENSHOT_KEY_CHORD,
+                                        event.getDisplayId()),
+                                getScreenshotChordLongPressDelay());
                     }
                     break;
                 default:
