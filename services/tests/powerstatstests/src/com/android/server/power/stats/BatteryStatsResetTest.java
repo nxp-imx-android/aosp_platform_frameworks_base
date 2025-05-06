@@ -110,6 +110,7 @@ public class BatteryStatsResetTest {
     public void testResetOnUnplug_highBatteryLevel() {
         long initialStartTime = mBatteryStatsImpl.getHistory().getStartTime();
         when(mConfig.shouldResetOnUnplugHighBatteryLevel()).thenReturn(true);
+        when(mConfig.getHighBatteryLevelAfterCharge()).thenReturn(94);
 
         long expectedResetTimeUs = 0;
 
@@ -117,9 +118,9 @@ public class BatteryStatsResetTest {
         dischargeToLevel(60);
 
         plugBattery(BatteryManager.BATTERY_PLUGGED_USB);
-        chargeToLevel(80);
+        chargeToLevel(93);
         unplugBattery();
-        // Reset should not occur until battery level above 90.
+        // Reset should not occur until battery level above getHighBatteryLevelAfterCharge.
         assertThat(mBatteryStatsImpl.getStatsStartRealtime()).isEqualTo(expectedResetTimeUs);
 
         plugBattery(BatteryManager.BATTERY_PLUGGED_USB);
