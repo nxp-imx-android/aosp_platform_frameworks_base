@@ -209,6 +209,9 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** Transition type for converting a task to a bubble. */
     public static final int TRANSIT_CONVERT_TO_BUBBLE = TRANSIT_FIRST_CUSTOM + 24;
 
+    /** Transition type for converting a floating bubble to a bar bubble. */
+    public static final int TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR = TRANSIT_FIRST_CUSTOM + 25;
+
     /** Transition type for desktop mode transitions. */
     public static final int TRANSIT_DESKTOP_MODE_TYPES =
             WindowManager.TRANSIT_FIRST_CUSTOM + 100;
@@ -1918,6 +1921,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             case TRANSIT_START_RECENTS_TRANSITION -> "START_RECENTS_TRANSITION";
             case TRANSIT_END_RECENTS_TRANSITION -> "END_RECENTS_TRANSITION";
             case TRANSIT_CONVERT_TO_BUBBLE -> "CONVERT_TO_BUBBLE";
+            case TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR -> "BUBBLE_CONVERT_FLOATING_TO_BAR";
             default -> "";
         };
         if (typeStr.isEmpty()) {
