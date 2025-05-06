@@ -126,7 +126,7 @@ constructor(
 
     init {
         applicationScope.launch {
-            trustRepository.isCurrentUserActiveUnlockRunning.collect {
+            trustRepository.isCurrentUserActiveUnlockEnabled.collect {
                 currentUserActiveUnlockRunning = it
             }
         }

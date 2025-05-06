@@ -41,7 +41,6 @@ class DeviceEntryFingerprintAuthInteractor
 @Inject
 constructor(
     repository: DeviceEntryFingerprintAuthRepository,
-    biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     fingerprintPropertyRepository: FingerprintPropertyRepository,
     @Application private val applicationScope: CoroutineScope,
 ) {
