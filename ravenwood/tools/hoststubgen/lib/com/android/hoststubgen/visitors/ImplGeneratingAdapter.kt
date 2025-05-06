@@ -15,12 +15,16 @@
  */
 package com.android.hoststubgen.visitors
 
+import com.android.hoststubgen.HostStubGenErrors
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_DESC
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.CTOR_NAME
 import com.android.hoststubgen.asm.ClassNodes
+import com.android.hoststubgen.asm.UnifiedVisitor
 import com.android.hoststubgen.asm.adjustStackForConstructorRedirection
 import com.android.hoststubgen.asm.changeMethodDescriptorReturnType
+import com.android.hoststubgen.asm.getPackageNameFromFullClassName
+import com.android.hoststubgen.asm.isEnum
 import com.android.hoststubgen.asm.prependArgTypeToMethodDescriptor
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.asm.writeByteCodeToPushArguments
@@ -29,11 +33,14 @@ import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
+import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
 import com.android.hoststubgen.hosthelper.HostTestUtils
 import com.android.hoststubgen.log
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.INVOKEINTERFACE
@@ -42,17 +49,55 @@ import org.objectweb.asm.Opcodes.INVOKESTATIC
 import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Type
 
+const val OPCODE_VERSION = Opcodes.ASM9
+
 /**
  * An adapter that generates the "impl" class file from an input class file.
  */
 class ImplGeneratingAdapter(
-    classes: ClassNodes,
+    val classes: ClassNodes,
     nextVisitor: ClassVisitor,
-    filter: OutputFilter,
-    options: Options,
-) : BaseAdapter(classes, nextVisitor, filter, options) {
+    val filter: OutputFilter,
+    val options: Options,
+) : ClassVisitor(OPCODE_VERSION, nextVisitor) {
+
+    /**
+     * Options to control the behavior.
+     */
+    data class Options(
+        val errors: HostStubGenErrors,
+
+        val deleteClassFinals: Boolean,
+        val deleteMethodFinals: Boolean,
+        // We don't remove finals from fields, because final fields have a stronger memory
+        // guarantee than non-final fields, see:
+        // https://docs.oracle.com/javase/specs/jls/se22/html/jls-17.html#jls-17.5
+        // i.e. changing a final field to non-final _could_ result in different behavior.
+        // val deleteFieldFinals: Boolean,
+
+        val throwExceptionType: String,
+    )
+
+    private lateinit var currentPackageName: String
+    private lateinit var currentClassName: String
+    private var redirectionClass: String? = null
+    private lateinit var classPolicy: FilterPolicyWithReason
 
     private var classLoadHooks: List<String> = emptyList()
+
+    private fun maybeRemoveFinalFromClass(access: Int): Int {
+        if (options.deleteClassFinals && !isEnum(access)) {
+            return access and Opcodes.ACC_FINAL.inv()
+        }
+        return access
+    }
+
+    private fun maybeRemoveFinalFromMethod(access: Int): Int {
+        if (options.deleteMethodFinals) {
+            return access and Opcodes.ACC_FINAL.inv()
+        }
+        return access
+    }
 
     override fun visit(
         version: Int,
@@ -62,8 +107,20 @@ class ImplGeneratingAdapter(
         superName: String?,
         interfaces: Array<String>
     ) {
-        val access = modifyClassAccess(origAccess)
+        val access = maybeRemoveFinalFromClass(origAccess)
+
         super.visit(version, access, name, signature, superName, interfaces)
+
+        currentClassName = name
+        currentPackageName = getPackageNameFromFullClassName(name)
+        classPolicy = filter.getPolicyForClass(currentClassName)
+        redirectionClass = filter.getRedirectionClass(currentClassName)
+        log.d("[%s] visit: %s (package: %s)", javaClass.simpleName, name, currentPackageName)
+        log.indent()
+        log.v("Emitting class: %s", name)
+        log.indent()
+        // Inject annotations to generated classes.
+        UnifiedVisitor.on(this).visitAnnotation(CLASS_DESCRIPTOR, true)
 
         classLoadHooks = filter.getClassLoadHooks(currentClassName)
 
@@ -77,6 +134,26 @@ class ImplGeneratingAdapter(
             if (!classes.hasClassInitializer(currentClassName)) {
                 injectClassLoadHook()
             }
+        }
+    }
+
+    override fun visitEnd() {
+        log.unindent()
+        log.unindent()
+        super.visitEnd()
+    }
+
+    var skipMemberModificationNestCount = 0
+
+    /**
+     * This method allows writing class members without any modifications.
+     */
+    private inline fun writeRawMembers(callback: () -> Unit) {
+        skipMemberModificationNestCount++
+        try {
+            callback()
+        } finally {
+            skipMemberModificationNestCount--
         }
     }
 
@@ -124,7 +201,36 @@ class ImplGeneratingAdapter(
         }
     }
 
-    override fun updateAccessFlags(
+    override fun visitField(
+        access: Int,
+        name: String,
+        descriptor: String,
+        signature: String?,
+        value: Any?,
+    ): FieldVisitor? {
+        if (skipMemberModificationNestCount > 0) {
+            return super.visitField(access, name, descriptor, signature, value)
+        }
+        val policy = filter.getPolicyForField(currentClassName, name)
+        log.d("visitField: %s %s [%x] Policy: %s", name, descriptor, access, policy)
+
+        log.withIndent {
+            if (policy.policy == FilterPolicy.Remove) {
+                log.d("Removing %s %s", name, policy)
+                return null
+            }
+
+            log.v("Emitting field: %s %s %s", name, descriptor, policy)
+            val ret = super.visitField(access, name, descriptor, signature, value)
+
+            UnifiedVisitor.on(ret)
+                .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
+
+            return ret
+        }
+    }
+
+    private fun updateMethodAccessFlags(
         access: Int,
         name: String,
         descriptor: String,
@@ -138,7 +244,85 @@ class ImplGeneratingAdapter(
         return access
     }
 
-    override fun visitMethodInner(
+    override fun visitMethod(
+        origAccess: Int,
+        name: String,
+        descriptor: String,
+        signature: String?,
+        exceptions: Array<String>?,
+    ): MethodVisitor? {
+        val access = maybeRemoveFinalFromMethod(origAccess)
+        if (skipMemberModificationNestCount > 0) {
+            return super.visitMethod(access, name, descriptor, signature, exceptions)
+        }
+        val p = filter.getPolicyForMethod(currentClassName, name, descriptor)
+        log.d("visitMethod: %s%s [%x] [%s] Policy: %s", name, descriptor, access, signature, p)
+
+        log.withIndent {
+            // If it's a substitute-from method, then skip (== remove).
+            // Instead of this method, we rename the substitute-to method with the original
+            // name, in the "Maybe rename the method" part below.
+            val policy = filter.getPolicyForMethod(currentClassName, name, descriptor)
+            if (policy.policy == FilterPolicy.Substitute) {
+                log.d("Skipping %s%s %s", name, descriptor, policy)
+                return null
+            }
+            if (p.policy == FilterPolicy.Remove) {
+                log.d("Removing %s%s %s", name, descriptor, policy)
+                return null
+            }
+
+            var newAccess = access
+
+            // Maybe rename the method.
+            val newName: String
+            val renameTo = filter.getRenameTo(currentClassName, name, descriptor)
+            if (renameTo != null) {
+                newName = renameTo
+
+                // It's confusing, but here, `newName` is the original method name
+                // (the one with the @substitute/replace annotation).
+                // `name` is the name of the method we're currently visiting, so it's usually a
+                // "...$ravewnwood" name.
+                newAccess = checkSubstitutionMethodCompatibility(
+                    classes, currentClassName, newName, name, descriptor, options.errors
+                )
+                if (newAccess == NOT_COMPATIBLE) {
+                    return null
+                }
+                newAccess = maybeRemoveFinalFromMethod(newAccess)
+
+                log.v(
+                    "Emitting %s.%s%s as %s %s", currentClassName, name, descriptor,
+                    newName, policy
+                )
+            } else {
+                log.v("Emitting method: %s%s %s", name, descriptor, policy)
+                newName = name
+            }
+
+            // Let subclass update the flag.
+            // But note, we only use it when calling the super's method,
+            // but not for visitMethodInner(), because when subclass wants to change access,
+            // it can do so inside visitMethodInner().
+            newAccess = updateMethodAccessFlags(newAccess, name, descriptor, policy.policy)
+
+            val ret = visitMethodInner(
+                access, newName, descriptor, signature, exceptions, policy,
+                renameTo != null,
+                super.visitMethod(newAccess, newName, descriptor, signature, exceptions)
+            )
+
+            ret?.let {
+                UnifiedVisitor.on(ret)
+                    .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
+            }
+
+            return ret
+        }
+    }
+
+    private fun visitMethodInner(
         access: Int,
         name: String,
         descriptor: String,
