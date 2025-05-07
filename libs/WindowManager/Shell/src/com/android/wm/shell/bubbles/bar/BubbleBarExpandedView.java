@@ -54,6 +54,7 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.handles.RegionSamplingHelper;
 import com.android.wm.shell.taskview.TaskView;
 
+import java.io.PrintWriter;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -806,5 +807,18 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
             return false;
         }
+    }
+
+    /**
+     * Description of current expanded view state.
+     */
+    public void dump(@android.annotation.NonNull PrintWriter pw,
+            @android.annotation.NonNull String prefix) {
+        pw.print(prefix); pw.println("BubbleBarExpandedView:");
+        pw.print(prefix); pw.print("  taskId: "); pw.println(getTaskId());
+        pw.print(prefix); pw.print("  contentVisibility: "); pw.println(mIsContentVisible);
+        pw.print(prefix); pw.print("  isAnimating: "); pw.println(mIsAnimating);
+        pw.print(prefix); pw.print("  isDragging: "); pw.println(mIsDragging);
+        pw.print(prefix); pw.print("  visibilityState: "); pw.println(mVisibilityState);
     }
 }
