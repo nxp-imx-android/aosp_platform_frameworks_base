@@ -21,8 +21,14 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import com.android.internal.R;
+import com.android.window.flags.Flags;
+
 /** Settings that should not be restored when target device is a large screen
  *  i.e. tablets and foldables in unfolded state
+ *
+ *  <p>If {@link Flags#FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR} is enabled, specified
+ *  settings will not be restored when target device is a large screen i.e. tablets and foldables
  */
 public class LargeScreenSettings {
     private static final float LARGE_SCREEN_MIN_DPS = 600;
@@ -43,7 +49,15 @@ public class LargeScreenSettings {
         final Rect bounds = windowManager.getCurrentWindowMetrics().getBounds();
         float smallestWidth = dpiFromPx(Math.min(bounds.width(), bounds.height()),
                 context.getResources().getConfiguration().densityDpi);
-        return smallestWidth >= LARGE_SCREEN_MIN_DPS;
+        boolean isLargeScreen = smallestWidth >= LARGE_SCREEN_MIN_DPS;
+        if (Flags.enableOmitAccelerometerRotationRestore()) {
+            isLargeScreen = isLargeScreen || isFoldable(context);
+        }
+        return isLargeScreen;
+    }
+
+    private static boolean isFoldable(Context context) {
+        return context.getResources().getIntArray(R.array.config_foldedDeviceStates).length > 0;
     }
 
     private static float dpiFromPx(float size, int densityDpi) {
