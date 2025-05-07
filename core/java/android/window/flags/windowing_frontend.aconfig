@@ -452,6 +452,7 @@ flag {
     }
 }
 
+
 flag {
     name: "enable_handlers_debugging_mode"
     namespace: "windowing_frontend"
@@ -493,6 +494,17 @@ flag {
     namespace: "windowing_frontend"
     description: "Allows the starting window to be removed while a transition is in progress."
     bug: "397353053"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "transition_handler_cuj_tags"
+    namespace: "windowing_frontend"
+    description: "Add CUJ tags for measuring performance of transition handlers"
+    bug: "404190067"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

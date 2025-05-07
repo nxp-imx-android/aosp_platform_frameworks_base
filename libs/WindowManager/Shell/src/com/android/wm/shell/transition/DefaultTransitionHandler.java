@@ -362,7 +362,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final ArrayList<Animator> animations = new ArrayList<>();
         mAnimations.put(transition, animations);
 
-        final boolean isTaskTransition = isTaskTransition(info);
+        final boolean isTaskTransition = com.android.window.flags.Flags.transitionHandlerCujTags()
+                && isTaskTransition(info);
 
         final Runnable onAnimFinish = () -> {
             if (!animations.isEmpty()) return;
