@@ -22,6 +22,7 @@ import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.compatui.letterbox.LetterboxControllerRobotTest.Companion.ANOTHER_TASK_ID
 import com.android.wm.shell.compatui.letterbox.LetterboxMatchers.asAnyMode
 import java.util.function.Consumer
 import org.junit.Test
@@ -67,12 +68,10 @@ class MultiSurfaceLetterboxControllerTest : ShellTestCase() {
         runTestScenario { r ->
             r.sendCreateSurfaceRequest()
             r.sendCreateSurfaceRequest()
-            r.sendCreateSurfaceRequest(displayId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2, taskId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2, taskId = 2)
+            r.sendCreateSurfaceRequest(taskId = ANOTHER_TASK_ID)
+            r.sendCreateSurfaceRequest(taskId = ANOTHER_TASK_ID)
 
-            r.checkSurfaceBuilderInvoked(times = 12)
+            r.checkSurfaceBuilderInvoked(times = 8)
         }
     }
 
@@ -95,7 +94,7 @@ class MultiSurfaceLetterboxControllerTest : ShellTestCase() {
         runTestScenario { r ->
             r.sendCreateSurfaceRequest()
             r.sendUpdateSurfaceVisibilityRequest(visible = true)
-            r.sendUpdateSurfaceVisibilityRequest(visible = true, displayId = 20)
+            r.sendUpdateSurfaceVisibilityRequest(visible = true, taskId = ANOTHER_TASK_ID)
 
             r.checkVisibilityUpdated(times = 4, expectedVisibility = true)
         }

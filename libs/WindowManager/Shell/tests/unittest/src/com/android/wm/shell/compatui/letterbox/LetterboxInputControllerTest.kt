@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.suppliers.InputChannelSupplier
 import com.android.wm.shell.common.suppliers.WindowSessionSupplier
+import com.android.wm.shell.compatui.letterbox.LetterboxControllerRobotTest.Companion.ANOTHER_TASK_ID
 import com.android.wm.shell.compatui.letterbox.LetterboxMatchers.asAnyMode
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListener
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListenerFactory
@@ -79,12 +80,10 @@ class LetterboxInputControllerTest : ShellTestCase() {
         runTestScenario { r ->
             r.sendCreateSurfaceRequest()
             r.sendCreateSurfaceRequest()
-            r.sendCreateSurfaceRequest(displayId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2, taskId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2)
-            r.sendCreateSurfaceRequest(displayId = 2, taskId = 2)
+            r.sendCreateSurfaceRequest(taskId = ANOTHER_TASK_ID)
+            r.sendCreateSurfaceRequest(taskId = ANOTHER_TASK_ID)
 
-            r.checkInputSurfaceBuilderInvoked(times = 3)
+            r.checkInputSurfaceBuilderInvoked(times = 2)
         }
     }
 
@@ -106,7 +105,7 @@ class LetterboxInputControllerTest : ShellTestCase() {
         runTestScenario { r ->
             r.sendCreateSurfaceRequest()
             r.sendUpdateSurfaceVisibilityRequest(visible = true)
-            r.sendUpdateSurfaceVisibilityRequest(visible = true, displayId = 20)
+            r.sendUpdateSurfaceVisibilityRequest(visible = true, taskId = ANOTHER_TASK_ID)
 
             r.checkVisibilityUpdated(expectedVisibility = true)
         }
