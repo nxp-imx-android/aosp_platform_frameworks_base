@@ -20,9 +20,8 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
-import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
-import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtilsKt.verifyEnterBubbleTransaction;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -262,7 +261,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
+    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testConvertToBubble_disallowFlagLaunchAdjacent() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
