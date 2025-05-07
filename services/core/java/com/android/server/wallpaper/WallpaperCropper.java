@@ -20,7 +20,6 @@ import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
 import static android.app.WallpaperManager.getOrientation;
 import static android.app.WallpaperManager.getRotatedOrientation;
-import static android.app.Flags.accurateWallpaperDownsampling;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.wallpaper.WallpaperUtils.RECORD_FILE;
@@ -378,14 +377,11 @@ public class WallpaperCropper {
         for (int i = 0; i < wallpaper.mCropHints.size(); i++) {
             Rect adjustedRect = new Rect(wallpaper.mCropHints.valueAt(i));
             adjustedRect.offset(-wallpaper.cropHint.left, -wallpaper.cropHint.top);
-            if (accurateWallpaperDownsampling()) {
-                adjustedRect.left = (int) (0.5f + adjustedRect.left / wallpaper.mSampleSize);
-                adjustedRect.top = (int) (0.5f + adjustedRect.top / wallpaper.mSampleSize);
-                adjustedRect.right = (int) Math.floor(adjustedRect.right / wallpaper.mSampleSize);
-                adjustedRect.bottom = (int) Math.floor(adjustedRect.bottom / wallpaper.mSampleSize);
-            } else {
-                adjustedRect.scale(1f / wallpaper.mSampleSize);
-            }
+            adjustedRect.left = (int) (0.5f + adjustedRect.left / wallpaper.mSampleSize);
+            adjustedRect.top = (int) (0.5f + adjustedRect.top / wallpaper.mSampleSize);
+            adjustedRect.right = (int) Math.floor(adjustedRect.right / wallpaper.mSampleSize);
+            adjustedRect.bottom = (int) Math.floor(adjustedRect.bottom / wallpaper.mSampleSize);
+
             result.put(wallpaper.mCropHints.keyAt(i), adjustedRect);
         }
         return result;
@@ -612,13 +608,8 @@ public class WallpaperCropper {
                             .getDefaultDisplaySizes().get(orientation);
                     if (displayForThisOrientation == null) continue;
                     float sampleSizeForThisOrientation = Math.max(1f, Math.min(
-                            crop.width() / displayForThisOrientation.x,
-                            crop.height() / displayForThisOrientation.y));
-                    if (accurateWallpaperDownsampling()) {
-                        sampleSizeForThisOrientation = Math.max(1f, Math.min(
-                                (float) crop.width() / displayForThisOrientation.x,
-                                (float) crop.height() / displayForThisOrientation.y));
-                    }
+                            (float) crop.width() / displayForThisOrientation.x,
+                            (float) crop.height() / displayForThisOrientation.y));
                     sampleSize = Math.min(sampleSize, sampleSizeForThisOrientation);
                 }
                 // If the total crop has more width or height than either the max texture size
