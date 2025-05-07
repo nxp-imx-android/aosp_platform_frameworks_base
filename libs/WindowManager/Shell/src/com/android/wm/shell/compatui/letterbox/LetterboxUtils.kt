@@ -89,6 +89,20 @@ object LetterboxUtils {
             }
             return onMissed(key, this)
         }
+
+        /*
+        * Executes [onItem] on the [item] for the [key]s for a given [filter] predicate.
+        */
+        fun <V, K> MutableMap<K, V>.runOnFilteredItem(
+            filter: (K) -> Boolean,
+            onItem: (K, V) -> Unit = { _, _ -> },
+        ) {
+            this.forEach { k, v ->
+                if (filter(k)) {
+                    onItem(k, v)
+                }
+            }
+        }
     }
 
     // Utility methods about Transaction usage in Letterbox.
