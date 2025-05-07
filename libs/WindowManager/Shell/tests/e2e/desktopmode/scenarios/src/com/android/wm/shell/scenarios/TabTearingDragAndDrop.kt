@@ -59,6 +59,7 @@ abstract class TabTearingDragAndDrop(val rotation: Rotation = Rotation.ROTATION_
         }
         ChangeDisplayOrientationRule.setRotation(rotation)
         browserDesktopAppHelper.enterDesktopMode(wmHelper, device)
+        browserAppHelper.closePopupsIfNeeded(device)
     }
 
     @Test
@@ -79,6 +80,9 @@ abstract class TabTearingDragAndDrop(val rotation: Rotation = Rotation.ROTATION_
 
     @After
     fun teardown() {
+        // Tab tearing creates a new window. We want to make sure to clear storage (and remove all
+        // opened windows) to prevent hitting the Chrome window limit.
+        browserAppHelper.clearStorage()
         browserDesktopAppHelper.exit(wmHelper)
     }
 }
