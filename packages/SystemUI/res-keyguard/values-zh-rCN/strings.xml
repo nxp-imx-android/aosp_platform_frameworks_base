@@ -117,7 +117,7 @@
     <string name="kg_prompt_reason_device_admin" msgid="6961159596224055685">"管理员已锁定设备"</string>
     <string name="kg_prompt_reason_user_request" msgid="6015774877733717904">"此设备已手动锁定"</string>
     <string name="kg_face_not_recognized" msgid="7903950626744419160">"无法识别"</string>
-    <string name="kg_face_sensor_privacy_enabled" msgid="939511161763558512">"如需使用人脸解锁功能，请在“设置”中开启摄像头使用权限"</string>
+    <string name="kg_face_sensor_privacy_enabled" msgid="939511161763558512">"如需使用人脸解锁功能，请在“设置”中开启相机权限"</string>
     <string name="kg_password_default_pin_message" msgid="1434544655827987873">"{count,plural, =1{请输入 SIM 卡 PIN 码。您还可以尝试 # 次，如果仍不正确，则必须联系运营商帮您解锁设备。}other{请输入 SIM 卡 PIN 码。您还可以尝试 # 次。}}"</string>
     <string name="kg_password_default_puk_message" msgid="1025139786449741950">"{count,plural, =1{SIM 卡现已停用，请输入 PUK 码继续使用。您还可以尝试 # 次，如果仍不正确，SIM 卡将永远无法使用。有关详情，请联系运营商。}other{SIM 卡现已停用，请输入 PUK 码继续使用。您还可以尝试 # 次，如果仍不正确，SIM 卡将永远无法使用。有关详情，请联系运营商。}}"</string>
     <string name="clock_title_default" msgid="6342735240617459864">"默认"</string>
