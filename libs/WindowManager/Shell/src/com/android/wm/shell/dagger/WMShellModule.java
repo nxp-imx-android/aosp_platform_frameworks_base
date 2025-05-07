@@ -982,11 +982,12 @@ public abstract class WMShellModule {
     @Provides
     static Optional<TaskChangeListener> provideDesktopTaskChangeListener(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            ShellController shellController) {
         if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopTaskChangeListener(
-                    desktopUserRepositories, desktopState));
+                    desktopUserRepositories, desktopState, shellController));
         }
         return Optional.empty();
     }
