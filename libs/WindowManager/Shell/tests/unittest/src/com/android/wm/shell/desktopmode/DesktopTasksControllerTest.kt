@@ -4048,6 +4048,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @DisableFlags(Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE)
     fun onDesktopWindowMinimize_lastWindow_deactivatesDesk() {
         val task = setUpFreeformTask()
         val transition = Binder()
@@ -4069,7 +4070,34 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
+    )
+    fun onDesktopWindowMinimize_lastWindow_dontDeactivateDesk() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        val captor = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
+
+        assertTrue(captor.firstValue.isEmpty)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @DisableFlags(Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE)
     fun onDesktopWindowMinimize_lastWindow_addsPendingDeactivateTransition() {
         val task = setUpFreeformTask()
         val transition = Binder()
@@ -4086,6 +4114,28 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         verify(desksTransitionsObserver)
             .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
+    )
+    fun onDesktopWindowMinimize_lastWindow_dontAddPendingDeactivateTransition() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verifyNoInteractions(desksTransitionsObserver)
     }
 
     private fun minimizePipTask(task: RunningTaskInfo, appOpsAllowed: Boolean = true) {
@@ -4268,6 +4318,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    @DisableFlags(Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE)
     fun onTaskMinimize_singleActiveTask_hasWallpaperActivityToken_removesWallpaper() {
         val task = setUpFreeformTask()
         val transition = Binder()
@@ -4288,6 +4339,34 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
         // Adds remove wallpaper operation
         captor.firstValue.assertReorderAt(index = 0, wallpaperToken, toTop = false)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
+    )
+    fun onTaskMinimize_singleActiveTask_hasWallpaperActivityToken_dontRemoveWallpaper() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        // The only active task is being minimized.
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        val captor = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task.taskId), eq(true))
+
+        assertThat(captor.firstValue.changes).isEmpty()
     }
 
     @Test
@@ -4349,6 +4428,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    @DisableFlags(Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE)
     fun onDesktopWindowMinimize_multipleActiveTasks_minimizesTheOnlyVisibleTask_removesWallpaper() {
         val task1 = setUpFreeformTask(active = true)
         val task2 = setUpFreeformTask(active = true)
@@ -4371,6 +4451,36 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .startMinimizedModeTransition(captor.capture(), eq(task1.taskId), eq(true))
         // Adds remove wallpaper operation
         captor.firstValue.assertReorderAt(index = 0, wallpaperToken, toTop = false)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDesktopWindowMinimize_multipleActiveTasks_minimizesTheOnlyVisibleTask_dontRemoveWallpaper() {
+        val task1 = setUpFreeformTask(active = true)
+        val task2 = setUpFreeformTask(active = true)
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+        taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
+
+        // task1 is the only visible task as task2 is minimized.
+        controller.minimizeTask(task1, MinimizeReason.MINIMIZE_BUTTON)
+
+        val captor = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter)
+            .startMinimizedModeTransition(captor.capture(), eq(task1.taskId), eq(true))
+
+        assertTrue(captor.firstValue.isEmpty)
     }
 
     @Test
