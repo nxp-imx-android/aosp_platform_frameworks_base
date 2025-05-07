@@ -8739,23 +8739,47 @@ public class AppOpsManager {
      * Restrictions are temporary additional constraints imposed on top of the persisted rules
      * defined by {@link #setMode}.
      *
+     * Audio restrictions are keyed by code/usage pairs (i.e. OP_PLAY_AUDIO, USAGE_MEDIA), and have
+     * a value of a MODE and a set of exempted packages, and apply globally.
+     *
      * @param code The operation to restrict.
-     * @param usage The {@link android.media.AudioAttributes} usage value.
-     * @param mode The restriction mode (MODE_IGNORED,MODE_ERRORED) or MODE_ALLOWED to unrestrict.
+     * @param usages A set of {@link android.media.AudioAttributes} usage values to apply
+     * restrictions to, overriding any restriction currently in place for that usage.
+     * @param mode The restriction mode (MODE_IGNORED,MODE_ERRORED) or MODE_ALLOWED to unrestrict
+     * (see key above).
      * @param exceptionPackages Optional list of packages to exclude from the restriction.
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
-    @UnsupportedAppUsage
-    public void setRestriction(int code, @AttributeUsage int usage, @Mode int mode,
+    public void setAudioRestriction(int code, @AttributeUsage int[] usages, @Mode int mode,
             String[] exceptionPackages) {
         try {
-            final int uid = Binder.getCallingUid();
-            mService.setAudioRestriction(code, usage, uid, mode, exceptionPackages);
+            mService.setAudioRestriction(code, usages, mode, exceptionPackages);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * See #setRestriction(int, int[], int, String[]).
+     *
+     * Included for compatibility
+     *
+     * @param code The operation to restrict.
+     * @param usage The {@link android.media.AudioAttributes} usage value.
+     * @param mode The restriction mode (MODE_IGNORED,MODE_ERRORED) or MODE_ALLOWED to unrestrict.
+     * @param exceptionPackages Optional list of packages to exclude from the restriction.
+     * @deprecated Use {@link #setAudioRestriction(int, int[], int, String[])} instead.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
+    @Deprecated
+    @UnsupportedAppUsage
+    public void setRestriction(int code, @AttributeUsage int usage, @Mode int mode,
+            String[] exceptionPackages) {
+        setAudioRestriction(code, new int[] {usage}, mode, exceptionPackages);
+    }
+
 
     /** @hide */
     @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
