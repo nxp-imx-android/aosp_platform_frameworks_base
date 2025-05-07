@@ -741,7 +741,7 @@ class PackageManagerShellCommand extends ShellCommand {
     }
 
     private int runPath() throws RemoteException {
-        int userId = UserHandle.USER_SYSTEM;
+        int userId = UserHandle.USER_CURRENT;
         String option = getNextOption();
         if (option != null && option.equals("--user")) {
             userId = UserHandle.parseUserArg(getNextArgRequired());
