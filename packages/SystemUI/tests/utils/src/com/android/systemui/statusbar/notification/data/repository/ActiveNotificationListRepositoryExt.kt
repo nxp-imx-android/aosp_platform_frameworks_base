@@ -30,7 +30,7 @@ fun ActiveNotificationListRepository.setActiveNotifs(count: Int) {
                 val rankingsMap = mutableMapOf<String, Int>()
                 repeat(count) { i ->
                     val key = "$i"
-                    addEntry(activeNotificationModel(key = key))
+                    addNotifEntry(activeNotificationModel(key = key))
                     rankingsMap[key] = i
                 }
 
