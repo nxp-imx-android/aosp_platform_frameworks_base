@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.content.DialogInterface
 import android.content.packageManager
 import android.graphics.Bitmap
@@ -66,9 +67,11 @@ import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.testKosmos
@@ -1074,6 +1077,159 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest!!["secondNotif"]).isEqualTo(RectF(2f, 2f, 2f, 2f))
             assertThat(latest!!["thirdNotif"]).isEqualTo(RectF(3f, 3f, 3f, 3f))
             assertThat(latest).doesNotContainKey("fourthNotif")
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifDidNotRequestPromotion_showsCallChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-notPromoted"
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = createStatusBarIconViewOrNull(),
+                requestedPromotion = false,
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+
+            assertIsCallChip(latest!!.active[0], key, context)
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifDidNotRequestPromotion_showsCallChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-notPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = false,
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = false,
+                    promotedContent = null,
+                )
+            )
+
+            assertIsCallChip(latest!!.primary, key, context)
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-requestedPromoted-andPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(
+                        PromotedNotificationContentBuilder(key).build()
+                    ),
+            )
+
+            assertIsNotifChip(latest!!.active[0], context, icon, key)
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-requestedPromoted-andPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            val promotedContent = PromotedNotificationContentBuilder(key).build()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(promotedContent),
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = true,
+                    promotedContent = promotedContent,
+                )
+            )
+
+            assertIsNotifChip(latest!!.primary, context, icon, key)
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-requestedPromoted-butNotPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                // Content will be null if notif wasn't actually promoted
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+
+            assertThat(latest!!.active).isEmpty()
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-requestedPromoted-butNotPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                // Content will be null if notif wasn't actually promoted
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = true,
+                    promotedContent = null,
+                )
+            )
+
+            assertThat(latest!!.primary).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
         }
 
     @DisableChipsModernization

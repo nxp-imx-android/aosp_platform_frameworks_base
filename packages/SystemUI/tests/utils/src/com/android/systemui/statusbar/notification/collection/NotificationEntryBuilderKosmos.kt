@@ -42,8 +42,8 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_IMPORTANT_PERSON
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.promoted.setPromotedContent
-import org.mockito.kotlin.mock
 import kotlin.random.Random
+import org.mockito.kotlin.mock
 
 fun Kosmos.setIconPackWithMockIconViews(entry: NotificationEntry) {
     entry.icons =
@@ -79,7 +79,12 @@ fun Kosmos.buildNotificationEntry(
     block: NotificationEntryBuilder.() -> Unit = {},
 ): NotificationEntry {
     return buildNotificationEntry(
-        tag = tag, promoted = promoted, style = style, context = applicationContext, block = block)
+        tag = tag,
+        promoted = promoted,
+        style = style,
+        context = applicationContext,
+        block = block,
+    )
 }
 
 fun Kosmos.buildNotificationEntry(
@@ -105,6 +110,7 @@ fun Kosmos.buildNotificationEntry(
                         FLAG_IMMUTABLE,
                     )
                 )
+                .setRequestPromotedOngoing(promoted)
             updateSbn {
                 setId(Random.nextInt())
                 setUser(UserHandle.of(ActivityManager.getCurrentUser()))
@@ -136,38 +142,28 @@ fun Kosmos.buildNotificationEntry(
         .also { setIconPackWithMockIconViews(it) }
 
 fun Kosmos.buildSummaryNotificationEntry(
-    block: NotificationEntryBuilder.() -> Unit = {},
-) : NotificationEntry =
-    buildNotificationEntry {
-        modifyNotification(applicationContext)
-            .setGroupSummary(true)
-            .setGroup("groupId")
-        updateRanking {
-            it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH))
-        }
-        updateSbn {
-            setTag("summary")
-            setGroup(applicationContext, "groupId")
-        }
-        apply(block)
+    block: NotificationEntryBuilder.() -> Unit = {}
+): NotificationEntry = buildNotificationEntry {
+    modifyNotification(applicationContext).setGroupSummary(true).setGroup("groupId")
+    updateRanking { it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH)) }
+    updateSbn {
+        setTag("summary")
+        setGroup(applicationContext, "groupId")
     }
+    apply(block)
+}
 
 fun Kosmos.buildChildNotificationEntry(
-    block: NotificationEntryBuilder.() -> Unit = {},
-) : NotificationEntry =
-    buildNotificationEntry {
-        modifyNotification(applicationContext)
-            .setGroupSummary(false)
-            .setGroup("groupId")
-        updateRanking {
-            it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH))
-        }
-        updateSbn {
-            setTag("child")
-            setGroup(applicationContext, "groupId")
-        }
-        apply(block)
+    block: NotificationEntryBuilder.() -> Unit = {}
+): NotificationEntry = buildNotificationEntry {
+    modifyNotification(applicationContext).setGroupSummary(false).setGroup("groupId")
+    updateRanking { it.setChannel(NotificationChannel("channel", "Channel", IMPORTANCE_HIGH)) }
+    updateSbn {
+        setTag("child")
+        setGroup(applicationContext, "groupId")
     }
+    apply(block)
+}
 
 private fun Kosmos.makeOngoingCallStyle(): Notification.CallStyle {
     val pendingIntent =

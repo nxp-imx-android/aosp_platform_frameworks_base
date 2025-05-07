@@ -165,6 +165,7 @@ constructor(
             notificationKey = model.key,
             appName = model.appName,
             promotedContent = model.promotedContent,
+            requestedPromotion = model.requestedPromotion,
             isAppVisible = isVisible,
             notificationInstanceId = model.instanceId,
         )

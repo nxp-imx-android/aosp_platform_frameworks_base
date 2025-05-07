@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
+import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.statusbar.window.fakeStatusBarWindowControllerStore
@@ -81,7 +82,9 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 startTimeMs = startTimeMs,
                 statusBarChipIconView = testIconView,
                 contentIntent = testIntent,
-                promotedContent = testPromotedContent,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(testPromotedContent),
                 isAppVisible = false,
             )
 
@@ -92,6 +95,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             assertThat(model.notificationIconView).isSameInstanceAs(testIconView)
             assertThat(model.intent).isSameInstanceAs(testIntent)
             assertThat(model.notificationKey).isEqualTo(key)
+            assertThat(model.requestedPromotion).isTrue()
             assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
             assertThat(model.isAppVisible).isFalse()
         }
@@ -112,7 +116,9 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 startTimeMs = startTimeMs,
                 statusBarChipIconView = testIconView,
                 contentIntent = testIntent,
-                promotedContent = testPromotedContent,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(testPromotedContent),
                 isAppVisible = true,
             )
 
@@ -124,6 +130,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             assertThat(model.notificationIconView).isSameInstanceAs(testIconView)
             assertThat(model.intent).isSameInstanceAs(testIntent)
             assertThat(model.notificationKey).isEqualTo(key)
+            assertThat(model.requestedPromotion).isTrue()
             assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
             assertThat(model.isAppVisible).isTrue()
         }
