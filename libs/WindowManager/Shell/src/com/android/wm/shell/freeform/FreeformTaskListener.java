@@ -139,7 +139,7 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 // triggered on a task and the task is closing. It will be marked as minimized in
                 // [DesktopTasksTransitionObserver] before it gets here.
                 repository.removeClosingTask(taskInfo.taskId);
-                repository.removeTask(taskInfo.displayId, taskInfo.taskId);
+                repository.removeTask(taskInfo.taskId);
             }
         }
         // TODO: b/367268649 - This listener shouldn't need to call the transition observer directly

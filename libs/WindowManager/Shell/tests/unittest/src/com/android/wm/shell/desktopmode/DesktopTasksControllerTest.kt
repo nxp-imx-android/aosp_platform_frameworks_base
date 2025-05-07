@@ -1291,7 +1291,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             setUpFreeformTask(active = false).apply {
                 topActivityInfo = ActivityInfo().apply { launchMode = LAUNCH_SINGLE_INSTANCE }
             }
-        taskRepository.removeTask(launchingTask.displayId, launchingTask.taskId)
+        taskRepository.removeTask(launchingTask.taskId)
         launchingTask.topActivity = testComponent
 
         // Move new instance to desktop. By default multi instance is not supported so first

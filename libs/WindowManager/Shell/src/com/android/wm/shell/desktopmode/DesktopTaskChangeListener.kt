@@ -33,16 +33,16 @@ class DesktopTaskChangeListener(
 
     override fun onTaskOpening(taskInfo: RunningTaskInfo) {
         logD("onTaskOpening for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
+        val desktopRepository: DesktopRepository =
+            desktopUserRepositories.getProfile(taskInfo.userId)
+        if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
+            desktopRepository.removeTask(taskInfo.taskId)
+            return
+        }
         if (
             !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            return
-        }
-        val desktopRepository: DesktopRepository =
-            desktopUserRepositories.getProfile(taskInfo.userId)
-        if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
-            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
             return
         }
         if (isFreeformTask(taskInfo) && !desktopRepository.isActiveTask(taskInfo.taskId)) {
@@ -70,7 +70,7 @@ class DesktopTaskChangeListener(
         // fullscreen,
         // remove the task from the desktop repository since it is no longer a freeform task.
         if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
-            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+            desktopRepository.removeTask(taskInfo.taskId)
         } else if (isFreeformTask(taskInfo)) {
             // If the task is already active in the repository, then moves task to the front,
             // else adds the task.
@@ -105,7 +105,7 @@ class DesktopTaskChangeListener(
         // When the task change is from a task in the desktop repository which is now fullscreen,
         // remove the task from the desktop repository since it is no longer a freeform task.
         if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
-            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+            desktopRepository.removeTask(taskInfo.taskId)
         }
         if (isFreeformTask(taskInfo)) {
             // If the task is already active in the repository, then it only moves the task to the
@@ -150,11 +150,11 @@ class DesktopTaskChangeListener(
             if (isMinimized) {
                 desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, isVisible = false)
             } else {
-                desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+                desktopRepository.removeTask(taskInfo.taskId)
             }
         } else {
             desktopRepository.removeClosingTask(taskInfo.taskId)
-            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+            desktopRepository.removeTask(taskInfo.taskId)
         }
     }
 
