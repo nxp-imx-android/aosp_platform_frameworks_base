@@ -964,6 +964,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
         }
 
+        if (mTmpControlArray.size() > 0) {
+            // Update surface positions for animations.
+            for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
+                mRunningAnimations.get(i).runner.updateSurfacePosition(mTmpControlArray);
+            }
+        }
+
         @InsetsType int controllableTypes = 0;
         int consumedControlCount = 0;
         final @InsetsType int[] showTypes = new int[1];
@@ -1004,13 +1011,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 final InsetsSourceControl control = mTmpControlArray.valueAt(i);
                 getSourceConsumer(control.getId(), control.getType())
                         .setControl(control, showTypes, hideTypes, cancelTypes, transientTypes);
-            }
-        }
-
-        if (mTmpControlArray.size() > 0) {
-            // Update surface positions for animations.
-            for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
-                mRunningAnimations.get(i).runner.updateSurfacePosition(mTmpControlArray);
             }
         }
         mTmpControlArray.clear();
