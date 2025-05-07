@@ -25,8 +25,6 @@ import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 
-import static com.android.window.flags.Flags.FLAG_SUPPORT_WIDGET_INTENTS_ON_CONNECTED_DISPLAY;
-
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -1043,7 +1041,6 @@ public class ActivityThreadTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_SUPPORT_WIDGET_INTENTS_ON_CONNECTED_DISPLAY)
     public void tesScheduleReceiver_withLaunchDisplayId_receivesDisplayContext() {
         final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         final Display virtualDisplay = createVirtualDisplay(context, 100 /* w */, 100 /* h */);
@@ -1063,7 +1060,6 @@ public class ActivityThreadTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_SUPPORT_WIDGET_INTENTS_ON_CONNECTED_DISPLAY)
     public void tesScheduleReceiver_withNotExistDisplayId_receivesNoneUiContext() {
         final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         final Display virtualDisplay = createVirtualDisplay(context, 100 /* w */, 100 /* h */);
@@ -1080,7 +1076,6 @@ public class ActivityThreadTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_SUPPORT_WIDGET_INTENTS_ON_CONNECTED_DISPLAY)
     public void tesScheduleReceiver_withInvalidDisplay_receivesNoneUiContext() {
         final Context context = mock(Context.class);
         final ActivityOptions activityOptions =
@@ -1095,7 +1090,6 @@ public class ActivityThreadTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_SUPPORT_WIDGET_INTENTS_ON_CONNECTED_DISPLAY)
     public void tesScheduleReceiver_withoutDisplayManagerService_receivesNoneUiContext() {
         final Context context = mock(Context.class);
         when(context.getSystemService(DisplayManager.class)).thenReturn(null);
