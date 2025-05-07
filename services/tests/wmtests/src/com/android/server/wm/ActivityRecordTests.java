@@ -3034,7 +3034,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         // The transform will be finished because there is no running animation. Keep activity in
         // animating state to avoid the transform being finished.
-        doReturn(true).when(activity).isAnimating(anyInt());
+        doReturn(true).when(activity).isAnimating(anyInt(), anyInt());
         // Make sure the fixed rotation transform linked to activity2 when adding starting window
         // on activity2.
         topActivity.addStartingWindow(mPackageName, android.R.style.Theme, activity, false, false,

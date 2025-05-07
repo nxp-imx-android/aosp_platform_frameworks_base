@@ -125,11 +125,8 @@ import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_
 import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_RECENT_TASKS;
 import static com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
-import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
-import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_INPUT_METHOD;
@@ -2858,18 +2855,11 @@ public class WindowManagerService extends IWindowManager.Stub
             } else if (win.isSelfAnimating(0 /* flags */, ANIMATION_TYPE_WINDOW_ANIMATION)) {
                 // This is already animating via a WMCore-driven window animation.
                 reason = "selfAnimating";
-            } else {
-                if (win.mTransitionController.isShellTransitionsEnabled()) {
-                    // Already animating as part of a shell-transition. Currently this only handles
-                    // activity window because other types should be WMCore-driven.
-                    if ((win.mActivityRecord != null && win.mActivityRecord.inTransition())) {
-                        win.mTransitionController.mAnimatingExitWindows.add(win);
-                        reason = "inTransition";
-                    }
-                } else if (win.isAnimating(PARENTS | TRANSITION, ANIMATION_TYPE_APP_TRANSITION)) {
-                    // Already animating as part of a legacy app-transition.
-                    reason = "inLegacyTransition";
-                }
+            } else if (win.mActivityRecord != null && win.mActivityRecord.inTransition()) {
+                // Already animating as part of a shell-transition. Currently this only handles
+                // activity window because other types should be WMCore-driven.
+                win.mTransitionController.mAnimatingExitWindows.add(win);
+                reason = "inTransition";
             }
             if (reason != null) {
                 win.mAnimatingExit = true;
@@ -9152,7 +9142,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 animateStarting = !mAtmService.getTransitionController().isShellTransitionsEnabled()
                         && mRoot.forAllActivities(ActivityRecord::hasStartingWindow);
                 boolean isAnimating = mAnimator.isAnimationScheduled()
-                        || mRoot.isAnimating(TRANSITION | CHILDREN, ANIMATION_TYPE_ALL)
+                        || mRoot.isAnimating(CHILDREN, ANIMATION_TYPE_ALL)
                         || animateStarting;
                 if (!isAnimating) {
                     // isAnimating is a legacy transition query and will be removed, so also add
@@ -9171,8 +9161,7 @@ public class WindowManagerService extends IWindowManager.Stub
             mAnimator.mNotifyWhenNoAnimation = false;
 
             WindowContainer animatingContainer;
-            animatingContainer = mRoot.getAnimatingContainer(TRANSITION | CHILDREN,
-                    ANIMATION_TYPE_ALL);
+            animatingContainer = mRoot.getAnimatingContainer(CHILDREN, ANIMATION_TYPE_ALL);
             if (mAnimator.isAnimationScheduled() || animatingContainer != null || animateStarting) {
                 Slog.w(TAG, "Timed out waiting for animations to complete,"
                         + " animatingContainer=" + animatingContainer

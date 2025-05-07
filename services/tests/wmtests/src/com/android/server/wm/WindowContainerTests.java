@@ -51,7 +51,6 @@ import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITIO
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_SCREEN_ROTATION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
@@ -416,11 +415,11 @@ public class WindowContainerTests extends WindowTestsBase {
 
         assertFalse(root.isAnimating());
         assertFalse(child1.isAnimating());
-        assertFalse(child1.isAnimating(PARENTS));
+        assertFalse(child1.isAnimating(PARENTS, ANIMATION_TYPE_ALL));
         assertTrue(child2.isAnimating());
-        assertTrue(child2.isAnimating(PARENTS));
+        assertTrue(child2.isAnimating(PARENTS, ANIMATION_TYPE_ALL));
         assertFalse(child21.isAnimating());
-        assertTrue(child21.isAnimating(PARENTS));
+        assertTrue(child21.isAnimating(PARENTS, ANIMATION_TYPE_ALL));
     }
 
     @Test
@@ -432,39 +431,13 @@ public class WindowContainerTests extends WindowTestsBase {
         final TestWindowContainer child11 = child1.addChildWindow(builder.setIsAnimating(true));
 
         assertFalse(root.isAnimating());
-        assertTrue(root.isAnimating(CHILDREN));
+        assertTrue(root.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
         assertFalse(child1.isAnimating());
-        assertTrue(child1.isAnimating(CHILDREN));
+        assertTrue(child1.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
         assertTrue(child2.isAnimating());
-        assertTrue(child2.isAnimating(CHILDREN));
+        assertTrue(child2.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
         assertTrue(child11.isAnimating());
-        assertTrue(child11.isAnimating(CHILDREN));
-    }
-
-    @Test
-    public void testIsAnimating_combineFlags() {
-        final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
-        final TestWindowContainer root = builder.setLayer(0).build();
-
-        final TestWindowContainer child1 = root.addChildWindow(builder.setIsAnimating(true));
-        final TestWindowContainer child2 = root.addChildWindow();
-        final TestWindowContainer child11 = child1.addChildWindow();
-        final TestWindowContainer child12 = child1.addChildWindow(builder.setIsAnimating(true));
-        final TestWindowContainer child21 = child2.addChildWindow();
-
-        assertFalse(root.isAnimating(TRANSITION | PARENTS));
-        assertTrue(child1.isAnimating(TRANSITION | PARENTS));
-        assertTrue(child11.isAnimating(TRANSITION | PARENTS));
-        assertTrue(child12.isAnimating(TRANSITION | PARENTS));
-        assertFalse(child2.isAnimating(TRANSITION | PARENTS));
-        assertFalse(child21.isAnimating(TRANSITION | PARENTS));
-
-        assertTrue(root.isAnimating(TRANSITION | CHILDREN));
-        assertTrue(child1.isAnimating(TRANSITION | CHILDREN));
-        assertFalse(child11.isAnimating(TRANSITION | CHILDREN));
-        assertTrue(child12.isAnimating(TRANSITION | CHILDREN));
-        assertFalse(child2.isAnimating(TRANSITION | CHILDREN));
-        assertFalse(child21.isAnimating(TRANSITION | CHILDREN));
+        assertTrue(child11.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
     }
 
     @Test
@@ -479,7 +452,7 @@ public class WindowContainerTests extends WindowTestsBase {
 
         final TestWindowContainer child = window.addChildWindow();
         assertFalse(child.isAnimating());
-        assertTrue(child.isAnimating(PARENTS));
+        assertTrue(child.isAnimating(PARENTS, ANIMATION_TYPE_ALL));
         assertTrue(child.isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION));
         assertFalse(child.isAnimating(PARENTS, ANIMATION_TYPE_SCREEN_ROTATION));
 
@@ -490,10 +463,10 @@ public class WindowContainerTests extends WindowTestsBase {
         doReturn(true).when(windowState.mSurfaceAnimator).isAnimating();
         doReturn(ANIMATION_TYPE_APP_TRANSITION).when(
                 windowState.mSurfaceAnimator).getAnimationType();
-        assertTrue(parent.isAnimating(CHILDREN));
+        assertTrue(parent.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
 
         windowState.setControllableInsetProvider(mock(InsetsSourceProvider.class));
-        assertFalse(parent.isAnimating(CHILDREN));
+        assertFalse(parent.isAnimating(CHILDREN, ANIMATION_TYPE_ALL));
     }
 
     @Test
