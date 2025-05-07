@@ -2016,6 +2016,16 @@ flag {
 }
 
 flag {
+    name: "enable_constraint_layout_lockscreen_on_external_display"
+    namespace: "systemui"
+    description: "Uses a constraint layout to have clocks on the extenral display lockscreen"
+    bug: "415295016"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "hub_edit_mode_transition"
    namespace: "systemui"
    description: "Fix hub to edit mode transition issues"
