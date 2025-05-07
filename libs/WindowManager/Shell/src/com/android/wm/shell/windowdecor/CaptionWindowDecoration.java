@@ -208,7 +208,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         // synced with the buffer transaction (that draws the View). Both will be shown on screen
         // at the same, whereas applying them independently causes flickering. See b/270202228.
         relayout(taskInfo, t, t, true /* applyStartTransactionOnDraw */,
-                shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, displayExclusionRegion);
+                shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, displayExclusionRegion,
+                /* inSyncWithTransition= */ false);
     }
 
     @VisibleForTesting
@@ -223,7 +224,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             InsetsState displayInsetsState,
             boolean hasGlobalFocus,
             @NonNull Region globalExclusionRegion,
-            boolean shouldSetBackground) {
+            boolean shouldSetBackground,
+            boolean inSyncWithTransition) {
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
@@ -244,6 +246,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         relayoutParams.mIsCaptionVisible = taskInfo.isFreeform()
                 || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
         relayoutParams.mDisplayExclusionRegion.set(globalExclusionRegion);
+        relayoutParams.mInSyncWithTransition = inSyncWithTransition;
 
         if (TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo)) {
             // If the app is requesting to customize the caption bar, allow input to fall
@@ -275,7 +278,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus,
-            @NonNull Region globalExclusionRegion) {
+            @NonNull Region globalExclusionRegion, boolean inSyncWithTransition) {
         final boolean isFreeform =
                 taskInfo.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM;
         final boolean isDragResizeable = ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
@@ -289,7 +292,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 shouldSetTaskVisibilityPositionAndCrop, mIsStatusBarVisible,
                 mIsKeyguardVisibleAndOccluded,
                 mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
-                globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo));
+                globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo),
+                inSyncWithTransition);
 
         relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo

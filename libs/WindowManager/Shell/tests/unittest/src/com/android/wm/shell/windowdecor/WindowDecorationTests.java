@@ -261,7 +261,16 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void testLayoutResultCalculation_visibleFocusedTask() {
+    public void testLayoutResultCalculation_visibleFocusedTask_inSyncWithTransition() {
+        testLayoutResultCalculation_visibleFocusedTask(/* inSyncWithTransition= */ true);
+    }
+
+    @Test
+    public void testLayoutResultCalculation_visibleFocusedTask_NotInSyncWithTransition() {
+        testLayoutResultCalculation_visibleFocusedTask(/* inSyncWithTransition= */ false);
+    }
+
+    void testLayoutResultCalculation_visibleFocusedTask(boolean inSyncWithTransition) {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
@@ -282,6 +291,7 @@ public class WindowDecorationTests extends ShellTestCase {
         taskInfo.configuration.densityDpi = DisplayMetrics.DENSITY_DEFAULT * 2;
         final TestWindowDecoration windowDecor = createWindowDecoration(taskInfo);
         mRelayoutParams.mIsCaptionVisible = true;
+        mRelayoutParams.mInSyncWithTransition = inSyncWithTransition;
 
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
 
@@ -314,20 +324,41 @@ public class WindowDecorationTests extends ShellTestCase {
                 anyInt());
 
         if (Flags.enableFreeformBoxShadows()) {
-            verify(mMockSurfaceControlStartT).setBoxShadowSettings(eq(mMockTaskSurface), any());
-            verify(mMockSurfaceControlFinishT).setBoxShadowSettings(eq(mMockTaskSurface), any());
-            verify(mMockSurfaceControlStartT).setBorderSettings(eq(mMockTaskSurface), any());
-            verify(mMockSurfaceControlFinishT).setBorderSettings(eq(mMockTaskSurface), any());
+            if (inSyncWithTransition) {
+                verify(mMockSurfaceControlStartT).setBoxShadowSettings(eq(mMockTaskSurface), any());
+                verify(mMockSurfaceControlFinishT).setBoxShadowSettings(eq(mMockTaskSurface),
+                        any());
+                verify(mMockSurfaceControlStartT).setBorderSettings(eq(mMockTaskSurface), any());
+                verify(mMockSurfaceControlFinishT).setBorderSettings(eq(mMockTaskSurface), any());
+            } else {
+                verify(mMockSurfaceControlStartT, never()).setBoxShadowSettings(
+                        eq(mMockTaskSurface), any());
+                verify(mMockSurfaceControlFinishT, never()).setBoxShadowSettings(
+                        eq(mMockTaskSurface), any());
+                verify(mMockSurfaceControlStartT, never()).setBorderSettings(eq(mMockTaskSurface),
+                        any());
+                verify(mMockSurfaceControlFinishT, never()).setBorderSettings(eq(mMockTaskSurface),
+                        any());
+            }
         } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-            final int cornerRadius = WindowDecoration.loadDimensionPixelSize(
-                    windowDecor.mDecorWindowContext.getResources(),
-                    mRelayoutParams.mCornerRadiusId);
-            verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, cornerRadius);
-            verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, cornerRadius);
-            final int shadowRadius = WindowDecoration.loadDimensionPixelSize(
-                    windowDecor.mDecorWindowContext.getResources(),
-                    mRelayoutParams.mShadowRadiusId);
-            verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, shadowRadius);
+            if (inSyncWithTransition) {
+                final int cornerRadius = WindowDecoration.loadDimensionPixelSize(
+                        windowDecor.mDecorWindowContext.getResources(),
+                        mRelayoutParams.mCornerRadiusId);
+                verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, cornerRadius);
+                verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, cornerRadius);
+                final int shadowRadius = WindowDecoration.loadDimensionPixelSize(
+                        windowDecor.mDecorWindowContext.getResources(),
+                        mRelayoutParams.mShadowRadiusId);
+                verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, shadowRadius);
+            } else {
+                verify(mMockSurfaceControlStartT, never()).setCornerRadius(eq(mMockTaskSurface),
+                        anyFloat());
+                verify(mMockSurfaceControlFinishT, never()).setCornerRadius(eq(mMockTaskSurface),
+                        anyFloat());
+                verify(mMockSurfaceControlStartT, never()).setShadowRadius(eq(mMockTaskSurface),
+                        anyFloat());
+            }
         } else {
             verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
             verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
