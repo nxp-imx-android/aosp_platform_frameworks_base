@@ -249,11 +249,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "dump_bitmaps"
-    namespace: "system_performance"
-    is_fixed_read_only: true
-    description: "Allow am to dump information and contents of bitmaps"
-    bug: "369619160"
-}
