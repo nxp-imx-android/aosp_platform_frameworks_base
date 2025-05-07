@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Permitir"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Non se permite a depuración sen fíos"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"O usuario coa sesión iniciada actualmente neste dispositivo non pode activar a depuración sen fíos. Para utilizar esta función, cambia ao usuario administrador."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"O porto USB está desactivado"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Para protexer o dispositivo de líquidos ou residuos, desactivouse o porto USB e non detectará ningún accesorio.\n\nRecibirás unha notificación cando o poidas utilizar de novo."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Activouse o porto USB para detectar cargadores e accesorios"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Sen configurar"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Xestionar na configuración"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Non hai ningún modo activo}=1{{mode} está activo}other{Hai # modos activos}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> modos"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Activados"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Non te molestará ningún son nin vibración, agás os procedentes de alarmas, recordatorios, eventos e os emisores de chamada especificados. Seguirás escoitando todo aquilo que decidas reproducir, mesmo a música, os vídeos e os xogos."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Non te molestará ningún son nin vibración, agás os procedentes de alarmas. Seguirás escoitando todo aquilo que decidas reproducir, mesmo a música, os vídeos e os xogos."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Desbloqueado por un axente de confianza"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Bloqueouse o dispositivo por un exceso de intentos de autenticación"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Bloqueouse o dispositivo\nProduciuse un erro na autenticación"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Dispositivo bloqueado polo reloxo"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Configuración do son"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Crear subtítulos automáticos"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Como mínimo ten que haber <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaicos"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar os atallos"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos e segundos"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Outros"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"cambiar o tamaño do atallo"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Quitar o atallo"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Colocar un atallo"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"activar ou desactivar o modo de posición"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"activar ou desactivar a selección"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Engadir o atallo á última posición"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Engadir <xliff:g id="NAME">%1$s</xliff:g> á última posición"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mover atallo"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Engadir o atallo á última posición"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Mover a <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pór a animación en pausa"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Chamada en curso"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"En curso"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"despregar a notificación"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"contraer a notificación"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Datos móbiles"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Conectada"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Conectada temporalmente"</string>

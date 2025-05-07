@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Разрешаване"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Безжичното отстраняване на грешки не е разрешено"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Потребителят, който понастоящем е влязъл в това устройство, не може да включи функцията за безжично отстраняване на грешки. За да я използвате, превключете към потребител с администраторски достъп."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB портът е деактивиран"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"С цел защита на устройството ви от течности и замърсяване USB портът е деактивиран и няма да открива аксесоари.\n\nЩе получите известие, когато можете отново да използвате USB порта."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB портът може да разпознава зарядни устройства и аксесоари"</string>
@@ -361,7 +363,7 @@
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Инвертиране на цветовете"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекция на цветове"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Размер на шрифта"</string>
-    <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Управляване"</string>
+    <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Управление на потребителите"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Готово"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Затваряне"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Установена е връзка"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Не е зададено"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Управление от настройките"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Няма активни режими}=1{Режимът „{mode}“ е активен}other{# активни режима}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> режима"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Вкл."</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Няма да бъдете обезпокоявани от звуци и вибрирания освен от будилници, напомняния, събития и обаждания от посочени от вас контакти. Пак ще чувате всичко, което изберете да се пусне, включително музика, видеоклипове и игри."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Няма да бъдете обезпокоявани от звуци и вибрирания освен от будилници. Ще чувате обаче всичко, което изберете пуснете, включително музика, видеоклипове и игри."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поддържа се отключено от надежден агент"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Устройството бе заключено. Твърде много опити за удостоверяване"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Устройството е заключено\nНеуспешно удостоверяване"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Отключено от часовника ви"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Настройки за звука"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Медия с автоматични надписи"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Трябва да останат поне <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> плочки"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Редактиране"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Редактиране на панелите"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Час"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Показване на часовете, минутите и секундите"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Друго"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"превключване на размера на панела"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Премахване на панел"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Поставяне на плочката"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"превключване на режима за поставяне"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"превключване на избраното"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Добавяне на панела на последната позиция"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Добавяне на <xliff:g id="NAME">%1$s</xliff:g> на последната позиция"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместване на панел"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Добавяне на панела на желаната позиция"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Преместване към позиция <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1397,7 +1399,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Визуализация на изображението"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"редактиране"</string>
     <string name="add" msgid="81036585205287996">"Добавяне"</string>
-    <string name="manage_users" msgid="1823875311934643849">"Потребители"</string>
+    <string name="manage_users" msgid="1823875311934643849">"Управление на потребителите"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Това известие не поддържа плъзгане за разделяне на екрана"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Местоположението е активно"</string>
     <string name="dream_overlay_status_bar_wifi_off" msgid="4497069245055003582">"Wi‑Fi не е налице"</string>

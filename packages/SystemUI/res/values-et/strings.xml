@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Luba"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Juhtmevaba silumine pole lubatud"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Sellesse seadmesse praegu sisse logitud kasutaja ei saa juhtmevaba silumist sisse lülitada. Selle funktsiooni kasutamiseks vahetage administraatoriõigustega kasutajale."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-port on keelatud"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Selleks et kaitsta teie seadet vedeliku või mustuse eest, on USB-port keelatud ja see ei tuvasta lisatarvikuid.\n\nKui USB-porti tohib taas kasutada, saate selle kohta märguande."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB-pordil on lubatud tuvastada laadijaid ja tarvikuid"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Määramata"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Seadetes halamine"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Aktiivsed režiimid puuduvad}=1{{mode} on aktiivne}other{# režiimi on aktiivsed}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> režiimi"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Sees"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Helid ja värinad ei sega teid. Kuulete siiski enda määratud äratusi, meeldetuletusi, sündmusi ja helistajaid. Samuti kuulete kõike, mille esitamise ise valite, sh muusika, videod ja mängud."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Helid ja värinad ei sega teid. Kuulete siiski äratusi. Samuti kuulete kõike, mille esitamise ise valite, sh muusika, videod ja mängud."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Avatuna hoiab TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Seade lukustati, liiga palju autentimiskatseid."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Seade on lukustatud\nAutentimine ebaõnnestus"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Lukustatud teie kellaga"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Heliseaded"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automaatsed subtiitrid"</string>
@@ -1000,13 +1002,15 @@
     <string name="left_icon" msgid="5036278531966897006">"Vasak ikoon"</string>
     <string name="right_icon" msgid="1103955040645237425">"Parem ikoon"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Paanide lisamiseks hoidke all ja lohistage"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Paanide ümberpaigutamiseks hoidke neid all ja lohistage"</string>
+    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Paanide ümberpaigutamiseks hoidke neid all ja lohistage."</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Valige ümberkorraldamiseks ja suuruse muutmiseks paanid."</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Paani paigutamiseks puudutage"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Lohistage eemaldamiseks siia"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Teil on vaja vähemalt <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> paani"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Muutmine"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Paanide muutmine"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Kellaaeg"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Kuva tunnid, minutid ja sekundid"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Muu"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"muutke paani suurust"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Paani eemaldamine"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Paani asetamine"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"paigutuse režiimi lülitamiseks"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"valiku vahetamiseks"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Paani lisamine viimasesse asukohta"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Lisa <xliff:g id="NAME">%1$s</xliff:g> viimasele positsioonile"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Teisalda paan"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lisage paan soovitud asukohta"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Teisaldamine asendisse <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Peata animatsioon"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Käimasolev kõne"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Pooleli"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"laiendamise märguanne"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"ahendamise märguanne"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiilne andmeside"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Ühendatud"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Ajutiselt ühendatud"</string>

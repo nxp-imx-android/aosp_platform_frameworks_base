@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"اجازه دادن"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"اشکال‌زدایی بی‌سیم مجاز نیست"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"کاربری که درحال‌حاضر به سیستم این دستگاه وارد شده است نمی‌تواند اشکال‌زدایی بی‌سیم را روشن کند. برای استفاده از این ویژگی، به کاربر سرپرست تغییر وضعیت دهید."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"‏درگاه USB غیرفعال شده است"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"‏برای محافظت از دستگاهتان دربرابر مایعات یا خاکروبه، درگاه USB غیرفعال شده است و هیچ‌کدام از لوازم جانبی را شناسایی نخواهد کرد.\n\nهرزمان که استفاده از درگاه USB امکان‌پذیر باشد، به شما اطلاع داده می‌شود."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"‏درگاه USB برای تشخیص شارژرها و لوازم جانبی فعال شد"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"تنظیم نشده است"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"مدیریت در تنظیمات"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{حالت فعالی وجود ندارد}=1{‫{mode} فعال است}one{‫# حالت فعال است}other{‫# حالت فعال است}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"‫<xliff:g id="NUMBER">%s</xliff:g> حالت"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"روشن"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"به‌جز هشدارها، یادآوری‌ها، رویدادها و تماس‌گیرندگانی که خودتان مشخص می‌کنید، هیچ صدا و لرزشی نخواهید داشت. همچنان صدای مواردی را که پخش می‌کنید می‌شنوید (ازجمله صدای موسیقی، ویدیو و بازی)."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"به‌جز هشدارها، هیچ صدا و لرزشی نخواهید داشت. همچنان صدای مواردی را که پخش می‌کنید می‌شنوید (ازجمله صدای موسیقی، ویدیو و بازی)."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"‏با TrustAgent قفل را باز نگه‌دارید"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"به‌دلیل تلاش‌های بیش‌از حد برای اصالت‌سنجی، دستگاه قفل شد"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"دستگاه قفل شد\nاصالت‌سنجی ناموفق بود"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ازطریق ساعتتان قفل شده است"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. ‏<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"تنظیمات صدا"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"رسانه زیرنویس خودکار"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"حداقل به <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> کاشی نیاز دارید"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ویرایش"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ویرایش کردن کاشی‌ها"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"زمان"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ساعت، دقیقه و ثانیه نشان داده شود"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"موارد دیگر"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"تغییر اندازه کاشی"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"برداشتن کاشی"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"جای‌گذاری کاشی"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"روشن/خاموش کردن حالت جای‌گذاری"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"تغییر وضعیت انتخاب"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"افزودن کاشی به آخرین جایگاه"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"افزودن <xliff:g id="NAME">%1$s</xliff:g> به آخرین جایگاه"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"انتقال کاشی"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"افزودن کاشی به جایگاه دلخواه"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"انتقال به <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"توقف موقت پویانمایی"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"تماس درحال انجام"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"درحال انجام"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"ازهم بازکردن اعلان"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"جمع کردن اعلان"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"داده تلفن همراه"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"متصل است"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"موقتاً متصل است"</string>
