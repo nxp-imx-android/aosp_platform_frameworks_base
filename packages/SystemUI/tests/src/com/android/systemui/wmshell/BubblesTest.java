@@ -48,7 +48,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -2752,20 +2751,11 @@ public class BubblesTest extends SysuiTestCase {
         verify(stackView, never()).showOverflow(anyBoolean());
     }
 
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_addBubble() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_POSTED));
-    }
-
+    // TODO (b/216523800): There's a test in BubbleControllerBubbleBarTest verifying this logging,
+    //  however, it doesn't do it via the notification entry listener, it calls the method within
+    //  BubbleController that would eventually be called. We can remove this test from BubblesTest
+    //  once we have something that validates entryListener#onEntryUpdated -> calls what's needed
+    //  in BubbleController.
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
     @Test
     public void testEventLogging_bubbleBar_updateBubble() {
@@ -2781,172 +2771,6 @@ public class BubblesTest extends SysuiTestCase {
 
         verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
                 eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_UPDATED));
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_dragSelectedBubbleToDismiss() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-        mEntryListener.onEntryAdded(mEntry2);
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(mEntry2.getKey(), 0);
-
-        clearInvocations(mBubbleLogger);
-
-        // Dismiss selected bubble
-        mBubbleController.startBubbleDrag(mEntry2.getKey());
-        mBubbleController.dragBubbleToDismiss(mEntry2.getKey(), System.currentTimeMillis());
-
-        // Log bubble dismissed via drag and new bubble selected
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry2.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_BUBBLE));
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED));
-
-        verifyNoMoreInteractions(mBubbleLogger);
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_dragOtherBubbleToDismiss() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-        mEntryListener.onEntryAdded(mEntry2);
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(mEntry2.getKey(), 0);
-
-        clearInvocations(mBubbleLogger);
-
-        // Dismiss other bubble
-        mBubbleController.startBubbleDrag(mEntry.getKey());
-        mBubbleController.dragBubbleToDismiss(mEntry.getKey(), System.currentTimeMillis());
-
-        // Log bubble dismissed via drag, but no switch event
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_BUBBLE));
-
-        verifyNoMoreInteractions(mBubbleLogger);
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_dragBarToDismiss() {
-        mPositioner.setIsLargeScreen(true);
-
-        // Not a user gesture, should not log an event
-        mBubbleController.removeAllBubbles(Bubbles.DISMISS_NO_LONGER_BUBBLE);
-        verify(mBubbleLogger, never()).log(BubbleLogger.Event.BUBBLE_BAR_DISMISSED_DRAG_BAR);
-
-        // Dismiss via user gesture, log an event
-        mBubbleController.removeAllBubbles(Bubbles.DISMISS_USER_GESTURE);
-        verify(mBubbleLogger).log(BubbleLogger.Event.BUBBLE_BAR_DISMISSED_DRAG_BAR);
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_expandAndCollapse() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(mEntry.getKey(), 0);
-
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_EXPANDED));
-
-        mBubbleController.collapseStack();
-
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_COLLAPSED));
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_autoExpandingBubble() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        setMetadataFlags(mEntry,
-                Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE, true /* enableFlag */);
-        mEntryListener.onEntryAdded(mEntry);
-
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_EXPANDED));
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_switchBubble() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-        mEntryListener.onEntryAdded(mEntry2);
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(mEntry.getKey(), 0);
-
-        // First select is expand
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_EXPANDED));
-        verify(mBubbleLogger, never()).log(eqBubbleWithKey(mEntry.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED));
-
-        // Second select is switch
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(mEntry2.getKey(), 0);
-        verify(mBubbleLogger).log(eqBubbleWithKey(mEntry2.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED));
-        verify(mBubbleLogger, never()).log(eqBubbleWithKey(mEntry2.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_EXPANDED));
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_openOverflow() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-
-        clearInvocations(mBubbleLogger);
-        mBubbleController.expandStackAndSelectBubbleFromLauncher(BubbleOverflow.KEY, 0);
-        verify(mBubbleLogger).log(BubbleLogger.Event.BUBBLE_BAR_OVERFLOW_SELECTED);
-        verifyNoMoreInteractions(mBubbleLogger);
-    }
-
-    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
-    @Test
-    public void testEventLogging_bubbleBar_fromOverflowToBar() {
-        mPositioner.setIsLargeScreen(true);
-        mBubbleController.setLauncherHasBubbleBar(true);
-        FakeBubbleStateListener bubbleStateListener = new FakeBubbleStateListener();
-        mBubbleController.registerBubbleStateListener(bubbleStateListener);
-
-        mEntryListener.onEntryAdded(mEntry);
-
-        // Dismiss the bubble so it's in the overflow
-        mBubbleController.removeBubble(
-                mEntry.getKey(), Bubbles.DISMISS_USER_GESTURE);
-        Bubble overflowBubble = mBubbleData.getOverflowBubbleWithKey(mEntry.getKey());
-        assertThat(overflowBubble).isNotNull();
-
-        // Promote overflow bubble and check that it is logged
-        mBubbleController.promoteBubbleFromOverflow(overflowBubble);
-        verify(mBubbleLogger).log(eqBubbleWithKey(overflowBubble.getKey()),
-                eq(BubbleLogger.Event.BUBBLE_BAR_OVERFLOW_REMOVE_BACK_TO_BAR));
     }
 
     /** Creates a bubble using the userId and package. */
