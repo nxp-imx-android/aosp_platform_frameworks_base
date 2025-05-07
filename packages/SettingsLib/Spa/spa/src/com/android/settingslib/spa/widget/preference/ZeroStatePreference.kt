@@ -19,6 +19,7 @@ package com.android.settingslib.spa.widget.preference
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -62,7 +63,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String? = null, description: St
     val clip = remember(zeroStateShape) {
         RoundedPolygonShape(polygon = zeroStateShape)
     }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .clip(clip)
