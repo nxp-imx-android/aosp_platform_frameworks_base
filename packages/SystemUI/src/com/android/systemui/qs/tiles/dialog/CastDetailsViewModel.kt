@@ -57,7 +57,9 @@ constructor(
     }
 
     fun createChooserContentManager(): MediaRouteChooserContentManager {
-        return MediaRouteChooserContentManager(context, this)
+        val manager = MediaRouteChooserContentManager(context, this)
+        manager.routeTypes = this.routeTypes
+        return manager
     }
 
     fun createControllerContentManager(): MediaRouteControllerContentManager {
