@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.app.ActivityTaskManager
 import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
@@ -26,6 +27,7 @@ import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.res.R
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.concurrent.Executor
@@ -35,6 +37,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -49,6 +52,9 @@ interface AmbientCueRepository {
 
     /** If IME is visible or not. */
     val isImeVisible: MutableStateFlow<Boolean>
+
+    /** Task Id which is globally focused on display. */
+    val globallyFocusedTaskId: StateFlow<Int>
 }
 
 @SysUISingleton
@@ -59,6 +65,7 @@ constructor(
     private val smartSpaceManager: SmartspaceManager?,
     @Background executor: Executor,
     @Application applicationContext: Context,
+    focusdDisplayRepository: FocusedDisplayRepository,
 ) : AmbientCueRepository {
 
     override val actions: StateFlow<List<ActionModel>> =
@@ -114,11 +121,21 @@ constructor(
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    override val globallyFocusedTaskId: StateFlow<Int> =
+        focusdDisplayRepository.globallyFocusedTask
+            .map { it?.taskId ?: INVALID_TASK_ID }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = INVALID_TASK_ID,
+            )
+
     companion object {
         // Surface that PCC wants to push cards into
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
+        private const val INVALID_TASK_ID = ActivityTaskManager.INVALID_TASK_ID
     }
 }
