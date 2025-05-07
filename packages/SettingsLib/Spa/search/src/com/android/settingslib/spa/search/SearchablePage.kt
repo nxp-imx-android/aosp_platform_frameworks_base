@@ -22,7 +22,7 @@ interface SearchablePage {
     data class SearchItem(val itemTitle: String, val keywords: String? = null)
 
     /** Gets the title of the page. */
-    fun getPageTitleForSearch(context: Context): String
+    fun getPageTitleForSearch(context: Context): String = ""
 
     /** Gets the titles of the searchable items at the current moment. */
     fun getSearchItems(context: Context): List<SearchItem>
