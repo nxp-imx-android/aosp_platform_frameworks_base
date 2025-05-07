@@ -209,7 +209,6 @@ private class GridDragDropStateV1(
     private val scrollChannel = Channel<Float>()
 
     private val spacer = CommunalContentModel.Spacer(CommunalContentSize.Responsive(1))
-    private var spacerIndex: Int? = null
 
     private var previousTargetItemKey: Any? = null
 
@@ -248,7 +247,6 @@ private class GridDragDropStateV1(
                         lastWidget.size.span > draggingItemLayoutInfo!!.span
                 ) {
                     contentListState.list.add(spacer)
-                    spacerIndex = contentListState.list.size - 1
                 }
                 return true
             }
@@ -272,10 +270,12 @@ private class GridDragDropStateV1(
         previousTargetItemKey = null
         draggingItemDraggedDelta = Offset.Zero
         draggingItemInitialOffset = Offset.Zero
-        // Remove spacer, if any, when a drag gesture finishes.
-        spacerIndex?.let {
-            contentListState.list.removeAt(it)
-            spacerIndex = null
+        // Remove spacer, if one is added at the end, when a drag gesture finishes.
+        if (
+            contentListState.list.isNotEmpty() &&
+                contentListState.list.last() is CommunalContentModel.Spacer
+        ) {
+            contentListState.list.removeLast()
         }
     }
 
@@ -395,7 +395,6 @@ private class GridDragDropStateV2(
     private var draggingItemWhileScrolling: LazyGridItemInfo? by mutableStateOf(null)
 
     private val spacer = CommunalContentModel.Spacer(CommunalContentSize.Responsive(1))
-    private var spacerIndex: Int? = null
 
     private var previousTargetItemKey: Any? = null
 
@@ -468,7 +467,6 @@ private class GridDragDropStateV2(
                         lastWidget.size.span > draggingItemLayoutInfo!!.span
                 ) {
                     contentListState.list.add(spacer)
-                    spacerIndex = contentListState.list.size - 1
                 }
                 return true
             }
@@ -494,10 +492,12 @@ private class GridDragDropStateV2(
         draggingItemInitialOffset = Offset.Zero
         currentDragPositionOnScreen = Offset.Zero
         draggingItemWhileScrolling = null
-        // Remove spacer, if any, when a drag gesture finishes.
-        spacerIndex?.let {
-            contentListState.list.removeAt(it)
-            spacerIndex = null
+        // Remove spacer, if one is added at the end, when a drag gesture finishes.
+        if (
+            contentListState.list.isNotEmpty() &&
+                contentListState.list.last() is CommunalContentModel.Spacer
+        ) {
+            contentListState.list.removeLast()
         }
     }
 
