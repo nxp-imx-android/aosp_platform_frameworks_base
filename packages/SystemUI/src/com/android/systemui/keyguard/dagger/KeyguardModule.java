@@ -125,6 +125,7 @@ import java.util.concurrent.Executor;
             StartKeyguardTransitionModule.class,
             ResourceTrimmerModule.class,
             BouncerLoggerModule.class,
+            KeyguardConnectedDisplaysModule.class,
         })
 public interface KeyguardModule {
     /**
