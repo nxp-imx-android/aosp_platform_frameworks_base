@@ -140,9 +140,7 @@ class DropTargetManager(
         val currentDragZone = dropState.currentDragZone
         if (currentDragZone == null) {
             startFadeAnimation(dropTargetView, to = 0f)
-            startFadeAnimation(secondDropTargetView, to = 0f) {
-                container.removeView(secondDropTargetView)
-            }
+            startFadeAnimation(secondDropTargetView, to = 0f)
             return
         }
         val dropTargetRect = currentDragZone.dropTarget
