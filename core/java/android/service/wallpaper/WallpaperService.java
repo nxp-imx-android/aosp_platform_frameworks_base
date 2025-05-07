@@ -32,7 +32,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.flags.Flags.disableDrawWakeLock;
 
 import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
-import static com.android.window.flags.Flags.noDuplicateSurfaceDestroyedEvents;
 import static com.android.window.flags.Flags.noConsecutiveVisibilityEvents;
 import static com.android.window.flags.Flags.offloadColorExtraction;
 
@@ -1129,9 +1128,7 @@ public abstract class WallpaperService extends Service {
             out.print(prefix); out.print("mDisplay="); out.println(mDisplay);
             out.print(prefix); out.print("mCreated="); out.print(mCreated);
                     out.print(" mSurfaceCreated="); out.print(mSurfaceCreated);
-                    if (noDuplicateSurfaceDestroyedEvents()) {
-                        out.print(" mReportedSurfaceCreated="); out.print(mReportedSurfaceCreated);
-                    }
+                    out.print(" mReportedSurfaceCreated="); out.print(mReportedSurfaceCreated);
                     out.print(" mIsCreating="); out.print(mIsCreating);
                     out.print(" mDrawingAllowed="); out.println(mDrawingAllowed);
             out.print(prefix); out.print("mWidth="); out.print(mWidth);
@@ -2343,8 +2340,7 @@ public abstract class WallpaperService extends Service {
         }
 
         void reportSurfaceDestroyed() {
-            if ((!noDuplicateSurfaceDestroyedEvents() && mSurfaceCreated)
-                    || (noDuplicateSurfaceDestroyedEvents() && mReportedSurfaceCreated)) {
+            if (mReportedSurfaceCreated) {
                 mSurfaceCreated = false;
                 mReportedSurfaceCreated = false;
                 mSurfaceHolder.ungetCallbacks();

@@ -35,16 +35,6 @@ flag {
 }
 
 flag {
-  name: "no_duplicate_surface_destroyed_events"
-  namespace: "systemui"
-  description: "Prevent the system from sending onSurfaceDestroyed() twice."
-  bug: "344461715"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "avoid_rebinding_intentionally_disconnected_wallpaper"
   namespace: "systemui"
   description: "Prevents rebinding with intentionally disconnected wallpaper services."
