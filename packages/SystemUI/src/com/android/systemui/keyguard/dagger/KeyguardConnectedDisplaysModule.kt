@@ -20,8 +20,8 @@ import android.view.Display
 import com.android.keyguard.ConnectedDisplayConstraintLayoutKeyguardPresentation
 import com.android.keyguard.ConnectedDisplayKeyguardPresentation
 import com.android.keyguard.ConnectedDisplayKeyguardPresentationFactory
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.KeyguardPresentationCLRefactor
 import dagger.Module
 import dagger.Provides
 
@@ -36,7 +36,7 @@ object KeyguardConnectedDisplaysModule {
             ConnectedDisplayConstraintLayoutKeyguardPresentation.Factory,
     ): ConnectedDisplayKeyguardPresentationFactory {
         return ConnectedDisplayKeyguardPresentationFactory { display: Display ->
-            if (Flags.enableConstraintLayoutLockscreenOnExternalDisplay()) {
+            if (KeyguardPresentationCLRefactor.isEnabled) {
                 connectedDisplayConstraintLayoutKeyguardPresentationFactory.create(display)
             } else {
                 connectedDisplayKeyguardPresentationFactory.create(display)
