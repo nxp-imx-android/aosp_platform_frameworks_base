@@ -191,12 +191,27 @@ constructor(
         constraints.apply {
             connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, START, PARENT_ID, START)
             connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, END, guideline, END)
-            connect(
-                ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
-                BOTTOM,
-                R.id.device_entry_icon_view,
-                TOP,
-            )
+            if (
+                com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout() &&
+                    !com.android.systemui.shared.Flags.clockReactiveVariants()
+            ) {
+                connect(
+                    ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
+                    BOTTOM,
+                    R.id.device_entry_icon_view,
+                    TOP,
+                    context.resources.getDimensionPixelSize(
+                        clocksR.dimen.date_weather_view_height
+                    ) * 2,
+                )
+            } else {
+                connect(
+                    ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
+                    BOTTOM,
+                    R.id.device_entry_icon_view,
+                    TOP,
+                )
+            }
             val largeClockTopMargin =
                 if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     keyguardClockViewModel.getLargeClockTopMargin() +
