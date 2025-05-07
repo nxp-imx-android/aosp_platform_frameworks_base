@@ -295,6 +295,25 @@ class BubbleBarLayerViewTest {
     }
 
     @Test
+    fun twoBubbles_removeBubbleInTransition_skipCollapse() {
+        val firstBubble = createBubble("first")
+        val secondBubble = createBubble("second")
+
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(firstBubble) }
+        waitForExpandedViewAnimation()
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(secondBubble) }
+        waitForExpandedViewAnimation()
+
+        firstBubble.preparingTransition = object : BubbleTransitions.BubbleTransition {}
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.removeBubble(firstBubble) {} }
+
+        assertThat(bubbleBarLayerView.isExpanded).isTrue()
+    }
+
+    @Test
     fun testEventLogging_dismissExpandedViewViaDrag() {
         val bubble = createBubble("first")
         getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }

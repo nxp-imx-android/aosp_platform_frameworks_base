@@ -305,7 +305,7 @@ public class BubbleTransitions {
      * in order to coordinate with the bubble view logic. These steps are communicated on this
      * interface.
      */
-    interface BubbleTransition {
+    public interface BubbleTransition {
         default void surfaceCreated() {}
         default void continueExpand() {}
         default void skip() {}
