@@ -201,7 +201,7 @@ public class BubbleViewInfoTaskLegacy extends
                 info.bubbleBarExpandedView = (BubbleBarExpandedView) inflater.inflate(
                         R.layout.bubble_bar_expanded_view, layerView, false /* attachToRoot */);
                 info.bubbleBarExpandedView.initialize(expandedViewManager, positioner,
-                        false /* isOverflow */, bubbleTaskView, mainExecutor, backgroundExecutor,
+                        false /* isOverflow */, b, bubbleTaskView, mainExecutor, backgroundExecutor,
                         new RegionSamplingProvider() {
                             @Override
                             public RegionSamplingHelper createHelper(View sampledView,

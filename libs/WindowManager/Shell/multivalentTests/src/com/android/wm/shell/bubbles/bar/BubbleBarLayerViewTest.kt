@@ -473,12 +473,16 @@ class BubbleBarLayerViewTest {
     }
 
     private fun createBubble(key: String): Bubble {
+        val bubble = FakeBubbleFactory.createChatBubble(context, key).also {
+            testBubblesList.add(it)
+        }
         val bubbleTaskView = FakeBubbleTaskViewFactory(context, mainExecutor).create()
         val bubbleBarExpandedView =
             FakeBubbleFactory.createExpandedView(
                 context,
                 bubblePositioner,
                 expandedViewManager,
+                bubble,
                 bubbleTaskView,
                 mainExecutor,
                 bgExecutor,
@@ -487,10 +491,7 @@ class BubbleBarLayerViewTest {
         // Mark visible so we don't wait for task view before animations can start
         bubbleBarExpandedView.onContentVisibilityChanged(true /* visible */)
 
-        val viewInfo = FakeBubbleFactory.createViewInfo(bubbleBarExpandedView)
-        return FakeBubbleFactory.createChatBubble(context, key, viewInfo).also {
-            testBubblesList.add(it)
-        }
+        return bubble
     }
 
     private fun leftEdge(): PointF {
