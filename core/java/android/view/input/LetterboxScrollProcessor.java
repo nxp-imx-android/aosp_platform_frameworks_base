@@ -159,7 +159,11 @@ public class LetterboxScrollProcessor {
      */
     @Nullable
     public InputEvent processInputEventBeforeFinish(@NonNull InputEvent inputEvent) {
-        return mGeneratedEventIds.remove(inputEvent.getId()) ? null : inputEvent;
+        if (mGeneratedEventIds.remove(inputEvent.getId())) {
+            inputEvent.recycleIfNeededAfterDispatch();
+            return null;
+        }
+        return inputEvent;
     }
 
     @NonNull

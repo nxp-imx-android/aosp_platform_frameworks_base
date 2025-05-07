@@ -24,6 +24,8 @@ import static android.view.MotionEvent.ACTION_UP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -40,6 +42,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -193,6 +196,16 @@ public class LetterboxScrollProcessorTest {
 
         // Ensure all processed events (that are not ignored) are offset over the app.
         assertXCoordinatesAdjustedToZero(scrollGestureEvents, processedEvents);
+
+        // The first event is synthesized event. Ensure it is recycled in the processor.
+        // Mockito cannot mock final class, the event is faked by returning the same ID.
+        final InputEvent mockEvent = Mockito.mock(InputEvent.class);
+        when(mockEvent.getId()).thenReturn(processedEvents.getFirst().getId());
+        final InputEvent firstEventToBeFinished =
+                mLetterboxScrollProcessor.processInputEventBeforeFinish(mockEvent);
+        verify(mockEvent).recycleIfNeededAfterDispatch();
+        assertNull(firstEventToBeFinished);
+
         // Except the first generated ACTION_DOWN event, ensure the following events should be
         // finished (these events should not be generated).
         assertMotionEventsShouldBeFinished(processedEvents.subList(1, processedEvents.size()));
