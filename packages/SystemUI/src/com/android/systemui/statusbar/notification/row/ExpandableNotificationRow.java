@@ -2884,6 +2884,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
+    public boolean isBundle() {
+        return mIsBundle;
+    }
+
     private void updateChildrenVisibility() {
         boolean hideContentWhileLaunching = mExpandAnimationRunning && mGuts != null
                 && mGuts.isExposed();

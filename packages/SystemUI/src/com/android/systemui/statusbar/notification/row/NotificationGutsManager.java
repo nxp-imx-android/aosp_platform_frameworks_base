@@ -83,6 +83,9 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.wmshell.BubblesManager;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -306,13 +309,15 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 ? row.getEntryAdapter().getRanking()
                 : row.getEntryLegacy().getRanking();
 
-        if (sbn == null || ranking == null) {
+        if ((sbn == null || ranking == null) && !row.isBundle()) {
             // only valid for notification rows
             return false;
         }
 
         row.setGutsView(item);
-        row.setTag(sbn.getPackageName());
+        if (sbn != null) {
+            row.setTag(sbn.getPackageName());
+        }
         row.getGuts().setClosedListener((NotificationGuts g) -> {
             row.onGutsClosed();
             if (!g.willBeRemoved() && !row.isRemoved()) {
@@ -358,6 +363,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             } else if (gutsView instanceof BundledNotificationInfo) {
                 initializeBundledNotificationInfo(
                         row, sbn, ranking, (BundledNotificationInfo) gutsView);
+            } else if (gutsView instanceof BundleHeaderGutsContent) {
+                initializeBundleHeaderGutsContent(row, (BundleHeaderGutsContent) gutsView);
             }
             return true;
         } catch (Exception e) {
@@ -487,6 +494,40 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mAssistantFeedbackController,
                 mMetricsLogger,
                 row.getCloseButtonOnClickListener(row));
+    }
+
+    /**
+     * Sets up the {@link BundleHeaderGutsContent} inside the notification row's guts.
+     * @param row view to set up the guts for
+     * @param gutsView view to set up/bind within {@code row}
+     */
+    @VisibleForTesting
+    void initializeBundleHeaderGutsContent(
+            final ExpandableNotificationRow row,
+            BundleHeaderGutsContent gutsView) {
+
+        NotificationGuts guts = row.getGuts();
+
+        Function0<Unit> onSettingsClicked = () -> {
+            guts.resetFalsingCheck();
+            // TODO(b/409748420): navigate to correct settings page
+            startBundleSettingsActivity(0, row);
+            return Unit.INSTANCE;
+        };
+
+        Function0<Unit> onDismissClicked = () -> {
+            guts.resetFalsingCheck();
+            // TODO(b/409748420): Not yet implemented
+            return Unit.INSTANCE;
+        };
+
+        Function0<Unit> onDoneClicked = () -> {
+            guts.resetFalsingCheck();
+            // TODO(b/409748420): Not yet implemented
+            return Unit.INSTANCE;
+        };
+
+        gutsView.bindNotification(row, onSettingsClicked, onDismissClicked, onDoneClicked);
     }
 
     /**
