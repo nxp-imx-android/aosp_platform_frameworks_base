@@ -37,5 +37,6 @@ val Kosmos.entryAdapterFactory by
             mockNotificationActionClickManager,
             mockHighPriorityProvider,
             mockHeadsUpManager,
+            onUserInteractionCallback,
         )
     }

@@ -302,7 +302,7 @@ class ExpandableNotificationRowBuilder(
         val mFutureDismissalRunnable = Mockito.mock(Runnable::class.java)
         whenever(
                 kosmos.mockNotifCollection.registerFutureDismissal(
-                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any(NotificationEntry::class.java),
                     ArgumentMatchers.anyInt(),
                     ArgumentMatchers.any(),
                 )

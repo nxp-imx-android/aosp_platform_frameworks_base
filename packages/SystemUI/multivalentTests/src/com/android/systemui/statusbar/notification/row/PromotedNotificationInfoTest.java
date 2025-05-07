@@ -131,7 +131,8 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mock(VisualStabilityCoordinator.class),
                 mock(NotificationActionClickManager.class),
                 mock(HighPriorityProvider.class),
-                mock(HeadsUpManager.class)
+                mock(HeadsUpManager.class),
+                mOnUserInteractionCallback
         ).create(mEntry);
         mRanking = mEntry.getRanking();
         when(mAssistantFeedbackController.isFeedbackEnabled()).thenReturn(false);

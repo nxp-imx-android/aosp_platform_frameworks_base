@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -33,8 +34,8 @@ import com.android.systemui.statusbar.notification.collection.UseElapsedRealtime
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.notifcollection.DismissedByUserStats;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import javax.inject.Inject;
@@ -96,5 +97,11 @@ public class OnUserInteractionCallbackImpl implements OnUserInteractionCallback 
             @CancellationReason int cancellationReason) {
         return mNotifCollection.registerFutureDismissal(
                 entry, cancellationReason, this::getDismissedByUserStats);
+    }
+
+    @NonNull
+    @Override
+    public Runnable registerFutureDismissal(@NonNull BundleEntry bundleEntry) {
+        return mNotifCollection.registerFutureDismissal(bundleEntry, this::getDismissedByUserStats);
     }
 }

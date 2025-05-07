@@ -28,7 +28,6 @@ import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotifBindPipeline;
-import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
 import com.android.systemui.statusbar.notification.row.RowContentBindStage;
 
 import kotlinx.coroutines.flow.StateFlow;
@@ -200,8 +199,6 @@ public interface EntryAdapter {
      */
     void onNotificationActionClicked();
 
-    NotificationEntry.DismissState getDismissState();
-
     void onEntryClicked(ExpandableNotificationRow row);
 
     @Nullable RemoteInputEntryAdapter getRemoteInputEntryAdapter();
@@ -220,7 +217,8 @@ public interface EntryAdapter {
 
     void onEntryAnimatingAwayEnded();
 
-    Runnable registerFutureDismissal(@NonNull OnUserInteractionCallback callback, int reason);
+    @NonNull
+    Runnable registerFutureDismissal();
 
     void markForReinflation(@NonNull RowContentBindStage stage);
 
@@ -233,6 +231,8 @@ public interface EntryAdapter {
      * Returns whether this entry *is within* a bundle. The bundle header will always return false.
      */
     boolean isBundled();
+
+    boolean isParentDismissed();
 
     /**
      * Returns whether this entry *is* a bundle.

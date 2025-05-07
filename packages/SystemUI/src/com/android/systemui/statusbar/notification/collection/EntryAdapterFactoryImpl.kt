@@ -23,6 +23,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import javax.inject.Inject
 
@@ -38,22 +39,25 @@ constructor(
     private val notificationActionClickManager: NotificationActionClickManager,
     private val highPriorityProvider: HighPriorityProvider,
     private val headsUpManager: HeadsUpManager,
+    private val onUserInteractionCallback: OnUserInteractionCallback,
 ) : EntryAdapterFactory {
-    override fun create(entry: PipelineEntry): EntryAdapter {
-        return if (entry is NotificationEntry) {
-            NotificationEntryAdapter(
-                notificationActivityStarter,
-                metricsLogger,
-                peopleNotificationIdentifier,
-                iconStyleProvider,
-                visualStabilityCoordinator,
-                notificationActionClickManager,
-                highPriorityProvider,
-                headsUpManager,
-                entry,
-            )
-        } else {
-            BundleEntryAdapter(highPriorityProvider, (entry as BundleEntry))
+    override fun create(entry: PipelineEntry): EntryAdapter =
+        when (entry) {
+            is NotificationEntry ->
+                NotificationEntryAdapter(
+                    notificationActivityStarter,
+                    metricsLogger,
+                    peopleNotificationIdentifier,
+                    iconStyleProvider,
+                    visualStabilityCoordinator,
+                    notificationActionClickManager,
+                    highPriorityProvider,
+                    headsUpManager,
+                    onUserInteractionCallback,
+                    entry,
+                )
+            is BundleEntry ->
+                BundleEntryAdapter(highPriorityProvider, onUserInteractionCallback, entry)
+            else -> error("Cannot create entry adapter for $entry")
         }
-    }
 }

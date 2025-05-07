@@ -38,9 +38,9 @@ import com.android.systemui.statusbar.notification.collection.provider.mockHighP
 import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
+import com.android.systemui.statusbar.notification.row.onUserInteractionCallback
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_ALERTING
 import com.android.systemui.testKosmos
@@ -50,10 +50,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mockito
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -61,7 +61,7 @@ import org.mockito.kotlin.whenever
 @RunWithLooper
 @EnableFlags(NotificationBundleUi.FLAG_NAME)
 class NotificationEntryAdapterTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().apply { onUserInteractionCallback = mock() }
 
     private val factory: EntryAdapterFactory = kosmos.entryAdapterFactory
     private lateinit var underTest: NotificationEntryAdapter
@@ -126,7 +126,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getRow_adapter() {
-        val row : ExpandableNotificationRow = mock()
+        val row: ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -143,7 +143,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun isGroupRoot_adapter_groupSummary() {
-        val row : ExpandableNotificationRow = mock()
+        val row: ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
@@ -188,7 +188,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun isClearable_adapter() {
-        val row : ExpandableNotificationRow = mock()
+        val row: ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -205,7 +205,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getSummarization_adapter() {
-        val row : ExpandableNotificationRow = mock()
+        val row: ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -224,7 +224,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getIcons_adapter() {
-        val row : ExpandableNotificationRow = mock()
+        val row: ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -363,7 +363,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun canDragAndDrop() {
-        val pi : PendingIntent = mock()
+        val pi: PendingIntent = mock()
         Mockito.`when`(pi.isActivity).thenReturn(true)
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -506,7 +506,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    fun getDismissState() {
+    fun isParentDismissed() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -515,7 +515,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
-        assertThat(underTest.dismissState).isEqualTo(entry.dismissState)
+        assertThat(underTest.isParentDismissed).isTrue()
     }
 
     @Test
@@ -526,7 +526,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
                 .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
-        val row : ExpandableNotificationRow= mock()
+        val row: ExpandableNotificationRow = mock()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
@@ -542,15 +542,13 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
                 .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
-        val callback: OnUserInteractionCallback = mock()
-        whenever(callback.registerFutureDismissal(any(), any())).thenReturn(mock())
+        val callback = kosmos.onUserInteractionCallback
+        whenever(callback.registerFutureDismissal(any<NotificationEntry>(), any()))
+            .thenReturn(mock())
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
-        underTest.registerFutureDismissal(
-            callback,
-            REASON_CANCEL,
-        )
+        underTest.registerFutureDismissal()
         verify(callback).registerFutureDismissal(entry, REASON_CANCEL)
     }
 
@@ -569,14 +567,13 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     @Test
     fun isBundled() {
         val notification: Notification =
-            Notification.Builder(mContext, "")
-                .setSmallIcon(R.drawable.ic_person)
-                .build()
+            Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
-        val entry = NotificationEntryBuilder()
-            .setNotification(notification)
-            .setChannel(NotificationChannel(NEWS_ID, NEWS_ID, 2))
-            .build()
+        val entry =
+            NotificationEntryBuilder()
+                .setNotification(notification)
+                .setChannel(NotificationChannel(NEWS_ID, NEWS_ID, 2))
+                .build()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.isBundled).isTrue()
