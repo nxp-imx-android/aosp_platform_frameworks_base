@@ -68,16 +68,19 @@ import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
  * the chip can show text containing contextual information.
  */
 @Composable
-fun StatusBarPopupChip(viewModel: PopupChipModel.Shown, modifier: Modifier = Modifier) {
-    val colors = viewModel.colors
+fun StatusBarPopupChip(
+    viewModel: PopupChipModel.Shown,
+    modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+) {
     val hasHoverBehavior = viewModel.hoverBehavior !is HoverBehavior.None
-    val interactionSource = remember { MutableInteractionSource() }
     val hoveredState by interactionSource.collectIsHoveredAsState()
     val isHovered = hasHoverBehavior && hoveredState
     val isPopupShown = viewModel.isPopupShown
     val indication = if (hoveredState) null else LocalIndication.current
     val chipShape =
         RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
+    val colors = viewModel.colors
     val chipBackgroundColor =
         colors.chipBackground(isPopupShown = isPopupShown, colorScheme = MaterialTheme.colorScheme)
 
