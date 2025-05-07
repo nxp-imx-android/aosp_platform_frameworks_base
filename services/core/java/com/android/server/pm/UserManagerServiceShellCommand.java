@@ -80,7 +80,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("  help");
         pw.println("    Prints this help text.");
         pw.println();
-        pw.println("  list [-v | --verbose] [--all]");
+        pw.println("  list [-v | --verbose] [-V | --very-verbose] [--all]");
         pw.println("    Prints all users on the system.");
         pw.println();
         pw.println("  report-system-user-package-whitelist-problems [-v | --verbose] "
@@ -167,12 +167,18 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         boolean all = false;
         boolean verbose = false;
+        boolean veryVerbose = false;
         String opt;
         while ((opt = getNextOption()) != null) {
             switch (opt) {
                 case "-v":
                 case "--verbose":
                     verbose = true;
+                    break;
+                case "-V":
+                case "--very-verbose":
+                    verbose = true;
+                    veryVerbose = true;
                     break;
                 case "--all":
                     all = true;
@@ -227,10 +233,13 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                     final boolean hasParent = user.profileGroupId != user.id
                             && user.profileGroupId != UserInfo.NO_PROFILE_GROUP_ID;
                     final boolean visible = mService.isUserVisible(user.id);
-                    final String unresolvedName = user.name;
                     // If name is null, use the default (owner / guest)
                     final String name = user.name != null ? user.name : mService.getName(user);
-                    pw.printf("%d: id=%d, name=%s, unresolvedName=%s, type=%s, "
+                    String unresolvedName = "";
+                    if (veryVerbose) {
+                        unresolvedName = ", unresolvedName=" + user.name;
+                    }
+                    pw.printf("%d: id=%d, name=%s%s, type=%s, "
                             + "flags=%s%s%s%s%s%s%s%s%s%s\n",
                             i,
                             user.id,
