@@ -15,6 +15,7 @@
  */
 package com.android.server.am;
 
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
@@ -24,6 +25,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
@@ -34,6 +36,9 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 
+import java.lang.ref.WeakReference;
+import java.util.function.BiConsumer;
+
 /**
  * ProcessStateController is responsible for maintaining state that can affect the OomAdjuster
  * computations of a process. Any state that can affect a process's importance must be set by
@@ -43,6 +48,7 @@ public class ProcessStateController {
     public static String TAG = "ProcessStateController";
 
     private final OomAdjuster mOomAdjuster;
+    private final BiConsumer<ConnectionRecord, Boolean> mServiceBinderCallUpdater;
 
     private final GlobalState mGlobalState = new GlobalState();
 
@@ -51,6 +57,13 @@ public class ProcessStateController {
             CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
+        mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> {
+            synchronized (ams) {
+                if (cr.setOngoingCalls(hasOngoingCalls)) {
+                    runUpdate(cr.binding.client, OOM_ADJ_REASON_SERVICE_BINDER_CALL);
+                }
+            }
+        };
     }
 
     /**
@@ -104,6 +117,26 @@ public class ProcessStateController {
      */
     public void runFollowUpUpdate() {
         mOomAdjuster.updateOomAdjFollowUpTargetsLocked();
+    }
+
+    /**
+     * Returns a {@link BoundServiceSession} for the given {@link ConnectionRecord}. Creates and
+     * associates a new one if required.
+     */
+    public BoundServiceSession getBoundServiceSessionFor(ConnectionRecord connectionRecord) {
+        if (connectionRecord.notHasFlag(Context.BIND_ALLOW_FREEZE)) {
+            // Don't incur the memory and compute overhead for process state adjustments for all
+            // bindings by default. This should be opted into as needed.
+            // TODO: b/415379524 - Add a debug flag to allow clients to opt-in to binder call
+            // accounting without having to use BIND_ALLOW_FREEZE.
+            return null;
+        }
+        if (connectionRecord.mBoundServiceSession != null) {
+            return connectionRecord.mBoundServiceSession;
+        }
+        connectionRecord.mBoundServiceSession = new BoundServiceSession(mServiceBinderCallUpdater,
+                new WeakReference<>(connectionRecord), connectionRecord.toShortString());
+        return connectionRecord.mBoundServiceSession;
     }
 
     private static class GlobalState implements OomAdjuster.GlobalState {
@@ -491,6 +524,13 @@ public class ProcessStateController {
      */
     public void setTreatLikeActivity(@NonNull ProcessServiceRecord psr, boolean treatLikeActivity) {
         psr.setTreatLikeActivity(treatLikeActivity);
+    }
+
+    /**
+     * Update the ongoing binder calls state for a given Connection record.
+     */
+    public boolean updateBinderServiceCalls(ConnectionRecord cr, boolean ongoing) {
+        return cr.setOngoingCalls(ongoing);
     }
 
     /**

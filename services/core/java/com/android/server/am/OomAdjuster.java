@@ -38,6 +38,7 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ALLOWLIST;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BIND_SERVICE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COMPONENT_DISABLED;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_EXECUTING_SERVICE;
@@ -209,6 +210,8 @@ public abstract class OomAdjuster {
                 return AppProtoEnums.OOM_ADJ_REASON_FOLLOW_UP;
             case OOM_ADJ_REASON_RECONFIGURATION:
                 return AppProtoEnums.OOM_ADJ_REASON_RECONFIGURATION;
+            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
+                return AppProtoEnums.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
             default:
                 return AppProtoEnums.OOM_ADJ_REASON_UNKNOWN_TO_PROTO;
         }
@@ -267,6 +270,8 @@ public abstract class OomAdjuster {
                 return OOM_ADJ_REASON_METHOD + "_followUp";
             case OOM_ADJ_REASON_RECONFIGURATION:
                 return OOM_ADJ_REASON_METHOD + "_reconfiguration";
+            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
+                return OOM_ADJ_REASON_METHOD + "_serviceBinderCall";
             default:
                 return "_unknown";
         }

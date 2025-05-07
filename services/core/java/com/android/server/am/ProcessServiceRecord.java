@@ -132,7 +132,7 @@ final class ProcessServiceRecord {
     private final ArraySet<ServiceRecord> mExecutingServices = new ArraySet<>();
 
     /**
-     * All ConnectionRecord this process holds.
+     * All outgoing connections from this process.
      */
     private final ArraySet<ConnectionRecord> mConnections = new ArraySet<>();
 

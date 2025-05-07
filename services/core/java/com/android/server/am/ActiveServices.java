@@ -44,6 +44,7 @@ import static android.app.ForegroundServiceTypePolicy.FGS_TYPE_POLICY_CHECK_PERM
 import static android.app.ForegroundServiceTypePolicy.FGS_TYPE_POLICY_CHECK_PERMISSION_DENIED_PERMISSIVE;
 import static android.app.ForegroundServiceTypePolicy.FGS_TYPE_POLICY_CHECK_UNKNOWN;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
+import static android.content.flags.Flags.enableBindPackageIsolatedProcess;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST;
@@ -94,8 +95,6 @@ import static android.os.Process.ROOT_UID;
 import static android.os.Process.SHELL_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_EMPTY;
-import static android.content.flags.Flags.enableBindPackageIsolatedProcess;
-
 
 import static com.android.internal.messages.nano.SystemMessageProto.SystemMessage.NOTE_FOREGROUND_SERVICE_BG_LAUNCH;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_START_API__FGSSTARTAPI_DELEGATE;
@@ -152,6 +151,7 @@ import android.app.ForegroundServiceTypePolicy.ForegroundServicePolicyCheckCode;
 import android.app.ForegroundServiceTypePolicy.ForegroundServiceTypePermission;
 import android.app.ForegroundServiceTypePolicy.ForegroundServiceTypePolicyInfo;
 import android.app.IApplicationThread;
+import android.app.IBinderSession;
 import android.app.IForegroundServiceObserver;
 import android.app.IServiceConnection;
 import android.app.InvalidForegroundServiceTypeException;
@@ -4408,8 +4408,10 @@ public final class ActiveServices {
                 // pass the alias component name instead to the client.
                 final ComponentName clientSideComponentName =
                         res.aliasComponent != null ? res.aliasComponent : s.name;
+                final IBinderSession session =
+                        mAm.mProcessStateController.getBoundServiceSessionFor(c);
                 try {
-                    c.conn.connected(clientSideComponentName, b.intent.binder, false);
+                    c.conn.connected(clientSideComponentName, b.intent.binder, session, false);
                 } catch (Exception e) {
                     Slog.w(TAG, "Failure sending service " + s.shortInstanceName
                             + " to connection " + c.conn.asBinder()
@@ -4495,8 +4497,10 @@ public final class ActiveServices {
                             // pass the alias component name instead to the client.
                             final ComponentName clientSideComponentName =
                                     c.aliasComponent != null ? c.aliasComponent : r.name;
+                            final IBinderSession session =
+                                    mAm.mProcessStateController.getBoundServiceSessionFor(c);
                             try {
-                                c.conn.connected(clientSideComponentName, service, false);
+                                c.conn.connected(clientSideComponentName, service, session, false);
                             } catch (Exception e) {
                                 Slog.w(TAG, "Failure sending service " + r.shortInstanceName
                                       + " to connection " + c.conn.asBinder()
@@ -6325,7 +6329,7 @@ public final class ActiveServices {
                 final ComponentName clientSideComponentName =
                         cr.aliasComponent != null ? cr.aliasComponent : r.name;
                 try {
-                    cr.conn.connected(clientSideComponentName, null, true);
+                    cr.conn.connected(clientSideComponentName, null, null, true);
                 } catch (Exception e) {
                     Slog.w(TAG, "Failure disconnecting service " + r.shortInstanceName
                           + " to connection " + c.get(i).conn.asBinder()
