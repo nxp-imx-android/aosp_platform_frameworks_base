@@ -414,6 +414,16 @@ public class MetadataSyncAdapter {
      * This method returns a map of package names to a set of function ids from the AppFunction
      * metadata.
      *
+     * <p>Retry Conditions:
+     *
+     * <ul>
+     *   <li>If an {@link AppSearchException} with {@code RESULT_ABORTED} (code 13) is thrown during
+     *       the first attempt, the query will be retried once.
+     *   <li>If the number of function ids returned equals {@code DEFAULT_RESULT_COUNT_PER_PAGE},
+     *       which may indicate an incomplete result due to known issue b/400670498, the query will
+     *       be retried with an increased page size ({@code RETRY_RESULT_COUNT_PER_PAGE}).
+     * </ul>
+     *
      * @param searchSession The {@link FutureAppSearchSession} to search the AppFunction metadata.
      * @param schemaType The schema type of the AppFunction metadata.
      * @param propertyFunctionId The property name of the function id in the AppFunction metadata.
@@ -429,13 +439,38 @@ public class MetadataSyncAdapter {
             @NonNull String propertyFunctionId,
             @NonNull String propertyPackageName)
             throws ExecutionException, InterruptedException {
-        ArrayMap<String, ArraySet<String>> packageToFunctionIdMap =
-                getPackageToFunctionIdMap(
-                        searchSession,
-                        schemaType,
-                        propertyFunctionId,
-                        propertyPackageName,
-                        DEFAULT_RESULT_COUNT_PER_PAGE);
+        ArrayMap<String, ArraySet<String>> packageToFunctionIdMap;
+        try {
+            packageToFunctionIdMap =
+                    getPackageToFunctionIdMap(
+                            searchSession,
+                            schemaType,
+                            propertyFunctionId,
+                            propertyPackageName,
+                            DEFAULT_RESULT_COUNT_PER_PAGE);
+        } catch (ExecutionException e) {
+            // TODO: b/416177384 - Use AppSearchResult#RESULT_ABORTED instead of 13.
+            if (!(e.getCause() instanceof AppSearchException)
+                    || (((AppSearchException) e.getCause()).getResultCode() != 13)) {
+                throw e;
+            }
+
+            Slog.d(
+                    TAG,
+                    "Retrying to fetch app functions because AppSearch resulted in RESULT_ABORTED",
+                    e.getCause());
+
+            packageToFunctionIdMap =
+                    getPackageToFunctionIdMap(
+                            searchSession,
+                            schemaType,
+                            propertyFunctionId,
+                            propertyPackageName,
+                            DEFAULT_RESULT_COUNT_PER_PAGE);
+        }
+
+        // Since older mainline versions won't throw an exception we rely on checking if results
+        // returned are same as DEFAULT_RESULT_COUNT_PER_PAGE.
         int functionIdCount = countTotalStringsInValueSets(packageToFunctionIdMap);
         if (functionIdCount == DEFAULT_RESULT_COUNT_PER_PAGE) {
             // We might run into b/400670498 where only the first page is returned while there
