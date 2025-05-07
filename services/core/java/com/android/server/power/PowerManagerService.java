@@ -2256,6 +2256,11 @@ public final class PowerManagerService extends SystemService
     @GuardedBy("mLock")
     private boolean dozePowerGroupLocked(final PowerGroup powerGroup, long eventTime,
             @GoToSleepReason int reason, int uid) {
+        if (powerGroup.getGroupId() != Display.DEFAULT_DISPLAY_GROUP
+                && android.companion.virtualdevice.flags.Flags.virtualPowerGroupSleepNoDoze()) {
+            return sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
+        }
+
         if (DEBUG_SPEW) {
             Slog.d(TAG, "dozePowerGroup: eventTime=" + eventTime
                     + ", groupId=" + powerGroup.getGroupId()
