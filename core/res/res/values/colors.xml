@@ -615,14 +615,14 @@
     <color name="system_inverse_on_surface_dark">#545559</color>
     <color name="system_inverse_primary_dark">#515E81</color>
     <color name="system_inverse_surface_dark">#FAF8FE</color>
-    <color name="system_on_background_dark">#CFD0DB</color>
+    <color name="system_on_background_dark">#E4E5F0</color>
     <color name="system_on_error_dark">#490006</color>
     <color name="system_on_error_container_dark">#FF9993</color>
     <color name="system_on_primary_dark">#323F60</color>
     <color name="system_on_primary_container_dark">#DAE3FF</color>
     <color name="system_on_secondary_dark">#394052</color>
     <color name="system_on_secondary_container_dark">#B8BFD5</color>
-    <color name="system_on_surface_dark">#CFD0DB</color>
+    <color name="system_on_surface_dark">#E4E5F0</color>
     <color name="system_on_surface_variant_dark">#91939D</color>
     <color name="system_on_tertiary_dark">#5B4870</color>
     <color name="system_on_tertiary_container_dark">#523F67</color>
