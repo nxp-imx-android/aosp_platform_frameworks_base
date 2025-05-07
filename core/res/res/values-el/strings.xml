@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Λειτουργία ενός χεριού"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Επιπλέον μείωση φωτεινότητας"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Συσκευές ακοής"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"Αυτόματο κλικ"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Πλήκτρα ελέγχου ποντικιού"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Αποσυνδέθηκε"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Συνδέθηκε"</string>
@@ -2267,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad αριστερά"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad δεξιά"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad κέντρο"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Πλαίσιο ρυθμίσεων τύπου αυτόματου κλικ"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Αριστερό κλικ"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Δεξί κλικ"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Διπλό κλικ"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Μεταφορά"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Κύλιση"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Παρατεταμένο πάτημα"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Παύση"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Θέση"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Κύλιση προς τα επάνω"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Κύλιση προς τα κάτω"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Κύλιση προς τα αριστερά"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Κύλιση προς τα δεξιά"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Έξοδος από τη λειτουργία κύλισης"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Παύση"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Συνέχιση"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Πλαίσιο κύλισης"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Το πακέτο <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> τοποθετήθηκε στον κάδο ΠΕΡΙΟΡΙΣΜΕΝΗΣ ΠΡΟΣΒΑΣΗΣ."</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
