@@ -296,14 +296,6 @@ void JTvInputHal::onDeviceUnavailable(int deviceId) {
 }
 
 void JTvInputHal::onStreamConfigurationsChanged(int deviceId, int cableConnectionStatus) {
-    if (cableConnectionStatus != static_cast<int>(CableConnectionStatus::CONNECTED)) {
-        Mutex::Autolock autoLock(&mStreamLock);
-        KeyedVector<int, Connection>& connections = mConnections.editValueFor(deviceId);
-        for (size_t i = 0; i < connections.size(); ++i) {
-            removeStream(deviceId, connections.keyAt(i));
-        }
-        connections.clear();
-    }
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->CallVoidMethod(mThiz, gTvInputHalClassInfo.streamConfigsChanged, deviceId,
                         cableConnectionStatus);
