@@ -155,7 +155,6 @@ import com.android.server.wm.BackgroundActivityStartController.BalCode;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.TaskFragment.EmbeddingCheckResult;
-import com.android.wm.shell.Flags;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -1937,13 +1936,9 @@ class ActivityStarter {
         // Get top task at beginning because the order may be changed when reusing existing task.
         final Task prevTopRootTask = mPreferredTaskDisplayArea.getFocusedRootTask();
         final Task prevTopTask = prevTopRootTask != null ? prevTopRootTask.getTopLeafTask() : null;
-        final boolean sourceActivityLaunchedFromBubble =
-                sourceRecord != null && sourceRecord.getLaunchedFromBubble();
-        // if the flag is enabled, allow reusing bubbled tasks only if the source activity is
-        // bubbled.
+        // allow reusing bubbled tasks only if the source activity is bubbled.
         final boolean includeLaunchedFromBubble =
-                Flags.onlyReuseBubbledTaskWhenLaunchedFromBubble()
-                        ? sourceActivityLaunchedFromBubble : true;
+                sourceRecord != null && sourceRecord.getLaunchedFromBubble();
         final Task reusedTask = resolveReusableTask(includeLaunchedFromBubble);
 
         // If requested, freeze the task list
