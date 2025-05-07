@@ -208,8 +208,8 @@ public class UserManagerServiceCreateProfileTest {
     public void testCanAddMoreManagedProfiles_removeProfile() {
         // if device is low-ram or doesn't support managed profiles for some other reason, just
         // skip the test
-        if (!mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                false /* disallow remove */)) {
+        if (!mUserManagerService.canAddMoreProfilesToUser(USER_TYPE_PROFILE_MANAGED,
+                UserHandle.USER_SYSTEM, false)) {
             return;
         }
         if (mUserManagerService.getMaxUsersOfTypePerParent(USER_TYPE_PROFILE_MANAGED) < 0) {
@@ -218,23 +218,23 @@ public class UserManagerServiceCreateProfileTest {
         }
 
         // GIVEN we've reached the limit of managed profiles possible on the system user
-        while (mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                false /* disallow remove */)) {
+        while (mUserManagerService.canAddMoreProfilesToUser(USER_TYPE_PROFILE_MANAGED,
+                UserHandle.USER_SYSTEM, false)) {
             addProfile(mUserManagerService.getPrimaryUser());
         }
 
         // THEN you should be able to add a new profile if you remove an existing one
         assertTrue("Cannot add a managed profile by removing another one",
-                mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                        true /* allow remove */));
+                mUserManagerService.canAddMoreProfilesToUser(
+                        USER_TYPE_PROFILE_MANAGED, UserHandle.USER_SYSTEM, true));
     }
 
     @Test
     public void testCanAddMoreManagedProfiles_removeDisabledProfile() {
         // if device is low-ram or doesn't support managed profiles for some other reason, just
         // skip the test
-        if (!mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                false /* disallow remove */)) {
+        if (!mUserManagerService.canAddMoreProfilesToUser(USER_TYPE_PROFILE_MANAGED,
+                UserHandle.USER_SYSTEM, false)) {
             return;
         }
         if (mUserManagerService.getMaxUsersOfTypePerParent(USER_TYPE_PROFILE_MANAGED) < 0) {
@@ -244,15 +244,15 @@ public class UserManagerServiceCreateProfileTest {
 
         // GIVEN we've reached the limit of managed profiles possible on the system user
         // GIVEN that the profiles are not enabled yet
-        while (mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                false /* disallow remove */)) {
+        while (mUserManagerService.canAddMoreProfilesToUser(USER_TYPE_PROFILE_MANAGED,
+                UserHandle.USER_SYSTEM, false)) {
             addProfile(mUserManagerService.getPrimaryUser(), true /* disabled */);
         }
 
         // THEN you should be able to add a new profile if you remove an existing one
         assertTrue("Cannot add a managed profile by removing another one",
-                mUserManagerService.canAddMoreManagedProfiles(UserHandle.USER_SYSTEM,
-                        true /* allow remove */));
+                mUserManagerService.canAddMoreProfilesToUser(
+                        USER_TYPE_PROFILE_MANAGED, UserHandle.USER_SYSTEM, true));
     }
 
     @Test
@@ -297,9 +297,6 @@ public class UserManagerServiceCreateProfileTest {
         LocalServices.addService(DeviceStorageMonitorInternal.class, dsmMock);
 
         UserManagerService userManagerServiceSpy = Mockito.spy(mUserManagerService);
-        Mockito.doReturn(false).when(userManagerServiceSpy).canAddMoreManagedProfiles(
-                Mockito.anyInt(), Mockito.anyBoolean());
-
         Mockito.doReturn(false).when(userManagerServiceSpy).canAddMoreProfilesToUser(
                 Mockito.anyString(), Mockito.anyInt(), Mockito.anyBoolean());
 

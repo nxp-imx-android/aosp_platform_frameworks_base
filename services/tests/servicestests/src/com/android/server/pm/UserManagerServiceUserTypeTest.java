@@ -211,7 +211,7 @@ public class UserManagerServiceUserTypeTest {
 
         assertTrue(type.isEnabled());
         assertEquals(UNLIMITED_NUMBER_OF_USERS, type.getMaxAllowed());
-        assertEquals(UNLIMITED_NUMBER_OF_USERS, type.getMaxAllowedPerParent());
+        assertEquals(0, type.getMaxAllowedPerParent());
         assertEquals(FLAG_FULL, type.getDefaultUserInfoFlags());
         assertEquals(Resources.ID_NULL, type.getIconBadge());
         assertEquals(Resources.ID_NULL, type.getBadgePlain());
@@ -478,7 +478,7 @@ public class UserManagerServiceUserTypeTest {
         UserTypeFactory.customizeBuilders(builders, parser);
 
         UserTypeDetails details = builders.get(userTypeFull).createUserTypeDetails();
-        assertEquals(UNLIMITED_NUMBER_OF_USERS, details.getMaxAllowedPerParent());
+        assertEquals(0, details.getMaxAllowedPerParent());
         assertFalse(details.isEnabled());
         assertEquals(17, details.getMaxAllowed());
         assertTrue(UserRestrictionsUtils.areEqual(

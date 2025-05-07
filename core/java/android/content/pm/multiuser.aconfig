@@ -32,6 +32,27 @@ flag {
 }
 
 flag {
+    name: "consistent_max_users"
+    namespace: "multiuser"
+    description: "Makes max supported users be consistent and fine-grained."
+    bug: "394178333"
+}
+
+flag {
+    name: "consistent_max_users_including_guests"
+    namespace: "multiuser"
+    description: "Builds on consistent_max_users, making Guest users included in the max."
+    bug: "394178333"
+}
+
+flag {
+    name: "max_users_in_car_is_for_secondary"
+    namespace: "multiuser"
+    description: "Update Car SystemUi and Settings to specify FULL_SECONDARY for max users (alongside consistent_max_users flag)."
+    bug: "394178333"
+}
+
+flag {
     name: "support_communal_profile_nextgen"
     is_exported: true
     namespace: "multiuser"
