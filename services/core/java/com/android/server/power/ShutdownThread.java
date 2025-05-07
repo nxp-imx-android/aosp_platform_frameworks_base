@@ -339,7 +339,11 @@ public final class ShutdownThread extends Thread {
                             com.android.internal.R.string.reboot_to_update_reboot));
             }
         } else if (mReason != null && mReason.equals(PowerManager.REBOOT_RECOVERY)) {
-            if (PackageWatchdog.isRecoveryTriggeredReboot()) {
+            boolean prioritizeSysUiForRecoveryRebootUi = context.getResources().getBoolean(
+                    com.android.internal.R.bool.config_prioritizeSysUiForRecoveryRebootUi);
+            if (prioritizeSysUiForRecoveryRebootUi && showSysuiReboot()) {
+                return null;
+            } else if (PackageWatchdog.isRecoveryTriggeredReboot()) {
                 // We're not actually doing a factory reset yet; we're rebooting
                 // to ask the user if they'd like to reset, so give them a less
                 // scary dialog message.
