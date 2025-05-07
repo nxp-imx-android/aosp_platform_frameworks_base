@@ -20,7 +20,8 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 
 class BundleHeaderGutsViewModel(
-    @StringRes val titleTextResId: Int,
+    @StringRes val titleText: Int,
+    @StringRes val summaryText: Int,
     @DrawableRes val bundleIcon: Int,
     val onSettingsClicked: () -> Unit = {},
     val onDoneClicked: () -> Unit = {},

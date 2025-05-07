@@ -24,7 +24,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /** Holds information about a BundleEntry that is relevant to UI. */
-class BundleRepository(@StringRes val titleTextResId: Int, @DrawableRes val bundleIcon: Int) {
+class BundleRepository(
+    @StringRes val titleText: Int,
+    @DrawableRes val bundleIcon: Int,
+    @StringRes val summaryText: Int,
+) {
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 

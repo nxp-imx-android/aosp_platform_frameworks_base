@@ -44,8 +44,9 @@ class BundleHeaderGutsContent(context: Context) : GutsContent {
         val repository = (row.entryAdapter as BundleEntryAdapter).entry.bundleRepository
         val viewModel =
             BundleHeaderGutsViewModel(
-                titleTextResId = repository.titleTextResId,
+                titleText = repository.titleText,
                 bundleIcon = repository.bundleIcon,
+                summaryText = repository.summaryText,
                 onSettingsClicked = onSettingsClicked,
                 onDoneClicked = onDoneClicked,
                 onDismissClicked = onDismissClicked,

@@ -159,7 +159,7 @@ private fun ContentScope.BundleHeaderContent(
                     .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
         )
         Text(
-            text = stringResource(viewModel.titleTextResId),
+            text = stringResource(viewModel.titleText),
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,

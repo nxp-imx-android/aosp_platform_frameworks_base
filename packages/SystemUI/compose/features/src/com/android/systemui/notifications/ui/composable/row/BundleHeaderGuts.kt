@@ -87,7 +87,7 @@ private fun View.initOnBackPressureDispatcherOwner(lifecycle: Lifecycle) {
 fun BundleHeaderGuts(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Modifier) {
     Column(modifier.padding(horizontal = 16.dp)) {
         TopRow(viewModel)
-        ContentRow()
+        ContentRow(viewModel)
         BottomRow(viewModel)
     }
 }
@@ -100,7 +100,7 @@ private fun TopRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Mo
     ) {
         BundleIcon(viewModel.bundleIcon, modifier = Modifier.padding(end = 16.dp))
         Text(
-            text = stringResource(viewModel.titleTextResId),
+            text = stringResource(viewModel.titleText),
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,
@@ -126,7 +126,7 @@ private fun TopRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Mo
 }
 
 @Composable
-private fun ContentRow(modifier: Modifier = Modifier) {
+private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
@@ -149,11 +149,7 @@ private fun ContentRow(modifier: Modifier = Modifier) {
                 maxLines = 1,
             )
             Text(
-                // TODO(b/409748420): Implement string based on bundle type
-                text =
-                    stringResource(
-                        com.android.systemui.res.R.string.notification_guts_social_summary
-                    ),
+                text = stringResource(viewModel.summaryText),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 overflow = TextOverflow.Ellipsis,
