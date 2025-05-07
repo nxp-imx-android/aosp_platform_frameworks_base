@@ -251,6 +251,9 @@ public class DesktopModeStatus {
      * of the display's root [TaskDisplayArea] is set to WINDOWING_MODE_FREEFORM.
      */
     public static boolean enterDesktopByDefaultOnFreeformDisplay(@NonNull Context context) {
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue()) {
+            return true;
+        }
         if (!DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue()) {
             return false;
         }
