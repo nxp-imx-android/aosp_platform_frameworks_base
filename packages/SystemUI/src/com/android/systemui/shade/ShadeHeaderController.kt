@@ -263,10 +263,14 @@ constructor(
 
     private val insetListener =
         View.OnApplyWindowInsetsListener { view, insets ->
-            updateConstraintsForInsets(view as MotionLayout, insets)
-            lastInsets = WindowInsets(insets)
-
-            view.onApplyWindowInsets(insets)
+            val windowInsets = WindowInsets(insets)
+            if (windowInsets != lastInsets) {
+                updateConstraintsForInsets(view as MotionLayout, insets)
+                lastInsets = windowInsets
+                view.onApplyWindowInsets(insets)
+            } else {
+                insets
+            }
         }
 
     private var singleCarrier = false
@@ -634,6 +638,9 @@ constructor(
             systemIconsHoverContainer.setOnClickListener(null)
             systemIconsHoverContainer.isClickable = false
         }
+
+        lastInsets?.let { updateConstraintsForInsets(header, it) }
+
         header.jumpToState(header.startState)
         updatePosition()
         updateScrollY()
