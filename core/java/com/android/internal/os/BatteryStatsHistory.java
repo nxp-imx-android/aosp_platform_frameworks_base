@@ -1928,6 +1928,12 @@ public class BatteryStatsHistory {
                 // Negative or excessively large time deltas are unexpected.
                 debugLog(cur, last, "Unexpected time delta: " + deltaTime, true);
             }
+            if (com.android.server.power.optimization.Flags
+                    .reportOutOfOrderBatteryHistoryEvents()) {
+                // Generate verbose syslog to help root-cause the issue
+                debugLog(Log.ERROR, cur, last, "Unexpected time delta: " + deltaTime, false);
+                Slog.wtfStack(TAG, "Out-of-order battery history event. Check logcat for details");
+            }
         } else if (deltaTime >= BatteryStatsHistory.DELTA_TIME_ABS) {
             deltaTimeToken = BatteryStatsHistory.DELTA_TIME_INT;
         } else {
@@ -2482,15 +2488,26 @@ public class BatteryStatsHistory {
             return;
         }
 
-        PrintWriter logWriter;
         try {
-            logWriter = new PrintWriter(
+            PrintWriter logWriter = new PrintWriter(
                     new FileOutputStream(DEBUG_LOG_FILE, /* append */ true));
+            debugLog(logWriter, item, last, message, includeStack);
+            logWriter.println();
+            logWriter.close();
         } catch (IOException e) {
             Slog.e(TAG, "Cannot create debug log file");
-            logWriter = new PrintWriter(new LogWriter(Log.DEBUG, TAG));
+            debugLog(Log.DEBUG, item, last, message, includeStack);
         }
+    }
 
+    private void debugLog(int priority, HistoryItem item, HistoryItem last, String message,
+            boolean includeStack) {
+        debugLog(new PrintWriter(new LogWriter(priority, TAG), /* autoflash */ true),
+                item, last, message, includeStack);
+    }
+
+    private void debugLog(PrintWriter writer, HistoryItem item, HistoryItem last, String message,
+            boolean includeStack) {
         if (mDebugLogBaseTimeUtc == 0) {
             mDebugLogBaseTimeUtc = mClock.currentTimeMillis();
             mDebugLogBaseMonotonicTime = mMonotonicClock.monotonicTime();
@@ -2500,21 +2517,18 @@ public class BatteryStatsHistory {
 
         long currentTimeSaved = last.currentTime;
         last.currentTime = mDebugLogBaseTimeUtc + (last.time - mDebugLogBaseMonotonicTime);
-        historyPrinter.printNextItem(logWriter, last, 0, false, true);
+        historyPrinter.printNextItem(writer, last, 0, false, true);
         last.currentTime = currentTimeSaved;
 
         currentTimeSaved = item.currentTime;
         item.currentTime = mDebugLogBaseTimeUtc + (item.time - mDebugLogBaseMonotonicTime);
-        historyPrinter.printNextItem(logWriter, item, 0, false, true);
+        historyPrinter.printNextItem(writer, item, 0, false, true);
         item.currentTime = currentTimeSaved;
 
-        logWriter.println("    " + message);
+        writer.println("    " + message);
 
         if (includeStack) {
-            new Exception("Stack trace").printStackTrace(logWriter);
+            new Exception("Stack trace").printStackTrace(writer);
         }
-
-        logWriter.println();
-        logWriter.close();
     }
 }
