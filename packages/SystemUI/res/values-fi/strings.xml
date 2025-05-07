@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Salli"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Langatonta virheenkorjausta ei sallita"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Laitteelle tällä hetkellä kirjautunut käyttäjä ei voi laittaa langatonta virheenkorjausta päälle. Vaihda järjestelmänvalvojaksi, jotta voit käyttää tätä ominaisuutta."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-portti poistettu käytöstä"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Laitteen suojaamiseksi nesteiltä ja lialta USB-portti on poistettu käytöstä, eikä se havaitse lisävarusteita.\n\nSaat ilmoituksen, kun USB-porttia voi taas käyttää."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB-portti on käytössä ja voi havaita latureita sekä lisävarusteita"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ei asetettu"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Muuta asetuksista"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Ei aktiivisia tiloja}=1{{mode} on aktiivinen}other{# tilaa on aktiivisena}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> tilaa"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Päällä"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Äänet ja värinät eivät häiritse sinua, paitsi jos ne ovat hälytyksiä, muistutuksia, tapahtumia tai määrittämiäsi soittajia. Kuulet edelleen kaiken valitsemasi sisällön, kuten musiikin, videot ja pelit."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Äänet ja värinät eivät häiritse sinua, paitsi jos ne ovat hälytyksiä. Kuulet edelleen kaiken valitsemasi sisällön, kuten musiikin, videot ja pelit."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent pitää lukitusta avattuna"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Laite lukittiin, liian monta todennusyritystä"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Laite lukittu\nTodennus epäonnistui"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Lukittu kellolla"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Ääniasetukset"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Tekstitä media automaatt."</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> kiekkoa on vähimmäismäärä"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Muokkaa"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Muokkaa laattoja"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Aika"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Näytä tunnit, minuutit ja sekunnit"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Muu"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ruudun koko päälle/pois"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Poista laatta"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Sijoita laatta"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"laittaaksesi sijoittelutilan päälle / pois päältä"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"vaihtaaksesi valintaa"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Lisää laatta viimeiseen kohtaan"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Lisää <xliff:g id="NAME">%1$s</xliff:g> viimeiseen kohtaan"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Siirrä kiekkoa"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Lisää laatta haluttuun kohtaan"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Siirrä paikkaan <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Keskeytä animaatio"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Käynnissä oleva puhelu"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Käynnissä"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"laajenna ilmoitus"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"tiivistä ilmoitus"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiilidata"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Yhdistetty"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Väliaikaisesti yhdistetty"</string>

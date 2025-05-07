@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Povolit"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bezdrátové ladění není povoleno"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Uživatel aktuálně přihlášený k tomuto zařízení nemůže zapnout bezdrátové ladění. Pokud chcete tuto funkci používat, přepněte na administrativního uživatele."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"Port USB je deaktivován"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Kvůli ochraně vašeho zařízení před tekutinami a nečistotami je port USB zakázán a nerozpozná žádné příslušenství.\n\nAž bude opět bezpečné port USB použít, budeme vás informovat."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Port USB může zjišťovat nabíječky a příslušenství"</string>
@@ -339,7 +341,7 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Autom. otáčení"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automatické otáčení obrazovky"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Poloha"</string>
-    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Spořič"</string>
+    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Spořič obrazovky"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Fotoaparát"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"Přístup k mikrofonu"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Dostupné"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nenastaveno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Spravovat v nastavení"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Žádné aktivní}=1{Režim {mode} je aktivní}few{# režimy jsou aktivní}many{# režimu je aktivních}other{# režimů je aktivních}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Režimy: <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Zapnuto"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Nebudou vás rušit zvuky ani vibrace s výjimkou budíků, upozornění, událostí a volajících, které zadáte. Nadále uslyšíte veškerý obsah, který si sami pustíte (např. hudba, videa nebo hry)."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Nebudou vás rušit zvuky ani vibrace s výjimkou budíků. Nadále uslyšíte veškerý obsah, který si sami pustíte (např. hudba, videa nebo hry)."</string>
@@ -598,7 +599,7 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Sdílet obrazovku"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> tuto možnost zakázala"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Není aplikací podporováno"</string>
-    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Vyberte aplikaci ke sdílení"</string>
+    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Vyberte aplikaci, kterou chcete sdílet"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Odesílat obrazovku?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Odesílat jednu aplikaci"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Odeslat celou obrazovku"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Odemknutí udržováno funkcí TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Zařízení bylo uzamčeno, příliš mnoho pokusů o ověření"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Zařízení uzamčeno\nOvěření se nezdařilo"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Zamknuto hodinkami"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Nastavení zvuku"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatické přepisy médií"</string>
@@ -955,7 +957,7 @@
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6316043911946540137">"Kalkulačka"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7312554713993114342">"Mapy"</string>
     <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"Přepnout opakovaná stisknutí"</string>
-    <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"Přepnout klávesy myši"</string>
+    <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"Přepnout na ovládání myši klávesnicí"</string>
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Přepnout funkci Jedním prstem"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Přepnout zpomalení kláves"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Přepnout ovládání hlasem"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Potřebujete alespoň tento počet dlaždic: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Upravit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Upravit dlaždice"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Čas"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Zobrazovat hodiny, minuty a sekundy"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Jiné"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"přepnout velikost dlaždice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Odstranit dlaždici"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Umístit dlaždici"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"přepnout režim umístění"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"přepnout výběr"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Přidat dlaždici na poslední pozici"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Přidat dlaždici <xliff:g id="NAME">%1$s</xliff:g> na poslední pozici"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Přesunout dlaždici"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Přidat dlaždici na požadované místo"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Přesunout na pozici <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pozastavit animaci"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Probíhající hovor"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Probíhá"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"rozbalit oznámení"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"sbalit oznámení"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobilní data"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Připojeno"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Dočasně připojeno"</string>

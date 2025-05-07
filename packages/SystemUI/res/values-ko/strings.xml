@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"허용"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"무선 디버깅이 허용되지 않음"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"현재 이 기기에 로그인한 사용자는 무선 디버깅을 사용 설정할 수 없습니다. 이 기능을 사용하려면 관리자로 전환하세요."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB 포트 비활성화됨"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"기기를 액체나 이물질로부터 보호하기 위해 USB 포트가 사용 중지되었으며 액세서리를 연결할 수 없습니다.\n\nUSB 포트를 다시 안전하게 사용할 수 있게 되면 알려 드리겠습니다."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"충전기와 액세서리를 감지할 수 있도록 USB 포트가 사용 설정됨"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"설정되지 않음"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"설정에서 관리"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{활성화된 모드 없음}=1{{mode} 모드가 활성화됨}other{모드 #개가 활성화됨}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"모드 <xliff:g id="NUMBER">%s</xliff:g>개"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"사용"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"알람, 알림, 일정 및 지정한 발신자로부터 받은 전화를 제외한 소리와 진동을 끕니다. 음악, 동영상, 게임 등 재생하도록 선택한 소리는 정상적으로 들립니다."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"알람을 제외한 소리와 진동을 끕니다. 음악, 동영상, 게임 등 재생하도록 선택한 소리는 정상적으로 들립니다."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent가 잠금 해제함"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"인증 시도 횟수가 너무 많아 기기가 잠겼습니다."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"기기 잠김\n인증에 실패함"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"워치에서 잠금"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"소리 설정"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"미디어 자막 자동 생성"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>개 이상의 타일이 필요합니다."</string>
     <string name="qs_edit" msgid="5583565172803472437">"수정"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"타일 수정"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"시간"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"시간, 분, 초 표시"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"기타"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"타일 크기 전환"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"타일 삭제"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"타일 배치"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"배치 모드 전환"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"선택 전환"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"마지막 위치에 타일 추가"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"마지막 위치에 <xliff:g id="NAME">%1$s</xliff:g> 추가"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"타일 이동"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"원하는 위치에 타일 추가"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> 위치로 이동"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"애니메이션 일시중지"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"진행 중인 통화"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"진행 중"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"알림 펼치기"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"알림 접기"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"모바일 데이터"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"연결됨"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"일시적으로 연결됨"</string>

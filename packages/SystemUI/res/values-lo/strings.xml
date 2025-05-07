@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ອະນຸຍາດ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ບໍ່ອະນຸຍາດໃຫ້ໃຊ້ການດີບັກໄຮ້ສາຍ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ຜູ້ໃຊ້ທີ່ເຂົ້າສູ່ລະບົບອຸປະກອນຢູ່ໃນຕອນນີ້ບໍ່ສາມາດເປີດໃຊ້ການດີບັກໄຮ້ສາຍໄດ້. ເພື່ອໃຊ້ຄຸນສົມບັດນີ້, ໃຫ້ປ່ຽນໄປເປັນຜູ້ໃຊ້ທີ່ເບິ່ງແຍງລະບົບ."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"ປິດການນຳໃຊ້ຜອດ USB ແລ້ວ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ເພື່ອປົກປ້ອງອຸປະກອນຂອງທ່ານຈາກຂອງແຫລວ ຫຼື ເສດດິນຕ່າງໆ, ຜອດ USB ຈຶ່ງຖືກປິດການນຳໃຊ້ ແລະ ຈະບໍ່ກວດຫາອຸປະກອນເສີມໃດໆ.\n\nທ່ານຈະໄດ້ຮັບການແຈ້ງເຕືອນເມື່ອສາມາດໃຊ້ຜອດ USB ໄດ້ອີກເທື່ອໜຶ່ງ."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ເປີດນຳໃຊ້ USB ແລ້ວເພື່ອກວດຫາສາຍສາກ ແລະ ອຸປະກອນເສີມ"</string>
@@ -682,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ປັອດລັອກປະໄວ້ໂດຍ TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ອຸປະກອນຖືກລັອກແລ້ວ, ພະຍາຍາມເຮັດການພິສູດຢືນຢັນຫຼາຍເທື່ອເກີນໄປ"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ລັອກອຸປະກອນແລ້ວ\nການພິສູດຢືນຢັນບໍ່ສຳເລັດ"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ຖືກລັອກໂດຍໂມງຂອງທ່ານ"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ການຕັ້ງຄ່າສຽງ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ສ້າງຄຳບັນຍາຍມີເດຍໂດຍອັດຕະໂນມັດ"</string>
@@ -1006,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ທ່ານຍຕ້ອງໃຊ້ຢ່າງໜ້ອຍ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ຊ່ອງ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ແກ້ໄຂ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ແກ້ໄຂແຜ່ນ"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"ເວລາ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ສະແດງຊົ່ວໂມງ, ນາທີ ແລະ ວິນາທີ"</item>
@@ -1348,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"ຢຸດອະນິເມຊັນຊົ່ວຄາວ"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ສາຍທີ່ສົນທະນາຢູ່"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ດຳເນີນຢູ່"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"ຂະຫຍາຍການແຈ້ງເຕືອນ"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"ຫຍໍ້ການແຈ້ງເຕືອນລົງ"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ອິນເຕີເນັດມືຖື"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"ເຊື່ອມຕໍ່ແລ້ວຊົ່ວຄາວ"</string>

@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"अनुमति दें"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"वॉयरलेस डीबगिंग की सुविधा चालू करने की अनुमति नहीं है"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"फ़िलहाल, इस डिवाइस में जिस उपयोगकर्ता ने साइन इन किया है वह वॉयरलेस डीबगिंग की सुविधा चालू नहीं कर सकता. इस सुविधा का इस्तेमाल करने के लिए, खाते के एडमिन के तौर पर साइन इन करें."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"यूएसबी पोर्ट बंद है"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"तरल चीज़ या कचरे से आपके डिवाइस की सुरक्षा करने के लिए, यूएसबी पोर्ट को बंद कर दिया गया है. साथ ही, इससे किसी भी एक्सेसरी की पहचान नहीं की जा सकेगी.\n\nयूएसबी पोर्ट का दोबारा इस्तेमाल करना सुरक्षित होने पर आपको सूचित किया जाएगा."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"चार्जर और एक्सेसरी पहचानने के लिए यूएसबी पोर्ट को चालू कर दिया गया है"</string>
@@ -414,7 +416,7 @@
     <string name="custom" msgid="3337456985275158299">"कस्टम"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"ट्रेस करने से जुड़ी कस्टम सेटिंग"</string>
     <string name="restore_default" msgid="5259420807486239755">"डिफ़ॉल्ट सेटिंग वापस लाएं"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"वन-हैंडेड मोड"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"एक हाथ से इस्तेमाल करने की सुविधा"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"कान की मशीनें"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"ऐक्टिव"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"डिसकनेक्ट हो गया"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट नहीं है"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग में जाकर मैनेज करें"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोई मोड चालू नहीं है}=1{{mode} मोड चालू है}one{# मोड चालू है}other{# मोड चालू हैं}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> मोड"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"चालू है"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"आपको अलार्म, रिमाइंडर, इवेंट और चुनिंदा कॉल करने वालों के अलावा किसी और तरह से (आवाज़ करके और थरथरा कर ) परेशान नहीं किया जाएगा. आप फिर भी संगीत, वीडियो और गेम सहित अपना चुना हुआ सब कुछ सुन सकते हैं."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"आपको अलार्म छोड़कर दूसरी आवाज़ों और कंपनों से परेशान नहीं किया जाएगा. आपको अब भी संगीत, वीडियो और गेम सहित वह सब कुछ सुनाई देगा जो आपने चलाने के लिए चुना है."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent की वजह से अनलॉक रखा गया है"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"तय सीमा से ज़्यादा बार पुष्टि करने की कोशिशों से, डिवाइस लॉक हो गया है"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिवाइस लॉक हो गया है\nपुष्टि नहीं की जा सकी"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"आपकी स्मार्टवॉच ने लॉक किया"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"साउंड सेटिंग"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ऑडियो-वीडियो से अपने-आप कैप्शन बनना"</string>
@@ -999,7 +1001,7 @@
     <string name="right_keycode" msgid="2480715509844798438">"दायां कुंजी कोड"</string>
     <string name="left_icon" msgid="5036278531966897006">"बायां आइकॉन"</string>
     <string name="right_icon" msgid="1103955040645237425">"दायां आइकॉन"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोड़ने के लिए दबाकर खींचे और छोड़ें"</string>
+    <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोड़ने के लिए दबाकर खींचें और छोड़ें"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"टाइल का क्रम फिर से बदलने के लिए उन्हें दबाकर रखें और खींचें"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"उन टाइल को चुनें जिन्हें फिर से व्यवस्थित करना है और जिनका साइज़ बदलना है"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"टाइल की जगह तय करने के लिए टैप करें"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"आपके पास कम से कम <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलें होनी चाहिए"</string>
     <string name="qs_edit" msgid="5583565172803472437">"बदलाव करें"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइल में बदलाव करें"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"समय"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"घंटे, मिनट और सेकंड दिखाएं"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइल के साइज़ को टॉगल करने के लिए दो बार टैप करें"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"टाइल हटाएं"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"टाइल जोड़ें"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड को टॉगल करें"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"चुने हुए हिस्से को टॉगल करें"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"आखिरी जगह पर टाइल जोड़ें"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> को पिछली जगह पर जोड़ें"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल को किसी और पोज़िशन पर ले जाएं"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"अपनी पसंदीदा जगह पर टाइल जोड़ें"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"टाइल को <xliff:g id="POSITION">%1$d</xliff:g> पोज़िशन पर ले जाएं"</string>
@@ -1351,10 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"ऐनिमेशन रोकें"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"पहले से जारी कॉल"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"जारी है"</string>
-    <!-- no translation found for status_bar_chip_custom_a11y_action_expand_notification (3937742348749607401) -->
-    <skip />
-    <!-- no translation found for status_bar_chip_custom_a11y_action_collapse_notification (8413156834916891757) -->
-    <skip />
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"सूचना वाले सेक्शन को बड़ा करें"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"सूचना वाले सेक्शन को छोटा करें"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"कनेक्ट हो गया"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"इंटरनेट कनेक्शन कुछ समय के लिए है"</string>
