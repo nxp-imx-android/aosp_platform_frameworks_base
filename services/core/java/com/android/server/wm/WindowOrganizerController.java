@@ -855,11 +855,20 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 } else if (newBounds.right > display.right) {
                                     task.mOffsetXForInsets = display.right - newBounds.right;
                                 }
+                                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                        "Applying inset offsets for task=%d offsetX=%d offsetY=%d",
+                                        task.mTaskId, task.mOffsetXForInsets,
+                                        task.mOffsetYForInsets);
                             } else {
                                 task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
+                                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                        "Resetting inset offsets for in-bounds task=%d",
+                                        task.mTaskId);
                             }
                         } else {
                             task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
+                            ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                    "Resetting inset offsets for task=%d", task.mTaskId);
                         }
                     }
                 }
