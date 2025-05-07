@@ -28,8 +28,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.customization.clocks.ViewUtils.animateToAlpha
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
-import com.android.systemui.keyguard.ui.view.layout.sections.setVisibility
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewClockViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.plugins.clocks.ClockController
@@ -78,8 +78,13 @@ object KeyguardPreviewClockViewBinder {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 var lastClock: ClockController? = null
                 launch("$TAG#viewModel.previewClock") {
-                        combine(viewModel.previewClock, viewModel.previewClockSize, ::Pair)
-                            .collect { (currentClock, clockSize) ->
+                        combine(
+                                viewModel.previewClock,
+                                viewModel.previewClockSize,
+                                viewModel.showClock,
+                                ::Triple,
+                            )
+                            .collect { (currentClock, clockSize, showClock) ->
                                 lastClock?.let { clock ->
                                     (clock.largeClock.layout.views + clock.smallClock.layout.views)
                                         .forEach { rootView.removeView(it) }
@@ -106,6 +111,7 @@ object KeyguardPreviewClockViewBinder {
                                     rootView,
                                     currentClock,
                                     clockSize,
+                                    showClock,
                                 )
                             }
                     }
@@ -121,42 +127,66 @@ object KeyguardPreviewClockViewBinder {
         }
     }
 
+    // Track the current show clock flag. If it turns from false to true, animate fade-in.
+    private var currentShowClock: Boolean? = null
+
     private fun applyPreviewConstraints(
         clockPreviewConfig: ClockPreviewConfig,
         rootView: ConstraintLayout,
         previewClock: ClockController,
         clockSize: ClockSizeSetting?,
+        showClock: Boolean,
     ) {
-        val cs = ConstraintSet().apply { clone(rootView) }
+        val shouldFadeIn = (currentShowClock == false) && showClock
 
+        val cs = ConstraintSet().apply { clone(rootView) }
         val configWithUpdatedLockId =
             if (rootView.getViewById(lockViewId) != null) {
                 clockPreviewConfig.copy(lockViewId = lockViewId)
             } else {
                 clockPreviewConfig
             }
-
         previewClock.largeClock.layout.applyPreviewConstraints(configWithUpdatedLockId, cs)
         previewClock.smallClock.layout.applyPreviewConstraints(configWithUpdatedLockId, cs)
+        cs.applyTo(rootView)
 
         // When previewClockSize is the initial value, make both clocks invisible to avoid flicker
         val largeClockVisibility =
-            when (clockSize) {
-                ClockSizeSetting.DYNAMIC -> VISIBLE
-                ClockSizeSetting.SMALL -> INVISIBLE
-                null -> INVISIBLE
-            }
+            if (showClock)
+                when (clockSize) {
+                    ClockSizeSetting.DYNAMIC -> VISIBLE
+                    ClockSizeSetting.SMALL -> INVISIBLE
+                    null -> INVISIBLE
+                }
+            else INVISIBLE
         val smallClockVisibility =
-            when (clockSize) {
-                ClockSizeSetting.DYNAMIC -> INVISIBLE
-                ClockSizeSetting.SMALL -> VISIBLE
-                null -> INVISIBLE
+            if (showClock)
+                when (clockSize) {
+                    ClockSizeSetting.DYNAMIC -> INVISIBLE
+                    ClockSizeSetting.SMALL -> VISIBLE
+                    null -> INVISIBLE
+                }
+            else INVISIBLE
+        setVisibility(previewClock.largeClock.layout.views, largeClockVisibility, shouldFadeIn)
+        setVisibility(previewClock.smallClock.layout.views, smallClockVisibility, shouldFadeIn)
+        if (shouldFadeIn) {
+            if (largeClockVisibility == VISIBLE) {
+                previewClock.largeClock.layout.views.forEach { it.animateToAlpha(1F) }
             }
-        cs.apply {
-            setVisibility(previewClock.largeClock.layout.views, largeClockVisibility)
-            setVisibility(previewClock.smallClock.layout.views, smallClockVisibility)
+            if (smallClockVisibility == VISIBLE) {
+                previewClock.smallClock.layout.views.forEach { it.animateToAlpha(1F) }
+            }
         }
-        cs.applyTo(rootView)
+        currentShowClock = showClock
+    }
+
+    private fun setVisibility(views: Iterable<View>, visibility: Int, shouldFadeIn: Boolean) {
+        views.forEach { view ->
+            if (shouldFadeIn && visibility == VISIBLE) {
+                view.alpha = 0F
+            }
+            view.visibility = visibility
+        }
     }
 
     private const val TAG = "KeyguardPreviewClockViewBinder"

@@ -29,6 +29,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @AssistedFactory
 interface KeyguardPreviewSmartspaceViewModelFactory {
@@ -54,13 +55,19 @@ constructor(
 
     val shouldHideSmartspace: Flow<Boolean> =
         combine(previewClockSize, clockInteractor.currentClockId) { size, clockId ->
-            when (size) {
-                // TODO (b/284122375) This is temporary. We should use clockController
-                //      .largeClock.config.hasCustomWeatherDataDisplay instead, but
-                //      ClockRegistry.createCurrentClock is not reliable.
-                ClockSizeSetting.DYNAMIC -> clockId == "DIGITAL_CLOCK_WEATHER"
-                ClockSizeSetting.SMALL -> false
+                when (size) {
+                    // TODO (b/284122375) This is temporary. We should use clockController
+                    //      .largeClock.config.hasCustomWeatherDataDisplay instead, but
+                    //      ClockRegistry.createCurrentClock is not reliable.
+                    ClockSizeSetting.DYNAMIC -> clockId == "DIGITAL_CLOCK_WEATHER"
+                    ClockSizeSetting.SMALL -> false
+                }
             }
+            .distinctUntilChanged()
+
+    val showSmartspace =
+        combine(clockViewModel.showClock, shouldHideSmartspace) { showClock, shouldHideSmartspace ->
+            showClock && !shouldHideSmartspace
         }
 
     fun getDateWeatherStartPadding(context: Context): Int {
