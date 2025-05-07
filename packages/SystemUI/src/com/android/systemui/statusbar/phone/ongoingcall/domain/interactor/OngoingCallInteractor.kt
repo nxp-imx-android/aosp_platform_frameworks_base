@@ -168,6 +168,7 @@ constructor(
             requestedPromotion = model.requestedPromotion,
             isAppVisible = isVisible,
             notificationInstanceId = model.instanceId,
+            packageName = model.packageName,
         )
     }
 
