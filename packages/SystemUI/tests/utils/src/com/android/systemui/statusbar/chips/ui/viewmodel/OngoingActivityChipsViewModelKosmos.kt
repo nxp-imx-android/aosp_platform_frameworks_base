@@ -36,6 +36,10 @@ val Kosmos.ongoingActivityChipsViewModel: OngoingActivityChipsViewModel by
             callChipViewModel = callChipViewModel,
             notifChipsViewModel = notifChipsViewModel,
             displayStateInteractor = displayStateInteractor,
+            chipsRefiners = chipsRefinerSet,
             logger = statusBarChipsLogger,
         )
     }
+
+val Kosmos.chipsRefinerSet: MutableSet<OngoingActivityChipsRefiner> by
+    Kosmos.Fixture { mutableSetOf() }

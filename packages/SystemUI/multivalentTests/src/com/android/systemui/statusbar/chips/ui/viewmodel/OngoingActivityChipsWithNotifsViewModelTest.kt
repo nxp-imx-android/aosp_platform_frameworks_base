@@ -29,6 +29,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -50,6 +53,7 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.Me
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModelTest.Companion.assertIsNotifChip
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
+import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -1953,6 +1957,123 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // THEN the chip is immediately hidden with no animation
             assertThat(latest).isEqualTo(OngoingActivityChipModel.Inactive(shouldAnimate = false))
         }
+
+    @Test
+    @EnableChipsModernization
+    fun chips_singleRefiner_hidesSpecificChip() =
+        kosmos.runTest {
+            chipsRefinerSet.add(RemoveChipRefiner(ShareToAppChipViewModel.KEY))
+
+            val latestChips by collectLastValue(underTest.chips)
+
+            val callNotificationKey = "call"
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
+            mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+
+            val activeChips = latestChips?.active
+
+            assertThat(activeChips?.size).isEqualTo(1)
+            assertThat(activeChips?.any { it.key == ShareToAppChipViewModel.KEY }).isFalse()
+            assertThat(activeChips?.any { it.key.startsWith(CallChipViewModel.KEY_PREFIX) })
+                .isTrue()
+
+            val inactiveChips = latestChips?.inactive
+            assertThat(
+                    inactiveChips?.any {
+                        it == OngoingActivityChipModel.Inactive(shouldAnimate = false)
+                    }
+                )
+                .isTrue()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun chips_multipleRefiners_bothApplied() =
+        kosmos.runTest {
+            chipsRefinerSet.add(RemoveChipRefiner(ShareToAppChipViewModel.KEY))
+            val changeFirstChipIconRefiner = ChangeFirstChipIconRefiner()
+            chipsRefinerSet.add(changeFirstChipIconRefiner)
+
+            val latestChips by collectLastValue(underTest.chips)
+
+            val callNotificationKey = "callChip"
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
+            mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+            screenRecordState.value = ScreenRecordModel.DoingNothing
+
+            val activeChips = latestChips?.active
+            assertThat(activeChips).isNotNull()
+            assertThat(activeChips).isNotEmpty()
+
+            assertThat(activeChips?.any { it.key == ShareToAppChipViewModel.KEY }).isFalse()
+
+            val firstChip = activeChips?.firstOrNull()
+            assertThat(firstChip!!.key).startsWith(CallChipViewModel.KEY_PREFIX)
+
+            val icon = firstChip.icon
+            assertThat(icon)
+                .isInstanceOf(OngoingActivityChipModel.ChipIcon.SingleColorIcon::class.java)
+            val singleColorIcon = icon as OngoingActivityChipModel.ChipIcon.SingleColorIcon
+            val resourceIcon = singleColorIcon.impl as Icon.Resource
+            assertThat(resourceIcon.res).isEqualTo(changeFirstChipIconRefiner.newIconRes)
+            assertThat(resourceIcon.contentDescription?.loadContentDescription(context))
+                .isEqualTo(changeFirstChipIconRefiner.newIconDesc)
+        }
+
+    companion object {
+        class RemoveChipRefiner(private val keyToRemove: String) : OngoingActivityChipsRefiner {
+            override fun transform(
+                input: MultipleOngoingActivityChipsModel
+            ): MultipleOngoingActivityChipsModel {
+                val chipWasInActive = input.active.any { it.key == keyToRemove }
+                val chipWasInOverflow = input.overflow.any { it.key == keyToRemove }
+
+                val newActive = input.active.filterNot { it.key == keyToRemove }
+                val newOverflow = input.overflow.filterNot { it.key == keyToRemove }
+
+                val currentInactive = input.inactive.toMutableList()
+                if (chipWasInActive || chipWasInOverflow) {
+                    // Add an Inactive model if the chip key was found in active or overflow lists.
+                    // This signifies that the refiner made this chip inactive.
+                    currentInactive.add(OngoingActivityChipModel.Inactive(shouldAnimate = false))
+                }
+
+                return input.copy(
+                    active = newActive,
+                    overflow = newOverflow,
+                    inactive = currentInactive.toList(),
+                )
+            }
+        }
+
+        class ChangeFirstChipIconRefiner : OngoingActivityChipsRefiner {
+            val newIconRes = android.R.drawable.ic_dialog_info // A standard Android resource
+            val newIconDesc = "Test Changed Icon"
+
+            override fun transform(
+                input: MultipleOngoingActivityChipsModel
+            ): MultipleOngoingActivityChipsModel {
+                if (input.active.isNotEmpty()) {
+                    val firstChip = input.active.first()
+                    val modifiedFirstChip =
+                        firstChip.copy(
+                            icon =
+                                OngoingActivityChipModel.ChipIcon.SingleColorIcon(
+                                    Icon.Resource(
+                                        newIconRes,
+                                        ContentDescription.Loaded(newIconDesc),
+                                    )
+                                )
+                        )
+                    val newActive = listOf(modifiedFirstChip) + input.active.drop(1)
+                    return input.copy(active = newActive)
+                }
+                return input
+            }
+        }
+    }
 
     private fun setNotifs(notifs: List<ActiveNotificationModel>) {
         activeNotificationListRepository.activeNotifications.value =

@@ -66,6 +66,7 @@ constructor(
     callChipViewModel: CallChipViewModel,
     notifChipsViewModel: NotifChipsViewModel,
     displayStateInteractor: DisplayStateInteractor,
+    private val chipsRefiners: Set<@JvmSuppressWildcards OngoingActivityChipsRefiner>,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) {
     private enum class ChipType {
@@ -255,44 +256,52 @@ constructor(
      * A flow modeling the active and inactive chips as well as which should be shown in the status
      * bar after accounting for possibly multiple ongoing activities and animation requirements.
      */
-    val chips: StateFlow<MultipleOngoingActivityChipsModel> =
+    private val unrefinedChips =
         if (StatusBarChipsModernization.isEnabled) {
             combine(
-                    incomingChipBundle.map { bundle -> rankChips(bundle) },
-                    displayStateInteractor.isWideScreen,
-                ) { rankedChips, isWideScreen ->
-                    if (
-                        PromotedNotificationUi.isEnabled &&
-                            !isWideScreen &&
-                            rankedChips.active.filter { !it.isHidden }.size >= 2
-                    ) {
-                        // If we have at least two showing chips and we don't have a ton of room
-                        // (!isWideScreen), then we want to make both of them as small as possible
-                        // so that we have the highest chance of showing both chips (as opposed to
-                        // showing the first chip with a lot of text and completely hiding the other
-                        // chips).
-                        val squishedActiveChips =
-                            rankedChips.active.map {
-                                if (!it.isHidden && it.shouldSquish()) {
-                                    it.toIconOnly()
-                                } else {
-                                    it
-                                }
+                incomingChipBundle.map { bundle -> rankChips(bundle) },
+                displayStateInteractor.isWideScreen,
+            ) { rankedChips, isWideScreen ->
+                if (
+                    PromotedNotificationUi.isEnabled &&
+                        !isWideScreen &&
+                        rankedChips.active.filter { !it.isHidden }.size >= 2
+                ) {
+                    // If we have at least two showing chips and we don't have a ton of room
+                    // (!isWideScreen), then we want to make both of them as small as possible
+                    // so that we have the highest chance of showing both chips (as opposed to
+                    // showing the first chip with a lot of text and completely hiding the other
+                    // chips).
+                    val squishedActiveChips =
+                        rankedChips.active.map {
+                            if (!it.isHidden && it.shouldSquish()) {
+                                it.toIconOnly()
+                            } else {
+                                it
                             }
+                        }
 
-                        MultipleOngoingActivityChipsModel(
-                            active = squishedActiveChips,
-                            overflow = rankedChips.overflow,
-                            inactive = rankedChips.inactive,
-                        )
-                    } else {
-                        rankedChips
-                    }
+                    MultipleOngoingActivityChipsModel(
+                        active = squishedActiveChips,
+                        overflow = rankedChips.overflow,
+                        inactive = rankedChips.inactive,
+                    )
+                } else {
+                    rankedChips
                 }
-                .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModel())
+            }
         } else {
-            MutableStateFlow(MultipleOngoingActivityChipsModel()).asStateFlow()
+            MutableStateFlow(MultipleOngoingActivityChipsModel())
         }
+
+    val chips: StateFlow<MultipleOngoingActivityChipsModel> =
+        unrefinedChips
+            .map { unrefinedChips ->
+                chipsRefiners.fold(unrefinedChips) { currentOutput, refiner ->
+                    refiner.transform(currentOutput)
+                }
+            }
+            .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModel())
 
     /**
      * A flow modeling the primary chip that should be shown in the status bar after accounting for
