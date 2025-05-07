@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.data.repository.fakeRemoteInputRepository
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
@@ -151,7 +150,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenNoNotifs() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
@@ -166,7 +166,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenNotifs() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -179,7 +180,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenQsExpandedDefault() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -194,7 +195,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenQsExpandedInSplitShade() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
@@ -215,7 +217,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenLockedShade() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
@@ -232,7 +235,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenKeyguard() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -247,7 +250,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenStartingToSleep() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -265,7 +268,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -283,7 +287,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenLockedShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -371,7 +376,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenQsExpandedSplitShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -668,12 +674,5 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         collectLastValue(
             if (SceneContainerFlag.isEnabled) underTest.shouldShowFooterView
             else underTest.shouldIncludeFooterView
-        )
-
-    private fun TestScope.collectEmptyShadeViewVisibility() =
-        collectLastValue(
-            if (ModesEmptyShadeFix.isEnabled)
-                underTest.shouldShowEmptyShadeViewAnimated.map { it.value }
-            else underTest.shouldShowEmptyShadeView
         )
 }

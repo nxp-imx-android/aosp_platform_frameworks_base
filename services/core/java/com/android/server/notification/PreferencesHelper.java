@@ -68,7 +68,6 @@ import android.content.pm.UserInfo;
 import android.metrics.LogMaker;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Process;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.provider.Settings;
@@ -76,7 +75,6 @@ import android.service.notification.Adjustment;
 import android.service.notification.ConversationChannelWrapper;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.RankingHelperProto;
-import android.service.notification.ZenModeConfig;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
@@ -1066,7 +1064,7 @@ public class PreferencesHelper implements RankingConfig {
             r.groups.put(group.getId(), group);
         }
         if (needsDndChange) {
-            updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+            updateCurrentUserHasPriorityChannels();
         }
         if (android.app.Flags.nmBinderPerfCacheChannels() && changed) {
             invalidateNotificationChannelGroupCache();
@@ -1233,7 +1231,7 @@ public class PreferencesHelper implements RankingConfig {
         }
 
         if (needsDndChange) {
-            updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+            updateCurrentUserHasPriorityChannels();
         }
 
         if (android.app.Flags.nmBinderPerfCacheChannels() && needsPolicyFileChange) {
@@ -1335,7 +1333,7 @@ public class PreferencesHelper implements RankingConfig {
             }
         }
         if (needsDndChange) {
-            updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+            updateCurrentUserHasPriorityChannels();
         }
         if (changed) {
             if (android.app.Flags.nmBinderPerfCacheChannels()) {
@@ -1563,7 +1561,7 @@ public class PreferencesHelper implements RankingConfig {
             }
         }
         if (channelBypassedDnd) {
-            updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+            updateCurrentUserHasPriorityChannels();
         }
 
         if (android.app.Flags.nmBinderPerfCacheChannels() && deletedChannel) {
@@ -1765,7 +1763,7 @@ public class PreferencesHelper implements RankingConfig {
     }
 
     public List<NotificationChannel> deleteNotificationChannelGroup(String pkg, int uid,
-            String groupId, int callingUid, boolean fromSystemOrSystemUi) {
+            String groupId) {
         List<NotificationChannel> deletedChannels = new ArrayList<>();
         boolean groupBypassedDnd = false;
         boolean deleted = false;
@@ -1793,7 +1791,7 @@ public class PreferencesHelper implements RankingConfig {
             }
         }
         if (groupBypassedDnd) {
-            updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+            updateCurrentUserHasPriorityChannels();
         }
         if (android.app.Flags.nmBinderPerfCacheChannels()) {
             if (deletedChannels.size() > 0) {
@@ -1929,7 +1927,7 @@ public class PreferencesHelper implements RankingConfig {
     }
 
     public @NonNull List<String> deleteConversations(String pkg, int uid,
-            Set<String> conversationIds, int callingUid, boolean fromSystemOrSystemUi) {
+            Set<String> conversationIds) {
         List<String> deletedChannelIds = new ArrayList<>();
         synchronized (mLock) {
             PackagePreferences r = getPackagePreferencesLocked(pkg, uid);
@@ -1955,7 +1953,7 @@ public class PreferencesHelper implements RankingConfig {
         }
         if (!deletedChannelIds.isEmpty()) {
             if (mCurrentUserHasPriorityChannels) {
-                updateCurrentUserHasPriorityChannels(callingUid, fromSystemOrSystemUi);
+                updateCurrentUserHasPriorityChannels();
             }
             if (android.app.Flags.nmBinderPerfCacheChannels()) {
                 invalidateNotificationChannelCache();
@@ -2161,8 +2159,7 @@ public class PreferencesHelper implements RankingConfig {
                 (mZenModeHelper.getNotificationPolicy(UserHandle.CURRENT).state
                         & NotificationManager.Policy.STATE_HAS_PRIORITY_CHANNELS) != 0;
 
-        updateCurrentUserHasPriorityChannels(/* callingUid= */ Process.SYSTEM_UID,
-                /* fromSystemOrSystemUi= */ true);
+        updateCurrentUserHasPriorityChannels();
     }
 
     /**
@@ -2171,9 +2168,7 @@ public class PreferencesHelper implements RankingConfig {
      * be called whenever a channel is created, updated, or deleted, or when the current user (or
      * its profiles) change.
      */
-    // TODO: b/368247671 - remove fromSystemOrSystemUi argument when modes_ui is inlined.
-    private void updateCurrentUserHasPriorityChannels(int callingUid,
-            boolean fromSystemOrSystemUi) {
+    private void updateCurrentUserHasPriorityChannels() {
         ArraySet<Pair<String, Integer>> candidatePkgs = new ArraySet<>();
 
         final IntArray currentUserIds = mUserProfiles.getCurrentProfileIds();
@@ -2202,13 +2197,8 @@ public class PreferencesHelper implements RankingConfig {
         boolean haveBypassingApps = candidatePkgs.size() > 0;
         if (mCurrentUserHasPriorityChannels != haveBypassingApps) {
             mCurrentUserHasPriorityChannels = haveBypassingApps;
-            if (android.app.Flags.modesUi()) {
-                mZenModeHelper.updateHasPriorityChannels(UserHandle.CURRENT,
-                        mCurrentUserHasPriorityChannels);
-            } else {
-                updateZenPolicy(mCurrentUserHasPriorityChannels, callingUid,
-                        fromSystemOrSystemUi);
-            }
+            mZenModeHelper.updateHasPriorityChannels(UserHandle.CURRENT,
+                    mCurrentUserHasPriorityChannels);
         }
     }
 
@@ -2225,26 +2215,6 @@ public class PreferencesHelper implements RankingConfig {
         }
 
         return true;
-    }
-
-    // TODO: b/368247671 - delete this method when modes_ui is inlined, as
-    //                     updateCurrentUserHasChannelsBypassingDnd was the only caller and
-    //                     PreferencesHelper should otherwise not need to modify actual policy
-    public void updateZenPolicy(boolean areChannelsBypassingDnd, int callingUid,
-            boolean fromSystemOrSystemUi) {
-        NotificationManager.Policy policy = mZenModeHelper.getNotificationPolicy(
-                UserHandle.CURRENT);
-        mZenModeHelper.setNotificationPolicy(
-                UserHandle.CURRENT,
-                new NotificationManager.Policy(
-                        policy.priorityCategories, policy.priorityCallSenders,
-                        policy.priorityMessageSenders, policy.suppressedVisualEffects,
-                        (areChannelsBypassingDnd
-                                ? NotificationManager.Policy.STATE_HAS_PRIORITY_CHANNELS : 0),
-                        policy.priorityConversationSenders),
-                fromSystemOrSystemUi ? ZenModeConfig.ORIGIN_SYSTEM
-                        : ZenModeConfig.ORIGIN_APP,
-                callingUid);
     }
 
     /**

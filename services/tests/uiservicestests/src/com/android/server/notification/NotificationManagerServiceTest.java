@@ -17025,7 +17025,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     public void setNotificationPolicy_fromSystemApp_appliesPriorityChannelsAllowed()
             throws Exception {
         setUpRealZenTest();
@@ -17055,7 +17054,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_fromRegularAppThatCanModifyPolicy_ignoresState()
             throws Exception {

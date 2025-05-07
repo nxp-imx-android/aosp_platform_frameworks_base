@@ -21,14 +21,12 @@ import android.os.UserManager.DISALLOW_CONFIG_LOCATION
 import android.os.UserManager.DISALLOW_MICROPHONE_TOGGLE
 import android.os.UserManager.DISALLOW_SHARE_LOCATION
 import com.android.systemui.Flags
-import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.AlarmTile
 import com.android.systemui.qs.tiles.CameraToggleTile
-import com.android.systemui.qs.tiles.DndTile
 import com.android.systemui.qs.tiles.FlashlightTile
 import com.android.systemui.qs.tiles.LocationTile
 import com.android.systemui.qs.tiles.MicrophoneToggleTile
@@ -82,7 +80,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
-import javax.inject.Provider
 
 @Module
 interface PolicyModule {
@@ -136,21 +133,14 @@ interface PolicyModule {
         const val WORK_MODE_TILE_SPEC = "work"
         const val CAMERA_TOGGLE_TILE_SPEC = "cameratoggle"
         const val MIC_TOGGLE_TILE_SPEC = "mictoggle"
-        const val DND_TILE_SPEC = "dnd"
+        const val MODES_TILE_SPEC = "dnd" // Value is "DND" to replace the old DND tile.
         const val MODES_DND_TILE_SPEC = "modes_dnd"
 
-        /** Inject DndTile or ModesTile into tileMap in QSModule based on feature flag */
+        /** Inject ModesTile into tileMap in QSModule */
         @Provides
         @IntoMap
-        @StringKey(DND_TILE_SPEC)
-        fun bindDndOrModesTile(
-            // Using providers to make sure that the unused tile isn't initialised at all if the
-            // flag is off.
-            dndTile: Provider<DndTile>,
-            modesTile: Provider<ModesTile>,
-        ): QSTileImpl<*> {
-            return if (ModesUi.isEnabled) modesTile.get() else dndTile.get()
-        }
+        @StringKey(MODES_TILE_SPEC)
+        fun bindModesTile(tile: ModesTile): QSTileImpl<*> = tile
 
         /** Inject ModesDndTile into tileViewModelMap in QSModule */
         @Provides
@@ -414,48 +404,35 @@ interface PolicyModule {
             return factory.create(MICROPHONE)
         }
 
-        /** Inject DND tile or Modes tile config based on feature flag */
+        /** Inject Modes tile config based on feature flag */
         @Provides
         @IntoMap
-        @StringKey(DND_TILE_SPEC)
-        fun provideDndOrModesTileConfig(uiEventLogger: QsEventLogger): QSTileConfig =
-            if (ModesUi.isEnabled) {
-                QSTileConfig(
-                    tileSpec = TileSpec.create(DND_TILE_SPEC),
-                    uiConfig =
-                        QSTileUIConfig.Resource(
-                            iconRes = com.android.internal.R.drawable.ic_zen_priority_modes,
-                            labelRes = R.string.quick_settings_modes_label,
-                        ),
-                    instanceId = uiEventLogger.getNewInstanceId(),
-                    category = TileCategory.UTILITIES,
-                )
-            } else {
-                QSTileConfig(
-                    tileSpec = TileSpec.create(DND_TILE_SPEC),
-                    uiConfig =
-                        QSTileUIConfig.Resource(
-                            iconRes = R.drawable.qs_dnd_icon_off,
-                            labelRes = R.string.quick_settings_dnd_label,
-                        ),
-                    instanceId = uiEventLogger.getNewInstanceId(),
-                    category = TileCategory.UTILITIES,
-                )
-            }
+        @StringKey(MODES_TILE_SPEC)
+        fun provideModesTileConfig(uiEventLogger: QsEventLogger): QSTileConfig =
+            QSTileConfig(
+                tileSpec = TileSpec.create(MODES_TILE_SPEC),
+                uiConfig =
+                    QSTileUIConfig.Resource(
+                        iconRes = com.android.internal.R.drawable.ic_zen_priority_modes,
+                        labelRes = R.string.quick_settings_modes_label,
+                    ),
+                instanceId = uiEventLogger.getNewInstanceId(),
+                category = TileCategory.UTILITIES,
+            )
 
         /** Inject ModesTile into tileViewModelMap in QSModule */
         @Provides
         @IntoMap
-        @StringKey(DND_TILE_SPEC)
+        @StringKey(MODES_TILE_SPEC)
         fun provideModesTileViewModel(
             factory: QSTileViewModelFactory.Static<ModesTileModel>,
             mapper: ModesTileMapper,
             stateInteractor: ModesTileDataInteractor,
             userActionInteractor: ModesTileUserActionInteractor,
         ): QSTileViewModel =
-            if (ModesUi.isEnabled && Flags.qsNewTilesFuture())
+            if (Flags.qsNewTilesFuture())
                 factory.create(
-                    TileSpec.create(DND_TILE_SPEC),
+                    TileSpec.create(MODES_TILE_SPEC),
                     userActionInteractor,
                     stateInteractor,
                     mapper,

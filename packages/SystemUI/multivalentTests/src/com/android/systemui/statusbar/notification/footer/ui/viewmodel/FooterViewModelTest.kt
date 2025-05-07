@@ -37,7 +37,6 @@ import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.footer.shared.NotifRedesignFooter
 import com.android.systemui.testKosmos
 import com.android.systemui.util.ui.isAnimating
@@ -250,7 +249,6 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME)
     @DisableFlags(NotifRedesignFooter.FLAG_NAME)
     fun manageButtonOnClick_whenHistoryDisabled() =
         testScope.runTest {
@@ -267,7 +265,6 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME)
     @DisableFlags(NotifRedesignFooter.FLAG_NAME)
     fun historyButtonOnClick_whenHistoryEnabled() =
         testScope.runTest {

@@ -451,7 +451,6 @@ public class BubblesTest extends SysuiTestCase {
         mNotesBubbleIntent = new Intent(mContext, BubblesTestActivity.class);
         mNotesBubbleIntent.setPackage(mContext.getPackageName());
 
-        mZenModeConfig.suppressedVisualEffects = 0;
         when(mZenModeController.getConfig()).thenReturn(mZenModeConfig);
 
         mSysUiState = mKosmos.getSysuiState();

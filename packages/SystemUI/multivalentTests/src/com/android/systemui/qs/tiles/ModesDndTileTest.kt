@@ -16,9 +16,7 @@
 
 package com.android.systemui.qs.tiles
 
-import android.app.Flags
 import android.os.Handler
-import android.platform.test.annotations.EnableFlags
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
@@ -66,7 +64,6 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 
-@EnableFlags(Flags.FLAG_MODES_UI)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)

@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.stack.ui.viewbinder
 
 import android.view.LayoutInflater
-import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.TraceUtils.traceAsync
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -36,7 +35,6 @@ import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewbinder.EmptyShadeViewBinder
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewmodel.EmptyShadeViewModel
@@ -69,7 +67,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
@@ -120,13 +117,7 @@ constructor(
                         hasNonClearableSilentNotifications,
                     )
                 }
-                launch {
-                    if (ModesEmptyShadeFix.isEnabled) {
-                        reinflateAndBindEmptyShade(emptyShadeViewModel, view)
-                    } else {
-                        bindEmptyShadeLegacy(emptyShadeViewModel, view)
-                    }
-                }
+                launch { reinflateAndBindEmptyShade(emptyShadeViewModel, view) }
                 launch { bindSilentHeaderClickListener(view, hasNonClearableSilentNotifications) }
                 launch {
                     viewModel.isImportantForAccessibility.collect { isImportantForAccessibility ->
@@ -199,8 +190,6 @@ constructor(
                         hideSilentSection = !hasNonClearableSilentNotifications.value,
                     )
                 },
-                launchNotificationSettings,
-                launchNotificationHistory,
                 notificationActivityStarter.get(),
             )
         if (SceneContainerFlag.isEnabled) {
@@ -228,19 +217,10 @@ constructor(
         disposableHandle.awaitCancellationThenDispose()
     }
 
-    private val launchNotificationSettings: (View) -> Unit = { view: View ->
-        notificationActivityStarter.get().startHistoryIntent(view, /* showHistory= */ false)
-    }
-
-    private val launchNotificationHistory: (View) -> Unit = { view ->
-        notificationActivityStarter.get().startHistoryIntent(view, /* showHistory= */ true)
-    }
-
     private suspend fun reinflateAndBindEmptyShade(
         emptyShadeViewModel: EmptyShadeViewModel,
         parentView: NotificationStackScrollLayout,
     ) {
-        ModesEmptyShadeFix.unsafeAssertInNewMode()
         // The empty shade needs to be re-inflated every time the theme or the font size
         // changes.
         configuration
@@ -258,27 +238,10 @@ constructor(
             }
     }
 
-    private suspend fun bindEmptyShadeLegacy(
-        emptyShadeViewModel: EmptyShadeViewModel,
-        parentView: NotificationStackScrollLayout,
-    ) {
-        ModesEmptyShadeFix.assertInLegacyMode()
-        combine(
-                viewModel.shouldShowEmptyShadeView,
-                emptyShadeViewModel.areNotificationsHiddenInShade,
-                emptyShadeViewModel.hasFilteredOutSeenNotifications,
-                ::Triple,
-            )
-            .collect { (shouldShow, areNotifsHidden, hasFilteredNotifs) ->
-                parentView.updateEmptyShadeView(shouldShow, areNotifsHidden, hasFilteredNotifs)
-            }
-    }
-
     private suspend fun bindEmptyShade(
         emptyShadeView: EmptyShadeView,
         emptyShadeViewModel: EmptyShadeViewModel,
     ): Unit = coroutineScope {
-        ModesEmptyShadeFix.unsafeAssertInNewMode()
         launch {
             emptyShadeView.repeatWhenAttachedToWindow {
                 EmptyShadeViewBinder.bind(
@@ -289,7 +252,7 @@ constructor(
             }
         }
         launch {
-            viewModel.shouldShowEmptyShadeViewAnimated.collect { shouldShow ->
+            viewModel.shouldShowEmptyShadeView.collect { shouldShow ->
                 emptyShadeView.setVisible(shouldShow.value, shouldShow.isAnimating) {
                     shouldShow.stopAnimating()
                 }

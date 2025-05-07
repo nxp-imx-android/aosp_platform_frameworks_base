@@ -1771,14 +1771,10 @@ public class NotificationManager {
      * {@link Settings#ACTION_AUTOMATIC_ZEN_RULE_SETTINGS}.
      */
     public boolean areAutomaticZenRulesUserManaged() {
-        if (Flags.modesUi()) {
-            PackageManager pm = mContext.getPackageManager();
-            return !pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
-                    && !pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
-                    && !pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
-        } else {
-            return false;
-        }
+        PackageManager pm = mContext.getPackageManager();
+        return !pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
+                && !pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
+                && !pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
     }
 
     /**
@@ -2376,10 +2372,10 @@ public class NotificationManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
     /**
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MODES_UI)
     public void setManualZenRuleDeviceEffects(@NonNull ZenDeviceEffects effects) {
         INotificationManager service = service();
         try {

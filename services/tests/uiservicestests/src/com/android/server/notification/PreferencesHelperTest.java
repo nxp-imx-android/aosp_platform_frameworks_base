@@ -1866,10 +1866,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3, true, false,
                 UID_N_MR1, false);
 
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(),
-                UID_N_MR1, false);
-        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(), UID_N_MR1, false);
+        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg.getId());
         assertEquals(channel2,
                 mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2.getId(), false));
 
@@ -2409,8 +2407,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testDeleteNonExistentChannel() throws Exception {
-        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, "does not exist",
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, "does not exist");
     }
 
     @Test
@@ -2418,10 +2415,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel channel = getChannel();
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
         assertEquals(2, mLogger.getCalls().size());
         assertEquals(
                 NotificationChannelLogger.NotificationChannelEvent.NOTIFICATION_CHANNEL_CREATED,
@@ -2444,8 +2439,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
 
         // Does not return deleted channel
         NotificationChannel response =
@@ -2478,8 +2472,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2, true, false,
                 UID_N_MR1, false);
 
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
 
         // Returns only non-deleted channels
         List<NotificationChannel> channels =
@@ -2518,10 +2511,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3, true, false,
                 UID_N_MR1, false);
 
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(), UID_N_MR1, false);
 
         assertEquals(2, mHelper.getDeletedChannelCount(PKG_N_MR1, UID_N_MR1));
         assertEquals(0, mHelper.getDeletedChannelCount("pkg2", UID_O));
@@ -2542,8 +2533,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3, true, false,
                 UID_N_MR1, false);
 
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(), UID_N_MR1, false);
 
         assertEquals(1, mHelper.getBlockedChannelCount(PKG_N_MR1, UID_N_MR1));
         assertEquals(0, mHelper.getBlockedChannelCount("pkg2", UID_O));
@@ -2562,8 +2552,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel channel = new NotificationChannel("id", "name",
                 NotificationManager.IMPORTANCE_MAX);
         channel.setBypassDnd(true);
-        mHelper.createNotificationChannel(PKG_N_MR1, 111, channel, true, true,
-                111, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, 111, channel, true, true, 111, false);
 
         assertEquals(0, mHelper.getNotificationChannelsBypassingDnd(PKG_N_MR1,
                 uid).getList().size());
@@ -2577,8 +2566,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 NotificationManager.IMPORTANCE_MAX);
         channel1.setBypassDnd(true);
         channel1.setGroup(ncg.getId());
-        mHelper.createNotificationChannelGroup(PKG_N_MR1, uid, ncg,  /* fromTargetApp */ true,
-                uid, false);
+        mHelper.createNotificationChannelGroup(PKG_N_MR1, uid, ncg,  /* fromTargetApp */ true, uid,
+                false);
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel1, true, /*has DND access*/ true,
                 uid, false);
 
@@ -2608,10 +2597,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // has DND access, so can set bypassDnd attribute
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel1, true, /*has DND access*/ true,
                 uid, false);
-        mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
-                uid, false);
-        mHelper.createNotificationChannel(PKG_N_MR1, uid, channel3, true, true,
-                uid, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true, uid, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, uid, channel3, true, true, uid, false);
         assertEquals(3, mHelper.getNotificationChannelsBypassingDnd(PKG_N_MR1,
                 uid).getList().size());
 
@@ -2711,12 +2698,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // has DND access, so can set bypassDnd attribute
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1, true,
                 /*has DND access*/ true, UID_N_MR1, false);
-        mHelper.createNotificationChannel(PKG_O, UID_O, channel2, true, true,
-                UID_O, false);
-        mHelper.createNotificationChannel(PKG_P, UID_P, channel3, true, true,
-                UID_P, false);
-        mHelper.createNotificationChannel(PKG_P, UID_P, channel4, true, true,
-                UID_P, false);
+        mHelper.createNotificationChannel(PKG_O, UID_O, channel2, true, true, UID_O, false);
+        mHelper.createNotificationChannel(PKG_P, UID_P, channel3, true, true, UID_P, false);
+        mHelper.createNotificationChannel(PKG_P, UID_P, channel4, true, true, UID_P, false);
 
         assertThat(mHelper.getPackagesBypassingDnd(UserHandle.getUserId(UID_O)))
                 .containsExactlyElementsIn(expected);
@@ -2734,12 +2718,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel, true, false,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         // create notification channel that can bypass dnd
@@ -2749,35 +2728,20 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
                 uid, false);
         assertTrue(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(true));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(true));
         resetZenModeHelper();
 
         // delete channels
         mHelper.deleteNotificationChannel(PKG_N_MR1, uid, channel.getId(), uid, false);
         assertTrue(mHelper.hasPriorityChannels()); // channel2 can still bypass DND
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         mHelper.deleteNotificationChannel(PKG_N_MR1, uid, channel2.getId(), uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -2793,12 +2757,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel, true, false,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         // Recreate a channel & now the app has dnd access granted and can set the bypass dnd field
@@ -2808,13 +2767,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 uid, false);
 
         assertTrue(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(true));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(true));
         resetZenModeHelper();
     }
 
@@ -2830,12 +2784,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel, true, false,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         // create notification channel that can bypass dnd, using local app level settings
@@ -2845,35 +2794,20 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
                 uid, false);
         assertTrue(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(true));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(true));
         resetZenModeHelper();
 
         // delete channels
         mHelper.deleteNotificationChannel(PKG_N_MR1, uid, channel.getId(), uid, false);
         assertTrue(mHelper.hasPriorityChannels()); // channel2 can still bypass DND
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         mHelper.deleteNotificationChannel(PKG_N_MR1, uid, channel2.getId(), uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -2900,13 +2834,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -2928,13 +2857,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -2956,13 +2880,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel2, true, true,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -2978,12 +2897,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, uid, channel, true, false,
                 uid, false);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
 
         // update channel so it CAN bypass dnd:
@@ -2991,13 +2905,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         channel.setBypassDnd(true);
         mHelper.updateNotificationChannel(PKG_N_MR1, uid, channel, true, SYSTEM_UID, true);
         assertTrue(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(true));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(true));
         resetZenModeHelper();
 
         // update channel so it can't bypass dnd:
@@ -3005,13 +2914,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         channel.setBypassDnd(false);
         mHelper.updateNotificationChannel(PKG_N_MR1, uid, channel, true, SYSTEM_UID, true);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -3024,13 +2928,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         when(mMockZenModeHelper.getNotificationPolicy(any())).thenReturn(mTestNotificationPolicy);
         mHelper.syncHasPriorityChannels();
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
-                    eq(false));
-        } else {
-            verify(mMockZenModeHelper, times(1)).setNotificationPolicy(eq(UserHandle.CURRENT),
-                    any(), anyInt(), anyInt());
-        }
+        verify(mMockZenModeHelper, times(1)).updateHasPriorityChannels(eq(UserHandle.CURRENT),
+                eq(false));
         resetZenModeHelper();
     }
 
@@ -3040,12 +2939,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mTestNotificationPolicy = new NotificationManager.Policy(0, 0, 0, 0, 0, 0);
         when(mMockZenModeHelper.getNotificationPolicy(any())).thenReturn(mTestNotificationPolicy);
         assertFalse(mHelper.hasPriorityChannels());
-        if (android.app.Flags.modesUi()) {
-            verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
-        } else {
-            verify(mMockZenModeHelper, never()).setNotificationPolicy(any(), any(), anyInt(),
-                    anyInt());
-        }
+        verify(mMockZenModeHelper, never()).updateHasPriorityChannels(any(), anyBoolean());
         resetZenModeHelper();
     }
 
@@ -3187,8 +3081,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, channel.getId(), UID_N_MR1, false);
 
         NotificationChannel newChannel = new NotificationChannel(
                 channel.getId(), channel.getName(), NotificationManager.IMPORTANCE_HIGH);
@@ -3371,8 +3264,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, groupedButNotDeleted, true, false,
                 UID_N_MR1, false);
 
-        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, deleted.getId(),
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, deleted.getId());
 
         assertNull(mHelper.getNotificationChannelGroup(deleted.getId(), PKG_N_MR1, UID_N_MR1));
         assertNotNull(
@@ -3806,8 +3698,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         // delete the first channel of the first package
         String pkg = expectedChannels.keyAt(0);
-        mHelper.deleteNotificationChannel("pkg" + 0, UID_N_MR1, "0",
-                UID_N_MR1, false);
+        mHelper.deleteNotificationChannel("pkg" + 0, UID_N_MR1, "0", UID_N_MR1, false);
         // dump should not include deleted channels
         int count = expectedChannels.get(pkg);
         expectedChannels.put(pkg, count - 1);
@@ -4238,16 +4129,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         c.setGroup(group.getId());
         NotificationChannel d = new NotificationChannel("d", "d", IMPORTANCE_DEFAULT);
 
-        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, a, true, false,
-                UID_N_MR1, false);
-        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, b, true, false,
-                UID_N_MR1, false);
-        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, c, true, false,
-                UID_N_MR1, false);
-        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, d, true, false,
-                UID_N_MR1, false);
-        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, c.getId(),
-                UID_N_MR1, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, a, true, false, UID_N_MR1, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, b, true, false, UID_N_MR1, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, c, true, false, UID_N_MR1, false);
+        mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, d, true, false, UID_N_MR1, false);
+        mHelper.deleteNotificationChannel(PKG_N_MR1, UID_N_MR1, c.getId(), UID_N_MR1, false);
 
         NotificationChannelGroup retrieved = mHelper.getNotificationChannelGroupWithChannels(
                 PKG_N_MR1, UID_N_MR1, group.getId(), true);
@@ -5353,10 +5239,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 PKG_P, UID_P, new NotificationChannel("id", "id", 2), true, false,
                 UID_P, false);
 
-        assertTrue(mHelper.deleteNotificationChannel(PKG_P, UID_P, "id",
-                UID_P, false));
-        assertFalse(mHelper.deleteNotificationChannel(PKG_P, UID_P, "id",
-                UID_P, false));
+        assertTrue(mHelper.deleteNotificationChannel(PKG_P, UID_P, "id", UID_P, false));
+        assertFalse(mHelper.deleteNotificationChannel(PKG_P, UID_P, "id", UID_P, false));
     }
 
     @Test
@@ -5760,8 +5644,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         assertEquals(channel, mHelper.getNotificationChannel(PKG_O, UID_O, channel.getId(), false));
         assertEquals(channel2,
                 mHelper.getNotificationChannel(PKG_O, UID_O, channel2.getId(), false));
-        List<String> deleted = mHelper.deleteConversations(PKG_O, UID_O, Set.of(convoId, convoIdC),
-                UID_O, false);
+        List<String> deleted = mHelper.deleteConversations(PKG_O, UID_O, Set.of(convoId, convoIdC));
         assertEquals(3, deleted.size());
 
         assertEquals(messages,
@@ -6967,14 +6850,12 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         // Delete conversations, but for a package without those conversations
         mHelper.resetCacheInvalidation();
-        mHelper.deleteConversations(PKG_O, UID_O, Set.of(p2u1Conv.getConversationId()), UID_O,
-                false);
+        mHelper.deleteConversations(PKG_O, UID_O, Set.of(p2u1Conv.getConversationId()));
         assertThat(mHelper.hasChannelCacheBeenInvalidated()).isFalse();
 
         // Now delete conversations for the right package
         mHelper.resetCacheInvalidation();
-        mHelper.deleteConversations(PKG_N_MR1, UID_N_MR1, Set.of(p2u1Conv.getConversationId()),
-                UID_N_MR1, false);
+        mHelper.deleteConversations(PKG_N_MR1, UID_N_MR1, Set.of(p2u1Conv.getConversationId()));
         assertThat(mHelper.hasChannelCacheBeenInvalidated()).isTrue();
     }
 
@@ -7128,14 +7009,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         // delete group 2: group cache should be cleared but not channel cache
         // (doesn't change channel information)
-        mHelper.deleteNotificationChannelGroup(PKG_O, UID_O, "2", UID_O, false);
+        mHelper.deleteNotificationChannelGroup(PKG_O, UID_O, "2");
         assertThat(mHelper.hasChannelCacheBeenInvalidated()).isFalse();
         assertThat(mHelper.hasGroupCacheBeenInvalidated()).isTrue();
 
         mHelper.resetCacheInvalidation();
 
         // Now delete group 1: there is a channel associated, which will also be deleted
-        mHelper.deleteNotificationChannelGroup(PKG_O, UID_O, "1", UID_O, false);
+        mHelper.deleteNotificationChannelGroup(PKG_O, UID_O, "1");
         assertThat(mHelper.hasChannelCacheBeenInvalidated()).isTrue();
         assertThat(mHelper.hasGroupCacheBeenInvalidated()).isTrue();
     }

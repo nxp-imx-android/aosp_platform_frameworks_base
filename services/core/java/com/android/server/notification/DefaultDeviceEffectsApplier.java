@@ -158,7 +158,7 @@ public class DefaultDeviceEffectsApplier implements DeviceEffectsApplier {
                 || origin == ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI
                 || origin == ZenModeConfig.ORIGIN_USER_IN_APP
                 || !mPowerManager.isInteractive()
-                || (android.app.Flags.modesUi() && mKeyguardManager.isKeyguardLocked())) {
+                || mKeyguardManager.isKeyguardLocked()) {
             unregisterScreenOffReceiver();
             updateNightModeImmediately(useNightMode);
         } else {

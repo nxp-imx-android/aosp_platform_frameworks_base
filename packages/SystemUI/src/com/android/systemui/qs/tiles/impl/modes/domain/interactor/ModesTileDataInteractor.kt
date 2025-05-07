@@ -24,8 +24,6 @@ import com.android.settingslib.notification.modes.ZenIcon
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.modes.shared.ModesUi
-import com.android.systemui.modes.shared.ModesUiIcons
 import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.tiles.ModesTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
@@ -99,18 +97,14 @@ constructor(
                 .firstOrNull()
 
         val icon =
-            if (ModesUiIcons.isEnabled) {
-                if (mainActiveMode != null) {
-                    zenModeInteractor.getModeIcon(mainActiveMode).toTileIcon()
-                } else {
-                    if (QsInCompose.isEnabled && lastManualMode != null) {
-                        zenModeInteractor.getModeIcon(lastManualMode).toTileIcon()
-                    } else {
-                        getDefaultTileIcon()
-                    }
-                }
+            if (mainActiveMode != null) {
+                zenModeInteractor.getModeIcon(mainActiveMode).toTileIcon()
             } else {
-                getDefaultTileIcon()
+                if (QsInCompose.isEnabled && lastManualMode != null) {
+                    zenModeInteractor.getModeIcon(lastManualMode).toTileIcon()
+                } else {
+                    getDefaultTileIcon()
+                }
             }
 
         return ModesTileModel(
@@ -126,8 +120,7 @@ constructor(
             isActivated = activeModes.isAnyActive(),
             activeModes = activeModes.modeNames,
             icon =
-                if (ModesUiIcons.isEnabled && activeModes.mainMode != null)
-                    activeModes.mainMode.icon.toTileIcon()
+                if (activeModes.mainMode != null) activeModes.mainMode.icon.toTileIcon()
                 else getDefaultTileIcon(),
             quickMode = null,
         )
@@ -154,5 +147,5 @@ constructor(
             res = ModesTile.ICON_RES_ID,
         )
 
-    override fun availability(user: UserHandle): Flow<Boolean> = flowOf(ModesUi.isEnabled)
+    override fun availability(user: UserHandle): Flow<Boolean> = flowOf(true)
 }

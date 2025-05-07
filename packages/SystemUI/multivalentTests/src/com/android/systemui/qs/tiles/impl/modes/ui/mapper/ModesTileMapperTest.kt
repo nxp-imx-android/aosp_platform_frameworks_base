@@ -36,7 +36,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_MODES_UI)
 class ModesTileMapperTest : SysuiTestCase() {
     val config =
         QSTileConfigTestBuilder.build {

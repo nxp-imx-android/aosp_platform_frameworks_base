@@ -72,12 +72,6 @@ public class ZenModeConditions implements ConditionProviders.Callback {
     public void evaluateConfig(ZenModeConfig config, ComponentName trigger,
             boolean processSubscriptions) {
         if (config == null) return;
-        if (!android.app.Flags.modesUi() && config.manualRule != null
-                && config.manualRule.condition != null
-                && !config.manualRule.isTrueOrUnknown()) {
-            if (DEBUG) Log.d(TAG, "evaluateConfig: clearing manual rule");
-            config.manualRule = null;
-        }
         final ArraySet<Uri> current = new ArraySet<>();
         evaluateRule(config.manualRule, current, null, processSubscriptions, true);
         for (ZenRule automaticRule : config.automaticRules.values()) {
