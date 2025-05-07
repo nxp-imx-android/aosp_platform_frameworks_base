@@ -834,10 +834,15 @@ public final class DisplayTopology implements Parcelable {
      */
     @NonNull
     public Map<Integer, TreeNode> allNodesIdMap() {
-        var pend = new ArrayDeque<TreeNode>();
         var found = new HashMap<Integer, TreeNode>();
 
+        if (mRoot == null) {
+            return found;
+        }
+
+        var pend = new ArrayDeque<TreeNode>();
         pend.push(mRoot);
+
         do {
             TreeNode node = pend.pop();
             found.put(node.mDisplayId, node);
