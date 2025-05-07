@@ -153,23 +153,31 @@ public final class WindowManagerGlobal {
     private final Object mLock = new Object();
 
     @UnsupportedAppUsage
+    @GuardedBy("mLock")
     private final ArrayList<View> mViews = new ArrayList<View>();
     /**
      * The {@link ListenerGroup} that is associated to {@link #mViews}.
      * @hide
      */
+    @GuardedBy("mLock")
     private final ListenerGroup<List<View>> mWindowViewsListenerGroup =
             new ListenerGroup<>(new ArrayList<>(), new Handler(Looper.getMainLooper()));
     @UnsupportedAppUsage
+    @GuardedBy("mLock")
     private final ArrayList<ViewRootImpl> mRoots = new ArrayList<ViewRootImpl>();
     @UnsupportedAppUsage
+    @GuardedBy("mLock")
     private final ArrayList<WindowManager.LayoutParams> mParams =
             new ArrayList<WindowManager.LayoutParams>();
+
+    @GuardedBy("mLock")
     private final ArraySet<View> mDyingViews = new ArraySet<View>();
 
+    @GuardedBy("mLock")
     private final ArrayList<ViewRootImpl> mWindowlessRoots = new ArrayList<ViewRootImpl>();
 
     /** A context token only has one remote registration to system. */
+    @GuardedBy("mLock")
     private WeakHashMap<IBinder, ProposedRotationListenerDelegate> mProposedRotationListenerMap;
 
     private Runnable mSystemPropertyUpdater;
@@ -1130,15 +1138,17 @@ public final class WindowManagerGlobal {
     public boolean canApplyWindowTypeOverride(
             @WindowManager.LayoutParams.WindowType int windowTypeToOverride,
             @NonNull View view) {
-        final int index = findViewLocked(view, false /* required */);
-        if (index < 0) {
-            // The view has not been added yet. Window type can be overridden.
-            return true;
+        synchronized (mLock) {
+            final int index = findViewLocked(view, false /* required */);
+            if (index < 0) {
+                // The view has not been added yet. Window type can be overridden.
+                return true;
+            }
+            final WindowManager.LayoutParams params = mParams.get(index);
+            // If the view has been attached, we should make sure the override type matches the
+            // existing one. The window type can't be changed after the view was added.
+            return windowTypeToOverride == params.type;
         }
-        final WindowManager.LayoutParams params = mParams.get(index);
-        // If the view has been attached, we should make sure the override type matches the existing
-        // one. The window type can't be changed after the view was added.
-        return windowTypeToOverride == params.type;
     }
 }
 
