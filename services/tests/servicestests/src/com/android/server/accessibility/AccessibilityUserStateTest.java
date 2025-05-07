@@ -22,6 +22,9 @@ import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HARD_K
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_IGNORE_HARD_KEYBOARD;
 import static android.content.pm.PackageManager.FEATURE_WINDOW_MAGNIFICATION;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW;
 import static android.view.accessibility.AccessibilityManager.STATE_FLAG_ACCESSIBILITY_ENABLED;
@@ -416,6 +419,24 @@ public class AccessibilityUserStateTest {
 
         assertEquals(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
                 mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+    }
+
+    @Test
+    public void setCursorFollowingMode_returnExpectedCursorFollowingMode() {
+        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS,
+                mUserState.getMagnificationCursorFollowingMode());
+
+        mUserState.setMagnificationCursorFollowingMode(
+                ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER);
+
+        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER,
+                mUserState.getMagnificationCursorFollowingMode());
+
+        mUserState.setMagnificationCursorFollowingMode(
+                ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE);
+
+        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE,
+                mUserState.getMagnificationCursorFollowingMode());
     }
 
     @Test

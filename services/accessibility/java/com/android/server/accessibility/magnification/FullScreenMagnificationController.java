@@ -123,8 +123,6 @@ public class FullScreenMagnificationController implements
     @NonNull private final Supplier<MagnificationThumbnail> mThumbnailSupplier;
     @NonNull private final Supplier<Boolean> mMagnificationConnectionStateSupplier;
 
-    private boolean mIsPointerMotionFilterInstalled = false;
-
     /**
      * Full screen magnification data for {@link FullScreenMagnificationPointerMotionEventFilter}.
      */
@@ -1189,7 +1187,6 @@ public class FullScreenMagnificationController implements
             if (display.register()) {
                 mDisplays.put(displayId, display);
                 mScreenStateObserver.registerIfNecessary();
-                configurePointerMotionFilter(true);
             }
         }
     }
@@ -2076,7 +2073,6 @@ public class FullScreenMagnificationController implements
         }
         if (!hasRegister) {
             mScreenStateObserver.unregister();
-            configurePointerMotionFilter(false);
         }
     }
 
@@ -2090,22 +2086,6 @@ public class FullScreenMagnificationController implements
         synchronized (mLock) {
             mMagnificationInfoChangedCallbacks.remove(callback);
         }
-    }
-
-    private void configurePointerMotionFilter(boolean enabled) {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return;
-        }
-        if (enabled == mIsPointerMotionFilterInstalled) {
-            return;
-        }
-        if (!enabled) {
-            mControllerCtx.getInputManager().registerAccessibilityPointerMotionFilter(null);
-        } else {
-            mControllerCtx.getInputManager().registerAccessibilityPointerMotionFilter(
-                    new FullScreenMagnificationPointerMotionEventFilter(this));
-        }
-        mIsPointerMotionFilterInstalled = enabled;
     }
 
     private boolean traceEnabled() {

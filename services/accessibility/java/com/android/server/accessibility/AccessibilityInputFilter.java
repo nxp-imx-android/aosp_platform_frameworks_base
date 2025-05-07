@@ -24,6 +24,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY
 import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
@@ -31,6 +32,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.provider.Settings.Secure.AccessibilityMagnificationCursorFollowingMode;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -51,11 +53,13 @@ import com.android.server.accessibility.autoclick.AutoclickController;
 import com.android.server.accessibility.gestures.TouchExplorer;
 import com.android.server.accessibility.magnification.FullScreenMagnificationController;
 import com.android.server.accessibility.magnification.FullScreenMagnificationGestureHandler;
+import com.android.server.accessibility.magnification.FullScreenMagnificationPointerMotionEventFilter;
 import com.android.server.accessibility.magnification.FullScreenMagnificationVibrationHelper;
 import com.android.server.accessibility.magnification.MagnificationGestureHandler;
 import com.android.server.accessibility.magnification.MagnificationKeyHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationGestureHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationPromptController;
+import com.android.server.input.InputManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 
 import java.io.FileDescriptor;
@@ -197,6 +201,10 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     private final SparseArray<MagnificationGestureHandler> mMagnificationGestureHandler =
             new SparseArray<>(0);
+
+    @Nullable
+    private FullScreenMagnificationPointerMotionEventFilter
+            mFullScreenMagnificationPointerMotionEventFilter;
 
     private final SparseArray<MotionEventInjector> mMotionEventInjectors = new SparseArray<>(0);
 
@@ -649,6 +657,8 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             enableFeaturesForDisplay(displaysList.get(i));
         }
         enableDisplayIndependentFeatures();
+
+        registerPointerMotionFilter(/* enabled= */ isAnyFullScreenMagnificationEnabled());
     }
 
     private void enableFeaturesForDisplay(Display display) {
@@ -774,6 +784,19 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                 || ((mEnabledFeatures & FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER) != 0);
     }
 
+    private boolean isAnyFullScreenMagnificationEnabled() {
+        if (!isAnyMagnificationEnabled()) {
+            return false;
+        }
+        for (final Display display : mAms.getValidDisplayList()) {
+            final int mode = mAms.getMagnificationMode(display.getDisplayId());
+            if (mode != Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Adds an event handler to the event handler chain for giving display. The handler is added at
      * the beginning of the chain.
@@ -802,6 +825,8 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         disableDisplayIndependentFeatures();
 
         resetAllStreamState();
+
+        registerPointerMotionFilter(/* enabled= */ false);
     }
 
     private void disableFeaturesForDisplay(int displayId) {
@@ -865,6 +890,69 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             mMagnificationKeyHandler.onDestroy();
             mMagnificationKeyHandler = null;
         }
+    }
+
+    @VisibleForTesting
+    @Nullable
+    FullScreenMagnificationPointerMotionEventFilter
+            getFullScreenMagnificationPointerMotionEventFilter() {
+        return mFullScreenMagnificationPointerMotionEventFilter;
+    }
+
+    private void createFullScreenMagnificationPointerMotionEventFilter() {
+        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
+            return;
+        }
+
+        final FullScreenMagnificationController controller =
+                mAms.getMagnificationController().getFullScreenMagnificationController();
+        mFullScreenMagnificationPointerMotionEventFilter =
+                new FullScreenMagnificationPointerMotionEventFilter(controller);
+        @AccessibilityMagnificationCursorFollowingMode
+        final int cursorFollowingMode = mAms.getMagnificationCursorFollowingMode();
+        setCursorFollowingMode(cursorFollowingMode);
+    }
+
+    /**
+     * Sets cursor following mode. No operation if the feature flag is
+     * not enabled.
+     *
+     * @param cursorFollowingMode The cursor following mode
+     */
+    public void setCursorFollowingMode(
+            @AccessibilityMagnificationCursorFollowingMode int cursorFollowingMode) {
+        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
+            return;
+        }
+
+        if (mFullScreenMagnificationPointerMotionEventFilter != null) {
+            mFullScreenMagnificationPointerMotionEventFilter.setMode(cursorFollowingMode);
+        }
+    }
+
+    @VisibleForTesting
+    void registerPointerMotionFilter(boolean enabled) {
+        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
+            return;
+        }
+
+        if (enabled == (mFullScreenMagnificationPointerMotionEventFilter != null)) {
+            return;
+        }
+
+        InputManagerInternal inputManager = LocalServices.getService(InputManagerInternal.class);
+        if (inputManager == null) {
+            return;
+        }
+
+        if (enabled) {
+            createFullScreenMagnificationPointerMotionEventFilter();
+        } else {
+            mFullScreenMagnificationPointerMotionEventFilter = null;
+        }
+
+        inputManager.registerAccessibilityPointerMotionFilter(
+                mFullScreenMagnificationPointerMotionEventFilter);
     }
 
     private MagnificationGestureHandler createMagnificationGestureHandler(
@@ -964,6 +1052,8 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         switchEventStreamTransformation(displayId, magnificationGestureHandler,
                 currentMagnificationGestureHandler);
         mMagnificationGestureHandler.put(displayId, currentMagnificationGestureHandler);
+
+        registerPointerMotionFilter(/* enabled= */ isAnyFullScreenMagnificationEnabled());
     }
 
     @MainThread

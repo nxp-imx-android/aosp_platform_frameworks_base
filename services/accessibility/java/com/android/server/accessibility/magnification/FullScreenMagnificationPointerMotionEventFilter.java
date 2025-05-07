@@ -44,6 +44,7 @@ public class FullScreenMagnificationPointerMotionEventFilter implements
     @VisibleForTesting
     static final float EDGE_MODE_MARGIN_PX = 100.f;
 
+    @NonNull
     private final FullScreenMagnificationController mController;
 
     @NonNull
@@ -53,7 +54,7 @@ public class FullScreenMagnificationPointerMotionEventFilter implements
             ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS);
 
     public FullScreenMagnificationPointerMotionEventFilter(
-            FullScreenMagnificationController controller) {
+            @NonNull FullScreenMagnificationController controller) {
         mController = controller;
         mMagnificationData = new FullScreenMagnificationController.FullScreenMagnificationData();
     }
