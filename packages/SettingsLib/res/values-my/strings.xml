@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"အပလီကေးရှင်းရွေးချယ်ရန်"</string>
     <string name="no_application" msgid="9038334538870247690">"တခုမှမရှိ"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"အမှားရှာပြင်ကိရိယာကို စောင့်ရန်"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"အမှားပြင်ဆင်ရှာဖွေသည့် အပလီကေးရှင်းသည် လုပ်ငန်းမစမီ တွဲဖက်ရန် အမှားရှာဖွေမည့်သူကို စောင့်နေသည်။"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"အမှားရှာပြင်သည့် အပလီကေးရှင်းသည် လုပ်ငန်းမစမီ အမှားရှာပြင်ကိရိယာ တွဲဖက်ရန် စောင့်နေသည်။"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"ထည့်သွင်းရန်"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"ရေးဆွဲခြင်း"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"ဟာ့ဒ်ဝဲ အရှိန်မြှင့် ပုံဖော်ခြင်း"</string>
