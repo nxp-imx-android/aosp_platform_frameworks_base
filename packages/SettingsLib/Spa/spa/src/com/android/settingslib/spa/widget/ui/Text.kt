@@ -35,6 +35,7 @@ import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsOpacity.alphaForEnabled
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.toMediumWeight
+import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 @Composable
 fun SettingsTitle(
@@ -94,8 +95,10 @@ fun SettingsBody(
         Text(
             text = body,
             modifier = Modifier.contentDescription(contentDescription),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
+            color = if (isSpaExpressiveEnabled) MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = if (isSpaExpressiveEnabled) MaterialTheme.typography.bodyLarge
+            else MaterialTheme.typography.bodyMedium,
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
         )
