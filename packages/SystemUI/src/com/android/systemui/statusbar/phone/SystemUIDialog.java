@@ -80,6 +80,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     public static final boolean DEFAULT_DISMISS_ON_DEVICE_LOCK = true;
 
     private final Context mContext;
+    private final DialogTransitionAnimator mDialogTransitionAnimator;
     private final DialogDelegate<SystemUIDialog> mDelegate;
     @Nullable
     private final DismissReceiver mDismissReceiver;
@@ -259,6 +260,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             boolean shouldAcsdDismissDialog) {
         super(context, theme);
         mContext = context;
+        mDialogTransitionAnimator = dialogTransitionAnimator;
         mDelegate = delegate;
 
         applyFlags(this);
@@ -488,6 +490,12 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             mOnCreateRunnables.add(() -> getButton(whichButton).setOnClickListener(
                     view -> onClick.onClick(this, whichButton)));
         }
+    }
+
+    /** Dismisses the dialog without animation. */
+    public void dismissWithoutAnimation() {
+        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
+        dismiss();
     }
 
     public static void setShowForAllUsers(Dialog dialog, boolean show) {

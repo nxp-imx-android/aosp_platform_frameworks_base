@@ -47,6 +47,7 @@ import com.android.systemui.shade.data.repository.ShadeDisplaysRepositoryImpl
 import com.android.systemui.shade.display.ShadeDisplayPolicyModule
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractorImpl
+import com.android.systemui.shade.domain.interactor.ShadeDisplaysDialogInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.notification.stack.NotificationStackRebindingHider
@@ -305,6 +306,19 @@ object ShadeDisplayAwareModule {
             alwaysLogToLogcat = true,
             systraceTrackName = trackGroup("shade", logBufferName),
         )
+    }
+
+    @Provides
+    @IntoMap
+    @ClassKey(ShadeDisplaysDialogInteractor::class)
+    fun provideShadeDisplayDialogInteractor(
+        impl: Provider<ShadeDisplaysDialogInteractor>
+    ): CoreStartable {
+        return if (ShadeWindowGoesAround.isEnabled) {
+            impl.get()
+        } else {
+            CoreStartable.NOP
+        }
     }
 }
 
