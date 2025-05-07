@@ -89,11 +89,24 @@ flag {
   bug: "401576820"
 }
 
-
 flag {
   name: "persistent_supervision_settings"
   is_exported: false
   namespace: "supervision"
   description: "Saves supervision user data and recovery info into a binary xml file"
   bug: "406449915"
+}
+
+flag {
+  name: "update_supervision_admin_dialog"
+  namespace: "supervision"
+  description: "Updates the supervision admin dialog customizations to be compatible with device supervision"
+  bug: "399481325"
+}
+
+flag {
+  name: "restrict_factory_reset"
+  namespace: "supervision"
+  description: "Enable restricting factory reset when device supervision is enabled and a supervision PIN recovery method is set"
+  bug: "383624414"
 }
