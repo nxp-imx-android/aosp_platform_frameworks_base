@@ -1362,6 +1362,9 @@ public class Bubble implements BubbleViewProvider {
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
         }
+        if (mBubbleBarExpandedView != null) {
+            mBubbleBarExpandedView.dump(pw, "  ");
+        }
     }
 
     @Override
