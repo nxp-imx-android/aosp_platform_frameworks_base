@@ -75,6 +75,7 @@ class MultiDisplayDragMoveIndicatorSurface(
         TRANSLUCENT,
         VISIBLE,
     }
+
     private var visibility = Visibility.INVISIBLE
 
     // A container surface to host the veil background

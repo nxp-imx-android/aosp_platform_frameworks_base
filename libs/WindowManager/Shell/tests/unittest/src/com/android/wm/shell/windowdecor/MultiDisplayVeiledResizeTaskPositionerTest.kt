@@ -55,7 +55,6 @@ import junit.framework.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
 import org.mockito.Mock
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.doAnswer
@@ -66,9 +65,10 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.`when` as whenever
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 
 /**
  * Tests for [MultiDisplayVeiledResizeTaskPositioner].
@@ -97,8 +97,9 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     @Mock private lateinit var mockTransitions: Transitions
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var mockSurfaceControl: SurfaceControl
-    @Mock private lateinit var mockMultiDisplayDragMoveIndicatorController:
-            MultiDisplayDragMoveIndicatorController
+    @Mock
+    private lateinit var mockMultiDisplayDragMoveIndicatorController:
+        MultiDisplayDragMoveIndicatorController
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -303,17 +304,21 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         // Move to the display 1
         taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 800f)
         val rectAfterMove = Rect(200, -600, 300, -400)
-        inOrder.verify(mockTransaction)
+        inOrder
+            .verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
-        inOrder.verify(mockTransaction)
+        inOrder
+            .verify(mockTransaction)
             .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
 
         // Moving back to the original display
         taskPositioner.onDragPositioningMove(DISPLAY_ID_0, 100f, 1500f)
         rectAfterMove.set(100, 1500, 200, 1700)
-        inOrder.verify(mockTransaction)
+        inOrder
+            .verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
-        inOrder.verify(mockTransaction)
+        inOrder
+            .verify(mockTransaction)
             .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_VISIBLE_WINDOW))
 
         // Finish the drag move on the original display
@@ -594,13 +599,11 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testClose() = runOnUiThread {
-        verify(mockDisplayController, times(1))
-            .addDisplayWindowListener(eq(taskPositioner))
+        verify(mockDisplayController, times(1)).addDisplayWindowListener(eq(taskPositioner))
 
         taskPositioner.close()
 
-        verify(mockDisplayController, times(1))
-            .removeDisplayWindowListener(eq(taskPositioner))
+        verify(mockDisplayController, times(1)).removeDisplayWindowListener(eq(taskPositioner))
     }
 
     @Test
@@ -689,16 +692,10 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             mockFinishCallback,
         )
 
-        verify(startTransaction).setPosition(
-            eq(taskLeash),
-            eq(point.x.toFloat()),
-            eq(point.y.toFloat())
-        )
-        verify(finishTransaction).setPosition(
-            eq(taskLeash),
-            eq(point.x.toFloat()),
-            eq(point.y.toFloat())
-        )
+        verify(startTransaction)
+            .setPosition(eq(taskLeash), eq(point.x.toFloat()), eq(point.y.toFloat()))
+        verify(finishTransaction)
+            .setPosition(eq(taskLeash), eq(point.x.toFloat()), eq(point.y.toFloat()))
         verify(startTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
         verify(finishTransaction, never()).setPosition(eq(nonTaskLeash), any(), any())
         verify(changeMock).endRelOffset
