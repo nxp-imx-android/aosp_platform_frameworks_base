@@ -94,6 +94,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.pip.PipContentOverlay;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -417,7 +418,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         mTaskOrganizer = shellTaskOrganizer;
         mMainExecutor = mainExecutor;
 
-        if (!PipUtils.isPip2ExperimentEnabled()) {
+        if (!PipFlags.isPip2ExperimentEnabled()) {
             shellInit.addInitCallback(this::onInit, this);
         }
     }

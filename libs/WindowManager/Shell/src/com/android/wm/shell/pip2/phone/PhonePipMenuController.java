@@ -43,8 +43,8 @@ import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.common.pip.PipMediaController.ActionListener;
 import com.android.wm.shell.common.pip.PipMenuController;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.pip.PipFlags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -491,7 +491,7 @@ public class PhonePipMenuController implements PipMenuController,
         // If UMO Experience is enabled, default to MediaSession actions if present.
         // Note that mMediaActions can be pulled asynchronously, we use the active media session
         // check here instead.
-        if (PipUtils.isPipUmoExperienceEnabled() && mMediaController.hasActiveMediaSession()) {
+        if (PipFlags.isPipUmoExperienceEnabled() && mMediaController.hasActiveMediaSession()) {
             return mMediaActions;
         }
         if (isValidActions(mAppActions)) {
