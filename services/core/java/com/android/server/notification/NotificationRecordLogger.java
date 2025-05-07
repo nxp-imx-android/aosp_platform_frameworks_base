@@ -370,7 +370,9 @@ interface NotificationRecordLogger {
 
     enum NotificationPullStatsEvent implements UiEventLogger.UiEventEnum {
         @UiEvent(doc = "Notification Bundle Preferences pulled.")
-        NOTIFICATION_BUNDLE_PREFERENCES_PULLED(2072);
+        NOTIFICATION_BUNDLE_PREFERENCES_PULLED(2072),
+        @UiEvent(doc = "Notification Summarization Preferences pulled.")
+        NOTIFICATION_SUMMARIZATION_PREFERENCES_PULLED(2245);
 
         private final int mId;
         NotificationPullStatsEvent(int id) {
