@@ -5333,20 +5333,20 @@ public class ActivityManager {
 
     /**
      * Logs out the specified user by stopping it. If that user is the foreground user, we first
-     * switch to another appropriate user. The system will determine the next user to switch to
-     * based on the device configuration:
+     * switch to another appropriate user. The current implementation (which is subject to change)
+     * depends on the device configuration, as follows:
      *
      * <ul>
-     *   <li>On a device in headless system user mode (HSUM), if {@code
-     *       config_canSwitchToHeadlessSystemUser} is {@code true}, the system will switch to the
-     *       headless system user.
-     *   <li>On other devices, the system will switch to an appropriate user, which is typically the
-     *       previously active foreground user.
+     *   <li>On a device that can switch to the system user, it will do so.
+     *   <li>On a device that cannot switch to the system user, this method will fail since we are
+     *       unable to logout the user.
+     *   <li>Note that attempts to logout the system user will fail, since the system user cannot be
+     *       stopped.
      * </ul>
      *
      * @param userId the user to logout.
-     * @return true if logout is successfully initiated. Reason for failure could be that no
-     *     suitable user can be found to switch to, or any underlying operations fails.
+     * @return true if logout is successfully initiated. Reason for failure could be that logout
+     *     does not support this type of device, or any underlying operations fails.
      * @hide
      */
     @RequiresPermission(Manifest.permission.INTERACT_ACROSS_USERS_FULL)

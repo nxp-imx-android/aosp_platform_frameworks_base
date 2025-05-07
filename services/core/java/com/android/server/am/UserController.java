@@ -290,7 +290,7 @@ class UserController implements Handler.Callback {
     // switching to that same user and cannot stop that user, then we flip this flag to true, so
     // that when the ongoing user-switch is finished, we would stop the user then.
     @GuardedBy("mLock")
-    private boolean mPendingLogoutTargetUser = false;
+    private boolean mPendingLogoutTargetUser;
 
     /**
      * LRU list of history of running users, in order of when we last needed to start them.
@@ -981,23 +981,23 @@ class UserController implements Handler.Callback {
      *
      * <ol>
      *   <li>If {@code userId} is the foreground user, first switching to an appropriate, active
-     *       user.
+     *       user. Currently it's always switching to the system user.
      *   <li>Stopping the specified {@code userId}.
      * </ol>
      *
      * <p>The logout operation will fail under the following conditions:
      *
      * <ul>
-     *   <li>No suitable user can be found to switch to, when user switch is needed.
+     *   <li>Trying to logout the system user.
+     *   <li>Device cannot switch to the system user.
      *   <li>The user switch operation fails for any reason.
      *   <li>The stop user operation fails for any reason.
      * </ul>
      *
-     * <p>The logoutUser API does not support HSUM devices that cannot switch to system user.
-     *
      * @see ActivityManager#logoutUser(int)
      * @param userId The ID of the user to log out.
      * @return true if logout is successfully initiated.
+     * @throws UnsupportedOperationException if device is in HSUM and cannot switch to system user.
      */
     boolean logoutUser(@UserIdInt int userId) {
         // TODO(b/380125011): To handle the edge case of trying to logout the user that the device
@@ -1005,6 +1005,8 @@ class UserController implements Handler.Callback {
         // system user (not the previous foreground user). Thus we cannot support HSUM devices
         // without interactive headless system user. To solve it for the long term, a refactor might
         // be needed, see more details in the bug.
+        // TODO(b/411696141): Use the more proper API to check if headless system user is
+        // interactive, once it's ready.
         if (mInjector.isHeadlessSystemUserMode()
                 && !mInjector.getUserManager().canSwitchToHeadlessSystemUser()) {
             throw new UnsupportedOperationException("device does not support logoutUser");
@@ -1020,41 +1022,24 @@ class UserController implements Handler.Callback {
             mPendingTargetUserIds.removeIf(id -> id == userId);
 
             if (userId == mTargetUserId) {
-                Slogf.i(TAG, "Cannot logout user %d now as we're in the process of switching to it,"
+                Slogf.w(TAG, "Cannot logout user %d now as we're in the process of switching to it,"
                         + " it will be logged out when the ongoing user-switch is complete.",
                         userId);
                 mPendingLogoutTargetUser = true;
                 return true;
             }
-
             if (userId == getCurrentUserId() && mTargetUserId == UserHandle.USER_NULL) {
                 shouldSwitchUser = true;
             }
         }
+
         if (shouldSwitchUser) {
-            final int switchToUserId =
-                    mInjector.getUserManagerInternal().getUserToLogoutCurrentUserTo();
-            if (switchToUserId == UserHandle.USER_NULL) {
-                Slogf.w(TAG, "Logout has no suitable user to switch to, to logout user %d.",
-                        userId);
+            if (!switchUser(UserHandle.USER_SYSTEM)) {
+                Slogf.e(TAG, "Cannot logout user %d; switch to system user failed", userId);
                 return false;
             }
-            // Due to possible race condition, switchToUserId could be equal to userId. When this is
-            // true:
-            // 1. if they are the current user (due to race condition), then we cannot logout
-            // userId, as we can't switch to another user.
-            // 2. if they are not the current user, we simply need to stop this userId (without
-            // switch user).
-            if (switchToUserId != userId) {
-                if (!switchUser(switchToUserId)) {
-                    Slogf.e(TAG, "Cannot logout user %d; switch to user %d failed", userId,
-                            switchToUserId);
-                    return false;
-                }
-            }
         }
-        // Now, userId is not current, so we can simply stop it. Attempting to stop system user
-        // will fail.
+        // Now, userId is not current, so we can simply stop it.
         final int result = stopUser(userId, /* allowDelayedLocking= */ false,
                 /* stopUserCallback= */ null, /* keyEvictedCallback */ null);
         if (result != USER_OP_SUCCESS) {

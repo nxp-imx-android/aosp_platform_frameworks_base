@@ -1053,41 +1053,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    public void testGetUserToLogoutCurrentUserTo_HsumAndInteractiveHeadlessSystemUser()
-            throws Exception {
-        setSystemUserHeadless(true);
-        mockCanSwitchToHeadlessSystemUser(true);
-        addUser(USER_ID);
-        mockCurrentUser(USER_ID);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_SYSTEM);
-    }
-
-    @Test
-    public void testGetUserToLogoutCurrentUserTo_HsumAndNonInteractiveHeadlessSystemUser()
-            throws Exception {
-        setSystemUserHeadless(true);
-        mockCanSwitchToHeadlessSystemUser(false);
-        addUser(USER_ID);
-        mockCurrentUser(USER_ID);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_NULL);
-    }
-
-    @Test
-    public void testGetUserToLogoutCurrentUserTo_NonHsum() throws Exception {
-        setSystemUserHeadless(false);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
-        addUser(THIRD_USER_ID);
-        mockCurrentUser(USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
-        setLastForegroundTime(THIRD_USER_ID, 900_000L);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(OTHER_USER_ID);
-    }
-
-    @Test
     public void testGetOwnerName() {
         assertThat(mUms.getOwnerName()).isNotEmpty();
     }
