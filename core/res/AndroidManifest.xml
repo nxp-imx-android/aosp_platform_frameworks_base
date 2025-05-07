@@ -5584,6 +5584,18 @@
     <permission android:name="android.permission.INJECT_EVENTS"
         android:protectionLevel="signature" />
 
+    <!-- @SystemApi Allows privileged applications to inject key events into the event stream by
+         creating a virtual keyboard. Key events may be delivered to ANY window. Allows for
+         arbitrary keycode injections (e.g. AKEYCODE_BRIGHTNESS_UP) and modifier events
+         (e.g. META_META_ON + AKEYCODE_L).
+         <p>Not for use by third-party applications.
+         @hide
+         @FlaggedApi(com.android.hardware.input.Flags.FLAG_CREATE_VIRTUAL_KEYBOARD_API)
+    -->
+    <permission android:name="android.permission.INJECT_KEY_EVENTS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.hardware.input.create_virtual_keyboard_api" />
+
     <!-- @hide Allows an application to register an input filter which filters the stream
          of user events (keys, touch, trackball) before they are dispatched to any window. -->
     <permission android:name="android.permission.FILTER_EVENTS"
