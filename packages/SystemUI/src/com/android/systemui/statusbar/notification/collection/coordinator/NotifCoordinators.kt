@@ -27,7 +27,6 @@ import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCo
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
-import com.android.systemui.statusbar.notification.shared.PriorityPeopleSection
 import javax.inject.Inject
 
 /**
@@ -129,9 +128,7 @@ constructor(
             mOrderedSections.add(lockScreenMinimalismCoordinator.topUnseenSectioner) // Top Unseen
         }
         mOrderedSections.add(colorizedFgsCoordinator.sectioner) // ForegroundService
-        if (PriorityPeopleSection.isEnabled) {
-            mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
-        }
+        mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
         mOrderedSections.add(conversationCoordinator.peopleAlertingSectioner) // People Alerting
         if (!SortBySectionTimeFlag.isEnabled) {
             mOrderedSections.add(conversationCoordinator.peopleSilentSectioner) // People Silent

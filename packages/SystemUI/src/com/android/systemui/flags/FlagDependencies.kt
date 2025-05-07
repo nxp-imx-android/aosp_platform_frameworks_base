@@ -31,7 +31,6 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.shared.NotificationAvalancheSuppression
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
-import com.android.systemui.statusbar.notification.shared.PriorityPeopleSection
 import javax.inject.Inject
 
 /** A class in which engineers can define flag dependencies */
@@ -45,7 +44,6 @@ class FlagDependencies @Inject constructor(featureFlags: FeatureFlagsClassic, ha
 
         // Internal notification frontend dependencies
         NotificationAvalancheSuppression.token dependsOn VisualInterruptionRefactor.token
-        PriorityPeopleSection.token dependsOn SortBySectionTimeFlag.token
         NotificationMinimalism.token dependsOn NotificationThrottleHun.token
 
         // SceneContainer dependencies
