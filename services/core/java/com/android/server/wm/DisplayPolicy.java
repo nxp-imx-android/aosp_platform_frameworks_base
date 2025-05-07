@@ -2220,6 +2220,7 @@ public class DisplayPolicy {
             ArrayList<InsetsSource> mPreservedInsets;
             ArrayList<InsetsSource> mRegularBarsInsets;
             PrivacyIndicatorBounds mPrivacyIndicatorBounds;
+            int mRotation;
 
             Cache(DisplayContent dc) {
                 mDecorInsets = new DecorInsets(dc);
@@ -2322,7 +2323,9 @@ public class DisplayPolicy {
             prevCache = new DecorInsets(mDisplayContent);
             prevCache.setTo(mCachedDecorInsets.mDecorInsets);
             privacyIndicatorBounds = mCachedDecorInsets.mPrivacyIndicatorBounds;
-            mCachedDecorInsets.mPreservedInsets = mCachedDecorInsets.mRegularBarsInsets;
+            mCachedDecorInsets.mPreservedInsets =
+                    mCachedDecorInsets.mRotation == mDisplayContent.mDisplayFrames.mRotation
+                            ? mCachedDecorInsets.mRegularBarsInsets : null;
         }
         // Set a special id to preserve it before a real id is available from transition.
         mCachedDecorInsets.mPreserveId = DecorInsets.Cache.ID_UPDATING_CONFIG;
@@ -2331,6 +2334,7 @@ public class DisplayPolicy {
         if (com.android.window.flags.Flags.useCachedInsetsForDisplaySwitch()) {
             mCachedDecorInsets.mRegularBarsInsets = DecorInsets.Cache.copyRegularBarInsets(
                     mDisplayContent.mDisplayFrames.mInsetsState);
+            mCachedDecorInsets.mRotation = mDisplayContent.mDisplayFrames.mRotation;
             mCachedDecorInsets.mPrivacyIndicatorBounds =
                     mDisplayContent.mCurrentPrivacyIndicatorBounds;
         } else {
