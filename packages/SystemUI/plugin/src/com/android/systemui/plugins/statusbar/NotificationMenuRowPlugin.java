@@ -58,7 +58,13 @@ public interface NotificationMenuRowPlugin extends Plugin {
 
         public View getMenuView();
 
-        public View getGutsView();
+        /**
+         * The guts content that provides the [View] to be displayed.
+         *
+         * @return Object of type [NotificationGuts.GutsContent]. The interface is not known in this
+         *          module, therefore only the implementation returns the proper type.
+         */
+        Object getGutsContent();
 
         public String getContentDescription();
 

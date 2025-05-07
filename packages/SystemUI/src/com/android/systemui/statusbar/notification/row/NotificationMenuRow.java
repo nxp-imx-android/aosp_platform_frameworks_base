@@ -932,8 +932,8 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         }
 
         @Override
-        public View getGutsView() {
-            return mGutsContent.getContentView();
+        public GutsContent getGutsContent() {
+            return mGutsContent;
         }
 
         @Override

@@ -17,31 +17,22 @@
 package com.android.systemui.statusbar.notification.row
 
 import android.content.Context
-import android.util.AttributeSet
 import android.view.View
-import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.android.compose.theme.PlatformTheme
+import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.notifications.ui.composable.row.BundleHeaderGuts
 import com.android.systemui.notifications.ui.composable.row.createBundleHeaderGutsComposeView
 import com.android.systemui.statusbar.notification.collection.BundleEntryAdapter
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderGutsViewModel
 
-/**
- * This View is a container for a ComposeView and implements GutsContent. Technically, this should
- * not be a View as GutsContent could just return the ComposeView directly for getContentView().
- * Unfortunately, the legacy design of `NotificationMenuRowPlugin.MenuItem.getGutsView()` forces the
- * GutsContent to be a View itself. Therefore this class is a view that just holds the ComposeView.
- *
- * A redesign of `NotificationMenuRowPlugin.MenuItem.getGutsView()` to return GutsContent instead is
- * desired but it lacks proper module dependencies. As soon as this class does not need to inherit
- * from View it can just return the ComposeView directly instead.
- */
-class BundleHeaderGutsContent
-@JvmOverloads
-constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
-    FrameLayout(context, attrs, defStyleAttr), GutsContent {
+/** The guts content that provides the view to be displayed when a bundle header is long pressed. */
+class BundleHeaderGutsContent(context: Context) : GutsContent {
 
-    private var composeView: ComposeView? = null
+    private var composeView: ComposeView = createBundleHeaderGutsComposeView(context)
     private var gutsParent: NotificationGuts? = null
 
     fun bindNotification(
@@ -50,8 +41,6 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         onDoneClicked: () -> Unit = {},
         onDismissClicked: () -> Unit = {},
     ) {
-        if (composeView != null) return
-
         val repository = (row.entryAdapter as BundleEntryAdapter).entry.bundleRepository
         val viewModel =
             BundleHeaderGutsViewModel(
@@ -61,8 +50,16 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
                 onDoneClicked = onDoneClicked,
                 onDismissClicked = onDismissClicked,
             )
-        composeView = createBundleHeaderGutsComposeView(context, viewModel)
-        addView(composeView)
+
+        composeView.repeatWhenAttached {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                composeView.setContent {
+                    // TODO(b/399588047): Check if we can init PlatformTheme once instead of once
+                    //  per ComposeView
+                    PlatformTheme { BundleHeaderGuts(viewModel) }
+                }
+            }
+        }
     }
 
     override fun setGutsParent(listener: NotificationGuts?) {
@@ -70,11 +67,11 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
     }
 
     override fun getContentView(): View {
-        return this
+        return composeView
     }
 
     override fun getActualHeight(): Int {
-        return composeView?.measuredHeight ?: 0
+        return composeView.measuredHeight
     }
 
     override fun handleCloseControls(save: Boolean, force: Boolean): Boolean {
