@@ -529,6 +529,14 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                     mStatusBarKeyguardViewManagerInteractor.getKeyguardViewOcclusionState(),
                     (occlusionState) -> setOccluded(
                             occlusionState.getOccluded(), occlusionState.getAnimate()));
+
+            mJavaAdapter.alwaysCollectFlow(
+                    mStatusBarKeyguardViewManagerInteractor
+                            .getNotifyKeyguardStateControllerKeyguardWillBeShowing(),
+                    (event) -> {
+                        Log.d(TAG, "Notifying keyguardShowing=true due to a lockNow event.");
+                        mKeyguardStateController.notifyKeyguardState(true, mLastOccluded);
+                    });
         }
     }
 
