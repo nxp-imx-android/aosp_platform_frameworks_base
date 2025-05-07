@@ -584,7 +584,7 @@ NativeInputManager::NativeInputManager(jobject serviceObj, const sp<Looper>& loo
 
     mServiceObj = env->NewGlobalRef(serviceObj);
 
-    InputManager* im = new InputManager(this, *this, *this, *this);
+    InputManager* im = new InputManager(this, *this, *this, *this, env);
     mInputManager = im;
     defaultServiceManager()->addService(String16("inputflinger"), im);
 }
