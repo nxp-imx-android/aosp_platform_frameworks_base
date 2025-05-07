@@ -2955,6 +2955,21 @@ package android.app.supervision {
     method @FlaggedApi("android.permission.flags.enable_system_supervision_role_behavior") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean shouldAllowBypassingSupervisionRoleQualification();
   }
 
+  @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public final class SupervisionRecoveryInfo implements android.os.Parcelable {
+    ctor public SupervisionRecoveryInfo(@NonNull String, @NonNull String, int, @Nullable android.os.PersistableBundle);
+    method public int describeContents();
+    method @NonNull public android.os.PersistableBundle getAccountData();
+    method @NonNull public String getAccountName();
+    method @NonNull public String getAccountType();
+    method public int getState();
+    method public void readFromParcel(@NonNull android.os.Parcel);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.SupervisionRecoveryInfo> CREATOR;
+    field public static final String EXTRA_SUPERVISION_RECOVERY_INFO = "android.app.supervision.extra.SUPERVISION_RECOVERY_INFO";
+    field public static final int STATE_PENDING = 0; // 0x0
+    field public static final int STATE_VERIFIED = 1; // 0x1
+  }
+
 }
 
 package android.app.time {
