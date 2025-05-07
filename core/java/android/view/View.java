@@ -50,7 +50,6 @@ import static android.view.flags.Flags.enableUseMeasureCacheDuringForceLayout;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
-import static android.view.flags.Flags.toolkitScrollMaxFrameRate;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 import static android.view.flags.Flags.viewVelocityApi;
@@ -2468,8 +2467,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             toolkitFrameRateBySizeReadOnly();
     private static boolean sToolkitViewGroupFrameRateApiFlagValue =
             toolkitViewgroupSetRequestedFrameRateApi();
-    private static boolean sToolkitScrollMaxFrameRateFlagValue =
-            toolkitScrollMaxFrameRate();
 
     // Used to set frame rate compatibility.
     @Surface.FrameRateCompatibility int mFrameRateCompatibility =
@@ -34414,23 +34411,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
-        // b/404936438 Remove this logic when 240 TE is re-enabled
-        // or sysprop is available for scrolling
-        if (sToolkitScrollMaxFrameRateFlagValue) {
-            boolean has80Hz = false;
-            if (getDisplay() != null) {
-                for (float rate : getDisplay().getSupportedRefreshRates()) {
-                    if (Math.abs(rate - 80.0f) < 0.1f) {
-                        has80Hz = true;
-                        break;
-                    }
-                }
-            }
-            if (!has80Hz) {
-                return MAX_FRAME_RATE;
-            }
-        }
-
         // Internal testing has shown that this gives a premium experience:
         // above 300dp/s => 120fps
         // between 300dp/s and 125fps => 80fps

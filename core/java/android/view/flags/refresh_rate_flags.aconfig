@@ -95,13 +95,3 @@ flag {
     description: "Feature flag to ennable ARR debug message"
     bug: "394614443"
 }
-
-flag {
-    name: "toolkit_scroll_max_frame_rate"
-    namespace: "toolkit"
-    description: "Feature flag to always return max frame rate for scrolling"
-    bug: "404936438"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
