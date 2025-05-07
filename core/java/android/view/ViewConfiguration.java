@@ -391,6 +391,8 @@ public class ViewConfiguration {
     private final int mTapTimeoutMillis;
     private final int mDoubleTapTimeoutMillis;
     private final int mDoubleTapMinTimeMillis;
+    private final int mLongPressTimeoutMillis;
+    private final int mMultiPressTimeoutMillis;
     private final float mScrollFriction;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123768915)
@@ -448,6 +450,8 @@ public class ViewConfiguration {
         mTapTimeoutMillis = sResourceCache.getTapTimeout();
         mDoubleTapTimeoutMillis = sResourceCache.getDoubleTapTimeout();
         mDoubleTapMinTimeMillis = sResourceCache.getDoubleTapMinTime();
+        mLongPressTimeoutMillis = getLongPressTimeout();
+        mMultiPressTimeoutMillis = getMultiPressTimeout();
         mScrollFriction = sResourceCache.getScrollFriction();
     }
 
@@ -592,6 +596,12 @@ public class ViewConfiguration {
         mDoubleTapTimeoutMillis = res.getInteger(R.integer.config_doubleTapTimeoutMillis);
         mDoubleTapMinTimeMillis = res.getInteger(R.integer.config_doubleTapMinTimeMillis);
         mScrollFriction = res.getFloat(R.dimen.config_scrollFriction);
+
+        int deviceId = context.getDeviceId();
+        mLongPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.LONG_PRESS_TIMEOUT,
+                DEFAULT_LONG_PRESS_TIMEOUT, deviceId);
+        mMultiPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.MULTI_PRESS_TIMEOUT,
+                DEFAULT_MULTI_PRESS_TIMEOUT, deviceId);
     }
 
     /**
@@ -718,12 +728,30 @@ public class ViewConfiguration {
     }
 
     /**
+     * @return the duration in milliseconds before a press turns into
+     * a long press.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public int getLongPressTimeoutMillis() {
+        return mLongPressTimeoutMillis;
+    }
+
+    /**
      * @return the duration in milliseconds between the first tap's up event and the second tap's
      * down event for an interaction to be considered part of the same multi-press.
      */
     public static int getMultiPressTimeout() {
         return AppGlobals.getIntCoreSetting(Settings.Secure.MULTI_PRESS_TIMEOUT,
                 DEFAULT_MULTI_PRESS_TIMEOUT);
+    }
+
+    /**
+     * @return the duration in milliseconds between the first tap's up event and the second tap's
+     * down event for an interaction to be considered part of the same multi-press.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public int getMultiPressTimeoutMillis() {
+        return mMultiPressTimeoutMillis;
     }
 
     /**
