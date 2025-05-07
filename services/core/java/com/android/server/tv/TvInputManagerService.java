@@ -655,19 +655,18 @@ public final class TvInputManagerService extends SystemService {
                 return;
             }
 
+            // NOTE: The switchUser() function is currently only used when switching from a kid's
+            // profile to the parent's (system) user.
+            // Cleanup for the single running kid's profile is currently handled in stopUser().
+            // This code includes cleanup logic for future multi-profile support.
             for (int runningId : mRunningProfiles) {
                 releaseSessionOfUserLocked(runningId);
+                cleanUpHdmiDevices(runningId);
                 unbindServiceOfUserLocked(runningId);
             }
             mRunningProfiles.clear();
 
-            int prevUserId = mCurrentUserId;
             mCurrentUserId = userId;
-
-            releaseSessionOfUserLocked(prevUserId);
-            cleanUpHdmiDevices(prevUserId);
-            unbindServiceOfUserLocked(prevUserId);
-
             buildTvInputListLocked(mCurrentUserId, null);
             buildTvContentRatingSystemListLocked(mCurrentUserId);
             mMessageHandler
