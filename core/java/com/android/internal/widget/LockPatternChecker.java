@@ -2,13 +2,22 @@ package com.android.internal.widget;
 
 import android.annotation.NonNull;
 import android.os.AsyncTask;
+import android.os.Process;
+
+import android.util.Log;
 
 import com.android.internal.widget.LockPatternUtils.RequestThrottledException;
+
+import static com.android.internal.widget.flags.Flags.runCheckCredentialWithHigherPriority;
 
 /**
  * Helper class to check/verify PIN/Password/Pattern asynchronously.
  */
 public final class LockPatternChecker {
+    private static final String TAG = "LockPatternChecker";
+
+   private static final int INVALID_PRIORITY = -21;
+
     /**
      * Interface for a callback to be invoked after security check.
      */
@@ -106,11 +115,33 @@ public final class LockPatternChecker {
 
             @Override
             protected Boolean doInBackground(Void... args) {
+                int originalPriority = INVALID_PRIORITY;
                 try {
+                    if (runCheckCredentialWithHigherPriority()) {
+                        originalPriority = Process.getThreadPriority(Process.myTid());
+                        try {
+                            Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
+                        } catch (SecurityException e) {
+                            Log.e(TAG,
+                                    "Failed to boost checkCredential thread priority to "
+                                            + "priority display", e);
+                        }
+                    }
                     return utils.checkCredential(credentialCopy, userId, callback::onEarlyMatched);
                 } catch (RequestThrottledException ex) {
                     mThrottleTimeout = ex.getTimeoutMs();
                     return false;
+                } finally {
+                    if (runCheckCredentialWithHigherPriority()
+                        && originalPriority != INVALID_PRIORITY) {
+                      try {
+                            Process.setThreadPriority(originalPriority);
+                        } catch (SecurityException e) {
+                            Log.e(TAG,
+                                    "Failed to restore checkCredential thread priority to "
+                                            + "original priority", e);
+                        }
+                    }
                 }
             }
 
