@@ -56,13 +56,14 @@ interface OngoingActivityChipViewModel {
             instanceId: InstanceId,
             uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
+            key: String,
             tag: String,
         ): View.OnClickListener {
             return View.OnClickListener { view ->
                 StatusBarChipsModernization.assertInLegacyMode()
 
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
-                uiEventLogger.logChipTapToShow(instanceId)
+                uiEventLogger.logChipTapToShow(key, instanceId)
 
                 val dialog = dialogDelegate.createDialog()
                 val launchableView =
@@ -81,6 +82,7 @@ interface OngoingActivityChipViewModel {
             dialogDelegate: SystemUIDialog.Delegate,
             dialogTransitionAnimator: DialogTransitionAnimator,
             cuj: DialogCuj,
+            key: String,
             instanceId: InstanceId,
             uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
@@ -90,7 +92,7 @@ interface OngoingActivityChipViewModel {
                 StatusBarChipsModernization.unsafeAssertInNewMode()
 
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
-                uiEventLogger.logChipTapToShow(instanceId)
+                uiEventLogger.logChipTapToShow(key, instanceId)
 
                 val dialog = dialogDelegate.createDialog()
 

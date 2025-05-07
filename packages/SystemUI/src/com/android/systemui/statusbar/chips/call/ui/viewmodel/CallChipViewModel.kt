@@ -290,7 +290,7 @@ constructor(
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
 
-            logChipTapped(instanceId)
+            logChipTapped(key = notificationKey, instanceId = instanceId)
 
             val backgroundView =
                 view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
@@ -328,7 +328,7 @@ constructor(
             onClick = { expandable ->
                 StatusBarChipsModernization.unsafeAssertInNewMode()
 
-                logChipTapped(instanceId)
+                logChipTapped(key = notificationKey, instanceId = instanceId)
 
                 val animationController =
                     if (
@@ -352,9 +352,9 @@ constructor(
         )
     }
 
-    private fun logChipTapped(instanceId: InstanceId?) {
+    private fun logChipTapped(key: String, instanceId: InstanceId?) {
         logger.i({ "Chip clicked" }) {}
-        uiEventLogger.logChipTapToShow(instanceId)
+        uiEventLogger.logChipTapToShow(key = key, instanceId = instanceId)
     }
 
     private fun getContentDescription(appName: String): ContentDescription {

@@ -156,9 +156,9 @@ constructor(
 
         if (isCurrentlyHeadsUp) {
             // If the chip's notif is currently showing as heads up, then we'll stop showing it.
-            statusBarChipsUiEventLogger.logChipTapToHide(entry.sbn.instanceId)
+            statusBarChipsUiEventLogger.logChipTapToHide(key, entry.sbn.instanceId)
         } else {
-            statusBarChipsUiEventLogger.logChipTapToShow(entry.sbn.instanceId)
+            statusBarChipsUiEventLogger.logChipTapToShow(key, entry.sbn.instanceId)
         }
 
         val posted =
