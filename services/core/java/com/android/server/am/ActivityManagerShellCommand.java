@@ -1700,10 +1700,6 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
     @NeverCompile // Avoid size overhead of debugging code
     int runDumpBitmaps(PrintWriter pw) throws RemoteException {
-        if (!Flags.dumpBitmaps()) {
-            pw.println("dumpbitmaps is not enabled");
-            return -1;
-        }
         ArrayList<String> processes = new ArrayList<>();
         boolean packages = false;
         String dumpFormat = null;
