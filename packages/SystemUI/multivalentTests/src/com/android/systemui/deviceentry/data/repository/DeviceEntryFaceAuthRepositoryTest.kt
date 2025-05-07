@@ -537,9 +537,31 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun authenticateDoesNotRunWhenKeyguardIsGoingAway() =
+    fun authenticateDoesNotRunWhenKeyguardIsTransitioningToGone() =
         testScope.runTest {
-            testGatingCheckForFaceAuth { keyguardRepository.setKeyguardGoingAway(true) }
+            testGatingCheckForFaceAuth {
+                keyguardTransitionRepository.sendTransitionStep(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.GONE,
+                    )
+                )
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun authenticateDoesNotRunWhenKeyguardIsGone() =
+        testScope.runTest {
+            testGatingCheckForFaceAuth {
+                keyguardTransitionRepository.sendTransitionSteps(
+                    from = KeyguardState.LOCKSCREEN,
+                    to = KeyguardState.GONE,
+                    testScope = testScope,
+                    throughTransitionState = TransitionState.FINISHED,
+                )
+            }
         }
 
     @Test
@@ -940,9 +962,17 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun detectDoesNotRunWhenKeyguardGoingAway() =
+    fun detectDoesNotRunWhenTransitioningToGone() =
         testScope.runTest {
-            testGatingCheckForDetect { keyguardRepository.setKeyguardGoingAway(true) }
+            testGatingCheckForDetect {
+                keyguardTransitionRepository.sendTransitionStep(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.GONE,
+                    )
+                )
+            }
         }
 
     @Test
@@ -1335,8 +1365,6 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             kosmos.sceneInteractor.setTransitionState(
                 MutableStateFlow(ObservableTransitionState.Idle(Scenes.Lockscreen))
             )
-        } else {
-            keyguardRepository.setKeyguardGoingAway(false)
         }
         powerInteractor.setAwakeForTest()
         biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
