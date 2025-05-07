@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ListAdapter
 import android.widget.ListView
+import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -179,6 +180,15 @@ private fun customizeView(listView: ListView) {
                         else -> entryBackgroundMiddle
                     }
                 setPadding(context, child)
+
+                val titleTextView = entry.requireViewById<TextView>(R.id.text1)
+                titleTextView.setTextAppearance(
+                    SystemUiR.style.TextAppearance_TileDetailsEntryTitle
+                )
+                val subTitleTextView = entry.requireViewById<TextView>(R.id.text2)
+                subTitleTextView.setTextAppearance(
+                    SystemUiR.style.TextAppearance_TileDetailsEntrySubTitle
+                )
             }
         }
     }
