@@ -34,23 +34,6 @@ flag {
   is_fixed_read_only: true
 }
 
-# Flag for finalized API: In Nextfood but exported (and therefore must stay).
-flag {
-  name: "modes_api"
-  is_exported: true
-  namespace: "systemui"
-  description: "This flag controls new and updated DND apis"
-  bug: "300477976"
-}
-
-# Flag for inlined feature: In Nextfood but checked by CTS (and therefore must stay).
-flag {
-  name: "modes_ui"
-  namespace: "systemui"
-  description: "This flag controls new and updated DND UIs; dependent on flag modes_api"
-  bug: "270703654"
-}
-
 flag {
   name: "modes_ui_dnd_tile"
   namespace: "systemui"
@@ -82,24 +65,6 @@ flag {
 }
 
 flag {
-  name: "api_tvextender"
-  is_exported: true
-  namespace: "systemui"
-  description: "Guards new android.app.Notification.TvExtender api"
-  bug: "308164892"
-  is_fixed_read_only: true
-}
-
-flag {
-  name: "lifetime_extension_refactor"
-  is_exported: true
-  namespace: "systemui"
-  description: "Enables moving notification lifetime extension management from SystemUI to "
-      "Notification Manager Service"
-  bug: "299448097"
-}
-
-flag {
   name: "notification_expansion_optional"
   namespace: "systemui"
   description: "Experiment to restore the pre-S behavior where standard notifications are not expandable unless they have actions."
@@ -111,22 +76,6 @@ flag {
   namespace: "systemui"
   description: "Ensures that conversations are not allowed to use Custom Views."
   bug: "368817201"
-}
-
-flag {
-  name: "category_voicemail"
-  is_exported: true
-  namespace: "wear_sysui"
-  description: "Adds a new voicemail category for notifications"
-  bug: "322806700"
-}
-
-flag {
-  name: "notification_channel_vibration_effect_api"
-  is_exported: true
-  namespace: "systemui"
-  description: "This flag enables the API to allow setting VibrationEffect for NotificationChannels"
-  bug: "241732519"
 }
 
 flag {
@@ -192,7 +141,8 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
- }
+}
+
 flag {
   name: "notif_entry_creation_time_use_elapsed_realtime"
   namespace: "systemui"
@@ -201,30 +151,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-  name: "api_rich_ongoing"
-  is_exported: true
-  namespace: "systemui"
-  description: "[RONs] Guards new RON-related APIs, including Notification.ProgressStyle"
-  bug: "337261753"
-}
-
-flag {
-  name: "opt_in_rich_ongoing"
-  namespace: "systemui"
-  is_exported: true
-  description: "[RONs] v0.2 promotion logic: explicit opt-in and no colorization"
-  bug: "410621769"
-}
-
-flag {
-  name: "ui_rich_ongoing"
-  is_exported: true
-  namespace: "systemui"
-  description: "[RONs] Guards new promotion logic and UI, including AOD notification and Colorization"
-  bug: "367705002"
 }
 
 flag {
@@ -290,14 +216,6 @@ flag {
 }
 
 flag {
-  name: "nm_summarization"
-  namespace: "systemui"
-  description: "Allows the NAS to summarize notifications"
-  bug: "390417189"
-  is_exported: true
-}
-
-flag {
   name: "nm_summarization_ui"
   namespace: "systemui"
   description: "Shows summarized notifications in the UI"
@@ -313,6 +231,89 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+
+
+# Start: exported flags that cannot be removed
+
+flag {
+  name: "nm_summarization"
+  namespace: "systemui"
+  description: "Allows the NAS to summarize notifications"
+  bug: "390417189"
+  is_exported: true
+}
+
+flag {
+  name: "opt_in_rich_ongoing"
+  namespace: "systemui"
+  is_exported: true
+  description: "[RONs] v0.2 promotion logic: explicit opt-in and no colorization"
+  bug: "410621769"
+}
+
+flag {
+  name: "notification_channel_vibration_effect_api"
+  is_exported: true
+  namespace: "systemui"
+  description: "This flag enables the API to allow setting VibrationEffect for NotificationChannels"
+  bug: "241732519"
+}
+
+flag {
+  name: "modes_api"
+  is_exported: true
+  namespace: "systemui"
+  description: "This flag controls new and updated DND apis"
+  bug: "300477976"
+}
+
+flag {
+  name: "api_tvextender"
+  is_exported: true
+  namespace: "systemui"
+  description: "Guards new android.app.Notification.TvExtender api"
+  bug: "308164892"
+  is_fixed_read_only: true
+}
+
+flag {
+  name: "lifetime_extension_refactor"
+  is_exported: true
+  namespace: "systemui"
+  description: "Enables moving notification lifetime extension management from SystemUI to "
+      "Notification Manager Service"
+  bug: "299448097"
+}
+
+flag {
+  name: "category_voicemail"
+  is_exported: true
+  namespace: "wear_sysui"
+  description: "Adds a new voicemail category for notifications"
+  bug: "322806700"
+}
+
+flag {
+  name: "api_rich_ongoing"
+  is_exported: true
+  namespace: "systemui"
+  description: "[RONs] Guards new RON-related APIs, including Notification.ProgressStyle"
+  bug: "337261753"
+}
+
+flag {
+  name: "ui_rich_ongoing"
+  is_exported: true
+  namespace: "systemui"
+  description: "[RONs] Guards new promotion logic and UI, including AOD notification and Colorization"
+  bug: "367705002"
+}
+
+# End: exported flags that cannot be removed
+
+
+# Start: Flags that have been cleaned up in code but need to remain for CTS
 
 flag {
   name: "restrict_audio_attributes_call"
@@ -334,3 +335,12 @@ flag {
   description: "No notifs can use USAGE_UNKNOWN or USAGE_MEDIA"
   bug: "331793339"
 }
+
+flag {
+  name: "modes_ui"
+  namespace: "systemui"
+  description: "This flag controls new and updated DND UIs; dependent on flag modes_api"
+  bug: "270703654"
+}
+
+# End: Flags that have been cleaned up in code but need to remain for CTS
