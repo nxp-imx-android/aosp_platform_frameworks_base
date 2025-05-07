@@ -87,12 +87,12 @@ combined_apis {
         "framework-pdf-v",
         "framework-permission",
         "framework-permission-s",
-        "framework-profiling",
         "framework-photopicker",
+        "framework-profiling",
         "framework-scheduling",
         "framework-sdkextensions",
-        "framework-statsd",
         "framework-sdksandbox",
+        "framework-statsd",
         "framework-tethering",
         "framework-uwb",
         "framework-virtualization",
@@ -161,8 +161,8 @@ java_genrule {
 java_genrule {
     name: "frameworks-base-api-current-compat",
     srcs: [
-        ":android.api.merged.public.latest",
         ":android-incompatibilities.api.public.latest",
+        ":android.api.merged.public.latest",
         ":frameworks-base-api-current.txt",
     ],
     out: ["updated-baseline.txt"],
@@ -191,8 +191,8 @@ java_genrule {
 java_genrule {
     name: "frameworks-base-api-system-current-compat",
     srcs: [
-        ":android.api.merged.system.latest",
         ":android-incompatibilities.api.system.latest",
+        ":android.api.merged.system.latest",
         ":frameworks-base-api-current.txt",
         ":frameworks-base-api-system-current.txt",
     ],
@@ -223,11 +223,11 @@ java_genrule {
 java_genrule {
     name: "frameworks-base-api-module-lib-current-compat",
     srcs: [
-        ":android.api.merged.module-lib.latest",
         ":android-incompatibilities.api.module-lib.latest",
+        ":android.api.merged.module-lib.latest",
         ":frameworks-base-api-current.txt",
-        ":frameworks-base-api-system-current.txt",
         ":frameworks-base-api-module-lib-current.txt",
+        ":frameworks-base-api-system-current.txt",
     ],
     out: ["updated-baseline.txt"],
     tools: ["metalava"],
@@ -246,8 +246,8 @@ java_genrule {
     out: ["current.srcjar"],
     cmd: "$(location merge_zips) $(out) $(in)",
     srcs: [
-        ":api-stubs-docs-non-updatable{.exportable}",
         ":all-modules-public-stubs-source-exportable",
+        ":api-stubs-docs-non-updatable{.exportable}",
     ],
     visibility: ["//visibility:private"], // Used by make module in //development, mind
 }
@@ -269,8 +269,8 @@ java_genrule {
     name: "sdk-annotations.zip",
     defaults: ["sdk-annotations-defaults"],
     srcs: [
-        ":android-non-updatable-doc-stubs{.exportable.annotations.zip}",
         ":all-modules-public-annotations",
+        ":android-non-updatable-doc-stubs{.exportable.annotations.zip}",
     ],
 }
 
@@ -278,8 +278,8 @@ java_genrule {
     name: "sdk-annotations-system.zip",
     defaults: ["sdk-annotations-defaults"],
     srcs: [
-        ":android-non-updatable-doc-stubs-system{.exportable.annotations.zip}",
         ":all-modules-system-annotations",
+        ":android-non-updatable-doc-stubs-system{.exportable.annotations.zip}",
     ],
 }
 
@@ -287,8 +287,8 @@ java_genrule {
     name: "sdk-annotations-module-lib.zip",
     defaults: ["sdk-annotations-defaults"],
     srcs: [
-        ":android-non-updatable-doc-stubs-module-lib{.exportable.annotations.zip}",
         ":all-modules-module-lib-annotations",
+        ":android-non-updatable-doc-stubs-module-lib{.exportable.annotations.zip}",
     ],
 }
 
@@ -296,8 +296,8 @@ java_genrule {
     name: "sdk-annotations-system-server.zip",
     defaults: ["sdk-annotations-defaults"],
     srcs: [
-        ":android-non-updatable-doc-stubs-system-server{.exportable.annotations.zip}",
         ":all-modules-system-server-annotations",
+        ":android-non-updatable-doc-stubs-system-server{.exportable.annotations.zip}",
     ],
 }
 
@@ -307,10 +307,10 @@ java_genrule {
         "//frameworks/base/boot",
     ],
     srcs: [
-        ":frameworks-base-api-removed.txt",
-        ":frameworks-base-api-system-removed.txt",
         ":android.car-stubs-docs{.removed-api.txt}",
         ":android.car-system-stubs-docs{.removed-api.txt}",
+        ":frameworks-base-api-removed.txt",
+        ":frameworks-base-api-system-removed.txt",
     ],
     tool_files: ["gen_combined_removed_dex.sh"],
     tools: ["metalava"],
@@ -322,8 +322,8 @@ java_genrule {
     name: "api_fingerprint",
     srcs: [
         ":frameworks-base-api-current.txt",
-        ":frameworks-base-api-system-current.txt",
         ":frameworks-base-api-module-lib-current.txt",
+        ":frameworks-base-api-system-current.txt",
         ":frameworks-base-api-system-server-current.txt",
     ],
     out: ["api_fingerprint.txt"],
@@ -381,9 +381,6 @@ stubs_defaults {
             "frameworks/base/media/aidl",
             "frameworks/base/telephony/java",
             "frameworks/native/libs/permission/aidl",
-            "packages/modules/Bluetooth/framework/aidl-export",
-            "packages/modules/Connectivity/framework/aidl-export",
-            "packages/modules/Media/apex/aidl/stable",
             "hardware/interfaces/biometrics/common/aidl",
             "hardware/interfaces/biometrics/fingerprint/aidl",
             "hardware/interfaces/common/aidl",
@@ -391,6 +388,9 @@ stubs_defaults {
             "hardware/interfaces/graphics/common/aidl",
             "hardware/interfaces/keymaster/aidl",
             "hardware/interfaces/power/aidl",
+            "packages/modules/Bluetooth/framework/aidl-export",
+            "packages/modules/Connectivity/framework/aidl-export",
+            "packages/modules/Media/apex/aidl/stable",
             "system/hardware/interfaces/media/aidl",
         ],
     },
@@ -400,10 +400,10 @@ stubs_defaults {
     // dependencies gets bigger.
     libs: android_non_updatable_stubs_libs,
     flags: [
-        "--error NoSettingsProvider",
-        "--error UnhiddenSystemApi",
-        "--error UnflaggedApi",
         "--error FlaggedApiLiteral",
+        "--error NoSettingsProvider",
+        "--error UnflaggedApi",
+        "--error UnhiddenSystemApi",
         "--force-convert-to-warning-nullability-annotations +*:-android.*:+android.icu.*:-dalvik.*",
         // Disable CallbackInterface, as Java 8 default interface methods avoid the extensibility
         // issue interfaces had previously.
@@ -441,8 +441,8 @@ soong_config_module_type {
 // so use the prebuilt module-lib stubs for modules that export module-lib stubs that the
 // non-updatable part depends on.
 non_updatable_api_deps_on_modules = [
-    "sdk_module-lib_current_framework-tethering",
     "sdk_module-lib_current_framework-connectivity-t",
+    "sdk_module-lib_current_framework-tethering",
     "sdk_system_current_android",
 ]
 
@@ -492,8 +492,8 @@ java_defaults {
     impl_library_visibility: ["//frameworks/base"],
     defaults_visibility: [
         "//frameworks/base/location",
-        "//frameworks/base/packages/CrashRecovery/framework",
         "//frameworks/base/nfc",
+        "//frameworks/base/packages/CrashRecovery/framework",
         "//packages/modules/NeuralNetworks:__subpackages__",
     ],
     plugins: ["error_prone_android_framework"],
@@ -562,7 +562,7 @@ phony_rule {
     name: "checkapi",
     phony_deps: [
         "frameworks-base-api-current-compat",
-        "frameworks-base-api-system-current-compat",
         "frameworks-base-api-module-lib-current-compat",
+        "frameworks-base-api-system-current-compat",
     ],
 }
