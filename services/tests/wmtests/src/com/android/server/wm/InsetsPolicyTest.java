@@ -159,6 +159,22 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_FORCE_SHOW_SYSTEM_BAR_FOR_BUBBLE)
+    public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible() {
+        addStatusBar();
+        addNavigationBar();
+
+        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
+                mDisplayContent).build();
+        win.getTask().setBounds(new Rect(1, 1, 10, 10));
+        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
+
+        // The non fullscreen multi window app window must not control any system bars.
+        assertNull(controls);
+    }
+
+    @Test
     public void testControlsForDispatch_forceStatusBarVisible() {
         addStatusBar().mAttrs.forciblyShownTypes |= statusBars();
         addNavigationBar();
@@ -190,7 +206,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
         notifShade.mAttrs.forciblyShownTypes |= navigationBars();
         addNavigationBar();
 
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(notifShade);
+        mDisplayContent.getDisplayPolicy().focusChangedLw(null, notifShade);
         InsetsSourceControl[] controls
                 = mDisplayContent.getInsetsStateController().getControlsForDispatch(notifShade);
 
@@ -232,7 +248,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
         displayPolicy.applyPostLayoutPolicyLw(dialog, dialog.mAttrs, fullscreenApp, null);
         displayPolicy.applyPostLayoutPolicyLw(fullscreenApp, fullscreenApp.mAttrs, null, null);
         displayPolicy.finishPostLayoutPolicyLw();
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(dialog);
+        displayPolicy.focusChangedLw(null, dialog);
 
         assertEquals(fullscreenApp, displayPolicy.getTopFullscreenOpaqueWindow());
 
@@ -255,12 +271,12 @@ public class InsetsPolicyTest extends WindowTestsBase {
         newFocusedFullscreenApp.setRequestedVisibleTypes(
                 WindowInsets.Type.statusBars(), WindowInsets.Type.statusBars());
         // Make sure status bar is hidden by previous insets state.
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(fullscreenApp);
+        displayPolicy.focusChangedLw(dialog, fullscreenApp);
 
         final StatusBarManagerInternal sbmi =
                 mDisplayContent.getDisplayPolicy().getStatusBarManagerInternal();
         clearInvocations(sbmi);
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(newFocusedFullscreenApp);
+        displayPolicy.focusChangedLw(fullscreenApp, newFocusedFullscreenApp);
         // The status bar should be shown by newFocusedFullscreenApp even
         // mTopFullscreenOpaqueWindowState is still fullscreenApp.
         verify(sbmi).setWindowState(mDisplayContent.mDisplayId, StatusBarManager.WINDOW_STATUS_BAR,
@@ -268,7 +284,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
 
         // Add a system window: panel.
         final WindowState panel = addWindow(TYPE_STATUS_BAR_SUB_PANEL, "panel");
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(panel);
+        displayPolicy.focusChangedLw(newFocusedFullscreenApp, panel);
 
         // panel is the focused window, but it can only control navigation bar.
         // Because fullscreenApp is hiding status bar.
@@ -626,7 +642,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
         // Make both system bars invisible.
         mAppWindow.setRequestedVisibleTypes(
                 0, navigationBars() | statusBars());
-        policy.updateBarControlTarget(mAppWindow);
+        mDisplayContent.getDisplayPolicy().focusChangedLw(null, mAppWindow);
         waitUntilWindowAnimatorIdle();
         assertFalse(mDisplayContent.getInsetsStateController().getRawInsetsState()
                 .isSourceOrDefaultVisible(statusBarId, statusBars()));
@@ -656,8 +672,8 @@ public class InsetsPolicyTest extends WindowTestsBase {
         addStatusBar().getControllableInsetProvider().getSource().setVisible(false);
         addNavigationBar().getControllableInsetProvider().setServerVisible(true);
 
+        mDisplayContent.getDisplayPolicy().focusChangedLw(null, mAppWindow);
         final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
-        policy.updateBarControlTarget(mAppWindow);
         policy.showTransient(navigationBars() | statusBars(),
                 true /* isGestureOnSystemBar */);
         waitUntilWindowAnimatorIdle();
@@ -691,8 +707,8 @@ public class InsetsPolicyTest extends WindowTestsBase {
         mAppWindow.setRequestedVisibleTypes(0, navigationBars() | statusBars());
         mAppWindow.mAboveInsetsState.addSource(navBarSource);
         mAppWindow.mAboveInsetsState.addSource(statusBarSource);
+        mDisplayContent.getDisplayPolicy().focusChangedLw(null, mAppWindow);
         final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
-        policy.updateBarControlTarget(mAppWindow);
         policy.showTransient(navigationBars() | statusBars(),
                 true /* isGestureOnSystemBar */);
         waitUntilWindowAnimatorIdle();
@@ -738,13 +754,10 @@ public class InsetsPolicyTest extends WindowTestsBase {
         final WindowState app = addWindow(TYPE_APPLICATION, "app");
         final WindowState app2 = addWindow(TYPE_APPLICATION, "app");
 
+        mDisplayContent.getDisplayPolicy().focusChangedLw(null, app);
         final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
-        policy.updateBarControlTarget(app);
-        policy.showTransient(navigationBars() | statusBars(),
-                true /* isGestureOnSystemBar */);
-        final InsetsSourceControl[] controls =
-                mDisplayContent.getInsetsStateController().getControlsForDispatch(app);
-        policy.updateBarControlTarget(app2);
+        policy.showTransient(navigationBars() | statusBars(), true /* isGestureOnSystemBar */);
+        mDisplayContent.getDisplayPolicy().focusChangedLw(app, app2);
         assertFalse(policy.isTransient(statusBars()));
         assertFalse(policy.isTransient(navigationBars()));
     }
@@ -941,7 +954,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
         // Force update the focus in DisplayPolicy here. Otherwise, without server side focus
         // update, the policy relying on windowing type will never get updated.
         mDisplayContent.getDisplayPolicy().focusChangedLw(null, win);
-        mDisplayContent.getInsetsPolicy().updateBarControlTarget(win);
         return mDisplayContent.getInsetsStateController().getControlsForDispatch(win);
     }
 }
