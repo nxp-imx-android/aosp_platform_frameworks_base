@@ -40,8 +40,6 @@ import static android.os.Process.SYSTEM_UID;
 
 import static com.android.internal.util.FrameworkStatsLog.BOOT_TIME_EVENT_ELAPSED_TIME__EVENT__FRAMEWORK_LOCKED_BOOT_COMPLETED;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_MU;
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
 import static com.android.server.am.UserState.STATE_BOOTING;
 import static com.android.server.am.UserState.STATE_RUNNING_LOCKED;
@@ -174,7 +172,7 @@ import java.util.function.BiConsumer;
  * may cause lock inversion.
  */
 class UserController implements Handler.Callback {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "UserController" : TAG_AM;
+    private static final String TAG = UserController.class.getSimpleName();
 
     // Amount of time we wait for observers to handle a user switch before
     // giving up on them and dismissing the user switching dialog.
