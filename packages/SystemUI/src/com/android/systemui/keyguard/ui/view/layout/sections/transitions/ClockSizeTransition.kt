@@ -257,6 +257,10 @@ class ClockSizeTransition(
                         override fun onAnimationEnd(anim: Animator) {
                             assignAnimValues("end", 1f, to.visibility, log = true)
                             if (sendToBack) to.view.translationZ = 0f
+
+                            // This removal is effectively redundant with the one in onTransitionEnd
+                            // but prevents the predraw listener from leaking the entire view tree.
+                            to.view.viewTreeObserver.removeOnPreDrawListener(predrawCallback)
                         }
                     }
 
