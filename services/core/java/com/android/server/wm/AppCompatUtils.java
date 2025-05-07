@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
@@ -235,6 +236,9 @@ final class AppCompatUtils {
         appCompatTaskInfo.setEligibleForUserAspectRatioButton(eligibleForAspectRatioButton);
         appCompatTaskInfo.cameraCompatTaskInfo.freeformCameraCompatMode =
                 AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
+        appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
+                Flags.enableCameraCompatCheckDeviceRotationBugfix()
+                        ? AppCompatCameraPolicy.getCameraDeviceRotation(top) : ROTATION_UNDEFINED;
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
         appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
