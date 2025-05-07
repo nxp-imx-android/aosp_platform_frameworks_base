@@ -19,6 +19,8 @@ package com.android.systemui.communal.ui.viewmodel
 import android.appwidget.AppWidgetHost.AppWidgetHostListener
 import android.appwidget.AppWidgetHostView
 import android.os.Bundle
+import android.os.DeadObjectException
+import android.util.Log
 import android.util.SizeF
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.app.tracing.coroutines.withContextTraced
@@ -83,7 +85,12 @@ constructor(
         coroutineScopeTraced("$TAG#onActivated") {
             requests.receiveAsFlow().collect { request ->
                 when (request) {
-                    is SetListener -> handleSetListener(request.appWidgetId, request.listener)
+                    is SetListener ->
+                        try {
+                            handleSetListener(request.appWidgetId, request.listener)
+                        } catch (exception: DeadObjectException) {
+                            Log.e(TAG, "could not set listener", exception)
+                        }
                     is UpdateSize -> handleUpdateSize(request.size, request.view)
                 }
             }
