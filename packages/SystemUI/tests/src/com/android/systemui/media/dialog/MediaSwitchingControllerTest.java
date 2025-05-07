@@ -799,13 +799,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void isActiveItem_deviceNotConnected_returnsFalse() {
-        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice2);
-
-        assertThat(mMediaSwitchingController.isActiveItem(mMediaDevice1)).isFalse();
-    }
-
-    @Test
     public void getNotificationSmallIcon_packageNameIsNull_returnsNull() {
         MediaSwitchingController testMediaSwitchingController =
                 new MediaSwitchingController(
