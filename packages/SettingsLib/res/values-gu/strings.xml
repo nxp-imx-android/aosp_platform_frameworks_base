@@ -94,7 +94,7 @@
     <string name="bluetooth_connected_no_headset_battery_level" msgid="2661863370509206428">"<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g> સાથે કનેક્ટ થયેલ (કોઈ ફોન નથી), બૅટરી <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp_battery_level" msgid="6499078454894324287">"<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g> સાથે કનેક્ટ થયેલ (કોઈ મીડિયા નથી), બૅટરી <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp_battery_level" msgid="8477440576953067242">"<xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g> સાથે કનેક્ટ થયેલ (કોઈ ફોન અથવા મીડિયા નથી), બૅટરી <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
-    <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"સક્રિય. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> બૅટરી."</string>
+    <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"ઍક્ટિવ. <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> બૅટરી."</string>
     <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"સક્રિય. ડાબી બાજુ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, જમણી બાજુ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> બૅટરી."</string>
     <string name="bluetooth_active_battery_level_untethered_left" msgid="2895644748625343977">"ચાલુ છે. ડાબી બાજુ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> બૅટરી."</string>
     <string name="bluetooth_active_battery_level_untethered_right" msgid="7407517998880370179">"ચાલુ છે. જમણી બાજુ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> બૅટરી."</string>
@@ -446,8 +446,8 @@
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"ઍપ માન્ય ચૅનલ વિના નોટિફિકેશન પોસ્ટ કરે તો સ્ક્રીન પર ચેતવણી ડિસ્પ્લે થાય છે"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"બાહ્ય પર ઍપને મંજૂરી આપવાની ફરજ પાડો"</string>
     <string name="force_allow_on_external_summary" msgid="8525425782530728238">"મેનિફેસ્ટ મૂલ્યોને ધ્યાનમાં લીધા સિવાય, કોઈપણ ઍપને બાહ્ય સ્ટોરેજ પર લખાવા માટે લાયક બનાવે છે"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"પ્રવૃત્તિઓને ફરીથી કદ યોગ્ય થવા માટે ફરજ પાડો"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"મૅનિફેસ્ટ મૂલ્યોને ધ્યાનમાં લીધા સિવાય, તમામ પ્રવૃત્તિઓને મલ્ટી-વિન્ડો માટે ફરીથી કદ બદલી શકે તેવી બનાવો."</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"ઍક્ટિવિટીને ફરીથી કદ યોગ્ય થવા માટે ફરજ પાડો"</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"મૅનિફેસ્ટ મૂલ્યોને ધ્યાનમાં લીધા સિવાય, તમામ ઍક્ટિવિટીને એકથી વધુ વિન્ડો માટે ફરીથી કદ બદલી શકે તેવી બનાવો."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"ફ્રીફોર્મ વિન્ડો ચાલુ કરો"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"ડેસ્કટૉપ બૅકઅપ પાસવર્ડ"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"ડેસ્કટૉપ સંપૂર્ણ બૅકઅપ હાલમાં સુરક્ષિત નથી"</string>

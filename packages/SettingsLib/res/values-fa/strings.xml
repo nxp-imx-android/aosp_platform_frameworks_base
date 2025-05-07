@@ -361,7 +361,7 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"تنظیمات برنامه‌نویسی مجاز باشد؟"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"این تنظیمات فقط برای برنامه‌نویسی در نظر گرفته شده است. ممکن است استفاده از این تنظیمات موجب خرابی یا عملکرد نادرست دستگاه یا برنامه‌های شما شود."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"‏تأیید برنامه‌ها ازطریق USB"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"‏برنامه‌های نصب‌شده ازطریق ADB/ADT را ازنظر رفتار مخاطره‌آمیز بررسی کنید."</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"‏برنامه‌های نصب‌شده ازطریق ADB/ADT ازنظر رفتار مخاطره‌آمیز بررسی شود."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"‏دستگاه‌های بلوتوث بدون نام (فقط نشانی‌های MAC) نشان داده خواهند شد"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"درصورت وجود مشکل در صدا با دستگاه‌های راه دور مثل صدای بلند ناخوشایند یا عدم کنترل صدا، ویژگی میزان صدای کامل بلوتوث را غیرفعال کنید."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"‏دسته ویژگی Gabeldorsche، بلوتوث را فعال می‌کند."</string>

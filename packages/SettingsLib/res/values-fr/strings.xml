@@ -524,7 +524,7 @@
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"Complètement chargé d\'ici <xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"Inconnu"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"Batterie en charge"</string>
-    <string name="battery_info_status_charging_fast" msgid="8027559755902954885">"Charge rapide"</string>
+    <string name="battery_info_status_charging_fast" msgid="8027559755902954885">"Recharge rapide"</string>
     <string name="battery_info_status_charging_slow" msgid="3190803837168962319">"Charge lente"</string>
     <string name="battery_info_status_charging_wireless" msgid="8924722966861282197">"En charge sans fil"</string>
     <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"Recharge"</string>

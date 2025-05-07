@@ -350,7 +350,7 @@
     <string name="select_usb_configuration_dialog_title" msgid="3579567144722589237">"USB कॉन्‍फिगरेशन निवडा"</string>
     <string name="allow_mock_location" msgid="2102650981552527884">"बनावट स्थानांना अनुमती द्या"</string>
     <string name="allow_mock_location_summary" msgid="179780881081354579">"बनावट स्थानांना अनुमती द्या"</string>
-    <string name="debug_view_attributes" msgid="3539609843984208216">"दृश्‍य विशेषता तपासणी सुरू करा"</string>
+    <string name="debug_view_attributes" msgid="3539609843984208216">"व्ह्यू ॲट्रिब्यूट तपासणी सुरू करा"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"वाय-फाय सुरू असतानाही मोबाइल डेटा नेहमी सुरू ठेवा (नेटवर्क जलदरीत्या स्विच करण्यासाठी)."</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"उपलब्ध असल्यास टेदरिंग हार्डवेअर ॲक्सिलरेशन वापरा"</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"USB डीबग करण्यास अनुमती द्यायची?"</string>
@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"ॲप्लिकेशन निवडा"</string>
     <string name="no_application" msgid="9038334538870247690">"काहीही नाही"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"डीबगरची प्रतीक्षा करा"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"डीबग केलेले ॲप्लिकेशन अमलात आणण्यापूर्वी डीबगर संलग्न करण्याची प्रतीक्षा करतो"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"डीबग केलेले ॲप्लिकेशन अमलात आणण्यापूर्वी डीबगर अटॅच करण्याची प्रतीक्षा करते"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"इनपुट"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"ड्रॉइंग"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"हार्डवेअर अ‍ॅक्सिलरेटेड रेंडरिंग"</string>
