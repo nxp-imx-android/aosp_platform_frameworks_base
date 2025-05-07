@@ -8287,6 +8287,12 @@ final class ActivityRecord extends WindowToken {
         }
         for (int i = getChildCount() - 1; i >= 0; --i) {
             dispatchConfigurationToChild(getChildAt(i), getConfiguration());
+            final WindowState ws = getChildAt(i).asWindowState();
+            if (ws != null) {
+                getDisplayContent().getDisplayPolicy().layoutWindowLw(ws, null /* attached */,
+                        getDisplayContent().mDisplayFrames);
+                ws.updateSurfacePositionNonOrganized();
+            }
         }
         updateReportedConfigurationAndSend();
         return true;
