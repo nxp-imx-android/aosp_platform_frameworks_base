@@ -23,12 +23,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +41,7 @@ import com.android.settingslib.spa.framework.compose.LogCompositions
 import com.android.settingslib.spa.framework.compose.TimeMeasurer.Companion.rememberTimeMeasurer
 import com.android.settingslib.spa.framework.compose.rememberLazyListStateAndHideKeyboardWhenStartScroll
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
+import com.android.settingslib.spa.widget.preference.ZeroStatePreference
 import com.android.settingslib.spa.widget.ui.CategoryTitle
 import com.android.settingslib.spa.widget.ui.LazyCategory
 import com.android.settingslib.spa.widget.ui.PlaceholderTitle
@@ -73,6 +77,13 @@ data class AppListInput<T : AppRecord>(
     val header: @Composable () -> Unit,
     val noItemMessage: String? = null,
     val bottomPadding: Dp,
+    val noAppInfo: NoAppInfo = NoAppInfo(),
+)
+
+data class NoAppInfo(
+    val icon: ImageVector = Icons.Filled.Apps,
+    val title: Int = R.string.no_applications,
+    val description: Int? = null,
 )
 
 /**
@@ -81,12 +92,13 @@ data class AppListInput<T : AppRecord>(
  * This UI element will take the remaining space on the screen to show the App List.
  */
 @Composable
-fun <T : AppRecord> AppListInput<T>.AppList() {
-    AppListImpl { rememberViewModel(config, listModel, state) }
+fun <T : AppRecord> AppListInput<T>.AppList(noAppInfo: NoAppInfo = NoAppInfo()) {
+    AppListImpl(noAppInfo) { rememberViewModel(config, listModel, state) }
 }
 
 @Composable
 internal fun <T : AppRecord> AppListInput<T>.AppListImpl(
+    noAppInfo: NoAppInfo = NoAppInfo(),
     viewModelSupplier: @Composable () -> IAppListViewModel<T>
 ) {
     LogCompositions(TAG, config.userIds.toString())
@@ -95,7 +107,7 @@ internal fun <T : AppRecord> AppListInput<T>.AppListImpl(
         val optionsState = viewModel.spinnerOptionsFlow.collectAsStateWithLifecycle(null)
         SpinnerOptions(optionsState, viewModel.optionFlow)
         val appListData = viewModel.appListDataFlow.collectAsStateWithLifecycle(null)
-        listModel.AppListWidget(appListData, header, bottomPadding, noItemMessage)
+        listModel.AppListWidget(appListData, header, bottomPadding, noItemMessage, noAppInfo)
     }
 }
 
@@ -123,13 +135,18 @@ private fun <T : AppRecord> AppListModel<T>.AppListWidget(
     header: @Composable () -> Unit,
     bottomPadding: Dp,
     noItemMessage: String?,
+    noAppInfo: NoAppInfo = NoAppInfo(),
 ) {
     val timeMeasurer = rememberTimeMeasurer(TAG)
     appListData.value?.let { (list, option) ->
         timeMeasurer.logFirst("app list first loaded")
         if (list.isEmpty()) {
             header()
-            PlaceholderTitle(noItemMessage ?: stringResource(R.string.no_applications))
+            if (isSpaExpressiveEnabled) {
+                ZeroStatePreference(noAppInfo.icon, stringResource(noAppInfo.title))
+            } else {
+                PlaceholderTitle(noItemMessage ?: stringResource(R.string.no_applications))
+            }
             return
         }
         if (isSpaExpressiveEnabled) {
