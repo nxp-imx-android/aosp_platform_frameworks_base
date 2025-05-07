@@ -513,8 +513,8 @@ class StorageManagerService extends IStorageManager.Stub
     public static final Pattern KNOWN_APP_DIR_PATHS = Pattern.compile(
             "(?i)(^/storage/[^/]+/(?:([0-9]+)/)?Android/(?:data|media|obb|sandbox)/)([^/]+)(/.*)?");
 
-
-    private WatchedVolumeInfo findVolumeByIdOrThrow(String id) {
+    @VisibleForTesting
+    protected WatchedVolumeInfo findVolumeByIdOrThrow(String id) {
         synchronized (mLock) {
             final WatchedVolumeInfo vol = mVolumes.get(id);
             if (vol != null) {
@@ -1954,11 +1954,12 @@ class StorageManagerService extends IStorageManager.Stub
      */
     private boolean isMountDisallowed(WatchedVolumeInfo vol) {
         UserManager userManager = mContext.getSystemService(UserManager.class);
+        UserHandle mountUserHandle = UserHandle.of(vol.getMountUserId());
 
         boolean isUsbRestricted = false;
         if (vol.getDisk() != null && vol.getDisk().isUsb()) {
             isUsbRestricted = userManager.hasUserRestriction(UserManager.DISALLOW_USB_FILE_TRANSFER,
-                    Binder.getCallingUserHandle());
+                    mountUserHandle);
         }
 
         boolean isTypeRestricted = false;
@@ -1966,7 +1967,7 @@ class StorageManagerService extends IStorageManager.Stub
                 || vol.getType() == VolumeInfo.TYPE_STUB) {
             isTypeRestricted = userManager
                     .hasUserRestriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,
-                    Binder.getCallingUserHandle());
+                    mountUserHandle);
         }
 
         return isUsbRestricted || isTypeRestricted;
@@ -2379,10 +2380,10 @@ class StorageManagerService extends IStorageManager.Stub
         super.mount_enforcePermission();
 
         final WatchedVolumeInfo vol = findVolumeByIdOrThrow(volId);
+        updateVolumeMountIdIfRequired(vol);
         if (isMountDisallowed(vol)) {
             throw new SecurityException("Mounting " + volId + " restricted by policy");
         }
-        updateVolumeMountIdIfRequired(vol);
         mount(vol);
     }
 
