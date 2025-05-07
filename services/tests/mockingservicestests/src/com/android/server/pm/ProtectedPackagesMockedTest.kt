@@ -56,10 +56,25 @@ open class ProtectedPackagesMockedTest {
         MockitoAnnotations.openMocks(this)
         rule.system().stageNominalSystemState()
         whenever(roleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_SYSTEM_SUPERVISION), any()))
+            .thenReturn(listOf(SYSTEM_SUPERVISION_PKG))
+        whenever(roleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_SUPERVISION), any()))
             .thenReturn(listOf(SUPERVISION_PKG))
         whenever(rule.mocks().context.getSystemService(RoleManager::class.java))
             .thenReturn(roleManager)
         protectedPackages = ProtectedPackages(rule.mocks().context)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    @EnableFlags(Flags.FLAG_PROTECT_SUPERVISION_PACKAGES)
+    fun testIsPackageProtected_systemSupevisionPackage_flagEnabled_returnsTrue() {
+        val stateProtected =
+            protectedPackages.isPackageStateProtected(TEST_USER_ID, SYSTEM_SUPERVISION_PKG)
+        val dataProtected =
+            protectedPackages.isPackageDataProtected(TEST_USER_ID, SYSTEM_SUPERVISION_PKG)
+
+        assertThat(stateProtected).isTrue()
+        assertThat(dataProtected).isTrue()
     }
 
     @Test
@@ -113,6 +128,7 @@ open class ProtectedPackagesMockedTest {
     }
 
     private companion object {
+        const val SYSTEM_SUPERVISION_PKG = "com.android.system.supervision"
         const val SUPERVISION_PKG = "com.android.supervision"
         const val TEST_PKG = "com.android.stub"
         const val TEST_USER_ID = 0

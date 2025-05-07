@@ -197,10 +197,14 @@ public class ProtectedPackages {
         }
         return Binder.withCleanCallingIdentity(
                 () -> {
-                    List<String> roleHolders =
+                    List<String> systemSupervisionHolders =
                             roleManager.getRoleHoldersAsUser(
                                     RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));
-                    return roleHolders.contains(packageName);
+                    List<String> supervisionHolders =
+                            roleManager.getRoleHoldersAsUser(
+                                    RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
+                    return systemSupervisionHolders.contains(packageName)
+                            || supervisionHolders.contains(packageName);
                 });
     }
 }
