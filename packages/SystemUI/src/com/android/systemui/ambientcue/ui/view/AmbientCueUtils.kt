@@ -20,25 +20,23 @@ import android.view.Gravity
 import android.view.WindowManager.LayoutParams
 
 object AmbientCueUtils {
-    fun getAmbientCueLayoutParams(width: Int, height: Int, readyToShow: Boolean): LayoutParams {
-        val touchFlag =
-            if (readyToShow) {
-                LayoutParams.FLAG_NOT_TOUCH_MODAL
-            } else {
-                LayoutParams.FLAG_NOT_TOUCHABLE
-            }
+    fun getAmbientCueLayoutParams(spyTouches: Boolean): LayoutParams {
         return LayoutParams(
-                width,
-                height,
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
                 LayoutParams.TYPE_DRAG,
-                LayoutParams.FLAG_NOT_FOCUSABLE or touchFlag,
+                LayoutParams.FLAG_NOT_FOCUSABLE or LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT,
             )
             .apply {
-                alpha = if (readyToShow) 1f else 0f
                 gravity = Gravity.BOTTOM or Gravity.START
                 fitInsetsTypes = 0
                 isFitInsetsIgnoringVisibility = false
+                privateFlags = privateFlags or LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
+                title = "AmbientCue"
+                if (spyTouches) {
+                    inputFeatures = inputFeatures or LayoutParams.INPUT_FEATURE_SPY
+                }
             }
     }
 }

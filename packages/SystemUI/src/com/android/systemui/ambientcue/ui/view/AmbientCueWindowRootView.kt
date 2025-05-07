@@ -19,9 +19,9 @@ package com.android.systemui.ambientcue.ui.view
 import android.content.Context
 import android.view.Gravity
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import com.android.compose.theme.PlatformTheme
@@ -35,6 +35,7 @@ import javax.inject.Inject
 class AmbientCueWindowRootView
 @Inject
 constructor(
+    private val windowManager: WindowManager,
     @Application applicationContext: Context,
     ambientCueViewModelFactory: AmbientCueViewModel.Factory,
 ) : FrameLayout(applicationContext) {
@@ -59,8 +60,16 @@ constructor(
                 setContent {
                     PlatformTheme {
                         AmbientCueContainer(
-                            Modifier.fillMaxWidth().wrapContentHeight(),
-                            ambientCueViewModelFactory,
+                            modifier = Modifier.fillMaxSize(),
+                            ambientCueViewModelFactory = ambientCueViewModelFactory,
+                            onShouldInterceptTouches = { interceptTouches ->
+                                windowManager.updateViewLayout(
+                                    this@AmbientCueWindowRootView,
+                                    AmbientCueUtils.getAmbientCueLayoutParams(
+                                        spyTouches = !interceptTouches
+                                    ),
+                                )
+                            },
                         )
                     }
                 }

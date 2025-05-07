@@ -60,12 +60,18 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             modifier = Modifier.size(24.dp).clip(CircleShape),
         )
 
-        Text(action.label, style = MaterialTheme.typography.labelLarge, color = outlineColor)
+        Text(
+            action.label,
+            style = MaterialTheme.typography.labelLarge,
+            color = outlineColor,
+            maxLines = 1,
+        )
         if (action.attribution != null) {
             Text(
                 action.attribution,
                 style = MaterialTheme.typography.labelLarge,
                 color = outlineColor,
+                maxLines = 1,
                 modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
             )
         }
