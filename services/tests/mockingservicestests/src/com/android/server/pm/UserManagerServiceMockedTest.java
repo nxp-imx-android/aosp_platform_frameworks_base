@@ -1113,7 +1113,8 @@ public final class UserManagerServiceMockedTest {
      * {@code null} name.
      */
     @Test
-    public void testUserWithName_withDefaultName() {
+    public void testUserWithName_withDefaultName_nonHsum() {
+        setSystemUserHeadless(false);
         int initialAllocations = getCurrentNumberOfUser0Allocations();
 
         var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
@@ -1164,6 +1165,21 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_LOGOUT_USER_API)
+    public void testUserWithName_withDefaultName_hsum() {
+        setSystemUserHeadless(true);
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        UserInfo systemUserWithName = mUms.userWithName(systemUser);
+        assertWithMessage("userWithName(systemUser)").that(systemUserWithName).isNotNull();
+        expect.withMessage("userWithName(systemUser)").that(systemUserWithName)
+                .isNotSameInstanceAs(systemUser);
+        expect.withMessage("systemUserWithName.name").that(systemUserWithName.name)
+                .isEqualTo(mUms.getHeadlessSystemUserName());
+        expect.withMessage("system.name").that(systemUser.name).isNull();
+    }
+
+    @Test
     public void testGetName_null() {
         assertThrows(NullPointerException.class, () -> mUms.getName(null));
     }
@@ -1188,10 +1204,33 @@ public final class UserManagerServiceMockedTest {
 
     /** Tests what happens when the {@link UserInfo} has a {@code null} name. */
     @Test
-    public void testGetName_withDefaultNames() {
+    public void testGetName_withDefaultNames_nonHsum() {
+        setSystemUserHeadless(false);
+
         var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
         expect.withMessage("name of system user").that(mUms.getName(systemUser))
                 .isEqualTo(mUms.getOwnerName());
+
+        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        expect.withMessage("name of main user").that(mUms.getName(mainUser))
+                .isEqualTo(mUms.getOwnerName());
+
+        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        expect.withMessage("name of guest user").that(mUms.getName(guestUser))
+                .isEqualTo(mUms.getGuestName());
+
+        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_LOGOUT_USER_API)
+    public void testGetName_withDefaultNames_hsum() {
+        setSystemUserHeadless(true);
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of system user").that(mUms.getName(systemUser))
+                .isEqualTo(mUms.getHeadlessSystemUserName());
 
         var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
         expect.withMessage("name of main user").that(mUms.getName(mainUser))
