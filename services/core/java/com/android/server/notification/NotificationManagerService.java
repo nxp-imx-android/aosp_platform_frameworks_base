@@ -3641,6 +3641,9 @@ public class NotificationManagerService extends SystemService {
          */
         @Override
         public boolean areNotificationsEnabledForPackage(String pkg, int uid) {
+            if (Process.isSdkSandboxUid(uid)) {
+                return false;
+            }
             enforceSystemOrSystemUIOrSamePackage(pkg,
                     "Caller not system or systemui or same package");
             if (UserHandle.getCallingUserId() != UserHandle.getUserId(uid)) {
@@ -4003,8 +4006,8 @@ public class NotificationManagerService extends SystemService {
         public NotificationChannel getConversationNotificationChannel(String callingPkg, int userId,
                 String targetPkg, String channelId, boolean returnParentIfNoConversationChannel,
                 String conversationId) {
-            if (canNotifyAsPackage(callingPkg, targetPkg, userId)
-                    || isCallerIsSystemOrSysemUiOrShell()) {
+            if (isCallerIsSystemOrSystemUiOrShell()
+                    || canNotifyAsPackage(callingPkg, targetPkg, userId)) {
                 int targetUid = INVALID_UID;
                 try {
                     targetUid = mPackageManagerClient.getPackageUidAsUser(targetPkg, userId);
@@ -10109,7 +10112,7 @@ public class NotificationManagerService extends SystemService {
                 == PERMISSION_GRANTED;
     }
 
-    private boolean isCallerIsSystemOrSysemUiOrShell() {
+    private boolean isCallerIsSystemOrSystemUiOrShell() {
         int callingUid = Binder.getCallingUid();
         if (callingUid == Process.SHELL_UID || callingUid == Process.ROOT_UID) {
             return true;
@@ -10220,7 +10223,7 @@ public class NotificationManagerService extends SystemService {
         if (uid == Process.ROOT_UID && ROOT_PKG.equals(pkg)) {
             return;
         }
-        if (!mPackageManagerInternal.isSameApp(pkg, uid, userId)) {
+        if (!UserHandle.isSameApp(uid, mPackageManagerInternal.getPackageUid(pkg, 0L, userId))) {
             throw new SecurityException("Package " + pkg + " is not owned by uid " + uid);
         }
     }
