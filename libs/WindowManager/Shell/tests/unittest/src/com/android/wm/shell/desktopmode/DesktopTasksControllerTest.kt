@@ -202,6 +202,7 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
@@ -8896,7 +8897,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_homeTask_activeDesk_deactivates() {
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 0)
-        val home = createHomeTask(DEFAULT_DISPLAY)
+        val home = createHomeTask(DEFAULT_DISPLAY, userId = taskRepository.userId)
 
         val transition = Binder()
         val result = controller.handleRequest(transition, createTransition(home))
@@ -8917,6 +8918,27 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val result = controller.handleRequest(transition, createTransition(home, TRANSIT_CLOSE))
 
         assertNull(result)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_homeTask_activeDesk_nonCurrentUser_deactivatesDeskOfCorrectUser() {
+        val currentUserDesk = 0
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = currentUserDesk)
+        val otherUser = 88
+        val otherUserDesk = 1
+        userRepositories.getProfile(otherUser).apply {
+            addDesk(DEFAULT_DISPLAY, deskId = otherUserDesk)
+            setActiveDesk(DEFAULT_DISPLAY, deskId = otherUserDesk)
+        }
+        val home = createHomeTask(DEFAULT_DISPLAY, userId = otherUser)
+
+        val transition = Binder()
+        val result = controller.handleRequest(transition, createTransition(home))
+
+        assertNotNull(result)
+        verify(desksOrganizer).deactivateDesk(result, deskId = otherUserDesk)
+        verify(desksOrganizer, never()).deactivateDesk(result, deskId = currentUserDesk)
     }
 
     @Test

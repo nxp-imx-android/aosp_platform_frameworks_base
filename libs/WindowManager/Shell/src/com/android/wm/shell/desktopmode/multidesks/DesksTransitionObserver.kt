@@ -103,6 +103,10 @@ class DesksTransitionObserver(
 
     private fun handleDeskTransition(info: TransitionInfo, deskTransition: DeskTransition) {
         logD("Desk transition ready: %s", deskTransition)
+        // TODO: b/415381304 - don't use |current|. It can point to the old user during user-switch
+        //   transitions while transition info changes can be for the new user. Transitions can
+        //   even contain changes for tasks of different users. Instead, add a |userId| argument
+        //   in |DeskTransition|, since |TaskInfo#mUserId| is also unreliable on non leaf tasks.
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
