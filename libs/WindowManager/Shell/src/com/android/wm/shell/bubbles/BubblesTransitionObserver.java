@@ -92,7 +92,8 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             }
             // If the opening task was launched by another bubble, skip collapsing the existing one
             // since BubbleTransitions will start a new bubble for it
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble() && taskInfo.isAppBubble) {
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                    && mBubbleController.shouldBeAppBubble(taskInfo)) {
                 ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TransitionObserver.onTransitionReady(): "
                         + "skipping app bubble for taskId=%d", taskInfo.taskId);
                 continue;

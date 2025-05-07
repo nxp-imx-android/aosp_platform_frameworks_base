@@ -375,7 +375,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                         && chg.getMode() != TRANSIT_CHANGE) {
                     continue;
                 }
-                if (!chg.getTaskInfo().isAppBubble) {
+                if (!bubbleTransitions.shouldBeAppBubble(chg.getTaskInfo())) {
                     continue;
                 }
                 bubblingTask = chg;
