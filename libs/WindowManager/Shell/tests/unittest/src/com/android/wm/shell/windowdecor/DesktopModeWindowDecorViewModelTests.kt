@@ -58,6 +58,7 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopImmersiveController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
@@ -1132,6 +1133,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
     fun testGestureExclusionChanged_updatesDecorations() {
         val captor = argumentCaptor<ISystemGestureExclusionListener>()
         verify(mockWindowManager)
@@ -1156,6 +1158,41 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
+    fun testGestureExclusionChanged_updatesDecorations_onlyOnItsDisplayId() {
+        val gestureExclusionCaptor = argumentCaptor<ISystemGestureExclusionListener>()
+        val displayListenerCaptor = argumentCaptor<DisplayController.OnDisplaysChangedListener>()
+        verify(mockDisplayController).addDisplayWindowListener(displayListenerCaptor.capture())
+        displayListenerCaptor.firstValue.onDisplayAdded(DEFAULT_DISPLAY)
+        displayListenerCaptor.firstValue.onDisplayAdded(SECOND_DISPLAY)
+        verify(mockWindowManager)
+            .registerSystemGestureExclusionListener(gestureExclusionCaptor.capture(),
+                eq(DEFAULT_DISPLAY))
+        verify(mockWindowManager)
+            .registerSystemGestureExclusionListener(gestureExclusionCaptor.capture(),
+                eq(SECOND_DISPLAY))
+        val task = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            displayId = DEFAULT_DISPLAY,
+        )
+        val task2 = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            displayId = SECOND_DISPLAY,
+        )
+        val newRegion = Region.obtain().apply {
+            set(Rect(0, 0, 1600, 80))
+        }
+
+        gestureExclusionCaptor.firstValue.onSystemGestureExclusionChanged(SECOND_DISPLAY, newRegion,
+            newRegion)
+        testShellExecutor.flushAll()
+
+        verify(task, never()).onExclusionRegionChanged(newRegion)
+        verify(task2).onExclusionRegionChanged(newRegion)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY)
     fun testGestureExclusionChanged_otherDisplay_skipsDecorationUpdate() {
         val captor = argumentCaptor<ISystemGestureExclusionListener>()
         verify(mockWindowManager)
@@ -1338,5 +1375,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             surfaceView.holder.surface,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
         )
+    }
+
+    private companion object {
+        const val SECOND_DISPLAY = 2
     }
 }
