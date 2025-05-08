@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.database.ContentObserver
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
@@ -52,7 +53,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -79,7 +79,6 @@ constructor(
     private val sharedPreferences by lazy {
         context.getSharedPreferences(SHARED_PREFERENCES_FILE_NAME, Context.MODE_PRIVATE)
     }
-    private val isInvocationEffectEnabledByAssistantFlow = MutableStateFlow<Boolean?>(null)
 
     private val selectedAssistantName: StateFlow<String> =
         conflatedCallbackFlow {
@@ -119,20 +118,45 @@ constructor(
                 initialValue = roleManager.getCurrentAssistantFor(userRepository.selectedUserHandle),
             )
 
-    private val selectedAssistantNameAndUserFlow =
-        selectedAssistantName
-            .combine(userRepository.selectedUser) { a, b -> Pair(a, b) }
-            .distinctUntilChanged()
+    private val isInvocationEffectEnabledByAssistantFlow: Flow<Boolean> =
+        conflatedCallbackFlow {
+                val listener =
+                    SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                        if (key == IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE) {
+                            trySendWithFailureLogging(
+                                loadIsInvocationEffectEnabledByAssistant(),
+                                TAG,
+                                "updated isInvocationEffectEnabledByAssistantFlow due to enabled status change",
+                            )
+                        }
+                    }
+                sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
 
-    init {
-        coroutineScope.launch {
-            selectedAssistantNameAndUserFlow.collect {
-                // Assistant or user changed, reload enabled state
-                isInvocationEffectEnabledByAssistantFlow.value =
-                    loadIsInvocationEffectEnabledByAssistant()
+                coroutineScope.launch {
+                    userRepository.selectedUser.collect {
+                        trySendWithFailureLogging(
+                            loadIsInvocationEffectEnabledByAssistant(),
+                            TAG,
+                            "updated isInvocationEffectEnabledByAssistantFlow due to user change",
+                        )
+                    }
+                }
+
+                coroutineScope.launch {
+                    selectedAssistantName.collect {
+                        trySendWithFailureLogging(
+                            loadIsInvocationEffectEnabledByAssistant(),
+                            TAG,
+                            "updated isInvocationEffectEnabledByAssistantFlow due to assistant change",
+                        )
+                    }
+                }
+
+                awaitClose {
+                    sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+                }
             }
-        }
-    }
+            .flowOn(coroutineContext)
 
     private val isPowerButtonLongPressConfiguredToLaunchAssistantFlow: Flow<Boolean> =
         conflatedCallbackFlow {
@@ -277,7 +301,7 @@ constructor(
             isPowerButtonLongPressConfiguredToLaunchAssistantFlow,
             isInvocationEffectEnabledByAssistantFlow,
         ) { prerequisites ->
-            prerequisites.all { it ?: false } && Flags.enableLppAssistInvocationEffect()
+            prerequisites.all { it } && Flags.enableLppAssistInvocationEffect()
         }
 
     private fun getIsPowerButtonLongPressConfiguredToLaunchAssistant() =
@@ -314,7 +338,6 @@ constructor(
 
     private fun setIsInvocationEffectEnabledByAssistant(enabled: Boolean) {
         coroutineScope.launch {
-            isInvocationEffectEnabledByAssistantFlow.value = enabled
             sharedPreferences.edit {
                 putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE, enabled)
                 putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, selectedAssistantName.value)
