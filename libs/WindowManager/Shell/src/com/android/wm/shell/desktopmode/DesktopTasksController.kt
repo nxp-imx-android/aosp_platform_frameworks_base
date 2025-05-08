@@ -3808,6 +3808,20 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
     ) {
+        logD(
+            "activateDesk deskId=%d taskIdToReorderToFront=%d remoteTransition=%s",
+            deskId,
+            taskIdToReorderToFront,
+            remoteTransition,
+        )
+        if (!taskRepository.getAllDeskIds().contains(deskId)) {
+            logW(
+                "Request to activate desk=%d but desk not found for user=%d",
+                deskId,
+                taskRepository.userId,
+            )
+            return
+        }
         if (
             taskIdToReorderToFront != null &&
                 taskRepository.getDeskIdForTask(taskIdToReorderToFront) != deskId
