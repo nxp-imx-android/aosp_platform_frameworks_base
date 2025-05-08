@@ -40,6 +40,7 @@ import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.shared.R as sharedR
 import com.google.android.material.math.MathUtils
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 internal fun View.getRect(): Rect = Rect(this.left, this.top, this.right, this.bottom)
@@ -231,10 +232,7 @@ class ClockSizeTransition(
                 // We enforce the animation parameters on the target view every frame using a
                 // predraw listener. This is suboptimal but prevents issues with layout passes
                 // overwriting the animation for individual frames.
-                val predrawCallback = OnPreDrawListener {
-                    assignAnimValues("predraw", anim.animatedFraction, log = false)
-                    return@OnPreDrawListener true
-                }
+                val predrawCallback = PredrawAnimationCallback(anim, ::assignAnimValues)
 
                 this@VisibilityBoundsTransition.addListener(
                     object : TransitionListenerAdapter() {
@@ -276,6 +274,24 @@ class ClockSizeTransition(
             private const val SMARTSPACE_BOUNDS = "ClockSizeTransition:SSBounds"
             private val TRANSITION_PROPERTIES =
                 arrayOf(PROP_VISIBILITY, PROP_ALPHA, PROP_BOUNDS, SMARTSPACE_BOUNDS)
+        }
+    }
+
+    private class PredrawAnimationCallback(
+        anim: ValueAnimator,
+        cb: (String, Float, Int?, Boolean) -> Unit,
+    ) : OnPreDrawListener {
+        // Holding only WeakReferences prevents leaking the entire transition and all related views
+        // in the event that a predraw listener survives the cleanup steps and is still attached to
+        // the ViewTreeObserver past the terminiation of the transition.
+        private val callback = WeakReference(cb)
+        private val animation = WeakReference(anim)
+
+        override fun onPreDraw(): Boolean {
+            val cb = callback.get() ?: return true
+            val fraction = animation.get()?.animatedFraction ?: 1f
+            cb("predraw", fraction, null, false)
+            return true
         }
     }
 
