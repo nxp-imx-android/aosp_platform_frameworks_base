@@ -3527,11 +3527,14 @@ public class DeviceIdleController extends SystemService
     @VisibleForTesting
     @GuardedBy("this")
     void updateQuickDozeFlagLocked(boolean enabled) {
-        if (DEBUG) Slog.i(TAG, "updateQuickDozeFlagLocked: enabled=" + enabled);
+        if (DEBUG) {
+            Slog.i(TAG, "updateQuickDozeFlagLocked: enabled=" + enabled
+                    + ", mForceIdle=" + mForceIdle);
+        }
         mQuickDozeActivated = enabled;
         mQuickDozeActivatedWhileIdling =
                 mQuickDozeActivated && (mState == STATE_IDLE || mState == STATE_IDLE_MAINTENANCE);
-        if (enabled) {
+        if (!mForceIdle && enabled) {
             // If Quick Doze is enabled, see if we should go straight into it.
             becomeInactiveIfAppropriateLocked();
         }
@@ -3614,6 +3617,14 @@ public class DeviceIdleController extends SystemService
     void setLightEnabledForTest(boolean enabled) {
         synchronized (this) {
             mLightEnabled = enabled;
+        }
+    }
+
+    /** Must only be used in tests. */
+    @VisibleForTesting
+    void setForceIdleEnabledForTest(boolean enabled) {
+        synchronized (this) {
+            mForceIdle = enabled;
         }
     }
 

@@ -590,6 +590,33 @@ public class DeviceIdleControllerTest {
     }
 
     @Test
+    public void testStateUnchanged_QuickDozeOn_ForceIdleOn() {
+        enterDeepState(STATE_ACTIVE);
+        mDeviceIdleController.setForceIdleEnabledForTest(true);
+        setQuickDozeEnabled(true);
+        setChargingOn(false);
+        setScreenOn(false);
+        verifyStateConditions(STATE_ACTIVE);
+        assertTrue(mDeviceIdleController.isQuickDozeEnabled());
+    }
+
+    @Test
+    public void testStateActiveToStateQuickDozeDelay_ForceIdleOff() {
+        setAlarmSoon(false);
+        InOrder inOrder = inOrder(mDeviceIdleController);
+
+        enterDeepState(STATE_ACTIVE);
+        mDeviceIdleController.setForceIdleEnabledForTest(false);
+        setQuickDozeEnabled(true);
+        setChargingOn(false);
+        setScreenOn(false);
+        verifyStateConditions(STATE_QUICK_DOZE_DELAY);
+        assertTrue(mDeviceIdleController.isQuickDozeEnabled());
+        inOrder.verify(mDeviceIdleController)
+                .scheduleAlarmLocked(eq(mConstants.QUICK_DOZE_DELAY_TIMEOUT));
+    }
+
+    @Test
     public void testStateActiveToStateInactive_ConditionsNotMet() {
         mDeviceIdleController.becomeActiveLocked("testing", 0);
         verifyStateConditions(STATE_ACTIVE);
