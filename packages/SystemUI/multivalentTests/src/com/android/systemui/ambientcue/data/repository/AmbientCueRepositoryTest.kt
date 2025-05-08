@@ -25,7 +25,6 @@ import android.content.testableContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_ACTION_FEATURE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.advanceUntilIdle
@@ -83,7 +82,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
-                listOf(invalidTarget1, invalidTarget2)
+                listOf(invalidTarget1)
             )
             advanceUntilIdle()
             assertThat(isVisible).isFalse()
@@ -121,7 +120,6 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         private const val SUBTITLE_2 = "subtitle 2"
         private val validTarget =
             mock<SmartspaceTarget> {
-                on { featureType } doReturn AMBIENT_ACTION_FEATURE
                 on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
                 on { actionChips } doReturn
                     listOf(
@@ -136,20 +134,11 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
 
         private val invalidTarget1 =
             mock<SmartspaceTarget> {
-                on { featureType } doReturn 1
-                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
-                on { actionChips } doReturn
-                    listOf(SmartspaceAction.Builder("id", "title").setSubtitle("subtitle").build())
-            }
-
-        private val invalidTarget2 =
-            mock<SmartspaceTarget> {
-                on { featureType } doReturn AMBIENT_ACTION_FEATURE
                 on { smartspaceTargetId } doReturn "home"
                 on { actionChips } doReturn
                     listOf(SmartspaceAction.Builder("id", "title").setSubtitle("subtitle").build())
             }
 
-        private val allTargets = listOf(validTarget, invalidTarget1, invalidTarget2)
+        private val allTargets = listOf(validTarget, invalidTarget1)
     }
 }
