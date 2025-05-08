@@ -238,6 +238,11 @@ public class PipController implements PipTransitionController.PipTransitionCallb
          * Notifies the listener that user leaves PiP by tapping on the expand button.
          */
         void onExpandPip();
+
+        /**
+         * Notifies the listener that the PiP has exited.
+         */
+        void onExitPip();
     }
 
     /**
@@ -1304,6 +1309,11 @@ public class PipController implements PipTransitionController.PipTransitionCallb
             @Override
             public void onExpandPip() {
                 mListener.call(l -> l.onExpandPip());
+            }
+
+            @Override
+            public void onExitPip() {
+                mListener.call(l -> l.onExitPip());
             }
         };
 
