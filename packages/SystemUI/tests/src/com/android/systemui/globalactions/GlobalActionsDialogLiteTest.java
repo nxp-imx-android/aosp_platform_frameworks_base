@@ -67,6 +67,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesRepository;
 import com.android.systemui.globalactions.domain.interactor.GlobalActionsInteractor;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
@@ -220,6 +221,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         backdropColors.setMainColor(Color.BLACK);
         when(mColorExtractor.getNeutralColors()).thenReturn(backdropColors);
         when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(0);
+
+        mDependency.injectTestDependency(
+                SysUIStateDisplaysInteractor.class, mKosmos.getSysuiStateInteractor());
     }
 
     @Test
