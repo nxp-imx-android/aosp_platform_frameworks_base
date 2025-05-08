@@ -8012,6 +8012,57 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun newWindow_fromFreeformAddsNewWindow_launchesToCallingDisplay() {
+        setUpLandscapeDisplay()
+        val deskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        val task = setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = deskId)
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        val transition = Binder()
+        whenever(
+                mMockDesktopImmersiveController.exitImmersiveIfApplicable(
+                    any(),
+                    anyInt(),
+                    anyOrNull(),
+                    any(),
+                )
+            )
+            .thenReturn(ExitResult.NoExit)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    anyInt(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(transition)
+
+        runOpenNewWindow(task)
+
+        verify(desktopMixedTransitionHandler)
+            .startLaunchTransition(
+                anyInt(),
+                wctCaptor.capture(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+            )
+        wctCaptor.firstValue.assertLaunchTaskOnDisplay(SECOND_DISPLAY)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES)
     fun newWindow_fromFreeform_exitsImmersiveIfNeeded() {
         setUpLandscapeDisplay()

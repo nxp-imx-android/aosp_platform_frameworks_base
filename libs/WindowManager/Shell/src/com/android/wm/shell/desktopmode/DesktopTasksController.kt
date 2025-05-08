@@ -2825,11 +2825,16 @@ class DesktopTasksController(
                     error("Invalid windowing mode: $newTaskWindowingMode")
                 }
             }
+        val displayId =
+            if (ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue)
+                taskRepository.getDisplayForDesk(deskId)
+            else DEFAULT_DISPLAY
         return ActivityOptions.makeBasic().apply {
             launchWindowingMode = newTaskWindowingMode
             pendingIntentBackgroundActivityStartMode =
                 ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
             launchBounds = bounds
+            launchDisplayId = displayId
         }
     }
 
