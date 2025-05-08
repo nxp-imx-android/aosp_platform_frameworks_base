@@ -3398,6 +3398,9 @@
   <!-- Message shown in the dialog prompting the user to set up a screen lock to delete private space from Reset Options [CHAR LIMIT=120] -->
   <java-symbol type="string" name="private_space_set_up_screen_lock_for_reset" />
 
+  <!-- Allowlist of private space apps to receive ACTION_(LOCKED_)BOOT_COMPLETED intents immediately -->
+  <java-symbol type="array" name="config_privateSpaceBootCompletedImmediateReceivers" />
+
   <java-symbol type="string" name="deprecated_target_sdk_message" />
   <java-symbol type="string" name="deprecated_target_sdk_app_store" />
 
