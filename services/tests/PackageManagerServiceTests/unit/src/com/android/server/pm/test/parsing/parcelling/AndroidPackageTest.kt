@@ -56,7 +56,8 @@ import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
-@EnableFlags(android.content.pm.Flags.FLAG_INCLUDE_FEATURE_FLAGS_IN_PACKAGE_CACHER)
+@EnableFlags(android.content.pm.Flags.FLAG_INCLUDE_FEATURE_FLAGS_IN_PACKAGE_CACHER,
+        android.permission.flags.Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
 class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, PackageImpl::class) {
 
     @get:Rule
@@ -102,6 +103,8 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
         "getUsesStaticLibrariesSorted",
         "readFeatureFlagState",
         "writeFeatureFlagState",
+        "readUsesPermissionMapping",
+        "writeUsesPermissionMapping",
         // Tested through setting minor/major manually
         "setLongVersionCode",
         "getLongVersionCode",
@@ -488,15 +491,34 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
             "test.USES_PERMISSION",
             transformGet = {
                 // Need to strip implicit permission, which calls addUsesPermission when added
-                it.filterNot { it.name == "test.implicit.PERMISSION" }
+                it.filterNot { it.name == "test.implicit.PERMISSION" || it.name == "test.USES_PERMISSION_MAPPING" }
                     .singleOrNull()?.name.orEmpty()
             },
             transformSet = {
                 ParsedUsesPermissionImpl(
                     it,
-                    0
+                    0,
+                    setOf(),
                 )
             }
+        ),
+        getSetByValue(
+            AndroidPackage::getUsesPermissionMapping,
+            PackageImpl::addUsesPermission,
+            mapOf("test.USES_PERMISSION_MAPPING" to ParsedUsesPermissionImpl("test.USES_PERMISSION_MAPPING", 0, setOf())),
+            transformSet = {
+                ParsedUsesPermissionImpl(
+                        "test.USES_PERMISSION_MAPPING",
+                        0,
+                        setOf(),
+                    )
+            },
+            compare = { first, second ->
+                equalBy(
+                        first, second,
+                        { it["test.USES_PERMISSION_MAPPING"]?.name }
+                   )
+                }
         ),
         getSetByValue(
             AndroidPackage::getRequestedFeatures,
