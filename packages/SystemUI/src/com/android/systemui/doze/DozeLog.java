@@ -24,7 +24,6 @@ import static android.os.PowerManager.WAKE_REASON_TAP;
 
 import android.annotation.IntDef;
 import android.os.PowerManager;
-import android.text.TextUtils;
 import android.util.TimeUtils;
 
 import androidx.annotation.NonNull;
@@ -34,6 +33,7 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.Dumpable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.keyguard.shared.model.FingerprintAuthenticationStatus;
 import com.android.systemui.statusbar.policy.DevicePostureController;
 
 import com.google.errorprone.annotations.CompileTimeConstant;
@@ -281,11 +281,29 @@ public class DozeLog implements Dumpable {
 
     /**
      * Appends usudfps long press requestPulse event to the logs.
-     * @param msg the message to log for usudfps pulse event.
+     * @param immediate indicates if should request pulse immediately.
+     * @param flagEnabled indicates if the bug flag is enabled.
+     * @param fpsLockout indicates if fingerprint unlock is locked out.
+     * @param fpsAllowed indicates if fingerprint unlock is allowed.
+     * @param collectingEvents indicates if is collecting usudfps pulse events.
+     * @param featureEnabled indicates if usudfps screen-off unlock is enabled.
      */
-    public void traceShouldRequestUdfpsLongPressPulseImmediately(String msg) {
-        if (TextUtils.isEmpty(msg)) return;
-        mLogger.logShouldRequestUdfpsLongPressPulseImmediately(msg);
+    public void traceShouldRequestUdfpsLongPressPulseImmediately(boolean immediate,
+            boolean flagEnabled, boolean fpsLockout, boolean fpsAllowed, boolean collectingEvents,
+            boolean featureEnabled) {
+        mLogger.logShouldRequestUdfpsLongPressPulseImmediately(immediate, fpsLockout,
+                fpsAllowed, collectingEvents);
+        mLogger.logShouldRequestUdfpsLongPressPulseImmediatelyFeatureAndFlagState(
+                flagEnabled, featureEnabled);
+    }
+
+    /**
+     * Appends usudfps screen-off pulse event to the logs.
+     * @param state the state while usudfps screen-off pulse event raised.
+     */
+    public void traceUltrasonicScreenOffPulseEvent(FingerprintAuthenticationStatus state) {
+        if (state == null) return;
+        mLogger.logUltrasonicScreenOffPulseEvent(state);
     }
 
     @Override
