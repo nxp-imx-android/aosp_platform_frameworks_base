@@ -128,10 +128,14 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
 
-        // In multi-activity case, windowing mode change will reparent to original host task, so we
-        // have to update the parent windowing mode to what is expected.
-        mDesktopPipTransitionController.ifPresent(c -> c.maybeUpdateParentInWct(wct,
-                mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip));
+        mDesktopPipTransitionController.ifPresent(c -> {
+            // In multi-activity case, windowing mode change will reparent to original host task, so
+            // we have to update the parent windowing mode to what is expected.
+            c.maybeUpdateParentInWct(wct,
+                    mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip);
+            // In multi-desks case, we have to reparent the task to the root desk.
+            c.maybeReparentTaskToDesk(wct, mPipTransitionState.getPipTaskInfo().taskId);
+        });
 
         return wct;
     }
