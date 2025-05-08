@@ -35,6 +35,7 @@ import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
 import android.view.InsetsSource;
 
+import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
@@ -46,10 +47,14 @@ import org.junit.runner.RunWith;
 @RunWith(WindowTestRunner.class)
 public class InsetsSourceProviderTest extends WindowTestsBase {
 
-    private InsetsSource mSource = new InsetsSource(
+    @NonNull
+    private final InsetsSource mSource = new InsetsSource(
             InsetsSource.createId(null, 0, statusBars()), statusBars());
+    @NonNull
     private InsetsSourceProvider mProvider;
-    private InsetsSource mImeSource = new InsetsSource(ID_IME, ime());
+    @NonNull
+    private final InsetsSource mImeSource = new InsetsSource(ID_IME, ime());
+    @NonNull
     private InsetsSourceProvider mImeProvider;
 
     @Before
@@ -158,8 +163,9 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         statusBar.getFrame().set(0, 0, 500, 100);
         mProvider.setWindow(statusBar, null, null);
         mProvider.updateFakeControlTarget(target);
-        assertNotNull(mProvider.getControl(target));
-        assertNull(mProvider.getControl(target).getLeash());
+        final var control = mProvider.getControl(target);
+        assertNotNull(control);
+        assertNull(control.getLeash());
         mProvider.updateFakeControlTarget(null);
         assertNull(mProvider.getControl(target));
     }
@@ -270,7 +276,9 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         ime1.getFrame().set(new Rect(0, 400, 500, 500));
         mImeProvider.updateInsetsControlPosition(ime1);
-        assertEquals(new Point(0, 400), mImeProvider.getControl(target).getSurfacePosition());
+        var control = mImeProvider.getControl(target);
+        assertNotNull(control);
+        assertEquals(new Point(0, 400), control.getSurfacePosition());
 
         final WindowState ime2 = newWindowBuilder("ime2", TYPE_INPUT_METHOD).build();
         ime2.getFrame().set(new Rect(0, 0, 0, 0));
@@ -278,7 +286,9 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         ime2.getFrame().set(new Rect(0, 400, 500, 500));
         mImeProvider.updateInsetsControlPosition(ime2);
-        assertEquals(new Point(0, 400), mImeProvider.getControl(target).getSurfacePosition());
+        control = mImeProvider.getControl(target);
+        assertNotNull(control);
+        assertEquals(new Point(0, 400), control.getSurfacePosition());
     }
 
     @Test
