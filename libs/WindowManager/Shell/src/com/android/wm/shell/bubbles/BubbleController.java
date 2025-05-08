@@ -1351,8 +1351,12 @@ public class BubbleController implements ConfigurationChangeListener,
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        DeviceConfig deviceConfig = DeviceConfig.create(mContext, mWindowManager);
         if (mBubblePositioner != null) {
-            mBubblePositioner.update(DeviceConfig.create(mContext, mWindowManager));
+            mBubblePositioner.update(deviceConfig);
+        }
+        if (mLayerView != null) {
+            mLayerView.update(deviceConfig);
         }
         if (mStackView != null && newConfig != null) {
             if (newConfig.densityDpi != mDensityDpi

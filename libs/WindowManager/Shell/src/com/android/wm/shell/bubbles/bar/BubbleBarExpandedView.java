@@ -20,6 +20,8 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
+import static java.lang.Math.max;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Insets;
@@ -169,6 +171,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
 
     private boolean mIsClipping = false;
     private int mBottomClip = 0;
+    private int mImeTop = 0;
 
     /** An enum value that tracks the visibility state of the task view */
     private enum TaskViewVisibilityState {
@@ -693,10 +696,17 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         return mTempBounds.bottom;
     }
 
-    /** Update the amount by which to clip the expanded view at the bottom. */
-    public void updateBottomClip(int bottomClip) {
-        mBottomClip = bottomClip;
+    /** Notifies the expanded view that the IME top changed. */
+    public void onImeTopChanged(int imeTop) {
+        mImeTop = imeTop;
+        mBottomClip = max(getContentBottomOnScreen() - mImeTop, 0);
         onClipUpdate();
+    }
+
+    void updateBottomClip() {
+        if (mIsClipping) {
+            onImeTopChanged(mImeTop);
+        }
     }
 
     private void onClipUpdate() {

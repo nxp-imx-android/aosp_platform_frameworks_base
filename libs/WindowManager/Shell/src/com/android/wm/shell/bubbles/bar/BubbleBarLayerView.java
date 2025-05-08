@@ -23,6 +23,7 @@ import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDE
 
 import android.annotation.Nullable;
 import android.content.Context;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -106,6 +107,7 @@ public class BubbleBarLayerView extends FrameLayout
     // Used to ensure touch target size for the menu shown on a bubble expanded view
     private TouchDelegate mHandleTouchDelegate;
     private final Rect mHandleTouchBounds = new Rect();
+    private Insets mInsets;
 
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
             BubbleLogger bubbleLogger) {
@@ -612,6 +614,7 @@ public class BubbleBarLayerView extends FrameLayout
         mExpandedView.setX(mTempRect.left);
         mExpandedView.setY(mTempRect.top);
         mExpandedView.updateLocation();
+        mExpandedView.updateBottomClip();
     }
 
     private void showScrim(boolean show) {
@@ -662,6 +665,15 @@ public class BubbleBarLayerView extends FrameLayout
     @VisibleForTesting
     public BubbleBarExpandedViewDragController getDragController() {
         return mDragController;
+    }
+
+    /** Notifies view of device config update. */
+    public void update(DeviceConfig deviceConfig) {
+        Insets newInsets = deviceConfig.getInsets();
+        if (!newInsets.equals(mInsets)) {
+            mInsets = newInsets;
+            updateExpandedView();
+        }
     }
 
     private class LocationChangeListener implements
