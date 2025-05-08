@@ -138,38 +138,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/magnifier_typing_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="@dimen/magnification_setting_view_margin"
-        android:focusable="true"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/magnifier_typing_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="@dimen/magnification_setting_view_item_horizontal_spacing"
-            android:text="@string/accessibility_magnify_typing"
-            android:textAppearance="@style/TextAppearance.MagnificationSetting.Title"
-            android:labelFor="@id/magnifier_horizontal_lock_switch"
-            android:layout_gravity="center_vertical" />
-
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/magnifier_typing_switch"
-            android:layout_gravity="right|center_vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            android:theme="@style/Theme.Material3.DynamicColors.DayNight"
-            style="@style/SettingslibSwitchStyle.Expressive" />
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/magnifier_keyboard_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -191,6 +159,38 @@
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/magnifier_keyboard_switch"
+            android:layout_gravity="right|center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:theme="@style/Theme.Material3.DynamicColors.DayNight"
+            style="@style/SettingslibSwitchStyle.Expressive" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/magnifier_typing_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/magnification_setting_view_margin"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/magnifier_typing_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/magnification_setting_view_item_horizontal_spacing"
+            android:text="@string/accessibility_magnify_typing"
+            android:textAppearance="@style/TextAppearance.MagnificationSetting.Title"
+            android:labelFor="@id/magnifier_horizontal_lock_switch"
+            android:layout_gravity="center_vertical" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/magnifier_typing_switch"
             android:layout_gravity="right|center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
