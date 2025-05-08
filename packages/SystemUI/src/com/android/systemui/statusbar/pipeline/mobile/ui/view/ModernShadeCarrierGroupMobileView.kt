@@ -115,6 +115,7 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
                                 logger = logger,
                                 scope = this,
                                 kairosNetwork = kairosNetwork,
+                                subId = subscriptionId,
                             )
                         binding
                     }
@@ -124,6 +125,7 @@ class ModernShadeCarrierGroupMobileView(context: Context, attrs: AttributeSet?) 
                         view.requireViewById<AutoMarqueeTextView>(R.id.mobile_carrier_text)
                     launch {
                         ShadeCarrierBinderKairos.bind(
+                            subscriptionId,
                             textView,
                             buildSpec { viewModel },
                             kairosNetwork,

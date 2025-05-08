@@ -67,7 +67,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 
 /**
  * Turns info from StatusBarIconController into ImageViews in a ViewGroup.
@@ -304,7 +303,7 @@ public class IconManager implements DemoModeCommandReceiver {
             if (view instanceof ModernStatusBarMobileView) {
                 Job bindingJob = mBindingJobs.remove(((ModernStatusBarMobileView) view).getSubId());
                 if (bindingJob != null) {
-                    bindingJob.cancel(new CancellationException());
+                    bindingJob.cancel(null);
                 }
             }
         }
