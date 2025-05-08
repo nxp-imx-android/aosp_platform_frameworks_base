@@ -712,7 +712,8 @@ public class Bubble implements BubbleViewProvider {
     /**
      * Sets the current bubble-transition that is coordinating a change in this bubble.
      */
-    void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
+    @VisibleForTesting
+    public void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setPreparingTransition: transit=%s", transit);
         mPreparingTransition = transit;
     }
