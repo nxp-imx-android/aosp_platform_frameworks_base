@@ -397,8 +397,27 @@ public class Cuj {
      */
     public static final int CUJ_WEAR_CAROUSEL_SWIPE_JANK = 135;
 
+    /**
+     * Track wear QSS tray open jank.
+     *
+     * QSS tray is the quick settings tray on the watch that is accessed by a swipe down from the
+     * top of the screen while looking at the watch face.
+     *
+     * <p>Tracking starts when the tray starts to become visible on screen. Tracking ends when the QSS tray
+     * is fully expanded.
+     */
+    public static final int CUJ_WEAR_QSS_TRAY_OPEN = 136;
+
+    /**
+     * Track wear notification tray open jank.
+     *
+     * <p>Tracking starts when the notification tray starts to become visible on screen. Tracking
+     * ends when the notification tray is fully expanded.
+     */
+    public static final int CUJ_WEAR_NOTIFICATION_TRAY_OPEN = 137;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_WEAR_CAROUSEL_SWIPE_JANK;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_WEAR_NOTIFICATION_TRAY_OPEN;
 
     /** @hide */
     @IntDef({
@@ -525,7 +544,10 @@ public class Cuj {
             CUJ_LPP_ASSIST_INVOCATION_EFFECT,
             CUJ_WEAR_CAROUSEL_SCROLL_JANK,
             CUJ_WEAR_CAROUSEL_FLING_JANK,
-            CUJ_WEAR_CAROUSEL_SWIPE_JANK
+            CUJ_WEAR_CAROUSEL_SWIPE_JANK,
+            CUJ_WEAR_QSS_TRAY_OPEN,
+            CUJ_WEAR_NOTIFICATION_TRAY_OPEN
+
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -663,6 +685,8 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_SCROLL_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_SCROLL_JANK;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_FLING_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_FLING_JANK;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_SWIPE_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_SWIPE_JANK;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_QSS_TRAY_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_QSS_TRAY_OPEN;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_NOTIFICATION_TRAY_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_NOTIFICATION_TRAY_OPEN;
     }
 
     private Cuj() {
@@ -929,6 +953,10 @@ public class Cuj {
                 return "WEAR_CAROUSEL_FLING_JANK";
             case CUJ_WEAR_CAROUSEL_SWIPE_JANK:
                 return "WEAR_CAROUSEL_SWIPE_JANK";
+            case CUJ_WEAR_QSS_TRAY_OPEN:
+                return "WEAR_QSS_TRAY_OPEN";
+            case CUJ_WEAR_NOTIFICATION_TRAY_OPEN:
+                return "WEAR_NOTIFICATION_TRAY_OPEN";
         }
         return "UNKNOWN";
     }
