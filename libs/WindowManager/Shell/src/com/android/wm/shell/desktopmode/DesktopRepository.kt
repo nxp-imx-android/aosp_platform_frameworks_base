@@ -380,8 +380,9 @@ class DesktopRepository(
     }
 
     fun removeLeftTiledTaskFromDesk(displayId: Int, deskId: Int) {
-        logD("removeLeftTiledTaskToDesk for displayId=%d", displayId)
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
+        logD("removeLeftTiledTaskFromDesk for displayId=%d", displayId)
+        val desk = desktopData.getDesk(deskId)
+        if (desk == null) return
         desk.leftTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             updatePersistentRepositoryForDesk(deskId)
@@ -390,7 +391,8 @@ class DesktopRepository(
 
     fun removeRightTiledTaskFromDesk(displayId: Int, deskId: Int) {
         logD("removeRightTiledTaskFromDesk for displayId=%d", displayId)
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
+        val desk = desktopData.getDesk(deskId)
+        if (desk == null) return
         desk.rightTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             updatePersistentRepositoryForDesk(deskId)
