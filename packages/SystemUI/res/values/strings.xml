@@ -2271,6 +2271,8 @@
         few {# minutes}
         other {# minutes}
     }</string>
+    <!-- Notification: Promoted Ongoing specific long click [CHAR LIMIT=NONE] -->
+    <string name="notification_promoted_ongoing_long_click">to open demotion menu</string>
 
     <!-- Summary of battery saver not available [CHAR LIMIT=NONE] -->
 

@@ -4225,7 +4225,16 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         super.onInitializeAccessibilityNodeInfoInternal(info);
         final boolean isLongClickable = isNotificationRowLongClickable();
         if (isLongClickable) {
-            info.addAction(AccessibilityAction.ACTION_LONG_CLICK);
+            if (isPromotedOngoing()) {
+                final AccessibilityAction longClick =
+                        new AccessibilityAction(
+                                AccessibilityAction.ACTION_LONG_CLICK.getId(),
+                                getContext().getResources().getString(
+                                        R.string.notification_promoted_ongoing_long_click));
+                info.addAction(longClick);
+            } else {
+                info.addAction(AccessibilityAction.ACTION_LONG_CLICK);
+            }
         }
         info.setLongClickable(isLongClickable);
 
