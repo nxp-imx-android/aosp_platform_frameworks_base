@@ -45,15 +45,15 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.Executor;
 
 /**
- * Tests for {@link CameraStateMonitor}.
+ * Tests for {@link CameraStateMonitorImpl}.
  *
  * Build/Install/Run:
- *  atest WmTests:CameraStateMonitorTests
+ *  atest WmTests:CameraStateMonitorImplTests
  */
 @SmallTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
-public final class CameraStateMonitorTests extends WindowTestsBase {
+public final class CameraStateMonitorImplTests extends WindowTestsBase {
 
     private static final String TEST_PACKAGE_1 = "com.test.package.one";
     private static final String TEST_PACKAGE_2 = "com.test.package.two";
@@ -64,7 +64,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     private Handler mMockHandler;
     private AppCompatConfiguration mAppCompatConfiguration;
 
-    private CameraStateMonitor mCameraStateMonitor;
+    private CameraStateMonitorImpl mCameraStateMonitor;
     private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
     private ActivityRecord mActivity;
@@ -112,7 +112,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
                     return null;
                 });
         mCameraStateMonitor =
-                new CameraStateMonitor(mDisplayContent, mMockHandler);
+                new CameraStateMonitorImpl(mDisplayContent, mMockHandler);
         configureActivity(TEST_PACKAGE_1);
         configureActivity(TEST_PACKAGE_2);
 
@@ -216,7 +216,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     }
 
     private class FakeCameraCompatStateListener implements
-            CameraStateMonitor.CameraCompatStateListener {
+            CameraStateMonitorImpl.CameraCompatStateListener {
 
         int mOnCameraOpenedCounter = 0;
         int mCheckCanCloseCounter = 0;
@@ -231,7 +231,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
          *                                      `checkCanClose`. When true, returns `false` on the
          *                                      first `checkCanClose` callback, and `true on the
          *                                      subsequent calls. This fake implementation tests the
-         *                                      retry mechanism in {@link CameraStateMonitor}.
+         *                                      retry mechanism in {@link CameraStateMonitorImpl}.
          */
         FakeCameraCompatStateListener(boolean simulateCannotCloseOnce) {
             mCheckCanCloseReturnValue = !simulateCannotCloseOnce;
