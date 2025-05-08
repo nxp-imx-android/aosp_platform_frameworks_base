@@ -16,7 +16,14 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import android.graphics.RuntimeShader
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -25,48 +32,62 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import com.android.systemui.ambientcue.ui.shader.BackgroundGlowShader
 
 @Composable
-fun BackgroundGlow(visible: Boolean, modifier: Modifier) {
+fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
+    val density = LocalDensity.current
+    val turbulenceDisplacementPx = with(density) { Defaults.TURBULENCE_DISPLACEMENT_DP.dp.toPx() }
+    val gradientRadiusPx = with(density) { Defaults.GRADIENT_RADIUS.dp.toPx() }
+
     val alpha by animateFloatAsState(if (visible) 1f else 0f, animationSpec = tween(750))
-    val blurScale = 1.3f
+    val verticalOffset by
+        animateDpAsState(if (expanded) 0.dp else Defaults.COLLAPSED_TRANSLATION_DP.dp, tween(350))
+    val verticalOffsetPx = with(density) { verticalOffset.toPx() }
 
-    val primaryBoosted = Color(boostChroma(MaterialTheme.colorScheme.primary.toArgb()))
-    val primaryFixedBoosted = Color(boostChroma(MaterialTheme.colorScheme.primary.toArgb()))
-    val tertiaryBoosted = Color(boostChroma(MaterialTheme.colorScheme.tertiaryContainer.toArgb()))
-
-    val gradient1Brush =
-        Brush.radialGradient(
-            listOf(primaryFixedBoosted.copy(alpha = 0.3f), primaryFixedBoosted.copy(alpha = 0f))
-        )
-    val gradient2Brush =
-        Brush.radialGradient(
-            listOf(primaryBoosted.copy(alpha = 0.4f), primaryBoosted.copy(alpha = 0f))
-        )
-    val gradient3Brush =
-        Brush.radialGradient(
-            listOf(tertiaryBoosted.copy(alpha = 0.3f), tertiaryBoosted.copy(alpha = 0f))
+    // Infinite animation responsible for the "vapor" effect distorting the radial gradient
+    val infiniteTransition = rememberInfiniteTransition(label = "backgroundGlow")
+    val turbulencePhase by
+        infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 10f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(Defaults.ONE_MINUTE_MS, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+            label = "turbulencePhase",
         )
 
-    // The glow is made of 3 radial gradients.
-    // All gradients are in the same box to make it simpler to move them around
+    val color1 = Color(boostChroma(MaterialTheme.colorScheme.secondaryContainer.toArgb()))
+    val color2 = Color(boostChroma(MaterialTheme.colorScheme.primary.toArgb()))
+    val color3 = Color(boostChroma(MaterialTheme.colorScheme.tertiary.toArgb()))
+
+    val shader = RuntimeShader(BackgroundGlowShader.FRAG_SHADER)
+    val shaderBrush = ShaderBrush(shader)
+
     Box(
-        modifier.size(372.dp, 68.dp).alpha(alpha).drawBehind {
-            scale(2.12f * blurScale, 1f) {
-                translate(0f, size.height * 0.8f) { drawCircle(gradient1Brush) }
+        modifier.size(400.dp, 200.dp).alpha(alpha).drawWithCache {
+            onDrawWithContent {
+                shader.setFloatUniform("alpha", alpha)
+                shader.setFloatUniform("resolution", size.width, size.height)
+                shader.setColorUniform("color1", color1.toArgb())
+                shader.setColorUniform("color2", color2.toArgb())
+                shader.setColorUniform("color3", color3.toArgb())
+                shader.setFloatUniform("origin", size.width / 2, size.height + verticalOffsetPx)
+                shader.setFloatUniform("radius", gradientRadiusPx)
+                shader.setFloatUniform("turbulenceAmount", turbulenceDisplacementPx)
+                shader.setFloatUniform("turbulencePhase", turbulencePhase)
+                shader.setFloatUniform("turbulenceSize", Defaults.TURBULENCE_SIZE)
+                drawRect(shaderBrush)
             }
-            scale(4.59f * blurScale, 1f) {
-                translate(0f, size.height * 0.45f) { drawOval(gradient2Brush) }
-            }
-            scale(2.41f * blurScale, 1f) { drawOval(gradient3Brush) }
         }
     )
 }
@@ -79,4 +100,12 @@ private fun boostChroma(color: Int): Int {
         return color
     }
     return ColorUtils.M3HCTToColor(outColor[0], 120f, outColor[2])
+}
+
+private object Defaults {
+    const val COLLAPSED_TRANSLATION_DP = 110
+    const val TURBULENCE_SIZE = 4.7f
+    const val TURBULENCE_DISPLACEMENT_DP = 30
+    const val GRADIENT_RADIUS = 200
+    const val ONE_MINUTE_MS = 60 * 1000
 }
