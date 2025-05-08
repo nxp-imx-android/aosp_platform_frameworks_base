@@ -201,3 +201,14 @@ flag {
     bug: "407669465"
     is_fixed_read_only: true
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "fix_fullscreen_in_multi_window"
+    description: "Let leaf task inherits the windowing mode from the root task."
+    bug: "408087047"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
