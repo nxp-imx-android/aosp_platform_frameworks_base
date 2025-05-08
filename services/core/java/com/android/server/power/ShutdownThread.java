@@ -59,8 +59,8 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.PackageWatchdog;
 import com.android.server.LocalServices;
+import com.android.server.PackageWatchdog;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import java.io.File;
@@ -404,6 +404,20 @@ public final class ShutdownThread extends Thread {
             sIsStarted = true;
         }
 
+        /*
+         * Write a system property in case the system_server reboots before we
+         * get to the actual hardware restart. If that happens, we'll retry at
+         * the beginning of the SystemServer startup.
+         *
+         * NOTE: the `init` process also monitors this property to kick off a
+         * watchdog making sure that the shutdown process doesn't take too long.
+         */
+        {
+            String reason = (sInstance.mReboot ? "1" : "0")
+                          + (sInstance.mReason != null ? sInstance.mReason : "");
+            SystemProperties.set(SHUTDOWN_ACTION_PROPERTY, reason);
+        }
+
         sInstance.mProgressDialog = showShutdownDialog(context);
         sInstance.mContext = context;
         sInstance.mPowerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
@@ -469,16 +483,6 @@ public final class ShutdownThread extends Thread {
         Thread dumpCheckPointsThread = ShutdownCheckPoints.newDumpThread(
                 new File(CHECK_POINTS_FILE_BASENAME));
         dumpCheckPointsThread.start();
-
-        /*
-         * Write a system property in case the system_server reboots before we
-         * get to the actual hardware restart. If that happens, we'll retry at
-         * the beginning of the SystemServer startup.
-         */
-        {
-            String reason = (mReboot ? "1" : "0") + (mReason != null ? mReason : "");
-            SystemProperties.set(SHUTDOWN_ACTION_PROPERTY, reason);
-        }
 
         /*
          * If we are rebooting into safe mode, write a system property
