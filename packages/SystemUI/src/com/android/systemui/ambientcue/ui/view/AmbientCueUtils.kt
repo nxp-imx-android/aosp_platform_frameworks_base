@@ -37,6 +37,7 @@ object AmbientCueUtils {
                 if (spyTouches) {
                     inputFeatures = inputFeatures or LayoutParams.INPUT_FEATURE_SPY
                 }
+                receiveInsetsIgnoringZOrder = true
             }
     }
 }

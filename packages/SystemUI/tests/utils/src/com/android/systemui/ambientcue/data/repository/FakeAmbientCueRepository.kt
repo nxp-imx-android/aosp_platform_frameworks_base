@@ -31,6 +31,8 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
     }

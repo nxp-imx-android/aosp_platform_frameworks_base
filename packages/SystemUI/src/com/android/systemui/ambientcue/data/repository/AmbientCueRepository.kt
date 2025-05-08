@@ -46,6 +46,9 @@ interface AmbientCueRepository {
 
     /** If hint (or chips list) should be visible. */
     val isVisible: MutableStateFlow<Boolean>
+
+    /** If IME is visible or not. */
+    val isImeVisible: MutableStateFlow<Boolean>
 }
 
 @SysUISingleton
@@ -109,6 +112,8 @@ constructor(
             )
 
     override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     companion object {
         // Privately defined card type, exclusive for ambient actions

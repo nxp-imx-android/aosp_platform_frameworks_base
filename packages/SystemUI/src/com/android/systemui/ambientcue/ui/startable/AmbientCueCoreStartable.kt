@@ -17,6 +17,7 @@
 package com.android.systemui.ambientcue.ui.startable
 
 import android.util.Log
+import android.view.WindowInsets.Type.ime
 import android.view.WindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
@@ -61,6 +62,12 @@ constructor(
                     destroyAmbientCueView()
                 }
             }
+        }
+
+        ambientCueWindowRootView.setOnApplyWindowInsetsListener { _, insets ->
+            val imeVisible = insets.isVisible(ime())
+            ambientCueInteractor.setIsImeVisible(imeVisible)
+            insets
         }
     }
 
