@@ -64,6 +64,24 @@ class BubbleUtilsTest : ShellTestCase() {
         FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
     @Test
+    fun testGetEnterBubbleTransaction_reparentToTda(@TestParameter isAppBubble: Boolean) {
+        val wctWithLaunchNextToBubble =
+            getEnterBubbleTransaction(token, isAppBubble, reparentToTda = true)
+
+        verifyEnterBubbleTransaction(
+            wctWithLaunchNextToBubble,
+            token.asBinder(),
+            isAppBubble,
+            reparentToTda = true,
+        )
+    }
+
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        FLAG_EXCLUDE_TASK_FROM_RECENTS,
+        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+    )
+    @Test
     fun testGetExitBubbleTransaction() {
         val wct = getExitBubbleTransaction(token)
 

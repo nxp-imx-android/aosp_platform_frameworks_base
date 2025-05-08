@@ -30,8 +30,14 @@ private fun getBubbleTransaction(
     token: WindowContainerToken,
     toBubble: Boolean,
     isAppBubble: Boolean,
+    reparentToTda: Boolean,
 ): WindowContainerTransaction {
     val wct = WindowContainerTransaction()
+    if (reparentToTda) {
+        // Reparenting must happen before setAlwaysOnTop() below since WCT operations are applied in
+        // order and always-on-top for nested tasks is not supported
+        wct.reparent(token, null, true)
+    }
     wct.setWindowingMode(
         token,
         if (toBubble)
@@ -64,15 +70,20 @@ private fun getBubbleTransaction(
  * Returns a [WindowContainerTransaction] that includes the necessary operations of entering Bubble.
  *
  * @param isAppBubble App Bubble has some different UX from Chat Bubble.
+ * @param reparentToTda Whether to reparent the task to the ancestor TaskDisplayArea (for if this
+ *                      task is a child of another root task)
  */
+@JvmOverloads
 fun getEnterBubbleTransaction(
     token: WindowContainerToken,
     isAppBubble: Boolean,
+    reparentToTda: Boolean = false,
 ): WindowContainerTransaction {
     return getBubbleTransaction(
         token,
         toBubble = true,
         isAppBubble,
+        reparentToTda,
     )
 }
 
@@ -87,6 +98,7 @@ fun getExitBubbleTransaction(
         toBubble = false,
         // Everything will be reset, so doesn't matter for exit.
         isAppBubble = true,
+        reparentToTda = false,
     )
 }
 

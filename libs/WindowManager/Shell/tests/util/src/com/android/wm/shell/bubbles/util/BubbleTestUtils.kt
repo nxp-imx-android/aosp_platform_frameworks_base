@@ -20,20 +20,36 @@ import android.app.WindowConfiguration
 import android.os.IBinder
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE
+import android.window.WindowContainerTransaction.HierarchyOp
 import com.google.common.truth.Truth.assertThat
 
 /** Verifies the [WindowContainerTransaction] to enter Bubble. */
+@JvmOverloads
 fun verifyEnterBubbleTransaction(
     wct: WindowContainerTransaction,
     taskToken: IBinder,
     isAppBubble: Boolean,
+    reparentToTda: Boolean = false,
 ) {
     // Verify hierarchy ops
 
-    assertThat(wct.hierarchyOps.size).isEqualTo(1)
-    val hierarchyOp = wct.hierarchyOps[0]
-    assertThat(hierarchyOp.container).isEqualTo(taskToken)
-    assertThat(hierarchyOp.isAlwaysOnTop).isTrue()
+    val alwaysOnTopOp: HierarchyOp
+
+    if (reparentToTda) {
+        assertThat(wct.hierarchyOps.size).isEqualTo(2)
+        val reparentOp = wct.hierarchyOps[0]
+        assertThat(reparentOp.container).isEqualTo(taskToken)
+        assertThat(reparentOp.isReparent).isTrue()
+        assertThat(reparentOp.newParent).isNull()
+        assertThat(reparentOp.toTop).isTrue()
+
+        alwaysOnTopOp = wct.hierarchyOps[1]
+    } else {
+        assertThat(wct.hierarchyOps.size).isEqualTo(1)
+        alwaysOnTopOp = wct.hierarchyOps[0]
+    }
+    assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
+    assertThat(alwaysOnTopOp.isAlwaysOnTop).isTrue()
 
     // Verify Change
 
