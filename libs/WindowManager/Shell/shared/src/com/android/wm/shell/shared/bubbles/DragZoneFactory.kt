@@ -47,6 +47,7 @@ class DragZoneFactory(
     private var desktopWindowDragZoneHeight = 0
     private var desktopWindowFromExpandedViewDragZoneWidth = 0
     private var desktopWindowFromExpandedViewDragZoneHeight = 0
+    private var desktopWindowFromExpandedViewDragZoneYOffset = 0
     private var splitFromBubbleDragZoneHeight = 0
     private var splitFromBubbleDragZoneWidth = 0
     private var hSplitFromExpandedViewDragZoneWidth = 0
@@ -172,6 +173,7 @@ class DragZoneFactory(
         desktopWindowDragZoneHeight = 300.dpToPx()
         desktopWindowFromExpandedViewDragZoneWidth = 200.dpToPx()
         desktopWindowFromExpandedViewDragZoneHeight = 350.dpToPx()
+        desktopWindowFromExpandedViewDragZoneYOffset = 25.dpToPx()
         splitFromBubbleDragZoneHeight = 100.dpToPx()
         splitFromBubbleDragZoneWidth = 60.dpToPx()
         hSplitFromExpandedViewDragZoneWidth = 60.dpToPx()
@@ -366,9 +368,11 @@ class DragZoneFactory(
                 RectZone(
                     Rect(
                         windowBounds.right / 2 - desktopWindowFromExpandedViewDragZoneWidth / 2,
-                        windowBounds.bottom / 2 - desktopWindowFromExpandedViewDragZoneHeight / 2,
+                        windowBounds.bottom / 2 - desktopWindowFromExpandedViewDragZoneHeight / 2 -
+                            desktopWindowFromExpandedViewDragZoneYOffset,
                         windowBounds.right / 2 + desktopWindowFromExpandedViewDragZoneWidth / 2,
-                        windowBounds.bottom / 2 + desktopWindowFromExpandedViewDragZoneHeight / 2
+                        windowBounds.bottom / 2 + desktopWindowFromExpandedViewDragZoneHeight / 2 -
+                            desktopWindowFromExpandedViewDragZoneYOffset
                     ),
                 ),
             dropTarget = desktopWindowDropTarget
@@ -531,7 +535,7 @@ class DragZoneFactory(
             val splitZoneLeft = windowBounds.right / 2 - vSplitFromExpandedViewDragZoneWidth / 2
             val splitZoneRight = splitZoneLeft + vSplitFromExpandedViewDragZoneWidth
             val bottomSplitZoneBottom =
-                windowBounds.bottom - dismissDragZoneBottomMargin - dismissDragZoneRadius
+                windowBounds.bottom - dismissDragZoneBottomMargin - dismissDragZoneRadius * 2
             listOf(
                 DragZone.Split.Top(
                     bounds =
