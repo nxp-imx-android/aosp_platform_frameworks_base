@@ -207,6 +207,7 @@ class RootTaskDesksOrganizer(
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
         updateLaunchRoot(wct, deskId, enabled = true)
+        updateTaskMoveAllowed(wct, deskId, allowed = true)
     }
 
     override fun deactivateDesk(
@@ -218,6 +219,7 @@ class RootTaskDesksOrganizer(
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
+        updateTaskMoveAllowed(wct, deskId, allowed = false)
     }
 
     private fun updateLaunchRoot(wct: WindowContainerTransaction, deskId: Int, enabled: Boolean) {
@@ -241,6 +243,29 @@ class RootTaskDesksOrganizer(
                 /* activityTypes= */ null,
             )
         }
+    }
+
+    private fun updateTaskMoveAllowed(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        allowed: Boolean,
+    ) {
+        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        if (root.isTaskMoveAllowed == allowed) {
+            logD(
+                "updateTaskMoveAllowed desk=%d Task move allowed already set to allowed=%b",
+                deskId,
+                allowed,
+            )
+            return
+        }
+        root.isTaskMoveAllowed = allowed
+        logD(
+            "updateTaskMoveAllowed changing desk=%d Task move allowed to allowed=%b",
+            deskId,
+            allowed,
+        )
+        wct.setIsTaskMoveAllowed(root.taskInfo.token, allowed)
     }
 
     override fun moveTaskToDesk(
@@ -622,6 +647,7 @@ class RootTaskDesksOrganizer(
         val children: MutableSet<Int> = mutableSetOf(),
         val users: MutableSet<Int> = mutableSetOf(),
         var isLaunchRootRequested: Boolean = false,
+        var isTaskMoveAllowed: Boolean = false,
     ) {
         val token: WindowContainerToken = taskInfo.token
     }
@@ -678,6 +704,7 @@ class RootTaskDesksOrganizer(
             pw.println("$innerPrefix  #$deskId visible=${root.taskInfo.isVisible}")
             pw.println("$innerPrefix    displayId=${root.taskInfo.displayId}")
             pw.println("$innerPrefix    isLaunchRootRequested=${root.isLaunchRootRequested}")
+            pw.println("$innerPrefix    isTaskMoveAllowed=${root.isTaskMoveAllowed}")
             pw.println("$innerPrefix    children=${root.children}")
             pw.println("$innerPrefix    users=${root.users}")
             pw.println("$innerPrefix    minimization root:")
