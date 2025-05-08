@@ -249,6 +249,7 @@ class KosmosJavaAdapter() {
     val mockNotificationActionClickManager by lazy { kosmos.mockNotificationActionClickManager }
     val topUiController by lazy { kosmos.topUiController }
     val groupExpansionManager by lazy { kosmos.groupExpansionManager }
+    val sysuiStateInteractor by lazy { kosmos.sysuiStateInteractor }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {
