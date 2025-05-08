@@ -40,6 +40,7 @@ import com.android.systemui.biometrics.udfps.EllipseOverlapDetector
 import com.android.systemui.biometrics.udfps.OverlapDetector
 import com.android.systemui.biometrics.ui.binder.DeviceEntryUnlockTrackerViewBinder
 import com.android.systemui.biometrics.ui.binder.SideFpsOverlayViewBinder
+import com.android.systemui.camera.CameraSensorPrivacyModule
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
@@ -57,7 +58,7 @@ import java.util.concurrent.Executor
 import javax.inject.Qualifier
 
 /** Dagger module for all things biometric. */
-@Module
+@Module(includes = [CameraSensorPrivacyModule::class])
 interface BiometricsModule {
     /** Starts AuthController. */
     @Binds

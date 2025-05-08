@@ -36,6 +36,7 @@ import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
+import com.android.systemui.camera.domain.interactor.cameraSensorPrivacyInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeFaceWakeUpTriggersConfig
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
@@ -132,6 +133,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                 trustManager,
                 { kosmos.sceneInteractor },
                 deviceEntryFaceAuthStatusInteractor,
+                kosmos.cameraSensorPrivacyInteractor,
             )
     }
 
