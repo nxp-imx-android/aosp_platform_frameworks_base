@@ -5300,6 +5300,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
+    @Override
+    public void onAnimationLeashLost(Transaction t) {
+        if (!mSurfacePlacementNeeded && mActivityRecord != null
+                && !mActivityRecord.isVisibleRequested() && mActivityRecord.isVisible()
+                && !mLastSurfacePosition.equals(mSurfacePosition)) {
+            // The activity is closing but still visible. Make sure updateSurfacePosition() is not
+            // skipped due to isGoneForLayout().
+            mSurfacePlacementNeeded = true;
+        }
+        super.onAnimationLeashLost(t);
+    }
+
     // TODO(b/70040778): We should aim to eliminate the last user of TYPE_APPLICATION_MEDIA
     // then we can drop all negative layering on the windowing side and simply inherit
     // the default implementation here.
