@@ -24,7 +24,6 @@ import android.hardware.input.KeyGestureEvent
 import android.os.IBinder
 import android.os.UserHandle
 import android.view.KeyEvent.KEYCODE_STYLUS_BUTTON_TAIL
-import android.view.ViewConfiguration
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.dagger.qualifiers.Background
@@ -149,10 +148,5 @@ constructor(
         } else {
             backgroundExecutor.execute { controller.showNoteTask(KEYBOARD_SHORTCUT) }
         }
-    }
-
-    companion object {
-        val MULTI_PRESS_TIMEOUT = ViewConfiguration.getMultiPressTimeout().toLong()
-        val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout().toLong()
     }
 }
