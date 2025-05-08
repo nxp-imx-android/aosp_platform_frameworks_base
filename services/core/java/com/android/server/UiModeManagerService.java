@@ -153,9 +153,11 @@ final class UiModeManagerService extends SystemService {
 
         @Override
         public void set(int mode) {
-            mNightModeValue = mode;
-            if (enableNightModeBinderCache()) {
-                UiModeManager.invalidateNightModeCache();
+            if (mNightModeValue != mode) {
+                mNightModeValue = mode;
+                if (enableNightModeBinderCache()) {
+                    UiModeManager.invalidateNightModeCache();
+                }
             }
         }
     };
@@ -207,9 +209,11 @@ final class UiModeManagerService extends SystemService {
 
         @Override
         public void set(int mode) {
-            mCurrentModeTypeValue = mode;
-            if (enableCurrentModeTypeBinderCache()) {
-                UiModeManager.invalidateCurrentModeTypeCache();
+            if (mCurrentModeTypeValue != mode) {
+                mCurrentModeTypeValue = mode;
+                if (enableCurrentModeTypeBinderCache()) {
+                    UiModeManager.invalidateCurrentModeTypeCache();
+                }
             }
         }
     };
