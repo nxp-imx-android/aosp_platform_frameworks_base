@@ -486,6 +486,19 @@ class TransitionController {
         return false;
     }
 
+    /**
+     * Returns {@code true} if the `wc` is a participant of a playing transition even if it is not
+     * the playing target, e.g. its {@link Transition.ChangeInfo#hasChanged()} is false.
+     */
+    boolean isParticipantOfPlayingTransition(@NonNull WindowContainer<?> wc) {
+        for (int i = mPlayingTransitions.size() - 1; i >= 0; --i) {
+            if (mPlayingTransitions.get(i).mParticipants.contains(wc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns {@code true} if the finishing transition contains `wc`. */
     boolean inFinishingTransition(WindowContainer<?> wc) {
         return mFinishingTransition != null && mFinishingTransition.isInTransition(wc);
