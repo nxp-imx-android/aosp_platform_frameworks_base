@@ -57,8 +57,8 @@ interface IWallpaperManager {
      */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.SET_WALLPAPER)")
     ParcelFileDescriptor setWallpaper(String name, in String callingPackage,
-            in int[] screenOrientations, in List<Rect> crops, boolean allowBackup,
-            out Bundle extras, int which, IWallpaperManagerCallback completion, int userId);
+            in WallpaperDescription description, boolean allowBackup, out Bundle extras, int which,
+            IWallpaperManagerCallback completion, int userId);
 
     /**
      * Set the live wallpaper.
