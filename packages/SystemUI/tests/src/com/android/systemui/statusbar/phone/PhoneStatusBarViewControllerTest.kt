@@ -71,7 +71,6 @@ import com.android.systemui.unfold.config.UnfoldTransitionConfig
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel
 import com.android.systemui.util.mockito.argumentCaptor
-import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.view.ViewUtil
 import com.google.common.truth.Truth.assertThat
 import dagger.Lazy
@@ -86,10 +85,10 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -108,6 +107,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Mock private lateinit var sysuiUnfoldComponent: SysUIUnfoldComponent
     @Mock private lateinit var progressProvider: ScopedUnfoldTransitionProgressProvider
     @Mock private lateinit var mStatusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory
+    @Mock private lateinit var mStatusOverlayHoverListener: StatusOverlayHoverListener
     @Mock private lateinit var userChipViewModel: StatusBarUserChipViewModel
     @Mock private lateinit var centralSurfacesImpl: CentralSurfacesImpl
     @Mock private lateinit var commandQueue: CommandQueue
@@ -142,11 +142,13 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         configurationController =
             fakeConfigurationControllerStore.forDisplay(Display.DEFAULT_DISPLAY)
 
-        `when`(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
+        whenever(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
-
-        `when`(sysuiUnfoldComponent.getStatusBarMoveFromCenterAnimationController())
+        whenever(sysuiUnfoldComponent.getStatusBarMoveFromCenterAnimationController())
             .thenReturn(moveFromCenterAnimation)
+        whenever(mStatusOverlayHoverListenerFactory.createDarkAwareListener(any()))
+            .thenReturn(mStatusOverlayHoverListener)
+
         // create the view and controller on main thread as it requires main looper
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val parent = FrameLayout(mContext) // add parent to keep layout params
@@ -156,7 +158,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
             controller = createAndInitController(view)
         }
 
-        `when`(
+        whenever(
                 statusBarContentInsetsProviderForSecondaryDisplay
                     .getStatusBarContentInsetsForCurrentRotation()
             )
@@ -239,6 +241,40 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
+    fun onViewAttached_statusBarInteractable_containersInteractive() {
+        val view = createViewMock(allowInteractions = true)
+        val endSideContainer = spy(view.requireViewById<View>(R.id.system_icons))
+        whenever(view.requireViewById<View>(R.id.system_icons)).thenReturn(endSideContainer)
+        val statusContainer = spy(view.requireViewById<View>(R.id.status_bar_start_side_content))
+        whenever(view.requireViewById<View>(R.id.status_bar_start_side_content))
+            .thenReturn(statusContainer)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+
+        verify(endSideContainer).setOnHoverListener(any())
+        verify(statusContainer).setOnTouchListener(any())
+    }
+
+    @Test
+    fun onViewAttached_statusBarNonInteractable_containersNonInteractive() {
+        val view = createViewMock(allowInteractions = false)
+        val endSideContainer = spy(view.requireViewById<View>(R.id.system_icons))
+        whenever(view.requireViewById<View>(R.id.system_icons)).thenReturn(endSideContainer)
+        val statusContainer = spy(view.requireViewById<View>(R.id.status_bar_start_side_content))
+        whenever(view.requireViewById<View>(R.id.status_bar_start_side_content))
+            .thenReturn(statusContainer)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+
+        verify(endSideContainer, never()).setOnHoverListener(any())
+        verify(statusContainer, never()).setOnTouchListener(any())
+    }
+
+    @Test
     fun onViewDetached_darkReceiversUnregistered() {
         val view = createViewMock()
 
@@ -255,7 +291,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     fun handleTouchEventFromStatusBar_panelsNotEnabled_returnsFalseAndNoViewEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(false)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(false)
         val returnVal =
             view.onTouchEvent(MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0))
         assertThat(returnVal).isFalse()
@@ -264,8 +300,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     fun handleTouchEventFromStatusBar_viewNotEnabled_returnsTrueAndNoViewEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(false)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(false)
         val returnVal =
             view.onTouchEvent(MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0))
         assertThat(returnVal).isTrue()
@@ -274,8 +310,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     fun handleTouchEventFromStatusBar_viewNotEnabledButIsMoveEvent_viewReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(false)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(false)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 0f, 2f, 0)
 
         view.onTouchEvent(event)
@@ -285,8 +321,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     fun handleTouchEventFromStatusBar_panelAndViewEnabled_viewReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         view.onTouchEvent(event)
@@ -296,8 +332,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     fun handleTouchEventFromStatusBar_topEdgeTouch_viewNeverReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(panelExpansionInteractor.isFullyCollapsed).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(panelExpansionInteractor.isFullyCollapsed).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
 
         view.onTouchEvent(event)
@@ -308,8 +344,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnPrimaryDisplay_statusBarConnectedDisplaysDisabled_shadeReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         view.onTouchEvent(event)
@@ -320,8 +356,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnPrimaryDisplay_statusBarConnectedDisplaysEnabled_shadeWindowGoesAroundEnabled_shadeReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         view.onTouchEvent(event)
@@ -333,8 +369,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnPrimaryDisplay_statusBarConnectedDisplaysEnabled_shadeWindowGoesAroundDisabled_shadeReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         view.onTouchEvent(event)
@@ -345,8 +381,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_statusBarConnectedDisplaysDisabled_shadeReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         viewForSecondaryDisplay.onTouchEvent(event)
@@ -357,8 +393,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_statusBarConnectedDisplaysEnabled_shadeWindowGoesAroundEnabled_shadeReceivesEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         viewForSecondaryDisplay.onTouchEvent(event)
@@ -370,8 +406,8 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_statusBarConnectedDisplaysEnabled_shadeWindowGoesAroundDisabled_shadeDoesNotReceiveEvent() {
-        `when`(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
-        `when`(shadeViewController.isViewEnabled).thenReturn(true)
+        whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
+        whenever(shadeViewController.isViewEnabled).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         viewForSecondaryDisplay.onTouchEvent(event)
@@ -382,7 +418,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOff_viewReturnsFalse() {
-        `when`(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
+        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         val returnVal = view.onInterceptTouchEvent(event)
@@ -393,7 +429,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOn_viewReturnsFalse() {
-        `when`(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
+        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         val returnVal = view.onInterceptTouchEvent(event)
@@ -404,7 +440,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOff_viewReturnsFalse() {
-        `when`(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
+        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         val returnVal = view.onInterceptTouchEvent(event)
@@ -415,7 +451,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOn_viewReturnsTrue() {
-        `when`(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
+        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         val returnVal = view.onInterceptTouchEvent(event)
@@ -615,12 +651,13 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         return captor.value!!
     }
 
-    private fun createViewMock(): PhoneStatusBarView {
-        val view = spy(view)
+    private fun createViewMock(allowInteractions: Boolean = true): PhoneStatusBarView {
+        val mView = spy(view)
         val viewTreeObserver = mock(ViewTreeObserver::class.java)
-        `when`(view.viewTreeObserver).thenReturn(viewTreeObserver)
-        `when`(view.isAttachedToWindow).thenReturn(true)
-        return view
+        whenever(mView.viewTreeObserver).thenReturn(viewTreeObserver)
+        whenever(mView.isAttachedToWindow).thenReturn(true)
+        whenever(mView.shouldAllowInteractions()).thenReturn(allowInteractions)
+        return mView
     }
 
     private fun createAndInitController(view: PhoneStatusBarView): PhoneStatusBarViewController {

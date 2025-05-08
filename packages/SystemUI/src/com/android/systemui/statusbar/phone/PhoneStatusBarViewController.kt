@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.phone
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
 import android.graphics.Point
 import android.util.Log
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
@@ -138,10 +137,12 @@ private constructor(
         clock = mView.requireViewById(R.id.clock)
         battery = mView.requireViewById(R.id.battery)
         addDarkReceivers()
-        addCursorSupportToIconContainers()
+        if (mView.shouldAllowInteractions()) {
+            addCursorSupportToIconContainers()
 
-        if (ShadeExpandsOnStatusBarLongPress.isEnabled) {
-            mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
+            if (ShadeExpandsOnStatusBarLongPress.isEnabled) {
+                mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
+            }
         }
 
         progressProvider?.setReadyToHandleTransition(true)
@@ -204,8 +205,10 @@ private constructor(
     @VisibleForTesting
     public override fun onViewDetached() {
         removeDarkReceivers()
-        startSideContainer.setOnHoverListener(null)
-        endSideContainer.setOnHoverListener(null)
+        if (mView.shouldAllowInteractions()) {
+            startSideContainer.setOnHoverListener(null)
+            endSideContainer.setOnHoverListener(null)
+        }
         progressProvider?.setReadyToHandleTransition(false)
         moveFromCenterAnimationController?.onViewDetached()
         configurationController.removeCallback(configurationListener)
@@ -323,18 +326,7 @@ private constructor(
                 }
             }
 
-            // With the StatusBarConnectedDisplays changes, status bar touches should result in
-            // shade interaction only if ShadeWindowGoesAround.isEnabled or if touch is on default
-            // display.
-            return if (
-                !StatusBarConnectedDisplays.isEnabled ||
-                    ShadeWindowGoesAround.isEnabled ||
-                    context.displayId == DEFAULT_DISPLAY
-            ) {
-                shadeViewController.handleExternalTouch(event)
-            } else {
-                false
-            }
+            return shadeViewController.handleExternalTouch(event)
         }
     }
 
