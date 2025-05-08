@@ -599,8 +599,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
     @Test
     public void testTaskFragmentHiddenFocusableTranslucentChanges() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         removeGlobalMinSizeRestriction();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FULLSCREEN).build();
@@ -736,8 +734,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
     private void testTaskFragmentChangesWithoutSystemOrganizerThrowException(
             BiConsumer<WindowContainerTransaction, WindowContainerToken> addOp) {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         removeGlobalMinSizeRestriction();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FULLSCREEN).build();

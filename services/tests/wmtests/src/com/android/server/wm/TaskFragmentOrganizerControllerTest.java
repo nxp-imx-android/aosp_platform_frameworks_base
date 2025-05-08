@@ -109,8 +109,6 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -246,8 +244,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testOnTaskFragmentAppeared_systemOrganizer() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         mController.unregisterOrganizer(mIOrganizer);
         registerTaskFragmentOrganizer(mIOrganizer, true /* isSystemOrganizer */);
 
@@ -606,8 +602,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_allowRemoteTransitionForSystemOrganizer() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         mController.unregisterOrganizer(mIOrganizer);
         registerTaskFragmentOrganizer(mIOrganizer, true /* isSystemOrganizer */);
 
@@ -1017,7 +1011,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_createTaskFragment_overrideOrientation_systemOrganizer() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
         mController.unregisterOrganizer(mIOrganizer);
         registerTaskFragmentOrganizer(mIOrganizer, true /* isSystemOrganizer */);
 
@@ -1801,8 +1794,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_reorderToBottomOfTask() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         mController.unregisterOrganizer(mIOrganizer);
         registerTaskFragmentOrganizer(mIOrganizer, true /* isSystemOrganizer */);
         final Task task = createTask(mDisplayContent);
@@ -1838,8 +1829,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_reorderToTopOfTask() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         mController.unregisterOrganizer(mIOrganizer);
         registerTaskFragmentOrganizer(mIOrganizer, true /* isSystemOrganizer */);
         final Task task = createTask(mDisplayContent);
@@ -1875,8 +1864,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_createTaskFragmentDecorSurface() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         final Task task = createTask(mDisplayContent);
         final TaskFragment tf = createTaskFragment(task);
         final TaskFragmentOperation operation = new TaskFragmentOperation.Builder(
@@ -1890,8 +1877,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
     @Test
     public void testApplyTransaction_removeTaskFragmentDecorSurface() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_TASK_FRAGMENT_SYSTEM_ORGANIZER_FLAG);
-
         final Task task = createTask(mDisplayContent);
         final TaskFragment tf = createTaskFragment(task);
 
