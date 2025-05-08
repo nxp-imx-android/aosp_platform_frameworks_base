@@ -1,6 +1,8 @@
 package com.android.systemui.biometrics.domain.model
 
 import android.graphics.Bitmap
+import android.hardware.biometrics.BiometricManager.IconType
+import android.hardware.biometrics.FallbackOption
 import android.hardware.biometrics.PromptContentItemBulletedText
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -34,6 +36,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
         val title = "what"
         val subtitle = "a"
         val description = "request"
+        val fallbackOptions = listOf(FallbackOption("Account", IconType.ACCOUNT))
         val contentView =
             PromptVerticalListContentView.Builder()
                 .setDescription("content description")
@@ -52,6 +55,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                     subtitle = subtitle,
                     description = description,
                     contentView = contentView,
+                    fallbackOptions = fallbackOptions,
                 ),
                 BiometricUserInfo(USER_ID),
                 BiometricOperationInfo(OPERATION_ID),
@@ -70,6 +74,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
         assertThat(request.operationInfo).isEqualTo(BiometricOperationInfo(OPERATION_ID))
         assertThat(request.modalities)
             .isEqualTo(BiometricModalities(fingerprintProperties = fpPros))
+        assertThat(request.fallbackOptions).containsExactlyElementsIn(fallbackOptions)
     }
 
     @Test
