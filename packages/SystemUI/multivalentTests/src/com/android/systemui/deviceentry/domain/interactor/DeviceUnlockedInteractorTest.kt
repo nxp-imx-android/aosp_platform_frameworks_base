@@ -18,10 +18,13 @@ package com.android.systemui.deviceentry.domain.interactor
 
 import android.content.pm.UserInfo
 import android.os.PowerManager
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -30,6 +33,7 @@ import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRep
 import com.android.systemui.deviceentry.shared.model.DeviceEntryRestrictionReason
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.flags.fakeSystemPropertiesHelper
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
@@ -43,6 +47,8 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -61,12 +67,11 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DeviceUnlockedInteractorTest : SysuiTestCase() {
-
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val authenticationRepository = kosmos.fakeAuthenticationRepository
+    private val authenticationRepository by lazy { kosmos.fakeAuthenticationRepository }
 
-    val underTest = kosmos.deviceUnlockedInteractor
+    val underTest: DeviceUnlockedInteractor by lazy { kosmos.deviceUnlockedInteractor }
 
     @Before
     fun setup() {
@@ -376,6 +381,11 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
                     DeviceEntryRestrictionReason.UnattendedUpdate,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
                     DeviceEntryRestrictionReason.PolicyLockdown,
+                LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth,
+                LockPatternUtils.StrongAuthTracker
+                    .STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST to null,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
                     null,
@@ -410,6 +420,11 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
                     DeviceEntryRestrictionReason.UnattendedUpdate,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
                     DeviceEntryRestrictionReason.PolicyLockdown,
+                LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth,
+                LockPatternUtils.StrongAuthTracker
+                    .STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST to null,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
                     null,
@@ -445,6 +460,11 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
                     DeviceEntryRestrictionReason.UnattendedUpdate,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
                     DeviceEntryRestrictionReason.PolicyLockdown,
+                LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth,
+                LockPatternUtils.StrongAuthTracker
+                    .STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE to
+                    DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST to
                     DeviceEntryRestrictionReason.TrustAgentDisabled,
                 LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED to
@@ -649,6 +669,105 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    fun deviceUnlockStatus_updatesAcrossTwoFactorBouncerUnlock_whenSecureLockDeviceEnabled_fp() =
+        testScope.runTest {
+            val authenticationFlags by
+                collectLastValue(kosmos.deviceEntryBiometricSettingsInteractor.authenticationFlags)
+            val deviceEntryRestrictionReason by
+                collectLastValue(underTest.deviceEntryRestrictionReason)
+            val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
+            val requiresPrimaryAuthForSecureLockDevice by
+                collectLastValue(
+                    kosmos.secureLockDeviceInteractor.requiresPrimaryAuthForSecureLockDevice
+                )
+            val requiresStrongBiometricAuthForSecureLockDevice by
+                collectLastValue(
+                    kosmos.secureLockDeviceInteractor.requiresStrongBiometricAuthForSecureLockDevice
+                )
+            val isSecureLockDeviceEnabled by collectLastValue(underTest.isSecureLockDeviceEnabled)
+
+            // Enroll fingerprint, configure PIN as primary auth method
+            kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+
+            // Mock secure lock device enabled, both StrongAuthFlags set
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            kosmos.biometricSettingsRepository.setAuthenticationFlags(
+                AuthenticationFlags(
+                    userId = primaryUserId,
+                    flag =
+                        LockPatternUtils.StrongAuthTracker
+                            .PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE or
+                            LockPatternUtils.StrongAuthTracker
+                                .STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                )
+            )
+            runCurrent()
+
+            // Assert device lock state, device entry restriction reason, authentication
+            // requirements, and secure lock device state updated
+            assertThat(authenticationFlags!!.isPrimaryAuthRequiredForSecureLockDevice).isTrue()
+            assertThat(deviceEntryRestrictionReason)
+                .isEqualTo(DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth)
+            assertThat(requiresPrimaryAuthForSecureLockDevice).isTrue()
+            assertThat(requiresStrongBiometricAuthForSecureLockDevice).isFalse()
+            assertThat(isSecureLockDeviceEnabled).isTrue()
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
+
+            // Mock primary auth on bouncer
+            authenticationRepository.reportAuthenticationAttempt(true)
+
+            // Mock primary auth secure lock device flag cleared
+            kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
+            kosmos.biometricSettingsRepository.setAuthenticationFlags(
+                AuthenticationFlags(
+                    userId = primaryUserId,
+                    flag =
+                        LockPatternUtils.StrongAuthTracker
+                            .STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                )
+            )
+            runCurrent()
+
+            // Assert device lock state, device entry restriction reason, authentication
+            // requirements, and secure lock device state updated to reflect bouncer auth
+            assertThat(authenticationFlags!!.isPrimaryAuthRequiredForSecureLockDevice).isFalse()
+            assertThat(deviceEntryRestrictionReason)
+                .isEqualTo(DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth)
+            assertThat(requiresPrimaryAuthForSecureLockDevice).isFalse()
+            assertThat(requiresStrongBiometricAuthForSecureLockDevice).isTrue()
+            assertThat(isSecureLockDeviceEnabled).isTrue()
+
+            // Assert device is still locked, deviceUnlockSource does not update
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
+
+            // Mock successful strong fingerprint auth
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+
+            // Mock secure lock device auth flags cleared, secure lock device disabled
+            kosmos.biometricSettingsRepository.setAuthenticationFlags(
+                AuthenticationFlags(userId = primaryUserId, flag = STRONG_AUTH_NOT_REQUIRED)
+            )
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceDisabled()
+            runCurrent()
+
+            // Assert device is now unlocked, deviceUnlockSource updates to fingerprint
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource)
+                .isEqualTo(DeviceUnlockSource.Fingerprint)
+
+            // Assert secure lock device disabled after successful strong biometric auth
+            assertThat(requiresPrimaryAuthForSecureLockDevice).isFalse()
+            assertThat(requiresStrongBiometricAuthForSecureLockDevice).isFalse()
+            assertThat(isSecureLockDeviceEnabled).isFalse()
         }
 
     private fun TestScope.unlockDevice() {
