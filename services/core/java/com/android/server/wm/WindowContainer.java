@@ -3229,7 +3229,9 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (mSafeRegionBounds != null) {
             pw.println(prefix + "mSafeRegionBounds=" + mSafeRegionBounds);
         }
-        pw.println(prefix + "mIsTaskMoveAllowed=" + mIsTaskMoveAllowed);
+        if (mIsTaskMoveAllowed) {
+            pw.println(prefix + "TaskMoveAllowed");
+        }
     }
 
     final void updateSurfacePositionNonOrganized() {
