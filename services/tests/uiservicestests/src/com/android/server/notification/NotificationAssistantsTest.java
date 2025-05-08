@@ -16,6 +16,7 @@
 package com.android.server.notification;
 
 import static android.os.UserHandle.USER_ALL;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
@@ -131,9 +132,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     private TestableContext mContext = spy(getContext());
     Object mLock = new Object();
 
-
     UserInfo mZero = new UserInfo(0, "zero", 0);
-    UserInfo mTen = new UserInfo(10, "ten", 0);
+    UserInfo mTen = new UserInfo(10, "ten", UserInfo.FLAG_PROFILE);
 
     ComponentName mCn = new ComponentName("a", "b");
 
@@ -199,11 +199,19 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         List<UserInfo> users = new ArrayList<>();
         users.add(mZero);
         users.add(mTen);
-        users.add(new UserInfo(11, "11", 0));
-        users.add(new UserInfo(12, "12", 0));
+        users.add(new UserInfo(11, "11", null, UserInfo.FLAG_PROFILE, USER_TYPE_PROFILE_MANAGED));
+        users.add(new UserInfo(12, "12", UserInfo.FLAG_PROFILE));
         users.add(new UserInfo(13, "13", 0));
         for (UserInfo user : users) {
             when(mUm.getUserInfo(eq(user.id))).thenReturn(user);
+            if (user.isProfile()) {
+                when(mNm.hasParent(user)).thenReturn(true);
+                when(mNm.isProfileUser(user)).thenReturn(true);
+                when(mUserProfiles.isProfileUser(eq(user.id), any())).thenReturn(true);
+                if (user.isManagedProfile()) {
+                    when(mUserProfiles.isManagedProfileUser(user.id)).thenReturn(true);
+                }
+            }
         }
         when(mUm.getUsers()).thenReturn(users);
         when(mUm.getAliveUsers()).thenReturn(users);
@@ -213,8 +221,10 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         profileIds.add(10);
         profileIds.add(12);
         when(mUmInternal.getProfileParentId(13)).thenReturn(13);  // 13 is a full user
+        when(mUserProfiles.getProfileParentId(eq(13), any())).thenReturn(13);
         when(mUserProfiles.getCurrentProfileIds()).thenReturn(profileIds);
         when(mUmInternal.getProfileParentId(11)).thenReturn(mZero.id);
+        when(mUserProfiles.getProfileParentId(eq(11), any())).thenReturn(mZero.id);
         when(mNm.isNASMigrationDone(anyInt())).thenReturn(true);
         when(mNm.canUseManagedServices(any(), anyInt(), any())).thenReturn(true);
         mRegistry = ExtensionRegistryLite.newInstance();
@@ -704,16 +714,33 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         // if the profile's parent has that adjustment disabled.
         // User 11 is set up as a profile user of mZero in setup; user 13 is not
         mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
+        mAssistants.allowAdjustmentType(13, Adjustment.KEY_TYPE);
         mAssistants.disallowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
 
         assertThat(mAssistants.getAllowedAssistantAdjustments(11)).doesNotContain(
                 Adjustment.KEY_TYPE);
         assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+        assertThat(mAssistants.isAdjustmentAllowed(13, Adjustment.KEY_TYPE)).isTrue();
 
         // Now turn it back on for the parent; it should be considered allowed for the profile
         // (for which it was already on).
         mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(11)).contains(Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
+    }
+
+    @Test
+    public void testClassificationAdjustment_managedProfileDefaultsOff() {
+        // Turn on KEY_TYPE classification for mZero (parent) but not 11 (managed profile)
+        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+
+        // Check this doesn't apply to other adjustments if they default to allowed
+        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_SUMMARIZATION);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_SUMMARIZATION)).isTrue();
+
+        // now turn on classification for the profile user directly
+        mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
         assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
     }
 
@@ -745,6 +772,28 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
         assertThat(mAssistants.getAllowedClassificationTypes(mZero.id)).asList()
             .containsExactly(TYPE_NEWS);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testClassificationAdjustments_readWriteXml_userSetStateMaintained()
+            throws Exception {
+        // Turn on KEY_TYPE classification for mZero (parent) but not 11 (managed profile)
+        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+
+        // reload from XML; default state should persist
+        writeXmlAndReload(USER_ALL);
+
+        assertThat(mAssistants.isAdjustmentAllowed(mZero.id, Adjustment.KEY_TYPE)).isTrue();
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+
+        mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
+
+        // now that it's been set, we should still retain this information after XML reload
+        writeXmlAndReload(USER_ALL);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
     }
 
     @Test

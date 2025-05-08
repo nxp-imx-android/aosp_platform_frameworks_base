@@ -12145,6 +12145,9 @@ public class NotificationManagerService extends SystemService {
         private static final String TAG_ENABLED_TYPES = "enabled_classification_types";
         private static final String ATT_NAS_UNSUPPORTED = "unsupported_adjustments";
         private static final String ATT_USER_ID = "user";
+        // for classification only, but named a bit more generally in case this ever gets expanded
+        private static final String TAG_SET_BY_USERS = "adjustment_pref_set_by_users";
+        private static final String ATT_USER_LIST = "users";
 
         private final Object mLock = new Object();
 
@@ -12161,6 +12164,12 @@ public class NotificationManagerService extends SystemService {
 
         @GuardedBy("mLock")
         private Map<Integer, HashSet<String>> mNasUnsupported = new ArrayMap<>();
+
+        // Set of user IDs for which the classification setting was ever explicitly changed (in
+        // other words, the current setting -- allowed or disallowed -- is not default). Used for
+        // handling default behavior for profiles until the user sets a preference.
+        @GuardedBy("mLock")
+        private Set<Integer> mClassificationPrefSetByUsers = new ArraySet<>();
 
         // Map of user ID -> the disallowed packages for each adjustment key.
         // Inner map key: Adjustment key. value - list of pkgs that we shouldn't apply
@@ -12334,18 +12343,28 @@ public class NotificationManagerService extends SystemService {
         // be effectively denied for that user. In particular:
         // - if an adjustment is denied for that profile user's parent, then it is also effectively
         //   denied for that profile regardless of what the profile's current setting is.
+        // - for classification (KEY_TYPE) only, if a user hasn't explicitly enabled the adjustment
+        //   for their managed/work profile, default the setting to off.
         @GuardedBy("mLock")
         private @NonNull Set<String> deniedAdjustmentsForUser(@UserIdInt int userId) {
             Set<String> denied = new HashSet<>();
             if (mDeniedAdjustments.containsKey(userId)) {
                 denied.addAll(mDeniedAdjustments.get(userId));
             }
-            final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
-            if ((parentId != userId) && mDeniedAdjustments.containsKey(parentId)) {
-                denied.addAll(mDeniedAdjustments.get(parentId));
+            if (getUserProfiles().isProfileUser(userId, mContext)) {
+                final @UserIdInt int parentId = getUserProfiles().getProfileParentId(userId,
+                        mContext);
+                if (mDeniedAdjustments.containsKey(parentId)) {
+                    denied.addAll(mDeniedAdjustments.get(parentId));
+                }
+
+                // Managed profiles only: if the setting hasn't been explicitly set for this
+                // profile, then also consider KEY_TYPE (classification) denied.
+                if (getUserProfiles().isManagedProfileUser(userId)
+                        && !mClassificationPrefSetByUsers.contains(userId)) {
+                    denied.add(KEY_TYPE);
+                }
             }
-            // TODO: b/415768865 - add any cases where a (work/managed) profile should default to
-            //                     off unless explicitly turned on
             return denied;
         }
 
@@ -12849,7 +12868,7 @@ public class NotificationManagerService extends SystemService {
             return Log.isLoggable("notification_assistant", Log.VERBOSE);
         }
 
-        @GuardedBy("mNotificationLock")
+        @GuardedBy("mLock")
         private void addDefaultClassificationTypes(int userId) {
             // Add the default classification types if the list is empty or not present.
             // Will do so for the profile's parent if the user ID is a profile user.
@@ -12868,14 +12887,17 @@ public class NotificationManagerService extends SystemService {
             if (!android.service.notification.Flags.notificationClassification()) {
                 return;
             }
-            if (mDeniedAdjustments.containsKey(userId)) {
-                mDeniedAdjustments.get(userId).remove(key);
+            synchronized (mLock) {
+                if (mDeniedAdjustments.containsKey(userId)) {
+                    mDeniedAdjustments.get(userId).remove(key);
+                }
+                if (KEY_TYPE.equals(key)) {
+                    mClassificationPrefSetByUsers.add(userId);
+                    addDefaultClassificationTypes(userId);
+                }
             }
             for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
                 mHandler.post(() -> notifyCapabilitiesChanged(info));
-            }
-            if (KEY_TYPE.equals(key)) {
-                addDefaultClassificationTypes(userId);
             }
         }
 
@@ -12885,8 +12907,13 @@ public class NotificationManagerService extends SystemService {
             if (!android.service.notification.Flags.notificationClassification()) {
                 return;
             }
-            mDeniedAdjustments.putIfAbsent(userId, new ArraySet<>());
-            mDeniedAdjustments.get(userId).add(key);
+            synchronized (mLock) {
+                mDeniedAdjustments.putIfAbsent(userId, new ArraySet<>());
+                mDeniedAdjustments.get(userId).add(key);
+                if (KEY_TYPE.equals(key)) {
+                    mClassificationPrefSetByUsers.add(userId);
+                }
+            }
             for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
                 mHandler.post(() -> notifyCapabilitiesChanged(info));
             }
@@ -12999,6 +13026,11 @@ public class NotificationManagerService extends SystemService {
                             TextUtils.join(",", mAllowedClassificationTypes.get(user)));
                     out.endTag(null, TAG_ENABLED_TYPES);
                 }
+
+                out.startTag(null, TAG_SET_BY_USERS);
+                out.attribute(null, ATT_USER_LIST,
+                        TextUtils.join(",", mClassificationPrefSetByUsers));
+                out.endTag(null, TAG_SET_BY_USERS);
             }
         }
 
@@ -13035,7 +13067,7 @@ public class NotificationManagerService extends SystemService {
                             try {
                                 userAllowedTypes.add(Integer.parseInt(type));
                             } catch (NumberFormatException e) {
-                                Slog.wtf(TAG, "Bad type specified", e);
+                                Slog.wtf(TAG, "Bad integer specified", e);
                             }
                         }
                         mAllowedClassificationTypes.put(user, userAllowedTypes);
@@ -13052,6 +13084,18 @@ public class NotificationManagerService extends SystemService {
                     List<String> pkgList = Arrays.asList(pkgs.split(","));
                     userDeniedPackages.put(key, new ArraySet<>(pkgList));
                     mAdjustmentKeyDeniedPackages.put(user, userDeniedPackages);
+                }
+            } else if (TAG_SET_BY_USERS.equals(tag)) {
+                final String users = XmlUtils.readStringAttribute(parser, ATT_USER_LIST);
+                if (!TextUtils.isEmpty(users)) {
+                    for (String userIdString : Arrays.asList(users.split(","))) {
+                        try {
+                            mClassificationPrefSetByUsers.add(
+                                    Integer.parseInt(userIdString));
+                        } catch (NumberFormatException e) {
+                            Slog.wtf(TAG, "Bad type specified", e);
+                        }
+                    }
                 }
             }
         }
