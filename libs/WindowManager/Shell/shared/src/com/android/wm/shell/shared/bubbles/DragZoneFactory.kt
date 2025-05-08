@@ -245,6 +245,21 @@ class DragZoneFactory(
         return dragZones
     }
 
+    fun getBubbleBarDropRect(isLeftSide: Boolean): Rect {
+        val dragZoneSize =
+            if (deviceConfig.isSmallTablet) {
+                bubbleDragZoneFoldableSize
+            } else {
+                bubbleDragZoneTabletSize
+            }
+        return Rect(
+            if (isLeftSide) 0 else windowBounds.right - dragZoneSize,
+            windowBounds.bottom - dragZoneSize,
+            if (isLeftSide) dragZoneSize else windowBounds.right,
+            windowBounds.bottom
+        )
+    }
+
     private fun createDismissDragZone(): DragZone {
         return DragZone.Dismiss(
             bounds =
@@ -257,36 +272,14 @@ class DragZoneFactory(
     }
 
     private fun createBubbleCornerDragZones(showSecondDropTarget: Boolean = false): List<DragZone> {
-        val dragZoneSize =
-            if (deviceConfig.isSmallTablet) {
-                bubbleDragZoneFoldableSize
-            } else {
-                bubbleDragZoneTabletSize
-            }
         return listOf(
             DragZone.Bubble.Left(
-                bounds =
-                    RectZone(
-                        Rect(
-                            0,
-                            windowBounds.bottom - dragZoneSize,
-                            dragZoneSize,
-                            windowBounds.bottom,
-                        ),
-                    ),
+                bounds = RectZone(getBubbleBarDropRect(isLeftSide = true)),
                 dropTarget = expandedViewDropTargetLeft,
                 secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetLeft else null
             ),
             DragZone.Bubble.Right(
-                bounds =
-                    RectZone(
-                        Rect(
-                            windowBounds.right - dragZoneSize,
-                            windowBounds.bottom - dragZoneSize,
-                            windowBounds.right,
-                            windowBounds.bottom,
-                        ),
-                    ),
+                bounds = RectZone(getBubbleBarDropRect(isLeftSide = false)),
                 dropTarget = expandedViewDropTargetRight,
                 secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetRight else null
             )

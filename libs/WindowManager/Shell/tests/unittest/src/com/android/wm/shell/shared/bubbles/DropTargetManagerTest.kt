@@ -515,6 +515,44 @@ class DropTargetManagerTest {
         assertThat(runnableExecuted).isTrue()
     }
 
+    @Test
+    fun onDragUpdated_reEnterZoneWithMultipleDropTargetViews_dropTargetsShown() {
+        dropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
+        )
+        val pointX = 200
+        val pointY = 200
+        assertThat(bubbleLeftDragZone.contains(pointX, pointY)).isFalse()
+        assertThat(bubbleRightDragZone.contains(pointX, pointY)).isFalse()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerX(),
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerY()
+            )
+            animatorTestRule.advanceTimeBy(250)
+        }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(pointX, pointY)
+            animatorTestRule.advanceTimeBy(250)
+        }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerX(),
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerY()
+            )
+            animatorTestRule.advanceTimeBy(250)
+        }
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(dropTargetView.alpha).isEqualTo(1)
+        assertThat(secondDropTargetView!!.alpha).isEqualTo(1)
+        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget.rect)
+        verifyDropTargetPosition(
+            secondDropTargetView!!,
+            bubbleRightDragZoneWithSecondDropTarget.secondDropTarget!!.rect
+        )
+    }
+
     private fun verifyDropTargetPosition(rect: Rect) {
         verifyDropTargetPosition(dropTargetView, rect)
     }
