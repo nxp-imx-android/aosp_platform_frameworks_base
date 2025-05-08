@@ -28,6 +28,7 @@ import android.provider.Settings
 import android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS
 import android.util.Log
 import android.util.MathUtils
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -770,6 +771,8 @@ constructor(
             if (existingPlayer == null) {
                 bgExecutor.execute {
                     val mediaViewHolder = createMediaViewHolderInBg()
+                    mediaViewHolder.titleText.gravity = if (isRtl) Gravity.RIGHT else Gravity.LEFT
+                    mediaViewHolder.artistText.gravity = if (isRtl) Gravity.RIGHT else Gravity.LEFT
                     // Add the new player in the main thread.
                     uiExecutor.execute {
                         setupNewPlayer(key, data, curVisibleMediaKey, mediaViewHolder)
