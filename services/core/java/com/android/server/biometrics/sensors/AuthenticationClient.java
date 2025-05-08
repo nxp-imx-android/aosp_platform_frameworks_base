@@ -32,6 +32,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.security.KeyStoreAuthorization;
 import android.util.EventLog;
+import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.biometrics.BiometricsProto;
@@ -65,7 +66,7 @@ public abstract class AuthenticationClient<T, O extends AuthenticateOptions>
             STATE_STARTED_PAUSED_ATTEMPTED,
             STATE_STOPPED})
     @interface State {}
-    private static final String TAG = "Biometrics/AuthenticationClient";
+    private static final String TAG = "AuthenticationClient";
     protected final long mOperationId;
     private final boolean mIsStrongBiometric;
     private final boolean mRequireConfirmation;
@@ -180,12 +181,11 @@ public abstract class AuthenticationClient<T, O extends AuthenticateOptions>
 
         final ClientMonitorCallbackConverter listener = getListener();
 
-        if (DEBUG) {
+        if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Slog.v(TAG, "onAuthenticated(" + authenticated + ")"
                     + ", ID:" + identifier.getBiometricId()
                     + ", Owner: " + getOwnerString()
                     + ", isBP: " + isBiometricPrompt()
-                    + ", listener: " + listener
                     + ", requireConfirmation: " + mRequireConfirmation
                     + ", user: " + getTargetUserId()
                     + ", clientMonitor: " + this);
