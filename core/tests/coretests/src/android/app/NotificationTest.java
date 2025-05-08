@@ -360,6 +360,38 @@ public class NotificationTest {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    public void testGetNotificationStyle_metricStyle_withApiFlagEnabled() {
+        // FIRST -- check that this works if you use the constructor
+        Notification n = new Notification.Builder(mContext, "test")
+                .setStyle(new Notification.MetricStyle())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .build();
+        assertThat(n.extras.getString(Notification.EXTRA_TEMPLATE))
+                .isEqualTo("android.app.Notification$MetricStyle");
+        assertThat(n.getNotificationStyle()).isEqualTo(Notification.MetricStyle.class);
+
+        // SECOND -- check that this works if you just set the extra on the notification
+        n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .build();
+        n.extras.putString(Notification.EXTRA_TEMPLATE, "android.app.Notification$MetricStyle");
+        assertThat(n.getNotificationStyle()).isEqualTo(Notification.MetricStyle.class);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
+    @DisableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetNotificationStyle_metricStyle_withApiFlagDisabled() {
+        // ALTERNATIVELY -- check that this returns null if the API flag is disabled
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .build();
+        n.extras.putString(Notification.EXTRA_TEMPLATE, "android.app.Notification$MetricStyle");
+        assertThat(n.getNotificationStyle()).isNull();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_noStyle() {
         Notification n = new Notification.Builder(mContext, "test")

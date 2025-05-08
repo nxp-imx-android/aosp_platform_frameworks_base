@@ -6980,6 +6980,10 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
+  @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {
+    ctor public Notification.MetricStyle();
+  }
+
   @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
     ctor public Notification.ProgressStyle();
     method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
