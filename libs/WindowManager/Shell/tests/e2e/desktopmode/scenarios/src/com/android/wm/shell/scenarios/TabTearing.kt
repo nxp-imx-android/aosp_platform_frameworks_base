@@ -36,7 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class TabTearingDragAndDrop(val rotation: Rotation = Rotation.ROTATION_0) :
+abstract class TabTearing(val rotation: Rotation = Rotation.ROTATION_0) :
     TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
