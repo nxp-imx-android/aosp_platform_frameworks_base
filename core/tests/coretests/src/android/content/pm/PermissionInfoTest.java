@@ -36,6 +36,8 @@ public final class PermissionInfoTest {
             "6a8b96e278e58f62cfe3584022cec1d0527fcb85a9e5d2e1694eb0405be5b599";
     private static final String KNOWN_CERT_DIGEST_2 =
             "9369370ffcfdc1e92dae777252c05c483b8cbb55fa9d5fd9f6317f623ae6d8c6";
+    private static final String PURPOSE_1 = "purpose1";
+    private static final String PURPOSE_2 = "purpose2";
 
     @Test
     public void createFromParcel_returnsKnownCerts() {
@@ -59,5 +61,25 @@ public final class PermissionInfoTest {
         assertEquals(2, unparceledPermissionInfo.knownCerts.size());
         assertTrue(unparceledPermissionInfo.knownCerts.contains(KNOWN_CERT_DIGEST_1));
         assertTrue(unparceledPermissionInfo.knownCerts.contains(KNOWN_CERT_DIGEST_2));
+    }
+
+    @Test
+    public void createFromParcel_returnsValidPurposes() {
+        PermissionInfo permissionInfo = new PermissionInfo();
+        permissionInfo.requiresPurpose = true;
+        permissionInfo.validPurposes = new ArraySet<>(2);
+        permissionInfo.validPurposes.add(PURPOSE_1);
+        permissionInfo.validPurposes.add(PURPOSE_2);
+        Parcel parcel = Parcel.obtain();
+        permissionInfo.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+        PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
+
+        assertTrue(unparceledPermissionInfo.requiresPurpose);
+        assertNotNull(unparceledPermissionInfo.validPurposes);
+        assertEquals(2, unparceledPermissionInfo.validPurposes.size());
+        assertTrue(unparceledPermissionInfo.validPurposes.contains(PURPOSE_1));
+        assertTrue(unparceledPermissionInfo.validPurposes.contains(PURPOSE_2));
     }
 }
