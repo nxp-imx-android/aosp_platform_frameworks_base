@@ -20,7 +20,6 @@ import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
-import com.android.systemui.statusbar.notification.collection.SortBySectionTimeFlag
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator
@@ -105,44 +104,16 @@ constructor(
                 if (BundleUtil.isClassified(entry)) {
                     return false
                 }
-                if (SortBySectionTimeFlag.isEnabled) {
-                    return (highPriorityProvider.isHighPriorityConversation(entry) ||
-                        isConversation(entry))
-                } else {
-                    return highPriorityProvider.isHighPriorityConversation(entry)
-                }
+                return (highPriorityProvider.isHighPriorityConversation(entry)
+                        || isConversation(entry))
             }
 
             override fun getComparator(): NotifComparator? {
-                return if (SortBySectionTimeFlag.isEnabled) null else notifComparator
+                return null
             }
 
             override fun getHeaderNodeController(): NodeController? =
                 conversationHeaderNodeController
-        }
-
-    val peopleSilentSectioner =
-        object : NotifSectioner("People(silent)", BUCKET_PEOPLE) {
-            // Because the peopleAlertingSectioner is above this one, it will claim all
-            // conversations
-            // that are alerting. All remaining conversations must be silent.
-            override fun isInSection(entry: PipelineEntry): Boolean {
-                SortBySectionTimeFlag.assertInLegacyMode()
-                if (BundleUtil.isClassified(entry)) {
-                    return false
-                }
-                return isConversation(entry)
-            }
-
-            override fun getComparator(): NotifComparator {
-                SortBySectionTimeFlag.assertInLegacyMode()
-                return notifComparator
-            }
-
-            override fun getHeaderNodeController(): NodeController? {
-                SortBySectionTimeFlag.assertInLegacyMode()
-                return conversationHeaderNodeController
-            }
         }
 
     override fun attach(pipeline: NotifPipeline) {

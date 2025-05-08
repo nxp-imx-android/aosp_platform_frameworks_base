@@ -2774,12 +2774,9 @@ public class Notification implements Parcelable
     public Notification()
     {
         this.when = System.currentTimeMillis();
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        } else {
-            this.creationTime = System.currentTimeMillis();
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
+
         this.priority = PRIORITY_DEFAULT;
     }
 
@@ -2790,10 +2787,9 @@ public class Notification implements Parcelable
     public Notification(Context context, int icon, CharSequence tickerText, long when,
             CharSequence contentTitle, CharSequence contentText, Intent contentIntent)
     {
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
+
         new Builder(context)
                 .setWhen(when)
                 .setSmallIcon(icon)
@@ -2823,12 +2819,8 @@ public class Notification implements Parcelable
         this.icon = icon;
         this.tickerText = tickerText;
         this.when = when;
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        } else {
-            this.creationTime = System.currentTimeMillis();
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
     }
 
     /**
@@ -7657,10 +7649,6 @@ public class Notification implements Parcelable
                 mN.extras.putAll(saveExtras);
             }
 
-            if (!Flags.sortSectionByTime()) {
-                mN.creationTime = System.currentTimeMillis();
-            }
-
             // lazy stuff from mContext; see comment in Builder(Context, Notification)
             Notification.addFieldsFromContext(mContext, mN);
 
@@ -8258,10 +8246,8 @@ public class Notification implements Parcelable
      * @hide
      */
     public long getWhen() {
-        if (Flags.sortSectionByTime()) {
-            if (when == 0) {
-                return creationTime;
-            }
+        if (when == 0) {
+            return creationTime;
         }
         return when;
     }
@@ -8271,10 +8257,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean showsTime() {
-        if (Flags.sortSectionByTime()) {
-            return extras.getBoolean(EXTRA_SHOW_WHEN);
-        }
-        return when != 0 && extras.getBoolean(EXTRA_SHOW_WHEN);
+        return extras.getBoolean(EXTRA_SHOW_WHEN);
     }
 
     /**
@@ -8282,10 +8265,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean showsChronometer() {
-        if (Flags.sortSectionByTime()) {
-            return extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
-        }
-        return when != 0 && extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
+        return extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
     }
 
     /**

@@ -2397,12 +2397,6 @@ public class NotificationTest {
                 .setWhen(0)
                 .build();
 
-        mSetFlagsRule.disableFlags(Flags.FLAG_SORT_SECTION_BY_TIME);
-
-        assertThat(n.getWhen()).isEqualTo(0);
-
-        mSetFlagsRule.enableFlags(Flags.FLAG_SORT_SECTION_BY_TIME);
-
         assertThat(n.getWhen()).isEqualTo(n.creationTime);
     }
 
@@ -2411,12 +2405,6 @@ public class NotificationTest {
         Notification n = new Notification.Builder(mContext, "test")
                 .setWhen(9)
                 .build();
-
-        mSetFlagsRule.disableFlags(Flags.FLAG_SORT_SECTION_BY_TIME);
-
-        assertThat(n.getWhen()).isEqualTo(9);
-
-        mSetFlagsRule.enableFlags(Flags.FLAG_SORT_SECTION_BY_TIME);
 
         assertThat(n.getWhen()).isEqualTo(9);
     }

@@ -19,7 +19,6 @@ import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationClassificationFlag
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
-import com.android.systemui.statusbar.notification.collection.SortBySectionTimeFlag
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
@@ -130,9 +129,6 @@ constructor(
         mOrderedSections.add(colorizedFgsCoordinator.sectioner) // ForegroundService
         mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
         mOrderedSections.add(conversationCoordinator.peopleAlertingSectioner) // People Alerting
-        if (!SortBySectionTimeFlag.isEnabled) {
-            mOrderedSections.add(conversationCoordinator.peopleSilentSectioner) // People Silent
-        }
         mOrderedSections.add(rankingCoordinator.alertingSectioner) // Alerting
         if (NotificationClassificationFlag.isEnabled && !NotificationBundleUi.isEnabled) {
             mOrderedSections.add(bundleCoordinator.newsSectioner)
@@ -144,19 +140,9 @@ constructor(
         mOrderedSections.add(rankingCoordinator.minimizedSectioner) // Minimized
 
         sectionStyleProvider.setMinimizedSections(setOf(rankingCoordinator.minimizedSectioner))
-        if (SortBySectionTimeFlag.isEnabled) {
-            sectionStyleProvider.setSilentSections(
-                listOf(rankingCoordinator.silentSectioner, rankingCoordinator.minimizedSectioner)
-            )
-        } else {
-            sectionStyleProvider.setSilentSections(
-                listOf(
-                    conversationCoordinator.peopleSilentSectioner,
-                    rankingCoordinator.silentSectioner,
-                    rankingCoordinator.minimizedSectioner,
-                )
-            )
-        }
+        sectionStyleProvider.setSilentSections(
+            listOf(rankingCoordinator.silentSectioner, rankingCoordinator.minimizedSectioner)
+        )
     }
 
     /**

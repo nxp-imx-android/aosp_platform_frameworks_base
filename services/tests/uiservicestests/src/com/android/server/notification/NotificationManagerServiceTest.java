@@ -27,7 +27,6 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
-import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -8724,7 +8723,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.app.Flags.FLAG_SORT_SECTION_BY_TIME})
     public void testVisualDifference_userInitiatedJob() {
         Notification.Builder nb1 = new Notification.Builder(mContext, "")
                 .setContentTitle("foo");
@@ -17394,7 +17392,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_newNotification_noisy_matchesSbn() throws Exception {
         NotificationRecord nr = generateNotificationRecord(mTestNotificationChannel, mUserId);
 
@@ -17408,7 +17405,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_newNotification_silent_matchesSbn() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);
@@ -17423,7 +17419,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_silentSameText_originalPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);
@@ -17443,7 +17438,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_silentNewText_newPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, 0, mUserId);
@@ -17468,7 +17462,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_noisySameText_newPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);

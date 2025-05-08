@@ -30,7 +30,6 @@ import static android.app.Flags.lifetimeExtensionRefactor;
 import static android.app.Flags.nmSummarization;
 import static android.app.Flags.nmSummarizationUi;
 import static android.app.Flags.notificationClassificationUi;
-import static android.app.Flags.sortSectionByTime;
 import static android.app.Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.Notification.EXTRA_LARGE_ICON_BIG;
@@ -9953,10 +9952,8 @@ public class NotificationManagerService extends SystemService {
                         r.isUpdate = true;
                         final boolean isInterruptive = isVisuallyInterruptive(old, r);
                         r.setTextChanged(isInterruptive);
-                        if (sortSectionByTime()) {
-                            if (isInterruptive) {
-                                r.resetRankingTime();
-                            }
+                        if (isInterruptive) {
+                            r.resetRankingTime();
                         }
                     }
 
@@ -10138,26 +10135,14 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        if (sortSectionByTime()) {
-            // Ignore visual interruptions from FGS/UIJs because users
-            // consider them one 'session'. Count them for everything else.
-            if (r.getSbn().getNotification().isFgsOrUij()) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is not interruptive: FGS/UIJ");
-                }
-                return false;
+        // Ignore visual interruptions from FGS/UIJs because users
+        // consider them one 'session'. Count them for everything else.
+        if (r.getSbn().getNotification().isFgsOrUij()) {
+            if (DEBUG_INTERRUPTIVENESS) {
+                Slog.v(TAG, "INTERRUPTIVENESS: "
+                        + r.getKey() + " is not interruptive: FGS/UIJ");
             }
-        } else {
-            // Ignore visual interruptions from foreground services because users
-            // consider them one 'session'. Count them for everything else.
-            if ((r.getSbn().getNotification().flags & FLAG_FOREGROUND_SERVICE) != 0) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is not interruptive: foreground service");
-                }
-                return false;
-            }
+            return false;
         }
 
         final String oldTitle = String.valueOf(oldN.extras.get(EXTRA_TITLE));

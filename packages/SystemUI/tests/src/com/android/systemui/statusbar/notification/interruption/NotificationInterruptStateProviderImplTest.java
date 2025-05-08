@@ -537,21 +537,6 @@ public class NotificationInterruptStateProviderImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SORT_SECTION_BY_TIME)
-    public void testShouldHeadsUp_oldWhen_whenZero() {
-        ensureStateForHeadsUpWhenAwake();
-
-        NotificationEntry entry = createNotification(IMPORTANCE_HIGH);
-        entry.getSbn().getNotification().when = 0L;
-
-        assertThat(mNotifInterruptionStateProvider.shouldHeadsUp(entry)).isTrue();
-
-        verify(mLogger, never()).logNoHeadsUpOldWhen(any(), anyLong(), anyLong());
-        verify(mLogger).logMaybeHeadsUpDespiteOldWhen(eq(entry), eq(0L), anyLong(),
-                eq("when <= 0"));
-    }
-
-    @Test
     public void testShouldHeadsUp_oldWhen_whenNegative() {
         ensureStateForHeadsUpWhenAwake();
 
