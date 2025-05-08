@@ -16,8 +16,10 @@
 
 package com.android.wm.shell.compatui.letterbox
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.view.SurfaceControl
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListener
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
 
 // The key to use for identify the letterbox sessions.
 data class LetterboxKey(val displayId: Int, val taskId: Int)
@@ -38,3 +40,9 @@ data class LetterboxInputItems(
     val inputDetector: LetterboxInputDetector,
     val gestureListener: ReachabilityGestureListener
 )
+
+/**
+ * Extract the [LetterboxKey] from the [LetterboxLifecycleEvent].
+ */
+fun RunningTaskInfo.letterboxKey(): LetterboxKey =
+    LetterboxKey(displayId = displayId, taskId = taskId)
