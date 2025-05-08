@@ -32,7 +32,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.flags.Flags.disableDrawWakeLock;
 
 import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
-import static com.android.window.flags.Flags.noConsecutiveVisibilityEvents;
 import static com.android.window.flags.Flags.offloadColorExtraction;
 
 import android.animation.AnimationHandler;
@@ -1523,27 +1522,10 @@ public abstract class WallpaperService extends Service {
                                 // Trigger onVisibilityChanged(true) then onVisibilityChanged(false)
                                 // to make sure the wallpaper is stopped even after the events
                                 // onSurfaceCreated() and onSurfaceChanged().
-                                if (noConsecutiveVisibilityEvents()) {
-                                    if (DEBUG) Log.v(TAG, "toggling onVisibilityChanged");
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
-                                    onVisibilityChanged(true);
-                                    Trace.endSection();
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-false");
-                                    onVisibilityChanged(false);
-                                    Trace.endSection();
-                                } else {
-                                    if (DEBUG) {
-                                        Log.v(TAG, "onVisibilityChanged(true) at surface: " + this);
-                                    }
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
-                                    onVisibilityChanged(true);
-                                    Trace.endSection();
-                                }
-                            }
-                            if (!noConsecutiveVisibilityEvents()) {
-                                if (DEBUG) {
-                                    Log.v(TAG, "onVisibilityChanged(false) at surface: " + this);
-                                }
+                                if (DEBUG) Log.v(TAG, "toggling onVisibilityChanged");
+                                Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
+                                onVisibilityChanged(true);
+                                Trace.endSection();
                                 Trace.beginSection("WPMS.Engine.onVisibilityChanged-false");
                                 onVisibilityChanged(false);
                                 Trace.endSection();
