@@ -271,6 +271,14 @@ flag {
 }
 
 flag {
+    name: "app_compat_warnings_16kb"
+    namespace: "devoptions_settings"
+    description: "Feature flag to enable page size app compat warnings based on the alignment checks."
+    bug: "418267369"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "remove_hidden_module_usage"
     namespace: "modularization"
     description: "Feature flag to remove the consumption of the hidden module status (ModuleInfo#IsHidden) in the Android source tree."

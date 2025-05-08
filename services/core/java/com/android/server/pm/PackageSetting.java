@@ -40,6 +40,8 @@ import android.os.UserHandle;
 import android.os.incremental.IncrementalManager;
 import android.service.pm.PackageProto;
 import android.service.pm.PackageProto.UserInfoProto.ArchiveState.ArchiveActivityInfo;
+import android.system.Os;
+import android.system.OsConstants;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -1860,19 +1862,26 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         boolean elfNotAligned = (mPageSizeAppCompatFlags
                 & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_ELF_NOT_ALIGNED) != 0;
 
+        // On 4 KB device, show a warning to fix compatibility.
+        boolean is4kbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == 4096;
         if (uncompressedLibsNotAligned && elfNotAligned) {
-            return context.getText(
-                            com.android.internal.R.string.page_size_compat_apk_and_elf_warning)
+            return context.getText(is4kbDevice
+                            ? com.android.internal.R.string.page_size_compat_apk_and_elf_warning_4kb
+                     : com.android.internal.R.string.page_size_compat_apk_and_elf_warning)
                     .toString();
         }
 
         if (uncompressedLibsNotAligned) {
-            return context.getText(com.android.internal.R.string.page_size_compat_apk_warning)
+            return context.getText(is4kbDevice
+                            ? com.android.internal.R.string.page_size_compat_apk_warning_4kb
+                            : com.android.internal.R.string.page_size_compat_apk_warning)
                     .toString();
         }
 
         if (elfNotAligned) {
-            return context.getText(com.android.internal.R.string.page_size_compat_elf_warning)
+            return context.getText(is4kbDevice
+                            ? com.android.internal.R.string.page_size_compat_elf_warning_4kb
+                            : com.android.internal.R.string.page_size_compat_elf_warning)
                     .toString();
         }
 
