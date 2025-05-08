@@ -2541,10 +2541,12 @@ public class LockSettingsService extends ILockSettings.Stub {
      * reporting the password changed.
      */
     private void notifyPasswordChanged(LockscreenCredential newCredential, @UserIdInt int userId) {
+        // Must compute the PasswordMetrics for newCredential outside the mHandler asynchronous
+        // call, as once the handler actually runs the thread the newCredential parameter may be
+        // zeroized by the caller.
+        PasswordMetrics newMetrics = PasswordMetrics.computeForCredential(newCredential);
         mHandler.post(() -> {
-            mInjector.getDevicePolicyManager().reportPasswordChanged(
-                    PasswordMetrics.computeForCredential(newCredential),
-                    userId);
+            mInjector.getDevicePolicyManager().reportPasswordChanged(newMetrics, userId);
             LocalServices.getService(WindowManagerInternal.class).reportPasswordChanged(userId);
         });
     }
