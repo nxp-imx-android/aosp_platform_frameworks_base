@@ -28,11 +28,7 @@ import android.os.Handler
 import android.os.UserHandle
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
-import android.util.DisplayUtils
-import android.view.DisplayInfo
 import android.view.KeyEvent
-import androidx.annotation.ArrayRes
-import androidx.annotation.DrawableRes
 import androidx.core.content.edit
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.assist.AssistManager
@@ -40,9 +36,7 @@ import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLoggin
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.res.R
 import com.android.systemui.shared.Flags
-import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -192,60 +186,6 @@ constructor(
         }
     }
 
-    override suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo {
-        val displayInfo = DisplayInfo()
-        context.display.getDisplayInfo(displayInfo)
-        val displayIndex =
-            DisplayUtils.getDisplayUniqueIdConfigIndex(context.resources, displayInfo.uniqueId)
-        val maxResDisplayMode =
-            DisplayUtils.getMaximumResolutionDisplayMode(displayInfo.supportedModes)
-        val ratio =
-            if (maxResDisplayMode == null) {
-                1f
-            } else {
-                DisplayUtils.getPhysicalPixelDisplaySizeRatio(
-                    /*physicalWidth = */ maxResDisplayMode.physicalWidth,
-                    /*physicalHeight = */ maxResDisplayMode.physicalHeight,
-                    /*currentWidth = */ displayInfo.naturalWidth,
-                    /*currentHeight = */ displayInfo.naturalHeight,
-                )
-            }
-        return SqueezeEffectCornersInfo(
-            topResourceId =
-                getDrawableResource(
-                    displayIndex = displayIndex,
-                    arrayResId = R.array.config_roundedCornerTopDrawableArray,
-                    backupDrawableId = R.drawable.rounded_corner_top,
-                ),
-            bottomResourceId =
-                getDrawableResource(
-                    displayIndex = displayIndex,
-                    arrayResId = R.array.config_roundedCornerBottomDrawableArray,
-                    backupDrawableId = R.drawable.rounded_corner_bottom,
-                ),
-            physicalPixelDisplaySizeRatio = ratio,
-        )
-    }
-
-    @DrawableRes
-    private fun getDrawableResource(
-        displayIndex: Int,
-        @ArrayRes arrayResId: Int,
-        @DrawableRes backupDrawableId: Int,
-    ): Int {
-        val drawableResource: Int
-        context.resources.obtainTypedArray(arrayResId).let { array ->
-            drawableResource =
-                if (displayIndex >= 0 && displayIndex < array.length()) {
-                    array.getResourceId(displayIndex, backupDrawableId)
-                } else {
-                    backupDrawableId
-                }
-            array.recycle()
-        }
-        return drawableResource
-    }
-
     private fun loadIsInvocationEffectEnabledByAssistant(): Boolean {
         val persistedForUser =
             sharedPreferences.getInt(
@@ -279,6 +219,8 @@ constructor(
         ) { prerequisites ->
             prerequisites.all { it ?: false } && Flags.enableLppAssistInvocationEffect()
         }
+
+    override val isSqueezeEffectHapticEnabled = Flags.enableLppAssistInvocationHapticEffect()
 
     private fun getIsPowerButtonLongPressConfiguredToLaunchAssistant() =
         globalSettings.getInt(

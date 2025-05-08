@@ -85,7 +85,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         AppZoomOutDisplayAreaOrganizer appDisplayAreaOrganizer = new AppZoomOutDisplayAreaOrganizer(
                 context, displayLayout, mainExecutor);
         TopLevelZoomOutDisplayAreaOrganizer topLevelDisplayAreaOrganizer =
-                new TopLevelZoomOutDisplayAreaOrganizer(displayLayout, mainExecutor);
+                new TopLevelZoomOutDisplayAreaOrganizer(displayLayout, context, mainExecutor);
         return new AppZoomOutController(context, shellInit, shellTaskOrganizer, displayController,
                 appDisplayAreaOrganizer, topLevelDisplayAreaOrganizer, mainExecutor);
     }
@@ -135,13 +135,13 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
 
     /**
      * Scales all content on the screen belonging to
-     * {@link DisplayAreaOrganizer#FEATURE_WINDOWED_MAGNIFICATION}.
+     * {@link DisplayAreaOrganizer#FEATURE_WINDOWED_MAGNIFICATION} and applies a cropping.
      *
-     * @param scale scale factor to be applied to the surfaces.
+     * @param progress progress to be applied to the top-level zoom effect.
      */
-    private void setTopLevelScale(float scale) {
+    private void setTopLevelProgress(float progress) {
         if (enableLppAssistInvocationEffect()) {
-            mTopLevelDisplayAreaOrganizer.setScale(scale);
+            mTopLevelDisplayAreaOrganizer.setProgress(progress);
         }
     }
 
@@ -197,8 +197,8 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         }
 
         @Override
-        public void setTopLevelScale(float scale) {
-            mMainExecutor.execute(() -> AppZoomOutController.this.setTopLevelScale(scale));
+        public void setTopLevelProgress(float progress) {
+            mMainExecutor.execute(() -> AppZoomOutController.this.setTopLevelProgress(progress));
         }
     }
 }
