@@ -82,6 +82,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests for the shell task organizer.
@@ -673,6 +674,29 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testSelfRemovingVanishedTaskListenersCallback() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_FULLSCREEN);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        AtomicInteger calledListenerCount = new AtomicInteger(0);
+        ShellTaskOrganizer.TaskVanishedListener listener1 = getSelfRemovingVanishedListener(
+                mOrganizer, calledListenerCount);
+        ShellTaskOrganizer.TaskVanishedListener listener2 = getSelfRemovingVanishedListener(
+                mOrganizer, calledListenerCount);
+        mOrganizer.addTaskVanishedListener(listener1);
+        mOrganizer.addTaskVanishedListener(listener2);
+        mOrganizer.onTaskVanished(task1);
+
+        assertEquals(2, calledListenerCount.get());
+
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+        mOrganizer.onTaskVanished(task1);
+
+        // Count should remain the same if no new vanished listeners are added.
+        assertEquals(2, calledListenerCount.get());
+    }
+
+    @Test
     public void testHomeTaskOnDefaultDisplay() {
         RunningTaskInfo taskInfo = createTaskInfo(
                 /* taskId= */ 1, ACTIVITY_TYPE_HOME, DEFAULT_DISPLAY);
@@ -713,6 +737,17 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         mOrganizer.onTaskAppeared(taskInfo, taskLeash);
         assertNull(mOrganizer.getHomeTaskSurface(/* displayId= */ 0));
         assertEquals(mOrganizer.getHomeTaskSurface(/* displayId= */ 2), taskLeash);
+    }
+
+    private static ShellTaskOrganizer.TaskVanishedListener getSelfRemovingVanishedListener(
+            ShellTaskOrganizer shellTaskOrganizer, AtomicInteger taskVanishedCalls) {
+        return new ShellTaskOrganizer.TaskVanishedListener() {
+            @Override
+            public void onTaskVanished(RunningTaskInfo taskInfo) {
+                shellTaskOrganizer.removeTaskVanishedListener(this);
+                taskVanishedCalls.incrementAndGet();
+            }
+        };
     }
 
     private static RunningTaskInfo createTaskInfo(int taskId, int windowingMode) {

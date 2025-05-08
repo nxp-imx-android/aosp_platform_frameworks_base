@@ -41,7 +41,6 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.ArrayMap;
-import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
@@ -72,6 +71,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Unified task organizer for all components in the shell.
@@ -173,12 +173,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private final SparseArray<LocusId> mVisibleTasksWithLocusId = new SparseArray<>();
 
     /** @see #addLocusIdListener */
-    private final ArraySet<LocusIdListener> mLocusIdListeners = new ArraySet<>();
+    private final CopyOnWriteArrayList<LocusIdListener> mLocusIdListeners =
+            new CopyOnWriteArrayList<>();
 
-    private final ArraySet<FocusListener> mFocusListeners = new ArraySet<>();
+    private final CopyOnWriteArrayList<FocusListener> mFocusListeners =
+            new CopyOnWriteArrayList<>();
 
     // Listeners that should be notified when a task is removed
-    private final ArraySet<TaskVanishedListener> mTaskVanishedListeners = new ArraySet<>();
+    private final CopyOnWriteArrayList<TaskVanishedListener> mTaskVanishedListeners =
+            new CopyOnWriteArrayList<>();
 
     private final Object mLock = new Object();
     private StartingWindowController mStartingWindow;
@@ -627,8 +630,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                     || mLastFocusedTaskInfo.getWindowingMode() != taskInfo.getWindowingMode())
                     && isFocusedOrHome;
             if (focusTaskChanged) {
-                for (int i = 0; i < mFocusListeners.size(); i++) {
-                    mFocusListeners.valueAt(i).onFocusTaskChanged(taskInfo);
+                for (FocusListener focusListener : mFocusListeners) {
+                    focusListener.onFocusTaskChanged(taskInfo);
                 }
                 mLastFocusedTaskInfo = taskInfo;
             }
@@ -781,8 +784,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     private void notifyLocusIdChange(int taskId, LocusId locus, boolean visible) {
-        for (int i = 0; i < mLocusIdListeners.size(); i++) {
-            mLocusIdListeners.valueAt(i).onVisibilityChanged(taskId, locus, visible);
+        for (LocusIdListener l : mLocusIdListeners) {
+            l.onVisibilityChanged(taskId, locus, visible);
         }
     }
 
