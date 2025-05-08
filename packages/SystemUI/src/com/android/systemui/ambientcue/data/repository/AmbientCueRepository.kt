@@ -76,7 +76,6 @@ constructor(
                 val smartSpaceListener = OnTargetsAvailableListener { targets ->
                     val actions =
                         targets
-                            .filter { target -> target.featureType == AMBIENT_ACTION_FEATURE }
                             .filter { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }
                             .flatMap { target -> target.actionChips }
                             .map { chip ->
@@ -116,8 +115,6 @@ constructor(
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     companion object {
-        // Privately defined card type, exclusive for ambient actions
-        @VisibleForTesting const val AMBIENT_ACTION_FEATURE = 72
         // Surface that PCC wants to push cards into
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
         // Timeout to hide cuebar if it wasn't interacted with
