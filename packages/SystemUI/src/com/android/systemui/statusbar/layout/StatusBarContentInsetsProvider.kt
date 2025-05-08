@@ -573,7 +573,7 @@ private fun getStatusBarContentBounds(
     bottomAlignedMargin: Int,
     statusBarContentHeight: Int,
 ): Rect {
-    val insetTop = getInsetTop(bottomAlignedMargin, statusBarContentHeight, sbHeight)
+    val insetTop = getInsetTop(bottomAlignedMargin, statusBarContentHeight, sbHeight, sysUICutout)
 
     val logicalDisplayWidth = if (targetRotation.isHorizontal()) height else width
 
@@ -666,8 +666,11 @@ private fun getInsetTop(
     bottomAlignedMargin: Int,
     statusBarContentHeight: Int,
     statusBarHeight: Int,
+    sysUICutout: SysUICutoutInformation?,
 ): Int {
-    val bottomAlignmentEnabled = bottomAlignedMargin >= 0
+    // This bottom aligned margin is only intended for displays with a cutout, so that the
+    // content can be aligned with the cutout, when it isn't centered.
+    val bottomAlignmentEnabled = bottomAlignedMargin >= 0 && sysUICutout != null
     if (!bottomAlignmentEnabled) {
         return 0
     }
