@@ -641,10 +641,17 @@ public class MediaQualityService extends SystemService {
                     }
                     long handle = -1;
                     cursor.moveToFirst();
-                    int colIndex = cursor.getColumnIndex(BaseParameters.PARAMETER_ID);
-                    if (colIndex != -1) {
-                        handle = cursor.getLong(colIndex);
+                    PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
+                            cursor, mPictureProfileTempIdMap);
+                    handle = p.getHandle().getId();
+                    PictureProfile current = mHandleToPictureProfile.get(handle);
+                    if (current != null) {
+                        long currentHandle = current.getHandle().getId();
+                        mHalNotifier.notifyHalOnPictureProfileChange(
+                                currentHandle, current.getParameters());
+                        return currentHandle;
                     }
+                    mHalNotifier.notifyHalOnPictureProfileChange(handle, p.getParameters());
                     return handle;
                 }
             }
