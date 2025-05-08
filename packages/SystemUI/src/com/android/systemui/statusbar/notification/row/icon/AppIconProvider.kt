@@ -64,6 +64,13 @@ interface AppIconProvider {
     /**
      * Loads the skeleton (black and white)-themed icon corresponding to [packageName] into cache,
      * or fetches it from there if already present. This should only be called from the background.
+     *
+     * @param packageName the name of the app's package
+     * @param context the app's context (NOT SystemUI)
+     *
+     * TODO: b/416215382 - if we get the SystemUI context here instead of the app's, and the package
+     *   is not installed on the main profile, this will throw a [NameNotFoundException]. We should
+     *   update the API to take a userId directly to avoid such issues.
      */
     @Throws(NameNotFoundException::class)
     @WorkerThread

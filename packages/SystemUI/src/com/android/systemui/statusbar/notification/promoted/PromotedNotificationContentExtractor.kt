@@ -36,6 +36,7 @@ import android.app.Notification.InboxStyle
 import android.app.Notification.ProgressStyle
 import android.app.Person
 import android.content.Context
+import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import com.android.systemui.Flags
@@ -243,7 +244,16 @@ constructor(
     private fun StatusBarNotification.skeletonAppIcon(): NotifIcon.AppIcon? {
         if (!android.app.Flags.notificationsRedesignAppIcons()) return null
         if (!notificationIconStyleProvider.shouldShowAppIcon(this, context)) return null
-        return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, context))
+        return try {
+            NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, context))
+        } catch (e: NameNotFoundException) {
+            // TODO: b/416215382 - Because we're passing the SystemUI context to AppIconProvider
+            //  instead of the app's context, the fetch method can throw a NameNotFoundException
+            //  if the app is not installed on the main profile. When this happens, we fall back to
+            //  the small icon here as a temporary workaround, but this will be removed when the
+            //  AppIconProvided is updated to receive a userId instead of a context.
+            null
+        }
     }
 
     private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
