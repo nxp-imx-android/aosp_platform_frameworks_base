@@ -477,7 +477,10 @@ class UserController implements Handler.Callback {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
             mDelayUserDataLocking = delayUserDataLocking;
-            mBackgroundUserScheduledStopTimeSecs = backgroundUserScheduledStopTimeSecs;
+            if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
+                // If flag is off, default value of -1 disables scheduling (but not infrastructure).
+                mBackgroundUserScheduledStopTimeSecs = backgroundUserScheduledStopTimeSecs;
+            }
             mInitialized = true;
         }
     }

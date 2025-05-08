@@ -643,7 +643,9 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users after a user-switch. */
     @Test
     public void testScheduleStopOfBackgroundUser_switch() {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -693,7 +695,9 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users that were started in the background. */
     @Test
     public void testScheduleStopOfBackgroundUser_startInBackground() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -733,7 +737,9 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if current user is a guest. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleWhenGuest() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -789,7 +795,9 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if user with a scheduled alarm. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleIfAlarm() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
