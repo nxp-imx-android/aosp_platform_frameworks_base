@@ -56,7 +56,7 @@ fun AmbientCueContainer(
         )
         NavBarPill(
             actions = actions,
-            navBarWidth = 90.dp, // TODO: b/414507396 - Replace with the width of the navbar
+            navBarWidth = 110.dp, // TODO: b/414507396 - Replace with the width of the navbar
             visible = visible,
             expanded = expanded,
             modifier = Modifier.align(Alignment.BottomCenter),
