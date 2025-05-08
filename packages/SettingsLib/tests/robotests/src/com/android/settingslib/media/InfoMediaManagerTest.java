@@ -16,8 +16,10 @@
 
 package com.android.settingslib.media;
 
+import static android.media.MediaRoute2Info.TYPE_BLE_HEADSET;
 import static android.media.MediaRoute2Info.TYPE_BLUETOOTH_A2DP;
 import static android.media.MediaRoute2Info.TYPE_BUILTIN_SPEAKER;
+import static android.media.MediaRoute2Info.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER;
 import static android.media.MediaRoute2Info.TYPE_REMOTE_SPEAKER;
 import static android.media.MediaRoute2Info.TYPE_REMOTE_TV;
 import static android.media.MediaRoute2Info.TYPE_USB_DEVICE;
@@ -53,6 +55,7 @@ import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaSessionManager;
 import android.os.Build;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -539,7 +542,8 @@ public class InfoMediaManagerTest {
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
 
         final MediaRoute2Info route2Info = mock(MediaRoute2Info.class);
-        final MediaDevice device = new InfoMediaDevice(mContext, route2Info, /* item */ null);
+        final MediaDevice device = new InfoMediaDevice(mContext,
+                route2Info, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         final List<String> list = new ArrayList<>();
         list.add(TEST_ID);
@@ -558,7 +562,8 @@ public class InfoMediaManagerTest {
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
 
         final MediaRoute2Info route2Info = mock(MediaRoute2Info.class);
-        final MediaDevice device = new InfoMediaDevice(mContext, route2Info, /* item */ null);
+        final MediaDevice device = new InfoMediaDevice(mContext,
+                route2Info, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         final List<String> list = new ArrayList<>();
         list.add("fake_id");
@@ -578,7 +583,8 @@ public class InfoMediaManagerTest {
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
 
         final MediaRoute2Info route2Info = mock(MediaRoute2Info.class);
-        final MediaDevice device = new InfoMediaDevice(mContext, route2Info, /* item */ null);
+        final MediaDevice device = new InfoMediaDevice(mContext,
+                route2Info, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         final List<String> list = new ArrayList<>();
         list.add(TEST_ID);
@@ -597,7 +603,8 @@ public class InfoMediaManagerTest {
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
 
         final MediaRoute2Info route2Info = mock(MediaRoute2Info.class);
-        final MediaDevice device = new InfoMediaDevice(mContext, route2Info, /* item */ null);
+        final MediaDevice device = new InfoMediaDevice(mContext,
+                route2Info, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         final List<String> list = new ArrayList<>();
         list.add("fake_id");
@@ -612,6 +619,109 @@ public class InfoMediaManagerTest {
         assertThat(mInfoMediaManager.removeDeviceFromPlayMedia(device)).isFalse();
     }
 
+    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
+    @Test
+    public void populateDynamicRouteAttributes_checkList() {
+        final CachedBluetoothDeviceManager cachedBluetoothDeviceManager =
+                mock(CachedBluetoothDeviceManager.class);
+        final CachedBluetoothDevice cachedDevice = mock(CachedBluetoothDevice.class);
+        final List<MediaRoute2Info> mediaRoute2Infos = new ArrayList<>();
+
+        final MediaRoute2Info phoneRoute = mock(MediaRoute2Info.class);
+        when(phoneRoute.getName()).thenReturn("PHONE");
+        when(phoneRoute.isSystemRoute()).thenReturn(true);
+        when(phoneRoute.getId()).thenReturn(TEST_ID_1);
+        when(phoneRoute.getType()).thenReturn(TYPE_BUILTIN_SPEAKER);
+        mediaRoute2Infos.add(phoneRoute);
+
+        final MediaRoute2Info bluetoothRoute = mock(MediaRoute2Info.class);
+        when(cachedDevice.getName()).thenReturn("BLUETOOTH");
+        when(cachedDevice.getAddress()).thenReturn("00:00:00:00:00:00");
+        when(bluetoothRoute.isSystemRoute()).thenReturn(true);
+        when(bluetoothRoute.getId()).thenReturn(TEST_ID_2);
+        when(bluetoothRoute.getType()).thenReturn(TYPE_BLE_HEADSET);
+        when(bluetoothRoute.getAddress()).thenReturn("00:00:00:00:00:00");
+        when(mLocalBluetoothManager.getCachedDeviceManager())
+                .thenReturn(cachedBluetoothDeviceManager);
+        when(cachedBluetoothDeviceManager.findDevice(any(BluetoothDevice.class)))
+                .thenReturn(cachedDevice);
+
+        mediaRoute2Infos.add(bluetoothRoute);
+
+        final MediaRoute2Info complexRoute = mock(MediaRoute2Info.class);
+        when(complexRoute.getName()).thenReturn("COMPLEX");
+        when(complexRoute.isSystemRoute()).thenReturn(false);
+        when(complexRoute.getId()).thenReturn(TEST_ID_3);
+        when(complexRoute.getType()).thenReturn(TYPE_REMOTE_AUDIO_VIDEO_RECEIVER);
+        mediaRoute2Infos.add(complexRoute);
+
+        final MediaRoute2Info infoRoute = mock(MediaRoute2Info.class);
+        when(infoRoute.getName()).thenReturn("INFO");
+        when(infoRoute.isSystemRoute()).thenReturn(false);
+        when(infoRoute.getId()).thenReturn(TEST_ID_4);
+        when(infoRoute.getType()).thenReturn(TYPE_REMOTE_SPEAKER);
+        mediaRoute2Infos.add(infoRoute);
+
+        when(mRouter2.getRoutes()).thenReturn(mediaRoute2Infos);
+
+        when(mRoutingController.getTransferableRoutes()).thenReturn(List.of(phoneRoute, infoRoute));
+        when(mRoutingController.getSelectedRoutes()).thenReturn(List.of(bluetoothRoute));
+        when(mRoutingController.getSelectableRoutes()).thenReturn(List.of(complexRoute));
+        when(mRoutingController.getDeselectableRoutes()).thenReturn(List.of(infoRoute));
+
+        mInfoMediaManager.mRouteCallback.onRoutesUpdated(mediaRoute2Infos);
+
+        when(mRouterManager.getRoutingSessions(TEST_PACKAGE_NAME))
+                .thenReturn(List.of(TEST_SYSTEM_ROUTING_SESSION));
+        List<MediaDevice> transferableDevices = mInfoMediaManager.getTransferableMediaDevices();
+        List<MediaDevice> selectedDevices = mInfoMediaManager.getSelectedMediaDevices();
+        List<MediaDevice> selectableDevices = mInfoMediaManager.getSelectableMediaDevices();
+        List<MediaDevice> deselectableDevices = mInfoMediaManager.getDeselectableMediaDevices();
+
+        assertThat(transferableDevices.size()).isEqualTo(3);
+        // The "COMPLEX" device is transferable because it's a non-system route for a system session
+        assertThat(transferableDevices.get(0).getName()).isEqualTo("COMPLEX");
+        assertThat(transferableDevices.get(0).getId()).isEqualTo(TEST_ID_3);
+        assertThat(transferableDevices.get(1).getName()).isEqualTo("This phone");
+        assertThat(transferableDevices.get(1).getId()).isEqualTo(TEST_ID_1);
+        assertThat(transferableDevices.get(2).getName()).isEqualTo("INFO");
+        assertThat(transferableDevices.get(2).getId()).isEqualTo(TEST_ID_4);
+        MediaDevice phoneDevice = transferableDevices.get(1);
+        assertThat(phoneDevice.isTransferable()).isTrue();
+        assertThat(phoneDevice.isSelected()).isFalse();
+        assertThat(phoneDevice.isSelectable()).isFalse();
+        assertThat(phoneDevice.isDeselectable()).isFalse();
+
+        assertThat(selectedDevices.size()).isEqualTo(1);
+        MediaDevice selectedDevice = selectedDevices.getFirst();
+        assertThat(selectedDevice.getName()).isEqualTo("BLUETOOTH");
+        assertThat(selectedDevice.getId()).isEqualTo("00:00:00:00:00:00");
+        assertThat(selectedDevice.isTransferable()).isFalse();
+        assertThat(selectedDevice.isSelected()).isTrue();
+        assertThat(selectedDevice.isSelectable()).isFalse();
+        assertThat(selectedDevice.isDeselectable()).isFalse();
+
+        assertThat(selectableDevices.size()).isEqualTo(1);
+        MediaDevice selectableDevice = selectableDevices.getFirst();
+        assertThat(selectableDevice.getName()).isEqualTo("COMPLEX");
+        assertThat(selectableDevice.getId()).isEqualTo(TEST_ID_3);
+        assertThat(selectableDevice.isTransferable()).isTrue();
+        assertThat(selectableDevice.isSelected()).isFalse();
+        assertThat(selectableDevice.isSelectable()).isTrue();
+        assertThat(selectableDevice.isDeselectable()).isFalse();
+
+        assertThat(deselectableDevices.size()).isEqualTo(1);
+        MediaDevice deselectableDevice = deselectableDevices.getFirst();
+        assertThat(deselectableDevice.getName()).isEqualTo("INFO");
+        assertThat(deselectableDevice.getId()).isEqualTo(TEST_ID_4);
+        assertThat(deselectableDevice.isDeselectable()).isTrue();
+        assertThat(deselectableDevice.isTransferable()).isTrue();
+        assertThat(deselectableDevice.isSelected()).isFalse();
+        assertThat(deselectableDevice.isSelectable()).isFalse();
+        assertThat(deselectableDevice.isDeselectable()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
     @Test
     public void getSelectableMediaDevice_notContainPackageName_returnEmpty() {
         final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
@@ -622,6 +732,7 @@ public class InfoMediaManagerTest {
         assertThat(mInfoMediaManager.getSelectableMediaDevices()).isEmpty();
     }
 
+    @DisableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
     @Test
     public void getTransferableMediaDevice_checkList() {
         final List<MediaRoute2Info> mediaRoute2Infos = new ArrayList<>();
@@ -631,6 +742,7 @@ public class InfoMediaManagerTest {
         when(mediaRoute2Info.getId()).thenReturn(TEST_ID);
         when(mRouterManager.getRoutingSessions(TEST_PACKAGE_NAME))
                 .thenReturn(List.of(TEST_REMOTE_ROUTING_SESSION));
+        when(mRouter2.getRoutes()).thenReturn(mediaRoute2Infos);
         when(mRoutingController.getTransferableRoutes()).thenReturn(mediaRoute2Infos);
 
         final List<MediaDevice> mediaDevices = mInfoMediaManager.getTransferableMediaDevices();
@@ -639,11 +751,13 @@ public class InfoMediaManagerTest {
         assertThat(mediaDevices.get(0).getName()).isEqualTo(TEST_NAME);
     }
 
+    @DisableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
     @Test
     public void getDeselectableMediaDevice_checkList() {
         final List<MediaRoute2Info> mediaRoute2Infos = new ArrayList<>();
         final MediaRoute2Info mediaRoute2Info = mock(MediaRoute2Info.class);
         mediaRoute2Infos.add(mediaRoute2Info);
+        when(mRouter2.getRoutes()).thenReturn(mediaRoute2Infos);
         when(mRoutingController.getDeselectableRoutes()).thenReturn(mediaRoute2Infos);
         when(mediaRoute2Info.getName()).thenReturn(TEST_NAME);
         when(mediaRoute2Info.getId()).thenReturn(TEST_ID);

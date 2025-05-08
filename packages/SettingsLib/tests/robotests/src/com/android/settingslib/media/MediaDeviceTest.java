@@ -171,17 +171,24 @@ public class MediaDeviceTest {
 
         mBluetoothMediaDevice1 =
                 new BluetoothMediaDevice(
-                        mContext, mCachedDevice1, mBluetoothRouteInfo1, /* item */ null);
+                        mContext, mCachedDevice1,
+                        mBluetoothRouteInfo1, /* dynamicRouteAttributes= */ null, /* item */ null);
         mBluetoothMediaDevice2 =
                 new BluetoothMediaDevice(
-                        mContext, mCachedDevice2, mBluetoothRouteInfo2, /* item */ null);
+                        mContext, mCachedDevice2,
+                        mBluetoothRouteInfo2, /* dynamicRouteAttributes= */ null, /* item */ null);
         mBluetoothMediaDevice3 =
                 new BluetoothMediaDevice(
-                        mContext, mCachedDevice3, mBluetoothRouteInfo3, /* item */ null);
-        mInfoMediaDevice1 = new InfoMediaDevice(mContext, mRouteInfo1, /* item */ null);
-        mInfoMediaDevice2 = new InfoMediaDevice(mContext, mRouteInfo2, /* item */ null);
-        mInfoMediaDevice3 = new InfoMediaDevice(mContext, mRouteInfo3, /* item */ null);
-        mPhoneMediaDevice = new PhoneMediaDevice(mContext, mPhoneRouteInfo, /* item */ null);
+                        mContext, mCachedDevice3,
+                        mBluetoothRouteInfo3, /* dynamicRouteAttributes= */ null, /* item */ null);
+        mInfoMediaDevice1 = new InfoMediaDevice(mContext, mRouteInfo1, /* dynamicRouteAttributes= */
+                null, /* item */ null);
+        mInfoMediaDevice2 = new InfoMediaDevice(mContext, mRouteInfo2, /* dynamicRouteAttributes= */
+                null, /* item */ null);
+        mInfoMediaDevice3 = new InfoMediaDevice(mContext, mRouteInfo3, /* dynamicRouteAttributes= */
+                null, /* item */ null);
+        mPhoneMediaDevice = new PhoneMediaDevice(mContext,
+                mPhoneRouteInfo, /* dynamicRouteAttributes= */ null, /* item */ null);
     }
 
     @Test
@@ -315,8 +322,9 @@ public class MediaDeviceTest {
         final MediaRoute2Info phoneRouteInfo = mock(MediaRoute2Info.class);
         when(phoneRouteInfo.getType()).thenReturn(TYPE_WIRED_HEADPHONES);
 
-        final PhoneMediaDevice phoneMediaDevice =
-                new PhoneMediaDevice(mContext, phoneRouteInfo, /* item */ null);
+        final PhoneMediaDevice phoneMediaDevice = new PhoneMediaDevice(mContext,
+                phoneRouteInfo, /* dynamicRouteAttributes= */
+                null, /* item */ null);
 
         mMediaDevices.add(mBluetoothMediaDevice1);
         mMediaDevices.add(phoneMediaDevice);
@@ -331,8 +339,8 @@ public class MediaDeviceTest {
         final MediaRoute2Info phoneRouteInfo = mock(MediaRoute2Info.class);
         when(phoneRouteInfo.getType()).thenReturn(TYPE_WIRED_HEADPHONES);
 
-        final PhoneMediaDevice phoneMediaDevice =
-                new PhoneMediaDevice(mContext, phoneRouteInfo, /* item */ null);
+        final PhoneMediaDevice phoneMediaDevice = new PhoneMediaDevice(mContext,
+                phoneRouteInfo, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         mMediaDevices.add(mInfoMediaDevice1);
         mMediaDevices.add(phoneMediaDevice);
@@ -481,9 +489,9 @@ public class MediaDeviceTest {
 
     @Test
     public void getFeatures_noRouteInfo_returnEmptyList() {
-        mBluetoothMediaDevice1 =
-                new BluetoothMediaDevice(
-                        mContext, mCachedDevice1, /* MediaRoute2Info */ null, /* item */ null);
+        mBluetoothMediaDevice1 = new BluetoothMediaDevice(mContext,
+                mCachedDevice1, /* MediaRoute2Info */
+                null, /* dynamicRouteAttributes= */ null, /* item */ null);
 
         assertThat(mBluetoothMediaDevice1.getFeatures().size()).isEqualTo(0);
     }
@@ -498,9 +506,11 @@ public class MediaDeviceTest {
                         mContext,
                         mCachedDevice1,
                         null /* MediaRoute2Info */,
+                        null /* dynamicRouteAttributes */,
                         mItem);
         mPhoneMediaDevice =
-                new PhoneMediaDevice(mContext, mPhoneRouteInfo, mItem);
+                new PhoneMediaDevice(mContext, mPhoneRouteInfo, /* dynamicRouteAttributes= */ null,
+                        mItem);
 
         assertThat(mBluetoothMediaDevice1.getSelectionBehavior()).isEqualTo(
                 SELECTION_BEHAVIOR_TRANSFER);
@@ -514,7 +524,8 @@ public class MediaDeviceTest {
                 new RouteListingPreference.Item.Builder(DEVICE_ADDRESS_1)
                         .setSelectionBehavior(SELECTION_BEHAVIOR_GO_TO_APP)
                         .build();
-        MediaDevice castMediaDevice = new ComplexMediaDevice(mContext, mRouteInfo1, mItem);
+        MediaDevice castMediaDevice = new ComplexMediaDevice(mContext,
+                mRouteInfo1, /* dynamicRouteAttributes= */ null, mItem);
 
         assertThat(castMediaDevice.hasRouteListingPreferenceItem()).isTrue();
         assertThat(castMediaDevice.getSelectionBehavior()).isEqualTo(SELECTION_BEHAVIOR_GO_TO_APP);
@@ -522,10 +533,45 @@ public class MediaDeviceTest {
 
     @Test
     public void getSelectionBehavior_withoutRouteListingPreferenceItem_returnTransfer() {
-        MediaDevice castMediaDevice =
-                new ComplexMediaDevice(mContext, mRouteInfo1, /* item= */ null);
+        MediaDevice castMediaDevice = new ComplexMediaDevice(mContext,
+                mRouteInfo1, /* dynamicRouteAttributes= */
+                null, /* item= */ null);
 
         assertThat(castMediaDevice.hasRouteListingPreferenceItem()).isFalse();
         assertThat(castMediaDevice.getSelectionBehavior()).isEqualTo(SELECTION_BEHAVIOR_TRANSFER);
+    }
+
+    @Test
+    public void dynamicAttributesGetters_withDynamicRouteAttributes_returnsValues() {
+        DynamicRouteAttributes dynamicRouteAttributes = new DynamicRouteAttributes(
+                /* transferable= */ true,
+                /* selected= */ true,
+                /* selectable= */ true,
+                /* deselectable= */ true);
+        MediaDevice mediaDevice =
+                new PhoneMediaDevice(mContext, mRouteInfo1, /* dynamicRouteAttributes= */
+                        dynamicRouteAttributes, /* item= */ null);
+
+        assertThat(mediaDevice.isTransferable()).isTrue();
+        assertThat(mediaDevice.isSelected()).isTrue();
+        assertThat(mediaDevice.isSelectable()).isTrue();
+        assertThat(mediaDevice.isDeselectable()).isTrue();
+    }
+
+    @Test
+    public void dynamicAttributesGetters_withoutDynamicRouteAttributes_returnsFalse() {
+        DynamicRouteAttributes dynamicRouteAttributes = new DynamicRouteAttributes(
+                /* transferable= */ true,
+                /* selected= */ true,
+                /* selectable= */ true,
+                /* deselectable= */ true);
+        MediaDevice mediaDevice =
+                new PhoneMediaDevice(mContext, mRouteInfo1, /* dynamicRouteAttributes= */
+                        dynamicRouteAttributes, /* item= */ null);
+
+        assertThat(mediaDevice.isTransferable()).isFalse();
+        assertThat(mediaDevice.isSelected()).isFalse();
+        assertThat(mediaDevice.isSelectable()).isFalse();
+        assertThat(mediaDevice.isDeselectable()).isFalse();
     }
 }
