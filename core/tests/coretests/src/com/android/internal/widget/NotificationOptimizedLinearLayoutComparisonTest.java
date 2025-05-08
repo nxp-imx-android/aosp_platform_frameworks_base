@@ -340,7 +340,7 @@ public class NotificationOptimizedLinearLayoutComparisonTest {
     }
 
     private View buildChildView() {
-        final View childView = new TextView(mContext);
+        final View childView = new View(mContext);
         // this is initial value. We are going to mutate this layout params during the test.
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(MATCH_PARENT,
                 WRAP_CONTENT);
