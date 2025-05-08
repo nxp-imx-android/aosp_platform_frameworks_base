@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.domain.interactor
+package com.android.systemui.statusbar.featurepods.av.domain.interactor
 
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
-import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
-import com.android.systemui.statusbar.featurepods.vc.shared.model.SensorActivityModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.AvControlsChipModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.SensorActivityModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow

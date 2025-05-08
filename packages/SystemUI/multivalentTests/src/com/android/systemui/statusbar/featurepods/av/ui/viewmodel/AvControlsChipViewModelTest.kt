@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.ui.viewmodel
+package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -30,11 +30,10 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.avControlsChipInteractorImpl
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractorImpl
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test

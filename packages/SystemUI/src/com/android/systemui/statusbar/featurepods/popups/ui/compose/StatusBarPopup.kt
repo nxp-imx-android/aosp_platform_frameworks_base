@@ -30,10 +30,10 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.featurepods.av.ui.compose.AvControlsChipPopup
 import com.android.systemui.statusbar.featurepods.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
-import com.android.systemui.statusbar.featurepods.vc.ui.compose.AvControlsChipPopup
 
 /**
  * Displays a popup in the status bar area. The offset is calculated to draw the popup below the

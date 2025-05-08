@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc
+package com.android.systemui.statusbar.featurepods.av
 
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
