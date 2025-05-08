@@ -155,8 +155,20 @@ constructor(
     }
 
     @MainThread
-    private fun processSuggestionData(key: String, oldKey: String?, device: SuggestionData?) {
-        listeners.forEach { it.onSuggestionDataChanged(key, oldKey, device) }
+    private fun processSuggestionData(key: String, oldKey: String?, suggestion: SuggestionData?) {
+        listeners.forEach { it.onSuggestionDataChanged(key, oldKey, suggestion) }
+    }
+
+    @MainThread
+    private fun processMediaDeviceAndSuggestionData(
+        key: String,
+        oldKey: String?,
+        device: MediaDeviceData?,
+        suggestion: SuggestionData?,
+    ) {
+        listeners.forEach {
+            it.onMediaDeviceAndSuggestionDataChanged(key, oldKey, device, suggestion)
+        }
     }
 
     interface Listener {
@@ -168,6 +180,17 @@ constructor(
 
         /** Called when the suggested route has changed for a given notification. */
         fun onSuggestionDataChanged(key: String, oldKey: String?, data: SuggestionData?)
+
+        /**
+         * Called when the both the route and the suggested route has changed for a given
+         * notification.
+         */
+        fun onMediaDeviceAndSuggestionDataChanged(
+            key: String,
+            oldKey: String?,
+            deviceData: MediaDeviceData?,
+            suggestionData: SuggestionData?,
+        )
     }
 
     private inner class Entry(
@@ -191,23 +214,8 @@ constructor(
             bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
         }
         private var current: MediaDeviceData? = null
-            set(value) {
-                val sameWithoutIcon = value != null && value.equalsWithoutIcon(field)
-                if (!started || !sameWithoutIcon) {
-                    field = value
-                    fgExecutor.execute { processDevice(key, oldKey, value) }
-                }
-            }
 
-        private var suggestionData =
-            SuggestionData(onSuggestionSpaceVisible = requestSuggestionRunnable)
-            set(value) {
-                val sameWithoutConnect = value.equalsWithoutConnect(field)
-                if (!sameWithoutConnect) {
-                    field = value
-                    fgExecutor.execute { processSuggestionData(key, oldKey, value) }
-                }
-            }
+        private var suggestionData: SuggestionData? = null
 
         // A device that is not yet connected but is expected to connect imminently. Because it's
         // expected to connect imminently, it should be displayed as the current device.
@@ -226,9 +234,6 @@ constructor(
                 if (!started) {
                     // Fetch in case a suggestion already exists before registering for suggestions
                     localMediaManager.registerCallback(this)
-                    if (enableSuggestedDeviceUi()) {
-                        onSuggestedDeviceUpdated(localMediaManager.getSuggestedDevice())
-                    }
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
                     }
@@ -236,7 +241,23 @@ constructor(
                     playbackType = controller?.playbackInfo?.playbackType ?: PLAYBACK_TYPE_UNKNOWN
                     playbackVolumeControlId = controller?.playbackInfo?.volumeControlId
                     controller?.registerCallback(this)
-                    updateCurrent()
+                    if (enableSuggestedDeviceUi()) {
+                        updateCurrent(notifyListeners = false)
+                        updateSuggestion(
+                            localMediaManager.getSuggestedDevice(),
+                            notifyListeners = false,
+                        )
+                        fgExecutor.execute {
+                            processMediaDeviceAndSuggestionData(
+                                key,
+                                oldKey,
+                                current,
+                                suggestionData,
+                            )
+                        }
+                    } else {
+                        updateCurrent()
+                    }
                     started = true
                     configurationController.addCallback(configListener)
                 }
@@ -299,21 +320,7 @@ constructor(
             if (!enableSuggestedDeviceUi()) {
                 return
             }
-            bgExecutor.execute {
-                suggestionData =
-                    SuggestionData(
-                        suggestedMediaDeviceData =
-                            state?.let {
-                                SuggestedMediaDeviceData(
-                                    name = it.suggestedDeviceInfo.getDeviceDisplayName(),
-                                    icon = it.getIcon(context),
-                                    connectionState = it.connectionState,
-                                    connect = { localMediaManager.connectSuggestedDevice(it) },
-                                )
-                            },
-                        onSuggestionSpaceVisible = requestSuggestionRunnable,
-                    )
-            }
+            bgExecutor.execute { updateSuggestion(state) }
         }
 
         override fun onAboutToConnectDeviceAdded(
@@ -380,56 +387,103 @@ constructor(
         override fun onPlaybackStopped(reason: Int, broadcastId: Int) {}
 
         @WorkerThread
-        private fun updateCurrent() {
-            if (isLeAudioBroadcastEnabled()) {
-                current = getLeAudioBroadcastDeviceData()
-            } else {
-                val activeDevice: MediaDeviceData?
-
-                // LocalMediaManager provides the connected device based on PlaybackInfo.
-                // TODO (b/342197065): Simplify nullability once we make currentConnectedDevice
-                //  non-null.
-                val connectedDevice = localMediaManager.currentConnectedDevice?.toMediaDeviceData()
-
-                if (controller?.playbackInfo?.playbackType == PlaybackInfo.PLAYBACK_TYPE_REMOTE) {
-                    val routingSession =
-                        mr2manager.get().getRoutingSessionForMediaController(controller)
-
-                    activeDevice =
-                        routingSession?.let {
-                            val icon =
-                                if (it.selectedRoutes.size > 1) {
-                                    MediaControlDrawables.getGroupDevice(context)
-                                } else {
-                                    connectedDevice?.icon // Single route. We don't change the icon.
-                                }
-                            // For a remote session, always use the current device from
-                            // LocalMediaManager. Override with routing session information if
-                            // available:
-                            //   - Name: To show the dynamic group name.
-                            //   - Icon: To show the group icon if there's more than one selected
-                            //           route.
-                            connectedDevice?.copy(
-                                name = it.name ?: connectedDevice.name,
-                                icon = icon,
+        private fun updateSuggestion(
+            state: SuggestedDeviceState?,
+            notifyListeners: Boolean = true,
+        ) {
+            val oldSuggestion = suggestionData
+            val newSuggestion =
+                SuggestionData(
+                    suggestedMediaDeviceData =
+                        state?.let {
+                            SuggestedMediaDeviceData(
+                                name = it.suggestedDeviceInfo.getDeviceDisplayName(),
+                                icon = it.getIcon(context),
+                                connectionState = it.connectionState,
+                                connect = { localMediaManager.connectSuggestedDevice(it) },
                             )
-                        }
-                            ?: MediaDeviceData(
-                                enabled = false,
-                                icon = MediaControlDrawables.getHomeDevices(context),
-                                name = context.getString(R.string.media_seamless_other_device),
-                                showBroadcastButton = false,
-                            )
-                    logger.logRemoteDevice(routingSession?.name, connectedDevice)
-                } else {
-                    // Prefer SASS if available when playback is local.
-                    val sassDevice = getSassDevice()
-                    activeDevice = sassDevice ?: connectedDevice
-                    logger.logLocalDevice(sassDevice, connectedDevice)
+                        },
+                    onSuggestionSpaceVisible = requestSuggestionRunnable,
+                )
+            val updated = !newSuggestion.equalsWithoutConnect(oldSuggestion)
+            if (updated) {
+                suggestionData = newSuggestion
+                if (notifyListeners) {
+                    fgExecutor.execute { processSuggestionData(key, oldKey, newSuggestion) }
                 }
+            }
+        }
 
-                current = activeDevice ?: EMPTY_AND_DISABLED_MEDIA_DEVICE_DATA
-                logger.logNewDeviceName(current?.name?.toString())
+        @WorkerThread
+        private fun updateCurrent(notifyListeners: Boolean = true) {
+            val oldCurrent = current
+            val newCurrent =
+                if (isLeAudioBroadcastEnabled()) {
+                        getLeAudioBroadcastDeviceData()
+                    } else {
+                        val activeDevice: MediaDeviceData?
+
+                        // LocalMediaManager provides the connected device based on PlaybackInfo.
+                        // TODO (b/342197065): Simplify nullability once we make
+                        // currentConnectedDevice
+                        //  non-null.
+                        val connectedDevice =
+                            localMediaManager.currentConnectedDevice?.toMediaDeviceData()
+
+                        if (
+                            controller?.playbackInfo?.playbackType ==
+                                PlaybackInfo.PLAYBACK_TYPE_REMOTE
+                        ) {
+                            val routingSession =
+                                mr2manager.get().getRoutingSessionForMediaController(controller)
+
+                            activeDevice =
+                                routingSession?.let {
+                                    val icon =
+                                        if (it.selectedRoutes.size > 1) {
+                                            MediaControlDrawables.getGroupDevice(context)
+                                        } else {
+                                            connectedDevice
+                                                ?.icon // Single route. We don't change the icon.
+                                        }
+                                    // For a remote session, always use the current device from
+                                    // LocalMediaManager. Override with routing session information
+                                    // if
+                                    // available:
+                                    //   - Name: To show the dynamic group name.
+                                    //   - Icon: To show the group icon if there's more than one
+                                    // selected
+                                    //           route.
+                                    connectedDevice?.copy(
+                                        name = it.name ?: connectedDevice.name,
+                                        icon = icon,
+                                    )
+                                }
+                                    ?: MediaDeviceData(
+                                        enabled = false,
+                                        icon = MediaControlDrawables.getHomeDevices(context),
+                                        name =
+                                            context.getString(R.string.media_seamless_other_device),
+                                        showBroadcastButton = false,
+                                    )
+                            logger.logRemoteDevice(routingSession?.name, connectedDevice)
+                        } else {
+                            // Prefer SASS if available when playback is local.
+                            val sassDevice = getSassDevice()
+                            activeDevice = sassDevice ?: connectedDevice
+                            logger.logLocalDevice(sassDevice, connectedDevice)
+                        }
+
+                        activeDevice ?: EMPTY_AND_DISABLED_MEDIA_DEVICE_DATA
+                    }
+                    .also { logger.logNewDeviceName(it?.name?.toString()) }
+
+            val updated = newCurrent == null || !newCurrent.equalsWithoutIcon(oldCurrent)
+            if (!started || updated) {
+                current = newCurrent
+                if (notifyListeners) {
+                    fgExecutor.execute { processDevice(key, oldKey, newCurrent) }
+                }
             }
         }
 
