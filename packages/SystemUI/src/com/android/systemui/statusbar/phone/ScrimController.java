@@ -71,6 +71,8 @@ import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
 import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToGoneTransitionViewModel;
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel;
+import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToDreamingTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -295,9 +297,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
     private final CoroutineDispatcher mMainDispatcher;
     private boolean mIsBouncerToGoneTransitionRunning = false;
+    private final PrimaryBouncerToDreamingTransitionViewModel
+            mPrimaryBouncerToDreamingTransitionViewModel;
     private final PrimaryBouncerToGoneTransitionViewModel mPrimaryBouncerToGoneTransitionViewModel;
     private final AlternateBouncerToGoneTransitionViewModel
             mAlternateBouncerToGoneTransitionViewModel;
+    private final LockscreenToDreamingTransitionViewModel mLockscreenToDreamingTransitionViewModel;
     private final Consumer<ScrimAlpha> mBouncerToGoneScrimAlphaConsumer =
             (ScrimAlpha alphas) -> {
                 mInFrontAlpha = alphas.getFrontAlpha();
@@ -334,6 +339,16 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         mScrimBehind.setViewAlpha(mBehindAlpha);
     };
 
+    /**
+     * Consumer used to fade the behind scrim when entering the dream from a lockscreen state. This
+     * is done because the behind scrim is on top of the dream.
+     */
+    private final Consumer<ScrimAlpha> mDreamBehindScrimAlphaConsumer =
+            (ScrimAlpha alphas) -> {
+                mBehindAlpha = alphas.getBehindAlpha();
+                mScrimBehind.setViewAlpha(mBehindAlpha);
+            };
+
     @VisibleForTesting
     Consumer<TransitionStep> mBouncerToGoneTransition;
 
@@ -352,8 +367,10 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             ScreenOffAnimationController screenOffAnimationController,
             KeyguardUnlockAnimationController keyguardUnlockAnimationController,
             StatusBarKeyguardViewManager statusBarKeyguardViewManager,
+            PrimaryBouncerToDreamingTransitionViewModel primaryBouncerToDreamingTransitionViewModel,
             PrimaryBouncerToGoneTransitionViewModel primaryBouncerToGoneTransitionViewModel,
             AlternateBouncerToGoneTransitionViewModel alternateBouncerToGoneTransitionViewModel,
+            LockscreenToDreamingTransitionViewModel lockscreenToDreamingTransitionViewModel,
             KeyguardTransitionInteractor keyguardTransitionInteractor,
             KeyguardInteractor keyguardInteractor,
             @Main CoroutineDispatcher mainDispatcher,
@@ -399,8 +416,10 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             }
         });
         mColors = new GradientColors();
+        mPrimaryBouncerToDreamingTransitionViewModel = primaryBouncerToDreamingTransitionViewModel;
         mPrimaryBouncerToGoneTransitionViewModel = primaryBouncerToGoneTransitionViewModel;
         mAlternateBouncerToGoneTransitionViewModel = alternateBouncerToGoneTransitionViewModel;
+        mLockscreenToDreamingTransitionViewModel = lockscreenToDreamingTransitionViewModel;
         mKeyguardTransitionInteractor = keyguardTransitionInteractor;
         mKeyguardInteractor = keyguardInteractor;
         mMainDispatcher = mainDispatcher;
@@ -473,6 +492,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                     }
                 };
 
+        // PRIMARY_BOUNCER->DREAMING
+        if (Flags.dreamTransitionFixes()) {
+            collectFlow(behindScrim, mPrimaryBouncerToDreamingTransitionViewModel.getScrimAlpha(),
+                    mDreamBehindScrimAlphaConsumer, mMainDispatcher);
+        }
+
         // PRIMARY_BOUNCER->GONE
         collectFlow(behindScrim, mKeyguardTransitionInteractor.transition(
                 Edge.Companion.getINVALID(),
@@ -488,6 +513,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                 mBouncerToGoneTransition, mMainDispatcher);
         collectFlow(behindScrim, mAlternateBouncerToGoneTransitionViewModel.getScrimAlpha(),
                 mBouncerToGoneScrimAlphaConsumer, mMainDispatcher);
+
+        // LOCKSCREEN->DREAMING
+        if (Flags.dreamTransitionFixes()) {
+            collectFlow(behindScrim, mLockscreenToDreamingTransitionViewModel.getScrimAlpha(),
+                    mDreamBehindScrimAlphaConsumer, mMainDispatcher);
+        }
 
         // LOCKSCREEN<->GLANCEABLE_HUB
         collectFlow(

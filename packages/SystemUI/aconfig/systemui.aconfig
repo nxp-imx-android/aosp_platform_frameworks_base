@@ -1229,6 +1229,16 @@ flag {
 }
 
 flag {
+  name: "dream_transition_fixes"
+  namespace: "systemui"
+  description: "Flags some minor transition fixes for opening the dream"
+  bug: "409720192"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "dream_overlay_updated_ui"
     namespace: "systemui"
     description: "Flag to enable updated UI for dream overlay"
