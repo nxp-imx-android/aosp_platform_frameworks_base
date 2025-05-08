@@ -145,7 +145,8 @@ public final class BugreportParams {
     @IntDef(flag = true, prefix = { "BUGREPORT_FLAG_" }, value = {
             BUGREPORT_FLAG_USE_PREDUMPED_UI_DATA,
             BUGREPORT_FLAG_DEFER_CONSENT,
-            BUGREPORT_FLAG_KEEP_BUGREPORT_ON_RETRIEVAL
+            BUGREPORT_FLAG_KEEP_BUGREPORT_ON_RETRIEVAL,
+            BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT
     })
     public @interface BugreportFlag {}
 
@@ -178,4 +179,13 @@ public final class BugreportParams {
     @FlaggedApi(Flags.FLAG_ONBOARDING_BUGREPORT_V2_ENABLED)
     public static final int BUGREPORT_FLAG_KEEP_BUGREPORT_ON_RETRIEVAL =
             IDumpstate.BUGREPORT_FLAG_KEEP_BUGREPORT_ON_RETRIEVAL;
+
+    /**
+     * Flag for taking screenshots of all displays.
+     * @hide
+     */
+    @FlaggedApi(android.os.Flags.FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
+    public static final int BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT =
+            IDumpstate.BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT;
+
 }
