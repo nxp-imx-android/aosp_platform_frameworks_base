@@ -1265,16 +1265,6 @@ flag {
 }
 
 flag {
-    name: "media_controls_device_manager_background_execution"
-    namespace: "systemui"
-    description: "Sends some instances creation to background thread"
-    bug: "400200474"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "media_controls_in_compose"
   namespace: "systemui"
   description: "Runs media controls in compose"
