@@ -36,6 +36,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
@@ -132,6 +133,7 @@ public class Instrumentation {
 
     private final Object mSync = new Object();
     private ActivityThread mThread = null;
+    private Handler mMainHandler = null;
     private MessageQueue mMessageQueue = null;
     private Context mInstrContext;
     private Context mAppContext;
@@ -447,9 +449,10 @@ public class Instrumentation {
      * @param recipient Called the next time the thread's message queue is
      *                  idle.
      */
+    @RavenwoodKeep
     public void waitForIdle(Runnable recipient) {
         mMessageQueue.addIdleHandler(new Idler(recipient));
-        mThread.getHandler().post(new EmptyRunnable());
+        mMainHandler.post(new EmptyRunnable());
     }
 
     /**
@@ -457,11 +460,12 @@ public class Instrumentation {
      * from the main application thread -- use {@link #start} to execute
      * instrumentation in its own thread.
      */
+    @RavenwoodKeep
     public void waitForIdleSync() {
         validateNotAppThread();
         Idler idler = new Idler(null);
         mMessageQueue.addIdleHandler(idler);
-        mThread.getHandler().post(new EmptyRunnable());
+        mMainHandler.post(new EmptyRunnable());
         idler.waitForIdle();
     }
 
@@ -472,18 +476,11 @@ public class Instrumentation {
      * 
      * @param runner The code to run on the main thread.
      */
-    @RavenwoodReplace(blockedBy = ActivityThread.class)
+    @RavenwoodKeep
     public void runOnMainSync(Runnable runner) {
         validateNotAppThread();
         SyncRunnable sr = new SyncRunnable(runner);
-        mThread.getHandler().post(sr);
-        sr.waitForComplete();
-    }
-
-    private void runOnMainSync$ravenwood(Runnable runner) {
-        validateNotAppThread();
-        SyncRunnable sr = new SyncRunnable(runner);
-        mInstrContext.getMainExecutor().execute(sr);
+        mMainHandler.post(sr);
         sr.waitForComplete();
     }
 
@@ -2383,6 +2380,7 @@ public class Instrumentation {
             Context instrContext, Context appContext, ComponentName component, 
             IInstrumentationWatcher watcher, IUiAutomationConnection uiAutomationConnection) {
         mThread = thread;
+        mMainHandler = thread.getHandler();
         mMessageQueue = mThread.getLooper().myQueue();
         mInstrContext = instrContext;
         mAppContext = appContext;
@@ -2397,15 +2395,18 @@ public class Instrumentation {
      */
     final void basicInit(ActivityThread thread) {
         mThread = thread;
+        mMainHandler = thread.getHandler();
     }
 
     /**
-     * Only sets the Context up, keeps everything else null.
+     * Initialize the minimam fields needed for Ravenwood.
      *
      * @hide
      */
     @RavenwoodKeep
     public final void basicInit(Context instrContext, Context appContext, UiAutomation ui) {
+        mMainHandler = instrContext.getMainThreadHandler();
+        mMessageQueue = mMainHandler.getLooper().getQueue();
         mInstrContext = instrContext;
         mAppContext = appContext;
         mUiAutomation = ui;
@@ -2602,6 +2603,7 @@ public class Instrumentation {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private static final class EmptyRunnable implements Runnable {
         public void run() {
         }
@@ -2661,6 +2663,7 @@ public class Instrumentation {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private static final class Idler implements MessageQueue.IdleHandler {
         private final Runnable mCallback;
         private boolean mIdle;
