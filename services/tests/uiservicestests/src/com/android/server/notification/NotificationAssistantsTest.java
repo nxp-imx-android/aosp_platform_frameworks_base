@@ -212,6 +212,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         profileIds.add(11);
         profileIds.add(10);
         profileIds.add(12);
+        when(mUmInternal.getProfileParentId(13)).thenReturn(13);  // 13 is a full user
         when(mUserProfiles.getCurrentProfileIds()).thenReturn(profileIds);
         when(mUmInternal.getProfileParentId(11)).thenReturn(mZero.id);
         when(mNm.isNASMigrationDone(anyInt())).thenReturn(true);
@@ -681,8 +682,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 .doesNotContain(Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id)).contains(KEY_TYPE);
 
-        // should not affect other users
-        assertThat(mAssistants.getAllowedAssistantAdjustments(mTen.id)).contains(
+        // should not affect other (full) users
+        assertThat(mAssistants.getAllowedAssistantAdjustments(13)).contains(
                 Adjustment.KEY_RANKING_SCORE);
     }
 
@@ -695,6 +696,25 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
                 .contains(Adjustment.KEY_RANKING_SCORE);
+    }
+
+    @Test
+    public void testIsAdjustmentAllowed_profileUser_offIfParentOff() {
+        // Even if an adjustment is allowed for a profile user, it should not be considered allowed
+        // if the profile's parent has that adjustment disabled.
+        // User 11 is set up as a profile user of mZero in setup; user 13 is not
+        mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
+        mAssistants.disallowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+
+        assertThat(mAssistants.getAllowedAssistantAdjustments(11)).doesNotContain(
+                Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+
+        // Now turn it back on for the parent; it should be considered allowed for the profile
+        // (for which it was already on).
+        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+        assertThat(mAssistants.getAllowedAssistantAdjustments(11)).contains(Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
     }
 
     @Test
@@ -994,7 +1014,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         //      * KEY_TYPE is allowed; KEY_SUMMARIZATION disallowed
         //   * user 13 has only KEY_TYPE, which is disallowed
         //   * other users have neither supported
-        when(mUmInternal.getProfileParentId(13)).thenReturn(13);  // make sure 12 is a full user
         mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_TYPE, true);
         mAssistants.allowAdjustmentType(mZero.id, KEY_TYPE);
         mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_SUMMARIZATION, true);
