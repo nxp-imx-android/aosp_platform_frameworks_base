@@ -1961,6 +1961,63 @@ public final class MediaCodecInfo {
                                 maxChannels = 32;
                         }
                     }
+                } else if (GetFlag(() -> android.media.audio.Flags.iamfDefinitionsApi())
+                        && mime.equalsIgnoreCase(MediaFormat.MIMETYPE_AUDIO_IAMF)) {
+                    for (CodecProfileLevel profileLevel : profileLevels) {
+                        int iamfEncoding = profileLevel.profile & 0xff;
+                        int iamfProfile = profileLevel.profile & (0xff << 16);
+                        switch (iamfProfile) {
+                            case CodecProfileLevel.IAMF_PROFILE_SIMPLE:
+                                // Per the IAMF spec, the Simple profile can have only one Audio
+                                // Element and 16
+                                // input channels.
+                                maxChannels = 16;
+                                break;
+                            case CodecProfileLevel.IAMF_PROFILE_BASE:
+                                // The Base profile can have up to 18 input channels.
+                                maxChannels = 18;
+                                break;
+                            case CodecProfileLevel.IAMF_PROFILE_BASE_ENHANCED:
+                                // The Base Enhanced profile can have up to 28 input channels.
+                                maxChannels = 28;
+                                break;
+                            default:
+                                Log.w(TAG, "Unrecognized IAMF profile "
+                                        + iamfProfile + " for "+ mime);
+                                mParent.mError |= ERROR_UNRECOGNIZED;
+                        }
+                        // Samplerate and bitrate are only restricted by the underlying codecs, so
+                        // for AAC,
+                        // FLAC, and Opus these numbers match their numbers above.
+                        switch (iamfEncoding) {
+                            case CodecProfileLevel.IAMF_CODEC_OPUS:
+                                sampleRates = new int[] {48000};
+                                bitRates = Range.create(6000, 510000);
+                                break;
+                            case CodecProfileLevel.IAMF_CODEC_AAC:
+                                sampleRates =
+                                        new int[] {
+                                            7350, 8000, 11025, 12000, 16000, 22050, 24000, 32000,
+                                            44100, 48000, 64000, 88200, 96000
+                                        };
+                                bitRates = Range.create(8000, 510000);
+                                break;
+                            case CodecProfileLevel.IAMF_CODEC_FLAC:
+                                sampleRateRange = Range.create(1, 655350);
+                                // Lossless, bitrate range ignored.  It's possible to be as wide as
+                                // Range.create(1, 21000000).
+                                break;
+                            case CodecProfileLevel.IAMF_CODEC_PCM:
+                                // PCM is limited by the IAMF spec to the following.
+                                sampleRates = new int[] {16000, 32000, 44100, 48000, 96000};
+                                // Lossless, no bitrate range.
+                                break;
+                            default:
+                                Log.w(TAG, "Unrecognized encoding "
+                                        + iamfEncoding + " for " + mime);
+                                mParent.mError |= ERROR_UNRECOGNIZED;
+                        }
+                    }
                 } else {
                     Log.w(TAG, "Unsupported mime " + mime);
                     mParent.mError |= ERROR_UNSUPPORTED;
