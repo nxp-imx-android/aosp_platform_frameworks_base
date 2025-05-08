@@ -1225,7 +1225,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     boolean skipLayout() {
         // Skip layout of the window when in transition to pip mode.
-        return mActivityRecord != null && mActivityRecord.mWaitForEnteringPinnedMode;
+        return mActivityRecord != null && (mActivityRecord.mWaitForEnteringPinnedMode
+                || mActivityRecord.isConfigurationDispatchPaused());
     }
 
     void setFrames(ClientWindowFrames clientWindowFrames, int requestedWidth, int requestedHeight) {
