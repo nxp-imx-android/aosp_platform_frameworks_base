@@ -997,6 +997,48 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun showUserSwitcher_fullScreenDisabled_propagatesCustomContext() {
+        createUserInteractor()
+        testScope.runTest {
+            val expandable = mock<Expandable>()
+            val context = mock<Context>()
+            underTest.showUserSwitcher(expandable, context)
+
+            val dialogRequest = collectLastValue(underTest.dialogShowRequests)
+
+            // Dialog is shown.
+            assertThat(dialogRequest())
+                .isEqualTo(ShowDialogRequestModel.ShowUserSwitcherDialog(expandable, context))
+
+            underTest.onDialogShown()
+            assertThat(dialogRequest()).isNull()
+        }
+    }
+
+    @Test
+    fun showUserSwitcher_fullScreenEnabled_propagatesCustomContext() {
+        createUserInteractor()
+        testScope.runTest {
+            kosmos.fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, true)
+
+            val expandable = mock<Expandable>()
+            val context = mock<Context>()
+            underTest.showUserSwitcher(expandable, context)
+
+            val dialogRequest = collectLastValue(underTest.dialogShowRequests)
+
+            // Dialog is shown.
+            assertThat(dialogRequest())
+                .isEqualTo(
+                    ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog(expandable, context)
+                )
+
+            underTest.onDialogShown()
+            assertThat(dialogRequest()).isNull()
+        }
+    }
+
+    @Test
     fun showUserSwitcher_fullScreenEnabled_launchesFullScreenDialog() {
         createUserInteractor()
         testScope.runTest {
