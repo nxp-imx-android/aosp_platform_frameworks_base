@@ -19,10 +19,6 @@
 package com.android.systemui.notifications.ui.composable.row
 
 import android.content.Context
-import android.view.View
-import androidx.activity.OnBackPressedDispatcher
-import androidx.activity.OnBackPressedDispatcherOwner
-import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,32 +50,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.internal.R
+import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderGutsViewModel
 
 fun createBundleHeaderGutsComposeView(context: Context): ComposeView {
     return ComposeView(context).apply {
         repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
-                initOnBackPressureDispatcherOwner(this@repeatWhenAttached.lifecycle)
+                initOnBackPressedDispatcherOwner(this@repeatWhenAttached.lifecycle)
             }
         }
-    }
-}
-
-private fun View.initOnBackPressureDispatcherOwner(lifecycle: Lifecycle) {
-    if (!SceneContainerFlag.isEnabled) {
-        setViewTreeOnBackPressedDispatcherOwner(
-            object : OnBackPressedDispatcherOwner {
-                override val onBackPressedDispatcher =
-                    OnBackPressedDispatcher().apply {
-                        setOnBackInvokedDispatcher(viewRootImpl.onBackInvokedDispatcher)
-                    }
-
-                override val lifecycle: Lifecycle = lifecycle
-            }
-        )
     }
 }
 
