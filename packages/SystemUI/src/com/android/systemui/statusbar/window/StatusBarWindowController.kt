@@ -87,6 +87,7 @@ interface StatusBarWindowController {
             windowManager: WindowManager,
             statusBarConfigurationController: StatusBarConfigurationController,
             contentInsetsProvider: StatusBarContentInsetsProvider,
+            displayId: Int,
         ): StatusBarWindowController
     }
 }
