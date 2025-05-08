@@ -53,25 +53,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderGutsViewModel
 
-fun createBundleHeaderGutsComposeView(
-    context: Context,
-    viewModel: BundleHeaderGutsViewModel,
-): ComposeView {
+fun createBundleHeaderGutsComposeView(context: Context): ComposeView {
     return ComposeView(context).apply {
         repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 initOnBackPressureDispatcherOwner(this@repeatWhenAttached.lifecycle)
-                setContent {
-                    // TODO(b/399588047): Check if we can init PlatformTheme once instead of once
-                    //  per ComposeView
-                    PlatformTheme { BundleHeaderGuts(viewModel) }
-                }
             }
         }
     }

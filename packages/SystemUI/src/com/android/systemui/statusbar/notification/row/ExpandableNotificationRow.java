@@ -1566,8 +1566,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setGutsView(MenuItem item) {
-        if (getGuts() != null && item.getGutsView() instanceof NotificationGuts.GutsContent) {
-            getGuts().setGutsContent((NotificationGuts.GutsContent) item.getGutsView());
+        if (getGuts() != null
+                && item.getGutsContent() instanceof NotificationGuts.GutsContent gutsContent) {
+            getGuts().setGutsContent(gutsContent);
         }
     }
 
@@ -2604,10 +2605,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             menuItem = provider.getLongpressMenuItem(mContext);
         }
         if (SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY == semanticAction
-                && menuItem.getGutsView() instanceof NotificationConversationInfo) {
-            NotificationConversationInfo info =
-                    (NotificationConversationInfo) menuItem.getGutsView();
-            info.setSelectedAction(NotificationConversationInfo.ACTION_FAVORITE);
+                && menuItem.getGutsContent() instanceof NotificationConversationInfo gutsContent) {
+            gutsContent.setSelectedAction(NotificationConversationInfo.ACTION_FAVORITE);
         }
         doLongClickCallback(x, y, menuItem);
     }

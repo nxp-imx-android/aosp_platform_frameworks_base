@@ -135,11 +135,6 @@ public class NotificationGuts extends FrameLayout {
          * view on the lockscreen
          */
         boolean needsFalsingProtection();
-
-        /**
-         * Equivalent to {@link View#setAccessibilityDelegate(AccessibilityDelegate)}
-         */
-        void setAccessibilityDelegate(AccessibilityDelegate gutsContentAccessibilityDelegate);
     }
 
     public interface OnGutsClosedListener {
@@ -174,7 +169,7 @@ public class NotificationGuts extends FrameLayout {
 
     public void setGutsContent(GutsContent content) {
         content.setGutsParent(this);
-        content.setAccessibilityDelegate(mGutsContentAccessibilityDelegate);
+        content.getContentView().setAccessibilityDelegate(mGutsContentAccessibilityDelegate);
         mGutsContent = content;
         removeAllViews();
         addView(mGutsContent.getContentView());
