@@ -46,7 +46,10 @@ interface DeviceEntryFaceAuthInteractor : CoreStartable {
     fun canFaceAuthRun(): Boolean
 
     /** Whether face auth is currently running or not. */
-    fun isRunning(): Boolean
+    fun isAuthRunning(): Boolean
+
+    /** Whether face detect is currently running or not. */
+    fun isDetectRunning(): Boolean
 
     /** Whether face auth is enrolled and enabled for the current user */
     fun isFaceAuthEnabledAndEnrolled(): Boolean

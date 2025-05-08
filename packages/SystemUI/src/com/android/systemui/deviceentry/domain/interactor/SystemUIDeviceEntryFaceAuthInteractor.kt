@@ -243,7 +243,7 @@ constructor(
 
         facePropertyRepository.cameraInfo
             .onEach {
-                if (it != null && isRunning()) {
+                if (it != null && isAuthOrDetectRunning()) {
                     repository.cancel()
                     runFaceAuth(
                         FaceAuthUiEvent.FACE_AUTH_CAMERA_AVAILABLE_CHANGED,
@@ -333,7 +333,11 @@ constructor(
         listeners.remove(listener)
     }
 
-    override fun isRunning(): Boolean = repository.isAuthRunning.value
+    override fun isAuthRunning(): Boolean = repository.isAuthRunning.value
+
+    override fun isDetectRunning(): Boolean = repository.isDetectRunning.value
+
+    fun isAuthOrDetectRunning(): Boolean = isAuthRunning() || isDetectRunning()
 
     override fun canFaceAuthRun(): Boolean = repository.canRunFaceAuth.value
 
@@ -357,10 +361,10 @@ constructor(
     override val detectionStatus = repository.detectionStatus
     override val isLockedOut: StateFlow<Boolean> = repository.isLockedOut
     override val isAuthenticated: StateFlow<Boolean> = repository.isAuthenticated
-    override val isBypassEnabled: Flow<Boolean> = repository.isBypassEnabled
+    override val isBypassEnabled: StateFlow<Boolean> = repository.isBypassEnabled
 
     private fun runFaceAuth(uiEvent: FaceAuthUiEvent, fallbackToDetect: Boolean) {
-        if (repository.isLockedOut.value) {
+        if (repository.isLockedOut.value && !isBypassEnabled.value) {
             faceAuthenticationStatusOverride.value =
                 ErrorFaceAuthenticationStatus(
                     BiometricFaceConstants.FACE_ERROR_LOCKOUT_PERMANENT,

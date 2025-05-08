@@ -1653,7 +1653,7 @@ public class KeyguardIndicationController {
             return;
         }
         boolean fpEngaged = mDeviceEntryFingerprintAuthInteractor.isEngaged().getValue();
-        boolean faceRunning = mDeviceEntryFaceAuthInteractor.isRunning();
+        boolean faceRunning = mDeviceEntryFaceAuthInteractor.isAuthRunning();
         if (fpEngaged || faceRunning) {
             mKeyguardLogger.delayShowingTrustAgentError(message, fpEngaged, faceRunning);
             mTrustAgentErrorMessage = message;
