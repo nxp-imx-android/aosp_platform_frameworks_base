@@ -18,6 +18,7 @@ package android.appwidget;
 
 import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
 import static android.appwidget.flags.Flags.engagementMetrics;
+import static android.content.res.Flags.selfTargetingAndroidResourceFrro;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -961,16 +962,22 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      *
      * Calling this method will trigger a full re-inflation of the App Widget.
      *
-     * The color resources that can be overloaded are the ones whose name is prefixed with
-     * {@code system_neutral} or {@code system_accent}, for example
-     * {@link android.R.color#system_neutral1_500}.
+     * If flag {@code android.content.res.self_targeting_android_resource_frro} is set, any colors
+     * in {@code colorMapping} will be overloaded, otherwise the color resources that can
+     * be overloaded are the ones whose name is prefixed with {@code system_neutral} or
+     * {@code system_accent}, for example {@link android.R.color#system_neutral1_500}.
      */
     public void setColorResources(@NonNull SparseIntArray colorMapping) {
         if (mColorResources != null
                 && isSameColorMapping(mColorResources.getColorMapping(), colorMapping)) {
             return;
         }
-        setColorResources(RemoteViews.ColorResources.create(mContext, colorMapping));
+        if (selfTargetingAndroidResourceFrro()) {
+            setColorResources(
+                    RemoteViews.ColorResources.createWithOverlay(mContext, colorMapping));
+        } else {
+            setColorResources(RemoteViews.ColorResources.create(mContext, colorMapping));
+        }
     }
 
     private void setColorResourcesStates(RemoteViews.ColorResources colorResources) {
