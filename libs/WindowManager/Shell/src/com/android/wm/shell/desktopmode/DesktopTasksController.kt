@@ -3057,8 +3057,16 @@ class DesktopTasksController(
     private fun shouldFreeformTaskLaunchSwitchToFullscreen(task: RunningTaskInfo): Boolean =
         !isAnyDeskActive(task.displayId)
 
-    private fun shouldFullscreenTaskLaunchSwitchToDesktop(task: RunningTaskInfo): Boolean =
-        isAnyDeskActive(task.displayId) || forceEnterDesktop(task.displayId)
+    private fun shouldFullscreenTaskLaunchSwitchToDesktop(task: RunningTaskInfo): Boolean {
+        val isAnyDeskActive = isAnyDeskActive(task.displayId)
+        val forceEnterDesktop = forceEnterDesktop(task.displayId)
+        logV(
+            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, forceEnterDesktop=%s",
+            isAnyDeskActive,
+            forceEnterDesktop,
+        )
+        return isAnyDeskActive || forceEnterDesktop
+    }
 
     /**
      * If a task is not compatible with desktop mode freeform, it should always be launched in
