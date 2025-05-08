@@ -17,13 +17,13 @@
 package com.android.systemui.display.data.repository
 
 import android.hardware.display.DisplayManager
-import android.os.Looper
+import android.os.fakeHandler
 import android.testing.TestableLooper
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.TYPE_EXTERNAL
 import android.view.Display.TYPE_INTERNAL
-import android.view.IWindowManager
+import android.view.mockIWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.app.displaylib.DisplayRepository.PendingDisplay
@@ -31,13 +31,14 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.CommandQueue
+import com.android.systemui.statusbar.mockCommandQueue
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.kotlinArgumentCaptor
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.utils.os.FakeHandler
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -54,17 +55,18 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper
 @SmallTest
 class DisplayRepositoryTest : SysuiTestCase() {
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val displayManager = mock<DisplayManager>()
-    private val commandQueue = mock<CommandQueue>()
-    private val windowManager = mock<IWindowManager>()
+    private val displayManager = kosmos.mockDisplayManager
+    private val commandQueue = kosmos.mockCommandQueue
+    private val windowManager = kosmos.mockIWindowManager
 
     private val displayListener = kotlinArgumentCaptor<DisplayManager.DisplayListener>()
     private val commandQueueCallbacks = kotlinArgumentCaptor<CommandQueue.Callbacks>()
     private val connectedDisplayListener = kotlinArgumentCaptor<DisplayManager.DisplayListener>()
 
-    private val testHandler = FakeHandler(Looper.getMainLooper())
-    private val testScope = TestScope(UnconfinedTestDispatcher())
+    private val testHandler = kosmos.fakeHandler
+    private val testScope = kosmos.testScope
     private val defaultDisplay =
         display(type = TYPE_INTERNAL, id = DEFAULT_DISPLAY, state = Display.STATE_ON)
 
@@ -72,22 +74,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
     // that the initial state (soon after construction) contains the expected ones set in every
     // test.
     private val displayRepository: DisplayRepositoryImpl by lazy {
-        // TODO b/401305290 - move this to kosmos
-        val displayRepositoryFromLib =
-            com.android.app.displaylib.DisplayRepositoryImpl(
-                displayManager,
-                testHandler,
-                testScope.backgroundScope,
-                UnconfinedTestDispatcher(),
-            )
-        val displaysWithDecorRepository =
-            DisplaysWithDecorationsRepositoryImpl(
-                commandQueue,
-                windowManager,
-                testScope.backgroundScope,
-                displayRepositoryFromLib,
-            )
-        DisplayRepositoryImpl(displayRepositoryFromLib, displaysWithDecorRepository).also {
+        kosmos.realDisplayRepository.also {
             verify(displayManager, never()).registerDisplayListener(any(), any())
             // It needs to be called, just once, for the initial value.
             verify(displayManager).getDisplays()
