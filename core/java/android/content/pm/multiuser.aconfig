@@ -127,16 +127,6 @@ flag {
 }
 
 flag {
-    name: "place_add_user_dialog_within_activity"
-    namespace: "multiuser"
-    description: "Display dialog within activity to make it traversable by Accessibility"
-    bug: "376815882"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "change_switch_bar_into_main_preference"
     namespace: "multiuser"
     description: "Refactor multiuser toggle to be of type MainSwitchPreference"
