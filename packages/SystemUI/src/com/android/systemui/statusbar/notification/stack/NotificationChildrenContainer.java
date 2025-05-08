@@ -1228,7 +1228,11 @@ public class NotificationChildrenContainer extends ViewGroup
             float top = childTop + Math.max(0, slidingChild.getClipTopAmount());
             float bottom = childTop + slidingChild.getActualHeight();
             if (y >= top && y <= bottom) {
-                return slidingChild;
+                if (NotificationBundleUi.isEnabled()) {
+                    return slidingChild.getViewAtPosition(y - top);
+                } else {
+                    return slidingChild;
+                }
             }
         }
         return null;
