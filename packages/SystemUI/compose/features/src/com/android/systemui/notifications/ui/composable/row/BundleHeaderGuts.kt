@@ -35,10 +35,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -138,12 +134,9 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
             )
         }
 
-        var checked by remember { mutableStateOf(true) }
-
         Switch(
-            checked = checked,
-            // TODO(b/409748420): Implement proper checked logic
-            onCheckedChange = { checked = !checked },
+            checked = viewModel.switchState,
+            onCheckedChange = { viewModel.switchState = !viewModel.switchState },
             thumbContent = {
                 Icon(
                     // TODO(b/409748420): Add correct icon
@@ -172,7 +165,7 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDoneClicked,
+                        onClick = viewModel.onDismissClicked,
                         indication = null,
                         interactionSource = null,
                     ),
@@ -180,16 +173,15 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // TODO(b/409748420): Implement done/apply switch
         Text(
-            text = stringResource(R.string.done_label),
+            text = stringResource(viewModel.getDoneOrApplyButtonText()),
             style = MaterialTheme.typography.titleSmallEmphasized,
             color = MaterialTheme.colorScheme.primary,
             modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDismissClicked,
+                        onClick = { viewModel.onDoneOrApplyClicked() },
                         indication = null,
                         interactionSource = null,
                     ),

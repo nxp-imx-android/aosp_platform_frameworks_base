@@ -54,7 +54,6 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.ValueKey
-import com.android.compose.animation.scene.animateElementColorAsState
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 

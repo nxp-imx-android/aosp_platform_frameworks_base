@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.collection
 
 import android.app.NotificationChannel
+import android.service.notification.Adjustment
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.internal.R
@@ -32,6 +33,12 @@ data class BundleSpec(
     @StringRes val summaryText: Int,
     @DrawableRes val icon: Int,
     @PriorityBucket val bucket: Int,
+
+    /**
+     * This is the id / [type] that identifies the bundle when calling APIs of
+     * [android.app.INotificationManager]
+     */
+    @Adjustment.Types val bundleType: Int,
 ) {
     companion object {
         val PROMOTIONS =
@@ -42,6 +49,7 @@ data class BundleSpec(
                     com.android.systemui.res.R.string.notification_guts_promotions_summary,
                 icon = com.android.settingslib.R.drawable.ic_promotions,
                 bucket = BUCKET_PROMO,
+                bundleType = Adjustment.TYPE_PROMOTION,
             )
         val SOCIAL_MEDIA =
             BundleSpec(
@@ -50,6 +58,7 @@ data class BundleSpec(
                 summaryText = com.android.systemui.res.R.string.notification_guts_social_summary,
                 icon = com.android.settingslib.R.drawable.ic_social,
                 bucket = BUCKET_SOCIAL,
+                bundleType = Adjustment.TYPE_SOCIAL_MEDIA,
             )
         val NEWS =
             BundleSpec(
@@ -58,6 +67,7 @@ data class BundleSpec(
                 summaryText = com.android.systemui.res.R.string.notification_guts_news_summary,
                 icon = com.android.settingslib.R.drawable.ic_news,
                 bucket = BUCKET_NEWS,
+                bundleType = Adjustment.TYPE_NEWS,
             )
         val RECOMMENDED =
             BundleSpec(
@@ -66,6 +76,7 @@ data class BundleSpec(
                 summaryText = com.android.systemui.res.R.string.notification_guts_recs_summary,
                 icon = com.android.settingslib.R.drawable.ic_recs,
                 bucket = BUCKET_RECS,
+                bundleType = Adjustment.TYPE_CONTENT_RECOMMENDATION,
             )
     }
 }
