@@ -40,7 +40,6 @@ import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
 import com.android.settingslib.media.flags.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
-import com.android.systemui.Flags.mediaControlsDeviceManagerBackgroundExecution
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.media.controls.shared.MediaControlDrawables
@@ -100,19 +99,11 @@ constructor(
         data: MediaData,
         immediately: Boolean,
     ) {
-        if (mediaControlsDeviceManagerBackgroundExecution()) {
-            bgExecutor.execute { onMediaLoaded(key, oldKey, data) }
-        } else {
-            onMediaLoaded(key, oldKey, data)
-        }
+        bgExecutor.execute { onMediaLoaded(key, oldKey, data) }
     }
 
     override fun onMediaDataRemoved(key: String, userInitiated: Boolean) {
-        if (mediaControlsDeviceManagerBackgroundExecution()) {
-            bgExecutor.execute { onMediaRemoved(key, userInitiated) }
-        } else {
-            onMediaRemoved(key, userInitiated)
-        }
+        bgExecutor.execute { onMediaRemoved(key, userInitiated) }
     }
 
     fun dump(pw: PrintWriter) {
@@ -141,11 +132,7 @@ constructor(
             if (data.device != null) {
                 // If we were already provided device info (e.g. from RCN), keep that and
                 // don't listen for updates, but process once to push updates to listeners
-                if (mediaControlsDeviceManagerBackgroundExecution()) {
-                    fgExecutor.execute { processDevice(key, oldKey, data.device) }
-                } else {
-                    processDevice(key, oldKey, data.device)
-                }
+                fgExecutor.execute { processDevice(key, oldKey, data.device) }
                 return
             }
             val controller = data.token?.let { controllerFactory.create(it) }
@@ -162,11 +149,7 @@ constructor(
     private fun onMediaRemoved(key: String, userInitiated: Boolean) {
         val token = entries.remove(key)
         token?.stop()
-        if (mediaControlsDeviceManagerBackgroundExecution()) {
-            fgExecutor.execute {
-                token?.let { listeners.forEach { it.onKeyRemoved(key, userInitiated) } }
-            }
-        } else {
+        fgExecutor.execute {
             token?.let { listeners.forEach { it.onKeyRemoved(key, userInitiated) } }
         }
     }
