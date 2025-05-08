@@ -28,6 +28,8 @@ import java.util.Optional
 
 val Kosmos.fakeStatusBarWindowController by Kosmos.Fixture { FakeStatusBarWindowController() }
 
+var Kosmos.statusBarWindowControllerImplDisplayId by Kosmos.Fixture { testableContext.displayId }
+
 val Kosmos.statusBarWindowControllerImpl by
     Kosmos.Fixture {
         StatusBarWindowControllerImpl(
@@ -40,6 +42,7 @@ val Kosmos.statusBarWindowControllerImpl by
             fragmentService,
             Optional.empty(),
             fakeExecutor,
+            statusBarWindowControllerImplDisplayId,
         )
     }
 

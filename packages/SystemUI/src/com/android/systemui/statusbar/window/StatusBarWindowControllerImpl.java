@@ -36,6 +36,7 @@ import android.os.Binder;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.Log;
+import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.Gravity;
 import android.view.IWindowManager;
@@ -84,6 +85,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     private final IWindowManager mIWindowManager;
     private final StatusBarContentInsetsProvider mContentInsetsProvider;
     private final Executor mMainExecutor;
+    private final int mDisplayId;
     private int mBarHeight = -1;
     private final State mCurrentState = new State();
     private boolean mIsAttached;
@@ -115,8 +117,10 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             @Assisted StatusBarContentInsetsProvider contentInsetsProvider,
             FragmentService fragmentService,
             Optional<UnfoldTransitionProgressProvider> unfoldTransitionProgressProvider,
-            @Main Executor mainExecutor) {
+            @Main Executor mainExecutor,
+            @Assisted int displayId) {
         mContext = context;
+        mDisplayId = displayId;
         mWindowManager = windowManager;
         mStatusBarConfigurationController = statusBarConfigurationController;
         mIWindowManager = iWindowManager;
@@ -282,7 +286,9 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
         lp.token = new Binder();
         lp.gravity = Gravity.TOP;
         lp.setFitInsetsTypes(0 /* types */);
-        lp.setTitle("StatusBar");
+        String titleSuffix =
+                mDisplayId == Display.DEFAULT_DISPLAY ? "" : "(displayId=" + mDisplayId + ")";
+        lp.setTitle("StatusBar" + titleSuffix);
         lp.packageName = mContext.getPackageName();
         lp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
         final InsetsFrameProvider gestureInsetsProvider =
@@ -421,7 +427,8 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
                 @NonNull Context context,
                 @NonNull WindowManager windowManager,
                 @NonNull StatusBarConfigurationController statusBarConfigurationController,
-                @NonNull StatusBarContentInsetsProvider contentInsetsProvider);
+                @NonNull StatusBarContentInsetsProvider contentInsetsProvider,
+                int displayId);
     }
 
 }
