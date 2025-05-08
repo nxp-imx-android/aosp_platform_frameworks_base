@@ -22,6 +22,7 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -37,10 +38,10 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class CallChipInteractorTest : SysuiTestCase() {
-    val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    val repo = kosmos.ongoingCallRepository
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val Kosmos.repo by Kosmos.Fixture { kosmos.ongoingCallRepository }
 
-    val underTest = kosmos.callChipInteractor
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.callChipInteractor }
 
     @Test
     fun ongoingCallState_noCall_isNoCall() =
