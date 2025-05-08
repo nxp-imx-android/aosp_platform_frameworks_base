@@ -20,7 +20,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +55,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
 
@@ -114,9 +114,14 @@ fun NavBarPill(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier.clip(RoundedCornerShape(16.dp))
-                        .border(2.dp, outlineColor, RoundedCornerShape(16.dp))
                         .defaultMinSize(minWidth = navBarWidth)
                         .background(backgroundColor)
+                        .animatedActionBorder(
+                            strokeWidth = 2.dp,
+                            strokeColor = outlineColor,
+                            cornerRadius = 16.dp,
+                            visible = visible,
+                        )
                         .clickable { onClick() }
                         .padding(horizontal = 8.dp, vertical = 6.dp)
                         .onGloballyPositioned { expandedSize = it.size },

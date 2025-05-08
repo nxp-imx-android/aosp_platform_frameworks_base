@@ -38,8 +38,8 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import com.android.systemui.ambientcue.ui.shader.BackgroundGlowShader
+import com.android.systemui.ambientcue.ui.utils.AiColorUtils.boostChroma
 
 @Composable
 fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
@@ -90,16 +90,6 @@ fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
             }
         }
     )
-}
-
-private fun boostChroma(color: Int): Int {
-    val outColor = FloatArray(3)
-    ColorUtils.colorToM3HCT(color, outColor)
-    val chroma = outColor[1]
-    if (chroma <= 5) {
-        return color
-    }
-    return ColorUtils.M3HCTToColor(outColor[0], 120f, outColor[2])
 }
 
 private object Defaults {
