@@ -17,7 +17,7 @@
 package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
-import androidx.annotation.VisibleForTesting
+import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
@@ -27,13 +27,13 @@ import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.view.FlexClockView
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.VerticalAlignment
 import java.util.Locale
-import java.util.TimeZone
 
 class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
     SimpleClockLayerController {
@@ -63,23 +63,34 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                         transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
                     ),
 
-                // Placeholders
-                timespec = DigitalTimespec.TIME_FULL_FORMAT,
-                dateTimeFormat = "hh:mm",
+                // Placeholder Timespec Values
+                timespec = DigitalTimespec.DIGIT_PAIR,
+                timeFormatter = null,
             )
 
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "hh")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "hh")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, dateTimeFormat = "mm")
-        )
-        createController(
-            layerCfg.copy(timespec = DigitalTimespec.SECOND_DIGIT, dateTimeFormat = "mm")
-        )
+        DigitalTimeFormatter("hh", clockCtx.timeKeeper).also { timeFormatter ->
+            createController(
+                layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
+            )
+            createController(
+                layerCfg.copy(
+                    timespec = DigitalTimespec.SECOND_DIGIT,
+                    timeFormatter = timeFormatter,
+                )
+            )
+        }
+
+        DigitalTimeFormatter("mm", clockCtx.timeKeeper).also { timeFormatter ->
+            createController(
+                layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
+            )
+            createController(
+                layerCfg.copy(
+                    timespec = DigitalTimespec.SECOND_DIGIT,
+                    timeFormatter = timeFormatter,
+                )
+            )
+        }
     }
 
     private fun refreshTime() {
@@ -94,8 +105,8 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                 refreshTime()
             }
 
-            override fun onTimeFormatChanged(is24Hr: Boolean) {
-                layerControllers.forEach { it.events.onTimeFormatChanged(is24Hr) }
+            override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+                layerControllers.forEach { it.events.onTimeFormatChanged(formatKind) }
                 refreshTime()
             }
 
@@ -184,14 +195,4 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
             hasCustomWeatherDataDisplay = false,
             hasCustomPositionUpdatedAnimation = true,
         )
-
-    @VisibleForTesting
-    override var fakeTimeMills: Long? = null
-        get() = field
-        set(timeInMills) {
-            field = timeInMills
-            for (layerController in layerControllers) {
-                layerController.fakeTimeMills = timeInMills
-            }
-        }
 }

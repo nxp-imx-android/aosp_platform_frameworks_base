@@ -17,6 +17,7 @@
 package com.android.systemui.shared.clocks
 
 import android.content.res.Resources
+import android.icu.util.TimeZone
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
 import com.android.systemui.customization.clocks.FontUtils.put
@@ -32,12 +33,12 @@ import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFontAxis
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
 import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.view.FlexClockView
 import java.io.PrintWriter
 import java.util.Locale
-import java.util.TimeZone
 
 /** Controller for the default flex clock */
 class FlexClockController(private val clockCtx: ClockContext) : ClockController {
@@ -75,9 +76,9 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
                 largeClock.events.onTimeZoneChanged(timeZone)
             }
 
-            override fun onTimeFormatChanged(is24Hr: Boolean) {
-                smallClock.events.onTimeFormatChanged(is24Hr)
-                largeClock.events.onTimeFormatChanged(is24Hr)
+            override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+                smallClock.events.onTimeFormatChanged(formatKind)
+                largeClock.events.onTimeFormatChanged(formatKind)
             }
 
             override fun onLocaleChanged(locale: Locale) {

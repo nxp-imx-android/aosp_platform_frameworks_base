@@ -16,98 +16,143 @@
 
 package com.android.systemui.shared.clocks
 
-import android.icu.text.DateFormat
 import android.icu.text.SimpleDateFormat
-import android.icu.util.TimeZone as IcuTimeZone
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.icu.util.ULocale
-import androidx.annotation.VisibleForTesting
-import java.util.Calendar
+import com.android.systemui.plugins.clocks.ClockViewIds
+import com.android.systemui.plugins.clocks.TimeFormatKind
+import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
-open class TimespecHandler(val cal: Calendar) {
+interface TimeKeeper {
+    val callbacks: MutableList<TimeKeeper.Callback>
     var timeZone: TimeZone
-        get() = cal.timeZone
-        set(value) {
-            cal.timeZone = value
-            onTimeZoneChanged()
-        }
+    val time: Date
 
-    @VisibleForTesting var fakeTimeMills: Long? = null
+    fun updateTime()
 
-    fun updateTime() {
-        var timeMs = fakeTimeMills ?: System.currentTimeMillis()
-        cal.timeInMillis = (timeMs * TIME_TRAVEL_SCALE).toLong()
-    }
+    interface Callback {
+        fun onTimeChanged() {}
 
-    protected open fun onTimeZoneChanged() {}
-
-    companion object {
-        // Modifying this will cause the clock to run faster or slower. This is a useful way of
-        // manually checking that clocks are correctly animating through time.
-        private const val TIME_TRAVEL_SCALE = 1.0
+        fun onTimeZoneChanged() {}
     }
 }
 
-class DigitalTimespecHandler(
-    val timespec: DigitalTimespec,
-    private val timeFormat: String,
-    cal: Calendar = Calendar.getInstance(),
-) : TimespecHandler(cal) {
-    var is24Hr = false
+open class TimeKeeperImpl(private val cal: Calendar = Calendar.getInstance()) : TimeKeeper {
+    override var timeZone: TimeZone
+        get() = cal.timeZone
+        set(value) {
+            cal.timeZone = value
+            callbacks.forEach { it.onTimeZoneChanged() }
+        }
+
+    override val callbacks = mutableListOf<TimeKeeper.Callback>()
+
+    override val time: Date
+        get() = cal.time
+
+    override fun updateTime() = updateTime(System.currentTimeMillis())
+
+    protected fun updateTime(timeMillis: Long) {
+        cal.timeInMillis = timeMillis
+        callbacks.forEach { it.onTimeChanged() }
+    }
+}
+
+class FixedTimeKeeper(val fixedTimeMillis: Long) : TimeKeeperImpl() {
+    override fun updateTime() {
+        updateTime(fixedTimeMillis)
+    }
+}
+
+private fun TimeFormatKind.getTextPattern(pattern: String): String {
+    return when (this) {
+        TimeFormatKind.HALF_DAY -> pattern
+        TimeFormatKind.FULL_DAY -> pattern.replace("hh", "h").replace("h", "HH")
+    }
+}
+
+private fun TimeFormatKind.getContentDescriptionPattern(pattern: String): String {
+    return when (this) {
+        TimeFormatKind.HALF_DAY -> "hh:mm"
+        TimeFormatKind.FULL_DAY -> "HH:mm"
+    }
+}
+
+class DigitalTimeFormatter(
+    val pattern: String,
+    private val timeKeeper: TimeKeeper,
+    private val enableContentDescription: Boolean = false,
+) : TimeKeeper.Callback {
+    var formatKind = TimeFormatKind.HALF_DAY
         set(value) {
             field = value
             applyPattern()
         }
 
-    private var dateFormat = updateSimpleDateFormat(Locale.getDefault())
-    private var contentDescriptionFormat = getContentDescriptionFormat(Locale.getDefault())
+    private lateinit var textFormat: SimpleDateFormat
+    private var contentDescriptionFormat: SimpleDateFormat? = null
 
     init {
-        applyPattern()
+        timeKeeper.callbacks.add(this)
+        updateLocale(Locale.getDefault())
     }
 
     override fun onTimeZoneChanged() {
-        dateFormat.timeZone = IcuTimeZone.getTimeZone(cal.timeZone.id)
-        contentDescriptionFormat?.timeZone = IcuTimeZone.getTimeZone(cal.timeZone.id)
+        textFormat.timeZone = TimeZone.getTimeZone(timeKeeper.timeZone.id)
+        contentDescriptionFormat?.timeZone = TimeZone.getTimeZone(timeKeeper.timeZone.id)
         applyPattern()
     }
 
     fun updateLocale(locale: Locale) {
-        dateFormat = updateSimpleDateFormat(locale)
+        textFormat = getTextFormat(locale)
         contentDescriptionFormat = getContentDescriptionFormat(locale)
         onTimeZoneChanged()
     }
 
-    private fun updateSimpleDateFormat(locale: Locale): DateFormat {
+    private fun getTextFormat(locale: Locale): SimpleDateFormat {
         if (locale.language.equals(Locale.ENGLISH.language)) {
             // force date format in English, and time format to use format defined in json
-            return SimpleDateFormat(timeFormat, timeFormat, ULocale.forLocale(locale))
+            return SimpleDateFormat(pattern, pattern, ULocale.forLocale(locale))
         } else {
-            return SimpleDateFormat.getInstanceForSkeleton(timeFormat, locale)
+            return SimpleDateFormat.getInstanceForSkeleton(pattern, locale) as SimpleDateFormat
         }
     }
 
-    private fun getContentDescriptionFormat(locale: Locale): DateFormat? {
-        return when (timespec) {
-            DigitalTimespec.TIME_FULL_FORMAT ->
-                SimpleDateFormat.getInstanceForSkeleton("hh:mm", locale)
-            else -> null
-        }
+    private fun getContentDescriptionFormat(locale: Locale): SimpleDateFormat? {
+        if (!enableContentDescription) return null
+        return SimpleDateFormat.getInstanceForSkeleton("hh:mm", locale) as SimpleDateFormat
     }
 
     private fun applyPattern() {
-        val timeFormat24Hour = timeFormat.replace("hh", "h").replace("h", "HH")
-        val format = if (is24Hr) timeFormat24Hour else timeFormat
-        (dateFormat as SimpleDateFormat).applyPattern(format)
-        (contentDescriptionFormat as? SimpleDateFormat)?.applyPattern(
-            if (is24Hr) CONTENT_DESCRIPTION_TIME_FORMAT_24_HOUR
-            else CONTENT_DESCRIPTION_TIME_FORMAT_12_HOUR
-        )
+        textFormat.applyPattern(formatKind.getTextPattern(pattern))
+        contentDescriptionFormat?.applyPattern(formatKind.getContentDescriptionPattern(pattern))
     }
 
-    fun getDigitString(): String {
-        val text = dateFormat.format(cal.time).toString()
+    fun getText(): String {
+        return textFormat.format(timeKeeper.time)
+    }
+
+    fun getContentDescription(): String? {
+        return contentDescriptionFormat?.format(timeKeeper.time)
+    }
+}
+
+enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
+    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
+    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR),
+    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT),
+    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT);
+
+    fun getViewId(isHour: Boolean): Int = if (isHour) hourViewId else minuteViewId
+}
+
+class DigitalTimespecHandler(val timespec: DigitalTimespec, val formatter: DigitalTimeFormatter) {
+    fun getViewId(): Int = timespec.getViewId("h" in formatter.pattern)
+
+    fun getText(): String {
+        val text = formatter.getText()
         return when (timespec) {
             // DIGIT_PAIR & TIME_FULL_FORMAT directly return the result from the ICU time formatter
             DigitalTimespec.DIGIT_PAIR -> text
@@ -122,16 +167,7 @@ class DigitalTimespecHandler(
     }
 
     fun getContentDescription(): String? {
-        return when (timespec) {
-            DigitalTimespec.TIME_FULL_FORMAT -> {
-                contentDescriptionFormat?.format(cal.time).toString()
-            }
-            else -> return null
-        }
-    }
-
-    companion object {
-        const val CONTENT_DESCRIPTION_TIME_FORMAT_12_HOUR = "hh:mm"
-        const val CONTENT_DESCRIPTION_TIME_FORMAT_24_HOUR = "HH:mm"
+        if (timespec != DigitalTimespec.TIME_FULL_FORMAT) return null
+        return formatter.getContentDescription()
     }
 }
