@@ -217,6 +217,7 @@ fun StatusBarRoot(
                                             iconViewStore = iconViewStore,
                                             onChipBoundsChanged =
                                                 statusBarViewModel::onChipBoundsChanged,
+                                            modifier = Modifier.sysUiResTagContainer(),
                                         )
                                     }
                                 }
