@@ -70,22 +70,25 @@ public class FlexParallaxSpec implements ParallaxSpec {
         int endDismissPos = snapAlgorithm.getDismissEndTarget().getPosition();
         float progress;
 
-        if (startDismissPos <= position && position < firstTargetPos) {
-            // Divider is on the left/top (between 0% and 10% of screen), "fast dim" as it moves
-            // toward the screen edge
+        boolean between0and10 = startDismissPos <= position && position < firstTargetPos;
+        boolean between10and50 = firstTargetPos <= position && position < middleTargetPos;
+        boolean between50and90 = middleTargetPos <= position && position < lastTargetPos;
+        boolean between90and100 = lastTargetPos <= position && position <= endDismissPos;
+
+        if (between0and10) {
+            // "Fast dim" as the divider moves toward the screen edge.
             progress = (float) (firstTargetPos - position) / (firstTargetPos - startDismissPos);
             return fastDim(progress);
-        } else if (firstTargetPos <= position && position < middleTargetPos) {
-            // Divider is between 10% and 50%, "slow dim" as it moves toward the left/top target
+        } else if (between10and50) {
+            // "Slow dim" as the divider moves toward the left/top.
             progress = (float) (middleTargetPos - position) / (middleTargetPos - firstTargetPos);
             return slowDim(progress);
-        } else if (middleTargetPos <= position && position < lastTargetPos) {
-            // Divider is between 50% and 90%, "slow dim" as it moves toward the right/bottom target
+        } else if (between50and90) {
+            // "Slow dim" as the divider moves toward the right/bottom.
             progress = (float) (position - middleTargetPos) / (lastTargetPos - middleTargetPos);
             return slowDim(progress);
-        } else if (lastTargetPos <= position && position <= endDismissPos) {
-            // Divider is on the right/bottom (between 90% and 100% of screen), "fast dim" as it
-            // moves toward screen edge
+        } else if (between90and100) {
+            // "Fast dim" as the divider moves toward the screen edge.
             progress = (float) (position - lastTargetPos) / (endDismissPos - lastTargetPos);
             return fastDim(progress);
         }
