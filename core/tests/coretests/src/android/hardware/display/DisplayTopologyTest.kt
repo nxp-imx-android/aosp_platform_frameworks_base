@@ -42,6 +42,9 @@ class DisplayTopologyTest {
 
         assertThat(topology.primaryDisplayId).isEqualTo(displayId)
         verifyDisplay(topology.root!!, displayId, width, height, density, noOfChildren = 0)
+
+        assertThat(topology.allNodesIdMap())
+            .isEqualTo(mapOf(displayId to topology.root!!))
     }
 
     @Test
@@ -62,9 +65,13 @@ class DisplayTopologyTest {
         assertThat(topology.primaryDisplayId).isEqualTo(displayId1)
 
         val display1 = topology.root!!
+        val display2 = display1.children[0]
         verifyDisplay(display1, displayId1, width1, height1, density, noOfChildren = 1)
-        verifyDisplay(display1.children[0], displayId2, width2, height2, density, POSITION_TOP,
+        verifyDisplay(display2, displayId2, width2, height2, density, POSITION_TOP,
             offset = width1 / 2f - width2 / 2f, noOfChildren = 0)
+
+        assertThat(topology.allNodesIdMap())
+            .isEqualTo(mapOf(displayId1 to display1, displayId2 to display2))
     }
 
     @Test
@@ -1139,6 +1146,11 @@ class DisplayTopologyTest {
                         /* offsetDp= */ 0f))
             }
         }
+    }
+
+    @Test
+    fun allNodesIdMap_nullRoot() {
+        assertThat(topology.allNodesIdMap()).isEmpty()
     }
 
     data class DisplayArrangement(val logicalWidth: Int, val logicalHeight: Int,
