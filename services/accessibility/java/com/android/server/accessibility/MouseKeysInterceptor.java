@@ -75,8 +75,27 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private static final int MESSAGE_SCROLL_MOUSE_POINTER = 2;
     private static final int KEY_NOT_SET = -1;
 
-    /** Time interval after which mouse action will be repeated */
+    /**
+     * The base time interval, in milliseconds, after which a mouse action (like movement or scroll)
+     * will be repeated. This is used as the default interval when FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT
+     * is not enabled, or for scroll actions even when FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT is enabled.
+     */
     private static final int INTERVAL_MILLIS = 10;
+
+    /**
+     * The specific time interval, in milliseconds, after which mouse pointer movement actions
+     * are repeated when FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT is enabled. This value is longer than
+     * {@link #INTERVAL_MILLIS} to allow for a perceptible acceleration curve.
+     */
+    private static final int INTERVAL_MILLIS_MOUSE_POINTER = 25;
+
+    /**
+     * The initial movement step, in pixels per interval, for the mouse pointer.
+     * This value is used as the starting point for acceleration, and also as the
+     * reset value for the current movement step when a key is released and
+     * FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT is enabled.
+     */
+    private static final float INITIAL_MOUSE_POINTER_MOVEMENT_STEP = 1.0f;
 
     @VisibleForTesting
     public static final float MOUSE_POINTER_MOVEMENT_STEP = 1.8f;
@@ -121,6 +140,18 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     /** The ID of the input device that is currently active */
     private int mActiveInputDeviceId = 0;
+
+    /** The maximum movement step the mouse pointer can reach when accelerating. */
+    private float mMaxMovementStep = 10.0f;
+
+    /** The acceleration factor applied to the mouse pointer's speed per interval. */
+    private float mAcceleration = 0.1f;
+
+    /** The current movement step of the mouse pointer, which increases with acceleration. */
+    private float mCurrentMovementStep = INITIAL_MOUSE_POINTER_MOVEMENT_STEP;
+
+    /** Provides a source for obtaining uptime, used for precise timing calculations. */
+    private final TimeSource mTimeSource;
 
     /**
      * Enum representing different types of mouse key events, each associated with a specific
@@ -215,10 +246,11 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     public MouseKeysInterceptor(AccessibilityManagerService service,
-            InputManager inputManager, Looper looper, int displayId) {
+            InputManager inputManager, Looper looper, int displayId, TimeSource timeSource) {
         mAms = service;
         mInputManager = inputManager;
         mHandler = new Handler(looper, this);
+        mTimeSource = timeSource;
         // Create the virtual mouse on a separate thread since virtual device creation
         // should happen on an auxiliary thread, and not from the handler's thread.
         // This is because the handler thread is the same as the main thread,
@@ -386,41 +418,53 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private void performMousePointerAction(int keyCode) {
         float x = 0f;
         float y = 0f;
+
+        if (Flags.enableMouseKeyEnhancement()) {
+            // If there is no acceleration, start at the max movement step
+            if (mAcceleration == 0.0f) {
+                mCurrentMovementStep = mMaxMovementStep;
+            } else {
+                mCurrentMovementStep = Math.min(
+                        mCurrentMovementStep * (1 + mAcceleration), mMaxMovementStep);
+            }
+        } else {
+            mCurrentMovementStep = MOUSE_POINTER_MOVEMENT_STEP;
+        }
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
 
         switch (mouseKeyEvent) {
             case DIAGONAL_DOWN_LEFT_MOVE -> {
-                x = -MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
-                y = MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
+                x = -mCurrentMovementStep / sqrt(2);
+                y = mCurrentMovementStep / sqrt(2);
             }
             case DOWN_MOVE_OR_SCROLL -> {
                 if (!mScrollToggleOn) {
-                    y = MOUSE_POINTER_MOVEMENT_STEP;
+                    y = mCurrentMovementStep;
                 }
             }
             case DIAGONAL_DOWN_RIGHT_MOVE -> {
-                x = MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
-                y = MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
+                x = mCurrentMovementStep / sqrt(2);
+                y = mCurrentMovementStep / sqrt(2);
             }
             case LEFT_MOVE_OR_SCROLL -> {
-                x = -MOUSE_POINTER_MOVEMENT_STEP;
+                x = -mCurrentMovementStep;
             }
             case RIGHT_MOVE_OR_SCROLL -> {
-                x = MOUSE_POINTER_MOVEMENT_STEP;
+                x = mCurrentMovementStep;
             }
             case DIAGONAL_UP_LEFT_MOVE -> {
-                x = -MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
-                y = -MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
+                x = -mCurrentMovementStep / sqrt(2);
+                y = -mCurrentMovementStep / sqrt(2);
             }
             case UP_MOVE_OR_SCROLL -> {
                 if (!mScrollToggleOn) {
-                    y = -MOUSE_POINTER_MOVEMENT_STEP;
+                    y = -mCurrentMovementStep;
                 }
             }
             case DIAGONAL_UP_RIGHT_MOVE -> {
-                x = MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
-                y = -MOUSE_POINTER_MOVEMENT_STEP / sqrt(2);
+                x = mCurrentMovementStep / sqrt(2);
+                y = -mCurrentMovementStep / sqrt(2);
             }
             default -> {
                 x = 0.0f;
@@ -544,6 +588,8 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             if (mActiveMoveKey == keyCode) {
                 // If the key is released, and it is the active key, stop moving the pointer
                 mActiveMoveKey = KEY_NOT_SET;
+                mCurrentMovementStep = Flags.enableMouseKeyEnhancement()
+                        ? INITIAL_MOUSE_POINTER_MOVEMENT_STEP : MOUSE_POINTER_MOVEMENT_STEP;
                 mHandler.removeMessages(MESSAGE_MOVE_MOUSE_POINTER);
             } else if (mActiveScrollKey == keyCode) {
                 // If the key is released, and it is the active key, stop scrolling the pointer
@@ -566,9 +612,14 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     @Override
     public boolean handleMessage(Message msg) {
+        long currentProcessingTime = msg.getWhen();
+        if (Flags.enableMouseKeyEnhancement()) {
+            currentProcessingTime = this.mTimeSource.uptimeMillis();
+        }
         switch (msg.what) {
             case MESSAGE_MOVE_MOUSE_POINTER ->
-                    handleMouseMessage(msg.getWhen(), mActiveMoveKey, MESSAGE_MOVE_MOUSE_POINTER);
+                    handleMouseMessage(currentProcessingTime, mActiveMoveKey,
+                            MESSAGE_MOVE_MOUSE_POINTER);
             case MESSAGE_SCROLL_MOUSE_POINTER ->
                     handleMouseMessage(msg.getWhen(), mActiveScrollKey,
                             MESSAGE_SCROLL_MOUSE_POINTER);
@@ -582,14 +633,30 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     /**
      * Handles mouse-related messages for moving or scrolling the mouse pointer.
-     * This method checks if the specified time interval {@code INTERVAL_MILLIS} has passed since
-     * the last movement or scroll action and performs the corresponding action if necessary.
-     * If there is an active key, the message is rescheduled to be handled again
-     * after the specified {@code INTERVAL_MILLIS}.
      *
-     * @param currentTime The current time when the message is being handled.
-     * @param activeKey The key code representing the active key. This determines
-     *                  the direction or type of action to be performed.
+     * This method checks if the specified time interval (either {@code INTERVAL_MILLIS} or
+     * {@code INTERVAL_MILLIS_MOUSE_POINTER} if mouse keys enhancement is enabled for move messages)
+     * has passed since the last action was performed. If it has, the corresponding mouse
+     * action (move or scroll) is executed based on the {@code activeKey} and {@code messageType}.
+     * The time of this action is then recorded.
+     *
+     * If there is an {@code activeKey} (i.e., a key is still considered held down):
+     * <ul>
+     *   <li>If {@code Flags.enableMouseKeyEnhancement()} is true, the message is precisely
+     *       rescheduled to be handled at a target uptime derived from the controlled
+     *       {@code mTimeSource} plus the relevant delay ({@code INTERVAL_MILLIS} or
+     *       {@code INTERVAL_MILLIS_MOUSE_POINTER}). This ensures consistent timing
+     *       irrespective of message handling latencies.</li>
+     *   <li>If {@code Flags.enableMouseKeyEnhancement()} is false, the message is rescheduled
+     *       to be handled again after a fixed delay of {@code INTERVAL_MILLIS} using
+     *       {@code sendEmptyMessageDelayed}.</li>
+     * </ul>
+     *
+     * @param currentTime The current time (typically from the event or looper) when the message
+     *                    is being initially processed.
+     * @param activeKey The key code representing the active key. This determines the
+     *                  direction or type of action to be performed. Should be
+     *                  {@code KEY_NOT_SET} if no key is active.
      * @param messageType The type of message to be handled. It can be one of the
      *                    following:
      *                    <ul>
@@ -599,7 +666,13 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     public void handleMouseMessage(long currentTime, int activeKey, int messageType) {
-        if (currentTime - mLastTimeKeyActionPerformed >= INTERVAL_MILLIS) {
+        int delayMillis = INTERVAL_MILLIS;
+
+        if (Flags.enableMouseKeyEnhancement() && messageType == MESSAGE_MOVE_MOUSE_POINTER) {
+            delayMillis = INTERVAL_MILLIS_MOUSE_POINTER;
+        }
+
+        if (currentTime - mLastTimeKeyActionPerformed >= delayMillis) {
             if (messageType == MESSAGE_MOVE_MOUSE_POINTER) {
                 performMousePointerAction(activeKey);
             } else if (messageType == MESSAGE_SCROLL_MOUSE_POINTER) {
@@ -608,8 +681,15 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             mLastTimeKeyActionPerformed = currentTime;
         }
         if (activeKey != KEY_NOT_SET) {
-            // Reschedule the message if the key is still active
-            mHandler.sendEmptyMessageDelayed(messageType, INTERVAL_MILLIS);
+            if (Flags.enableMouseKeyEnhancement() && messageType == MESSAGE_MOVE_MOUSE_POINTER) {
+                // Schedule next message using a target time based on the controlled clock
+                long targetTime = this.mTimeSource.uptimeMillis() + delayMillis;
+                Message nextMessage = Message.obtain(mHandler, messageType);
+                mHandler.sendMessageAtTime(nextMessage, targetTime);
+            } else {
+                // Reschedule the message if the key is still active
+                mHandler.sendEmptyMessageDelayed(messageType, INTERVAL_MILLIS);
+            }
         }
     }
 
