@@ -22,8 +22,6 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.provider.DeviceConfig.NAMESPACE_PACKAGE_MANAGER_SERVICE;
 
-import static com.android.server.pm.PackageInstallerService.isValidPackageName;
-
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
@@ -41,7 +39,6 @@ import android.content.pm.verify.pkg.VerificationStatus;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.PersistableBundle;
-import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.util.Slog;
@@ -164,17 +161,10 @@ public class VerifierController {
 
     /**
      * Used by the installation session to get the package name of the installed verifier.
-     * It can be overwritten by a system config for testing purpose.
-     * Note: there can be only one verifier specified for all users on device.
-     * TODO(b/360129657): remove debug property and verifier override after moving tests to cts-root
+     * Note: there can be only one active verifier for all the users on the device.
      */
     @Nullable
     public String getVerifierPackageName() {
-        final String verifierPackageOverride = SystemProperties.get(
-                "debug.pm.verification_service_provider_override", "");
-        if (!verifierPackageOverride.isEmpty() && isValidPackageName(verifierPackageOverride)) {
-            return verifierPackageOverride;
-        }
         return mDefaultVerifierPackageName;
     }
 
