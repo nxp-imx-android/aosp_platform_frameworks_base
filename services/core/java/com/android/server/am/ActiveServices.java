@@ -4162,6 +4162,11 @@ public final class ActiveServices {
                     "BIND_ALLOW_FOREGROUND_SERVICE_STARTS_FROM_BACKGROUND");
         }
 
+        if ((flags & Context.BIND_ALLOW_FREEZE) != 0 && !isCallerSystem) {
+            throw new SecurityException("Non-system caller (pid=" + callingPid
+                    + ") set BIND_ALLOW_FREEZE when binding service " + service);
+        }
+
         final boolean callerFg = callerApp.mState.getSetSchedGroup()
                 != ProcessList.SCHED_GROUP_BACKGROUND;
         final boolean isBindExternal =
