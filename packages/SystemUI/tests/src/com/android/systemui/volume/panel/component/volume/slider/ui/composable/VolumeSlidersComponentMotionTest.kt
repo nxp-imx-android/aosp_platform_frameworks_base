@@ -25,7 +25,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.settingslib.volume.shared.model.AudioStream
@@ -45,6 +48,7 @@ import com.android.systemui.volume.panel.component.mediaoutput.domain.interactor
 import com.android.systemui.volume.panel.component.mediaoutput.domain.model.MediaControllerChangeModel
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderTestTags
 import com.android.systemui.volume.panel.component.volume.ui.composable.ColumnVolumeSlidersMotionTestKeys
+import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSlidersMotionTestKeys
 import com.android.systemui.volume.panel.component.volume.volumeSlidersComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
 import com.android.systemui.volume.panel.ui.viewmodel.volumePanelViewModel
@@ -125,6 +129,105 @@ class VolumeSlidersComponentMotionTest : SysuiTestCase() {
                 )
             assertThat(motion)
                 .timeSeriesMatchesGolden("VolumePanel_VolumeSliders_testCollapsedToExpanded")
+        }
+
+    @Test
+    fun recordMediaIconPosition() =
+        motionTestRule.runTest() {
+            val tag =
+                checkNotNull(
+                    AudioStreamSliderTestTags.testTagsByStream[
+                            AudioStream(AudioManager.STREAM_MUSIC)]
+                )
+
+            val motion =
+                recordMotion(
+                    content = { kosmos.Sliders() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                recording = {
+                                    performTouchInputAsync(
+                                        onNode(hasTestTag(resIdToTestTag(tag)))
+                                    ) {
+                                        swipeLeft(startX = right, endX = left, durationMillis = 500)
+                                    }
+                                }
+                            )
+                        ) {
+                            feature(
+                                hasTestTag(VolumeSlidersMotionTestKeys.ACTIVE_ICON_TAG)
+                                    .and(hasAnyAncestor(hasTestTag(resIdToTestTag(tag)))),
+                                positionInRoot,
+                                "${tag}_position_activeStartIcon",
+                                true,
+                            )
+                            feature(
+                                hasTestTag(VolumeSlidersMotionTestKeys.INACTIVE_ICON_TAG)
+                                    .and(hasAnyAncestor(hasTestTag(resIdToTestTag(tag)))),
+                                positionInRoot,
+                                "${tag}_position_inactiveStartIcon",
+                                true,
+                            )
+                        },
+                )
+            assertThat(motion)
+                .timeSeriesMatchesGolden("VolumePanel_VolumeSliders_recordMediaIconPosition")
+        }
+
+    @Test
+    fun testMuteRingerMutesNotification() =
+        motionTestRule.runTest() {
+            val ringTag =
+                checkNotNull(
+                    AudioStreamSliderTestTags.testTagsByStream[
+                            AudioStream(AudioManager.STREAM_RING)]
+                )
+            val notificationTag =
+                checkNotNull(
+                    AudioStreamSliderTestTags.testTagsByStream[
+                            AudioStream(AudioManager.STREAM_NOTIFICATION)]
+                )
+            val motion =
+                recordMotion(
+                    content = { kosmos.Sliders() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                recording = {
+                                    performTouchInputAsync(
+                                        onNode(hasTestTag(resIdToTestTag(ringTag)))
+                                    ) {
+                                        swipeLeft(
+                                            startX = right / 5,
+                                            endX = left,
+                                            durationMillis = 500,
+                                        )
+                                    }
+                                }
+                            )
+                        ) {
+                            feature(
+                                hasTestTag(VolumeSlidersMotionTestKeys.DISABLED_MESSAGE_TAG)
+                                    .and(
+                                        hasAnySibling(hasTestTag(resIdToTestTag(notificationTag)))
+                                    ),
+                                positionInRoot,
+                                "disabled_message_position",
+                                true,
+                            )
+                            feature(
+                                hasTestTag(resIdToTestTag(ringTag)),
+                                positionInRoot,
+                                "ring_slider_position",
+                                true,
+                            )
+                        },
+                )
+            assertThat(motion)
+                .timeSeriesMatchesGolden(
+                    "VolumePanel_VolumeSliders_testMuteRingerMutesNotification"
+                )
         }
 
     @Test
