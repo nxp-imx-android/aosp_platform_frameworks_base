@@ -129,7 +129,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -191,6 +194,7 @@ public abstract class WallpaperService extends Service {
     private static final int MSG_UPDATE_SCREEN_TURNING_ON = 10170;
     private static final int MSG_UPDATE_DIMMING = 10200;
     private static final int MSG_WALLPAPER_FLAGS_CHANGED = 10210;
+    private static final int MSG_MIRROR_SURFACE_CONTROL = 10220;
 
     /** limit calls to {@link Engine#onComputeColors} to at most once per second */
     private static final int NOTIFY_COLORS_RATE_LIMIT_MS = 1000;
@@ -1809,6 +1813,14 @@ public abstract class WallpaperService extends Service {
             processLocalColors();
         }
 
+        private void doMirrorSurfaceControl(
+                CompletableFuture<SurfaceControl> futureResult) {
+            if (mSurfaceControl == null || !mSurfaceControl.isValid()) {
+                futureResult.complete(null);
+            }
+            futureResult.complete(SurfaceControl.mirrorSurface(mSurfaceControl));
+        }
+
         /**
          * Thread-safe util to call {@link #processLocalColorsInternal} with a minimum interval of
          * {@link #PROCESS_LOCAL_COLORS_INTERVAL_MS} between two calls.
@@ -2633,14 +2645,20 @@ public abstract class WallpaperService extends Service {
 
         @Nullable
         public SurfaceControl mirrorSurfaceControl() {
-            if (mEngine == null) {
+            if (mEngine == null || mEngine.mSurfaceControl == null) {
                 return null;
             }
-            synchronized (mEngine.mSurfaceReleaseLock) {
-                if (mEngine.mSurfaceControl == null) {
-                    return null;
-                }
-                return SurfaceControl.mirrorSurface(mEngine.mSurfaceControl);
+            CompletableFuture<SurfaceControl> futureResult = new CompletableFuture<>();
+            Message msg = mCaller.obtainMessageO(MSG_MIRROR_SURFACE_CONTROL, futureResult);
+            mCaller.sendMessage(msg);
+            try {
+                return futureResult.get(5, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException e) {
+                Log.e(TAG, "mirrorSurfaceControl failed with an exception: ", e);
+                return null;
+            } catch (TimeoutException e) {
+                Log.e(TAG, "mirrorSurfaceControl timed out", e);
+                return null;
             }
         }
 
@@ -2810,6 +2828,12 @@ public abstract class WallpaperService extends Service {
                 } break;
                 case MSG_WALLPAPER_FLAGS_CHANGED: {
                     mEngine.onWallpaperFlagsChanged(message.arg1);
+                } break;
+                case MSG_MIRROR_SURFACE_CONTROL: {
+                    @SuppressWarnings("unchecked")
+                    CompletableFuture<SurfaceControl> futureResult =
+                            (CompletableFuture<SurfaceControl>) message.obj;
+                    mEngine.doMirrorSurfaceControl(futureResult);
                 } break;
                 default :
                     Log.w(TAG, "Unknown message type " + message.what);
