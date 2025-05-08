@@ -49,10 +49,14 @@ fun AmbientCueContainer(
             viewModel.collapse()
         }
     ) {
-        BackgroundGlow(visible, Modifier.align(Alignment.BottomCenter))
+        BackgroundGlow(
+            visible = visible,
+            expanded = expanded,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
         NavBarPill(
             actions = actions,
-            navBarWidth = 90.dp, // TODO: b/414507396 - Replace with the width of the navbar
+            navBarWidth = 110.dp, // TODO: b/414507396 - Replace with the width of the navbar
             visible = visible,
             expanded = expanded,
             modifier = Modifier.align(Alignment.BottomCenter),

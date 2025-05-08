@@ -17,6 +17,8 @@
 package com.android.systemui.ambientcue.ui.compose
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -40,14 +42,19 @@ fun ActionList(actions: List<ActionViewModel>, visible: Boolean, modifier: Modif
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         actions.fastForEachIndexed { index, action ->
-            val delay = 50 * (actions.size - index)
+            val delay = 64 * (actions.size - index)
             AnimatedVisibility(
                 visible = visible,
                 enter =
-                    slideInVertically(tween(450, delayMillis = delay)) {
-                        with(density) { 15.dp.roundToPx() }
+                    slideInVertically(
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow,
+                        )
+                    ) {
+                        with(density) { 15.dp.roundToPx() * (actions.size - index) }
                     } + fadeIn(tween(450, delayMillis = delay)),
-                exit = fadeOut(tween(250)),
+                exit = fadeOut(tween(350, delayMillis = delay)),
             ) {
                 Chip(action)
             }
