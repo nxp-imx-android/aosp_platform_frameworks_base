@@ -199,6 +199,15 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
         }
     }
 
+    @Override
+    protected void syncSummaryView(@NonNull View view) {
+        if (isDisabledByAdmin() || isDisabledByEcm()) {
+            // Summary should already be set, so no need to sync.
+            return;
+        }
+        super.syncSummaryView(view);
+    }
+
     public void useAdminDisabledSummary(boolean useSummary) {
         mHelper.useAdminDisabledSummary(useSummary);
     }
