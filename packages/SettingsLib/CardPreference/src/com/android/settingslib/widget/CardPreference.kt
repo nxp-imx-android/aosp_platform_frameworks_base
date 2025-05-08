@@ -30,7 +30,7 @@ import com.android.settingslib.widget.theme.R as ThemeR
  * The CardPreference shows a card like suggestion in homepage, which also support additional action
  * like dismiss.
  */
-class CardPreference
+open class CardPreference
 @JvmOverloads
 constructor(
     context: Context,
