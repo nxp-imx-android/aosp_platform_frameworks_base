@@ -110,6 +110,7 @@ bool Properties::enableWebViewOverlays = true;
 bool Properties::isHighEndGfx = true;
 bool Properties::isLowRam = false;
 bool Properties::isSystemOrPersistent = false;
+bool Properties::isForceInvertEnabled = false;
 
 float Properties::maxHdrHeadroomOn8bit = 5.f;  // TODO: Refine this number
 

@@ -1494,7 +1494,8 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_isLightThemeAndNotLightBackground_returnsNone()
+    public void
+            determineForceDarkType_isLightThemeAndNotLightBackground_returnsForceInvertColorDark()
             throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
@@ -1503,7 +1504,8 @@ public class ViewRootImplTest {
         setUpViewAttributes(/* isLightTheme= */ true, /* isLightBackground = */ false);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
-                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
+                () -> (mViewRootImpl.determineForceDarkType()
+                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
     }
 
     @Test
