@@ -17,56 +17,74 @@
 package com.android.settingslib.spa.search
 
 import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.spa.framework.common.SettingsPageProvider
+import com.android.settingslib.spa.framework.common.SettingsPageProviderRepository
+import com.android.settingslib.spa.framework.common.SpaEnvironment
+import com.android.settingslib.spa.framework.common.SpaEnvironmentFactory
 import com.android.settingslib.spa.search.SpaSearchLanding.SpaSearchLandingKey
 import com.android.settingslib.spa.search.SpaSearchLanding.SpaSearchLandingSpaPage
-import com.android.settingslib.spa.search.SpaSearchRepository.Companion.createSearchIndexableData
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
 class SpaSearchRepositoryTest {
 
-    @Test
-    fun createSearchIndexableData() {
-        val pageProvider =
-            object : SettingsPageProvider {
-                override val name = PAGE_NAME
+    private val context: Context = ApplicationProvider.getApplicationContext()
+
+    val pageProvider: SettingsPageProvider =
+        object : SettingsPageProvider, SearchablePage {
+            override val name = PAGE_NAME
+
+            override fun getPageTitleForSearch(context: Context) = PAGE_TITLE
+
+            override fun getSearchItems(context: Context) =
+                listOf(SearchablePage.SearchItem(itemTitle = ITEM_TITLE))
+        }
+
+    private val repository = SpaSearchRepository()
+
+    @Before
+    fun setUp() {
+        SpaEnvironmentFactory.reset(
+            object : SpaEnvironment(context) {
+                override val pageProviderRepository = lazy {
+                    SettingsPageProviderRepository(allPageProviders = listOf(pageProvider))
+                }
             }
+        )
+    }
+
+    @Test
+    fun getSearchIndexablePageList() {
         val searchItem = SearchablePage.SearchItem(ITEM_TITLE)
 
-        val searchIndexableData =
-            pageProvider.createSearchIndexableData(
-                intentAction = INTENT_ACTION,
-                intentTargetClass = INTENT_TARGET_CLASS,
-                getPageTitleForSearch = { PAGE_TITLE },
-                searchItemsProvider = { listOf(searchItem) },
-            )
-        val dynamicRawDataToIndex =
-            searchIndexableData.searchIndexProvider.getDynamicRawDataToIndex(mock<Context>(), true)
+        val searchIndexablePageList = repository.getSearchIndexablePageList()
 
-        assertThat(searchIndexableData.targetClass).isEqualTo(pageProvider::class.java)
-        assertThat(dynamicRawDataToIndex).hasSize(1)
-        val rawData = dynamicRawDataToIndex[0]
-        assertThat(decodeToSpaSearchLandingKey(rawData.key))
+        assertThat(searchIndexablePageList).hasSize(1)
+        val searchIndexablePage = searchIndexablePageList.single()
+        assertThat(searchIndexablePage.targetClass).isEqualTo(pageProvider::class.java)
+        val items = searchIndexablePage.itemsProvider(context)
+        assertThat(items).hasSize(1)
+        assertThat(items.single())
             .isEqualTo(
-                SpaSearchLandingKey.newBuilder()
-                    .setSpaPage(SpaSearchLandingSpaPage.newBuilder().setDestination(PAGE_NAME))
-                    .build()
+                SpaSearchIndexableItem(
+                    searchLandingKey =
+                        SpaSearchLandingKey.newBuilder()
+                            .setSpaPage(
+                                SpaSearchLandingSpaPage.newBuilder().setDestination(PAGE_NAME)
+                            )
+                            .build(),
+                    pageTitle = PAGE_TITLE,
+                    itemTitle = ITEM_TITLE,
+                )
             )
-        assertThat(rawData.title).isEqualTo(ITEM_TITLE)
-        assertThat(rawData.intentAction).isEqualTo(INTENT_ACTION)
-        assertThat(rawData.intentTargetClass).isEqualTo(INTENT_TARGET_CLASS)
-        assertThat(rawData.className).isEqualTo(pageProvider::class.java.name)
-        assertThat(rawData.screenTitle).isEqualTo(PAGE_TITLE)
     }
 
     private companion object {
-        const val INTENT_ACTION = "intent.Action"
-        const val INTENT_TARGET_CLASS = "target.Class"
         const val PAGE_NAME = "PageName"
         const val PAGE_TITLE = "Page Title"
         const val ITEM_TITLE = "Item Title"
