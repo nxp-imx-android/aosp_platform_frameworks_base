@@ -498,6 +498,7 @@ public class LocalMediaManagerTest {
         mLocalMediaManager.mMediaDeviceCallback.onDeviceListAdded(devices);
 
         assertThat(mLocalMediaManager.mMediaDevices).hasSize(2);
+        assertThat(mLocalMediaManager.mMediaDevices.getLast().isMutingExpectedDevice()).isTrue();
         verify(mCallback).onDeviceListUpdate(any());
     }
 

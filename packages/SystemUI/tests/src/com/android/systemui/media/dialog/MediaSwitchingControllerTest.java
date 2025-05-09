@@ -523,12 +523,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         reset(mCb);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = new ArrayList<>();
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
-            }
-        }
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
@@ -558,12 +554,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         reset(mCb);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = new ArrayList<>();
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
-            }
-        }
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
@@ -597,12 +589,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         reset(mCb);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = new ArrayList<>();
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
-            }
-        }
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
@@ -634,12 +622,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         reset(mCb);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        final List<MediaDevice> devices = new ArrayList<>();
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
-            }
-        }
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
 
         assertThat(devices.containsAll(mMediaDevices)).isTrue();
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
@@ -689,12 +673,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         // Input devices have changed.
         mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
 
-        final List<MediaDevice> devices = new ArrayList<>();
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
-            }
-        }
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
 
         assertThat(devices).containsAtLeastElementsIn(mMediaDevices);
         assertThat(devices).hasSize(mMediaDevices.size() + inputDevices.size());
@@ -725,6 +705,40 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(devices.size()).isEqualTo(mMediaDevices.size());
         assertThat(dividerSize).isEqualTo(2);
         verify(mCb).onDeviceListChanged();
+    }
+
+    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
+    @Test
+    public void onDeviceListUpdate_withMutingExpectedDevice_putItOnTop() {
+        when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);
+        when(mMediaDevice2.isMutingExpectedDevice()).thenReturn(true);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.clearMediaItemList();
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
+
+        assertThat(devices.getFirst().isMutingExpectedDevice()).isTrue();
+        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
+    @Test
+    public void onDeviceListUpdate_noMutingExpectedDevice_processListNormally() {
+        when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);
+        when(mMediaDevice2.isMutingExpectedDevice()).thenReturn(false);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.clearMediaItemList();
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+        final List<MediaDevice> devices = getMediaDevices(
+                mMediaSwitchingController.getMediaItemList());
+
+        assertThat(devices.getFirst().isMutingExpectedDevice()).isFalse();
+        assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isFalse();
     }
 
     @Test
@@ -1634,6 +1648,13 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
         assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
+    }
+
+    private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItemList) {
+        return mediaItemList.stream()
+                .filter(item -> item.getMediaDevice().isPresent())
+                .map(item -> item.getMediaDevice().get())
+                .collect(Collectors.toList());
     }
 
     private int getNumberOfConnectDeviceButtons(List<MediaItem> itemList) {

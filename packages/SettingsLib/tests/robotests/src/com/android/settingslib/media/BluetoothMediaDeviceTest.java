@@ -154,4 +154,16 @@ public class BluetoothMediaDeviceTest {
                 null, /* dynamicRouteAttributes= */ null, null);
         assertThat(bluetoothMediaDevice.getName()).isEqualTo(TEST_CACHED_DEVICE_NAME);
     }
+
+    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
+    @Test
+    public void getIsMutingExpectedDevice_dependsOnConstructorArgument() {
+        MediaDevice bluetoothMediaDevice = new BluetoothMediaDevice(mContext, mDevice,
+                null, /* dynamicRouteAttributes= */ null, null);
+        assertThat(bluetoothMediaDevice.isMutingExpectedDevice()).isFalse();
+
+        MediaDevice mutingExpectedDevice = new BluetoothMediaDevice(mContext, mDevice,
+                null, /* dynamicRouteAttributes= */ null, null, /* isMutingExpectedDevice= */ true);
+        assertThat(mutingExpectedDevice.isMutingExpectedDevice()).isTrue();
+    }
 }
