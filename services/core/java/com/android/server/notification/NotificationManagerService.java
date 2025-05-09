@@ -3869,23 +3869,30 @@ public class NotificationManagerService extends SystemService {
     @GuardedBy("mNotificationLock")
     protected void maybeRecordInterruptionLocked(NotificationRecord r) {
         if (r.isInterruptive() && !r.hasRecordedInterruption()) {
+            String channelId = r.getChannel().getId();
+            if (android.app.Flags.notificationClassificationUi()) {
+                channelId = r.getNotification().getChannelId();
+            }
             mAppUsageStats.reportInterruptiveNotification(r.getSbn().getPackageName(),
-                    r.getChannel().getId(),
+                    channelId,
                     getRealUserId(r.getSbn().getUserId()));
             Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "notifHistoryAddItem");
             try {
                 if (r.getNotification().getSmallIcon() != null) {
-                    mHistoryManager.addNotification(new HistoricalNotification.Builder()
+                    final HistoricalNotification.Builder builder
+                            = new HistoricalNotification.Builder()
                             .setPackage(r.getSbn().getPackageName())
                             .setUid(r.getSbn().getUid())
                             .setUserId(r.getSbn().getNormalizedUserId())
-                            .setChannelId(r.getChannel().getId())
-                            .setChannelName(r.getChannel().getName().toString())
+                            .setChannelId(channelId)
                             .setPostedTimeMs(System.currentTimeMillis())
                             .setTitle(getHistoryTitle(r.getNotification()))
                             .setText(getHistoryText(r.getNotification()))
-                            .setIcon(r.getNotification().getSmallIcon())
-                            .build());
+                            .setIcon(r.getNotification().getSmallIcon());
+                    if (android.app.Flags.notificationClassificationUi()) {
+                        builder.setChannelName(r.getChannel().getName().toString());
+                    }
+                    mHistoryManager.addNotification(builder.build());
                 }
             } finally {
                 Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
