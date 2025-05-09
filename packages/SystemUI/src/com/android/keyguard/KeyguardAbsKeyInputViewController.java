@@ -25,6 +25,7 @@ import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.PluralsMessageFormatter;
 import android.view.KeyEvent;
 
@@ -58,6 +59,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
     protected AsyncTask<?, ?, ?> mPendingLockCheck;
     protected boolean mResumed;
     protected boolean mLockedOut;
+    private static final String TAG = "KeyguardAbsKeyInputViewController";
 
     private final KeyDownListener mKeyDownListener = (keyCode, keyEvent) -> {
         // Fingerprint sensor sends a KeyEvent.KEYCODE_UNKNOWN.
@@ -192,6 +194,11 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             if (dismissKeyguard) {
                 mDismissing = true;
                 mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
+                Log.i(TAG,
+                        "StartUnlock. "
+                        + "User: " + userId
+                        + " TS: " + SystemClock.uptimeMillis()
+                );
                 getKeyguardSecurityCallback().dismiss(true, userId, getSecurityMode());
             }
         } else {
