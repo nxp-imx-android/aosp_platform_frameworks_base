@@ -23,11 +23,13 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.graphics.fonts.Font
 import android.os.VibrationEffect
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.util.MathUtils.lerp
+import android.util.MathUtils.lerpInvSat
 import android.util.TypedValue
 import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
@@ -59,6 +61,7 @@ import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
 import java.lang.Thread
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -70,6 +73,10 @@ private val tempRect = Rect()
 private fun Paint.getTextBounds(text: CharSequence): VRectF {
     this.getTextBounds(text, 0, text.length, tempRect)
     return VRectF(tempRect)
+}
+
+private fun nearEqual(a: Float, b: Float, tolerance: Float): Boolean {
+    return abs(a - b) < tolerance
 }
 
 enum class VerticalAlignment {
@@ -112,7 +119,7 @@ enum class XAlignment {
 @SuppressLint("AppCompatCustomView")
 open class SimpleDigitalClockTextView(
     val clockCtx: ClockContext,
-    isLargeClock: Boolean,
+    val isLargeClock: Boolean,
     attrs: AttributeSet? = null,
 ) : TextView(clockCtx.context, attrs) {
     val lockScreenPaint = TextPaint()
@@ -198,6 +205,53 @@ open class SimpleDigitalClockTextView(
     var measuredBaseline = 0
     var lockscreenColor = Color.WHITE
     var aodColor = Color.WHITE
+    var baseWidthAdjustment = 0f
+    var targetWidthAdjustment = 0f
+
+    private val animatorListener =
+        object : TextAnimatorListener {
+            override fun onInvalidate() = invalidate()
+
+            override fun onRebased(progress: Float) {
+                baseWidthAdjustment = lerp(baseWidthAdjustment, targetWidthAdjustment, progress)
+                updateAnimationTextBounds()
+            }
+
+            override fun onPaintModified(paint: Paint) {
+                updateAnimationTextBounds()
+            }
+
+            override fun getCharWidthAdjustment(font: Font, char: Char, width: Float): Float {
+                if (isLargeClock) return 0f
+                val charMult = SPACING_ADJUSTMENT_GLYPH_MAP.get(char) ?: 1f
+                val wdth = font.axes?.firstOrNull { it.tag == GSFAxes.WIDTH.tag }?.styleValue ?: 0f
+                return width * SPACING_BASE_ADJUSTMENT * charMult * lerpInvSat(30f, 120f, wdth)
+            }
+
+            override fun onTotalAdjustmentComputed(
+                paint: Paint,
+                lineAdvance: Float,
+                totalAdjustment: Float,
+            ): Boolean {
+                val isBasePaint = paint == textAnimator.textInterpolator.basePaint
+                if (isBasePaint) {
+                    if (!nearEqual(baseWidthAdjustment, totalAdjustment, 0.1f)) {
+                        baseWidthAdjustment = totalAdjustment
+                        updateAnimationTextBounds()
+                    }
+                } else {
+                    if (!nearEqual(targetWidthAdjustment, totalAdjustment, 0.1f)) {
+                        targetWidthAdjustment = totalAdjustment
+                        updateAnimationTextBounds()
+                    }
+                }
+
+                // If animation is disabled, then we don't want to adjust the glyph positions with
+                // updated bounds as in the robolectric test environment we don't see the same
+                // misalignment of RTL glyphs from the view bounds as we do in production.
+                return isAnimationEnabled
+            }
+        }
 
     fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE) {
         this.lockscreenColor = lockscreenColor
@@ -269,18 +323,7 @@ open class SimpleDigitalClockTextView(
         val layout = this.layout
         if (layout != null) {
             if (!this::textAnimator.isInitialized) {
-                textAnimator =
-                    TextAnimator(
-                        layout,
-                        typefaceCache,
-                        object : TextAnimatorListener {
-                            override fun onInvalidate() = invalidate()
-
-                            override fun onRebased() = updateAnimationTextBounds()
-
-                            override fun onPaintModified() = updateAnimationTextBounds()
-                        },
-                    )
+                textAnimator = TextAnimator(layout, typefaceCache, animatorListener)
                 setInterpolatorPaint()
             } else {
                 textAnimator.updateLayout(layout)
@@ -649,6 +692,15 @@ open class SimpleDigitalClockTextView(
         updateAnimationTextBounds()
     }
 
+    private fun adjustSpacingBounds(rect: VRectF, adjustment: Float): VRectF {
+        return VRectF(
+            top = rect.top,
+            bottom = rect.bottom,
+            left = rect.left - if (isLayoutRtl()) adjustment else 0f,
+            right = rect.right + if (isLayoutRtl()) 0f else adjustment,
+        )
+    }
+
     /**
      * Called after textAnimator.setTextStyle textAnimator.setTextStyle will update targetPaint, and
      * rebase if previous animator is canceled so basePaint will store the state we transition from
@@ -663,6 +715,9 @@ open class SimpleDigitalClockTextView(
             prevTextBounds = textBounds
             targetTextBounds = textBounds
         }
+
+        prevTextBounds = adjustSpacingBounds(prevTextBounds, baseWidthAdjustment)
+        targetTextBounds = adjustSpacingBounds(targetTextBounds, targetWidthAdjustment)
     }
 
     /**
@@ -724,6 +779,10 @@ open class SimpleDigitalClockTextView(
         private val FLEX_LS_WIDTH_AXIS = GSFAxes.WIDTH to 100f
         private val FLEX_AOD_WIDTH_AXIS = GSFAxes.WIDTH to 43f
         private val FLEX_ROUND_AXIS = GSFAxes.ROUND to 100f
+
+        // Multipliers for glyphs that need specific spacing adjustment
+        private val SPACING_ADJUSTMENT_GLYPH_MAP = mapOf(':' to 2.5f, '1' to 3.0f)
+        private val SPACING_BASE_ADJUSTMENT = -0.08f
 
         private fun fromAxes(vararg axes: Pair<AxisDefinition, Float>): ClockAxisStyle {
             return ClockAxisStyle(axes.map { (def, value) -> def.tag to value }.toMap())
