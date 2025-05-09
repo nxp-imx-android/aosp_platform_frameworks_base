@@ -753,7 +753,7 @@ class UserController implements Handler.Callback {
                 public void performReceive(Intent intent, int resultCode, String data,
                         Bundle extras, boolean ordered, boolean sticky, int sendingUser)
                         throws RemoteException {
-                    if (remainingPackages.decrementAndGet() == 0) {
+                    if (remainingPackages.decrementAndGet() == 0 && !Objects.isNull(receiver)) {
                         receiver.performReceive(intent, resultCode, data, extras, ordered, sticky,
                                 sendingUser);
                     }
