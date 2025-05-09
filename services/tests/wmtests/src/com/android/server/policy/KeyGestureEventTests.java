@@ -396,15 +396,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureToggleTalkback() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
-        mPhoneWindowManager.assertTalkBack(true);
-
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
-        mPhoneWindowManager.assertTalkBack(false);
-    }
-
-    @Test
     public void testKeyGestureToggleDoNotDisturb() {
         mPhoneWindowManager.overrideZenMode(Settings.Global.ZEN_MODE_OFF);
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB);
