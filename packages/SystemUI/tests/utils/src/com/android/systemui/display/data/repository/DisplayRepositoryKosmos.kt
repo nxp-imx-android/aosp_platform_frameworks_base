@@ -16,12 +16,19 @@
 
 package com.android.systemui.display.data.repository
 
+import android.hardware.display.DisplayManager
+import android.os.fakeHandler
 import android.view.Display
+import android.view.mockIWindowManager
+import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.mockCommandQueue
+import com.android.systemui.util.mockito.mock
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 val Kosmos.displayRepository by Fixture { FakeDisplayRepository() }
 
@@ -50,4 +57,26 @@ val Kosmos.displaySubcomponentPerDisplayRepository by Fixture {
     FakePerDisplayRepository<SystemUIDisplaySubcomponent>().apply {
         add(Display.DEFAULT_DISPLAY, sysuiDefaultDisplaySubcomponent)
     }
+}
+
+val Kosmos.mockDisplayManager by Fixture { mock<DisplayManager>() }
+val Kosmos.displayRepositoryFromDisplayLib by Fixture {
+    com.android.app.displaylib.DisplayRepositoryImpl(
+        mockDisplayManager,
+        fakeHandler,
+        testScope.backgroundScope,
+        UnconfinedTestDispatcher(),
+    )
+}
+val Kosmos.displayWithDecorationsRepository by Fixture {
+    DisplaysWithDecorationsRepositoryImpl(
+        mockCommandQueue,
+        mockIWindowManager,
+        testScope.backgroundScope,
+        displayRepositoryFromDisplayLib,
+    )
+}
+
+val Kosmos.realDisplayRepository by Fixture {
+    DisplayRepositoryImpl(displayRepositoryFromDisplayLib, displayWithDecorationsRepository)
 }
