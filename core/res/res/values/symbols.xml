@@ -1748,6 +1748,7 @@
   <java-symbol type="layout" name="media_route_controller_dialog" />
   <java-symbol type="layout" name="media_route_list_item" />
   <java-symbol type="id" name="media_route_list" />
+  <java-symbol type="id" name="empty_subtitle" />
   <java-symbol type="id" name="media_route_volume_layout" />
   <java-symbol type="id" name="media_route_volume_slider" />
   <java-symbol type="id" name="media_route_extended_settings_button" />

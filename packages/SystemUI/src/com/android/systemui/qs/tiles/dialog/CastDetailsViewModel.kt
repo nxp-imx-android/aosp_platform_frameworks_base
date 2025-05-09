@@ -44,7 +44,8 @@ constructor(
     MediaRouteControllerContentManager.Delegate,
     TileDetailsViewModel {
     private var detailsViewTitle by mutableStateOf(DEFAULT_TITLE)
-    private val detailsViewSubTitle = if (shouldShowChooserDialog()) DEFAULT_SUBTITLE else ""
+    private var detailsViewSubTitle by
+        mutableStateOf(if (shouldShowChooserDialog()) DEFAULT_SUBTITLE else "")
     var deviceIcon: Drawable? by mutableStateOf(null)
 
     @AssistedFactory
@@ -64,6 +65,10 @@ constructor(
 
     fun createControllerContentManager(): MediaRouteControllerContentManager {
         return MediaRouteControllerContentManager(context, this)
+    }
+
+    fun setMediaRouteDeviceSubTitle(title: CharSequence?) {
+        detailsViewSubTitle = title.toString()
     }
 
     override fun clickOnSettingsButton() {
