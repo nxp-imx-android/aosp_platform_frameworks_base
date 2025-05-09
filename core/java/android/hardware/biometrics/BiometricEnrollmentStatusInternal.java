@@ -62,7 +62,7 @@ public final class BiometricEnrollmentStatusInternal implements Parcelable {
     }
 
     private BiometricEnrollmentStatusInternal(Parcel in) {
-        this(in.readInt(), new BiometricEnrollmentStatus(in.readInt()));
+        this(in.readInt(), new BiometricEnrollmentStatus(in.readInt(), in.readInt()));
     }
 
     @NonNull
@@ -81,6 +81,7 @@ public final class BiometricEnrollmentStatusInternal implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mModality);
+        dest.writeInt(mStatus.getStrength());
         dest.writeInt(mStatus.getEnrollmentCount());
     }
 
@@ -97,12 +98,13 @@ public final class BiometricEnrollmentStatusInternal implements Parcelable {
         } else if (mModality == BiometricManager.TYPE_FACE) {
             modality = "Face";
         }
-        return "Modality: " + modality + ", Enrolled Count: " + mStatus.getEnrollmentCount();
+        return "Modality: " + modality + ", Strength: " + mStatus.getStrength()
+                + ", Enrolled Count: " + mStatus.getEnrollmentCount();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mModality, mStatus.getEnrollmentCount());
+        return Objects.hash(mModality, mStatus.getStrength(), mStatus.getEnrollmentCount());
     }
 
     @Override
@@ -111,6 +113,7 @@ public final class BiometricEnrollmentStatusInternal implements Parcelable {
         if (obj == null || getClass() != obj.getClass()) return false;
         BiometricEnrollmentStatusInternal other = (BiometricEnrollmentStatusInternal) obj;
         return mModality == other.mModality
+                && mStatus.getStrength() == other.mStatus.getStrength()
                 && mStatus.getEnrollmentCount() == other.mStatus.getEnrollmentCount();
     }
 }

@@ -5166,6 +5166,7 @@ package android.hardware.biometrics {
 
   @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") public final class BiometricEnrollmentStatus {
     method @IntRange(from=0) public int getEnrollmentCount();
+    method public int getStrength();
   }
 
   public class BiometricManager {

@@ -450,7 +450,10 @@ public class AuthService extends SystemService {
                     if (!fpProps.isEmpty()) {
                         int fpCount = fingerprintService.getEnrolledFingerprints(userId,
                                 opPackageName, getContext().getAttributionTag()).size();
-                        BiometricEnrollmentStatus status = new BiometricEnrollmentStatus(fpCount);
+                        int strength = Utils.propertyStrengthToAuthenticatorStrength(
+                                fpProps.getFirst().sensorStrength);
+                        BiometricEnrollmentStatus status = new BiometricEnrollmentStatus(strength,
+                                fpCount);
                         enrollmentStatusList.add(
                                 new BiometricEnrollmentStatusInternal(
                                         BiometricManager.TYPE_FINGERPRINT, status));
@@ -466,9 +469,13 @@ public class AuthService extends SystemService {
                     final List<FaceSensorPropertiesInternal> faceProps =
                             faceService.getSensorPropertiesInternal(opPackageName);
                     if (!faceProps.isEmpty()) {
-                        int faceCount = faceService.getEnrolledFaces(faceProps.getFirst().sensorId,
-                                userId, opPackageName).size();
-                        BiometricEnrollmentStatus status = new BiometricEnrollmentStatus(faceCount);
+                        FaceSensorPropertiesInternal faceProp = faceProps.getFirst();
+                        int faceCount = faceService.getEnrolledFaces(faceProp.sensorId, userId,
+                                opPackageName).size();
+                        int strength = Utils.propertyStrengthToAuthenticatorStrength(
+                                faceProp.sensorStrength);
+                        BiometricEnrollmentStatus status = new BiometricEnrollmentStatus(strength,
+                                faceCount);
                         enrollmentStatusList.add(
                                 new BiometricEnrollmentStatusInternal(
                                         BiometricManager.TYPE_FACE, status));
