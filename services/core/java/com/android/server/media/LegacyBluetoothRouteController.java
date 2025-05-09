@@ -46,6 +46,7 @@ import com.android.internal.R;
 import com.android.media.flags.Flags;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -195,13 +196,16 @@ class LegacyBluetoothRouteController implements BluetoothRouteController {
         }
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public MediaRoute2Info getSelectedRoute() {
+    public List<MediaRoute2Info> getSelectedRoutes() {
         // For now, active routes can be multiple only when a pair of hearing aid devices is active.
         // Let the first active device represent them.
-        return (mActiveRoutes.isEmpty() ? null : mActiveRoutes.get(0).mRoute);
+        return (mActiveRoutes.isEmpty()
+                ? Collections.emptyList()
+                : List.of(mActiveRoutes.getFirst().mRoute));
     }
+
 
     @NonNull
     @Override
@@ -219,8 +223,8 @@ class LegacyBluetoothRouteController implements BluetoothRouteController {
         List<MediaRoute2Info> routes = new ArrayList<>();
         List<String> routeIds = new ArrayList<>();
 
-        MediaRoute2Info selectedRoute = getSelectedRoute();
-        if (selectedRoute != null) {
+        List<MediaRoute2Info> selectedRoutes = getSelectedRoutes();
+        for (MediaRoute2Info selectedRoute : selectedRoutes) {
             routes.add(selectedRoute);
             routeIds.add(selectedRoute.getId());
         }

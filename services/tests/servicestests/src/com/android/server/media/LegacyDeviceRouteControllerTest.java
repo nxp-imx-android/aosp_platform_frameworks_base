@@ -115,7 +115,7 @@ public class LegacyDeviceRouteControllerTest {
                     mOnDeviceRouteChangedListener
             );
 
-            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
             assertThat(actualMediaRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
             assertThat(TextUtils.equals(actualMediaRoute.getName(), DEFAULT_ROUTE_NAME))
@@ -140,7 +140,7 @@ public class LegacyDeviceRouteControllerTest {
                     mOnDeviceRouteChangedListener
             );
 
-            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
             assertThat(actualMediaRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
             assertThat(TextUtils.equals(actualMediaRoute.getName(), DEFAULT_ROUTE_NAME))
@@ -160,7 +160,7 @@ public class LegacyDeviceRouteControllerTest {
                     new LegacyDeviceRouteController(
                             mContext, mAudioManager, mAudioService, mOnDeviceRouteChangedListener);
 
-            MediaRoute2Info selectedRoute = deviceRouteController.getSelectedRoute();
+            MediaRoute2Info selectedRoute = deviceRouteController.getSelectedRoutes().getFirst();
             assertThat(deviceRouteController.getAvailableRoutes())
                     .isEqualTo(List.of(selectedRoute));
         }
@@ -271,7 +271,7 @@ public class LegacyDeviceRouteControllerTest {
                     mOnDeviceRouteChangedListener
             );
 
-            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
             assertThat(actualMediaRoute.getType()).isEqualTo(mExpectedRouteType);
             assertThat(TextUtils.equals(actualMediaRoute.getName(), mExpectedRouteNameValue))
@@ -338,7 +338,8 @@ public class LegacyDeviceRouteControllerTest {
             // Simulating wired device being connected.
             callAudioRoutesObserver(audioRoutesInfo);
 
-            MediaRoute2Info actualMediaRoute = mDeviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute =
+                    mDeviceRouteController.getSelectedRoutes().getFirst();
 
             assertThat(actualMediaRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_WIRED_HEADPHONES);
             assertThat(TextUtils.equals(actualMediaRoute.getName(), DEFAULT_HEADPHONES_NAME))
@@ -352,7 +353,8 @@ public class LegacyDeviceRouteControllerTest {
             AudioRoutesInfo fakeBluetoothAudioRoute = createFakeBluetoothAudioRoute();
             callAudioRoutesObserver(fakeBluetoothAudioRoute);
 
-            MediaRoute2Info actualMediaRoute = mDeviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute =
+                    mDeviceRouteController.getAvailableRoutes().getFirst();
 
             assertThat(actualMediaRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
             assertThat(TextUtils.equals(actualMediaRoute.getName(), DEFAULT_ROUTE_NAME))
@@ -362,12 +364,13 @@ public class LegacyDeviceRouteControllerTest {
 
         @Test
         public void updateVolume_differentValue_updatesDeviceRouteVolume() {
-            MediaRoute2Info actualMediaRoute = mDeviceRouteController.getSelectedRoute();
+            MediaRoute2Info actualMediaRoute =
+                    mDeviceRouteController.getSelectedRoutes().getFirst();
             assertThat(actualMediaRoute.getVolume()).isEqualTo(VOLUME_DEFAULT_VALUE);
 
             assertThat(mDeviceRouteController.updateVolume(VOLUME_VALUE_SAMPLE_1)).isTrue();
 
-            actualMediaRoute = mDeviceRouteController.getSelectedRoute();
+            actualMediaRoute = mDeviceRouteController.getSelectedRoutes().getFirst();
             assertThat(actualMediaRoute.getVolume()).isEqualTo(VOLUME_VALUE_SAMPLE_1);
         }
 
