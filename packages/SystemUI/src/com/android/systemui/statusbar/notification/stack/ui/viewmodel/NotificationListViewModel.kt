@@ -93,12 +93,17 @@ constructor(
     val shouldShowEmptyShadeView: Flow<AnimatedValue<Boolean>> by lazy {
         combine(
                 activeNotificationsInteractor.areAnyNotificationsPresent,
-                shadeInteractor.isQsFullscreen,
+                shadeInteractor.qsExpansion
+                    .map { it >= QS_EXPANSION_THRESHOLD }
+                    .distinctUntilChanged(),
+                shadeModeInteractor.shadeMode.map { it == ShadeMode.Split },
                 notificationStackInteractor.isShowingOnLockscreen,
-            ) { hasNotifications, isQsFullScreen, isShowingOnLockscreen ->
+            ) { hasNotifications, qsExpandedEnough, isSplitShade, isShowingOnLockscreen ->
                 when {
                     hasNotifications -> false
-                    isQsFullScreen -> false
+                    // Hide the empty shade when QS is close to being full screen. We use this
+                    // instead of isQsFullscreen to avoid some flickering.
+                    qsExpandedEnough && !isSplitShade -> false
                     // Do not show the empty shade if the lockscreen is visible (including AOD
                     // b/228790482 and bouncer b/267060171), except if the shade is opened on
                     // top.
@@ -364,5 +369,9 @@ constructor(
 
     fun setHeadsUpAnimatingAway(animatingAway: Boolean) {
         headsUpNotificationInteractor.setHeadsUpAnimatingAway(animatingAway)
+    }
+
+    companion object {
+        const val QS_EXPANSION_THRESHOLD = 0.9
     }
 }
