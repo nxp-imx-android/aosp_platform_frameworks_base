@@ -3604,6 +3604,16 @@ public class BubbleController implements ConfigurationChangeListener,
         @Override
         public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible) {
             if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                // When removing the last bubble, BubbleData has already removed the bubble from
+                // the stack before this call occurs. Without this check, the TO_BACK transition
+                // would trigger DesktopModeWindowDecorViewModel#onTaskChanging, which
+                // incorrectly creates desktop mode window decorations for the removed bubble task
+                // since AppHandleAndHeaderVisibilityHelper#allowedForTask can't find the task in
+                // the bubble stack anymore. These decorations then "leak" because the task will be
+                // closed in the subsequent CLOSE transition. See b/416655338 for more details.
+                if (!visible && !mBubbleData.hasBubbleInStackWithTaskView(taskView)) {
+                    return;
+                }
                 // Use reorder instead of always-on-top with hidden.
                 mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
                         false /* toggleHiddenOnReorder */);
