@@ -1984,3 +1984,13 @@ flag {
      purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "fix_dialog_launch_animation_jank_logging"
+    namespace: "systemui"
+    description: "Adjust timing of jank logging for dialog launch animations, and attach it to the dialog window instead of the origin view window."
+    bug: "409008342"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
