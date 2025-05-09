@@ -8046,6 +8046,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyOrNull(),
                 eq(true),
                 eq(SPLIT_INDEX_UNDEFINED),
+                eq(DEFAULT_DISPLAY),
             )
         assertThat(ActivityOptions.fromBundle(optionsCaptor.firstValue).launchWindowingMode)
             .isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
@@ -8068,6 +8069,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyOrNull(),
                 eq(true),
                 eq(SPLIT_INDEX_UNDEFINED),
+                eq(DEFAULT_DISPLAY),
             )
         assertThat(ActivityOptions.fromBundle(optionsCaptor.firstValue).launchWindowingMode)
             .isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
