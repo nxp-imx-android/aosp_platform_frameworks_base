@@ -286,10 +286,15 @@ public class ComplicationLayoutEngine implements Complication.VisibilityControll
          * Informs the {@link ViewEntry}'s parent entity to remove the {@link ViewEntry} from
          * being shown further.
          */
-        public void remove() {
+        public void remove(boolean destroyed) {
             mParent.removeEntry(this);
 
-            ((ViewGroup) mView.getParent()).removeView(mView);
+            // In the case we're destroyed and going away, we maintain the view inside its parent
+            // for exit transition purposes.
+            if (!destroyed) {
+                ((ViewGroup) mView.getParent()).removeView(mView);
+            }
+
             mTouchInsetSession.removeViewFromTracking(mView);
         }
 
@@ -622,6 +627,8 @@ public class ComplicationLayoutEngine implements Complication.VisibilityControll
             new HashMap<>();
     private final Provider<Margins> mComplicationMarginsProvider;
     private Rect mScreenBounds = new Rect();
+    private boolean mDestroyed;
+
     /** */
     @Inject
     public ComplicationLayoutEngine(@Named(SCOPED_COMPLICATIONS_LAYOUT) ConstraintLayout layout,
@@ -718,6 +725,13 @@ public class ComplicationLayoutEngine implements Complication.VisibilityControll
         }
     }
 
+    protected void onDestroyed() {
+        // Some behaviors change upon destroy. For example, removing a complication will not result
+        // in its removal from the layout as there might be exit animations in progress. We note
+        // this state with the following variable to reference in those cases.
+        mDestroyed = true;
+    }
+
     /**
      * Adds a complication to this {@link ComplicationLayoutEngine}.
      * @param id A {@link ComplicationId} unique to this complication. If this matches a
@@ -764,7 +778,7 @@ public class ComplicationLayoutEngine implements Complication.VisibilityControll
             return false;
         }
 
-        entry.remove();
+        entry.remove(mDestroyed);
         return true;
     }
 
