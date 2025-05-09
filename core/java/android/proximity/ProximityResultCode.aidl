@@ -49,12 +49,24 @@ enum ProximityResultCode {
     PRIMARY_DEVICE_RANGING_FAILED_TO_START = 12,
     /** Ranging already running on primary device. */
     PRIMARY_DEVICE_RANGING_ALREADY_RUNNING = 13,
+    /** Max retry reached on primary device. */
+    PRIMARY_DEVICE_MAX_RETRY_REACHED = 14,
+    /** Ranging is unavailable on primary device. */
+    PRIMARY_DEVICE_RANGING_UNAVAILABLE = 15,
     /** Ranging could not start on associated device. May succeed on a retry. */
-    ASSOCIATED_DEVICE_RANGING_FAILED_TO_START = 14,
+    ASSOCIATED_DEVICE_RANGING_FAILED_TO_START = 16,
     /** Ranging already running on associated device. */
-    ASSOCIATED_DEVICE_RANGING_ALREADY_RUNNING = 15,
+    ASSOCIATED_DEVICE_RANGING_ALREADY_RUNNING = 17,
     /** User turned off ranging method on associated device. */
-    ASSOCIATED_DEVICE_RANGING_TURNED_OFF = 16,
+    ASSOCIATED_DEVICE_RANGING_TURNED_OFF = 18,
+    /** Max retry reached on associated device. */
+    ASSOCIATED_DEVICE_MAX_RETRY_REACHED = 19,
+    /** Ranging is unavailable on associated device. */
+    ASSOCIATED_DEVICE_RANGING_UNAVAILABLE = 20,
     /** Request contains invalid parameters. */
-    INVALID_PARAMETERS = 17,
+    INVALID_PARAMETERS = 21,
+    /** An ongoing request was cancelled. */
+    REQUEST_CANCELLED = 22,
+    /** Unknown error. */
+    UNKNOWN = 23,
 }
