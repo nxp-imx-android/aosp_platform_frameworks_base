@@ -5880,6 +5880,10 @@
   <java-symbol type="drawable" name="accessibility_autoclick_resume" />
   <java-symbol type="drawable" name="ic_accessibility_autoclick" />
   <java-symbol type="drawable" name="ic_accessibility_mouse_keys" />
+  <java-symbol type="drawable" name="accessibility_autoclick_position_top_left" />
+  <java-symbol type="drawable" name="accessibility_autoclick_position_top_right" />
+  <java-symbol type="drawable" name="accessibility_autoclick_position_bottom_left" />
+  <java-symbol type="drawable" name="accessibility_autoclick_position_bottom_right" />
 
   <!-- Accessibility autoclick scroll panel related -->
   <java-symbol type="layout" name="accessibility_autoclick_scroll_panel" />
