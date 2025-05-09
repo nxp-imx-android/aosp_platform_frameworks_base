@@ -788,10 +788,7 @@ public class CompatUIController implements OnDisplaysChangedListener,
             mActiveCompatLayouts.remove(taskId);
         }
 
-        if (mActiveLetterboxEduLayout != null && mActiveLetterboxEduLayout.getTaskId() == taskId) {
-            mActiveLetterboxEduLayout.release();
-            mActiveLetterboxEduLayout = null;
-        }
+        removeLetterboxEdu(taskId);
 
         final RestartDialogWindowManager restartLayout =
                 mTaskIdToRestartDialogWindowManagerMap.get(taskId);
@@ -810,6 +807,16 @@ public class CompatUIController implements OnDisplaysChangedListener,
                 && mUserAspectRatioSettingsLayout.getTaskId() == taskId) {
             mUserAspectRatioSettingsLayout.release();
             mUserAspectRatioSettingsLayout = null;
+        }
+    }
+
+    @VisibleForTesting
+    void removeLetterboxEdu(int taskId) {
+        // When in desktop windowing the dialog will be removed in any case.
+        if (mActiveLetterboxEduLayout != null && (mActiveLetterboxEduLayout.getTaskId() == taskId
+                || mIsInDesktopMode)) {
+            mActiveLetterboxEduLayout.release();
+            mActiveLetterboxEduLayout = null;
         }
     }
 
