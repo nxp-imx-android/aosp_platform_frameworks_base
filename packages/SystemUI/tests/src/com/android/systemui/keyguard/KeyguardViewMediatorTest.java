@@ -490,9 +490,40 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         captureKeyguardUpdateMonitorCallback();
         assertFalse(mViewMediator.isShowingAndNotOccluded());
 
-        // WHEN lockdown occurs
+        // WHEN lockdown occurs for current user
+        when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(0);
         when(mLockPatternUtils.isUserInLockdown(anyInt())).thenReturn(true);
         mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(0);
+
+        // THEN keyguard is shown
+        TestableLooper.get(this).processAllMessages();
+        assertTrue(mViewMediator.isShowingAndNotOccluded());
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    public void onLockdown_onlyShowKeyguardIfMainUserHadStrongAuthChanged() {
+        // GIVEN main user is in lockdown
+        mViewMediator.onSystemReady();
+        mViewMediator.setKeyguardEnabled(false);
+        TestableLooper.get(this).processAllMessages();
+        captureKeyguardUpdateMonitorCallback();
+        assertFalse(mViewMediator.isShowingAndNotOccluded());
+
+        int currentUserId = 0;
+        int otherUserId = 10;
+        when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(currentUserId);
+        when(mLockPatternUtils.isUserInLockdown(currentUserId)).thenReturn(true);
+
+        // WHEN a different user's strong auth changes
+        mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(otherUserId);
+
+        // THEN keyguard is not shown
+        TestableLooper.get(this).processAllMessages();
+        assertFalse(mViewMediator.isShowingAndNotOccluded());
+
+        // when the current user's strong auth changes
+        mKeyguardUpdateMonitorCallbackCaptor.getValue().onStrongAuthStateChanged(currentUserId);
 
         // THEN keyguard is shown
         TestableLooper.get(this).processAllMessages();
