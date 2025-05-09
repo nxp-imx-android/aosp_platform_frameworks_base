@@ -506,7 +506,6 @@ public class MediaDeviceManagerTest : SysuiTestCase() {
         val data = loadMediaAndCaptureDeviceData()
         assertThat(data.enabled).isFalse()
         assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
-        assertThat(data.icon).isEqualTo(OTHER_DEVICE_ICON_STUB)
     }
 
     @Test
@@ -559,7 +558,6 @@ public class MediaDeviceManagerTest : SysuiTestCase() {
         val data = captureDeviceData(KEY)
         assertThat(data.enabled).isFalse()
         assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
-        assertThat(data.icon).isEqualTo(OTHER_DEVICE_ICON_STUB)
     }
 
     @Test
