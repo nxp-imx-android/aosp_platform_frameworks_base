@@ -111,13 +111,6 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <do-not-install-in user-type="android.os.usertype.profile.PRIVATE" />
     </install-in-user-type>
 
-    <!--  Settings (Settings app) -->
-    <install-in-user-type package="com.android.settings">
-        <install-in user-type="SYSTEM" />
-        <install-in user-type="FULL" />
-        <install-in user-type="PROFILE" />
-    </install-in-user-type>
-
     <!-- Settings Storage (SettingsProvider)  -->
     <install-in-user-type package="com.android.providers.settings">
         <install-in user-type="SYSTEM" />
