@@ -2887,7 +2887,7 @@ public class DisplayPolicy {
         return win.isFullyTransparentBarAllowed(getBarContentFrameForWindow(win, type));
     }
 
-    private static boolean drawsBarBackground(WindowState win) {
+    private static boolean drawsBarBackground(WindowState win, @InsetsType int types) {
         if (win == null) {
             return true;
         }
@@ -2896,8 +2896,9 @@ public class DisplayPolicy {
                 (win.mAttrs.flags & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0;
         final boolean forceDrawsSystemBars =
                 (win.mAttrs.privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
+        final boolean hidesSystemBars = (win.getRequestedVisibleTypes() & types) == 0;
 
-        return forceDrawsSystemBars || drawsSystemBars;
+        return forceDrawsSystemBars || drawsSystemBars || hidesSystemBars;
     }
 
     /** @return the current visibility flags with the status bar opacity related flags toggled. */
@@ -2906,7 +2907,7 @@ public class DisplayPolicy {
         boolean isFullyTransparentAllowed = true;
         for (int i = mStatusBarBackgroundWindows.size() - 1; i >= 0; i--) {
             final WindowState window = mStatusBarBackgroundWindows.get(i);
-            drawBackground &= drawsBarBackground(window);
+            drawBackground &= drawsBarBackground(window, Type.statusBars());
             isFullyTransparentAllowed &= isFullyTransparentAllowed(window, Type.statusBars());
         }
 
@@ -2970,10 +2971,10 @@ public class DisplayPolicy {
     static WindowState chooseNavigationBackgroundWindow(WindowState candidate,
             WindowState imeWindow, boolean hasBottomNavigationBar) {
         if (imeWindow != null && imeWindow.isVisible() && hasBottomNavigationBar
-                && drawsBarBackground(imeWindow)) {
+                && drawsBarBackground(imeWindow, Type.navigationBars())) {
             return imeWindow;
         }
-        if (drawsBarBackground(candidate)) {
+        if (drawsBarBackground(candidate, Type.navigationBars())) {
             return candidate;
         }
         return null;
