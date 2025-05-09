@@ -91,6 +91,8 @@ static int32_t flinger2bitmapFormat(PixelFormat f) {
     switch (f) {
         case PIXEL_FORMAT_RGB_565:
             return ANDROID_BITMAP_FORMAT_RGB_565;
+        case PIXEL_FORMAT_RGBA_1010102:
+            return ANDROID_BITMAP_FORMAT_RGBA_1010102;
         default:
             return ANDROID_BITMAP_FORMAT_RGBA_8888;
     }
