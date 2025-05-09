@@ -114,4 +114,7 @@
     <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
      config enables OEMs to support its usage across tasks.-->
     <bool name="config_enableCrossTaskScaleUpAnimation">true</bool>
+
+    <!-- Whether Sys UI reboot UI is prioritized for reocvery triggered UI. -->
+    <bool name="config_prioritizeSysUiForRecoveryRebootUi">true</bool>
 </resources>
