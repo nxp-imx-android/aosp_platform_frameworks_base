@@ -382,7 +382,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @AppFunctionManager.EnabledState int enabledState,
             @NonNull IAppFunctionEnabledCallback callback) {
         try {
-            mCallerValidator.validateCallingPackage(callingPackage);
+            // Skip validation for shell to allow changing enabled state via shell.
+            if (Binder.getCallingUid() != Process.SHELL_UID) {
+                mCallerValidator.validateCallingPackage(callingPackage);
+            }
         } catch (SecurityException e) {
             reportException(callback, e);
             return;
