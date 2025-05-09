@@ -3486,7 +3486,7 @@ public final class ViewRootImpl implements ViewParent,
         final Rect bounds = new Rect(
                 mContext.getResources().getConfiguration().windowConfiguration.getBounds());
         bounds.inset(mInsetsController.getState().calculateInsets(
-                bounds, Type.systemBars(), false /* ignoreVisibility */));
+                bounds, bounds, Type.systemBars(), false /* ignoreVisibility */));
         return bounds;
     }
 
@@ -6685,6 +6685,14 @@ public final class ViewRootImpl implements ViewParent,
             }
             updateConfiguration(newDisplayId);
         }
+
+        if (com.android.window.flags.Flags.relativeInsets()) {
+            // Notify the insets controller about bounds change for insets calculation.
+            final Rect bounds = mergedConfiguration.getMergedConfiguration().windowConfiguration
+                    .getBounds();
+            mInsetsController.onBoundsChanged(bounds);
+        }
+
         mForceNextConfigUpdate = false;
     }
 

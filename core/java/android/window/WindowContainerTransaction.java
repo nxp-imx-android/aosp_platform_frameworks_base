@@ -43,6 +43,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -1004,14 +1005,45 @@ public final class WindowContainerTransaction implements Parcelable {
             @NonNull WindowContainerToken receiver,
             @Nullable IBinder owner, int index, @InsetsType int type, @Nullable Rect frame,
             @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
+                .setArbitraryRectangle(frame)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    /**
+     * Adds a given {@code Insets} attached to the {@code receiver}'s bounds.
+     *
+     * @param receiver      The window container that the insets source is attached to.
+     * @param owner         The owner of the insets source. An insets source can only be modified by
+     *                      its owner.
+     * @param index         An owner might add multiple insets sources with the same type.
+     *                      This identifies them.
+     * @param type          The {@link InsetsType} of the insets source.
+     * @param insets        The size of the insets on each side of the edges.
+     * @param boundingRects The bounding rects within this inset, relative to the |frame|.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type, @NonNull Insets insets,
+            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS)
+                .setInsetsSize(insets)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    @NonNull
+    private WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver, IBinder owner, InsetsFrameProvider provider) {
         final HierarchyOp hierarchyOp =
                 new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER)
                         .setContainer(receiver.asBinder())
-                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type)
-                                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
-                                .setArbitraryRectangle(frame)
-                                .setBoundingRects(boundingRects)
-                                .setFlags(flags))
+                        .setInsetsFrameProvider(provider)
                         .setCaller(owner)
                         .build();
         mHierarchyOps.add(hierarchyOp);

@@ -615,6 +615,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private final InsetsState mLastDispatchedState = new InsetsState();
 
     private final Rect mFrame = new Rect();
+    private final Rect mBounds = new Rect();
+
     @NonNull
     private final TriFunction<InsetsController, Integer, Integer, InsetsSourceConsumer>
             mConsumerCreator;
@@ -753,7 +755,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     }
                     cancelExistingControllers(mTypes);
                     final InsetsAnimationControlRunner runner = new InsetsResizeAnimationRunner(
-                            mFrame, mFromState, mToState, RESIZE_INTERPOLATOR,
+                            mFrame, mBounds, mFromState, mToState, RESIZE_INTERPOLATOR,
                             ANIMATION_DURATION_RESIZE, mTypes, InsetsController.this);
                     if (mRunningAnimations.isEmpty()) {
                         mHost.updateAnimatingTypes(runner.getTypes(),
@@ -812,7 +814,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
 
             WindowInsets insets = state.calculateInsets(mFrame,
-                    mState /* ignoringVisibilityState */, mLastInsets.isRound(),
+                    mBounds, mState /* ignoringVisibilityState */, mLastInsets.isRound(),
                     mLastLegacySoftInputMode, mLastLegacyWindowFlags, mLastLegacySystemUiFlags,
                     mWindowType, mLastActivityType, null /* idSideMap */);
             mHost.dispatchWindowInsetsAnimationProgress(insets,
@@ -843,6 +845,14 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
         mHost.notifyInsetsChanged();
         mFrame.set(frame);
+    }
+
+    public void onBoundsChanged(Rect bounds) {
+        if (mBounds.equals(bounds)) {
+            return;
+        }
+        mBounds.set(bounds);
+        mHost.notifyInsetsChanged();
     }
 
     @Override
@@ -925,7 +935,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     /**
-     * @see InsetsState#calculateInsets(Rect, InsetsState, boolean, int, int, int, int, int,
+     * @see InsetsState#calculateInsets(Rect, Rect, InsetsState, boolean, int, int, int, int, int,
      *      android.util.SparseIntArray)
      */
     @VisibleForTesting
@@ -936,19 +946,19 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mLastLegacySoftInputMode = legacySoftInputMode;
         mLastLegacyWindowFlags = legacyWindowFlags;
         mLastLegacySystemUiFlags = legacySystemUiFlags;
-        mLastInsets = mState.calculateInsets(mFrame, null /* ignoringVisibilityState */,
+        mLastInsets = mState.calculateInsets(mFrame, mBounds, null /* ignoringVisibilityState */,
                 isScreenRound, legacySoftInputMode, legacyWindowFlags,
                 legacySystemUiFlags, windowType, activityType, null /* idSideMap */);
         return mLastInsets;
     }
 
     /**
-     * @see InsetsState#calculateVisibleInsets(Rect, int, int, int, int)
+     * @see InsetsState#calculateVisibleInsets(Rect, Rect, int, int, int, int)
      */
     public Insets calculateVisibleInsets(int windowType, int activityType,
             @SoftInputModeFlags int softInputMode, int windowFlags) {
-        return mState.calculateVisibleInsets(mFrame, windowType, activityType, softInputMode,
-                windowFlags);
+        return mState.calculateVisibleInsets(mFrame, mBounds, windowType, activityType,
+                softInputMode, windowFlags);
     }
 
     /**
@@ -1228,7 +1238,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         // We are about to playing the default animation. Passing a null frame indicates the
         // controlled types should be animated regardless of the frame.
         controlAnimationUnchecked(pendingRequest.types, pendingRequest.cancellationSignal,
-                pendingRequest.listener, null /* frame */, true /* fromIme */,
+                pendingRequest.listener, null /* frame */, null /* bounds */, true /* fromIme */,
                 pendingRequest.mInsetsAnimationSpec,
                 pendingRequest.animationType, pendingRequest.layoutInsetsDuringAnimation,
                 pendingRequest.useInsetsAnimationThread, statsToken,
@@ -1347,7 +1357,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             WindowInsetsAnimationControlListener listener,
             boolean fromIme, long durationMs, @Nullable Interpolator interpolator,
             @AnimationType int animationType, boolean fromPredictiveBack) {
-        if ((mState.calculateUncontrollableInsetsFromFrame(mFrame) & types) != 0
+        if ((mState.calculateUncontrollableInsetsFromFrame(mFrame, mBounds) & types) != 0
                 || (fromPredictiveBack && ((mRequestedVisibleTypes & ime()) == 0))) {
             // abort if insets are uncontrollable or if control request is from predictive back but
             // there is already a hide anim in progress
@@ -1371,15 +1381,16 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
         };
         // TODO(b/342111149): Create statsToken here once ImeTracker#onStart becomes async.
-        controlAnimationUnchecked(types, cancellationSignal, listener, mFrame, fromIme, spec,
-                animationType, getLayoutInsetsDuringAnimationMode(types, fromPredictiveBack),
+        controlAnimationUnchecked(types, cancellationSignal, listener, mFrame, mBounds, fromIme,
+                spec, animationType, getLayoutInsetsDuringAnimationMode(types, fromPredictiveBack),
                 false /* useInsetsAnimationThread */, null, fromPredictiveBack);
     }
 
     private void controlAnimationUnchecked(@InsetsType int types,
             @Nullable CancellationSignal cancellationSignal,
-            WindowInsetsAnimationControlListener listener, @Nullable Rect frame, boolean fromIme,
-            InsetsAnimationSpec insetsAnimationSpec, @AnimationType int animationType,
+            WindowInsetsAnimationControlListener listener, @Nullable Rect frame,
+            @Nullable Rect bounds, boolean fromIme, InsetsAnimationSpec insetsAnimationSpec,
+            @AnimationType int animationType,
             @LayoutInsetsDuringAnimation int layoutInsetsDuringAnimation,
             boolean useInsetsAnimationThread, @Nullable ImeTracker.Token statsToken,
             boolean fromPredictiveBack) {
@@ -1395,7 +1406,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         // However, we might reject the request in some cases, such as delaying showing IME or
         // rejecting showing IME.
-        controlAnimationUncheckedInner(types, cancellationSignal, listener, frame, fromIme,
+        controlAnimationUncheckedInner(types, cancellationSignal, listener, frame, bounds, fromIme,
                 insetsAnimationSpec, animationType, layoutInsetsDuringAnimation,
                 useInsetsAnimationThread, statsToken, fromPredictiveBack);
 
@@ -1406,8 +1417,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     private void controlAnimationUncheckedInner(@InsetsType int types,
             @Nullable CancellationSignal cancellationSignal,
-            WindowInsetsAnimationControlListener listener, @Nullable Rect frame, boolean fromIme,
-            InsetsAnimationSpec insetsAnimationSpec, @AnimationType int animationType,
+            WindowInsetsAnimationControlListener listener, @Nullable Rect frame,
+            @Nullable Rect bounds, boolean fromIme, InsetsAnimationSpec insetsAnimationSpec,
+            @AnimationType int animationType,
             @LayoutInsetsDuringAnimation int layoutInsetsDuringAnimation,
             boolean useInsetsAnimationThread, @Nullable ImeTracker.Token statsToken,
             boolean fromPredictiveBack) {
@@ -1566,13 +1578,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         final InsetsAnimationControlRunner runner = useInsetsAnimationThread
                 ? new InsetsAnimationThreadControlRunner(controls,
-                        frame, mState, listener, typesReady, this,
+                        frame, bounds, mState, listener, typesReady, this,
                         insetsAnimationSpec, animationType, layoutInsetsDuringAnimation,
                         mHost.getTranslator(), mHost.getHandler(), statsToken)
                 : new InsetsAnimationControlImpl(controls,
-                        frame, mState, listener, typesReady, this, this, insetsAnimationSpec,
-                        animationType, layoutInsetsDuringAnimation, mHost.getTranslator(),
-                        statsToken);
+                        frame, bounds, mState, listener, typesReady, this, this,
+                        insetsAnimationSpec, animationType, layoutInsetsDuringAnimation,
+                        mHost.getTranslator(), statsToken);
         for (int i = controls.size() - 1; i >= 0; i--) {
             final InsetsSourceConsumer consumer = mSourceConsumers.get(controls.keyAt(i));
             if (consumer != null) {
@@ -2098,8 +2110,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         // We are about to playing the default animation (show/hide). Passing a null frame indicates
         // the controlled types should be animated regardless of the frame.
         controlAnimationUnchecked(
-                types, null /* cancellationSignal */, listener, null /* frame */, fromIme,
-                listener /* insetsAnimationSpec */,
+                types, null /* cancellationSignal */, listener, null /* frame */, null /* bounds */,
+                fromIme, listener /* insetsAnimationSpec */,
                 show ? ANIMATION_TYPE_SHOW : ANIMATION_TYPE_HIDE,
                 show ? LAYOUT_INSETS_DURING_ANIMATION_SHOWN : LAYOUT_INSETS_DURING_ANIMATION_HIDDEN,
                 !hasAnimationCallbacks || skipsCallbacks /* useInsetsAnimationThread */, statsToken,
@@ -2270,7 +2282,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 result |= consumer.getType();
             }
         }
-        return result & ~mState.calculateUncontrollableInsetsFromFrame(mFrame);
+        return result & ~mState.calculateUncontrollableInsetsFromFrame(mFrame, mBounds);
     }
 
     /**

@@ -325,7 +325,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         }
         final ActivityRecord activity = result.first;
         final WindowState mainWindow = result.second;
-        final Rect contentInsets = getSystemBarInsets(mainWindow.getFrame(),
+        final Rect contentInsets = getSystemBarInsets(mainWindow.getFrame(), mainWindow.getBounds(),
                 mainWindow.getInsetsStateWithVisibilityOverride());
         final Rect letterboxInsets = getLetterboxInsets(activity);
         InsetUtils.addInsets(contentInsets, letterboxInsets);
@@ -434,7 +434,8 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         final WindowManager.LayoutParams attrs = mainWindow.mAttrs;
         final Rect taskBounds = source.getBounds();
         final InsetsState insetsState = mainWindow.getInsetsStateWithVisibilityOverride();
-        final Rect systemBarInsets = getSystemBarInsets(mainWindow.getFrame(), insetsState);
+        final Rect systemBarInsets = getSystemBarInsets(mainWindow.getFrame(),
+                mainWindow.getBounds(), insetsState);
         final int taskWidth = taskBounds.width();
         final int taskHeight = taskBounds.height();
         float scale = mHighResSnapshotScale;
@@ -500,9 +501,10 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
         };
     }
 
-    static Rect getSystemBarInsets(Rect frame, InsetsState state) {
+    static Rect getSystemBarInsets(Rect frame, Rect hostBounds, InsetsState state) {
         return state.calculateInsets(
-                frame, WindowInsets.Type.systemBars(), false /* ignoreVisibility */).toRect();
+                frame, hostBounds, WindowInsets.Type.systemBars(), false /* ignoreVisibility */)
+                .toRect();
     }
 
     /**

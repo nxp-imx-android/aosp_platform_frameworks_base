@@ -431,7 +431,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
     private static int getTopPadding(RelayoutParams params, Rect taskBounds,
             InsetsState insetsState) {
         if (!params.mRunningTaskInfo.isFreeform()) {
-            Insets systemDecor = insetsState.calculateInsets(taskBounds,
+            Insets systemDecor = insetsState.calculateInsets(taskBounds, taskBounds,
                     WindowInsets.Type.systemBars() & ~WindowInsets.Type.captionBar(),
                     false /* ignoreVisibility */);
             return systemDecor.top;

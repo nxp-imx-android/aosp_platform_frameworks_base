@@ -465,7 +465,8 @@ public class DisplayPolicy {
                     if (provider == null) {
                         return Insets.NONE;
                     }
-                    return provider.getSource().calculateInsets(win.getBounds(),
+                    final Rect bounds = win.getBounds();
+                    return provider.getSource().calculateInsets(bounds, bounds,
                             true /* ignoreVisibility */);
                 }
 
@@ -1276,7 +1277,7 @@ public class DisplayPolicy {
      * @param inOutFrame the source frame.
      * @param insetsSize the insets size. Only the first non-zero value will be taken.
      */
-    private static void calculateInsetsFrame(Rect inOutFrame, Insets insetsSize) {
+    static void calculateInsetsFrame(Rect inOutFrame, Insets insetsSize) {
         if (insetsSize == null) {
             return;
         }
@@ -1534,7 +1535,8 @@ public class DisplayPolicy {
                         && mRightGestureHost != null && mBottomGestureHost != null) {
                     continue;
                 }
-                final Insets insets = source.calculateInsets(bounds, false /* ignoreVisibility */);
+                final Insets insets = source.calculateInsets(bounds, bounds,
+                        false /* ignoreVisibility */);
                 if (mLeftGestureHost == null && insets.left > 0) {
                     mLeftGestureHost = win;
                 }
@@ -2076,21 +2078,21 @@ public class DisplayPolicy {
                 dc.getDisplayPolicy().simulateLayoutDisplay(df);
                 final InsetsState insetsState = df.mInsetsState;
                 final Rect displayFrame = insetsState.getDisplayFrame();
-                final Insets decor = insetsState.calculateInsets(displayFrame,
+                final Insets decor = insetsState.calculateInsets(displayFrame, displayFrame,
                         dc.mWmService.mDecorTypes, true /* ignoreVisibility */);
                 final Insets configInsets = dc.mWmService.mConfigTypes == dc.mWmService.mDecorTypes
                         ? decor
-                        : insetsState.calculateInsets(displayFrame, dc.mWmService.mConfigTypes,
-                                true /* ignoreVisibility */);
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
+                                dc.mWmService.mConfigTypes, true /* ignoreVisibility */);
                 final Insets overrideConfigInsets = dc.mWmService.mConfigTypes
                         == dc.mWmService.mOverrideConfigTypes
                         ? configInsets
-                        : insetsState.calculateInsets(displayFrame,
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
                                 dc.mWmService.mOverrideConfigTypes, true /* ignoreVisibility */);
                 final Insets overrideDecorInsets = dc.mWmService.mDecorTypes
                         == dc.mWmService.mOverrideDecorTypes
                         ? decor
-                        : insetsState.calculateInsets(displayFrame,
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
                                 dc.mWmService.mOverrideDecorTypes, true /* ignoreVisibility */);
                 mNonDecorInsets.set(decor.left, decor.top, decor.right, decor.bottom);
                 mConfigInsets.set(configInsets.left, configInsets.top, configInsets.right,
@@ -2395,8 +2397,9 @@ public class DisplayPolicy {
     }
 
     boolean hasBottomNavigationBar() {
+        final Rect displayFrame = mDisplayContent.mDisplayFrames.mUnrestricted;
         Insets navBarInsets = mDisplayContent.getInsetsStateController().getRawInsetsState()
-                .calculateInsets(mDisplayContent.mDisplayFrames.mUnrestricted,
+                .calculateInsets(displayFrame, displayFrame,
                         Type.navigationBars(), true /* ignoreVisibilities */);
         return navBarInsets.bottom > 0;
     }
@@ -2847,7 +2850,7 @@ public class DisplayPolicy {
             }
             if (type == Type.statusBars()) {
                 safe.set(displayFrames.mDisplayCutoutSafe);
-                final Insets insets = source.calculateInsets(df, true /* ignoreVisibility */);
+                final Insets insets = source.calculateInsets(df, df, true /* ignoreVisibility */);
                 // The status bar content can extend into regular display cutout insets if they are
                 // at the same side, but the content cannot extend into waterfall insets.
                 if (insets.left > 0) {

@@ -107,7 +107,8 @@ public class InsetsAnimationThreadControlRunner implements InsetsAnimationContro
 
     @UiThread
     public InsetsAnimationThreadControlRunner(SparseArray<InsetsSourceControl> controls,
-            @Nullable Rect frame, InsetsState state, WindowInsetsAnimationControlListener listener,
+            @Nullable Rect frame, @Nullable Rect bounds, InsetsState state,
+            WindowInsetsAnimationControlListener listener,
             @InsetsType int types, InsetsAnimationControlCallbacks controller,
             InsetsAnimationSpec insetsAnimationSpec, @AnimationType int animationType,
             @LayoutInsetsDuringAnimation int layoutInsetsDuringAnimation,
@@ -115,7 +116,7 @@ public class InsetsAnimationThreadControlRunner implements InsetsAnimationContro
             @Nullable ImeTracker.Token statsToken) {
         mMainThreadHandler = mainThreadHandler;
         mOuterCallbacks = controller;
-        mControl = new InsetsAnimationControlImpl(controls, frame, state, listener, types,
+        mControl = new InsetsAnimationControlImpl(controls, frame, bounds, state, listener, types,
                 mCallbacks, mSurfaceParamsApplier, insetsAnimationSpec, animationType,
                 layoutInsetsDuringAnimation, translator, statsToken);
         InsetsAnimationThread.getHandler().post(() -> {

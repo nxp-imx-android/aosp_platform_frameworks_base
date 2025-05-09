@@ -3340,7 +3340,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void getStableRect(Rect out) {
         final InsetsState state = mDisplayContent.getInsetsStateController().getRawInsetsState();
         out.set(state.getDisplayFrame());
-        out.inset(state.calculateInsets(out, systemBars(), true /* ignoreVisibility */));
+        out.inset(state.calculateInsets(out, out, systemBars(), true /* ignoreVisibility */));
     }
 
     /**
@@ -3479,7 +3479,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 ? imeSource.getVisibleFrame() : imeSource.getFrame();
         final Rect dockFrame = mTmpRect;
         dockFrame.set(state.getDisplayFrame());
-        dockFrame.inset(state.calculateInsets(dockFrame, systemBars() | displayCutout(),
+        dockFrame.inset(state.calculateInsets(dockFrame, dockFrame, systemBars() | displayCutout(),
                 false /* ignoreVisibility */));
         return dockFrame.bottom - imeFrame.top;
     }
@@ -5846,7 +5846,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         final InsetsState state = mInsetsStateController.getRawInsetsState();
         final Rect df = state.getDisplayFrame();
-        final Insets gestureInsets = state.calculateInsets(df, systemGestures(),
+        final Insets gestureInsets = state.calculateInsets(df, df, systemGestures(),
                 false /* ignoreVisibility */);
         mSystemGestureFrameLeft.set(df.left, df.top, df.left + gestureInsets.left, df.bottom);
         mSystemGestureFrameRight.set(df.right - gestureInsets.right, df.top, df.right, df.bottom);
