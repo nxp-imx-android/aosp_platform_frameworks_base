@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.smartspace.SmartspaceAction
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession
@@ -32,6 +33,7 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -58,6 +60,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             smartSpaceManager = smartSpaceManager,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
+            focusdDisplayRepository = kosmos.fakeFocusedDisplayRepository,
         )
 
     @Test
@@ -81,9 +84,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
-            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
-                listOf(invalidTarget1)
-            )
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(invalidTarget1))
             advanceUntilIdle()
             assertThat(isVisible).isFalse()
         }
@@ -110,6 +111,17 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                 assertThat(lastAction.label).isEqualTo(TITLE_2)
                 assertThat(lastAction.attribution).isEqualTo(SUBTITLE_2)
             }
+        }
+
+    @Test
+    fun globallyFocusedTaskId_whenFocusedTaskChange_taskIdUpdated() =
+        kosmos.runTest {
+            val globallyFocusedTaskId by collectLastValue(underTest.globallyFocusedTaskId)
+            runCurrent()
+
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+
+            assertThat(globallyFocusedTaskId).isEqualTo(TASK_ID)
         }
 
     companion object {
@@ -140,5 +152,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val allTargets = listOf(validTarget, invalidTarget1)
+
+        private const val TASK_ID = 1
     }
 }

@@ -33,7 +33,14 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    private val _globallyFocusedTaskId = MutableStateFlow(0)
+    override val globallyFocusedTaskId: StateFlow<Int> = _globallyFocusedTaskId.asStateFlow()
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
+    }
+
+    fun setGloballyFocusedTaskId(taskId: Int) {
+        _globallyFocusedTaskId.update { taskId }
     }
 }
