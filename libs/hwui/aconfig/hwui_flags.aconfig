@@ -202,3 +202,10 @@ flag {
   bug: "400807118"
   is_fixed_read_only: true
 }
+
+flag {
+  name: "add_surfacecontrol_constants"
+  namespace: "core_graphics"
+  description: "Add two helper constants to SurfaceControl to improve @IntDef lint"
+  bug: "413710706"
+}

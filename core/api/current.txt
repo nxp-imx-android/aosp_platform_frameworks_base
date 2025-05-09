@@ -53748,7 +53748,9 @@ package android.view {
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int BUFFER_TRANSFORM_IDENTITY = 0; // 0x0
     field public static final int BUFFER_TRANSFORM_MIRROR_HORIZONTAL = 1; // 0x1
+    field @FlaggedApi("com.android.graphics.hwui.flags.add_surfacecontrol_constants") public static final int BUFFER_TRANSFORM_MIRROR_HORIZONTAL_ROTATE_90 = 5; // 0x5
     field public static final int BUFFER_TRANSFORM_MIRROR_VERTICAL = 2; // 0x2
+    field @FlaggedApi("com.android.graphics.hwui.flags.add_surfacecontrol_constants") public static final int BUFFER_TRANSFORM_MIRROR_VERTICAL_ROTATE_90 = 6; // 0x6
     field public static final int BUFFER_TRANSFORM_ROTATE_180 = 3; // 0x3
     field public static final int BUFFER_TRANSFORM_ROTATE_270 = 7; // 0x7
     field public static final int BUFFER_TRANSFORM_ROTATE_90 = 4; // 0x4
