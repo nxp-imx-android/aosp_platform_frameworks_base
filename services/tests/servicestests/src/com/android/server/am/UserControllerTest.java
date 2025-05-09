@@ -19,8 +19,8 @@ package com.android.server.am;
 import static android.Manifest.permission.INTERACT_ACROSS_PROFILES;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
-import static android.app.ActivityManager.STOP_USER_ON_SWITCH_TRUE;
 import static android.app.ActivityManager.STOP_USER_ON_SWITCH_FALSE;
+import static android.app.ActivityManager.STOP_USER_ON_SWITCH_TRUE;
 import static android.app.ActivityManagerInternal.ALLOW_FULL_ONLY;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL_IN_PROFILE;
@@ -57,10 +57,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -156,7 +156,7 @@ public class UserControllerTest {
     private static final int NONEXIST_USER_ID = 2;
     private static final int TEST_PRE_CREATED_USER_ID = 103;
 
-    private static final int NO_USERINFO_FLAGS = 0;
+    private static final int DEFAULT_USER_FLAGS = UserInfo.FLAG_FULL;
 
     private static final String TAG = UserControllerTest.class.getSimpleName();
 
@@ -225,8 +225,8 @@ public class UserControllerTest {
 
             mUserController = new UserController(mInjector);
             mUserController.setAllowUserUnlocking(true);
-            setUpUser(TEST_USER_ID, NO_USERINFO_FLAGS);
-            setUpUser(TEST_PRE_CREATED_USER_ID, NO_USERINFO_FLAGS, /* preCreated= */ true, null);
+            setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
+            setUpUser(TEST_PRE_CREATED_USER_ID, DEFAULT_USER_FLAGS, /* preCreated= */ true, null);
             mInjector.mRelevantUser = null;
         });
     }
@@ -652,7 +652,7 @@ public class UserControllerTest {
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ 2);
 
-        setUpUser(TEST_USER_ID1, NO_USERINFO_FLAGS);
+        setUpUser(TEST_USER_ID1, DEFAULT_USER_FLAGS);
 
         // Switch to TEST_USER_ID from user 0
         int numberOfUserSwitches = 0;
@@ -749,7 +749,7 @@ public class UserControllerTest {
         final int TEST_USER_GUEST = 902;
         setUpUser(TEST_USER_GUEST, UserInfo.FLAG_GUEST);
 
-        setUpUser(TEST_USER_ID2, NO_USERINFO_FLAGS);
+        setUpUser(TEST_USER_ID2, DEFAULT_USER_FLAGS);
 
         // Switch to TEST_USER_ID from user 0
         int numberOfUserSwitches = 0;
@@ -1665,7 +1665,7 @@ public class UserControllerTest {
     }
 
     private void setUpAndStartUserInBackground(int userId) throws Exception {
-        setUpUser(userId, 0);
+        setUpUser(userId, DEFAULT_USER_FLAGS);
         mUserController.startUser(userId, USER_START_MODE_BACKGROUND);
         verify(mInjector.mLockPatternUtilsMock, times(1)).unlockUserKeyIfUnsecured(userId);
         mUserStates.put(userId, mUserController.getStartedUserState(userId));
@@ -1740,16 +1740,19 @@ public class UserControllerTest {
         if (userType == null) {
             userType = UserInfo.getDefaultUserType(flags);
         }
-        UserInfo userInfo = new UserInfo(userId, "User" + userId, /* iconPath= */ null, flags,
-                userType);
-        userInfo.preCreated = preCreated;
-        when(mInjector.mUserManagerMock.getUserInfo(eq(userId))).thenReturn(userInfo);
-        when(mInjector.mUserManagerMock.isPreCreated(userId)).thenReturn(preCreated);
 
         UserTypeDetails userTypeDetails = UserTypeFactory.getUserTypes().get(userType);
         assertThat(userTypeDetails).isNotNull();
         when(mInjector.mUserManagerInternalMock.getUserProperties(eq(userId)))
                 .thenReturn(userTypeDetails.getDefaultUserPropertiesReference());
+
+        flags |= userTypeDetails.getDefaultUserInfoFlags();
+
+        UserInfo userInfo = new UserInfo(userId, "User" + userId, /* iconPath= */ null, flags,
+                userType);
+        userInfo.preCreated = preCreated;
+        when(mInjector.mUserManagerMock.getUserInfo(eq(userId))).thenReturn(userInfo);
+        when(mInjector.mUserManagerMock.isPreCreated(userId)).thenReturn(preCreated);
 
         mUserInfos.put(userId, userInfo);
         when(mInjector.mUserManagerMock.getUsers(anyBoolean()))

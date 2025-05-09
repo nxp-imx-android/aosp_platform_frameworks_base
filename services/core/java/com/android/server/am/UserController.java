@@ -2164,7 +2164,7 @@ class UserController implements Handler.Callback {
             // of mUserLru, so we need to ensure that the foreground user isn't displaced.
             addUserToUserLru(mCurrentUserId);
         }
-        if (userStartMode == USER_START_MODE_BACKGROUND && !userInfo.isProfile()) {
+        if (userStartMode == USER_START_MODE_BACKGROUND && userInfo.isFull()) {
             scheduleStopOfBackgroundUser(userId);
         }
         t.traceEnd();
