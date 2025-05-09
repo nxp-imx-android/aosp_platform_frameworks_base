@@ -430,6 +430,32 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Gets current picture profile instance for TV input.
+     * @hide
+     */
+    public PictureProfile getCurrentPictureProfileForTvInput(String inputId) {
+        try {
+            return mService.getCurrentPictureProfileForTvInput(
+                    inputId, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets all picture profiles instance for TV input.
+     * @hide
+     */
+    public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId) {
+        try {
+            return mService.getAllPictureProfilesForTvInput(
+                    inputId, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets sound profile handle by profile ID.
      * @hide
      */

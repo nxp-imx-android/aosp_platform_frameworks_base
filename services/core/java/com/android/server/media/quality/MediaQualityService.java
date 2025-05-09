@@ -666,6 +666,48 @@ public class MediaQualityService extends SystemService {
             }
         }
 
+        public PictureProfile getCurrentPictureProfileForTvInput(String inputId, int userId) {
+            long profileHandle = getPictureProfileForTvInput(inputId, userId);
+            if (profileHandle == -1) {
+                return null;
+            }
+            return mMqDatabaseUtils.getPictureProfile(profileHandle);
+        }
+
+        public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId, int userId) {
+            // TODO: cache profiles
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
+                mMqManagerNotifier.notifyOnPictureProfileError(
+                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+            }
+            String[] columns = {BaseParameters.PARAMETER_ID};
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+            String[] selectionArguments = {
+                    Integer.toString(PictureProfile.TYPE_SYSTEM),
+                    inputId
+            };
+            List<PictureProfile> profiles = new ArrayList<>();
+            synchronized (mPictureProfileLock) {
+                try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                        columns, selection, selectionArguments)) {
+                    int count = cursor.getCount();
+                    if (count == 0) {
+                        return profiles;
+                    }
+                    cursor.moveToFirst();
+                    while (cursor.moveToNext()) {
+                        profiles.add(MediaQualityUtils.convertCursorToPictureProfileWithTempId(
+                                cursor, mPictureProfileTempIdMap));
+                    }
+                    return profiles;
+                }
+            }
+        }
+
         @GuardedBy("mSoundProfileLock")
         @Override
         public List<SoundProfileHandle> getSoundProfileHandle(String[] ids, int userId) {
