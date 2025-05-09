@@ -176,6 +176,16 @@ public class DesktopModeStatus {
     }
 
     /**
+     * Returns true if the multi-desks frontend should be enabled on the display.
+     */
+    public static boolean isMultipleDesktopFrontendEnabledOnDisplay(@NonNull Context context,
+            Display display) {
+        return DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_FRONTEND.isTrue()
+                && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && isDesktopModeSupportedOnDisplay(context, display);
+    }
+
+    /**
      * Returns whether the multiple desktops feature is enabled for this device (both backend and
      * frontend implementations).
      */

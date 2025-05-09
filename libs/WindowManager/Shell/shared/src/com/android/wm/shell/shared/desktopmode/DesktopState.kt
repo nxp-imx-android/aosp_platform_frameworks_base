@@ -68,6 +68,16 @@ interface DesktopState {
     val enableMultipleDesktops: Boolean
 
     /**
+     * Returns true if the multi-desks frontend should be enabled on the display.
+     */
+    fun isMultipleDesktopFrontendEnabledOnDisplay(display: Display): Boolean
+
+    /**
+     *  Returns true if the multi-desks frontend should be enabled on the display with [displayId].
+     */
+    fun isMultipleDesktopFrontendEnabledOnDisplay(displayId: Int): Boolean
+
+    /**
      * Checks if the display with id [displayId] should have desktop mode enabled or not. Internal
      * and external displays have separate logic.
      */
