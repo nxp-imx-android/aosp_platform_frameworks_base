@@ -84,54 +84,20 @@
         <option name="collect-on-run-ended-only" value="false"/>
     </metrics_collector>
 
-    <!-- Post processors run in the reverse order to that in xml, so the order is:
-        1. PerfettoTracePostProcessor runs the trace_processor to produce a metric proto
-        2. PerfettoGenericPostProcessor parses the proto to produce metrics as key-value pairs
-        3. MetricFilePostProcessor writes the metrics to a file -->
-    <metric_post_processor class="com.android.tradefed.postprocessor.MetricFilePostProcessor"/>
+    <metrics_collector class="com.android.tradefed.device.metric.PerfettoPullerMetricCollector">
+        <option name="trace-processor-binary" value="trace_processor_shell"/>
+        <option name="perfetto-v1-metrics" value="false"/>
+        <option name="perfetto-v2-metrics" value="true"/>
+        <option name="perfetto-v2-metrics-ids" value="avg_runtime_per_uitracing_slice" />
+        <option name="summary-spec-file-name" value="avg_runtime_per_uitracing_slice.textproto" />
+        <option name="trace-processor-timeout" value="120000"/>
+        <option name="pull-pattern-keys" value="perfetto_file_path"/>
+        <option name="clean-up" value="false"/>
+        <option name="collect-on-run-ended-only" value="false"/>
+    </metrics_collector>
 
     <metric_post_processor class="com.android.tradefed.postprocessor.PerfettoGenericPostProcessor">
-        <option name="perfetto-proto-file-prefix" value="metric_perfetto"/>
         <option name="perfetto-proto-file-prefix" value="metric_v2_perfetto"/>
-
-        <!-- Memory related metrics -->
-        <option name="perfetto-prefix-key-field" value="perfetto.protos.AndroidGpuMetric.Process.name"/>
-        <option name="perfetto-metric-filter-regex" value="android_mem-process_metrics-process_name-.*-total_counters-.*"/>
-        <option name="perfetto-metric-replace-prefix" key="android_mem-process_metrics-process_name" value="android_mem"/>
-
-        <!-- PnP related metrics. -->
-        <option name="perfetto-metric-filter-regex" value="android_batt-battery_aggregates-avg_power_mw"/>
-        <option name="perfetto-metric-filter-regex" value="android_frame_timeline_metric-(total_frames|missed_app_frames)"/>
-
-        <!-- Metric for wattson energy/power consumption -->
-        <option name="perfetto-metric-filter-regex" value="wattson_atrace_apps_rails-period_info-period_name-*.*-cpu_subsystem-estimated_mw\b"/>
-        <option name="perfetto-metric-filter-regex" value="wattson_atrace_apps_rails-period_info-period_name-*.*-cpu_subsystem-estimated_mws"/>
-        <option name="perfetto-metric-replace-prefix" key="wattson_atrace_apps_rails-period_info-period_name" value="wattson_apps_rails-name"/>
-
-        <!-- Metric for android anomaly detection-->
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-system_server-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_incoming_process_count_per_second-process_name-system_server-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-/system/bin/servicemanager-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_incoming_process_count_per_second-process_name-/system/bin/servicemanager-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-com.google.android.apps.nexuslauncher-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_incoming_process_count_per_second-process_name-com.google.android.apps.nexuslauncher-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-com.android.systemui-value"/>
-        <option name="perfetto-metric-filter-regex" value="android_anomaly-binder-max_incoming_process_count_per_second-process_name-com.android.systemui-value"/>
-        <option name="perfetto-prefix-key-field"  value="perfetto.protos.AndroidAnomalyMetric.ProcessAnomaly.process_name"/>
-
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-system_server-value" value="android_anomaly-max_outgoing_process_name-system_server"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_incoming_process_count_per_second-process_name-system_server-value" value="android_anomaly-max_incoming_process_name-system_server"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-/system/bin/servicemanager-value" value="android_anomaly-max_outgoing_process_name-/system/bin/servicemanager"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_incoming_process_count_per_second-process_name-/system/bin/servicemanager-value" value="android_anomaly-max_incoming_process_name-/system/bin/servicemanager"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-com.android.systemui-value" value="android_anomaly-max_outgoing_process_name-com.android.systemui"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_incoming_process_count_per_second-process_name-com.android.systemui-value" value="android_anomaly-max_incoming_process_name-com.android.systemui"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_outgoing_process_count_per_second-process_name-com.google.android.apps.nexuslauncher-value" value="android_anomaly-max_outgoing_process_name-com.google.android.apps.nexuslauncher"/>
-        <option name="perfetto-metric-replace-prefix" key="android_anomaly-binder-max_incoming_process_count_per_second-process_name-com.google.android.apps.nexuslauncher-value" value="android_anomaly-max_incoming_process_name-com.google.android.apps.nexuslauncher"/>
-    </metric_post_processor>
-
-    <metric_post_processor class="com.android.tradefed.postprocessor.PerfettoTracePostProcessor">
-        <!-- V1 metrics -->
-        <option name="trace-processor-run-metrics" value="android_batt,android_frame_timeline_metric,android_mem,android_gpu,android_ion,android_dma_heap"/>
     </metric_post_processor>
 
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
