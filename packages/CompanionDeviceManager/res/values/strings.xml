@@ -187,6 +187,18 @@
     <!-- Notification permission will be granted of corresponding profile [CHAR LIMIT=30] -->
     <string name="permission_notifications">Notifications</string>
 
+    <!-- Virtual device permission will be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_create_virtual_device">Stream data to your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
+
+    <!-- Mirror display permission will be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_add_mirror_display">Mirror your screen</string>
+
+    <!-- Trusted display permission will be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_add_trusted_display">Stream apps</string>
+
+    <!-- Always unlocked display permission will be granted of corresponding profile [CHAR LIMIT=30] -->
+    <string name="permission_add_always_unlocked_display">Stream while locked</string>
+
     <!-- Description of phone permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_phone_summary">Make and manage phone calls</string>
 
@@ -212,10 +224,25 @@
     <string name="permission_notification_listener_access_summary">Read all notifications, including information like contacts, messages, and photos</string>
 
     <!-- Description of NLA & POST_NOTIFICATION of corresponding profile [CHAR LIMIT=NONE] -->
-    <string name="permission_notifications_summary">\u2022 Read all notifications, including info like contacts, messages, and photos&lt;br/>\u2022 Send notifications&lt;br/>&lt;br/>You can manage this app\'s ability to read and send notifications anytime in Settings > Notifications.</string>
+    <string name="permission_notifications_summary">\u2022 Read all notifications, including info like contacts, messages, and photos&lt;br/>\u2022 Send you notifications&lt;br/>&lt;br/>You can manage this app\'s ability to read and send notifications anytime in Settings > Notifications.</string>
 
     <!-- Description of storage permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_storage_summary"></string>
+
+    <!-- Description of post notifications permission of corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_post_notifications_summary">Send you notifications</string>
+
+    <!-- Description of virtual device permission of corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_create_virtual_device_summary">Stream microphone, camera and other sensor data from &lt;strong&gt;<xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>&lt;/strong&gt; to your <xliff:g id="device_type" example="phone">%2$s</xliff:g>.</string>
+
+    <!-- Description of mirror permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_add_mirror_display_summary">Record, cast or share your <xliff:g id="device_type" example="phone">%2$s</xliff:g>\u2019s screen to &lt;strong&gt;<xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/>&lt;br/><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will have access to anything that’s visible or played on your <xliff:g id="device_type" example="phone">%2$s</xliff:g>, including audio, photos, payment info, passwords and messages.</string>
+
+    <!-- Description of trusted permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_add_trusted_display_summary">Stream your <xliff:g id="device_type" example="phone">%2$s</xliff:g>\u2019s apps to &lt;strong&gt;<xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/>&lt;br/><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will have access to anything that’s visible or played on <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>, including audio, photos, payment info, passwords and messages.</string>
+
+    <!-- Description of always unlocked permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
+    <string name="permission_add_always_unlocked_display_summary">Stream your <xliff:g id="device_type" example="phone">%2$s</xliff:g>\u2019s apps even if it is locked.</string>
 
     <!-- Description of change media output permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_media_routing_control_summary">Access a list of available devices and control which one streams or casts audio or video from other apps</string>
