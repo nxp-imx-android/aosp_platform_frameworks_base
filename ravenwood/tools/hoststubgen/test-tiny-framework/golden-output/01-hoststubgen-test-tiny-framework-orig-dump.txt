@@ -1725,7 +1725,7 @@ BootstrapMethods:
       #x ()Ljava/lang/Integer;
 InnerClasses:
   public static #x= #x of #x;          // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
-  public static final #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas.class
   Compiled from "TinyFrameworkLambdas.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas
@@ -1882,7 +1882,7 @@ BootstrapMethods:
       #x ()Ljava/lang/Integer;
 InnerClasses:
   public static #x= #x of #x;          // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
-  public static final #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester.class
   Compiled from "TinyFrameworkMethodCallReplace.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester
@@ -2125,7 +2125,7 @@ BootstrapMethods:
 InnerClasses:
   public static #x= #x of #x;          // ConstructorTester=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
   public static #x= #x of #x;          // ReplaceTo=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
-  public static final #x= #x of #x;   // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static #x= #x of #x;   // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNative.class
   Compiled from "TinyFrameworkNative.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative
