@@ -153,6 +153,9 @@ constructor(
 
     // UI Components that only exist in tile details view, but not in dialog.
     private var entryBackgroundActive: Drawable? = null
+    private var entryBackgroundActiveStart: Drawable? = null
+    private var entryBackgroundActiveEnd: Drawable? = null
+    private var entryBackgroundActiveMiddle: Drawable? = null
     private var entryBackgroundInactive: Drawable? = null
     private var entryBackgroundInactiveStart: Drawable? = null
     private var entryBackgroundInactiveEnd: Drawable? = null
@@ -206,6 +209,12 @@ constructor(
         } else {
             entryBackgroundActive =
                 contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on)
+            entryBackgroundActiveStart =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_start)
+            entryBackgroundActiveEnd =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_end)
+            entryBackgroundActiveMiddle =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_middle)
             entryBackgroundInactive =
                 contentView.context.getDrawable(R.drawable.settingslib_entry_bg_off)
             entryBackgroundInactiveStart =
@@ -482,7 +491,15 @@ constructor(
                                     }
                             } else {
                                 // Set up background for connected devices
-                                background = entryBackgroundActive
+                                background =
+                                    when {
+                                        lastConnectedDeviceIndex == 0 -> entryBackgroundActive
+                                        adapterPosition == 0 -> entryBackgroundActiveStart
+                                        adapterPosition == lastConnectedDeviceIndex ->
+                                            entryBackgroundActiveEnd
+
+                                        else -> entryBackgroundActiveMiddle
+                                    }
                             }
                             background?.setBounds(child.left, child.top, child.right, child.bottom)
                             background?.draw(c)
