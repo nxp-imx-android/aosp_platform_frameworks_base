@@ -218,6 +218,7 @@ public class DisplayPolicy {
      */
     private boolean mRemoteInsetsControllerControlsSystemBars;
 
+    @Nullable
     StatusBarManagerInternal getStatusBarManagerInternal() {
         synchronized (mServiceAcquireLock) {
             if (mStatusBarManagerInternal == null) {
@@ -1073,7 +1074,7 @@ public class DisplayPolicy {
     /**
      * Check if a window can be added to the system.
      *
-     * Currently enforces that these window types are singletons per display:
+     * <p>Currently enforces that these window types are singletons per display:
      * <ul>
      * <li>{@link WindowManager.LayoutParams#TYPE_STATUS_BAR}</li>
      * <li>{@link WindowManager.LayoutParams#TYPE_NOTIFICATION_SHADE}</li>
@@ -1400,7 +1401,7 @@ public class DisplayPolicy {
      * used to layout window. This method only changes the given display frames, insets state and
      * some temporal states, but doesn't change the window frames used to show on screen.
      */
-    void simulateLayoutDisplay(DisplayFrames displayFrames) {
+    void simulateLayoutDisplay(@NonNull DisplayFrames displayFrames) {
         sTmpClientFrames.attachedFrame = null;
         for (int i = mInsetsSourceWindowsExceptIme.size() - 1; i >= 0; i--) {
             final WindowState win = mInsetsSourceWindowsExceptIme.valueAt(i);
@@ -1435,7 +1436,8 @@ public class DisplayPolicy {
      *                 so you can use its Rect.  Otherwise null.
      * @param displayFrames The display frames.
      */
-    public void layoutWindowLw(WindowState win, WindowState attached, DisplayFrames displayFrames) {
+    void layoutWindowLw(@NonNull WindowState win, @Nullable WindowState attached,
+            @NonNull DisplayFrames displayFrames) {
         if (win.skipLayout()) {
             return;
         }
@@ -1913,7 +1915,7 @@ public class DisplayPolicy {
         return mCurrentUserResources;
     }
 
-    @VisibleForTesting
+    @NonNull
     Context getContext() {
         return mContext;
     }
@@ -2012,8 +2014,8 @@ public class DisplayPolicy {
     /**
      * Return corner radius in pixels that should be used on windows in order to cover the display.
      *
-     * The radius is only valid for internal displays, since the corner radius of external displays
-     * is not known at build time when window corners are configured.
+     * <p>The radius is only valid for internal displays, since the corner radius of external
+     * displays is not known at build time when window corners are configured.
      */
     float getWindowCornerRadius() {
         return mDisplayContent.getDisplay().getType() == TYPE_INTERNAL
@@ -2357,7 +2359,9 @@ public class DisplayPolicy {
      * display is switching (e.g. fold/unfold). Otherwise, it returns the original state. This is
      * to avoid dispatching old insets source before the insets providers update new insets.
      */
-    InsetsState replaceInsetsSourcesIfNeeded(InsetsState originalState, boolean copyState) {
+    @NonNull
+    InsetsState replaceInsetsSourcesIfNeeded(@NonNull InsetsState originalState,
+            boolean copyState) {
         if (mCachedDecorInsets == null || mCachedDecorInsets.mPreservedInsets == null
                 || !shouldKeepCurrentDecorInsets()) {
             return originalState;

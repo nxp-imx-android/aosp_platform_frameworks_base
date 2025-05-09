@@ -822,7 +822,7 @@ class InsetsSourceProvider {
         }
 
         @Override
-        public void onAnimationCancelled(SurfaceControl animationLeash) {
+        public void onAnimationCancelled(@Nullable SurfaceControl animationLeash) {
             if (mAdapter == this) {
                 mStateController.notifyControlRevoked(mControlTarget, InsetsSourceProvider.this);
                 mStateController.notifySurfaceTransactionReady(InsetsSourceProvider.this, 0, false);
