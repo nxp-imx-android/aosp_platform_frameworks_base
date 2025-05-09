@@ -84,6 +84,22 @@
         <option name="collect-on-run-ended-only" value="false"/>
     </metrics_collector>
 
+    <metrics_collector class="com.android.tradefed.device.metric.PerfettoPullerMetricCollector">
+        <option name="trace-processor-binary" value="trace_processor_shell"/>
+        <option name="perfetto-v1-metrics" value="false"/>
+        <option name="perfetto-v2-metrics" value="true"/>
+        <option name="perfetto-v2-metrics-ids" value="avg_runtime_per_uitracing_slice" />
+        <option name="summary-spec-file-name" value="avg_runtime_per_uitracing_slice.textproto" />
+        <option name="trace-processor-timeout" value="120000"/>
+        <option name="pull-pattern-keys" value="perfetto_file_path"/>
+        <option name="clean-up" value="false"/>
+        <option name="collect-on-run-ended-only" value="false"/>
+    </metrics_collector>
+
+    <metric_post_processor class="com.android.tradefed.postprocessor.PerfettoGenericPostProcessor">
+        <option name="perfetto-proto-file-prefix" value="metric_v2_perfetto"/>
+    </metric_post_processor>
+
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
         <option name="pull-pattern-keys" value="managed_heapdump_file.*"/>
         <option name="pull-pattern-keys" value="android.device.collectors.LogcatCollector.*"/>
