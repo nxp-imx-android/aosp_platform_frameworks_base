@@ -236,7 +236,7 @@ public class BubbleBarAnimationHelper {
                 })
                 .withEndActions(() -> {
                     bbev.setAnimationMatrix(null);
-                    bbev.onImeTopChanged(0);
+                    bbev.resetBottomClip();
                     if (endRunnable != null) {
                         endRunnable.run();
                     }
