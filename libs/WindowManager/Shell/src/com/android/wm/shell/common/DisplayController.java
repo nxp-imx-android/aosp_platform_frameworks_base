@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.common;
 
+import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -78,8 +81,8 @@ public class DisplayController {
         mWmService = wmService;
         mDisplayManager = displayManager;
         mDesktopState = desktopState;
-        // TODO: Inject this instead
-        mChangeController = new DisplayChangeController(mWmService, shellInit, mainExecutor);
+        mChangeController = new DisplayChangeController(this, wmService, shellInit,
+                mainExecutor);
         mDisplayContainerListener = new DisplayWindowListenerImpl();
         // Note, add this after DisplaceChangeController is constructed to ensure that is
         // initialized first
@@ -230,27 +233,31 @@ public class DisplayController {
     public void onDisplayChangeRequested(WindowContainerTransaction wct, int displayId,
             Rect startAbsBounds, Rect endAbsBounds, int fromRotation, int toRotation) {
         synchronized (mDisplays) {
-            final DisplayRecord dr = mDisplays.get(displayId);
-            if (dr == null) {
+            final DisplayLayout dl = getDisplayLayout(displayId);
+            if (dl == null) {
                 Slog.w(TAG, "Skipping Display rotate on non-added display.");
                 return;
             }
-
-            if (dr.mDisplayLayout != null) {
-                if (endAbsBounds != null) {
-                    // If there is a change in the display dimensions update the layout as well;
-                    // note that endAbsBounds should ignore any potential rotation changes, so
-                    // we still need to rotate the layout after if needed.
-                    dr.mDisplayLayout.resizeTo(dr.mContext.getResources(),
-                            new Size(endAbsBounds.width(), endAbsBounds.height()));
-                }
-                if (fromRotation != toRotation) {
-                    dr.mDisplayLayout.rotateTo(dr.mContext.getResources(), toRotation);
-                }
-            }
+            updateDisplayLayout(displayId, startAbsBounds, endAbsBounds, fromRotation, toRotation);
 
             mChangeController.dispatchOnDisplayChange(
                     wct, displayId, fromRotation, toRotation, null /* newDisplayAreaInfo */);
+        }
+    }
+
+    void updateDisplayLayout(int displayId,
+            @NonNull Rect startBounds, @Nullable Rect endBounds, int fromRotation, int toRotation) {
+        final DisplayLayout dl = getDisplayLayout(displayId);
+        final Context ctx = getDisplayContext(displayId);
+        if (dl == null || ctx == null) return;
+
+        if (endBounds != null) {
+            // Note that endAbsBounds should ignore any potential rotation changes, so
+            // we still need to rotate the layout after if needed.
+            dl.resizeTo(ctx.getResources(), new Size(endBounds.width(), endBounds.height()));
+        }
+        if (fromRotation != toRotation && toRotation != ROTATION_UNDEFINED) {
+            dl.rotateTo(ctx.getResources(), toRotation);
         }
     }
 
