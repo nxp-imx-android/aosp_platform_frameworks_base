@@ -20,6 +20,8 @@ import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
+import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
+
 import android.annotation.CallbackExecutor;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
@@ -173,6 +175,7 @@ public class MediaSwitchingController
     @NonNull private MediaOutputColorScheme mMediaOutputColorScheme;
     @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
     private boolean mIsGroupListCollapsed = true;
+    private boolean mHasAdjustVolumeUserRestriction = false;
 
     public enum BroadcastNotifyDialog {
         ACTION_FIRST_LAUNCH,
@@ -275,6 +278,9 @@ public class MediaSwitchingController
 
         if (enableInputRouting()) {
             mInputRouteManager.registerCallback(mInputDeviceCallback);
+        }
+        if (avoidBinderCallsDuringRender()) {
+            mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
         }
     }
 
@@ -1010,6 +1016,13 @@ public class MediaSwitchingController
     }
 
     boolean hasAdjustVolumeUserRestriction() {
+        if (avoidBinderCallsDuringRender()) {
+            return mHasAdjustVolumeUserRestriction;
+        }
+        return checkIfAdjustVolumeRestrictionEnforced();
+    }
+
+    private boolean checkIfAdjustVolumeRestrictionEnforced() {
         if (RestrictedLockUtilsInternal.checkIfRestrictionEnforced(
                 mContext, UserManager.DISALLOW_ADJUST_VOLUME, UserHandle.myUserId()) != null) {
             return true;
