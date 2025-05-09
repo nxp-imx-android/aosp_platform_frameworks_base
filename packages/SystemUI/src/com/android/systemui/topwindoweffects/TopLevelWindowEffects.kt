@@ -24,9 +24,9 @@ import androidx.core.animation.ValueAnimator
 import com.android.app.animation.InterpolatorsAndroidX
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
-import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectConfig
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 class TopLevelWindowEffects
 @Inject
 constructor(
-    @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
     // TODO(b/409930584): make AppZoomOut non-optional
@@ -68,7 +68,7 @@ constructor(
     }
 
     override fun start() {
-        topLevelWindowEffectsScope.launch {
+        applicationScope.launch {
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 if (enabled) {
                     squeezeEffectInteractor.isPowerButtonDownAsSingleKeyGesture.collectLatest { down
