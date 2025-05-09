@@ -1306,6 +1306,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
     bug: "400407139"
+    is_exported: true
 }
 
 flag {
