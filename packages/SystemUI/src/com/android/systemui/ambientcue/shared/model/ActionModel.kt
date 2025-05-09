@@ -16,12 +16,11 @@
 
 package com.android.systemui.ambientcue.shared.model
 
-import android.content.Intent
 import android.graphics.drawable.Drawable
 
 data class ActionModel(
     val icon: Drawable,
     val label: String,
     val attribution: String?,
-    val intent: Intent?,
+    val onPerformAction: () -> Unit,
 )

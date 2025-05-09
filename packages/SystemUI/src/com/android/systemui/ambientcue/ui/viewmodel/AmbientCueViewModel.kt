@@ -55,7 +55,15 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
             source =
                 ambientCueInteractor.actions.map { actions ->
                     actions.map { action ->
-                        ActionViewModel(action.icon, action.label, action.attribution, {})
+                        ActionViewModel(
+                            icon = action.icon,
+                            label = action.label,
+                            attribution = action.attribution,
+                            onClick = {
+                                action.onPerformAction()
+                                collapse()
+                            },
+                        )
                     }
                 },
         )
