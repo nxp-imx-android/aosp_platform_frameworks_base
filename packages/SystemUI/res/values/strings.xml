@@ -3063,7 +3063,7 @@
     <!-- Title of the magnification option button allow diagonal scrolling [CHAR LIMIT=NONE]-->
     <string name="accessibility_allow_diagonal_scrolling">Allow diagonal scrolling</string>
     <!-- Title of the magnification option button allow magnify typing [CHAR LIMIT=NONE]-->
-    <string name="accessibility_magnify_typing">Magnify typing</string>
+    <string name="accessibility_magnify_typing">Follow typing</string>
     <!-- Title of the magnification option button allow magnify keyboard [CHAR LIMIT=NONE]-->
     <string name="accessibility_magnify_keyboard">Magnify keyboard</string>
     <!-- Title of the magnification option button Resize [CHAR LIMIT=NONE]-->
