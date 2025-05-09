@@ -16,7 +16,6 @@
 
 package com.android.companiondevicemanager;
 
-import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.CompanionDeviceManager.RESULT_INTERNAL_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_SECURITY_ERROR;
 import static android.companion.CompanionDeviceManager.RESULT_USER_REJECTED;
@@ -497,12 +496,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             return;
         }
 
-        if (DEVICE_PROFILE_COMPUTER.equals(deviceProfile)) {
-            title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), deviceName);
-        } else {
-            title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), mAppLabel,
-                    getString(R.string.device_type), deviceName);
-        }
+        title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), mAppLabel,
+                getString(R.string.device_type), deviceName);
 
         if (deviceIcon != null) {
             mDeviceIcon.setImageIcon(deviceIcon);

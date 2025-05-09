@@ -87,7 +87,8 @@
     <!-- ================= DEVICE_PROFILE_COMPUTER ================= -->
 
     <!-- Confirmation for associating an application with a companion device of COMPUTER profile (type) [CHAR LIMIT=NONE] -->
-    <string name="title_computer">Allow &lt;strong&gt;<xliff:g id="display_name" example="Chromebook">%1$s</xliff:g>&lt;/strong&gt; to access this information from your phone</string>
+    <string name="title_computer">Allow &lt;strong&gt;<xliff:g id="display_name" example="Chromebook">%3$s</xliff:g>&lt;/strong&gt; to access this information from your <xliff:g id="device_type" example="phone">%2$s</xliff:g></string>
+
     <!-- Description of the helper dialog for COMPUTER profile. [CHAR LIMIT=NONE] -->
     <string name="helper_summary_computer"><xliff:g id="app_name" example="GMS">%1$s</xliff:g> is requesting permission on behalf of your <xliff:g id="device_name" example="Chromebook">%2$s</xliff:g> to access your <xliff:g id="device_type" example="phone">%3$s</xliff:g>\u2019s photos, media, and notifications</string>
 
