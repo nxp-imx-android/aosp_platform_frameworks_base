@@ -22,13 +22,17 @@ filegroup {
 android_test {
     name: "UiTracingPerfTests",
     team: "trendy_team_windowing_tools",
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.rules",
         "apct-perftests-utils",
         "collector-device-lib",
         "collector-device-lib-platform",
+        "flickerlib-parsers",
         "perfetto_trace_java_protos",
         "platform-test-annotations",
     ],
