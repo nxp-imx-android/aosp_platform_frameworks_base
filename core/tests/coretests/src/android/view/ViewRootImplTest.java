@@ -64,7 +64,6 @@ import android.annotation.NonNull;
 import android.app.Instrumentation;
 import android.app.UiModeManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.ForceDarkType;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
@@ -1478,14 +1477,12 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void
-            determineForceDarkType_isLightThemeAndIsLightBackground_returnsForceInvertColorDark()
-            throws Exception {
+    public void determineForceDarkType_isLightTheme_returnsForceInvertColorDark() throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
         enableForceInvertColor(true);
 
-        setUpViewAttributes(/* isLightTheme= */ true, /* isLightBackground = */ true);
+        setUpViewAttributes(/* isLightTheme= */ true);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
                 () -> (mViewRootImpl.determineForceDarkType()
@@ -1494,43 +1491,12 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void
-            determineForceDarkType_isLightThemeAndNotLightBackground_returnsForceInvertColorDark()
-            throws Exception {
+    public void determineForceDarkType_notLightTheme_returnsNone() throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
         enableForceInvertColor(true);
 
-        setUpViewAttributes(/* isLightTheme= */ true, /* isLightBackground = */ false);
-
-        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
-                () -> (mViewRootImpl.determineForceDarkType()
-                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
-    }
-
-    @Test
-    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_notLightThemeAndIsLightBackground_returnsNone()
-            throws Exception {
-        // Set up configurations for force invert color
-        waitForSystemNightModeActivated(true);
-        enableForceInvertColor(true);
-
-        setUpViewAttributes(/* isLightTheme= */ false, /* isLightBackground = */ true);
-
-        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
-                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
-    }
-
-    @Test
-    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_notLightThemeAndNotLightBackground_returnsNone()
-            throws Exception {
-        // Set up configurations for force invert color
-        waitForSystemNightModeActivated(true);
-        enableForceInvertColor(true);
-
-        setUpViewAttributes(/* isLightTheme= */ false, /* isLightBackground = */ false);
+        setUpViewAttributes(/* isLightTheme= */ false);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
                 () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
@@ -1797,7 +1763,7 @@ public class ViewRootImplTest {
         });
     }
 
-    private void setUpViewAttributes(boolean isLightTheme, boolean isLightBackground) {
+    private void setUpViewAttributes(boolean isLightTheme) {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
             sContext.setTheme(isLightTheme ? android.R.style.Theme_DeviceDefault_Light
                     : android.R.style.Theme_DeviceDefault);
@@ -1809,11 +1775,6 @@ public class ViewRootImplTest {
                     TYPE_APPLICATION_OVERLAY);
             layoutParams.token = new Binder();
             view.setLayoutParams(layoutParams);
-            if (isLightBackground) {
-                view.setBackgroundColor(Color.WHITE);
-            } else {
-                view.setBackgroundColor(Color.BLACK);
-            }
             mViewRootImpl.setView(view, layoutParams, /* panelParentView= */ null);
             mViewRootImpl.updateConfiguration(sContext.getDisplayNoVerify().getDisplayId());
         });
