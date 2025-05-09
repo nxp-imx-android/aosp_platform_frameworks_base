@@ -2072,11 +2072,15 @@ class SyntheticPasswordManager {
             @NonNull final byte[] vendorAuthSecret,
             @NonNull final SyntheticPassword sp,
             @UserIdInt final int userId) {
-        final byte[] encrypted =
-                SyntheticPasswordCrypto.encrypt(
-                        sp.deriveVendorAuthSecretEncryptionKey(), new byte[0], vendorAuthSecret);
-        saveState(VENDOR_AUTH_SECRET_NAME, encrypted, NULL_PROTECTOR_ID, userId);
-        syncState(userId);
+        final byte[] key = sp.deriveVendorAuthSecretEncryptionKey();
+        try {
+            final byte[] encrypted = SyntheticPasswordCrypto.encrypt(key, new byte[0],
+                    vendorAuthSecret);
+            saveState(VENDOR_AUTH_SECRET_NAME, encrypted, NULL_PROTECTOR_ID, userId);
+            syncState(userId);
+        } finally {
+            ArrayUtils.zeroize(key);
+        }
     }
 
     public @Nullable byte[] readVendorAuthSecret(
@@ -2085,7 +2089,11 @@ class SyntheticPasswordManager {
         if (encrypted == null) {
             return null;
         }
-        return SyntheticPasswordCrypto.decrypt(
-                sp.deriveVendorAuthSecretEncryptionKey(), new byte[0], encrypted);
+        final byte[] key = sp.deriveVendorAuthSecretEncryptionKey();
+        try {
+            return SyntheticPasswordCrypto.decrypt(key, new byte[0], encrypted);
+        } finally {
+            ArrayUtils.zeroize(key);
+        }
     }
 }
