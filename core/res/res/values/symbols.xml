@@ -6209,4 +6209,7 @@
 
   <!-- The selection toolbar render service component name -->
   <java-symbol type="string" name="config_systemUiSelectionToolbarRenderService" />
+
+  <!-- Whether Sys UI reboot UI is prioritized for reocvery triggered UI. -->
+  <java-symbol type="bool" name="config_prioritizeSysUiForRecoveryRebootUi" />
 </resources>
