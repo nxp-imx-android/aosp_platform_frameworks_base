@@ -47,6 +47,7 @@ public abstract class Classifier {
     public static final int MEDIA_SEEKBAR = 18;
     public static final int ALTERNATE_BOUNCER_SWIPE = 19;
     public static final int GLANCEABLE_HUB_SWIPE = 20;
+    public static final int MEDIA_CAROUSEL_SWIPE = 21;
 
     @IntDef({
             QUICK_SETTINGS,
@@ -69,6 +70,7 @@ public abstract class Classifier {
             MEDIA_SEEKBAR,
             ALTERNATE_BOUNCER_SWIPE,
             GLANCEABLE_HUB_SWIPE,
+            MEDIA_CAROUSEL_SWIPE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InteractionType {}

@@ -22,6 +22,7 @@ import static com.android.systemui.classifier.Classifier.BOUNCER_UNLOCK;
 import static com.android.systemui.classifier.Classifier.BRIGHTNESS_SLIDER;
 import static com.android.systemui.classifier.Classifier.GLANCEABLE_HUB_SWIPE;
 import static com.android.systemui.classifier.Classifier.LEFT_AFFORDANCE;
+import static com.android.systemui.classifier.Classifier.MEDIA_CAROUSEL_SWIPE;
 import static com.android.systemui.classifier.Classifier.MEDIA_SEEKBAR;
 import static com.android.systemui.classifier.Classifier.NOTIFICATION_DISMISS;
 import static com.android.systemui.classifier.Classifier.NOTIFICATION_DRAG_DOWN;
@@ -74,6 +75,7 @@ public class TypeClassifier extends FalsingClassifier {
                 break;
             case NOTIFICATION_DISMISS:
             case GLANCEABLE_HUB_SWIPE:
+            case MEDIA_CAROUSEL_SWIPE:
                 wrongDirection = vertical;
                 break;
             case ALTERNATE_BOUNCER_SWIPE:
