@@ -53,7 +53,7 @@ class DesktopModeStatusTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        doReturn(mockResources).whenever(mockContext).getResources()
+        doReturn(mockResources).whenever(mockContext).resources
         setDeviceEligibleForDesktopMode(false)
         doReturn(false).whenever(mockResources).getBoolean(
             eq(R.bool.config_isDesktopModeDevOptionSupported)
@@ -122,6 +122,20 @@ class DesktopModeStatusTest : ShellTestCase() {
         assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isTrue()
     }
 
+    @DisableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION
+    )
+    @Test
+    fun canEnterDesktopMode_DWFlagDisabled_deviceNotEligible_forceNotUsingDevOption_returnsFalse() {
+        doReturn(true).whenever(mockResources).getBoolean(
+            eq(R.bool.config_isDesktopModeDevOptionSupported)
+        )
+        setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_OFF)
+
+        assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isFalse()
+    }
+
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @Test
@@ -187,6 +201,20 @@ class DesktopModeStatusTest : ShellTestCase() {
         setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_ON)
 
         assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_DESKTOP_MODE_THROUGH_DEV_OPTION
+    )
+    @Test
+    fun canEnterDesktopMode_DWFlagEnabled_deviceNotEligible_forceNotUsingDevOption_returnsFalse() {
+        doReturn(true).whenever(mockResources).getBoolean(
+            eq(R.bool.config_isDesktopModeDevOptionSupported)
+        )
+        setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_OFF)
+
+        assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isFalse()
     }
 
     @Test
@@ -284,11 +312,17 @@ class DesktopModeStatusTest : ShellTestCase() {
     }
 
     private fun resetDesktopModeFlagsCache() {
+        // Toggle raw override cache for DesktopModeFlags
+        val cachedRawToggleOverride1 =
+            DesktopModeFlags::class.java.getDeclaredField("sCachedRawToggleOverride")
+        cachedRawToggleOverride1.isAccessible = true
+        cachedRawToggleOverride1.set(null, DesktopModeFlags.ToggleOverride.OVERRIDE_UNSET)
+
         // Toggle override cache for DesktopModeFlags
         val cachedToggleOverride1 =
             DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
         cachedToggleOverride1.isAccessible = true
-        cachedToggleOverride1.set(null, DesktopModeFlags.ToggleOverride.OVERRIDE_OFF)
+        cachedToggleOverride1.set(null, null)
 
         // Toggle override cache for DesktopExperienceFlags
         val cachedToggleOverride2 =
@@ -298,9 +332,11 @@ class DesktopModeStatusTest : ShellTestCase() {
     }
 
     private fun setFlagOverride(override: DesktopModeFlags.ToggleOverride) {
-        // Toggle override cache for DesktopModeFlags can be on/off/unset
+        resetDesktopModeFlagsCache()
+
+        // Toggle raw override cache for DesktopModeFlags can be on/off/unset
         val cachedToggleOverride1 =
-            DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
+            DesktopModeFlags::class.java.getDeclaredField("sCachedRawToggleOverride")
         cachedToggleOverride1.isAccessible = true
         cachedToggleOverride1.set(null, override)
 

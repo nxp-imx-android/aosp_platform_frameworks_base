@@ -1007,7 +1007,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     Settings.Global.DEVELOPMENT_OVERRIDE_DESKTOP_EXPERIENCE_FEATURES,
                     DesktopModeFlags.ToggleOverride.OVERRIDE_UNSET.getSetting());
 
-            SystemProperties.set(DesktopModeFlags.SYSTEM_PROPERTY_NAME,
+            SystemProperties.set(DesktopExperienceFlags.SYSTEM_PROPERTY_NAME,
                     Integer.toString(overrideDesktopMode));
         }
 
