@@ -27,11 +27,15 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 
@@ -55,6 +59,7 @@ import org.mockito.MockitoAnnotations;
  *  atest FrameworksServicesTests:CoreSettingsObserverTest
  */
 @SmallTest
+@RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
 public class CoreSettingsObserverTest {
     private static final String TEST_SETTING_SECURE_INT = "secureInt";
     private static final String TEST_SETTING_GLOBAL_FLOAT = "globalFloat";
@@ -65,6 +70,8 @@ public class CoreSettingsObserverTest {
     private static final String TEST_STRING = "testString";
 
     @Rule public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
+    @Rule public final CheckFlagsRule checkFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private ActivityManagerService mAms;
     @Mock private Context mContext;
@@ -162,12 +169,12 @@ public class CoreSettingsObserverTest {
                 TEST_INT, settingsBundle.getInt(TEST_SETTING_SECURE_INT));
         assertEquals("Unexpected value of " + TEST_SETTING_SYSTEM_STRING,
                 TEST_STRING, settingsBundle.getString(TEST_SETTING_SYSTEM_STRING));
-
     }
 
     private Bundle getPopulatedBundle() {
         mCoreSettingsObserver.onChange(false);
-        return mCoreSettingsObserver.getCoreSettingsLocked();
+        return mCoreSettingsObserver.getCoreSettingsLocked().getBundle(
+                String.valueOf(Context.DEVICE_ID_DEFAULT));
     }
 
     private class TestInjector extends Injector {

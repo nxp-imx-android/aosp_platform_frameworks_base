@@ -955,7 +955,8 @@ public final class LoadedApk {
                             .getApplicationInfo(mPackageName, PackageManager.GET_META_DATA,
                                     UserHandle.myUserId());
                     final String debugLayerPath = GraphicsEnvironment.getInstance()
-                            .getDebugLayerPathsFromSettings(mActivityThread.getCoreSettings(),
+                            .getDebugLayerPathsFromSettings(
+                                    mActivityThread.getDefaultDeviceCoreSettings(),
                                     ActivityThread.getPackageManager(), mPackageName, ai);
                     if (debugLayerPath != null) {
                         libraryPermittedPath += File.pathSeparator + debugLayerPath;
