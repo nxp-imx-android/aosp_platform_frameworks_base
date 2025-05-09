@@ -24,7 +24,7 @@
     android:layout_gravity="center_horizontal"
     android:background="@drawable/accessibility_autoclick_type_panel_rounded_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="8dp">
 
     <LinearLayout
         android:id="@+id/accessibility_autoclick_button_group_container"
@@ -38,8 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/accessibility_autoclick_button_group_rounded_background"
-            android:orientation="horizontal"
-            android:padding="3dp">
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:id="@+id/accessibility_autoclick_long_press_layout"
