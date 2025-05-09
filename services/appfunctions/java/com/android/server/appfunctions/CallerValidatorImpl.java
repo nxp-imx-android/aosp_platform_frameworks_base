@@ -82,7 +82,7 @@ class CallerValidatorImpl implements CallerValidator {
             @NonNull String functionId) {
         boolean hasExecutionPermission =
                 mContext.checkPermission(
-                        Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
+                                Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
                         == PackageManager.PERMISSION_GRANTED;
         if (hasExecutionPermission) {
             return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
@@ -170,7 +170,7 @@ class CallerValidatorImpl implements CallerValidator {
     private void validateCallingPackageInternal(
             int actualCallingUid, @NonNull String claimedCallingPackage) {
         if (actualCallingUid == Process.ROOT_UID) {
-            // root does not have a package name.
+            // root does not have a package name
             return;
         }
         UserHandle callingUserHandle = UserHandle.getUserHandleForUid(actualCallingUid);

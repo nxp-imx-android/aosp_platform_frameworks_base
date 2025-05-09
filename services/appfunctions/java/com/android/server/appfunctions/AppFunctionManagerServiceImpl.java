@@ -160,8 +160,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void onShellCommand(FileDescriptor in, FileDescriptor out,
-            FileDescriptor err, @NonNull String[] args, ShellCallback callback,
+    public void onShellCommand(
+            FileDescriptor in,
+            FileDescriptor out,
+            FileDescriptor err,
+            @NonNull String[] args,
+            ShellCallback callback,
             @NonNull ResultReceiver resultReceiver) {
         new AppFunctionManagerServiceShellCommand(this)
                 .exec(this, in, out, err, args, callback, resultReceiver);
@@ -252,20 +256,21 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 .thenCompose(
                         canExecuteResult -> {
                             if (canExecuteResult == CAN_EXECUTE_APP_FUNCTIONS_DENIED) {
-                                return AndroidFuture.failedFuture(new SecurityException(
-                                        "Caller does not have permission to execute the"
-                                                + " appfunction"));
+                                return AndroidFuture.failedFuture(
+                                        new SecurityException(
+                                                "Caller does not have permission to execute the"
+                                                        + " appfunction"));
                             }
                             return isAppFunctionEnabled(
-                                    requestInternal
-                                            .getClientRequest()
-                                            .getFunctionIdentifier(),
-                                    requestInternal
-                                            .getClientRequest()
-                                            .getTargetPackageName(),
-                                    getAppSearchManagerAsUser(
-                                            requestInternal.getUserHandle()),
-                                    THREAD_POOL_EXECUTOR)
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getFunctionIdentifier(),
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getTargetPackageName(),
+                                            getAppSearchManagerAsUser(
+                                                    requestInternal.getUserHandle()),
+                                            THREAD_POOL_EXECUTOR)
                                     .thenApply(
                                             isEnabled -> {
                                                 if (!isEnabled) {
@@ -364,7 +369,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @AppFunctionManager.EnabledState int enabledState,
             @NonNull IAppFunctionEnabledCallback callback) {
         try {
-            mCallerValidator.validateCallingPackage(callingPackage);
+            // Skip validation for shell to allow changing enabled state via shell.
+            if (Binder.getCallingUid() != Process.SHELL_UID) {
+                mCallerValidator.validateCallingPackage(callingPackage);
+            }
         } catch (SecurityException e) {
             reportException(callback, e);
             return;

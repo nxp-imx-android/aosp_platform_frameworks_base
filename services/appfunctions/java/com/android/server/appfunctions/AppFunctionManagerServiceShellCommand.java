@@ -19,9 +19,11 @@ package com.android.server.appfunctions;
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.appfunctions.AppFunctionException;
+import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
+import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appsearch.GenericDocument;
@@ -73,6 +75,17 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 "    --user <USER_ID> (optional): The user ID to execute the function under. "
                         + "Defaults to the current user.");
         pw.println();
+        pw.println(
+                "  set-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
+                        + "--state <enable|disable> [--user <USER_ID>]");
+        pw.println("    Enables or disables an app function for the specified package.");
+        pw.println("    --package <PACKAGE_NAME>: The target package name.");
+        pw.println("    --function <FUNCTION_ID>: The ID of the app function.");
+        pw.println("    --state <enable|disable|default>: The desired enabled state.");
+        pw.println(
+                "    --user <USER_ID> (optional): The user ID under which to set the function state"
+                        + ". Defaults to the current user.");
+        pw.println();
     }
 
     @Override
@@ -85,12 +98,103 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             switch (cmd) {
                 case "execute-app-function":
                     return runExecuteAppFunction();
+                case "set-enabled":
+                    return runSetAppFunctionEnabled();
                 default:
                     return handleDefaultCommands(cmd);
             }
         } catch (Exception e) {
             getOutPrintWriter().println("Exception: " + e);
         }
+        return -1;
+    }
+
+    private int runSetAppFunctionEnabled() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        String packageName = null;
+        String functionId = null;
+        int enabledState = -1;
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--package":
+                    packageName = getNextArgRequired();
+                    break;
+                case "--function":
+                    functionId = getNextArgRequired();
+                    break;
+                case "--state":
+                    enabledState = determineEnabledState(getNextArgRequired());
+                    break;
+                case "--user":
+                    try {
+                        userId = UserHandle.parseUserArg(getNextArgRequired());
+                    } catch (NumberFormatException e) {
+                        pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
+                    }
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        if (packageName == null) {
+            pw.println("Error: --package must be specified.");
+            return -1;
+        }
+        if (functionId == null) {
+            pw.println("Error: --function must be specified.");
+            return -1;
+        }
+        if (enabledState == -1) {
+            pw.println(
+                    "Error: --state must be specified. The accepted values are: "
+                            + "`enable`, `disable`, `default`.");
+            return -1;
+        }
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        IAppFunctionEnabledCallback callback =
+                new IAppFunctionEnabledCallback.Stub() {
+                    @Override
+                    public void onSuccess() {
+                        pw.println("App function enabled state updated successfully.");
+                        countDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onError(android.os.ParcelableException exception) {
+                        pw.println("Error setting app function state: " + exception);
+                        countDownLatch.countDown();
+                    }
+                };
+
+        mService.setAppFunctionEnabled(
+                packageName, functionId, UserHandle.of(userId), enabledState, callback);
+
+        boolean completed = countDownLatch.await(5, TimeUnit.SECONDS);
+        if (!completed) {
+            pw.println("Timed out");
+        }
+        pw.flush();
+
+        return 0;
+    }
+
+    private int determineEnabledState(String state) {
+        switch (state) {
+            case "default":
+                return AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
+            case "enable":
+                return AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
+            case "disable":
+                return AppFunctionManager.APP_FUNCTION_STATE_DISABLED;
+        }
+
         return -1;
     }
 
@@ -187,12 +291,12 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
      * Converts a JSON string to a {@link GenericDocument}.
      *
      * <p>This method parses the provided JSON string and creates a {@link GenericDocument}
-     * representation. It extracts the 'id', 'namespace', and 'schemaType' fields from the
-     * top-level JSON object to initialize the {@code GenericDocument}. It then iterates
-     * through the remaining keys in the JSON object and adds them as properties to the
-     * {@code GenericDocument}.
+     * representation. It extracts the 'id', 'namespace', and 'schemaType' fields from the top-level
+     * JSON object to initialize the {@code GenericDocument}. It then iterates through the remaining
+     * keys in the JSON object and adds them as properties to the {@code GenericDocument}.
      *
      * <p>Example Input:
+     *
      * <pre>{@code
      * {"createNoteParams":{"title":"My title"}}
      * }</pre>
