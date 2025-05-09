@@ -1866,13 +1866,18 @@ class SyntheticPasswordManager {
             Slogf.e(TAG, "Failed to read password metrics file for user %d", userId);
             return null;
         }
-        final byte[] decrypted = SyntheticPasswordCrypto.decrypt(sp.deriveMetricsKey(),
-                /* personalization= */ new byte[0], encrypted);
-        if (decrypted == null) {
-            Slogf.e(TAG, "Failed to decrypt password metrics file for user %d", userId);
-            return null;
+        final byte[] metricsKey = sp.deriveMetricsKey();
+        try {
+            final byte[] decrypted = SyntheticPasswordCrypto.decrypt(metricsKey,
+                    /* personalization= */ new byte[0], encrypted);
+            if (decrypted == null) {
+                Slogf.e(TAG, "Failed to decrypt password metrics file for user %d", userId);
+                return null;
+            }
+            return VersionedPasswordMetrics.deserialize(decrypted).getMetrics();
+        } finally {
+            ArrayUtils.zeroize(metricsKey);
         }
-        return VersionedPasswordMetrics.deserialize(decrypted).getMetrics();
     }
 
     /**
