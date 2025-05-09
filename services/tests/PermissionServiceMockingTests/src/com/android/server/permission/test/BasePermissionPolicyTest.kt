@@ -24,11 +24,13 @@ import android.content.pm.SigningDetails
 import android.health.connect.HealthPermissions
 import android.os.Build
 import android.os.Bundle
+import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArrayMap
 import android.util.SparseArray
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.pm.pkg.component.ParsedPermission
 import com.android.internal.pm.pkg.component.ParsedPermissionGroup
+import com.android.internal.pm.pkg.component.ParsedUsesPermission
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.extendedtestutils.wheneverStatic
 import com.android.server.permission.access.MutableAccessState
@@ -61,6 +63,8 @@ abstract class BasePermissionPolicyTest {
     protected val defaultPermissionTree =
         mockParsedPermission(PERMISSION_TREE_NAME, PACKAGE_NAME_0, isTree = true)
     protected val defaultPermission = mockParsedPermission(PERMISSION_NAME_0, PACKAGE_NAME_0)
+    protected val defaultPermissionWithValidPurpose = mockParsedPermission(PERMISSION_NAME_0,
+            PLATFORM_PACKAGE_NAME, isPurposeRequired = true, validPurposes = setOf(VALID_PURPOSE))
 
     protected val appIdPermissionPolicy = AppIdPermissionPolicy()
 
@@ -68,6 +72,10 @@ abstract class BasePermissionPolicyTest {
     @JvmField
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this).spyStatic(PackageInfoUtils::class.java).build()
+
+    @Rule
+    @JvmField
+    val setFlagsRule: SetFlagsRule = SetFlagsRule()
 
     @Before
     fun baseSetUp() {
@@ -107,6 +115,8 @@ abstract class BasePermissionPolicyTest {
                     protectionLevel = parsedPermission.protectionLevel
                     group = parsedPermission.group
                     flags = parsedPermission.flags
+                    requiresPurpose = parsedPermission.isPurposeRequired
+                    validPurposes = parsedPermission.validPurposes
                 }
             }
     }
@@ -209,6 +219,7 @@ abstract class BasePermissionPolicyTest {
         permissionGroups: List<ParsedPermissionGroup> = emptyList(),
         permissions: List<ParsedPermission> = emptyList(),
         isSignatureMatching: Boolean = false,
+        usesPermissionMapping: Map<String, ParsedUsesPermission> = emptyMap()
     ): AndroidPackage = mock {
         whenever(this.packageName).thenReturn(packageName)
         whenever(this.targetSdkVersion).thenReturn(targetSdkVersion)
@@ -227,6 +238,7 @@ abstract class BasePermissionPolicyTest {
                     .thenReturn(isSignatureMatching)
             }
         whenever(this.signingDetails).thenReturn(signingDetails)
+        whenever(this.usesPermissionMapping).thenReturn(usesPermissionMapping)
     }
 
     protected fun mockParsedPermission(
@@ -237,6 +249,8 @@ abstract class BasePermissionPolicyTest {
         protectionLevel: Int = PermissionInfo.PROTECTION_NORMAL,
         flags: Int = 0,
         isTree: Boolean = false,
+        isPurposeRequired: Boolean = false,
+        validPurposes: Set<String> = emptySet(),
     ): ParsedPermission = mock {
         whenever(name).thenReturn(permissionName)
         whenever(this.packageName).thenReturn(packageName)
@@ -246,6 +260,18 @@ abstract class BasePermissionPolicyTest {
         whenever(this.protectionLevel).thenReturn(protectionLevel)
         whenever(this.flags).thenReturn(flags)
         whenever(this.isTree).thenReturn(isTree)
+        whenever(this.isPurposeRequired).thenReturn(isPurposeRequired)
+        whenever(this.validPurposes).thenReturn(validPurposes)
+    }
+
+    protected fun mockParsedUsesPermission(
+        permissionName: String,
+        flags: Int = 0,
+        purposes: Set<String> = emptySet(),
+    ): ParsedUsesPermission = mock {
+        whenever(name).thenReturn(permissionName)
+        whenever(this.usesPermissionFlags).thenReturn(flags)
+        whenever(this.purposes).thenReturn(purposes)
     }
 
     protected fun mockParsedPermissionGroup(
@@ -376,6 +402,9 @@ abstract class BasePermissionPolicyTest {
 
         @JvmStatic protected val PERMISSION_TREE_NAME = "permissionTree"
 
+        @JvmStatic protected val VALID_PURPOSE = "validPurpose"
+        @JvmStatic protected val INVALID_PURPOSE = "invalidPurpose"
+
         @JvmStatic protected val PERMISSION_NAME_0 = "permissionName0"
         @JvmStatic protected val PERMISSION_NAME_1 = "permissionName1"
         @JvmStatic protected val PERMISSION_NAME_2 = "permissionName2"
@@ -402,5 +431,8 @@ abstract class BasePermissionPolicyTest {
 
         @JvmStatic protected val USER_ID_0 = 0
         @JvmStatic protected val USER_ID_NEW = 1
+
+        // TODO(b/419394842) - Remove and use Android C build version code directly when available.
+        @JvmStatic protected val BUILD_VERSION_CODES_C = Build.VERSION_CODES.BAKLAVA + 1
     }
 }

@@ -986,9 +986,12 @@ class AppIdPermissionPolicy : SchemePolicy() {
             return
         }
         if (permission.isNormal) {
-            val wasGranted = oldFlags.hasBits(PermissionFlags.INSTALL_GRANTED)
-            if (!wasGranted) {
-                val wasRevoked = oldFlags.hasBits(PermissionFlags.INSTALL_REVOKED)
+            var newFlags: Int
+            val wasInstallGranted = oldFlags.hasBits(PermissionFlags.INSTALL_GRANTED)
+            val wasInstallRevoked = oldFlags.hasBits(PermissionFlags.INSTALL_REVOKED)
+            if (wasInstallGranted || !wasInstallRevoked) {
+                newFlags = PermissionFlags.INSTALL_GRANTED
+            } else {
                 val isRequestedByInstalledPackage =
                     installedPackageState != null &&
                         permissionName in
@@ -1002,10 +1005,9 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 // If this is an existing, non-system package,
                 // then we can't add any new permissions to it.
                 // Except if this is a permission that was added to the platform
-                var newFlags =
+                newFlags =
                     if (
-                        !wasRevoked ||
-                            isRequestedByInstalledPackage ||
+                        isRequestedByInstalledPackage ||
                             isRequestedBySystemPackage ||
                             isCompatibilityPermission
                     ) {
@@ -1013,13 +1015,25 @@ class AppIdPermissionPolicy : SchemePolicy() {
                     } else {
                         PermissionFlags.INSTALL_REVOKED
                     }
-                if (permission.isAppOp) {
-                    newFlags =
-                        newFlags or
-                            (oldFlags and (PermissionFlags.ROLE or PermissionFlags.USER_SET))
-                }
-                setPermissionFlags(appId, userId, permissionName, newFlags)
             }
+            // Starting from Android 17, an app requesting permission which requires purpose must
+            // declare at least one valid purpose in its manifest before it can be granted. Note
+            // that a flag state may have INSTALL_GRANTED and PURPOSE_REVOKED bits set, in which
+            // case the permission will not be granted.
+            if (Flags.purposeDeclarationEnabled() && permission.requiresPurpose) {
+                val hasValidPurpose =
+                    requestingPackageStates.anyIndexed { _, it ->
+                        hasValidPurposeForPackage(it.androidPackage!!, permission)
+                    }
+                if (!hasValidPurpose) {
+                    newFlags = newFlags or PermissionFlags.PURPOSE_REVOKED
+                }
+            }
+            if (permission.isAppOp) {
+                newFlags =
+                    newFlags or (oldFlags and (PermissionFlags.ROLE or PermissionFlags.USER_SET))
+            }
+            setPermissionFlags(appId, userId, permissionName, newFlags)
         } else if (permission.isSignature || permission.isInternal) {
             val wasProtectionGranted = oldFlags.hasBits(PermissionFlags.PROTECTION_GRANTED)
             var newFlags =
@@ -1305,6 +1319,22 @@ class AppIdPermissionPolicy : SchemePolicy() {
             }
         }
         return false
+    }
+
+    // TODO(b/422817717) - Handle app-compat scenarios by using versioning info at the purpose level
+    private fun hasValidPurposeForPackage(
+        androidPackage: AndroidPackage,
+        permission: Permission,
+    ): Boolean {
+        // TODO(b/419394842) - Use < Android C build version code when available.
+        if (androidPackage.targetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
+            // Purpose declaration is not supported on older target versions. Bypass check.
+            return true
+        }
+        val purposes = androidPackage.usesPermissionMapping[permission.name]?.purposes
+        // There must be at least one valid purpose defined as the parsing logic would otherwise
+        // force set the permission to not require purpose, making this code unreachable.
+        return purposes?.any { it in permission.validPurposes } ?: false
     }
 
     private fun MutateStateScope.shouldGrantPermissionBySignature(
