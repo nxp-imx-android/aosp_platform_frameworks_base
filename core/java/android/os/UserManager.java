@@ -4043,15 +4043,6 @@ public class UserManager {
             throw new IllegalArgumentException("Cannot access properties for user " + userId);
         }
 
-        if (!android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly() || userId < 0) {
-            // This is the historical code path, when all flags are false.
-            try {
-                return mService.getUserPropertiesCopy(userId);
-            } catch (RemoteException re) {
-                throw re.rethrowFromSystemServer();
-            }
-        }
-
         final int callingUid = Binder.getCallingUid();
         final int processUid = Process.myUid();
         if (processUid == Process.SYSTEM_UID && callingUid != processUid) {

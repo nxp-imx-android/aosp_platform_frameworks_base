@@ -1110,10 +1110,8 @@ public class UserManagerService extends IUserManager.Stub {
     private static final void initPropertyInvalidatedCaches() {
         UserManager.invalidateIsUserUnlockedCache();
         UserManager.invalidateQuietModeEnabledCache();
-        if (android.multiuser.Flags.cacheUserPropertiesCorrectlyReadOnly()) {
-            UserManager.invalidateStaticUserProperties();
-            UserManager.invalidateUserPropertiesCache();
-        }
+        UserManager.invalidateStaticUserProperties();
+        UserManager.invalidateUserPropertiesCache();
         UserManager.invalidateCacheOnUserListChange();
         UserManager.invalidateUserRestriction();
     }
