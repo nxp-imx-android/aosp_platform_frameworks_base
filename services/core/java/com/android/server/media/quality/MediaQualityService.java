@@ -88,10 +88,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -140,6 +142,7 @@ public class MediaQualityService extends SystemService {
 
     private final Map<Long, PictureProfile> mHandleToPictureProfile = new HashMap<>();
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
+    private final Set<Long> mPictureProfileForHal = new HashSet<>();
 
     public MediaQualityService(Context context) {
         super(context);
@@ -332,8 +335,11 @@ public class MediaQualityService extends SystemService {
                             pp.getPackageName(),
                             pp.getInputId(),
                             pp.getParameters());
-                    updateDatabaseOnPictureProfileAndNotifyManager(
-                            values, pp.getParameters(), callingUid, callingPid, true);
+                    if (mPictureProfileForHal
+                            .contains(values.getAsLong(BaseParameters.PARAMETER_ID))) {
+                        updateDatabaseOnPictureProfileAndNotifyManager(
+                                values, pp.getParameters(), callingUid, callingPid, true);
+                    }
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
                             pp.getPackageName(), pp.getHandle().getId());
@@ -582,6 +588,7 @@ public class MediaQualityService extends SystemService {
             synchronized (mPictureProfileLock) {
                 Long value = mPictureProfileTempIdMap.getKey(id);
                 if (value != null) {
+                    mPictureProfileForHal.add(value);
                     mHalNotifier.notifyHalOnPictureProfileChange(value, null);
                 }
                 return value != null ? value : -1;
@@ -598,6 +605,7 @@ public class MediaQualityService extends SystemService {
                 if (packageName != null) {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
                     if (value != null) {
+                        mPictureProfileForHal.add(value);
                         mHalNotifier.notifyHalOnPictureProfileChange(value, null);
                     }
                 }
@@ -610,6 +618,7 @@ public class MediaQualityService extends SystemService {
         public void notifyPictureProfileHandleSelection(long handle, int userId) {
             PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle, true);
             if (profile != null) {
+                mPictureProfileForHal.add(handle);
                 mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
             }
         }
@@ -2048,6 +2057,7 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        mPictureProfileForHal.add(profileHandle);
                         PersistableBundle currentProfileParameters = current.getParameters();
                         currentProfileParameters.putString("stream_status", newStatus);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
@@ -2084,6 +2094,7 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        mPictureProfileForHal.add(profileHandle);
                         PersistableBundle currentProfileParameters = current.getParameters();
                         currentProfileParameters.putString(
                                 "stream_status", PictureProfile.STATUS_SDR);
