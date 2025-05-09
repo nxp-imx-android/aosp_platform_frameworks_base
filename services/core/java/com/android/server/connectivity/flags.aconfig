@@ -14,3 +14,10 @@ flag {
     description: "This flag controls if airplane mode sync between phones and watches are enabled."
     bug: "414622391"
 }
+
+flag {
+    name: "collect_vpn_metrics"
+    namespace: "android_core_networking"
+    description: "This flag controls VPN metrics collection."
+    bug: "306313287"
+}

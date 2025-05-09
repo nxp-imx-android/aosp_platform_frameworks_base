@@ -33,6 +33,7 @@ import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_T
 import static android.telephony.CarrierConfigManager.KEY_PREFERRED_IKE_PROTOCOL_INT;
 
 import static com.android.net.module.util.NetworkStackConstants.IPV6_MIN_MTU;
+import static com.android.server.connectivity.Flags.collectVpnMetrics;
 
 import static java.util.Objects.requireNonNull;
 
@@ -386,6 +387,12 @@ public class Vpn {
     private final UserManager mUserManager;
 
     private final VpnProfileStore mVpnProfileStore;
+    /**
+     * Instance responsible for collecting VPN connectivity metrics.
+     * This field will be null if the {@link collectVpnMetrics} flag is set to false.
+     */
+    @Nullable
+    private final VpnConnectivityMetrics mVpnConnectivityMetrics;
 
     @VisibleForTesting
     VpnProfileStore getVpnProfileStore() {
@@ -594,6 +601,15 @@ public class Vpn {
                 throw new SecurityException(packageName + " does not belong to uid " + callingUid);
             }
         }
+
+        /**
+         * @see VpnConnectivityMetrics.
+         *
+         * <p>This method is only called when {@link collectVpnMetrics} is true.
+         */
+        public VpnConnectivityMetrics makeVpnConnectivityMetrics(int userId) {
+            return new VpnConnectivityMetrics(userId);
+        }
     }
 
     // A helper class to ensure JNI registration before use. This avoids native lib dependencies in
@@ -650,6 +666,8 @@ public class Vpn {
         mPackage = VpnConfig.LEGACY_VPN;
         mOwnerUID = getAppUid(mContext, mPackage, mUserId);
         mIsPackageTargetingAtLeastQ = doesPackageTargetAtLeastQ(mPackage);
+        mVpnConnectivityMetrics =
+                collectVpnMetrics() ? mDeps.makeVpnConnectivityMetrics(userId) : null;
 
         try {
             netService.registerObserver(mObserver);
