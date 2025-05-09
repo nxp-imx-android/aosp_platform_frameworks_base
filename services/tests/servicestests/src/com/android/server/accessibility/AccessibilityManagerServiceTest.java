@@ -434,8 +434,6 @@ public class AccessibilityManagerServiceTest {
     @SmallTest
     @Test
     public void testRegisterProxy() throws Exception {
-        mFakePermissionEnforcer.grant(Manifest.permission.CREATE_VIRTUAL_DEVICE);
-        when(mProxyManager.displayBelongsToCaller(anyInt(), anyInt())).thenReturn(true);
         mA11yms.registerProxyForDisplay(mMockServiceClient, TEST_DISPLAY);
         verify(mProxyManager).registerProxy(eq(mMockServiceClient), eq(TEST_DISPLAY), anyInt(),
                 eq(mMockSecurityPolicy),
@@ -446,20 +444,9 @@ public class AccessibilityManagerServiceTest {
     @SmallTest
     @Test
     public void testRegisterProxyWithoutA11yPermissionOrRole() throws Exception {
-        mFakePermissionEnforcer.grant(Manifest.permission.CREATE_VIRTUAL_DEVICE);
         doThrow(SecurityException.class).when(mMockSecurityPolicy)
-                .checkForAccessibilityPermissionOrRole();
+                .checkForAccessibilityPermissionOrDisplayOwnership(TEST_DISPLAY);
 
-        assertThrows(SecurityException.class,
-                () -> mA11yms.registerProxyForDisplay(mMockServiceClient, TEST_DISPLAY));
-        verify(mProxyManager, never()).registerProxy(any(), anyInt(), anyInt(), any(),
-                any(), any(), any());
-    }
-
-    @SmallTest
-    @Test
-    public void testRegisterProxyWithoutDevicePermission() throws Exception {
-        mFakePermissionEnforcer.revoke(Manifest.permission.CREATE_VIRTUAL_DEVICE);
         assertThrows(SecurityException.class,
                 () -> mA11yms.registerProxyForDisplay(mMockServiceClient, TEST_DISPLAY));
         verify(mProxyManager, never()).registerProxy(any(), anyInt(), anyInt(), any(),
@@ -469,6 +456,8 @@ public class AccessibilityManagerServiceTest {
     @SmallTest
     @Test
     public void testRegisterProxyForDefaultDisplay() throws Exception {
+        doThrow(SecurityException.class).when(mMockSecurityPolicy)
+                .checkForAccessibilityPermissionOrDisplayOwnership(Display.DEFAULT_DISPLAY);
         assertThrows(SecurityException.class,
                 () -> mA11yms.registerProxyForDisplay(mMockServiceClient, Display.DEFAULT_DISPLAY));
         verify(mProxyManager, never()).registerProxy(any(), anyInt(), anyInt(), any(),
@@ -478,7 +467,6 @@ public class AccessibilityManagerServiceTest {
     @SmallTest
     @Test
     public void testRegisterProxyForInvalidDisplay() throws Exception {
-        mFakePermissionEnforcer.grant(Manifest.permission.CREATE_VIRTUAL_DEVICE);
         assertThrows(IllegalArgumentException.class,
                 () -> mA11yms.registerProxyForDisplay(mMockServiceClient, Display.INVALID_DISPLAY));
         verify(mProxyManager, never()).registerProxy(any(), anyInt(), anyInt(), any(),
@@ -488,8 +476,6 @@ public class AccessibilityManagerServiceTest {
     @SmallTest
     @Test
     public void testUnRegisterProxyWithPermission() throws Exception {
-        mFakePermissionEnforcer.grant(Manifest.permission.CREATE_VIRTUAL_DEVICE);
-        when(mProxyManager.displayBelongsToCaller(anyInt(), anyInt())).thenReturn(true);
         mA11yms.registerProxyForDisplay(mMockServiceClient, TEST_DISPLAY);
         mA11yms.unregisterProxyForDisplay(TEST_DISPLAY);
 
@@ -498,19 +484,10 @@ public class AccessibilityManagerServiceTest {
 
     @SmallTest
     @Test
-    public void testUnRegisterProxyWithoutA11yPermissionOrRole() {
+    public void testUnRegisterProxyWithoutA11yPermissionOrDisplayOwnership() {
         doThrow(SecurityException.class).when(mMockSecurityPolicy)
-                .checkForAccessibilityPermissionOrRole();
+                .checkForAccessibilityPermissionOrDisplayOwnership(TEST_DISPLAY);
 
-        assertThrows(SecurityException.class,
-                () -> mA11yms.unregisterProxyForDisplay(TEST_DISPLAY));
-        verify(mProxyManager, never()).unregisterProxy(TEST_DISPLAY);
-    }
-
-    @SmallTest
-    @Test
-    public void testUnRegisterProxyWithoutDevicePermission() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.CREATE_VIRTUAL_DEVICE);
         assertThrows(SecurityException.class,
                 () -> mA11yms.unregisterProxyForDisplay(TEST_DISPLAY));
         verify(mProxyManager, never()).unregisterProxy(TEST_DISPLAY);
