@@ -57,6 +57,7 @@ interface SystemUIDisplaySubcomponent {
 
     /**
      * Annotates the displaylib implementation of a class.
+     *
      * TODO(b/408503553): Remove this annotation once the flag is cleaned up.
      */
     @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class DisplayLib

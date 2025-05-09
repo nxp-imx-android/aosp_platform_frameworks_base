@@ -91,3 +91,10 @@ val Kosmos.realDisplayRepository by Fixture {
         displaysWithDecorationsRepositoryFromDisplayLib,
     )
 }
+
+val Kosmos.displaysWithDecorationsRepositoryCompat by Fixture {
+    com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat(
+        testScope.backgroundScope,
+        displaysWithDecorationsRepositoryFromDisplayLib,
+    )
+}
