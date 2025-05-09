@@ -20,7 +20,6 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -30,6 +29,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
+import com.android.wm.shell.shared.pip.PipFlags
 import java.util.Optional
 
 /** Helper class for PiP on Desktop Mode. */
@@ -72,11 +72,12 @@ class PipDesktopState(
      * Returns whether PiP in Connected Displays is enabled by checking the following:
      * - PiP in Desktop Windowing is enabled
      * - PiP in Connected Displays flag is enabled
-     * - PiP2 flag is enabled
+     * - PiP2 is enabled
      */
     fun isConnectedDisplaysPipEnabled(): Boolean =
         isDesktopWindowingPipEnabled() &&
-                DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue && Flags.enablePip2()
+                DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue &&
+                PipFlags.isPip2ExperimentEnabled
 
     /**
      * Returns whether dragging PiP in Connected Displays is enabled by checking the following:
