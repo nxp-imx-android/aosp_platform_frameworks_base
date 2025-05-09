@@ -311,7 +311,7 @@ public class OriginTransitionSession {
 
         /** Add an origin entry transition to the builder. */
         public Builder withEntryTransition(
-                UIComponent entryOrigin, TransitionPlayer entryPlayer, long entryDuration) {
+                UIComponent entryOrigin, TransitionPlayer entryPlayer) {
             mEntryTransitionSupplier =
                     () ->
                             new OriginRemoteTransition(
@@ -319,7 +319,6 @@ public class OriginTransitionSession {
                                     /* isEntry= */ true,
                                     entryOrigin,
                                     entryPlayer,
-                                    entryDuration,
                                     mHandler);
             return this;
         }
@@ -332,7 +331,7 @@ public class OriginTransitionSession {
 
         /** Add an origin exit transition to the builder. */
         public Builder withExitTransition(
-                UIComponent exitTarget, TransitionPlayer exitPlayer, long exitDuration) {
+                UIComponent exitTarget, TransitionPlayer exitPlayer) {
             mExitTransitionSupplier =
                     () ->
                             new OriginRemoteTransition(
@@ -340,7 +339,6 @@ public class OriginTransitionSession {
                                     /* isEntry= */ false,
                                     exitTarget,
                                     exitPlayer,
-                                    exitDuration,
                                     mHandler);
             return this;
         }

@@ -209,7 +209,7 @@ public class TransitionAnimationController {
                                 mIsFirstFrame = false;
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, "SpringAnimation update error:" + e);
+                            Log.e(TAG, "SpringAnimation update error", e);
                         }
                     });
 
@@ -463,10 +463,15 @@ public class TransitionAnimationController {
     }
 
     /** Start all animations associated with this controller. */
-    public void startAnimations() {
+    public boolean startAnimations() {
+        if (mAnimationRunners.isEmpty()) {
+            Log.w(TAG, "Nothing to run in startAnimations()");
+            return false;
+        }
         for (AnimationRunner runner : mAnimationRunners.values()) {
             runner.start(mHandler);
         }
+        return true;
     }
 
     /**
