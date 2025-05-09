@@ -36,7 +36,7 @@ public class DataAggregator {
     private static final int MSG_BATCH_DATA = 1;
     private static final int MSG_DISABLE = 2;
 
-    private static final int STORED_EVENTS_SIZE_LIMIT = 1024;
+    private static final int STORED_EVENTS_SIZE_LIMIT = 4;
 
     private final IntrusionDetectionService mIntrusionDetectionService;
     private final ArrayList<DataSource> mDataSources;
