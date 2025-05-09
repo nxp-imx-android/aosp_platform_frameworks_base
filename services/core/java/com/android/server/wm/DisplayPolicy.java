@@ -66,6 +66,7 @@ import static android.view.WindowManagerGlobal.ADD_MULTIPLE_SINGLETON;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerPolicyConstants.ACTION_HDMI_PLUGGED;
 import static android.view.WindowManagerPolicyConstants.EXTRA_HDMI_PLUGGED_STATE;
+import static android.window.DesktopExperienceFlags.ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
@@ -2786,8 +2787,15 @@ public class DisplayPolicy {
                 defaultTaskDisplayArea.getRootTask(task -> task.isVisible()
                         && task.getTopLeafTask().hasAdjacentTask())
                         != null;
-        final Task topFreeformTask = defaultTaskDisplayArea
-                .getTopRootTaskInWindowingMode(WINDOWING_MODE_FREEFORM);
+        final Task topFreeformTask =
+                ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS.isTrue()
+                        ? defaultTaskDisplayArea.getTask(task ->
+                                task.getWindowingMode() == WINDOWING_MODE_FREEFORM
+                                // Must be filling to avoid container-only roots, such as
+                                // created-by-organizer desk roots.
+                                && task.hasFillingContent())
+                        : defaultTaskDisplayArea
+                                .getTopRootTaskInWindowingMode(WINDOWING_MODE_FREEFORM);
         final boolean freeformRootTaskVisible = topFreeformTask != null
                 && topFreeformTask.isVisible();
         final boolean inNonFullscreenFreeformMode = freeformRootTaskVisible
