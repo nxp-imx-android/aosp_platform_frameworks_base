@@ -38,8 +38,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.util.kotlin.emitOnStart
-import com.android.systemui.util.settings.SecureSettings
-import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
+import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,13 +58,13 @@ interface CommunalSettingsRepository {
     fun setSuppressionReasons(reasons: List<SuppressionReason>)
 
     /**
-     * Returns a[WhenToStartHub] for the specified user, indicating what state the device should be
-     * in to automatically display the hub.
+     * Returns a[WhenToStartHub] for the active user, indicating what state the device should be in
+     * to automatically display the hub.
      */
-    fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub>
+    fun getWhenToStartHubState(): Flow<WhenToStartHub>
 
-    /** Returns whether glanceable hub is enabled by the current user. */
-    fun getSettingEnabledByUser(user: UserInfo): Flow<Boolean>
+    /** Returns whether glanceable hub is enabled by the active user. */
+    fun getSettingEnabledByUser(): Flow<Boolean>
 
     /**
      * Returns true if any glanceable hub functionality should be enabled via configs and flags.
@@ -95,8 +94,11 @@ interface CommunalSettingsRepository {
     /** Keyguard widgets enabled state by Device Policy Manager for the specified user. */
     fun getAllowedByDevicePolicy(user: UserInfo): Flow<Boolean>
 
-    /** The type of background to use for the hub. Used to experiment with different backgrounds. */
-    fun getBackground(user: UserInfo): Flow<CommunalBackgroundType>
+    /**
+     * The type of background to use for the hub for the active user. Used to experiment with
+     * different backgrounds.
+     */
+    fun getBackground(): Flow<CommunalBackgroundType>
 }
 
 @SysUISingleton
@@ -106,7 +108,7 @@ constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     @Main private val resources: Resources,
     private val featureFlagsClassic: FeatureFlagsClassic,
-    private val secureSettings: SecureSettings,
+    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val devicePolicyManager: DevicePolicyManager,
     @Named(DEFAULT_BACKGROUND_TYPE) private val defaultBackgroundType: CommunalBackgroundType,
@@ -143,33 +145,13 @@ constructor(
             glanceableHubV2()
     }
 
-    override fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub> {
+    override fun getWhenToStartHubState(): Flow<WhenToStartHub> {
         if (!getV2FlagEnabled()) {
             return MutableStateFlow(WhenToStartHub.NEVER)
         }
-        return secureSettings
-            .observerFlow(
-                userId = user.id,
-                names = arrayOf(Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB),
-            )
-            .emitOnStart()
-            .map {
-                when (
-                    secureSettings.getIntForUser(
-                        Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
-                        whenToStartHubByDefault,
-                        user.id,
-                    )
-                ) {
-                    Settings.Secure.GLANCEABLE_HUB_START_NEVER -> WhenToStartHub.NEVER
-                    Settings.Secure.GLANCEABLE_HUB_START_CHARGING -> WhenToStartHub.WHILE_CHARGING
-                    Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT ->
-                        WhenToStartHub.WHILE_CHARGING_AND_POSTURED
-
-                    Settings.Secure.GLANCEABLE_HUB_START_DOCKED -> WhenToStartHub.WHILE_DOCKED
-                    else -> WhenToStartHub.NEVER
-                }
-            }
+        return userAwareSecureSettingsRepository
+            .intSetting(Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB, whenToStartHubByDefault)
+            .map { it.toWhenToStartHub() }
             .flowOn(bgDispatcher)
     }
 
@@ -186,34 +168,33 @@ constructor(
             .emitOnStart()
             .map { devicePolicyManager.areKeyguardWidgetsAllowed(user.id) }
 
-    override fun getBackground(user: UserInfo): Flow<CommunalBackgroundType> =
-        secureSettings
-            .observerFlow(userId = user.id, names = arrayOf(GLANCEABLE_HUB_BACKGROUND_SETTING))
-            .emitOnStart()
-            .map {
-                val intType =
-                    secureSettings.getIntForUser(
-                        GLANCEABLE_HUB_BACKGROUND_SETTING,
-                        defaultBackgroundType.value,
-                        user.id,
-                    )
-                CommunalBackgroundType.entries.find { type -> type.value == intType }
-                    ?: defaultBackgroundType
-            }
-
-    override fun getSettingEnabledByUser(user: UserInfo): Flow<Boolean> =
-        secureSettings
-            .observerFlow(userId = user.id, names = arrayOf(Settings.Secure.GLANCEABLE_HUB_ENABLED))
-            // Force an update
-            .emitOnStart()
-            .map {
-                secureSettings.getIntForUser(
-                    Settings.Secure.GLANCEABLE_HUB_ENABLED,
-                    ENABLED_SETTING_DEFAULT,
-                    user.id,
-                ) == 1
-            }
+    override fun getBackground(): Flow<CommunalBackgroundType> =
+        userAwareSecureSettingsRepository
+            .intSetting(GLANCEABLE_HUB_BACKGROUND_SETTING, defaultBackgroundType.value)
+            .map { it.toCommunalBackgroundType() }
             .flowOn(bgDispatcher)
+
+    override fun getSettingEnabledByUser(): Flow<Boolean> =
+        userAwareSecureSettingsRepository
+            .intSetting(Settings.Secure.GLANCEABLE_HUB_ENABLED, ENABLED_SETTING_DEFAULT)
+            .map { it == 1 }
+            .flowOn(bgDispatcher)
+
+    private fun Int.toCommunalBackgroundType(): CommunalBackgroundType {
+        return CommunalBackgroundType.entries.find { type -> type.value == this }
+            ?: defaultBackgroundType
+    }
+
+    private fun Int.toWhenToStartHub(): WhenToStartHub {
+        return when (this) {
+            Settings.Secure.GLANCEABLE_HUB_START_NEVER -> WhenToStartHub.NEVER
+            Settings.Secure.GLANCEABLE_HUB_START_CHARGING -> WhenToStartHub.WHILE_CHARGING
+            Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT ->
+                WhenToStartHub.WHILE_CHARGING_AND_POSTURED
+            Settings.Secure.GLANCEABLE_HUB_START_DOCKED -> WhenToStartHub.WHILE_DOCKED
+            else -> WhenToStartHub.NEVER
+        }
+    }
 
     companion object {
         const val GLANCEABLE_HUB_BACKGROUND_SETTING = "glanceable_hub_background"

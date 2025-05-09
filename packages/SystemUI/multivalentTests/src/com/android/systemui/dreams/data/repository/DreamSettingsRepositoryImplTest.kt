@@ -28,7 +28,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
-import com.android.systemui.util.settings.fakeSettings
+import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -69,6 +69,9 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
     @After
     fun tearDown() {
         mContext.orCreateTestableResources.removeOverride(
+            com.android.internal.R.bool.config_dreamsEnabledByDefault
+        )
+        mContext.orCreateTestableResources.removeOverride(
             com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault
         )
         mContext.orCreateTestableResources.removeOverride(
@@ -82,12 +85,11 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
     @Test
     fun whenToDream_charging() =
         kosmos.runTest {
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
 
-            fakeSettings.putIntForUser(
+            kosmos.userAwareSecureSettingsRepository.setInt(
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
                 1,
-                PRIMARY_USER.id,
             )
 
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_CHARGING)
@@ -101,19 +103,18 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
                 true,
             )
 
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_CHARGING)
         }
 
     @Test
     fun whenToDream_docked() =
         kosmos.runTest {
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
 
-            fakeSettings.putIntForUser(
+            kosmos.userAwareSecureSettingsRepository.setInt(
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
                 1,
-                PRIMARY_USER.id,
             )
 
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_DOCKED)
@@ -127,19 +128,18 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
                 true,
             )
 
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_DOCKED)
         }
 
     @Test
     fun whenToDream_postured() =
         kosmos.runTest {
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
 
-            fakeSettings.putIntForUser(
+            kosmos.userAwareSecureSettingsRepository.setInt(
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
                 1,
-                PRIMARY_USER.id,
             )
 
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_POSTURED)
@@ -153,7 +153,7 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
                 true,
             )
 
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_POSTURED)
         }
 
@@ -165,13 +165,19 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
                 true,
             )
 
-            fakeSettings.putBoolForUser(Settings.Secure.SCREENSAVER_ENABLED, false, PRIMARY_USER.id)
+            kosmos.userAwareSecureSettingsRepository.setBoolean(
+                Settings.Secure.SCREENSAVER_ENABLED,
+                false,
+            )
 
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
 
             assertThat(whenToDreamState).isEqualTo(WhenToDream.NEVER)
 
-            fakeSettings.putBoolForUser(Settings.Secure.SCREENSAVER_ENABLED, true, PRIMARY_USER.id)
+            kosmos.userAwareSecureSettingsRepository.setBoolean(
+                Settings.Secure.SCREENSAVER_ENABLED,
+                true,
+            )
 
             assertThat(whenToDreamState).isEqualTo(WhenToDream.WHILE_POSTURED)
         }
@@ -179,7 +185,7 @@ class DreamSettingsRepositoryImplTest : SysuiTestCase() {
     @Test
     fun whenToDream_default() =
         kosmos.runTest {
-            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState(PRIMARY_USER))
+            val whenToDreamState by collectLastValue(underTest.getWhenToDreamState())
             assertThat(whenToDreamState).isEqualTo(WhenToDream.NEVER)
         }
 

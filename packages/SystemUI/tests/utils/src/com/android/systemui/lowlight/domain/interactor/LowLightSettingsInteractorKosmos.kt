@@ -20,11 +20,9 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lowlight.data.repository.lowLightSettingsRepository
-import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
 val Kosmos.lowLightSettingInteractor by Fixture {
     LowLightSettingsInteractor(
-        userInteractor = selectedUserInteractor,
         settingsRepository = lowLightSettingsRepository,
         bgScope = testScope.backgroundScope,
     )
