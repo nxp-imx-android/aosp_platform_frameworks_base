@@ -74,6 +74,7 @@ import android.telephony.TelephonyManager;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.IWindowManager;
 import android.view.LayoutInflater;
@@ -782,9 +783,14 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     private Context getContextForDisplay(int displayId) {
         if (!ShadeWindowGoesAround.isEnabled()) {
-            Log.e(TAG, "Asked for the displayId=" + displayId
-                    + " context but returning default display one as ShadeWindowGoesAround flag "
-                    + "is disabled.");
+            if (displayId != Display.DEFAULT_DISPLAY) {
+                Log.e(
+                        TAG,
+                        "Asked for the displayId="
+                                + displayId
+                                + " context but returning default display one as"
+                                + " ShadeWindowGoesAround flag is disabled.");
+            }
             return mContext;
         }
         try {
