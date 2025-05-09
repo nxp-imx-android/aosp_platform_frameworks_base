@@ -581,8 +581,8 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             mSessionCb.mCb.asBinder().unlinkToDeath(this, 0);
             mDestroyed = true;
             mPlaybackState = null;
-            updateUserEngagedStateIfNeededLocked(
-                    /* isTimeoutExpired= */ true, /* isGlobalPrioritySessionActive= */ false);
+            mUserEngagementState = USER_DISENGAGED;
+            mHandler.removeCallbacks(mUserEngagementTimeoutExpirationRunnable);
             mHandler.post(MessageHandler.MSG_DESTROYED);
         }
     }
