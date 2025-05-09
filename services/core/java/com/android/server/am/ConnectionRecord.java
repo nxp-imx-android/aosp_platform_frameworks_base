@@ -339,6 +339,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
                 Integer.toHexString(System.identityHashCode(this)));
         if (binding.client != null) {
             proto.write(ConnectionRecordProto.USER_ID, binding.client.userId);
+            proto.write(ConnectionRecordProto.CLIENT_PID, binding.client.mPid);
         }
         ProtoUtils.writeBitWiseFlagsToProtoEnum(proto, ConnectionRecordProto.FLAGS,
                 flags, BIND_ORIG_ENUMS, BIND_PROTO_ENUMS);
