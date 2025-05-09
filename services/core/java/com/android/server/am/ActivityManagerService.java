@@ -16789,8 +16789,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public boolean startUserInBackground(final int userId) {
-            return ActivityManagerService.this.startUserInBackground(userId);
+        public boolean startUserInBackgroundTemporarily(@UserIdInt int userId, int durSecs) {
+            return mUserController.startUserInBackgroundTemporarily(userId, durSecs);
         }
 
         @Override
