@@ -36,6 +36,7 @@ data class MediaControlModel(
     val showExplicit: Boolean,
     val artwork: Icon?,
     val deviceData: MediaDeviceData?,
+    val suggestionData: SuggestionData?,
     /** [MediaButton] contains [MediaAction] objects which represent specific buttons in the UI */
     val semanticActionButtons: MediaButton?,
     val notificationActionButtons: List<MediaAction>,

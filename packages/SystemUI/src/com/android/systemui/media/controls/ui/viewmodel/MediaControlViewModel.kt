@@ -26,7 +26,10 @@ import android.util.Log
 import androidx.constraintlayout.widget.ConstraintSet
 import com.android.internal.logging.InstanceId
 import com.android.settingslib.flags.Flags.legacyLeAudioSharing
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaControlInteractor
@@ -134,6 +137,7 @@ data class MediaControlViewModel(
             useSemanticActions = model.semanticActionButtons != null,
             actionButtons = toActionViewModels(model),
             outputSwitcher = toOutputSwitcherViewModel(model),
+            deviceSuggestion = toSuggestionViewModel(model),
             gutsMenu = gutsViewModel,
             onClicked = { expandable ->
                 model.clickIntent?.let { clickIntent ->
@@ -239,6 +243,62 @@ data class MediaControlViewModel(
                 }
             },
         )
+    }
+
+    private fun toSuggestionViewModel(model: MediaControlModel): MediaSuggestionViewModel {
+        if (!enableSuggestedDeviceUi()) {
+            return MediaSuggestionViewModel(isValidSuggestion = false)
+        }
+        val suggestionData =
+            model.suggestionData ?: return MediaSuggestionViewModel(isValidSuggestion = false)
+        suggestionData.onSuggestionSpaceVisible.run()
+        val suggestedDeviceData =
+            suggestionData.suggestedMediaDeviceData
+                ?: return MediaSuggestionViewModel(isValidSuggestion = false)
+        with(suggestedDeviceData) {
+            // Don't show the device as suggested if we're already connected to it
+            if (
+                !(connectionState == MediaDeviceState.STATE_DISCONNECTED ||
+                    connectionState == MediaDeviceState.STATE_CONNECTING ||
+                    connectionState == MediaDeviceState.STATE_GROUPING ||
+                    connectionState == MediaDeviceState.STATE_CONNECTING_FAILED)
+            ) {
+                return MediaSuggestionViewModel(isValidSuggestion = false)
+            }
+            val onClick =
+                if (
+                    connectionState == MediaDeviceState.STATE_DISCONNECTED ||
+                        connectionState == MediaDeviceState.STATE_CONNECTING_FAILED
+                )
+                    ({ connect() })
+                else null
+            val buttonText =
+                when (connectionState) {
+                    MediaDeviceState.STATE_DISCONNECTED,
+                    MediaDeviceState.STATE_CONNECTING,
+                    MediaDeviceState.STATE_GROUPING ->
+                        applicationContext.getString(
+                            R.string.media_suggestion_disconnected_text,
+                            name,
+                        )
+                    MediaDeviceState.STATE_CONNECTING_FAILED ->
+                        applicationContext.getString(R.string.media_suggestion_failure_text)
+                    else -> {
+                        Log.wtf(TAG, "Invalid media device state for suggestion: $connectionState")
+                        null
+                    }
+                }
+            val isConnecting =
+                connectionState == MediaDeviceState.STATE_CONNECTING ||
+                    connectionState == MediaDeviceState.STATE_GROUPING
+            return MediaSuggestionViewModel(
+                isValidSuggestion = true,
+                onClicked = onClick,
+                buttonText = buttonText,
+                isConnecting = isConnecting,
+                icon = icon?.asIcon(),
+            )
+        }
     }
 
     private fun toGutsViewModel(model: MediaControlModel): GutsViewModel {

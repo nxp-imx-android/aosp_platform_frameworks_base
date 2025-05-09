@@ -34,6 +34,7 @@ data class MediaPlayerViewModel(
     val useSemanticActions: Boolean,
     val actionButtons: List<MediaActionViewModel>,
     val outputSwitcher: MediaOutputSwitcherViewModel,
+    val deviceSuggestion: MediaSuggestionViewModel,
     val gutsMenu: GutsViewModel,
     val onClicked: (Expandable) -> Unit,
     val onLongClicked: () -> Unit,
@@ -53,7 +54,8 @@ data class MediaPlayerViewModel(
                 playTurbulenceNoise == other.playTurbulenceNoise &&
                 useSemanticActions == other.useSemanticActions &&
                 areActionsEqual(other.actionButtons) &&
-                outputSwitcher.contentEquals(other.outputSwitcher)
+                outputSwitcher.contentEquals(other.outputSwitcher) &&
+                deviceSuggestion == other.deviceSuggestion
         } ?: false
     }
 
