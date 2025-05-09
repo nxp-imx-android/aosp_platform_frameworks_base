@@ -133,6 +133,7 @@ aconfig_declarations_group {
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
         "telephony_flags_core_java_lib",
+        "wifi_framework_aconfig_flags_lib",
         // !!! KEEP THIS LIST ALPHABETICAL !!!
     ],
 }
