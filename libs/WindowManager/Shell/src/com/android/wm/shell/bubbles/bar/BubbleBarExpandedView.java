@@ -712,6 +712,11 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         }
     }
 
+    void resetBottomClip() {
+        mBottomClip = 0;
+        onClipUpdate();
+    }
+
     private void onClipUpdate() {
         if (mBottomClip == 0) {
             if (mIsClipping) {
