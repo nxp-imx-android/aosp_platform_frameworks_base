@@ -22,6 +22,7 @@ import androidx.core.animation.AnimatorTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.haptics.fakeVibratorHelper
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
 import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
@@ -32,7 +33,10 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
+import com.android.systemui.topui.TopUiControllerRefactor
+import com.android.systemui.topui.mockTopUiController
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
@@ -51,6 +55,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.reset
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
 @SmallTest
@@ -88,6 +95,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 appZoomOutOptional = appZoomOutOptional,
                 keyEventInteractor = keyEventInteractor,
                 squeezeEffectHapticPlayerFactory = squeezeEffectHapticPlayerFactory,
+                notificationShadeWindowController = notificationShadeWindowController,
+                topUiController = mockTopUiController,
+                mainExecutor = fakeExecutor,
             )
         }
 
@@ -434,4 +444,97 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
 
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
         }
+
+    @Test
+    fun topUiRequested_whenAnimationStarts() =
+        kosmos.runTest {
+            // Setup: Enable effect and trigger power button down
+            val initialDelay = 50L
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
+
+            // Action: Start the effect and advance time past initial delay to start animation
+            underTest.start()
+            advanceTime((initialDelay + 1).milliseconds)
+            animatorTestRule.advanceTimeBy(1L) // Ensure animator starts processing
+
+            // Verification: setRequestTopUi(true) should be called
+            verifySetRequestTopUi(true)
+        }
+
+    @Test
+    fun topUiCleared_whenAnimationFinishesNormally() =
+        kosmos.runTest {
+            // Setup: Enable effect and trigger power button down
+            val initialDelay = 50L
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
+
+            // Action: Start the effect
+            underTest.start()
+            advanceTime((initialDelay + 1).milliseconds) // Pass initial delay
+            animatorTestRule.advanceTimeBy(1L) // Ensure animator starts
+
+            // Verification: Ensure TopUI was requested initially
+            verifySetRequestTopUi(true)
+            // Reset for next verification
+            reset(kosmos.mockTopUiController, kosmos.notificationShadeWindowController)
+
+            // Action: Complete the full animation cycle (inward + outward)
+            animatorTestRule.advanceTimeBy(SqueezeEffectConfig.INWARD_EFFECT_DURATION.toLong() - 1L)
+            runCurrent()
+            animatorTestRule.advanceTimeBy(SqueezeEffectConfig.OUTWARD_EFFECT_DURATION.toLong())
+            runCurrent()
+
+            // Verification: setRequestTopUi(false) should be called upon completion
+            verifySetRequestTopUi(false)
+        }
+
+    @Test
+    fun topUiCleared_whenAnimationIsCancelled() =
+        kosmos.runTest {
+            // Setup: Enable effect and trigger power button down
+            val initialDelay = 50L
+            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
+            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
+
+            // Action: Start the effect
+            underTest.start()
+            advanceTime((initialDelay + 1).milliseconds) // Pass initial delay
+            // Progress animation part way
+            animatorTestRule.advanceTimeBy(SqueezeEffectConfig.INWARD_EFFECT_DURATION.toLong() / 2)
+            runCurrent()
+
+            // Verification: Ensure TopUI was requested initially
+            verifySetRequestTopUi(true)
+            // Reset for next verification
+            reset(kosmos.mockTopUiController, kosmos.notificationShadeWindowController)
+
+            // Action: Release power button to cancel the animation
+            fakeKeyEventRepository.setPowerButtonDown(false)
+            runCurrent()
+            // Allow cancellation animation to complete
+            animatorTestRule.advanceTimeBy(SqueezeEffectConfig.OUTWARD_EFFECT_DURATION.toLong())
+            runCurrent()
+
+            // Verification: setRequestTopUi(false) should be called upon cancellation
+            verifySetRequestTopUi(false)
+        }
+
+    private fun verifySetRequestTopUi(isRequested: Boolean) {
+        if (TopUiControllerRefactor.isEnabled) {
+            verify(kosmos.mockTopUiController, times(1))
+                .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
+        } else {
+            kosmos.fakeExecutor.runAllReady()
+            verify(kosmos.notificationShadeWindowController, times(1))
+                .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
+        }
+    }
 }
