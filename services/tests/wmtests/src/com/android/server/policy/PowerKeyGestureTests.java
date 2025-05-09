@@ -27,6 +27,7 @@ import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.with
 import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.withKeyFlags;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_ASSISTANT;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GLOBAL_ACTIONS;
+import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_TO_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.POWER_MULTI_PRESS_TIMEOUT_MILLIS;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_GO_TO_SLEEP;
@@ -150,6 +151,16 @@ public class PowerKeyGestureTests extends ShortcutKeyTestBase {
         mPhoneWindowManager.overrideLongPressOnPower(LONG_PRESS_POWER_GLOBAL_ACTIONS);
         sendKey(KEYCODE_POWER, SingleKeyGestureDetector.sDefaultLongPressTimeout);
         mPhoneWindowManager.assertShowGlobalActionsCalled();
+    }
+
+    /**
+     * Power long press to go to sleep (doze).
+     */
+    @Test
+    public void testPowerLongPressGoToSleep() {
+        mPhoneWindowManager.overrideLongPressOnPower(LONG_PRESS_POWER_GO_TO_SLEEP);
+        sendKey(KEYCODE_POWER, SingleKeyGestureDetector.sDefaultLongPressTimeout);
+        mPhoneWindowManager.assertPowerSleep();
     }
 
     /**
