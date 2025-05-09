@@ -35,6 +35,14 @@ flag {
 }
 
 flag {
+  name: "api_metric_style"
+  is_exported: true
+  namespace: "notifications"
+  description: "This flag adds a new Notification.MetricStyle"
+  bug: "415827681"
+}
+
+flag {
   name: "modes_ui_dnd_tile"
   namespace: "systemui"
   description: "Shows a dedicated tile for the DND mode; dependent on modes_ui"

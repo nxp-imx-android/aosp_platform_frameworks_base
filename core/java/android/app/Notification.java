@@ -813,6 +813,10 @@ public class Notification implements Parcelable
             return style.getClass() == ProgressStyle.class;
         }
 
+        if (Flags.apiMetricStyle()) {
+            return style.getClass() == MetricStyle.class;
+        }
+
         return false;
     }
 
@@ -3290,6 +3294,7 @@ public class Notification implements Parcelable
         return notificationStyle == null
                 || BigTextStyle.class.equals(notificationStyle)
                 || CallStyle.class.equals(notificationStyle)
+                || MetricStyle.class.equals(notificationStyle)
                 || ProgressStyle.class.equals(notificationStyle);
     }
 
@@ -8310,6 +8315,11 @@ public class Notification implements Parcelable
                 return ProgressStyle.class;
             }
         }
+        if (Flags.apiMetricStyle()) {
+            if (templateClass.equals(MetricStyle.class.getName())) {
+                return MetricStyle.class;
+            }
+        }
         return null;
     }
 
@@ -11440,6 +11450,85 @@ public class Notification implements Parcelable
             return !Objects.equals(mCallType, otherS.mCallType)
                     || !Objects.equals(mPerson, otherS.mPerson)
                     || !Objects.equals(mVerificationText, otherS.mVerificationText);
+        }
+    }
+
+    /**
+     * A notification style which shows up to 3 metrics when expanded.
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    public static class MetricStyle extends Notification.Style {
+        // TODO(b/415828647): Implement this class
+
+        /** @hide */
+        @Override
+        public boolean areNotificationsVisiblyDifferent(Style other) {
+            if (other == null || getClass() != other.getClass()) {
+                return true;
+            }
+            // TODO(b/415828647): Implement for MetricStyle
+            return false;
+        }
+
+        /** @hide */
+        @Override
+        public void purgeResources() {
+            super.purgeResources();
+            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
+        }
+
+        /** @hide */
+        @Override
+        public void reduceImageSizes(Context context) {
+            super.reduceImageSizes(context);
+            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
+        }
+
+        /** @hide */
+        @Override
+        public void addExtras(Bundle extras) {
+            super.addExtras(extras);
+            // TODO(b/415828647): Implement for MetricStyle
+        }
+
+        /** @hide */
+        @Override
+        protected void restoreFromExtras(Bundle extras) {
+            super.restoreFromExtras(extras);
+            // TODO(b/415828647): Implement for MetricStyle
+        }
+
+        /** @hide */
+        @Override
+        public boolean displayCustomViewInline() {
+            // This is a lie; True is returned for metric notifications to make sure
+            // that the custom view is not used instead of the template, but it will not
+            // actually be included.
+            return true;
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeHeadsUpContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeExpandedContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
         }
     }
 
