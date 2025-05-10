@@ -16,7 +16,6 @@
 
 package com.android.systemui.ambientcue.domain.interactor
 
-import android.content.Intent
 import android.content.applicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -67,7 +66,7 @@ class AmbientCueInteractorTest : SysuiTestCase() {
                             ),
                         label = "Sunday Morning",
                         attribution = null,
-                        intent = Intent(),
+                        onPerformAction = {},
                     )
                 )
             ambientCueRepository.fake.setActions(testActions)

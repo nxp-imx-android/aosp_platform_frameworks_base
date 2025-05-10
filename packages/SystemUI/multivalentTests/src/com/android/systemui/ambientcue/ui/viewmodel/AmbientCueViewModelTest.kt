@@ -16,15 +16,20 @@
 
 package com.android.systemui.ambientcue.ui.viewmodel
 
+import android.content.applicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.ambientcue.data.repository.ambientCueRepository
+import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
+import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -67,5 +72,34 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
             runCurrent()
             assertThat(viewModel.isVisible).isTrue()
+        }
+
+    @Test
+    fun onClick_collapses() =
+        kosmos.runTest {
+            val testActions =
+                listOf(
+                    ActionModel(
+                        icon =
+                            applicationContext.resources.getDrawable(
+                                R.drawable.ic_content_paste_spark,
+                                applicationContext.theme,
+                            ),
+                        label = "Sunday Morning",
+                        attribution = null,
+                        onPerformAction = {},
+                    )
+                )
+            ambientCueRepository.fake.setActions(testActions)
+            ambientCueInteractor.setIsVisible(true)
+            viewModel.expand()
+            runCurrent()
+
+            assertThat(viewModel.isExpanded).isTrue()
+            val action: ActionViewModel = viewModel.actions.first()
+
+            // UI Collapses upon clicking on an action
+            action.onClick()
+            assertThat(viewModel.isExpanded).isFalse()
         }
 }

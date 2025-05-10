@@ -17,17 +17,21 @@
 package com.android.systemui.ambientcue.data.repository
 
 import android.app.ActivityTaskManager
+import android.app.assist.ActivityId
 import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.content.Context
 import android.util.Log
+import android.view.autofill.AutofillId
+import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.concurrent.Executor
@@ -63,6 +67,8 @@ class AmbientCueRepositoryImpl
 constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val smartSpaceManager: SmartspaceManager?,
+    private val autofillManager: AutofillManager?,
+    private val activityStarter: ActivityStarter,
     @Background executor: Executor,
     @Application applicationContext: Context,
     focusdDisplayRepository: FocusedDisplayRepository,
@@ -86,15 +92,41 @@ constructor(
                             .filter { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }
                             .flatMap { target -> target.actionChips }
                             .map { chip ->
+                                val title = chip.title.toString()
                                 ActionModel(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
                                             ?: applicationContext.getDrawable(
                                                 R.drawable.ic_content_paste_spark
                                             )!!,
-                                    intent = chip.intent,
-                                    label = chip.title.toString(),
+                                    label = title,
                                     attribution = chip.subtitle.toString(),
+                                    onPerformAction = {
+                                        val intent = chip.intent
+                                        val activityId =
+                                            chip.extras?.getParcelable<ActivityId>(
+                                                EXTRA_ACTIVITY_ID
+                                            )
+                                        val autofillId =
+                                            chip.extras?.getParcelable<AutofillId>(
+                                                EXTRA_AUTOFILL_ID
+                                            )
+                                        val token = activityId?.token
+                                        Log.v(
+                                            TAG,
+                                            "Performing action: $activityId, $autofillId, $intent",
+                                        )
+                                        if (token != null && autofillId != null) {
+                                            autofillManager?.autofillRemoteApp(
+                                                autofillId,
+                                                title,
+                                                token,
+                                                activityId.taskId,
+                                            )
+                                        } else if (intent != null) {
+                                            activityStarter.startActivity(intent, false)
+                                        }
+                                    },
                                 )
                             }
                     if (DEBUG) {
@@ -133,6 +165,8 @@ constructor(
     companion object {
         // Surface that PCC wants to push cards into
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
+        @VisibleForTesting const val EXTRA_ACTIVITY_ID = "activityId"
+        @VisibleForTesting const val EXTRA_AUTOFILL_ID = "autofillId"
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
