@@ -656,6 +656,13 @@ java_library {
 }
 
 java_library {
+    name: "z00-50-framework-updatable-stubs-module_libs_api",
+    installable: false,
+    static_libs: ["framework-updatable-stubs-module_libs_api-for-host"],
+    visibility: ["//visibility:private"],
+}
+
+java_library {
     name: "z00-all-updatable-modules-system-stubs",
     installable: false,
     static_libs: ["all-updatable-modules-system-stubs-for-host"],
@@ -706,7 +713,26 @@ android_ravenwood_libgroup {
         "mockito-ravenwood-prebuilt",
         "inline-mockito-ravenwood-prebuilt",
 
-        // It's a stub, so it should be towards the end.
+        // Below are the mainline API stubs. We put them after the test jar in the
+        // classpath so that the test jar can include its own, non-stub version
+        // of mainline classes.
+
+        // System API stubs including @SystemApi(MODULE_LIBRARIES),
+        // but it doesn't contain libcore APIs, which are included in
+        // all-updatable-modules-system-stubs.
+        //
+        // We want this one before z00-all-updatable-modules-system-stubs
+        // in the alphabetical order, but unfortunately CleanSpec.mk may
+        // not be working now, so we can't rename it.
+        // So for now, let's just use this ugly name...
+        "z00-50-framework-updatable-stubs-module_libs_api",
+
+        // System API stubs from all mainline modules, including ART,
+        // so it contains classes in libcore (including libcore.*, dalvik.*,
+        // android.system.*, java.*, org.xml, ...)
+        // (It doesn't contain @SystemApi(MODULE_LIBRARIES) APIs, which are
+        // covered in framework-updatable-stubs-module_libs_api. Libcore
+        // doesn't have MODULE_LIBRARIES APIs.)
         "z00-all-updatable-modules-system-stubs",
     ],
     jni_libs: [

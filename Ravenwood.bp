@@ -29,3 +29,10 @@ java_library {
     static_libs: ["all-updatable-modules-system-stubs"],
     visibility: ["//frameworks/base/ravenwood"],
 }
+
+java_library {
+    name: "framework-updatable-stubs-module_libs_api-for-host",
+    installable: false,
+    static_libs: ["framework-updatable-stubs-module_libs_api"],
+    visibility: ["//frameworks/base/ravenwood"],
+}
