@@ -166,6 +166,23 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
     }
 
     @Test
+    public void emitEventAfterDeviceAndSuggestionChangedTogether() {
+        // GIVEN that media event has already been received
+        mManager.onMediaDataLoaded(KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(KEY, OLD_KEY, mDeviceData);
+        mManager.onSuggestionDataChanged(KEY, OLD_KEY, mSuggestionData);
+        reset(mListener);
+        // WHEN suggestion event is received
+        mManager.onMediaDeviceAndSuggestionDataChanged(KEY, null, mDeviceData, mSuggestionData);
+        // THEN the listener receives a combined event
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(eq(KEY), any(), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getDevice()).isNotNull();
+        assertThat(captor.getValue().getSuggestionData()).isNotNull();
+    }
+
+    @Test
     public void migrateKeyMediaFirst() {
         // GIVEN that media and device info has already been received
         mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
@@ -207,6 +224,24 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
         verify(mListener)
                 .onMediaDataLoaded(
                         eq(KEY), eq(OLD_KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getSuggestionData()).isNotNull();
+    }
+
+    @Test
+    public void migrateKeyDeviceAndSuggestionFirst() {
+        // GIVEN that media and device info has already been received
+        mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(OLD_KEY, null, mDeviceData);
+        mManager.onSuggestionDataChanged(OLD_KEY, null, mSuggestionData);
+        reset(mListener);
+        // WHEN a key migration event is received
+        mManager.onMediaDeviceAndSuggestionDataChanged(KEY, OLD_KEY, mDeviceData, mSuggestionData);
+        // THEN the listener receives a combined event
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(
+                        eq(KEY), eq(OLD_KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getDevice()).isNotNull();
         assertThat(captor.getValue().getSuggestionData()).isNotNull();
     }
 
@@ -254,6 +289,25 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
         ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
         verify(mListener)
                 .onMediaDataLoaded(eq(KEY), eq(KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getSuggestionData()).isNotNull();
+    }
+
+
+    @Test
+    public void migrateKeyDeviceAndSuggestionAfter() {
+        // GIVEN that media and device info has already been received
+        mManager.onMediaDataLoaded(OLD_KEY, null, mMediaData, true /* immediately */);
+        mManager.onMediaDeviceChanged(OLD_KEY, null, mDeviceData);
+        mManager.onSuggestionDataChanged(OLD_KEY, null, mSuggestionData);
+        mManager.onMediaDataLoaded(KEY, OLD_KEY, mMediaData, true /* immediately */);
+        reset(mListener);
+        // WHEN a second key migration event is received for the device and suggestion
+        mManager.onMediaDeviceAndSuggestionDataChanged(KEY, OLD_KEY, mDeviceData, mSuggestionData);
+        // THEN the key has already be migrated
+        ArgumentCaptor<MediaData> captor = ArgumentCaptor.forClass(MediaData.class);
+        verify(mListener)
+                .onMediaDataLoaded(eq(KEY), eq(KEY), captor.capture(), anyBoolean());
+        assertThat(captor.getValue().getDevice()).isNotNull();
         assertThat(captor.getValue().getSuggestionData()).isNotNull();
     }
 

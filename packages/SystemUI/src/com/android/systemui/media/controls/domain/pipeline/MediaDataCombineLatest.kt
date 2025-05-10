@@ -80,6 +80,25 @@ class MediaDataCombineLatest @Inject constructor() :
         }
     }
 
+    override fun onMediaDeviceAndSuggestionDataChanged(
+        key: String,
+        oldKey: String?,
+        device: MediaDeviceData?,
+        suggestion: SuggestionData?,
+    ) {
+        if (oldKey != null && oldKey != key && entries.contains(oldKey)) {
+            val previousEntry = entries.remove(oldKey)
+            val mediaData = previousEntry?.first
+            entries[key] = Triple(mediaData, device, suggestion)
+            update(key, oldKey)
+        } else {
+            val previousEntry = entries[key]
+            val mediaData = previousEntry?.first
+            entries[key] = Triple(mediaData, device, suggestion)
+            update(key, key)
+        }
+    }
+
     override fun onKeyRemoved(key: String, userInitiated: Boolean) {
         remove(key, userInitiated)
     }
