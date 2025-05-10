@@ -1892,6 +1892,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+        // TODO (b/415631133): Update this to call on #relayout once b/415631133 is fixed
+        if (isAppHandle(mWindowDecorViewHolder)
+                && DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+            updateAppHandleViewHolder();
+        }
     }
 
     /**
