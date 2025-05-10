@@ -708,6 +708,16 @@ flag {
 }
 
 flag {
+    name: "restrict_freeform_hidden_system_bars_to_filling_tasks"
+    namespace: "lse_desktop_experience"
+    description: "Only allow filling freeform tasks to hide the system bars"
+    bug: "415267515"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "keyboard_shortcuts_to_switch_desks"
     namespace: "lse_desktop_experience"
     description: "Enable switching the active desk with keyboard shortcuts"
