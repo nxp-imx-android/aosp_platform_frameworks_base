@@ -26,7 +26,6 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
-import static android.companion.CompanionResources.PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
@@ -74,8 +73,6 @@ final class CompanionDeviceResources {
         map.put(PERMISSION_CREATE_VIRTUAL_DEVICE, R.string.permission_create_virtual_device);
         map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.string.permission_add_mirror_display);
         map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.string.permission_add_trusted_display);
-        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
-                R.string.permission_add_always_unlocked_display);
         PERMISSION_TITLES = unmodifiableMap(map);
     }
 
@@ -98,8 +95,6 @@ final class CompanionDeviceResources {
                 R.string.permission_create_virtual_device_summary);
         map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.string.permission_add_mirror_display_summary);
         map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.string.permission_add_trusted_display_summary);
-        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
-                R.string.permission_add_always_unlocked_display_summary);
         PERMISSION_SUMMARIES = unmodifiableMap(map);
     }
 
@@ -121,8 +116,6 @@ final class CompanionDeviceResources {
         map.put(PERMISSION_CREATE_VIRTUAL_DEVICE, R.drawable.ic_permission_create_virtual_device);
         map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.drawable.ic_permission_add_mirror_display);
         map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.drawable.ic_permission_add_trusted_display);
-        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
-                R.drawable.ic_permission_add_always_unlocked_display);
         PERMISSION_ICONS = unmodifiableMap(map);
     }
 
@@ -147,8 +140,15 @@ final class CompanionDeviceResources {
         final Map<String, Integer> map = new ArrayMap<>();
         map.put(DEVICE_PROFILE_WATCH, R.string.summary_watch);
         map.put(DEVICE_PROFILE_GLASSES, R.string.summary_glasses);
-        map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming);
-        map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, R.string.summary_nearby_device_streaming);
+        if (android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()) {
+            map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming);
+            map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
+                    R.string.summary_nearby_device_streaming);
+        } else {
+            map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming_legacy);
+            map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
+                    R.string.summary_nearby_device_streaming_legacy);
+        }
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE, R.string.summary_virtual_device);
         map.put(null, R.string.summary_generic);
 

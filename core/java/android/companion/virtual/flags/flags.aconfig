@@ -104,6 +104,16 @@ flag {
 }
 
 flag {
+    name: "itemized_vdm_permissions"
+    namespace: "virtual_devices"
+    description: "Itemized permissions in CDM dialog for VDM roles"
+    bug: "419169396"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     namespace: "virtual_devices"
     name: "notifications_for_device_streaming"
     description: "Add notifications permissions to device streaming role"
