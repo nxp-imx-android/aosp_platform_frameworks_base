@@ -24,6 +24,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
+import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
@@ -105,7 +106,13 @@ class PipDesktopState(
         }
 
         val displayId = pipDisplayLayoutState.displayId
-        return desktopUserRepositoriesOptional.get().current.isAnyDeskActive(displayId)
+        logV(
+            "isPipInDesktopMode isAnyDeskActive=%b isDisplayDesktopFirst=%b",
+            desktopUserRepositoriesOptional.get().current.isAnyDeskActive(displayId),
+            rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
+        )
+        return desktopUserRepositoriesOptional.get().current.isAnyDeskActive(displayId) ||
+                rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
     }
 
     /** Returns the windowing mode to restore to when resizing out of PIP direction. */
