@@ -28,7 +28,6 @@ public interface RecentsTransitionStateListener {
             TRANSITION_STATE_NOT_RUNNING,
             TRANSITION_STATE_REQUESTED,
             TRANSITION_STATE_ANIMATING,
-            TRANSITION_STATE_STOP_REQUESTED,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface RecentsTransitionState {}
@@ -36,7 +35,6 @@ public interface RecentsTransitionStateListener {
     int TRANSITION_STATE_NOT_RUNNING = 1;
     int TRANSITION_STATE_REQUESTED = 2;
     int TRANSITION_STATE_ANIMATING = 3;
-    int TRANSITION_STATE_STOP_REQUESTED = 4;
 
     /** Notifies whether the recents transition state changes. */
     default void onTransitionStateChanged(@RecentsTransitionState int state) {
@@ -52,18 +50,12 @@ public interface RecentsTransitionStateListener {
         return state >= TRANSITION_STATE_ANIMATING;
     }
 
-    /** Returns whether the recents transition has been requested to stop and is finishing up. */
-    static boolean isFinishing(@RecentsTransitionState int state) {
-        return state == TRANSITION_STATE_STOP_REQUESTED || state == TRANSITION_STATE_NOT_RUNNING;
-    }
-
     /** Returns a string representation of the given state. */
     static String stateToString(@RecentsTransitionState int state) {
         return switch (state) {
             case TRANSITION_STATE_NOT_RUNNING -> "TRANSITION_STATE_NOT_RUNNING";
             case TRANSITION_STATE_REQUESTED -> "TRANSITION_STATE_REQUESTED";
             case TRANSITION_STATE_ANIMATING -> "TRANSITION_STATE_ANIMATING";
-            case TRANSITION_STATE_STOP_REQUESTED -> "TRANSITION_STATE_STOP_REQUESTED";
             default -> "UNKNOWN";
         };
     }
