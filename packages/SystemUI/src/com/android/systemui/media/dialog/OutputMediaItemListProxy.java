@@ -16,6 +16,8 @@
 
 package com.android.systemui.media.dialog;
 
+import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+
 import android.content.Context;
 
 import androidx.annotation.Nullable;
@@ -74,10 +76,9 @@ public class OutputMediaItemListProxy {
         List<MediaItem> finalMediaItems = new CopyOnWriteArrayList<>();
         finalMediaItems.addAll(mSelectedMediaItems);
         if (!mSuggestedMediaItems.isEmpty()) {
-            finalMediaItems.add(
-                    MediaItem.createGroupDividerMediaItem(
-                            mContext.getString(
-                                    R.string.media_output_group_title_suggested_device)));
+            finalMediaItems.add(MediaItem.createGroupDividerMediaItem(mContext.getString(
+                    enableOutputSwitcherRedesign() ? R.string.media_output_group_title_suggested
+                            : R.string.media_output_group_title_suggested_device)));
             finalMediaItems.addAll(mSuggestedMediaItems);
         }
         if (!mSpeakersAndDisplaysMediaItems.isEmpty()) {
