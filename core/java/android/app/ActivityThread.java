@@ -254,8 +254,8 @@ import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.org.conscrypt.TrustedCertificateStore;
-import com.android.server.am.MemInfoDumpProto;
 import com.android.server.am.BitmapDumpProto;
+import com.android.server.am.MemInfoDumpProto;
 
 import dalvik.annotation.optimization.NeverCompile;
 import dalvik.system.AppSpecializationHooks;
@@ -298,6 +298,7 @@ import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This manages the execution of the main thread in an
@@ -1156,10 +1157,12 @@ public final class ActivityThread extends ClientTransactionHandler
         private static final String DB_POOL_INFO_HEADER = "  %13s %13s %13s  %s";
         private static final String DB_POOL_INFO_FORMAT = "  %13d %13d %13d  %s";
 
+        @Override
         public final void scheduleReceiver(Intent intent, ActivityInfo info,
                 CompatibilityInfo compatInfo, int resultCode, String data, Bundle extras,
                 boolean ordered, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage) {
+            assertCalledBySystem();
             updateProcessState(processState, false);
             ReceiverData r = new ReceiverData(intent, resultCode, data, extras,
                     ordered, false, assumeDelivered, mAppThread.asBinder(), sendingUser,
@@ -1171,7 +1174,9 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.RECEIVER, r);
         }
 
+        @Override
         public final void scheduleReceiverList(List<ReceiverInfo> info) throws RemoteException {
+            assertCalledBySystem();
             for (int i = 0; i < info.size(); i++) {
                 ReceiverInfo r = info.get(i);
                 if (r.registered) {
@@ -1188,8 +1193,10 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void scheduleCreateBackupAgent(ApplicationInfo app,
                 int backupMode, int userId, @BackupDestination int backupDestination) {
+            assertCalledBySystem();
             CreateBackupAgentData d = new CreateBackupAgentData();
             d.appInfo = app;
             d.backupMode = backupMode;
@@ -1199,7 +1206,9 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.CREATE_BACKUP_AGENT, d);
         }
 
+        @Override
         public final void scheduleDestroyBackupAgent(ApplicationInfo app, int userId) {
+            assertCalledBySystem();
             CreateBackupAgentData d = new CreateBackupAgentData();
             d.appInfo = app;
             d.userId = userId;
@@ -1207,8 +1216,10 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.DESTROY_BACKUP_AGENT, d);
         }
 
+        @Override
         public final void scheduleCreateService(IBinder token,
                 ServiceInfo info, CompatibilityInfo compatInfo, int processState) {
+            assertCalledBySystem();
             updateProcessState(processState, false);
             CreateServiceData s = new CreateServiceData();
             s.token = token;
@@ -1224,8 +1235,10 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.CREATE_SERVICE, s);
         }
 
+        @Override
         public final void scheduleBindService(IBinder token, IBinder bindToken, Intent intent,
                 boolean rebind, int processState, long bindSeq) {
+            assertCalledBySystem();
             updateProcessState(processState, false);
             BindServiceData s = new BindServiceData();
             s.token = token;
@@ -1249,7 +1262,9 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.BIND_SERVICE, s);
         }
 
+        @Override
         public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent) {
+            assertCalledBySystem();
             BindServiceData s = new BindServiceData();
             s.token = token;
             s.bindToken = bindToken;
@@ -1263,7 +1278,9 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.UNBIND_SERVICE, s);
         }
 
+        @Override
         public final void scheduleServiceArgs(IBinder token, ParceledListSlice args) {
+            assertCalledBySystem();
             List<ServiceStartArgs> list = args.getList();
 
             for (int i = 0; i < list.size(); i++) {
@@ -1286,7 +1303,9 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void scheduleStopService(IBinder token) {
+            assertCalledBySystem();
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleStopService. token="
                         + token);
@@ -1296,6 +1315,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public final void scheduleTimeoutService(IBinder token, int startId) {
+            assertCalledBySystem();
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleTimeoutService. token="
                         + token);
@@ -1305,12 +1325,14 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public final void schedulePing(RemoteCallback pong) {
+            assertCalledBySystem();
             sendMessage(H.PING, pong);
         }
 
         @Override
         public final void scheduleTimeoutServiceForType(IBinder token, int startId,
                 @ServiceInfo.ForegroundServiceType int fgsType) {
+            assertCalledBySystem();
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                         "scheduleTimeoutServiceForType. token=" + token);
@@ -1349,6 +1371,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 FileDescriptor applicationSharedMemoryFd,
                 long startRequestedElapsedTime,
                 long startRequestedUptime) {
+            assertCalledBySystem();
             if (DEBUG_STORE_ENABLED) {
                 DebugStore.recordScheduleBindApplication();
             }
@@ -1444,22 +1467,30 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void runIsolatedEntryPoint(String entryPoint, String[] entryPointArgs) {
+            assertCalledBySystem();
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = entryPoint;
             args.arg2 = entryPointArgs;
             sendMessage(H.RUN_ISOLATED_ENTRY_POINT, args);
         }
 
+        @Override
         public final void scheduleExit() {
+            assertCalledBySystem();
             sendMessage(H.EXIT_APPLICATION, null);
         }
 
+        @Override
         public final void scheduleSuicide() {
+            assertCalledBySystem();
             sendMessage(H.SUICIDE, null);
         }
 
+        @Override
         public void scheduleApplicationInfoChanged(ApplicationInfo ai) {
+            assertCalledBySystem();
             synchronized (mResourcesManager) {
                 var oldAi = mPendingAppInfoUpdates.put(ai.packageName, ai);
                 if (oldAi != null && oldAi.createTimestamp > ai.createTimestamp) {
@@ -1475,11 +1506,15 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.APPLICATION_INFO_CHANGED, ai.packageName);
         }
 
+        @Override
         public void updateTimeZone() {
+            assertCalledBySystem();
             TimeZone.setDefault(null);
         }
 
+        @Override
         public void clearDnsCache() {
+            assertCalledBySystem();
             // a non-standard API to get this to libcore
             InetAddress.clearDnsCache();
             // Allow libcore to perform the necessary actions as it sees fit upon a network
@@ -1487,7 +1522,9 @@ public final class ActivityThread extends ClientTransactionHandler
             NetworkEventDispatcher.getInstance().dispatchNetworkConfigurationChange();
         }
 
+        @Override
         public void updateHttpProxy() {
+            assertCalledBySystem();
             final Application app;
             synchronized (ActivityThread.this) {
                 app = getApplication();
@@ -1502,12 +1539,16 @@ public final class ActivityThread extends ClientTransactionHandler
             ActivityThread.updateHttpProxy(app);
         }
 
+        @Override
         public void processInBackground() {
+            assertCalledBySystem();
             mH.removeMessages(H.GC_WHEN_IDLE);
             mH.sendMessage(mH.obtainMessage(H.GC_WHEN_IDLE));
         }
 
+        @Override
         public void dumpService(ParcelFileDescriptor pfd, IBinder servicetoken, String[] args) {
+            assertCalledBySystem();
             DumpComponentInfo data = new DumpComponentInfo();
             try {
                 data.fd = pfd.dup();
@@ -1524,11 +1565,13 @@ public final class ActivityThread extends ClientTransactionHandler
         // This function exists to make sure all receiver dispatching is
         // correctly ordered, since these are one-way calls and the binder driver
         // applies transaction ordering per object for such calls.
+        @Override
         public void scheduleRegisteredReceiver(IIntentReceiver receiver, Intent intent,
                 int resultCode, String dataStr, Bundle extras, boolean ordered,
                 boolean sticky, boolean assumeDelivered, int sendingUser, int processState,
                 int sendingUid, String sendingPackage)
                 throws RemoteException {
+            assertCalledBySystem();
             updateProcessState(processState, false);
 
             // We can't modify IIntentReceiver due to UnsupportedAppUsage, so
@@ -1557,17 +1600,20 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void scheduleLowMemory() {
+            assertCalledBySystem();
             sendMessage(H.LOW_MEMORY, null);
         }
 
         @Override
         public void profilerControl(boolean start, ProfilerInfo profilerInfo, int profileType) {
+            assertCalledBySystem();
             sendMessage(H.PROFILER_CONTROL, profilerInfo, start ? 1 : 0, profileType);
         }
 
         @Override
         public void dumpHeap(boolean managed, boolean mallocInfo, boolean runGc, String dumpBitmaps,
                 String path, ParcelFileDescriptor fd, RemoteCallback finishCallback) {
+            assertCalledBySystem();
             DumpHeapData dhd = new DumpHeapData();
             dhd.managed = managed;
             dhd.mallocInfo = mallocInfo;
@@ -1588,15 +1634,21 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.DUMP_HEAP, dhd, 0, 0, true /*async*/);
         }
 
+        @Override
         public void attachAgent(String agent) {
+            assertCalledBySystem();
             sendMessage(H.ATTACH_AGENT, agent);
         }
 
+        @Override
         public void attachStartupAgents(String dataDir) {
+            assertCalledBySystem();
             sendMessage(H.ATTACH_STARTUP_AGENTS, dataDir);
         }
 
+        @Override
         public void setSchedulingGroup(int group) {
+            assertCalledBySystem();
             // Note: do this immediately, since going into the foreground
             // should happen regardless of what pending work we have to do
             // and the activity manager will wait for us to report back that
@@ -1608,12 +1660,15 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dispatchPackageBroadcast(int cmd, String[] packages) {
+            assertCalledBySystem();
             sendMessage(H.DISPATCH_PACKAGE_BROADCAST, packages, cmd);
         }
 
         @Override
         public void scheduleCrash(String msg, int typeId, @Nullable Bundle extras) {
+            assertCalledBySystem();
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = msg;
             args.arg2 = extras;
@@ -1622,6 +1677,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void dumpResources(ParcelFileDescriptor fd, RemoteCallback callback) {
+            assertCalledBySystem();
             DumpResourcesData data = new DumpResourcesData();
             try {
                 data.fd = fd.dup();
@@ -1634,8 +1690,10 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dumpActivity(ParcelFileDescriptor pfd, IBinder activitytoken,
                 String prefix, String[] args) {
+            assertCalledBySystem();
             DumpComponentInfo data = new DumpComponentInfo();
             try {
                 data.fd = pfd.dup();
@@ -1650,8 +1708,10 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dumpProvider(ParcelFileDescriptor pfd, IBinder providertoken,
                 String[] args) {
+            assertCalledBySystem();
             DumpComponentInfo data = new DumpComponentInfo();
             try {
                 data.fd = pfd.dup();
@@ -1670,6 +1730,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void dumpMemInfo(ParcelFileDescriptor pfd, Debug.MemoryInfo mem, boolean checkin,
                 boolean dumpFullInfo, boolean dumpDalvik, boolean dumpSummaryOnly,
                 boolean dumpUnreachable, boolean dumpAllocatorStats, String[] args) {
+            assertCalledBySystem();
             FileOutputStream fout = new FileOutputStream(pfd.getFileDescriptor());
             PrintWriter pw = new FastPrintWriter(fout);
             try {
@@ -1877,6 +1938,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void dumpMemInfoProto(ParcelFileDescriptor pfd, Debug.MemoryInfo mem,
                 boolean dumpFullInfo, boolean dumpDalvik, boolean dumpSummaryOnly,
                 boolean dumpUnreachable, String[] args) {
+            assertCalledBySystem();
             ProtoOutputStream proto = new ProtoOutputStream(pfd.getFileDescriptor());
             try {
                 dumpMemInfo(proto, mem, dumpFullInfo, dumpDalvik, dumpSummaryOnly, dumpUnreachable);
@@ -2004,6 +2066,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void dumpGfxInfo(ParcelFileDescriptor pfd, String[] args) {
+            assertCalledBySystem();
             DumpComponentInfo data = new DumpComponentInfo();
             try {
                 data.fd = pfd.dup();
@@ -2020,6 +2083,7 @@ public final class ActivityThread extends ClientTransactionHandler
         @Override
         @NeverCompile
         public void dumpBitmapsProto(ParcelFileDescriptor pfd, String dumpFormat) {
+            assertCalledBySystem();
             try {
                 int pid = Process.myPid();
                 String processName = (mBoundApplication != null)
@@ -2034,6 +2098,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void dumpCacheInfo(ParcelFileDescriptor pfd, String[] args) {
+            assertCalledBySystem();
             try {
                 PropertyInvalidatedCache.dumpCacheInfo(pfd, args);
                 BroadcastStickyCache.dumpCacheInfo(pfd);
@@ -2057,6 +2122,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void dumpDbInfo(final ParcelFileDescriptor pfd, final String[] args) {
+            assertCalledBySystem();
             if (mSystemThread) {
                 // Ensure this invocation is asynchronous to prevent writer waiting if buffer cannot
                 // be consumed. But it must duplicate the file descriptor first, since caller might
@@ -2089,12 +2155,14 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void unstableProviderDied(IBinder provider) {
+            assertCalledBySystem();
             sendMessage(H.UNSTABLE_PROVIDER_DIED, provider);
         }
 
         @Override
         public void requestAssistContextExtras(IBinder activityToken, IBinder requestToken,
                 int requestType, int sessionId, int flags) {
+            assertCalledBySystem();
             RequestAssistContextExtras cmd = new RequestAssistContextExtras();
             cmd.activityToken = activityToken;
             cmd.requestToken = requestToken;
@@ -2104,11 +2172,15 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.REQUEST_ASSIST_CONTEXT_EXTRAS, cmd);
         }
 
+        @Override
         public void setCoreSettings(Bundle coreSettings) {
+            assertCalledBySystem();
             sendMessage(H.SET_CORE_SETTINGS, coreSettings);
         }
 
+        @Override
         public void updatePackageCompatibilityInfo(String pkg, CompatibilityInfo info) {
+            assertCalledBySystem();
             UpdateCompatibilityData ucd = new UpdateCompatibilityData();
             ucd.pkg = pkg;
             ucd.info = info;
@@ -2117,7 +2189,9 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.UPDATE_PACKAGE_COMPATIBILITY_INFO, ucd);
         }
 
+        @Override
         public void scheduleTrimMemory(int level) {
+            assertCalledBySystem();
             final Runnable r = PooledLambda.obtainRunnable(ActivityThread::handleTrimMemory,
                     ActivityThread.this, level).recycleOnUse();
             // Schedule trimming memory after drawing the frame to minimize jank-risk.
@@ -2129,16 +2203,22 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void scheduleTranslucentConversionComplete(IBinder token, boolean drawComplete) {
+            assertCalledBySystem();
             sendMessage(H.TRANSLUCENT_CONVERSION_COMPLETE, token, drawComplete ? 1 : 0);
         }
 
+        @Override
         public void scheduleOnNewSceneTransitionInfo(IBinder token, SceneTransitionInfo info) {
+            assertCalledBySystem();
             sendMessage(H.ON_NEW_SCENE_TRANSITION_INFO,
                     new Pair<IBinder, SceneTransitionInfo>(token, info));
         }
 
+        @Override
         public void setProcessState(int state) {
+            assertCalledBySystem();
             updateProcessState(state, true);
         }
 
@@ -2149,6 +2229,7 @@ public final class ActivityThread extends ClientTransactionHandler
          */
         @Override
         public void setNetworkBlockSeq(long procStateSeq) {
+            assertCalledBySystem();
             synchronized (mNetworkPolicyLock) {
                 mNetworkBlockSeq = procStateSeq;
             }
@@ -2156,11 +2237,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void scheduleInstallProvider(ProviderInfo provider) {
+            assertCalledBySystem();
             sendMessage(H.INSTALL_PROVIDER, provider);
         }
 
         @Override
         public final void updateTimePrefs(int timeFormatPreference) {
+            assertCalledBySystem();
             final Boolean timeFormatPreferenceBool;
             // For convenience we are using the Intent extra values.
             if (timeFormatPreference == Intent.EXTRA_TIME_PREF_VALUE_USE_12_HOUR) {
@@ -2177,11 +2260,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void scheduleEnterAnimationComplete(IBinder token) {
+            assertCalledBySystem();
             sendMessage(H.ENTER_ANIMATION_COMPLETE, token);
         }
 
         @Override
         public void notifyCleartextNetwork(byte[] firstPacket) {
+            assertCalledBySystem();
             if (StrictMode.vmCleartextNetworkEnabled()) {
                 StrictMode.onCleartextNetworkDetected(firstPacket);
             }
@@ -2189,11 +2274,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void startBinderTracking() {
+            assertCalledBySystem();
             sendMessage(H.START_BINDER_TRACKING, null);
         }
 
         @Override
         public void stopBinderTrackingAndDump(ParcelFileDescriptor pfd) {
+            assertCalledBySystem();
             try {
                 sendMessage(H.STOP_BINDER_TRACKING_AND_DUMP, pfd.dup());
             } catch (IOException e) {
@@ -2205,6 +2292,7 @@ public final class ActivityThread extends ClientTransactionHandler
         @Override
         public void scheduleLocalVoiceInteractionStarted(IBinder token,
                 IVoiceInteractor voiceInteractor) throws RemoteException {
+            assertCalledBySystem();
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = token;
             args.arg2 = voiceInteractor;
@@ -2213,17 +2301,20 @@ public final class ActivityThread extends ClientTransactionHandler
 
         @Override
         public void handleTrustStorageUpdate() {
+            assertCalledBySystem();
             NetworkSecurityPolicy.getInstance().handleTrustStorageUpdate();
         }
 
         @Override
         public void scheduleTransaction(ClientTransaction transaction) throws RemoteException {
+            assertCalledBySystem();
             ActivityThread.this.scheduleTransaction(transaction);
         }
 
         @Override
         public void scheduleTaskFragmentTransaction(@NonNull ITaskFragmentOrganizer organizer,
                 @NonNull TaskFragmentTransaction transaction) throws RemoteException {
+            assertCalledBySystem();
             // TODO(b/352665082): ITaskFragmentOrganizer can be cleanup to be a IBinder token
             organizer.onTransactionReady(transaction);
         }
@@ -2232,6 +2323,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void requestDirectActions(@NonNull IBinder activityToken,
                 @NonNull IVoiceInteractor interactor, @Nullable RemoteCallback cancellationCallback,
                 @NonNull RemoteCallback callback) {
+            assertCalledBySystem();
             final CancellationSignal cancellationSignal = new CancellationSignal();
             if (cancellationCallback != null) {
                 final ICancellationSignal transport = createSafeCancellationTransport(
@@ -2250,6 +2342,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void performDirectAction(@NonNull IBinder activityToken, @NonNull String actionId,
                 @Nullable Bundle arguments, @Nullable RemoteCallback cancellationCallback,
                 @NonNull RemoteCallback resultCallback) {
+            assertCalledBySystem();
             final CancellationSignal cancellationSignal = new CancellationSignal();
             if (cancellationCallback != null) {
                 final ICancellationSignal transport = createSafeCancellationTransport(
@@ -2267,6 +2360,7 @@ public final class ActivityThread extends ClientTransactionHandler
         @Override
         public void notifyContentProviderPublishStatus(@NonNull ContentProviderHolder holder,
                 @NonNull String authorities, int userId, boolean published) {
+            assertCalledBySystem();
             final String auths[] = authorities.split(";");
             for (String auth: auths) {
                 final ProviderKey key = getGetProviderKey(auth, userId);
@@ -2281,6 +2375,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void instrumentWithoutRestart(ComponentName instrumentationName,
                 Bundle instrumentationArgs, IInstrumentationWatcher instrumentationWatcher,
                 IUiAutomationConnection instrumentationUiConnection, ApplicationInfo targetInfo) {
+            assertCalledBySystem();
             AppBindData data = new AppBindData();
             data.instrumentationName = instrumentationName;
             data.instrumentationArgs = instrumentationArgs;
@@ -2294,6 +2389,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void updateUiTranslationState(IBinder activityToken, int state,
                 TranslationSpec sourceSpec, TranslationSpec targetSpec, List<AutofillId> viewIds,
                 UiTranslationSpec uiTranslationSpec) {
+            assertCalledBySystem();
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = activityToken;
             args.arg2 = state;
@@ -2308,6 +2404,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public void getExecutableMethodFileOffsets(
                 @NonNull MethodDescriptor methodDescriptor,
                 @NonNull IOffsetCallback resultCallback) {
+            assertCalledBySystem();
             Executable executable = MethodDescriptorParser.parseMethodDescriptor(
                     getClass().getClassLoader(), methodDescriptor);
             VMDebug.ExecutableMethodFileOffsets location;
@@ -2330,6 +2427,29 @@ public final class ActivityThread extends ClientTransactionHandler
                 resultCallback.onResult(ret);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
+            }
+        }
+
+        private void assertCalledBySystem() {
+            int callingUid = Binder.getCallingUid();
+            if (callingUid != Process.SYSTEM_UID) {
+                String packageName;
+                if (callingUid == Process.ROOT_UID) {
+                    packageName = "root";
+                } else {
+                    String[] packagesForUid =
+                            getSystemContext().getPackageManager().getPackagesForUid(callingUid);
+                    if (packagesForUid == null || packagesForUid.length == 0) {
+                        packageName = "unknown";
+                    } else if (packagesForUid.length == 1) {
+                        packageName = packagesForUid[0];
+                    } else {
+                        packageName = Arrays.asList(packagesForUid).stream().sorted().collect(
+                                Collectors.joining(", "));
+                    }
+                }
+                Slog.wtf(TAG, "ApplicationThread called by non-system process"
+                        + " (" + callingUid + "): " + packageName);
             }
         }
     }
