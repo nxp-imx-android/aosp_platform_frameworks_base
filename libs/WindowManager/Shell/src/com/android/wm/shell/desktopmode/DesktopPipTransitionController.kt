@@ -84,6 +84,46 @@ class DesktopPipTransitionController(
     }
 
     /**
+     * This is called by [PipScheduler#getExitPipViaExpandTransaction] before starting a PiP
+     * transition. If the ENABLE_MULTIPLE_DESKTOPS_BACKEND flag is enabled and the PiP task is going
+     * to freeform windowing mode, we need to reparent the task to the root desk.
+     *
+     * @param wct WindowContainerTransaction that will apply these changes
+     * @param taskId of the task that is exiting PiP
+     */
+    fun maybeReparentTaskToDesk(wct: WindowContainerTransaction, taskId: Int) {
+        if (
+            !pipDesktopState.isDesktopWindowingPipEnabled() ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return
+        }
+
+        val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
+        if (runningTaskInfo == null) {
+            logW("maybeReparentTaskToDesk: Failed to find RunningTaskInfo for taskId=%d", taskId)
+            return
+        }
+
+        val desktopRepository = desktopUserRepositories.getProfile(runningTaskInfo.userId)
+        val displayId = runningTaskInfo.displayId
+        if (!desktopRepository.isAnyDeskActive(displayId)) {
+            logD("maybeReparentTaskToDesk: PiP transition is not in Desktop session")
+            return
+        }
+
+        val deskId = getDeskId(desktopRepository, displayId)
+        if (deskId == INVALID_DESK_ID) return
+
+        logD(
+            "maybeReparentTaskToDesk: addMoveToDeskTaskChanges, taskId=%d deskId=%d",
+            runningTaskInfo.taskId,
+            deskId,
+        )
+        desktopTasksController.addMoveToDeskTaskChanges(wct, runningTaskInfo, deskId)
+    }
+
+    /**
      * This is called by [PipTransition#handleRequest] when a request for entering PiP is received.
      *
      * @param wct WindowContainerTransaction that will apply these changes
@@ -102,7 +142,7 @@ class DesktopPipTransitionController(
         // Early return if the transition is a synthetic transition that is not backed by a true
         // system transition.
         if (transition == DesktopTasksController.SYNTHETIC_TRANSITION) {
-            logD("handlePipTransitionIfInDesktop: SYNTHETIC_TRANSITION, not a true transition")
+            logD("handlePipTransition: SYNTHETIC_TRANSITION, not a true transition")
             return
         }
 
@@ -110,25 +150,12 @@ class DesktopPipTransitionController(
         val displayId = taskInfo.displayId
         val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isAnyDeskActive(displayId)) {
-            logD("handlePipTransitionIfInDesktop: PiP transition is not in Desktop session")
+            logD("handlePipTransition: PiP transition is not in Desktop session")
             return
         }
 
-        val deskId =
-            desktopRepository.getActiveDeskId(displayId)
-                ?: if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    logW(
-                        "handlePipTransitionIfInDesktop: " +
-                            "Active desk not found for display id %d",
-                        displayId,
-                    )
-                    return
-                } else {
-                    checkNotNull(desktopRepository.getDefaultDeskId(displayId)) {
-                        "$TAG: handlePipTransitionIfInDesktop: " +
-                            "Expected a default desk to exist in display with id $displayId"
-                    }
-                }
+        val deskId = getDeskId(desktopRepository, displayId)
+        if (deskId == INVALID_DESK_ID) return
 
         val isLastTask =
             desktopRepository.isOnlyVisibleNonClosingTaskInDesk(
@@ -137,10 +164,16 @@ class DesktopPipTransitionController(
                 displayId = displayId,
             )
         if (!isLastTask) {
-            logD("handlePipTransitionIfInDesktop: PiP task is not last visible task in Desk")
+            logD("handlePipTransition: PiP task is not last visible task in Desk")
             return
         }
 
+        logD(
+            "handlePipTransition: performDesktopExitCleanUp, taskId=%d deskId=%d displayId=%d",
+            taskInfo.taskId,
+            deskId,
+            displayId,
+        )
         val desktopExitRunnable =
             desktopTasksController.performDesktopExitCleanUp(
                 wct = wct,
@@ -150,6 +183,18 @@ class DesktopPipTransitionController(
             )
         desktopExitRunnable?.invoke(transition)
     }
+
+    private fun getDeskId(repository: DesktopRepository, displayId: Int): Int =
+        repository.getActiveDeskId(displayId)
+            ?: if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                logW("getDeskId: Active desk not found for display id %d", displayId)
+                INVALID_DESK_ID
+            } else {
+                checkNotNull(repository.getDefaultDeskId(displayId)) {
+                    "$TAG: getDeskId: " +
+                        "Expected a default desk to exist in display with id $displayId"
+                }
+            }
 
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
@@ -161,5 +206,6 @@ class DesktopPipTransitionController(
 
     private companion object {
         private const val TAG = "DesktopPipTransitionController"
+        private const val INVALID_DESK_ID = -1
     }
 }
