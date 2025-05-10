@@ -63,6 +63,7 @@ import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_WAKING
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wm.shell.back.BackAnimation
@@ -145,6 +146,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @Mock private lateinit var statusBarShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Mock private lateinit var backAnimation: Optional<BackAnimation>
     private lateinit var desktopState: FakeDesktopState
+    private val fakeHeadlessSystemUserMode = HeadlessSystemUserModeFake()
 
     @Before
     fun setUp() {
@@ -173,6 +175,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         `when`(processWrapper.isSystemUser).thenReturn(true)
         sysuiStatePerDisplayRepository.add(Display.DEFAULT_DISPLAY, sysUiState)
         runBlocking { kosmos.displayRepository.apply { addDisplay(0) } }
+        fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
         subject = createLauncherProxyService(context)
     }
 
@@ -424,6 +427,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             processWrapper,
             kosmos.displayRepository,
             desktopState,
+            fakeHeadlessSystemUserMode,
         )
     }
 }
