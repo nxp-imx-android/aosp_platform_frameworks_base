@@ -109,7 +109,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                     animateOpenIntentWithRemoteAndPipOrDesktop(transition, info, startTransaction,
                             finishTransaction, finishCallback);
             case TYPE_UNFOLD ->
-                    animateUnfold(info, startTransaction, finishTransaction, finishCallback);
+                    animateUnfold(transition, info, startTransaction, finishTransaction,
+                            finishCallback);
             case TYPE_OPEN_IN_DESKTOP ->
                     animateOpenInDesktop(
                             transition, info, startTransaction, finishTransaction, finishCallback);
@@ -405,6 +406,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
     }
 
     private boolean animateUnfold(
+            @NonNull IBinder transition,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
@@ -416,6 +418,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             mInFlightSubAnimations--;
             if (mInFlightSubAnimations > 0) return;
             finishCallback.onTransitionFinished(wct);
+            mBubbleTransitions.notifyUnfoldTransitionFinished(transition);
         };
         mInFlightSubAnimations = 1;
         // Sync pip state.

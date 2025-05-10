@@ -634,6 +634,7 @@ public class Bubble implements BubbleViewProvider {
         return (mMetadataShortcutId != null && !mMetadataShortcutId.isEmpty());
     }
 
+    @Nullable
     public BubbleTransitions.BubbleTransition getPreparingTransition() {
         return mPreparingTransition;
     }
@@ -716,6 +717,12 @@ public class Bubble implements BubbleViewProvider {
     public void setPreparingTransition(BubbleTransitions.BubbleTransition transit) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "setPreparingTransition: transit=%s", transit);
         mPreparingTransition = transit;
+    }
+
+    /** Whether this bubble is currently converting to bubble bar. */
+    public boolean isConvertingToBar() {
+        return getPreparingTransition() != null
+                && getPreparingTransition().isConvertingBubbleToBar();
     }
 
     /**
@@ -1360,6 +1367,7 @@ public class Bubble implements BubbleViewProvider {
         pw.print("  autoExpand:    "); pw.println(shouldAutoExpand());
         pw.print("  isDismissable: "); pw.println(mIsDismissable);
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
+        pw.println("  preparingTransition null?: " + (mPreparingTransition == null));
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
         }

@@ -437,6 +437,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             if (wct != null) {
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_UNFOLD, transition));
+                mBubbleTransitions.notifyUnfoldTransitionStarting(transition);
             }
             return wct;
         } else if (mDesktopTasksController != null
