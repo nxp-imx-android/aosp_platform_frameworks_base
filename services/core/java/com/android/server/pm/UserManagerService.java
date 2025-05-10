@@ -53,6 +53,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.ColorRes;
 import android.annotation.DrawableRes;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -196,6 +197,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -350,8 +353,17 @@ public class UserManagerService extends IUserManager.Stub {
     private static final String TRON_DEMO_CREATED = "users_demo_created";
 
     // The boot user strategy for HSUM.
-    private static final int BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
-    private static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+    @VisibleForTesting
+    static final int BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
+    @VisibleForTesting
+    static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = false, prefix = { "BOOT_TO_" }, value = {
+            BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
+            BOOT_TO_HSU_FOR_PROVISIONED_DEVICE})
+    @VisibleForTesting
+    @interface BootStrategy {}
 
     private final Context mContext;
     private final PackageManagerService mPm;
