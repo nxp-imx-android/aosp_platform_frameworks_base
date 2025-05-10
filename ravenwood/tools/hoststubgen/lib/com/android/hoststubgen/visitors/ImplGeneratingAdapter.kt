@@ -99,6 +99,15 @@ class ImplGeneratingAdapter(
         return access
     }
 
+    override fun visitInnerClass(
+        name: String?,
+        outerName: String?,
+        innerName: String?,
+        access: Int,
+    ) {
+        super.visitInnerClass(name, outerName, innerName, maybeRemoveFinalFromClass(access))
+    }
+
     override fun visit(
         version: Int,
         origAccess: Int,
