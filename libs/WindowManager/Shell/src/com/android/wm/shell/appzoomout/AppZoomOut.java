@@ -32,21 +32,20 @@ public interface AppZoomOut {
     void setProgress(float progress);
 
     /**
-     * Sets the top-level scaling factor applied to all content on the screen during a zoom-out.
+     * Sets the squeeze effect progress.
      *
-     * <p>The {@code scale} parameter determines the current zoom level, ranging from {@code 0f} to
-     * {@code 1f}.
+     * <p>The {@code progress} parameter determines the current zoom level and surface crop, ranging
+     * from {@code 0f} to {@code 1f}.
      * <ul>
-     * <li>A value of {@code 1.0f} indicates no scaling (content is displayed at its original
-     * size).</li>
-     * <li>A value of {@code 0.0f} represents the maximum zoom-out, effectively scaling the
-     * content to zero size (though visually it might be constrained).</li>
+     * <li>A value of {@code 0f} indicates no scaling and cropping (content is displayed at its
+     * original size).</li>
+     * <li>A value of {@code 0.0f} represents the maximum zoom-out, effectively scaling and cropping
+     * the content to the max pushback level</li>
      * <li>Values between {@code 0.0f} and {@code 1.0f} represent intermediate zoom levels.</li>
      * </ul>
      *
-     * @param scale The scaling factor to apply, where {@code 1.0f} is no scale and {@code 0.0f} is
-     *              maximum zoom-out.
+     * @param progress The progress to set the squeeze zoom effect to.
      */
-    void setTopLevelScale(float scale);
+    void setTopLevelProgress(float progress);
 
 }

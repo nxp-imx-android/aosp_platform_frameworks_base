@@ -37,6 +37,7 @@ constructor(
     @Background private val coroutineContext: CoroutineContext,
 ) {
     val isSqueezeEffectEnabled = squeezeEffectRepository.isSqueezeEffectEnabled
+    val isSqueezeEffectHapticEnabled = squeezeEffectRepository.isSqueezeEffectHapticEnabled
 
     val isPowerButtonDownAsSingleKeyGesture: Flow<Boolean> =
         combine(
@@ -50,6 +51,4 @@ constructor(
 
     suspend fun getInvocationEffectInitialDelayMs() =
         squeezeEffectRepository.getInvocationEffectInitialDelayMs()
-
-    suspend fun getRoundedCornersResourceId() = squeezeEffectRepository.getRoundedCornersInfo()
 }

@@ -17,16 +17,16 @@
 package com.android.systemui.topwindoweffects.ui.viewmodel
 
 import com.android.systemui.haptics.vibratorHelper
-import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testScope
 
 val Kosmos.squeezeEffectHapticPlayerFactory by
     Kosmos.Fixture {
         object : SqueezeEffectHapticPlayer.Factory {
             override fun create(): SqueezeEffectHapticPlayer =
                 SqueezeEffectHapticPlayer(
-                    keyEventInteractor = keyEventInteractor,
                     vibratorHelper = vibratorHelper,
+                    topLevelWindowEffectsScope = testScope.backgroundScope,
                 )
         }
     }
