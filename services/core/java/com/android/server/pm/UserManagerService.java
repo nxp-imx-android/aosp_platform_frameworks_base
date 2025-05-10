@@ -8010,6 +8010,9 @@ public class UserManagerService extends IUserManager.Stub {
         if (userInfo.convertedFromPreCreated) {
             pw.print(" <converted>");
         }
+        if (userInfo.guestToRemove) {
+            pw.print(" <guestToRemove>");
+        }
         pw.println();
         pw.print("    Type: "); pw.println(userInfo.userType);
         pw.print("    Flags: "); pw.print(userInfo.flags); pw.print(" (");
