@@ -145,7 +145,7 @@ public enum DesktopExperienceFlags {
     ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE(Flags::enableMultidisplayTrackpadBackGesture, true,
             Flags.FLAG_ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE),
     ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS(
-            Flags::enableMultipleDesktopsDefaultActivationInDesktopFirstDisplays, true,
+            Flags::enableMultipleDesktopsDefaultActivationInDesktopFirstDisplays, false,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_DEFAULT_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS),
     ENABLE_MULTIPLE_DESKTOPS_BACKEND(Flags::enableMultipleDesktopsBackend, true,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND),
