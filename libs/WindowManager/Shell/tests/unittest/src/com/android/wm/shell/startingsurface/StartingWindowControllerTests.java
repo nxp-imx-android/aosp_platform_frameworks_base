@@ -168,8 +168,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         st.clear();
         final IBinder secondToken = new Binder();
         final TransitionInfo secondInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
-                .addChange(TRANSIT_OPEN, FLAG_IS_BEHIND_STARTING_WINDOW,
-                        null, null, null).build();
+                .addChange(TRANSIT_OPEN, FLAG_IS_BEHIND_STARTING_WINDOW).build();
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
         waitTransactionCommit(st);

@@ -81,7 +81,7 @@ class DesktopBackNavTransitionObserver(
             val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
             if (desktopRepository.isExitingDesktopTask(change)) {
                 logD("removeTaskIfNeeded taskId=%d", taskInfo.taskId)
-                desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+                desktopRepository.removeTask(taskInfo.taskId)
             }
         }
     }

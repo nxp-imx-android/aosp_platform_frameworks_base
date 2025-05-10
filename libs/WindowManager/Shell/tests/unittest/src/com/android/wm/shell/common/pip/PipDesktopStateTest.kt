@@ -19,6 +19,7 @@ import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
@@ -28,7 +29,7 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
-import com.android.wm.shell.Flags.FLAG_ENABLE_PIP2
+import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopRepository
@@ -99,10 +100,7 @@ class PipDesktopStateTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_CONNECTED_DISPLAYS_PIP,
-        FLAG_ENABLE_PIP2
-    )
+    @EnableFlags(FLAG_ENABLE_CONNECTED_DISPLAYS_PIP)
     fun isConnectedDisplaysPipEnabled_returnsTrue() {
         assertThat(pipDesktopState.isConnectedDisplaysPipEnabled()).isTrue()
     }
@@ -110,7 +108,6 @@ class PipDesktopStateTest : ShellTestCase() {
     @Test
     @EnableFlags(
         FLAG_ENABLE_CONNECTED_DISPLAYS_PIP,
-        FLAG_ENABLE_PIP2,
         FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
     )
     fun isDraggingPipAcrossDisplaysEnabled_returnsTrue() {
@@ -131,6 +128,7 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.isPipInDesktopMode()).isFalse()
     }
 
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToDesktop_displayFreeform_returnsUndefined() {
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
@@ -139,6 +137,7 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToDesktop_displayFullscreen_returnsFreeform() {
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
@@ -147,6 +146,7 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FREEFORM)
     }
 
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToFullscreen_displayFullscreen_returnsUndefined() {
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
@@ -154,6 +154,15 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @Test
+    fun outPipWindowingMode_exitToDesktop_multiDesktopsEnabled_returnsUndefined() {
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
+
+        assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
+    }
+
+    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)

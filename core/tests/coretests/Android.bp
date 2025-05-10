@@ -99,6 +99,7 @@ android_test {
         "mockito-target-extended-minus-junit4",
         "mockito-target-minus-junit4",
         "mockwebserver",
+        "perfetto_trace_android_track_event_extension_java_protos",
         "perfetto_trace_java_protos",
         "platform-compat-test-rules",
         "platform-parametric-runner-lib",
@@ -119,6 +120,7 @@ android_test {
         "ext",
         "framework",
         "framework-res",
+        "libprotobuf-java-lite",
         "org.apache.http.legacy.stubs",
     ],
     jni_libs: [
@@ -256,6 +258,7 @@ android_ravenwood_test {
         "ext",
         "framework",
         "framework-res",
+        "libprotobuf-java-lite",
         "org.apache.http.legacy.stubs",
     ],
     static_libs: [
@@ -269,6 +272,7 @@ android_ravenwood_test {
         "core-test-rules", // for libcore.dalvik.system.CloseGuardSupport
         "flag-junit",
         "flag-junit",
+        "perfetto_trace_android_track_event_extension_java_protos",
         "perfetto_trace_java_protos",
         "platform-compat-test-rules",
         "platform-test-annotations",
@@ -296,7 +300,6 @@ android_ravenwood_test {
         "src/android/view/DisplayTest.java",
         "src/com/android/internal/logging/**/*.java",
         "src/com/android/internal/os/**/*.java",
-        "src/com/android/internal/power/EnergyConsumerStatsTest.java",
         "src/com/android/internal/ravenwood/**/*.java",
         "src/com/android/internal/util/**/*.java",
 

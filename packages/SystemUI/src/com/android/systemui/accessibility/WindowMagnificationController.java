@@ -78,6 +78,7 @@ import androidx.annotation.UiThread;
 import androidx.core.math.MathUtils;
 
 import com.android.internal.accessibility.common.MagnificationConstants;
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Flags;
 import com.android.systemui.model.SysUiState;
@@ -237,6 +238,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             Math.tan(Math.toRadians(MAX_HORIZONTAL_MOVE_ANGLE));
 
     private boolean mAllowDiagonalScrolling = false;
+    private boolean mAllowMagnifyTyping = false;
+    private boolean mAllowMagnifyKeyboard = false;
     private boolean mEditSizeEnable = false;
     private boolean mSettingsPanelVisibility = false;
     @VisibleForTesting
@@ -282,6 +285,15 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         mAllowDiagonalScrolling = secureSettings.getIntForUser(
                 Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING, 1,
                 UserHandle.USER_CURRENT) == 1;
+        if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()) {
+            mAllowMagnifyTyping = secureSettings.getIntForUser(
+                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED, 1,
+                    UserHandle.USER_CURRENT) == 1;
+            mAllowMagnifyKeyboard = secureSettings.getIntForUser(
+                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                    AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
+                    UserHandle.USER_CURRENT) == 1;
+        }
 
         setupMagnificationSizeScaleOptions();
 
@@ -427,6 +439,14 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
 
     void setDiagonalScrolling(boolean enable) {
         mAllowDiagonalScrolling = enable;
+    }
+
+    void setMagnifyTyping(boolean enable) {
+        mAllowMagnifyTyping = enable;
+    }
+
+    void setMagnifyKeyboard(boolean enable) {
+        mAllowMagnifyKeyboard = enable;
     }
 
     /**
@@ -1379,6 +1399,16 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     @VisibleForTesting
     boolean isDiagonalScrollingEnabled() {
         return mAllowDiagonalScrolling;
+    }
+
+    @VisibleForTesting
+    boolean isMagnifyTypingEnabled() {
+        return mAllowMagnifyTyping;
+    }
+
+    @VisibleForTesting
+    boolean isMagnifyKeyboardEnabled() {
+        return mAllowMagnifyKeyboard;
     }
 
     private CharSequence formatStateDescription(float scale) {

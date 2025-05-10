@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.domain.interactor
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -120,8 +121,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_hasPromotedContent_hasNotif() =
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOff_hasPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -141,8 +142,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_noPromotedContent_hasNotif() =
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOff_noPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -163,7 +164,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_hasPromotedContent_hasNotif() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagOn_butOptInOff_hasPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -184,7 +186,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_noPromotedContent_null() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagOn_butOptInOff_noPromotedContent_noNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -204,40 +207,50 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_multiple_laterHasPromoted_usesEarlierNotif() =
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOn_hasPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
-            val earlierOngoingNotif =
+            val ongoingNotif =
                 activeNotificationModel(
-                    key = "earlierOngoingNotif",
+                    key = "ongoingNotif",
                     callType = CallType.Ongoing,
-                    whenTime = 45L,
+                    promotedContent = callPromotedContentBuilder("ongoingNotif").build(),
+                )
+
+            activeNotificationListRepository.activeNotifications.value =
+                ActiveNotificationsStore.Builder()
+                    .apply { addIndividualNotif(ongoingNotif) }
+                    .build()
+
+            assertThat(latest).isEqualTo(ongoingNotif)
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOn_noPromotedContent_hasNotif() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.ongoingCallNotification)
+
+            val ongoingNotif =
+                activeNotificationModel(
+                    key = "ongoingNotif",
+                    callType = CallType.Ongoing,
                     promotedContent = null,
                 )
-            val laterOngoingNotif =
-                activeNotificationModel(
-                    key = "laterOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 55L,
-                    promotedContent = callPromotedContentBuilder("laterOngoingNotif").build(),
-                )
 
             activeNotificationListRepository.activeNotifications.value =
                 ActiveNotificationsStore.Builder()
-                    .apply { addIndividualNotif(earlierOngoingNotif) }
-                    .apply { addIndividualNotif(laterOngoingNotif) }
+                    .apply { addIndividualNotif(ongoingNotif) }
                     .build()
 
-            // When PromotedNotificationUi flag is off, promotedContent doesn't matter and we should
-            // always use the earliest call notification
-            assertThat(latest).isEqualTo(earlierOngoingNotif)
+            assertThat(latest).isEqualTo(ongoingNotif)
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_multiple_allHavePromotedContent_usesEarlierNotif() =
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_multiple_usesEarlierNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -246,44 +259,12 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
                     key = "earlierOngoingNotif",
                     callType = CallType.Ongoing,
                     whenTime = 45L,
-                    promotedContent = callPromotedContentBuilder("earlierOngoingNotif").build(),
                 )
             val laterOngoingNotif =
                 activeNotificationModel(
                     key = "laterOngoingNotif",
                     callType = CallType.Ongoing,
                     whenTime = 55L,
-                    promotedContent = callPromotedContentBuilder("laterOngoingNotif").build(),
-                )
-
-            activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore.Builder()
-                    .apply { addIndividualNotif(earlierOngoingNotif) }
-                    .apply { addIndividualNotif(laterOngoingNotif) }
-                    .build()
-
-            assertThat(latest).isEqualTo(earlierOngoingNotif)
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_multiple_allHavePromoted_usesEarlierNotif() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.ongoingCallNotification)
-
-            val earlierOngoingNotif =
-                activeNotificationModel(
-                    key = "earlierOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 45L,
-                    promotedContent = callPromotedContentBuilder("earlierOngoingNotif").build(),
-                )
-            val laterOngoingNotif =
-                activeNotificationModel(
-                    key = "laterOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 55L,
-                    promotedContent = callPromotedContentBuilder("laterOngoingNotif").build(),
                 )
 
             activeNotificationListRepository.activeNotifications.value =
@@ -293,96 +274,6 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
                     .build()
 
             assertThat(latest).isEqualTo(earlierOngoingNotif)
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_multiple_earlierHasPromoted_usesEarlierNotif() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.ongoingCallNotification)
-
-            val earlierOngoingNotif =
-                activeNotificationModel(
-                    key = "earlierOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 45L,
-                    promotedContent = callPromotedContentBuilder("earlierOngoingNotif").build(),
-                )
-            val laterOngoingNotif =
-                activeNotificationModel(
-                    key = "laterOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 55L,
-                    promotedContent = null,
-                )
-
-            activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore.Builder()
-                    .apply { addIndividualNotif(earlierOngoingNotif) }
-                    .apply { addIndividualNotif(laterOngoingNotif) }
-                    .build()
-
-            assertThat(latest).isEqualTo(earlierOngoingNotif)
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_multiple_laterHasPromoted_usesLaterNotif() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.ongoingCallNotification)
-
-            val earlierOngoingNotif =
-                activeNotificationModel(
-                    key = "earlierOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 45L,
-                    promotedContent = null,
-                )
-            val laterOngoingNotif =
-                activeNotificationModel(
-                    key = "laterOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 55L,
-                    promotedContent = callPromotedContentBuilder("laterOngoingNotif").build(),
-                )
-
-            activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore.Builder()
-                    .apply { addIndividualNotif(earlierOngoingNotif) }
-                    .apply { addIndividualNotif(laterOngoingNotif) }
-                    .build()
-
-            assertThat(latest).isEqualTo(laterOngoingNotif)
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_multiple_noneHavePromoted_null() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.ongoingCallNotification)
-
-            val earlierOngoingNotif =
-                activeNotificationModel(
-                    key = "earlierOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 45L,
-                    promotedContent = null,
-                )
-            val laterOngoingNotif =
-                activeNotificationModel(
-                    key = "laterOngoingNotif",
-                    callType = CallType.Ongoing,
-                    whenTime = 55L,
-                    promotedContent = null,
-                )
-
-            activeNotificationListRepository.activeNotifications.value =
-                ActiveNotificationsStore.Builder()
-                    .apply { addIndividualNotif(earlierOngoingNotif) }
-                    .apply { addIndividualNotif(laterOngoingNotif) }
-                    .build()
-
-            assertThat(latest).isNull()
         }
 
     @Test

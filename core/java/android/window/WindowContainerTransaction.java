@@ -17,6 +17,7 @@
 package android.window;
 
 import static android.app.Instrumentation.DEBUG_START_ACTIVITY;
+import static android.app.TaskInfo.SELF_MOVABLE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.TaskFragmentOperation.OP_TYPE_CLEAR_ADJACENT_TASK_FRAGMENTS;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_TASK_FRAGMENT;
@@ -35,12 +36,14 @@ import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.Instrumentation;
 import android.app.PendingIntent;
+import android.app.TaskInfo.SelfMovable;
 import android.app.WindowConfiguration;
 import android.app.WindowConfiguration.WindowingMode;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Configuration;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -518,6 +521,47 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Sets whether the given container can be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     * Note that there are additional permission checks for the caller of {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     *
+     * @param container The window container of the task that the self-movable state is set on.
+     * @param selfMovable {@link android.app.TaskInfo#SELF_MOVABLE_ALLOWED} or {@link
+     *     android.app.TaskInfo#SELF_MOVABLE_DENIED} to set the task as self-movable or not, {@link
+     *     android.app.TaskInfo#SELF_MOVABLE_DEFAULT} to let the WM Core decide.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setSelfMovable(
+            @NonNull WindowContainerToken container, @SelfMovable int selfMovable) {
+        final Change change = getOrCreateChange(container.asBinder());
+        change.mSelfMovable = selfMovable;
+        return this;
+    }
+
+    /**
+     * Sets whether the given container is able to contain self-movable tasks. A display is
+     * considered able to contain self-movable tasks as long as there is one child window container
+     * that is able to contain self-movable tasks.
+     *
+     * <p>Initially after each boot-up no window containers can contain self-movable tasks.
+     *
+     * @param container The window container whose ability to contain self-movable tasks is set on.
+     * @param isTaskMoveAllowed {@code true} to allow containing self-movable tasks, {@code
+     *     false} otherwise.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setIsTaskMoveAllowed(
+            @NonNull WindowContainerToken container, boolean isTaskMoveAllowed) {
+        final Change change = getOrCreateChange(container.asBinder());
+        change.mChangeMask |= Change.CHANGE_IS_TASK_MOVE_ALLOWED;
+        change.mIsTaskMoveAllowed = isTaskMoveAllowed;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * Hierarchy updates (create/destroy/reorder/reparent containers)
@@ -961,14 +1005,45 @@ public final class WindowContainerTransaction implements Parcelable {
             @NonNull WindowContainerToken receiver,
             @Nullable IBinder owner, int index, @InsetsType int type, @Nullable Rect frame,
             @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
+                .setArbitraryRectangle(frame)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    /**
+     * Adds a given {@code Insets} attached to the {@code receiver}'s bounds.
+     *
+     * @param receiver      The window container that the insets source is attached to.
+     * @param owner         The owner of the insets source. An insets source can only be modified by
+     *                      its owner.
+     * @param index         An owner might add multiple insets sources with the same type.
+     *                      This identifies them.
+     * @param type          The {@link InsetsType} of the insets source.
+     * @param insets        The size of the insets on each side of the edges.
+     * @param boundingRects The bounding rects within this inset, relative to the |frame|.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type, @NonNull Insets insets,
+            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS)
+                .setInsetsSize(insets)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    @NonNull
+    private WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver, IBinder owner, InsetsFrameProvider provider) {
         final HierarchyOp hierarchyOp =
                 new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER)
                         .setContainer(receiver.asBinder())
-                        .setInsetsFrameProvider(new InsetsFrameProvider(owner, index, type)
-                                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
-                                .setArbitraryRectangle(frame)
-                                .setBoundingRects(boundingRects)
-                                .setFlags(flags))
+                        .setInsetsFrameProvider(provider)
                         .setCaller(owner)
                         .build();
         mHierarchyOps.add(hierarchyOp);
@@ -1381,6 +1456,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_LAUNCH_NEXT_TO_BUBBLE = 1 << 10;
         public static final int CHANGE_DISABLE_PIP = 1 << 11;
         public static final int CHANGE_DISABLE_LAUNCH_ADJACENT = 1 << 12;
+        public static final int CHANGE_IS_TASK_MOVE_ALLOWED = 1 << 13;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1396,6 +1472,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_LAUNCH_NEXT_TO_BUBBLE,
                 CHANGE_DISABLE_PIP,
                 CHANGE_DISABLE_LAUNCH_ADJACENT,
+                CHANGE_IS_TASK_MOVE_ALLOWED,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1409,6 +1486,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mForceExcludedFromRecents = false;
         private boolean mDisablePip = false;
         private boolean mDisableLaunchAdjacent = false;
+        private boolean mIsTaskMoveAllowed = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1421,6 +1499,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private int mActivityWindowingMode = -1;
         private int mWindowingMode = -1;
+        private @SelfMovable int mSelfMovable = SELF_MOVABLE_UNSET;
 
         private boolean mLaunchNextToBubble = false;
 
@@ -1437,6 +1516,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mLaunchNextToBubble = in.readBoolean();
             mDisablePip = in.readBoolean();
             mDisableLaunchAdjacent = in.readBoolean();
+            mIsTaskMoveAllowed = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1452,6 +1532,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
             mWindowingMode = in.readInt();
             mActivityWindowingMode = in.readInt();
+            mSelfMovable = in.readInt();
         }
 
         /**
@@ -1494,12 +1575,18 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((other.mChangeMask & CHANGE_DISABLE_LAUNCH_ADJACENT) != 0) {
                 mDisableLaunchAdjacent = other.mDisableLaunchAdjacent;
             }
+            if ((other.mChangeMask & CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
+                mIsTaskMoveAllowed = other.mIsTaskMoveAllowed;
+            }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
                 mActivityWindowingMode = other.mActivityWindowingMode;
             }
             if (other.mWindowingMode >= WINDOWING_MODE_UNDEFINED) {
                 mWindowingMode = other.mWindowingMode;
+            }
+            if (other.mSelfMovable != SELF_MOVABLE_UNSET) {
+                mSelfMovable = other.mSelfMovable;
             }
             if (other.mRelativeBounds != null) {
                 mRelativeBounds = transfer
@@ -1602,6 +1689,23 @@ public final class WindowContainerTransaction implements Parcelable {
             return mConfigAtTransitionEnd;
         }
 
+        /**
+         * Gets whether the given container can be repositioned by {@link
+         * android.app.ActivityManager.AppTask#moveTaskTo}.
+         */
+        public @SelfMovable int getSelfMovable() {
+            return mSelfMovable;
+        }
+
+        /**
+         * Gets whether the given container is able to contain self-movable tasks. A display
+         * is considered able to contain self-movable tasks as long as there is one child window
+         * container that is able to contain self-movable tasks.
+         */
+        public boolean getIsTaskMoveAllowed() {
+            return mIsTaskMoveAllowed;
+        }
+
         @ChangeMask
         public int getChangeMask() {
             return mChangeMask;
@@ -1676,6 +1780,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_DISABLE_LAUNCH_ADJACENT) != 0) {
                 sb.append("disableLaunchAdjacent:" + mDisableLaunchAdjacent + ",");
             }
+            if ((mChangeMask & CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
+                sb.append("isTaskMoveAllowed:" + mIsTaskMoveAllowed + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1707,6 +1814,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mLaunchNextToBubble);
             dest.writeBoolean(mDisablePip);
             dest.writeBoolean(mDisableLaunchAdjacent);
+            dest.writeBoolean(mIsTaskMoveAllowed);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
@@ -1721,6 +1829,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
             dest.writeInt(mWindowingMode);
             dest.writeInt(mActivityWindowingMode);
+            dest.writeInt(mSelfMovable);
         }
 
         @Override

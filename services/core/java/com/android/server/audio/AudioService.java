@@ -52,6 +52,7 @@ import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
+import static android.media.audio.Flags.deviceVolumeApis;
 import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatency;
 import static android.media.audio.Flags.focusFreezeTestApi;
 import static android.media.audio.Flags.registerVolumeCallbackApiHardening;
@@ -4792,7 +4793,8 @@ public class AudioService extends IAudioService.Stub
         }
 
         int index = vi.getVolumeIndex();
-        if (index == VolumeInfo.INDEX_NOT_SET && !vi.hasMuteCommand()) {
+        boolean hasMuteState = deviceVolumeApis() ? vi.hasMuteState() : vi.hasMuteCommand();
+        if (index == VolumeInfo.INDEX_NOT_SET && !hasMuteState) {
             throw new IllegalArgumentException(
                     "changing device volume requires a volume index or mute command");
         }
@@ -4805,7 +4807,8 @@ public class AudioService extends IAudioService.Stub
         int index = vi.getVolumeIndex();
         // if a stream is not muted but the VolumeInfo is for muting, set the volume index
         // for the device to min volume
-        if (vi.hasMuteCommand() && vi.isMuted() && !isStreamMute(streamType)) {
+        boolean hasMuteState = deviceVolumeApis() ? vi.hasMuteState() : vi.hasMuteCommand();
+        if (hasMuteState && vi.isMuted() && !isStreamMute(streamType)) {
             setStreamVolumeWithAttributionInt(streamType,
                     vss.getMinIndex(),
                     flags,

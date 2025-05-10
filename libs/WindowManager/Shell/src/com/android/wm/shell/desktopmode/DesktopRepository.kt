@@ -380,8 +380,9 @@ class DesktopRepository(
     }
 
     fun removeLeftTiledTaskFromDesk(displayId: Int, deskId: Int) {
-        logD("removeLeftTiledTaskToDesk for displayId=%d", displayId)
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
+        logD("removeLeftTiledTaskFromDesk for displayId=%d", displayId)
+        val desk = desktopData.getDesk(deskId)
+        if (desk == null) return
         desk.leftTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             updatePersistentRepositoryForDesk(deskId)
@@ -390,7 +391,8 @@ class DesktopRepository(
 
     fun removeRightTiledTaskFromDesk(displayId: Int, deskId: Int) {
         logD("removeRightTiledTaskFromDesk for displayId=%d", displayId)
-        val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
+        val desk = desktopData.getDesk(deskId)
+        if (desk == null) return
         desk.rightTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
             updatePersistentRepositoryForDesk(deskId)
@@ -929,14 +931,10 @@ class DesktopRepository(
      *
      * TODO: b/389960283 - consider using [removeTaskFromDesk] instead.
      */
-    fun removeTask(displayId: Int, taskId: Int) {
+    fun removeTask(taskId: Int) {
         logD("Removes freeform task: taskId=%d", taskId)
-        if (displayId == INVALID_DISPLAY) {
-            // Removes the original display id of the task.
-            getDisplayIdForTask(taskId)?.let { removeTaskFromDisplay(it, taskId) }
-        } else {
-            removeTaskFromDisplay(displayId, taskId)
-        }
+        // Removes the original display id of the task.
+        getDisplayIdForTask(taskId)?.let { removeTaskFromDisplay(it, taskId) }
     }
 
     /** Removes given task from a valid [displayId] and updates the repository state. */

@@ -30,7 +30,6 @@ import static android.app.Flags.lifetimeExtensionRefactor;
 import static android.app.Flags.nmSummarization;
 import static android.app.Flags.nmSummarizationUi;
 import static android.app.Flags.notificationClassificationUi;
-import static android.app.Flags.sortSectionByTime;
 import static android.app.Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.Notification.EXTRA_LARGE_ICON_BIG;
@@ -2835,6 +2834,7 @@ public class NotificationManagerService extends SystemService {
                 mNotificationChannelLogger,
                 mAppOps,
                 mUserProfiles,
+                mUgmInternal,
                 mShowReviewPermissionsNotification,
                 Clock.systemUTC());
         mRankingHelper = new RankingHelper(getContext(), mRankingHandler, mPreferencesHelper,
@@ -3170,7 +3170,7 @@ public class NotificationManagerService extends SystemService {
                 if (notificationClassificationUi()) {
                     mPreferencesHelper.pullPackagePreferencesStats(data,
                             getAllUsersNotificationPermissions(),
-                            new ArrayMap<>());
+                            mAssistants.getDeniedKeysForUsersAndPackages());
                 } else {
                     mPreferencesHelper.pullPackagePreferencesStats(data,
                             getAllUsersNotificationPermissions());
@@ -3183,7 +3183,8 @@ public class NotificationManagerService extends SystemService {
                 mPreferencesHelper.pullPackageChannelGroupPreferencesStats(data);
                 break;
             case NOTIFICATION_ADJUSTMENT_PREFERENCES:
-                if (notificationClassification() && notificationClassificationUi()) {
+                if ((notificationClassification() && notificationClassificationUi())
+                        || nmSummarization() || nmSummarizationUi()) {
                     mAssistants.pullAdjustmentPreferencesStats(data);
                 }
                 break;
@@ -3868,23 +3869,30 @@ public class NotificationManagerService extends SystemService {
     @GuardedBy("mNotificationLock")
     protected void maybeRecordInterruptionLocked(NotificationRecord r) {
         if (r.isInterruptive() && !r.hasRecordedInterruption()) {
+            String channelId = r.getChannel().getId();
+            if (android.app.Flags.notificationClassificationUi()) {
+                channelId = r.getNotification().getChannelId();
+            }
             mAppUsageStats.reportInterruptiveNotification(r.getSbn().getPackageName(),
-                    r.getChannel().getId(),
+                    channelId,
                     getRealUserId(r.getSbn().getUserId()));
             Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "notifHistoryAddItem");
             try {
                 if (r.getNotification().getSmallIcon() != null) {
-                    mHistoryManager.addNotification(new HistoricalNotification.Builder()
+                    final HistoricalNotification.Builder builder
+                            = new HistoricalNotification.Builder()
                             .setPackage(r.getSbn().getPackageName())
                             .setUid(r.getSbn().getUid())
                             .setUserId(r.getSbn().getNormalizedUserId())
-                            .setChannelId(r.getChannel().getId())
-                            .setChannelName(r.getChannel().getName().toString())
+                            .setChannelId(channelId)
                             .setPostedTimeMs(System.currentTimeMillis())
                             .setTitle(getHistoryTitle(r.getNotification()))
                             .setText(getHistoryText(r.getNotification()))
-                            .setIcon(r.getNotification().getSmallIcon())
-                            .build());
+                            .setIcon(r.getNotification().getSmallIcon());
+                    if (android.app.Flags.notificationClassificationUi()) {
+                        builder.setChannelName(r.getChannel().getName().toString());
+                    }
+                    mHistoryManager.addNotification(builder.build());
                 }
             } finally {
                 Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
@@ -5142,8 +5150,7 @@ public class NotificationManagerService extends SystemService {
                     enforceDeletingChannelHasNoUserInitiatedJob(pkg, userId, channelId);
                 }
                 List<NotificationChannel> deletedChannels =
-                        mPreferencesHelper.deleteNotificationChannelGroup(pkg, callingUid, groupId,
-                                callingUid, isSystemOrSystemUi);
+                        mPreferencesHelper.deleteNotificationChannelGroup(pkg, callingUid, groupId);
                 for (int i = 0; i < deletedChannels.size(); i++) {
                     final NotificationChannel deletedChannel = deletedChannels.get(i);
                     cancelAllNotificationsInt(MY_UID, MY_PID, pkg, deletedChannel.getId(), 0, 0,
@@ -6891,29 +6898,23 @@ public class NotificationManagerService extends SystemService {
                 int newVisualEffects = calculateSuppressedVisualEffects(
                             policy, currPolicy, applicationInfo.targetSdkVersion);
 
-                if (android.app.Flags.modesUi()) {
-                    // 1. Callers should not modify STATE_CHANNELS_BYPASSING_DND, which is
-                    // internally calculated and only indicates whether channels that want to bypass
-                    // DND _exist_.
-                    // 2. Only system callers should modify STATE_PRIORITY_CHANNELS_BLOCKED because
-                    // it is @hide.
-                    // 3. If the policy has been modified by the targetSdkVersion checks above then
-                    // it has lost its state flags and that's fine (STATE_PRIORITY_CHANNELS_BLOCKED
-                    // didn't exist until V).
-                    int newState = Policy.STATE_UNSET;
-                    if (isSystemCaller && policy.state != Policy.STATE_UNSET) {
-                        newState = Policy.policyState(
-                                currPolicy.hasPriorityChannels(),
-                                policy.allowPriorityChannels());
-                    }
-                    policy = new Policy(policy.priorityCategories,
-                            policy.priorityCallSenders, policy.priorityMessageSenders,
-                            newVisualEffects, newState, policy.priorityConversationSenders);
-                } else {
-                    policy = new Policy(policy.priorityCategories,
-                            policy.priorityCallSenders, policy.priorityMessageSenders,
-                            newVisualEffects, policy.priorityConversationSenders);
+                // 1. Callers should not modify STATE_CHANNELS_BYPASSING_DND, which is
+                // internally calculated and only indicates whether channels that want to bypass
+                // DND _exist_.
+                // 2. Only system callers should modify STATE_PRIORITY_CHANNELS_BLOCKED because
+                // it is @hide.
+                // 3. If the policy has been modified by the targetSdkVersion checks above then
+                // it has lost its state flags and that's fine (STATE_PRIORITY_CHANNELS_BLOCKED
+                // didn't exist until V).
+                int newState = Policy.STATE_UNSET;
+                if (isSystemCaller && policy.state != Policy.STATE_UNSET) {
+                    newState = Policy.policyState(
+                            currPolicy.hasPriorityChannels(),
+                            policy.allowPriorityChannels());
                 }
+                policy = new Policy(policy.priorityCategories,
+                        policy.priorityCallSenders, policy.priorityMessageSenders,
+                        newVisualEffects, newState, policy.priorityConversationSenders);
 
                 if (shouldApplyAsImplicitRule) {
                     mZenModeHelper.applyGlobalPolicyAsImplicitZenRule(zenUser, pkg, callingUid,
@@ -7341,13 +7342,7 @@ public class NotificationManagerService extends SystemService {
             final Uri originalSoundUri =
                     (originalChannel != null) ? originalChannel.getSound() : null;
             if (soundUri != null && !Objects.equals(originalSoundUri, soundUri)) {
-                Binder.withCleanCallingIdentity(() -> {
-                    mUgmInternal.checkGrantUriPermission(sourceUid, null,
-                            ContentProvider.getUriWithoutUserId(soundUri),
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                            ContentProvider.getUserIdFromUri(soundUri,
-                            UserHandle.getUserId(sourceUid)));
-                });
+                PermissionHelper.grantUriPermission(mUgmInternal, soundUri, sourceUid);
             }
         }
 
@@ -8772,8 +8767,7 @@ public class NotificationManagerService extends SystemService {
 
         mHistoryManager.deleteConversations(pkg, uid, shortcuts);
         List<String> deletedChannelIds =
-                mPreferencesHelper.deleteConversations(pkg, uid, shortcuts,
-                        /* callingUid */ Process.SYSTEM_UID, /* is system */ true);
+                mPreferencesHelper.deleteConversations(pkg, uid, shortcuts);
         for (String channelId : deletedChannelIds) {
             cancelAllNotificationsInt(MY_UID, MY_PID, pkg, channelId, 0, 0,
                     UserHandle.getUserId(uid), REASON_CHANNEL_REMOVED
@@ -9965,10 +9959,8 @@ public class NotificationManagerService extends SystemService {
                         r.isUpdate = true;
                         final boolean isInterruptive = isVisuallyInterruptive(old, r);
                         r.setTextChanged(isInterruptive);
-                        if (sortSectionByTime()) {
-                            if (isInterruptive) {
-                                r.resetRankingTime();
-                            }
+                        if (isInterruptive) {
+                            r.resetRankingTime();
                         }
                     }
 
@@ -10150,26 +10142,14 @@ public class NotificationManagerService extends SystemService {
             return false;
         }
 
-        if (sortSectionByTime()) {
-            // Ignore visual interruptions from FGS/UIJs because users
-            // consider them one 'session'. Count them for everything else.
-            if (r.getSbn().getNotification().isFgsOrUij()) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is not interruptive: FGS/UIJ");
-                }
-                return false;
+        // Ignore visual interruptions from FGS/UIJs because users
+        // consider them one 'session'. Count them for everything else.
+        if (r.getSbn().getNotification().isFgsOrUij()) {
+            if (DEBUG_INTERRUPTIVENESS) {
+                Slog.v(TAG, "INTERRUPTIVENESS: "
+                        + r.getKey() + " is not interruptive: FGS/UIJ");
             }
-        } else {
-            // Ignore visual interruptions from foreground services because users
-            // consider them one 'session'. Count them for everything else.
-            if ((r.getSbn().getNotification().flags & FLAG_FOREGROUND_SERVICE) != 0) {
-                if (DEBUG_INTERRUPTIVENESS) {
-                    Slog.v(TAG, "INTERRUPTIVENESS: "
-                            + r.getKey() + " is not interruptive: foreground service");
-                }
-                return false;
-            }
+            return false;
         }
 
         final String oldTitle = String.valueOf(oldN.extras.get(EXTRA_TITLE));
@@ -12347,13 +12327,33 @@ public class NotificationManagerService extends SystemService {
                     : new ArraySet<>(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES);
         }
 
+        // Convenience method to return the effective list of denied adjustments for the given user.
+        // For full users, this is just the list of denied adjustments contained in
+        // mDeniedAdjustments for that user.
+        // For profile users, this method checks additional criteria that may cause an adjustment to
+        // be effectively denied for that user. In particular:
+        // - if an adjustment is denied for that profile user's parent, then it is also effectively
+        //   denied for that profile regardless of what the profile's current setting is.
+        @GuardedBy("mLock")
+        private @NonNull Set<String> deniedAdjustmentsForUser(@UserIdInt int userId) {
+            Set<String> denied = new HashSet<>();
+            if (mDeniedAdjustments.containsKey(userId)) {
+                denied.addAll(mDeniedAdjustments.get(userId));
+            }
+            final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
+            if ((parentId != userId) && mDeniedAdjustments.containsKey(parentId)) {
+                denied.addAll(mDeniedAdjustments.get(parentId));
+            }
+            // TODO: b/415768865 - add any cases where a (work/managed) profile should default to
+            //                     off unless explicitly turned on
+            return denied;
+        }
+
         protected Set<String> getAllowedAssistantAdjustments(@UserIdInt int userId) {
             synchronized (mLock) {
                 if (notificationClassification()) {
                     Set<String> types = new HashSet<>(Set.of(DEFAULT_ALLOWED_ADJUSTMENTS));
-                    if (mDeniedAdjustments.containsKey(userId)) {
-                        types.removeAll(mDeniedAdjustments.get(userId));
-                    }
+                    types.removeAll(deniedAdjustmentsForUser(userId));
                     return types;
                 } else {
                     Set<String> types = new HashSet<>();
@@ -12367,8 +12367,7 @@ public class NotificationManagerService extends SystemService {
             synchronized (mLock) {
                 if (notificationClassification()) {
                     return List.of(DEFAULT_ALLOWED_ADJUSTMENTS).contains(type)
-                            && !(mDeniedAdjustments.containsKey(userId)
-                                    && mDeniedAdjustments.get(userId).contains(type));
+                            && !(deniedAdjustmentsForUser(userId).contains(type));
                 } else {
                     return mAllowedAdjustments.contains(type);
                 }
@@ -12462,6 +12461,28 @@ public class NotificationManagerService extends SystemService {
                     mAdjustmentKeyDeniedPackages.get(userId).get(key).add(pkg);
                 }
             }
+        }
+
+        // For logging preferences: get a map of user id -> package name -> list of denied keys
+        // This is essentially a reconfiguration of the contents of mAdjustmentKeyDeniedPackages.
+        @NonNull Map<Integer, Map<String, List<String>>> getDeniedKeysForUsersAndPackages() {
+            Map<Integer, Map<String, List<String>>> out = new ArrayMap<>();
+            synchronized (mLock) {
+                for (int userId : mAdjustmentKeyDeniedPackages.keySet()) {
+                    Map<String, Set<String>> pkgsByType = mAdjustmentKeyDeniedPackages.get(userId);
+                    if (!pkgsByType.isEmpty()) {
+                        out.putIfAbsent(userId, new ArrayMap<>());
+                        Map<String, List<String>> pkgMapForUser = out.get(userId);
+                        for (String keyType : pkgsByType.keySet()) {
+                            for (String pkgName : pkgsByType.get(keyType)) {
+                                pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
+                                pkgMapForUser.get(pkgName).add(keyType);
+                            }
+                        }
+                    }
+                }
+            }
+            return out;
         }
 
         protected void onNotificationsSeenLocked(ArrayList<NotificationRecord> records) {
@@ -13045,32 +13066,56 @@ public class NotificationManagerService extends SystemService {
         }
 
         /**
-         * Fills out {@link BundlePreferences} proto and wraps it in a {@link StatsEvent}.
+         * Fills out {@link NotificationAdjustmentPreferences} proto and wraps it in a
+         * {@link StatsEvent}.
          */
         @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
         protected void pullAdjustmentPreferencesStats(List<StatsEvent> events) {
-            boolean bundlesAllowed = true;
-            synchronized (mLock) {
-                List<String> unsupportedAdjustments = new ArrayList(
-                        mNasUnsupported.getOrDefault(
-                                UserHandle.getUserId(Binder.getCallingUid()),
-                                new HashSet(List.of(mDefaultUnsupportedAdjustments)))
-                );
-                bundlesAllowed = !unsupportedAdjustments.contains(Adjustment.KEY_TYPE);
+            final List<UserInfo> allUsers = mUm.getUsers();
+            for (UserInfo ui : allUsers) {
+                int userId = ui.getUserHandle().getIdentifier();
+
+                boolean bundlesSupported, summariesSupported;
+                synchronized (mLock) {
+                    List<String> unsupportedAdjustments = new ArrayList(
+                            mNasUnsupported.getOrDefault(userId,
+                                    new HashSet(List.of(mDefaultUnsupportedAdjustments)))
+                    );
+                    bundlesSupported = !unsupportedAdjustments.contains(Adjustment.KEY_TYPE);
+                    summariesSupported = !unsupportedAdjustments.contains(
+                            Adjustment.KEY_SUMMARIZATION);
+                }
+
+                if (notificationClassificationUi() && bundlesSupported) {
+                    boolean bundlesAllowed = isAdjustmentAllowed(userId, KEY_TYPE);
+                    int[] allowedBundleTypes = getAllowedClassificationTypes(userId);
+
+                    events.add(FrameworkStatsLog.buildStatsEvent(
+                            NOTIFICATION_ADJUSTMENT_PREFERENCES,
+                            /* optional int32 event_id = 1 */
+                            NotificationPullStatsEvent.NOTIFICATION_BUNDLE_PREFERENCES_PULLED
+                                    .getId(),
+                            /* optional bool adjustment_allowed = 2 */ bundlesAllowed,
+                            /* repeated BundleTypes allowed_bundle_types = 3 */ allowedBundleTypes,
+                            /* optional android.stats.notification.AdjustmentKey key = 4 */
+                            NotificationPullStatsEvent.adjustmentKeyEnum(KEY_TYPE),
+                            /* optional int32 user_id = 5 */ userId));
+                }
+
+                if ((nmSummarization() || nmSummarizationUi()) && summariesSupported) {
+                    boolean summariesAllowed = isAdjustmentAllowed(userId, KEY_SUMMARIZATION);
+                    events.add(FrameworkStatsLog.buildStatsEvent(
+                            NOTIFICATION_ADJUSTMENT_PREFERENCES,
+                            /* optional int32 event_id = 1 */
+                            NotificationPullStatsEvent.NOTIFICATION_SUMMARIZATION_PREFERENCES_PULLED
+                                    .getId(),
+                            /* optional bool adjustment_allowed = 2 */ summariesAllowed,
+                            /* repeated BundleTypes allowed_bundle_types = 3 */ new int[]{},
+                            /* optional android.stats.notification.AdjustmentKey key = 4 */
+                            NotificationPullStatsEvent.adjustmentKeyEnum(KEY_SUMMARIZATION),
+                            /* optional int32 user_id = 5 */ userId));
+                }
             }
-
-            // TODO: b/411465430 - pull info for all users
-            int[] allowedBundleTypes = getAllowedClassificationTypes(UserHandle.getCallingUserId());
-
-            events.add(FrameworkStatsLog.buildStatsEvent(
-                    NOTIFICATION_ADJUSTMENT_PREFERENCES,
-                    /* optional int32 event_id = 1 */
-                    NotificationPullStatsEvent.NOTIFICATION_BUNDLE_PREFERENCES_PULLED.getId(),
-                    /* optional bool adjustment_allowed = 2 */ bundlesAllowed,
-                    /* repeated android.stats.notification.BundleTypes allowed_bundle_types = 3 */
-                    allowedBundleTypes,
-                    /* optional android.stats.notification.AdjustmentKey key = 4 */
-                    NotificationPullStatsEvent.adjustmentKeyEnum(KEY_TYPE)));
         }
     }
 

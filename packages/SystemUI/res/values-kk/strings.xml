@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Рұқсат ету"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Сымсыз түзетуге рұқсат етілмейді"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Бұл құрылғыға жаңа кірген пайдаланушы сымсыз түзетуді іске қоса алмайды. Бұл мүмкіндікті пайдалану үшін әкімші пайдаланушыға ауысыңыз."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB порты өшірілді"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Құрылғыңызға сұйықтық немесе қоқыс кіріп кетпеуі үшін, USB порты өшірілген және ешқандай керек-жарақты анықтамайды.\n\nUSB портын қайта пайдалануға болатын кезде хабарландыру аласыз."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Зарядтағыштар мен аксессуарларды анықтау үшін USB порты қосылды."</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Орнатылмаған"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"\"Параметрлер\" бөлімінде реттеу"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Қосулы режим жоқ}=1{{mode} қосулы}other{# режим қосулы}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> режим"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Қосулы"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Оятқыш, еске салғыш, іс-шара мен өзіңіз көрсеткен контактілердің қоңырауларынан басқа дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойын сияқты медиафайлдарды қоссаңыз, оларды естисіз."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Дабылдардан басқа ешқандай дыбыстар мен дірілдер мазаламайтын болады. Музыка, бейне және ойындар сияқты ойнатылатын контентті ести алатын боласыз."</string>
@@ -598,7 +599,7 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Экранды бөлісу"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы осы опцияны өшірді."</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Қолданба қолдау көрсетпейді"</string>
-    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Бөлісетін қолданба экранын таңдау"</string>
+    <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Көрсетілетін қолданба экранын таңдау"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Экранды трансляциялау керек пе?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Бір қолданба экранын трансляциялау"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Бүкіл экранды трансляциялау"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent арқылы құлпы ашылды."</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Құрылғы құлыпталды, тым көп аутентификациялау талпынысы жасалды."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Құрылғы құлыпталды\nАутентификация орындалмады"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Сағат арқылы құлыпталды"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Дыбыс параметрлері"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Автоматты субтитр қосу"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Пернетақтаны планшетке қосу үшін алдымен Bluetooth функциясын қосу керек."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Қосу"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Қосулы – бет негізінде"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Дыбысын өшіру және топтау"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Жеңілдіктер, жаңа функциялар және т.б."</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Үздік сюжеттер, редакторлар таңдауы және т.б."</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Лайктар, посттар және т.б."</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Жаңалықтар хаттары, ұсынылған мультимедиа және т.б."</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Дайын"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Қолдану"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Өшіру"</string>
@@ -1005,13 +1002,15 @@
     <string name="left_icon" msgid="5036278531966897006">"Сол жақ белгіше"</string>
     <string name="right_icon" msgid="1103955040645237425">"Оң жақ белгіше"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Қажетті элементтерді сүйреп әкеліп қойыңыз"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Элементтердің ретін өзгерту үшін оларды басып тұрып сүйреңіз"</string>
+    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Элементтердің ретін өзгерту үшін оларды басып тұрып сүйреңіз."</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Ретін және өлшемін өзгерту қажет бөлшектерді таңдаңыз"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Бөлшекті орналастыру үшін түрту"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Керексіздерін осы жерге сүйреңіз"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Кемінде <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> бөлшек қажет."</string>
     <string name="qs_edit" msgid="5583565172803472437">"Өзгерту"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Бөлшектерді өзгерту"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Уақыт"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Сағаттарды, минуттарды және секундтарды көрсету"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Басқа"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"бөлшек өлшемін ауыстыру"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Бөлшекті өшіру"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Бөлшекті қою"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"орналастыру режимін ауыстыру"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"таңдауды ауыстыру"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Бөлшекті соңына қосу"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Соңғы позицияға <xliff:g id="NAME">%1$s</xliff:g> қосу"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Бөлшекті жылжыту"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Қалаған позицияға бөлшек қосу"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> орнына жылжыту"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Анимацияны кідірту"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Ағымдағы қоңырау"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Ағымдағы"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"хабарландыруды жаю"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"хабарландыруды жию"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мобильдік интернет"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Жалғанды"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Уақытша байланыс орнатылды."</string>
@@ -1487,7 +1486,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Пайдалану рұқсатын басқару"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Телефон қоңырауы үшін пайдаланылып жатыр"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Соңғы рет телефон қоңырауы үшін пайдаланылды."</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы пайдаланып жатыр"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы пайдаланып жатыр."</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Соңғы рет <xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы пайдаланды."</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) қолданбасы пайдаланып жатыр"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Соңғы рет <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) қолданбасы пайдаланды."</string>

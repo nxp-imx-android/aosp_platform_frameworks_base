@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"അനുവദിക്കൂ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"വയർലെസ് ഡീബഗ്ഗിംഗ് അനുവദനീയമല്ല"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ഈ ഉപകരണത്തിൽ ഇപ്പോൾ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന ഉപയോക്താവിന് വയർലെസ് ഡീബഗ്ഗിംഗ് ഓണാക്കാനാകില്ല. ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ അഡ്‌മിൻ ഉപയോക്താവിലേക്ക് മാറുക."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB പോർട്ട് പ്രവർത്തനരഹിതമാക്കി"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ദ്രാവകത്തിൽ നിന്നോ പൊടിയിൽ നിന്നോ നിങ്ങളുടെ ഉപകരണത്തെ പരിരക്ഷിക്കാനായി USB പോർട്ട് പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നതിനാൽ അത് ആക്‌സസറികളൊന്നും തിരിച്ചറിയില്ല.\n\n USB പോർട്ട് വീണ്ടും ഉപയോഗിക്കാനാകുമ്പോൾ നിങ്ങളെ അറിയിക്കും."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ആക്‌സസറികളും ചാർജറുകളും കണ്ടെത്താൻ USB പോർട്ട് പ്രവർത്തനക്ഷമമാക്കുക"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"സജ്ജീകരിച്ചിട്ടില്ല"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ക്രമീകരണത്തിൽ മാനേജ് ചെയ്യുക"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{സജീവ മോഡുകൾ ഒന്നുമില്ല}=1{{mode} സജീവമാണ്}other{# മോഡുകൾ സജീവമാണ്}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> മോഡുകൾ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ഓണാണ്"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"നിങ്ങൾ സജ്ജീകരിച്ച അലാറങ്ങൾ, റിമൈൻഡറുകൾ, ഇവന്റുകൾ, കോളർമാർ എന്നിവയിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"അലാറങ്ങളിൽ നിന്നുള്ള ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളുമൊഴികെ മറ്റൊന്നും നിങ്ങളെ ശല്യപ്പെടുത്തുകയില്ല. സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയുൾപ്പെടെ പ്ലേ ചെയ്യുന്നതെന്തും നിങ്ങൾക്ക് ‌തുടർന്നും കേൾക്കാൻ കഴിയും."</string>
@@ -492,7 +493,7 @@
     <string name="zen_silence_introduction" msgid="6117517737057344014">"ഇത് അലാറങ്ങൾ, സംഗീതം, വീഡിയോകൾ, ഗെയിമുകൾ എന്നിവയിൽ നിന്നുൾപ്പെടെ എല്ലാ ശബ്‌ദങ്ങളും വൈബ്രേഷനുകളും തടയുന്നു."</string>
     <string name="notification_tap_again" msgid="4477318164947497249">"തുറക്കുന്നതിന് വീണ്ടും ടാപ്പുചെയ്യുക"</string>
     <string name="tap_again" msgid="1315420114387908655">"വീണ്ടും ടാപ്പ് ചെയ്യുക"</string>
-    <string name="keyguard_unlock" msgid="8031975796351361601">"തുറക്കാൻ മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക"</string>
+    <string name="keyguard_unlock" msgid="8031975796351361601">"തുറക്കാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"മുഖം വഴി അൺലോക്കുചെയ്തു. മുകളിലേക്ക് സ്വൈപ്പുചെയ്ത് തുറക്കൂ."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തത്"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ഉപകരണം ലോക്ക് ചെയ്തു, നിരവധി തവണ പരിശോധിച്ചുറപ്പിക്കാൻ ശ്രമിച്ചു"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ഉപകരണം ലോക്ക് ചെയ്തു\nപരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"നിങ്ങളുടെ വാച്ച് ഉപയോഗിച്ച് ലോക്ക് ചെയ്‌തിരിക്കുന്നു"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ശബ്‌ദ ക്രമീകരണം"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"മീഡിയയ്ക്ക് സ്വയമേവ ക്യാപ്ഷൻ"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"നിങ്ങളുടെ ടാബ്‌ലെറ്റുമായി കീബോർഡ് കണക്റ്റുചെയ്യുന്നതിന്, ആദ്യം Bluetooth ഓണാക്കേണ്ടതുണ്ട്."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"നിശബ്‌ദമാക്കലും ബണ്ടിൽ ചെയ്യലും"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"സെയിൽസും പുതിയ ഫീച്ചറുകളും മറ്റും"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"പ്രധാന വാർത്തകളും എഡിറ്റോറിയലുകളും മറ്റും"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"ലൈക്കുകളും പോസ്റ്റുകളും മറ്റും"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"നിങ്ങൾക്ക് ചുരുങ്ങിയത് <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ടൈലുകളെങ്കിലും വേണം"</string>
     <string name="qs_edit" msgid="5583565172803472437">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ടൈലുകൾ എഡിറ്റ് ചെയ്യുക"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"സമയം"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"മണിക്കൂറും മിനിറ്റും സെക്കൻഡും കാണിക്കുക"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"മറ്റുള്ളവ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ടൈലിന്റെ വലുപ്പം മാറ്റുക"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ടൈൽ നീക്കം ചെയ്യുക"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ടൈൽ പ്ലേസ് ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"പ്ലേസ്‌മെന്റ് മോഡ് ടോഗിൾ ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"തിരഞ്ഞെടുത്തത് ടോഗിൾ ചെയ്യുക"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"അവസാന ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> എന്നത് അവസാനം ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ടൈൽ നീക്കുക"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ഇഷ്ടമുള്ള ഭാഗത്ത് ടൈൽ ചേർക്കുക"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> എന്നതിലേക്ക് നീക്കുക"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"ആനിമേഷൻ താൽക്കാലികമായി നിർത്തുക"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"കോളിലാണ്"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"നടന്നുകൊണ്ടിരിക്കുന്നവ"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"അറിയിപ്പ് വികസിപ്പിക്കുക"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"അറിയിപ്പ് ചുരുക്കുക"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"മൊബൈൽ ഡാറ്റ"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"കണക്റ്റ് ചെയ്തു"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"താൽക്കാലികമായി കണക്റ്റ് ചെയ്തിരിക്കുന്നു"</string>

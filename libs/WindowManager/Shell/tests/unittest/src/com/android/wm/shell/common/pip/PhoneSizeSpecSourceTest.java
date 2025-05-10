@@ -26,6 +26,7 @@ import android.view.DisplayInfo;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 
 import org.junit.Assert;
@@ -73,6 +74,7 @@ public class PhoneSizeSpecSourceTest extends ShellTestCase {
     private static Map<Float, Size> sSquareDisplayExpectedMinSizes;
 
     @Mock private Context mContext;
+    @Mock private DisplayController mDisplayController;
     @Mock private Resources mResources;
 
     private PipDisplayLayoutState mPipDisplayLayoutState;
@@ -179,7 +181,7 @@ public class PhoneSizeSpecSourceTest extends ShellTestCase {
         // this is done to avoid unnecessary mocking while allowing for custom display dimensions
         DisplayLayout displayLayout = new DisplayLayout(displayInfo, getContext().getResources(),
                 false, false);
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
         mPipDisplayLayoutState.setDisplayLayout(displayLayout);
 
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);

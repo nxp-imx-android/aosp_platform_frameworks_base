@@ -15,7 +15,6 @@
  */
 package com.android.server.notification;
 
-import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.COLOR_DEFAULT;
 import static android.app.Notification.FLAG_AUTO_CANCEL;
 import static android.app.Notification.FLAG_BUBBLE;
@@ -3862,30 +3861,8 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
-    @DisableFlags(FLAG_SORT_SECTION_BY_TIME)
-    public void testConversationGroupSections_disableSortSectionByTime() {
-        // Check that there are separate sections for conversations: alerting and silent
-        NotificationRecord notification_conversation_silent = getNotificationRecord(mPkg, 0, "",
-                mUser, "", false, IMPORTANCE_LOW);
-        notification_conversation_silent = spy(notification_conversation_silent);
-        when(notification_conversation_silent.isConversation()).thenReturn(true);
-        assertThat(GroupHelper.getSection(notification_conversation_silent).mName).isEqualTo(
-                "PeopleSection(silent)");
-
-        // Check that there is a correct section for conversations
-        NotificationRecord notification_conversation_alerting = getNotificationRecord(mPkg, 0, "",
-                mUser, "", false, IMPORTANCE_DEFAULT);
-        notification_conversation_alerting = spy(notification_conversation_alerting);
-        when(notification_conversation_alerting.isConversation()).thenReturn(true);
-        assertThat(GroupHelper.getSection(notification_conversation_alerting).mName).isEqualTo(
-                "PeopleSection(alerting)");
-    }
-
-    @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS,
-            FLAG_SORT_SECTION_BY_TIME})
+            FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS})
     public void testConversationGroupSections() {
         // Check that there is a single section for silent/alerting conversations
         NotificationRecord notification_conversation_silent = getNotificationRecord(mPkg, 0, "",

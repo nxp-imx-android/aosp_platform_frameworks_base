@@ -297,7 +297,7 @@
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"कार मोड"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"खाते की स्थिति"</string>
     <string name="notification_channel_developer" msgid="1691059964407549150">"डेवलपर के संदेश"</string>
-    <string name="notification_channel_developer_important" msgid="7197281908918789589">"डेवलपर के ज़रूरी मैसेज"</string>
+    <string name="notification_channel_developer_important" msgid="7197281908918789589">"डेवलपर के लिए ज़रूरी मैसेज"</string>
     <string name="notification_channel_updates" msgid="7907863984825495278">"अपडेट"</string>
     <string name="notification_channel_network_status" msgid="2127687368725272809">"नेटवर्क की स्थिति"</string>
     <string name="notification_channel_network_alerts" msgid="6312366315654526528">"नेटवर्क संबंधी सूचनाएं"</string>
@@ -698,7 +698,7 @@
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"फ़िंगरप्रिंट की पहचान नहीं हो पाई"</string>
     <string name="fingerprint_udfps_error_not_match" msgid="8236930793223158856">"फ़िंगरप्रिंट की पहचान नहीं हो पाई"</string>
-    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"चेहरा की पहचान नहीं हो पाई. फ़िंगरप्रिंट का इस्तेमाल करें."</string>
+    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"चेहरे की पहचान नहीं हो पाई. फ़िंगरप्रिंट इस्तेमाल करें."</string>
     <string name="fingerprint_authenticated" msgid="2024862866860283100">"फ़िंगरप्रिंट की पुष्टि हो गई"</string>
     <string name="face_authenticated_no_confirmation_required" msgid="8867889115112348167">"चेहरे की पहचान की गई"</string>
     <string name="face_authenticated_confirmation_required" msgid="6872632732508013755">"चेहरे की पहचान की गई, कृपया पुष्टि बटन दबाएं"</string>
@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"चेहरे का माॅडल नहीं बन सका. फिर से कोशिश करें."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"आपने गहरे रंग का चश्मा पहना है. आपका पूरा चेहरा दिखना चाहिए."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"चेहरा ढका हुआ है. आपका पूरा चेहरा दिखना चाहिए."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"चेहरा ढका हुआ है. आपका पूरा चेहरा दिखना चाहिए"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"चेहरा नहीं पहचान पा रहे. हार्डवेयर उपलब्ध नहीं है."</string>
@@ -1801,10 +1801,11 @@
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"शॉर्टकट का उपयोग करें"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"रंग बदलने की सुविधा"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"रंग में सुधार करने की सुविधा"</string>
-    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"वन-हैंडेड मोड"</string>
+    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"एक हाथ से इस्तेमाल करने की सुविधा"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"स्क्रीन की रोशनी को सामान्य लेवल से और कम करने की सुविधा"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"कान की मशीन"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"अपने-आप क्लिक होने की सुविधा"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"कीबोर्ड पर माउस के लिए बटन"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"डिसकनेक्ट हो गया"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"कनेक्ट हो गया"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"प्रमोशन"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"सोशल"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"खबरें"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"सुझाया गया"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"आपने इन सूचनाओं की अहमियत सेट की है."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"यह मौजूद व्यक्तियों के कारण महत्वपूर्ण है."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ऐप्लिकेशन की सूचना पसंद के मुताबिक बनाएं"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"डी-पैड का बाईं ओर वाला बटन"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"डी-पैड का दाईं ओर वाला बटन"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"डी-पैड का बीच वाला बटन"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"अपने-आप क्लिक होने की सुविधा वाली सेटिंग का पैनल"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"लेफ़्ट क्लिक करें"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"राइट क्लिक करें"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"दो बार क्लिक करें"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"खींचें और छोड़ें"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"स्क्रोल करें"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"दबाकर रखें"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"रोकें"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"पोज़िशन"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ऊपर की ओर स्क्रोल करें"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"नीचे की ओर स्क्रोल करें"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"बाईं ओर स्क्रोल करें"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"दाईं ओर स्क्रोल करें"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"स्क्रोल मोड को बंद करें"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"रोकें"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"फिर से शुरू करें"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"पैनल को स्क्रोल करें"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> को प्रतिबंधित बकेट में रखा गया है"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

@@ -26,9 +26,20 @@ import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
 /**
  * Model for a top-level "entry" in the notification list, either an
+ * [individual notification][ActiveNotificationModel], a [group][ActiveNotificationGroupModel], or a
+ * [bundle][ActiveBundleModel].
+ */
+sealed class ActivePipelineEntryModel
+
+/** Model for a bundle of notifications. */
+data class ActiveBundleModel(val key: String, val children: List<ActiveNotificationEntryModel>) :
+    ActivePipelineEntryModel()
+
+/**
+ * Model for a notification-backed "entry" in the notification list, either an
  * [individual notification][ActiveNotificationModel], or a [group][ActiveNotificationGroupModel].
  */
-sealed class ActiveNotificationEntryModel
+sealed class ActiveNotificationEntryModel : ActivePipelineEntryModel()
 
 /**
  * Model for an individual notification in the notification list. These can appear as either an
@@ -91,6 +102,8 @@ data class ActiveNotificationModel(
      * this notification cannot be rendered as a promoted notification.
      */
     val promotedContent: PromotedNotificationContentModels?,
+    /** True if this notification set the "requested promotion?" extra and false otherwise. */
+    val requestedPromotion: Boolean,
 ) : ActiveNotificationEntryModel() {
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {

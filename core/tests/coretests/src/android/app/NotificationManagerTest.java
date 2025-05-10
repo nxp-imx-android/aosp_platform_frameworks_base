@@ -590,7 +590,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     public void areAutomaticZenRulesUserManaged_handheld_isTrue() {
         PackageManager pm = mock(PackageManager.class);
         when(pm.hasSystemFeature(any())).thenReturn(false);
@@ -600,7 +599,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     public void areAutomaticZenRulesUserManaged_auto_isFalse() {
         PackageManager pm = mock(PackageManager.class);
         when(pm.hasSystemFeature(eq(PackageManager.FEATURE_AUTOMOTIVE))).thenReturn(true);
@@ -610,7 +608,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     public void areAutomaticZenRulesUserManaged_tv_isFalse() {
         PackageManager pm = mock(PackageManager.class);
         when(pm.hasSystemFeature(eq(PackageManager.FEATURE_LEANBACK))).thenReturn(true);
@@ -620,7 +617,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MODES_UI)
     public void areAutomaticZenRulesUserManaged_watch_isFalse() {
         PackageManager pm = mock(PackageManager.class);
         when(pm.hasSystemFeature(eq(PackageManager.FEATURE_WATCH))).thenReturn(true);

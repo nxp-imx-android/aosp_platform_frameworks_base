@@ -20,7 +20,6 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -30,6 +29,7 @@ import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.RecentsTransitionState
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING
+import com.android.wm.shell.shared.pip.PipFlags
 import java.util.Optional
 
 /** Helper class for PiP on Desktop Mode. */
@@ -72,11 +72,12 @@ class PipDesktopState(
      * Returns whether PiP in Connected Displays is enabled by checking the following:
      * - PiP in Desktop Windowing is enabled
      * - PiP in Connected Displays flag is enabled
-     * - PiP2 flag is enabled
+     * - PiP2 is enabled
      */
     fun isConnectedDisplaysPipEnabled(): Boolean =
         isDesktopWindowingPipEnabled() &&
-                DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue && Flags.enablePip2()
+                DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue &&
+                PipFlags.isPip2ExperimentEnabled
 
     /**
      * Returns whether dragging PiP in Connected Displays is enabled by checking the following:
@@ -118,11 +119,13 @@ class PipDesktopState(
 
         // If we are exiting PiP while the device is in Desktop mode, the task should expand to
         // freeform windowing mode.
-        // 1) If the display windowing mode is freeform, set windowing mode to UNDEFINED so it will
-        //    resolve the windowing mode to the display's windowing mode.
-        // 2) If the display windowing mode is not FREEFORM, set windowing mode to FREEFORM.
+        // 1) If the display windowing mode is freeform or if the ENABLE_MULTIPLE_DESKTOPS_BACKEND
+        //    flag is true, set windowing mode to UNDEFINED so it will resolve the windowing mode to
+        //    the display or root desk's windowing mode (which is always FREEFORM).
+        // 2) Otherwise, set windowing mode to FREEFORM.
         if (isInDesktop) {
-            return if (isDisplayInFreeform()) {
+            return if (isDisplayInFreeform()
+                || DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 WINDOWING_MODE_UNDEFINED
             } else {
                 WINDOWING_MODE_FREEFORM

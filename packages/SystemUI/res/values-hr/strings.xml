@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Dopusti"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bežično otklanjanje pogrešaka nije dopušteno"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Korisnik koji je trenutačno prijavljen na ovaj uređaj ne može uključiti bežično otklanjanje pogrešaka. Da biste upotrebljavali tu značajku, prijeđite na korisnika s administratorskim pravima."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"Onemogućen je USB priključak"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Radi zaštite uređaja od tekućine ili prljavštine USB priključak onemogućen je i neće otkrivati pribor.\n\nPrimit ćete obavijest kad upotreba USB priključka ponovo bude sigurna."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB priključak omogućen za otkrivanje punjača i opreme"</string>
@@ -405,7 +407,7 @@
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Pokreni"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Zaustavi"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Izvješće o programskim pogreškama"</string>
-    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Na koji je dio doživljaja na uređaju to utjecalo?"</string>
+    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"Na koji je aspekt uređaja utjecala poteškoća?"</string>
     <string name="qs_record_issue_dropdown_prompt" msgid="2526949919167046219">"Odaberite vrstu poteškoće"</string>
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Snimanje zaslona"</string>
     <string name="performance" msgid="6552785217174378320">"Izvedba"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije postavljeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u postavkama"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih načina}=1{Aktivno: {mode}}one{# način je aktivan}few{# načina su aktivna}other{# načina je aktivno}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> načina"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Uključeno"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas ometati zvukovi i vibracije, osim alarma, podsjetnika, događaja i pozivatelja koje navedete. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas ometati zvukovi i vibracije, osim alarma. I dalje ćete čuti sve što želite reproducirati, uključujući glazbu, videozapise i igre."</string>
@@ -527,7 +528,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Prijeđite prstom ulijevo da biste pokrenuli zajednički vodič"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Prilagodi"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Odbaci"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Dodavanje, uklanjanje i promjena redoslijeda widgeta u ovom prostoru"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Dodajte, uklonite i promijenite redoslijed widgeta u ovom prostoru"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Dodavanje još widgeta"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"Dugo pritisnite za prilagodbu widgeta"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"Prilagodi widgete"</string>
@@ -550,8 +551,8 @@
     <string name="accessibility_action_label_select_widget" msgid="8897281501387398191">"odaberi widget"</string>
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"ukloni widget"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"postavi odabrani widget"</string>
-    <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgeti zaključanog zaslona"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"Svi vide widgete na vašem zaključanom zaslonu, čak i ako je tablet zaključan."</string>
+    <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgeti na zaključanom zaslonu"</string>
+    <string name="communal_widget_picker_description" msgid="490515450110487871">"Svi vide widgete na zaključanom zaslonu, čak i ako je tablet zaključan."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"poništavanje odabira widgeta"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Smanjenje visine"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Povećanje visine"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Otključano održava TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Uređaj je zaključan zbog previše pokušaja autentifikacije"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Uređaj je zaključan\nAutentifikacija nije uspjela"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Zaključano pomoću sata"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Postavke zvuka"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatski titlovi za medije"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Da biste povezali tipkovnicu s tabletom, morate uključiti Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na temelju lica"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Utišavanje i grupiranje"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sniženja, nove značajke i drugo"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Najčitanije vijesti, urednički sadržaj i drugo"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Sviđanja, postovi i drugo"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Bilteni, preporučeni mediji i drugo"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Potrebno je barem <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> pločica"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Uređivanje"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Uredite pločice"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Vrijeme"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Prikaži sate, minute i sekunde"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Ostalo"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"promjenu veličine pločice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Ukloni pločicu"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Postavite pločicu"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"promjenu načina pozicioniranja"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"promjenu odabira"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Dodaj pločicu na posljednji položaj"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Dodajte <xliff:g id="NAME">%1$s</xliff:g> na posljednji položaj"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Premještanje kartice"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Dodajte karticu na željeni položaj"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Premještanje u prostoriju <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Pauziraj animaciju"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Poziv u tijeku"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"U tijeku"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"proširite obavijest"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"sažmite obavijest"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobilni podaci"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Povezano"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Privremeno povezano"</string>

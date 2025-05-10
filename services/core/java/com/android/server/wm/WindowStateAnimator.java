@@ -35,7 +35,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTION
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_STARTING_WINDOW_VERBOSE;
@@ -276,10 +275,7 @@ class WindowStateAnimator {
         if (mWin.mActivityRecord == null) {
             return;
         }
-
-        if (!mWin.mActivityRecord.isAnimating(TRANSITION)) {
-            mWin.mActivityRecord.clearAllDrawn();
-        }
+        mWin.mActivityRecord.clearAllDrawn();
     }
 
     SurfaceControl createSurfaceLocked() {

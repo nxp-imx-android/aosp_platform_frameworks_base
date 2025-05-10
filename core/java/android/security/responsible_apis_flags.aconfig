@@ -153,3 +153,17 @@ flag {
     description: "Android Advanced Protection Mode Feature: Usb Data Protection"
     bug: "389958463"
 }
+
+flag {
+    name: "explicit_uri_grants_restricted_for_sendmultiple_imagecapture_actions"
+    namespace: "permissions"
+    description: "Flag for restricting explicit URI grants on SendMultiple and ImageCapture intents"
+    bug: "295238578"
+}
+
+flag {
+    name: "explicit_uri_grants_restricted_for_send_action"
+    namespace: "permissions"
+    description: "Flag to restricting explicit URI grants on Send action intents"
+    bug: "295238578"
+}

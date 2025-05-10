@@ -76,6 +76,8 @@ public class PowerGroup {
     private final int mGroupId;
     private final PowerManagerFlags mFeatureFlags;
 
+    private final boolean mIsDefaultGroupAdjacent;
+
     /** True if DisplayManagerService has applied all the latest display states that were requested
      *  for this group. */
     private boolean mReady;
@@ -107,7 +109,8 @@ public class PowerGroup {
 
     PowerGroup(int groupId, PowerGroupListener wakefulnessListener, Notifier notifier,
             DisplayManagerInternal displayManagerInternal, int wakefulness, boolean ready,
-            boolean supportsSandman, long eventTime, PowerManagerFlags featureFlags) {
+            boolean supportsSandman, long eventTime, PowerManagerFlags featureFlags,
+            boolean isDefaultGroupAdjacent) {
         mGroupId = groupId;
         mWakefulnessListener = wakefulnessListener;
         mNotifier = notifier;
@@ -118,6 +121,7 @@ public class PowerGroup {
         mLastWakeTime = eventTime;
         mLastSleepTime = eventTime;
         mFeatureFlags = featureFlags;
+        mIsDefaultGroupAdjacent = isDefaultGroupAdjacent;
 
         long dimDuration = INVALID_TIMEOUT;
         long screenOffTimeout = INVALID_TIMEOUT;
@@ -146,7 +150,7 @@ public class PowerGroup {
 
     PowerGroup(int wakefulness, PowerGroupListener wakefulnessListener, Notifier notifier,
             DisplayManagerInternal displayManagerInternal, long eventTime,
-            PowerManagerFlags featureFlags) {
+            PowerManagerFlags featureFlags, boolean isDefaultGroupAdjacent) {
         mGroupId = Display.DEFAULT_DISPLAY_GROUP;
         mWakefulnessListener = wakefulnessListener;
         mNotifier = notifier;
@@ -159,6 +163,7 @@ public class PowerGroup {
         mFeatureFlags = featureFlags;
         mDimDuration = INVALID_TIMEOUT;
         mScreenOffTimeout = INVALID_TIMEOUT;
+        mIsDefaultGroupAdjacent = isDefaultGroupAdjacent;
     }
 
     long getScreenOffTimeoutOverrideLocked(long defaultScreenOffTimeout) {
@@ -251,6 +256,11 @@ public class PowerGroup {
 
     boolean isPoweringOnLocked() {
         return mPoweringOn;
+    }
+
+    @VisibleForTesting
+    boolean isDefaultGroupAdjacent() {
+        return mIsDefaultGroupAdjacent;
     }
 
     void setIsPoweringOnLocked(boolean isPoweringOnNew) {
@@ -574,6 +584,8 @@ public class PowerGroup {
                 + "\nmLastWakeReason=" + mLastWakeReason
                 + "\nmLastSleepReason=" + mLastSleepReason
                 + "\nmDimDuration=" + mDimDuration
+                + "\nmWakefulness=" + mWakefulness
+                + "\nmIsDefaultGroupAdjacent=" + mIsDefaultGroupAdjacent
                 + "\nmScreenOffTimeout=" + mScreenOffTimeout;
     }
 

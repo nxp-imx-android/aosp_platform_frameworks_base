@@ -138,7 +138,7 @@ data class WeatherData(
         WINTRY_MIX_RAIN_SNOW(31, "h");
 
         companion object {
-            fun fromInt(value: Int) = values().firstOrNull { it.id == value }
+            @JvmStatic fun fromInt(value: Int) = entries.firstOrNull { it.id == value }
         }
     }
 

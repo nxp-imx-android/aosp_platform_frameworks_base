@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.ColorPainter
@@ -74,6 +75,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -131,21 +133,17 @@ fun BrightnessSlider(
     val enabled = !isRestricted
     val contentDescription = stringResource(R.string.accessibility_brightness)
     val interactionSource = remember { MutableInteractionSource() }
-    val hapticsViewModel: SliderHapticsViewModel? =
-        if (Flags.hapticsForComposeSliders()) {
-            rememberViewModel(traceName = "SliderHapticsViewModel") {
-                hapticsViewModelFactory.create(
-                    interactionSource,
-                    floatValueRange,
-                    Orientation.Horizontal,
-                    SliderHapticFeedbackConfig(
-                        maxVelocityToScale = 1f /* slider progress(from 0 to 1) per sec */
-                    ),
-                    SeekableSliderTrackerConfig(),
-                )
-            }
-        } else {
-            null
+    val hapticsViewModel: SliderHapticsViewModel =
+        rememberViewModel(traceName = "SliderHapticsViewModel") {
+            hapticsViewModelFactory.create(
+                interactionSource,
+                floatValueRange,
+                Orientation.Horizontal,
+                SliderHapticFeedbackConfig(
+                    maxVelocityToScale = 1f /* slider progress(from 0 to 1) per sec */
+                ),
+                SeekableSliderTrackerConfig(),
+            )
         }
     val colors = colors()
 
@@ -177,9 +175,16 @@ fun BrightnessSlider(
     val inactiveIconColor = colors.inactiveTickColor
     val trackIcon: DrawScope.(Offset, Color, Float) -> Unit = remember {
         { offset, color, alpha ->
-            translate(offset.x + IconPadding.toPx(), offset.y) {
-                with(painter) {
-                    draw(IconSize.toSize(), colorFilter = ColorFilter.tint(color), alpha = alpha)
+            val rtl = layoutDirection == LayoutDirection.Rtl
+            scale(if (rtl) -1f else 1f, 1f) {
+                translate(offset.x + IconPadding.toPx(), offset.y) {
+                    with(painter) {
+                        draw(
+                            IconSize.toSize(),
+                            colorFilter = ColorFilter.tint(color),
+                            alpha = alpha,
+                        )
+                    }
                 }
             }
         }
@@ -193,7 +198,7 @@ fun BrightnessSlider(
         onValueChange = {
             if (enabled) {
                 if (!overriddenByAppState) {
-                    hapticsViewModel?.onValueChange(it)
+                    hapticsViewModel.onValueChange(it)
                     value = it.toInt()
                     onDrag(value)
                 }
@@ -202,7 +207,7 @@ fun BrightnessSlider(
         onValueChangeFinished = {
             if (enabled) {
                 if (!overriddenByAppState) {
-                    hapticsViewModel?.onValueChangeEnded()
+                    hapticsViewModel.onValueChangeEnded()
                     onStop(value)
                 }
             }

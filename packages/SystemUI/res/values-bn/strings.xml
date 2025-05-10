@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"অনুমতি দিন"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ওয়্যারলেস ডিবাগিং করা যাবে না"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"বর্তমানে এই ডিভাইসে সাইন-ইন করে থাকা ব্যবহারকারী \'ওয়্যারলেস ডিবাগিং\' চালু করতে পারবেন না। এই ফিচার ব্যবহার করতে, একজন অ্যাডমিন ব্যবহারকারী হিসেবে সাইন-ইন করুন।"</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"ইউএসবি পোর্ট বন্ধ করা হয়েছে"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"কোনও তরল পদার্থ ও ধুলো থেকে আপনার ডিভাইসকে সুরক্ষিত রাখতে, ইউএসবি পোর্ট বন্ধ করা আছে, তাই কোনও অ্যাক্সেসরির শনাক্ত করা যাবে না।\n\nইউএসবি পোর্ট আবার ব্যবহার করা নিরাপদ হলে, আপনাকে জানানো হবে।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"চার্জার ও আনুষঙ্গিক আইটেম শনাক্ত করার জন্য ইউএসবি চালু করা হয়েছে"</string>
@@ -237,7 +239,7 @@
     <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"\'ফেস আনলক\' সেট-আপ করা যায়নি। আবার চেষ্টা করতে সেটিংসে যান।"</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"ফিঙ্গারপ্রিন্ট সেন্সর টাচ করুন"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"চালিয়ে যেতে \'আনলক করুন\' আইকনে প্রেস করুন"</string>
-    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"মুখ চেনা যায়নি। পরিবর্তে ফিঙ্গারপ্রিন্ট ব্যবহার করুন।"</string>
+    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"ফেস চেনা যায়নি। এর পরিবর্তে ফিঙ্গারপ্রিন্ট ব্যবহার করুন।"</string>
     <!-- no translation found for keyguard_face_failed_use_fp (7140293906176164263) -->
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"মুখ চেনা যায়নি"</string>
@@ -481,9 +483,8 @@
     <string name="zen_mode_off" msgid="1736604456618147306">"বন্ধ আছে"</string>
     <string name="zen_mode_set_up" msgid="8231201163894922821">"সেট করা নেই"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"সেটিংসে গিয়ে ম্যানেজ করুন"</string>
-    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{কোনও মোড চালু নেই}=1{{mode} চালু আছে}one{# মোড চালু আছে}other{# মোড চালু আছে}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{কোনও মোড চালু নেই}=1{{mode} চালু আছে}one{#টি মোড চালু আছে}other{#টি মোড চালু আছে}}"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g>টি মোড"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"চালু আছে"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"অ্যালার্ম, রিমাইন্ডার, ইভেন্ট, এবং আপনার নির্দিষ্ট করে দেওয়া ব্যক্তিদের কল ছাড়া অন্য কোনও আওয়াজ বা ভাইব্রেশন হবে না। তবে সঙ্গীত, ভিডিও, এবং গেম সহ আপনি যা কিছু চালাবেন তার আওয়াজ শুনতে পাবেন।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"অ্যালার্ম ছাড়া অন্য কোনও আওয়াজ বা ভাইব্রেশন হবে না। তবে সঙ্গীত, ভিডিও, এবং গেম সহ আপনি যা কিছু চালাবেন তার আওয়াজ শুনতে পাবেন।"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent দিয়ে আনলক করে রাখা হয়েছে"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ডিভাইস লক করা আছে, যাচাইকরণের জন্য অনেকবার চেষ্টা করা হয়েছে"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ডিভাইস লক করা আছে\nযাচাইকরণ করা যায়নি"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"আপনার স্মার্টওয়াচ থেকে লক আউট হয়ে গেছে"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"সাউন্ড সেটিংস"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"অটোমেটিক মিডিয়া ক্যাপশন দেখুন"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"আপনার ট্যাবলেটের সাথে আপনার কীবোর্ড সংযুক্ত করতে, আপনাকে প্রথমে ব্লুটুথ চালু করতে হবে।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"চালু করুন"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"চালু আছে - মুখের হিসেবে"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"সাইলেন্স ও বান্ডেল"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"সেলস, নতুন ফিচার ও আরও অনেক কিছু"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"সেরা খবর, সম্পাদকীয় কলাম ও আরও অনেক কিছু"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"লাইক, পোস্ট ও আরও অনেক কিছু"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"নিউজলেটার, সাজেস্ট করা মিডিয়া ও আরও অনেক কিছু"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"হয়ে গেছে"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্রয়োগ করুন"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"বন্ধ করুন"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"আপনাকে কমপক্ষে <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>টি টাইল রাখতে হবে"</string>
     <string name="qs_edit" msgid="5583565172803472437">"এডিট করুন"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"টাইল এডিট করুন"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"সময়"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ঘণ্টা, মিনিট, এবং সেকেন্ড দেখান"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"অন্যান্য"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"টাইলের সাইজ টগল করুন"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"টাইল সরান"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"টাইল প্লেস করুন"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"প্লেসমেন্ট মোড টগল করুন"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"বেছে নেওয়া বিকল্প টগল করুন"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"শেষ জায়গাতে টাইল যোগ করুন"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"শেষ পজিশনে <xliff:g id="NAME">%1$s</xliff:g>-কে যোগ করুন"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"টাইল সরান"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"আপনার পছন্দের জায়গাতে টাইল যোগ করুন"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>-এ সরান"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"অ্যানিমেশন পজ করুন"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"চালু থাকা কল"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"চলছে"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"বিজ্ঞপ্তি বড় করুন"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"বিজ্ঞপ্তি আড়াল করুন"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"মোবাইল ডেটা"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"কানেক্ট করা আছে"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"সাময়িকভাবে কানেক্ট করা হয়েছে"</string>

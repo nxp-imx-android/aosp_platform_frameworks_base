@@ -70,9 +70,11 @@ import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Slog;
+import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService.TargetUser;
@@ -98,6 +100,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final Map<String, Object> mLocks = new WeakHashMap<>();
     private final AppFunctionsLoggerWrapper mLoggerWrapper;
     private final PackageManagerInternal mPackageManagerInternal;
+    // Not Guarded by lock since this is only accessed in main thread.
+    private final SparseArray<PackageMonitor> mPackageMonitors = new SparseArray<>();
 
     public AppFunctionManagerServiceImpl(
             @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal) {
@@ -136,6 +140,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         registerAppSearchObserver(user);
         trySyncRuntimeMetadata(user);
+        PackageMonitor pkgMonitorForUser =
+                AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
+        mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
     }
 
     /** Called when the user is stopping. */
@@ -143,6 +150,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         Objects.requireNonNull(user);
 
         MetadataSyncPerUser.removeUserSyncAdapter(user.getUserHandle());
+
+        int userIdentifier = user.getUserIdentifier();
+        if (mPackageMonitors.contains(userIdentifier)) {
+            mPackageMonitors.get(userIdentifier).unregister();
+            mPackageMonitors.delete(userIdentifier);
+        }
     }
 
     @Override
@@ -160,8 +173,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void onShellCommand(FileDescriptor in, FileDescriptor out,
-            FileDescriptor err, @NonNull String[] args, ShellCallback callback,
+    public void onShellCommand(
+            FileDescriptor in,
+            FileDescriptor out,
+            FileDescriptor err,
+            @NonNull String[] args,
+            ShellCallback callback,
             @NonNull ResultReceiver resultReceiver) {
         new AppFunctionManagerServiceShellCommand(this)
                 .exec(this, in, out, err, args, callback, resultReceiver);
@@ -252,20 +269,21 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 .thenCompose(
                         canExecuteResult -> {
                             if (canExecuteResult == CAN_EXECUTE_APP_FUNCTIONS_DENIED) {
-                                return AndroidFuture.failedFuture(new SecurityException(
-                                        "Caller does not have permission to execute the"
-                                                + " appfunction"));
+                                return AndroidFuture.failedFuture(
+                                        new SecurityException(
+                                                "Caller does not have permission to execute the"
+                                                        + " appfunction"));
                             }
                             return isAppFunctionEnabled(
-                                    requestInternal
-                                            .getClientRequest()
-                                            .getFunctionIdentifier(),
-                                    requestInternal
-                                            .getClientRequest()
-                                            .getTargetPackageName(),
-                                    getAppSearchManagerAsUser(
-                                            requestInternal.getUserHandle()),
-                                    THREAD_POOL_EXECUTOR)
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getFunctionIdentifier(),
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getTargetPackageName(),
+                                            getAppSearchManagerAsUser(
+                                                    requestInternal.getUserHandle()),
+                                            THREAD_POOL_EXECUTOR)
                                     .thenApply(
                                             isEnabled -> {
                                                 if (!isEnabled) {
@@ -364,7 +382,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @AppFunctionManager.EnabledState int enabledState,
             @NonNull IAppFunctionEnabledCallback callback) {
         try {
-            mCallerValidator.validateCallingPackage(callingPackage);
+            // Skip validation for shell to allow changing enabled state via shell.
+            if (Binder.getCallingUid() != Process.SHELL_UID) {
+                mCallerValidator.validateCallingPackage(callingPackage);
+            }
         } catch (SecurityException e) {
             reportException(callback, e);
             return;

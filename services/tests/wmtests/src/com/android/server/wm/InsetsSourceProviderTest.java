@@ -248,7 +248,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateSourceFrame(inputMethod.getFrame());
         assertEquals(new Rect(0, 0, 0, 0), mImeSource.getFrame());
         Insets insets = mImeSource.calculateInsets(new Rect(0, 0, 500, 500),
-                false /* ignoreVisibility */);
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 0), insets);
 
         mImeProvider.setServerVisible(true);
@@ -256,7 +256,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateSourceFrame(inputMethod.getFrame());
         assertEquals(inputMethod.getFrame(), mImeSource.getFrame());
         insets = mImeSource.calculateInsets(new Rect(0, 0, 500, 500),
-                false /* ignoreVisibility */);
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
 
@@ -317,12 +317,12 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         // the inset-window's top.
         assertEquals(Insets.of(0, 100, 0, 0),
                 mProvider.getSource().calculateInsets(new Rect(0, -100, 500, 400),
-                        false /* ignoreVisibility */));
+                        null /* hostBounds */, false /* ignoreVisibility */));
 
         // Don't apply left insets if window is left-of inset-window but still overlaps
         statusBar.getFrame().set(100, 0, 0, 0);
         assertEquals(Insets.of(0, 0, 0, 0),
                 mProvider.getSource().calculateInsets(new Rect(-100, 0, 400, 500),
-                        false /* ignoreVisibility */));
+                        null /* hostBounds */, false /* ignoreVisibility */));
     }
 }

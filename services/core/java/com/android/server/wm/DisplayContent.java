@@ -130,8 +130,6 @@ import static com.android.server.wm.EventLogTags.IMF_REMOVE_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_SHOW_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_UPDATE_IME_PARENT;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
-import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.DISPLAY_CONTENT;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_INPUT_METHOD;
@@ -3342,7 +3340,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void getStableRect(Rect out) {
         final InsetsState state = mDisplayContent.getInsetsStateController().getRawInsetsState();
         out.set(state.getDisplayFrame());
-        out.inset(state.calculateInsets(out, systemBars(), true /* ignoreVisibility */));
+        out.inset(state.calculateInsets(out, out, systemBars(), true /* ignoreVisibility */));
     }
 
     /**
@@ -3397,10 +3395,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     private boolean shouldDeferRemoval() {
-        return isAnimating(TRANSITION | PARENTS)
-                // isAnimating is a legacy transition query and will be removed, so also add a
-                // check for whether this is in a shell-transition when not using legacy.
-                || mTransitionController.isTransitionOnDisplay(this);
+        return mTransitionController.isTransitionOnDisplay(this);
     }
 
     @Override
@@ -3484,7 +3479,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 ? imeSource.getVisibleFrame() : imeSource.getFrame();
         final Rect dockFrame = mTmpRect;
         dockFrame.set(state.getDisplayFrame());
-        dockFrame.inset(state.calculateInsets(dockFrame, systemBars() | displayCutout(),
+        dockFrame.inset(state.calculateInsets(dockFrame, dockFrame, systemBars() | displayCutout(),
                 false /* ignoreVisibility */));
         return dockFrame.bottom - imeFrame.top;
     }
@@ -5851,7 +5846,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         final InsetsState state = mInsetsStateController.getRawInsetsState();
         final Rect df = state.getDisplayFrame();
-        final Insets gestureInsets = state.calculateInsets(df, systemGestures(),
+        final Insets gestureInsets = state.calculateInsets(df, df, systemGestures(),
                 false /* ignoreVisibility */);
         mSystemGestureFrameLeft.set(df.left, df.top, df.left + gestureInsets.left, df.bottom);
         mSystemGestureFrameRight.set(df.right - gestureInsets.right, df.top, df.right, df.bottom);

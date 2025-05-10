@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"允許"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"不允許使用無線偵錯功能"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"目前登入這部裝置的使用者無法開啟無線偵錯功能。如要使用這項功能，請切換為管理員使用者帳戶。"</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB 連接埠已停用"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"為了避免液體或灰塵導致你的裝置受損，系統已停用 USB 連接埠，因此目前無法偵測任何配件。\n\n系統會在可繼續使用 USB 連接埠時通知你。"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB 連接埠已啟用，可偵測充電器和配件"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"未設定"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"在「設定」中管理"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{未啟用任何模式}=1{已啟用 {mode} 個模式}other{已啟用 # 個模式}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g>個模式"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"開啟"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"裝置不會發出音效或震動造成干擾，但是會保留與鬧鐘、提醒、活動和指定來電者有關的設定。如果你選擇播放音樂、影片和遊戲等內容，還是可以聽見相關音訊。"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"裝置不會發出音效或震動造成干擾，但是會保留鬧鐘響鈴。如果你選擇播放音樂、影片和遊戲等內容，還是可以聽見相關音訊。"</string>
@@ -527,7 +528,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"向左滑動即可啟動通用教學課程"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"自訂"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"關閉"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"新增和移除小工具，及調整小工具在此空間的位置"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"新增、移除或重新排列此空間的小工具"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"新增更多小工具"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"長按即可自訂小工具"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"自訂小工具"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由 TrustAgent 維持解鎖狀態"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"驗證錯誤次數過多，裝置已鎖定"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"裝置已鎖定\n驗證失敗"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"已由手錶鎖定"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>。<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"音效設定"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"自動產生媒體字幕"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"如要將鍵盤連線到平板電腦，你必須先開啟藍牙。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"開啟"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"已開啟 - 依臉部方向旋轉"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"靜音和套裝組合"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"特價優惠、新功能等等"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"焦點新聞、社論等等"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"喜歡的項目、貼文等等"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"電子報、推薦媒體等等"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"套用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"關閉"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"你至少必須要有 <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個設定方塊"</string>
     <string name="qs_edit" msgid="5583565172803472437">"編輯"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"編輯設定方塊"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"時間"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"顯示小時、分鐘和秒"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"其他"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"切換設定方塊大小"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"移除設定方塊"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"放置設定方塊"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"切換位置調整模式"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"切換選取項目"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"將設定方塊新增到最後位置"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"將「<xliff:g id="NAME">%1$s</xliff:g>」新增到最後位置"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"移動圖塊"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"將設定方塊新增到所需位置"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"移至 <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"暫停播放動畫"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"通話中"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"進行中"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"展開通知"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"收合通知"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"行動數據"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"已連線"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"已暫時建立連線"</string>

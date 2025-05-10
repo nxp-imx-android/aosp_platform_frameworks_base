@@ -5698,6 +5698,19 @@ public final class DisplayManagerService extends SystemService {
         }
 
         @Override
+        public long getDisplayGroupFlags(int groupId) {
+            synchronized (mSyncRoot) {
+                final DisplayGroup displayGroup = mLogicalDisplayMapper.getDisplayGroupLocked(
+                        groupId);
+                if (displayGroup == null) {
+                    return 0;
+                }
+                return displayGroup.getFlags();
+            }
+        }
+
+
+        @Override
         public boolean requestPowerState(int groupId, DisplayPowerRequest request,
                 boolean waitForNegativeProximity) {
             synchronized (mSyncRoot) {

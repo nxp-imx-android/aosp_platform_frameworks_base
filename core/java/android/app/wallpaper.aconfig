@@ -44,16 +44,6 @@ flag {
 }
 
 flag {
-  name: "accurate_wallpaper_downsampling"
-  namespace: "systemui"
-  description: "Accurate downsampling of wallpaper bitmap for high resolution images"
-  bug: "355665230"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enable_connected_displays_wallpaper"
   namespace: "lse_desktop_experience"
   description: "Enable wallpaper support in connected displays"

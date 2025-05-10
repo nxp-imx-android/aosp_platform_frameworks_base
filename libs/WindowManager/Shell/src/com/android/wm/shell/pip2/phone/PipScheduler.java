@@ -128,10 +128,14 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
 
-        // In multi-activity case, windowing mode change will reparent to original host task, so we
-        // have to update the parent windowing mode to what is expected.
-        mDesktopPipTransitionController.ifPresent(c -> c.maybeUpdateParentInWct(wct,
-                mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip));
+        mDesktopPipTransitionController.ifPresent(c -> {
+            // In multi-activity case, windowing mode change will reparent to original host task, so
+            // we have to update the parent windowing mode to what is expected.
+            c.maybeUpdateParentInWct(wct,
+                    mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip);
+            // In multi-desks case, we have to reparent the task to the root desk.
+            c.maybeReparentTaskToDesk(wct, mPipTransitionState.getPipTaskInfo().taskId);
+        });
 
         return wct;
     }
@@ -202,13 +206,6 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         WindowContainerTransaction wct = new WindowContainerTransaction();
         if (configAtEnd) {
             wct.deferConfigToTransitionEnd(pipTaskToken);
-
-            if (mPipBoundsState.getBounds().width() == toBounds.width()
-                    && mPipBoundsState.getBounds().height() == toBounds.height()) {
-                // TODO (b/393159816): Config-at-End causes a flicker without size change.
-                // If PiP size isn't changing enforce a minimal one-pixel change as a workaround.
-                --toBounds.bottom;
-            }
         }
         wct.setBounds(pipTaskToken, toBounds);
         mPipTransitionController.startPipBoundsChangeTransition(wct, duration);

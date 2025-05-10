@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g>এ আপোনাৰ <xliff:g id="DEVICE_NAME">%2$s</xliff:g>ৰ হৈ আপোনাৰ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>ৰ পৰা এপ্‌ আৰু ছিষ্টেমৰ সুবিধাসমূহ ষ্ট্ৰীম কৰিবলৈ অনুমতি বিচাৰি অনুৰোধ জনাইছে"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt;ক আপোনাৰ ফ’নৰ পৰা এই তথ্যখিনি এক্সেছ কৰাৰ অনুমতি দিয়ক"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g>এ আপোনাৰ <xliff:g id="DEVICE_NAME">%2$s</xliff:g>ৰ হৈ আপোনাৰ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>ৰ ফট’, মিডিয়া আৰু জাননী এক্সেছ কৰাৰ বাবে অনুমতি বিচাৰি অনুৰোধ জনাইছে"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;ক আপোনাৰ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ৰ এপ্‌সমূহ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ত ষ্ট্ৰীম কৰিবলৈ দিবনে?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>এ <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>ত দৃশ্যমান হোৱা বা প্লে’ কৰা অডিঅ’, ফট’ পাছৱৰ্ড আৰু বাৰ্তাকে ধৰি যিকোনো বস্তু এক্সেছ কৰিব পাৰিব।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g>এ আপুনি এই অনুমতিৰ এক্সেছ আঁতৰাই নিদিয়া পৰ্যন্ত <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>ত এপ্‌সমূহ ষ্ট্ৰীম কৰিব পাৰিব।"</string>

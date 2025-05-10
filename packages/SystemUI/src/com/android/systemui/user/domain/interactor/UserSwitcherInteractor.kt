@@ -542,11 +542,17 @@ constructor(
         }
     }
 
-    fun showUserSwitcher(expandable: Expandable) {
+    /**
+     * Shows the user switcher dialog.
+     *
+     * If [context] is provided, the dialog will be created from that context. If not provided, the
+     * shade context will be used.
+     */
+    fun showUserSwitcher(expandable: Expandable, context: Context? = null) {
         if (featureFlags.isEnabled(Flags.FULL_SCREEN_USER_SWITCHER)) {
-            showDialog(ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog(expandable))
+            showDialog(ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog(expandable, context))
         } else {
-            showDialog(ShowDialogRequestModel.ShowUserSwitcherDialog(expandable))
+            showDialog(ShowDialogRequestModel.ShowUserSwitcherDialog(expandable, context))
         }
     }
 

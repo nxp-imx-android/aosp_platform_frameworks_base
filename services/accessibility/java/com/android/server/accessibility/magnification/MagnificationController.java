@@ -455,6 +455,12 @@ public class MagnificationController implements MagnificationConnectionManager.C
         mActivePanDirections = new boolean[]{false, false, false, false};
     }
 
+    @Override
+    public boolean isMagnificationActivated(int displayId) {
+        return mFullScreenMagnificationController.isActivated(displayId)
+                || getMagnificationConnectionManager().isWindowMagnifierEnabled(displayId);
+    }
+
     private void maybeContinuePan() {
         if (mActivePanDisplay == Display.INVALID_DISPLAY) {
             return;

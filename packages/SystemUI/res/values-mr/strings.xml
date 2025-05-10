@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"अनुमती द्या"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"वायरलेस डीबगिंग करण्याला अनुमती नाही"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"सध्‍या या डिव्हाइसमध्‍ये साइन इन केलेला वापरकर्ता वायरलेस डीबगिंग सुरू करू शकत नाही. हे वैशिष्‍ट्य वापरण्‍यासाठी ॲडमिन वापरकर्त्‍यावर स्विच करा."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB पोर्ट बंद करा"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"तुमच्या डिव्हाइसला ओलावा किंवा धूळीपासून संरक्षित करण्यासाठी, USB पोर्ट बंद आहे आणि अ‍ॅक्सेसरी डिटेक्ट करणार नाही. \n\n तुम्हाला USB पोर्ट पुन्हा वापरणे ठीक आहे तेव्हा सूचित केले जाईल."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"चार्जर आणि अ‍ॅक्सेसरी शोधण्यासाठी USB पोर्ट सुरू केलेले आहे"</string>
@@ -400,7 +402,7 @@
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC सक्षम केले आहे"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"स्क्रीन रेकॉर्ड"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"सुरू"</string>
-    <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"थांबा"</string>
+    <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"थांबवा"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"समस्या रेकॉर्ड करा"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"सुरुवात करा"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"थांबवा"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"सेट केलेला नाही"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"सेटिंग्जमध्ये व्यवस्थापित करा"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{कोणतेही अ‍ॅक्टिव्ह मोड नाहीत}=1{{mode} अ‍ॅक्टिव्ह आहे}other{# मोड अ‍ॅक्टिव्ह आहेत}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> मोड"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"सुरू आहेत"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"अलार्म, रिमाइंडर, इव्‍हेंट आणि तुम्ही निश्चित केलेल्या कॉलर व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"अलार्म व्यतिरिक्त तुम्हाला कोणत्याही आवाज आणि कंपनांचा व्यत्त्यय आणला जाणार नाही. तरीही तुम्ही प्ले करायचे ठरवलेले कोणतेही संगीत, व्हिडिओ आणि गेमचे आवाज ऐकू शकतात."</string>
@@ -527,7 +528,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"सामुदायिक ट्यूटोरियल सुरू करण्यासाठी डावीकडे स्वाइप करा"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"कस्टमाइझ करा"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"डिसमिस करा"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"या स्पेसमध्ये तुमची विजेट जोडा, काढून टाका आणि पुन्हा क्रमाने लावा"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"या स्पेसमध्ये तुमची विजेट जोडा, काढून टाका व पुन्हा क्रमाने लावा"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"आणखी विजेट जोडा"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"विजेट कस्टमाइझ करण्यासाठी प्रेस करून ठेवा"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"विजेट कस्टमाइझ करा"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ने अनलॉक ठेवले"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"डिव्हाइस लॉक केले होते, ऑथेंटिकेशनचे खूप वेळा प्रयत्न केले गेले"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिव्हाइस लॉक केले आहे\nऑथेंटिकेशन यशस्वी झाले नाही"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"तुमच्या वॉचद्वारे लॉक झाले आहे"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"आवाज सेटिंग्ज"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"मीडियाला आपोआप सबटायटल द्या"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"तुमचा कीबोर्ड तुमच्या टॅबलेटसह कनेक्ट करण्यासाठी, तुम्ही प्रथम ब्लूटूथ सुरू करणे आवश्यक आहे."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"सुरू - चेहऱ्यावर आधारित"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"सायलंट आणि बंडल करा"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"विक्री, बातम्यांसंबंधित वैशिष्ट्ये आणि आणखी बरेच काही"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"टॉप स्टोरी, संपादकीय आणि आणखी बरेच काही"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"लाइक, पोस्ट आणि आणखी बरेच काही"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"बातमीपत्रक, शिफारस केलेला मीडिया आणि आणखी बरेच काही"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"तुम्हाला किमान <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलची गरज आहे"</string>
     <string name="qs_edit" msgid="5583565172803472437">"संपादित करा"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइल संपादित करा"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"वेळ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"तास, मिनिटे आणि सेकंद दर्शवा"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलचा आकार टॉगल करा"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"टाइल काढून टाका"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"टाइल ठेवा"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"प्लेसमेंट मोड टॉगल करा"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"निवड टॉगल करा"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"शेवटच्या स्थानावर टाइल जोडा"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"शेवटच्या स्थानावर <xliff:g id="NAME">%1$s</xliff:g> जोडा"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल हलवा"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"हव्या असलेल्या स्थानावर टाइल जोडा"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> यावर हलवा"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"अ‍ॅनिमेशन थांबवा"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"सुरू असलेला कॉल"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"सुरू असलेले"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"नोटिफिकेशनचा विस्तार करा"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"नोटिफिकेशन कोलॅप्स करा"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"मोबाइल डेटा"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"कनेक्ट केले आहे"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"तात्पुरते कनेक्ट केलेले"</string>

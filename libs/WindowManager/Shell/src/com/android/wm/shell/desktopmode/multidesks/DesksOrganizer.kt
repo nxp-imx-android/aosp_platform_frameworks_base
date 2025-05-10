@@ -35,10 +35,10 @@ interface DesksOrganizer {
     fun createDeskImmediate(displayId: Int, userId: Int): Int?
 
     /** Activates the given desk, making it visible in its display. */
-    fun activateDesk(wct: WindowContainerTransaction, deskId: Int)
+    fun activateDesk(wct: WindowContainerTransaction, deskId: Int, skipReorder: Boolean = false)
 
     /** Deactivates the given desk, removing it as the default launch container for new tasks. */
-    fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int)
+    fun deactivateDesk(wct: WindowContainerTransaction, deskId: Int, skipReorder: Boolean = false)
 
     /** Removes the given desk of the given user. */
     fun removeDesk(wct: WindowContainerTransaction, deskId: Int, userId: Int)

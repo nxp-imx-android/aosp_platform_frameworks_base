@@ -21,8 +21,8 @@ import com.android.systemui.statusbar.notification.row.data.repository.BundleRep
 /** Provides functionality for UI to interact with a Notification Bundle. */
 class BundleInteractor(private val repository: BundleRepository) {
 
-    val titleTextResId
-        get() = repository.titleTextResId
+    val titleText
+        get() = repository.titleText
 
     val numberOfChildren
         get() = repository.numberOfChildren

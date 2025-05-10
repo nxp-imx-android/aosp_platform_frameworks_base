@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.content.DialogInterface
 import android.content.packageManager
 import android.graphics.Bitmap
@@ -28,6 +29,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -49,6 +53,7 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.Me
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModelTest.Companion.assertIsNotifChip
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
+import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -66,9 +71,11 @@ import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.testKosmos
@@ -1076,6 +1083,159 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest).doesNotContainKey("fourthNotif")
         }
 
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifDidNotRequestPromotion_showsCallChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-notPromoted"
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = createStatusBarIconViewOrNull(),
+                requestedPromotion = false,
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+
+            assertIsCallChip(latest!!.active[0], key, context)
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifDidNotRequestPromotion_showsCallChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-notPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = false,
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = false,
+                    promotedContent = null,
+                )
+            )
+
+            assertIsCallChip(latest!!.primary, key, context)
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-requestedPromoted-andPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(
+                        PromotedNotificationContentBuilder(key).build()
+                    ),
+            )
+
+            assertIsNotifChip(latest!!.active[0], context, icon, key)
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-requestedPromoted-andPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            val promotedContent = PromotedNotificationContentBuilder(key).build()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                promotedContent =
+                    OngoingCallTestHelper.PromotedContentInput.OverrideToValue(promotedContent),
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = true,
+                    promotedContent = promotedContent,
+                )
+            )
+
+            assertIsNotifChip(latest!!.primary, context, icon, key)
+        }
+
+    @Test
+    @EnableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chips_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "call-requestedPromoted-butNotPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                // Content will be null if notif wasn't actually promoted
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+
+            assertThat(latest!!.active).isEmpty()
+        }
+
+    @Test
+    @DisableChipsModernization
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun chipsLegacy_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chipsLegacy)
+
+            val key = "call-requestedPromoted-butNotPromoted"
+            val icon = createStatusBarIconViewOrNull()
+            // When ChipsModernization is disabled, activeNotificationListRepository isn't the
+            // source of truth for call notifs, so we have to set the information in 2 places.
+            addOngoingCallState(
+                key = key,
+                statusBarChipIconView = icon,
+                requestedPromotion = true,
+                // Content will be null if notif wasn't actually promoted
+                promotedContent = OngoingCallTestHelper.PromotedContentInput.OverrideToNull,
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = key,
+                    statusBarChipIcon = icon,
+                    callType = CallType.Ongoing,
+                    requestedPromotion = true,
+                    promotedContent = null,
+                )
+            )
+
+            assertThat(latest!!.primary).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
+        }
+
     @DisableChipsModernization
     @Test
     fun chipsLegacy_callAndPromotedNotifs_primaryIsCallSecondaryIsNotif() =
@@ -1797,6 +1957,123 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // THEN the chip is immediately hidden with no animation
             assertThat(latest).isEqualTo(OngoingActivityChipModel.Inactive(shouldAnimate = false))
         }
+
+    @Test
+    @EnableChipsModernization
+    fun chips_singleRefiner_hidesSpecificChip() =
+        kosmos.runTest {
+            chipsRefinerSet.add(RemoveChipRefiner(ShareToAppChipViewModel.KEY))
+
+            val latestChips by collectLastValue(underTest.chips)
+
+            val callNotificationKey = "call"
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
+            mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+
+            val activeChips = latestChips?.active
+
+            assertThat(activeChips?.size).isEqualTo(1)
+            assertThat(activeChips?.any { it.key == ShareToAppChipViewModel.KEY }).isFalse()
+            assertThat(activeChips?.any { it.key.startsWith(CallChipViewModel.KEY_PREFIX) })
+                .isTrue()
+
+            val inactiveChips = latestChips?.inactive
+            assertThat(
+                    inactiveChips?.any {
+                        it == OngoingActivityChipModel.Inactive(shouldAnimate = false)
+                    }
+                )
+                .isTrue()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun chips_multipleRefiners_bothApplied() =
+        kosmos.runTest {
+            chipsRefinerSet.add(RemoveChipRefiner(ShareToAppChipViewModel.KEY))
+            val changeFirstChipIconRefiner = ChangeFirstChipIconRefiner()
+            chipsRefinerSet.add(changeFirstChipIconRefiner)
+
+            val latestChips by collectLastValue(underTest.chips)
+
+            val callNotificationKey = "callChip"
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
+            mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
+            screenRecordState.value = ScreenRecordModel.DoingNothing
+
+            val activeChips = latestChips?.active
+            assertThat(activeChips).isNotNull()
+            assertThat(activeChips).isNotEmpty()
+
+            assertThat(activeChips?.any { it.key == ShareToAppChipViewModel.KEY }).isFalse()
+
+            val firstChip = activeChips?.firstOrNull()
+            assertThat(firstChip!!.key).startsWith(CallChipViewModel.KEY_PREFIX)
+
+            val icon = firstChip.icon
+            assertThat(icon)
+                .isInstanceOf(OngoingActivityChipModel.ChipIcon.SingleColorIcon::class.java)
+            val singleColorIcon = icon as OngoingActivityChipModel.ChipIcon.SingleColorIcon
+            val resourceIcon = singleColorIcon.impl as Icon.Resource
+            assertThat(resourceIcon.res).isEqualTo(changeFirstChipIconRefiner.newIconRes)
+            assertThat(resourceIcon.contentDescription?.loadContentDescription(context))
+                .isEqualTo(changeFirstChipIconRefiner.newIconDesc)
+        }
+
+    companion object {
+        class RemoveChipRefiner(private val keyToRemove: String) : OngoingActivityChipsRefiner {
+            override fun transform(
+                input: MultipleOngoingActivityChipsModel
+            ): MultipleOngoingActivityChipsModel {
+                val chipWasInActive = input.active.any { it.key == keyToRemove }
+                val chipWasInOverflow = input.overflow.any { it.key == keyToRemove }
+
+                val newActive = input.active.filterNot { it.key == keyToRemove }
+                val newOverflow = input.overflow.filterNot { it.key == keyToRemove }
+
+                val currentInactive = input.inactive.toMutableList()
+                if (chipWasInActive || chipWasInOverflow) {
+                    // Add an Inactive model if the chip key was found in active or overflow lists.
+                    // This signifies that the refiner made this chip inactive.
+                    currentInactive.add(OngoingActivityChipModel.Inactive(shouldAnimate = false))
+                }
+
+                return input.copy(
+                    active = newActive,
+                    overflow = newOverflow,
+                    inactive = currentInactive.toList(),
+                )
+            }
+        }
+
+        class ChangeFirstChipIconRefiner : OngoingActivityChipsRefiner {
+            val newIconRes = android.R.drawable.ic_dialog_info // A standard Android resource
+            val newIconDesc = "Test Changed Icon"
+
+            override fun transform(
+                input: MultipleOngoingActivityChipsModel
+            ): MultipleOngoingActivityChipsModel {
+                if (input.active.isNotEmpty()) {
+                    val firstChip = input.active.first()
+                    val modifiedFirstChip =
+                        firstChip.copy(
+                            icon =
+                                OngoingActivityChipModel.ChipIcon.SingleColorIcon(
+                                    Icon.Resource(
+                                        newIconRes,
+                                        ContentDescription.Loaded(newIconDesc),
+                                    )
+                                )
+                        )
+                    val newActive = listOf(modifiedFirstChip) + input.active.drop(1)
+                    return input.copy(active = newActive)
+                }
+                return input
+            }
+        }
+    }
 
     private fun setNotifs(notifs: List<ActiveNotificationModel>) {
         activeNotificationListRepository.activeNotifications.value =

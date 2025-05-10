@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor.viewholder
 import android.annotation.ColorInt
 import android.annotation.DrawableRes
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -27,6 +28,7 @@ import android.graphics.Rect
 import android.graphics.Shader
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewTreeObserver
@@ -63,6 +65,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
 import com.android.wm.shell.windowdecor.MaximizeButtonView
+import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
@@ -87,7 +90,8 @@ import kotlin.math.roundToInt
  * controls.
  */
 class AppHeaderViewHolder(
-    rootView: View,
+    appHeaderView: View?,
+    private val context: Context,
     windowDecorationActions: WindowDecorationActions,
     onCaptionTouchListener: View.OnTouchListener,
     onCaptionButtonClickListener: View.OnClickListener,
@@ -95,7 +99,7 @@ class AppHeaderViewHolder(
     onCaptionGenericMotionListener: View.OnGenericMotionListener,
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
-) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>(rootView) {
+) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
         val taskInfo: RunningTaskInfo,
@@ -172,13 +176,20 @@ class AppHeaderViewHolder(
             .getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_horizontal)
     )
 
+    override val rootView =
+        appHeaderView ?: if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
+            LayoutInflater.from(context)
+            .inflate(R.layout.desktop_mode_app_header, null) as WindowDecorLinearLayout
+    } else {
+        error("App Header root view should not be null")
+    }
     private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
     private val captionHandle: View = rootView.requireViewById(R.id.caption_handle)
     private val openMenuButton: View = rootView.requireViewById(R.id.open_menu_button)
     private val closeWindowButton: ImageButton = rootView.requireViewById(R.id.close_window)
     private val expandMenuButton: ImageButton = rootView.requireViewById(R.id.expand_menu_button)
     private val maximizeButtonView: MaximizeButtonView =
-            rootView.requireViewById(R.id.maximize_button_view)
+        rootView.requireViewById(R.id.maximize_button_view)
     private val maximizeWindowButton: ImageButton = rootView.requireViewById(R.id.maximize_window)
     private val minimizeWindowButton: ImageButton = rootView.requireViewById(R.id.minimize_window)
     private val appNameTextView: TextView = rootView.requireViewById(R.id.application_name)
@@ -996,7 +1007,8 @@ class AppHeaderViewHolder(
 
     class Factory {
         fun create(
-            rootView: View,
+            rootView: View?,
+            context: Context,
             windowDecorationActions: WindowDecorationActions,
             onCaptionTouchListener: View.OnTouchListener,
             onCaptionButtonClickListener: View.OnClickListener,
@@ -1006,6 +1018,7 @@ class AppHeaderViewHolder(
             desktopModeUiEventLogger: DesktopModeUiEventLogger
         ): AppHeaderViewHolder = AppHeaderViewHolder(
             rootView,
+            context,
             windowDecorationActions,
             onCaptionTouchListener,
             onCaptionButtonClickListener,

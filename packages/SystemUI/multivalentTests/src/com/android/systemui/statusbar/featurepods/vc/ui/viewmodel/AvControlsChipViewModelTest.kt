@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -29,8 +30,10 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.vc.domain.interactor.avControlsChipInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -64,7 +67,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
     fun avControlsChip_showingCamera_chipVisible() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            underTest.chip.verifyShown().verifyHasText("Camera")
+            underTest.chip.verifyShown().verifyIsCameraOnlyChip()
         }
 
     @Test
@@ -72,7 +75,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
     fun avControlsChip_showingMicrophone_chipVisible() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(microphoneItem))
-            underTest.chip.verifyShown().verifyHasText("Microphone")
+            underTest.chip.verifyShown().verifyIsMicrophoneOnlyChip()
         }
 
     @Test
@@ -80,7 +83,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
     fun avControlsChip_showingCameraAndMicrophone_chipVisible() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem, microphoneItem))
-            underTest.chip.verifyShown().verifyHasText("Cam & Mic")
+            underTest.chip.verifyShown().verifyIsCameraAndMicrophoneChip()
         }
 
     @Test
@@ -90,16 +93,16 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
             underTest.chip.verifyHidden()
 
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            underTest.chip.verifyShown().verifyHasText("Camera")
+            underTest.chip.verifyShown().verifyIsCameraOnlyChip()
 
             fakePrivacyChipRepository.setPrivacyItems(listOf())
             underTest.chip.verifyHidden()
 
             fakePrivacyChipRepository.setPrivacyItems(listOf(microphoneItem))
-            underTest.chip.verifyShown().verifyHasText("Microphone")
+            underTest.chip.verifyShown().verifyIsMicrophoneOnlyChip()
 
             fakePrivacyChipRepository.setPrivacyItems(listOf(microphoneItem, cameraItem))
-            underTest.chip.verifyShown().verifyHasText("Cam & Mic")
+            underTest.chip.verifyShown().verifyIsCameraAndMicrophoneChip()
         }
 
     @Test
@@ -133,7 +136,33 @@ private fun PopupChipModel.verifyShown(): PopupChipModel.Shown {
     return this as PopupChipModel.Shown
 }
 
-private fun PopupChipModel.Shown.verifyHasText(text: String?): PopupChipModel.Shown {
-    assertThat(this.chipText).isEqualTo(text)
-    return this
+private fun PopupChipModel.Shown.verifyHasNoText() {
+    assertThat(this.chipText).isEqualTo("")
+}
+
+private fun PopupChipModel.Shown.verifyHasIcon(res: Int) {
+    assertThat(this.icons).contains(ChipIcon(Icon.Resource(res = res, contentDescription = null)))
+}
+
+private fun PopupChipModel.Shown.verifyNumberOfIcons(num: Int) {
+    assertThat(this.icons.size).isEqualTo(num)
+}
+
+private fun PopupChipModel.Shown.verifyIsCameraOnlyChip() {
+    verifyNumberOfIcons(1)
+    verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
+    verifyHasNoText()
+}
+
+private fun PopupChipModel.Shown.verifyIsMicrophoneOnlyChip() {
+    verifyNumberOfIcons(1)
+    verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
+    verifyHasNoText()
+}
+
+private fun PopupChipModel.Shown.verifyIsCameraAndMicrophoneChip() {
+    verifyNumberOfIcons(2)
+    verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
+    verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
+    verifyHasNoText()
 }

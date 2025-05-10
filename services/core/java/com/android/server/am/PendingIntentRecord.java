@@ -731,9 +731,6 @@ public final class PendingIntentRecord extends IIntentSender.Stub {
      */
     @Nullable
     private Bundle createSafeActivityOptionsBundle(@Nullable Bundle optionsBundle) {
-        if (!com.android.window.flags.Flags.supportWidgetIntentsOnConnectedDisplay()) {
-            return null;
-        }
         if (optionsBundle == null) {
             return null;
         }

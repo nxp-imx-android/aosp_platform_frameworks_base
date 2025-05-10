@@ -16,7 +16,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_label" msgid="4470785958457506021">"مدیر دستگاه مرتبط"</string>
+    <string name="app_label" msgid="4470785958457506021">"مدیر دستگاه همپا"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"‏به برنامه &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه داده شود به &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; دسترسی پیدا کند؟"</string>
     <string name="message_discovery_soft_timeout" msgid="473346859407859161">"مطمئن شوید <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> در این <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> روشن باشد و <xliff:g id="PROFILE_NAME">%3$s</xliff:g> را نزدیک نگه دارید."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"دستگاهی پیدا نشد. لطفاً بعداً دوباره امتحان کنید."</string>
@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ازطرف <xliff:g id="DEVICE_NAME">%2$s</xliff:g> اجازه می‌خواهد برنامه‌ها و ویژگی‌های سیستم را از <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> شما جاری‌سازی کند"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (3214922337624458692) -->
-    <skip />
+    <string name="title_computer" msgid="3214922337624458692">"‏اجازه دادن به &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; برای دسترسی به این اطلاعات در تلفن شما"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ازطرف <xliff:g id="DEVICE_NAME">%2$s</xliff:g> اجازه می‌خواهد به عکس‌ها، رسانه‌ها، و اعلان‌های <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> شما دسترسی پیدا کند"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"‏به &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه می‌دهید برنامه‌های <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> را در &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; جاری‌سازی کند؟"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"‏‫<xliff:g id="APP_NAME_0">%1$s</xliff:g> به هرچیزی که در <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> شما نمایان است یا پخش می‌شود، ازجمله صداها، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها، و پیام‌ها دسترسی خواهد داشت.&lt;br/&gt;&lt;br/&gt;تا زمانی‌که دسترسی به این اجازه را حذف نکنید، <xliff:g id="APP_NAME_2">%1$s</xliff:g> می‌تواند برنامه‌ها را در <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> جاری‌سازی کند."</string>

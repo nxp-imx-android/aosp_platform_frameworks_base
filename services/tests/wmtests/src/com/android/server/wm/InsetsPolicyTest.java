@@ -880,8 +880,8 @@ public class InsetsPolicyTest extends WindowTestsBase {
         displayPolicy.applyPostLayoutPolicyLw(win, win.mAttrs, null, null);
         displayPolicy.finishPostLayoutPolicyLw();
 
-        final var imeInsetsShown = win.getInsetsState().calculateInsets(win.getFrame(), ime(),
-                true);
+        final var imeInsetsShown = win.getInsetsState().calculateInsets(win.getFrame(),
+                win.getBounds(), ime(), true);
         assertEquals(new Rect(0, 0, 0, winFrame.bottom / 2), imeInsetsShown.toRect());
 
 
@@ -894,8 +894,8 @@ public class InsetsPolicyTest extends WindowTestsBase {
         displayPolicy.applyPostLayoutPolicyLw(win, win.mAttrs, null, null);
         displayPolicy.finishPostLayoutPolicyLw();
 
-        final var imeInsetsHidden = win.getInsetsState().calculateInsets(win.getFrame(), ime(),
-                true);
+        final var imeInsetsHidden = win.getInsetsState().calculateInsets(win.getFrame(),
+                win.getBounds(), ime(), true);
         assertEquals(Insets.NONE, imeInsetsHidden);
     }
 

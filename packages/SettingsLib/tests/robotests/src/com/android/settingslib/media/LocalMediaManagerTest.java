@@ -141,8 +141,11 @@ public class LocalMediaManagerTest {
                 .when(mInfoMediaManager)
                 .getRoutingSessionsForPackage();
 
-        mInfoMediaDevice1 = spy(new InfoMediaDevice(mContext, mRouteInfo1, /* item */ null));
-        mInfoMediaDevice2 = new InfoMediaDevice(mContext, mRouteInfo2, /* item */ null);
+        mInfoMediaDevice1 = spy(
+                new InfoMediaDevice(mContext, mRouteInfo1, /* dynamicRouteAttributes= */
+                        null, /* item */ null));
+        mInfoMediaDevice2 = new InfoMediaDevice(mContext, mRouteInfo2, /* dynamicRouteAttributes= */
+                null, /* item */ null);
         mLocalMediaManager =
                 new LocalMediaManager(
                         mContext, mLocalBluetoothManager, mInfoMediaManager, TEST_PACKAGE_NAME);

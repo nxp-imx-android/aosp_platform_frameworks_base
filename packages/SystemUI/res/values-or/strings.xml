@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ୱାୟାରଲେସ୍ ଡିବଗିଂ ପାଇଁ ଅନୁମତି ନାହିଁ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ୟୁଜର ବର୍ତ୍ତମାନ ସାଇନ-ଇନ କରିଥିବା ଏହି ଡିଭାଇସରେ ୱାୟାରଲେସ ଡିବଗିଂ ଚାଲୁ କରିପାରିବେ ନାହିଁ। ଏହି ଫିଚର ବ୍ୟବହାର କରିବା ପାଇଁ ଜଣେ ଆଡମିନ ୟୁଜର ଭାବେ ସ୍ୱିଚ କରନ୍ତୁ।"</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ପୋର୍ଟକୁ ଅକ୍ଷମ କରାଯାଇଛି"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ଆପଣଙ୍କ ଡିଭାଇସ୍‌କୁ ତରଳ ପଦାର୍ଥ ଏବଂ ଧୂଳିରୁ ସୁରକ୍ଷିତ ରଖିବା ପାଇଁ, USB ପୋର୍ଟକୁ ଅକ୍ଷମ କରାଯାଇଛି ଏବଂ ଏହା କୌଣସି ଉପକରଣ ଚିହ୍ନଟ କରିବ ନାହିଁ। \n\n ଯେତେବେଳେ USB ପୋର୍ଟ ପୁଣିି ବ୍ୟବହାର କରିବାକୁ ସୁରକ୍ଷିତ ହେବ, ସେତେବେଳେ ଆପଣଙ୍କୁ ସୂଚିତ କରାଯିବ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ଚାର୍ଜର୍‍ ଏବଂ ଆକ୍ସେସରିଗୁଡ଼ିକୁ ଚିହ୍ନଟ କରିବାକୁ USB ପୋର୍ଟ ସକ୍ଷମ କରାଯାଇଛି"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ସେଟ କରାଯାଇନାହିଁ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ସେଟିଂସରେ ପରିଚାଳନା କରନ୍ତୁ"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{କୌଣସି ସକ୍ରିୟ ମୋଡ ନାହିଁ}=1{{mode} ସକ୍ରିୟ ଅଛି}other{# ମୋଡ ସକ୍ରିୟ ଅଛି}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> ମୋଡ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ଚାଲୁ ଅଛି"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"ଆଲାର୍ମ, ରିମାଇଣ୍ଡର୍‌, ଇଭେଣ୍ଟ ଏବଂ ଆପଣ ନିର୍ଦ୍ଦିଷ୍ଟ କରିଥିବା କଲର୍‌ଙ୍କ ବ୍ୟତୀତ ଆପଣଙ୍କ ଧ୍ୟାନ ଅନ୍ୟ କୌଣସି ଧ୍ୱନୀ ଏବଂ ଭାଇବ୍ରେଶନ୍‌ରେ ଆକର୍ଷଣ କରାଯିବନାହିଁ। ମ୍ୟୁଜିକ୍‍, ଭିଡିଓ ଏବଂ ଗେମ୍‌ ସମେତ ନିଜେ ଚଲାଇବାକୁ ବାଛିଥିବା ଅନ୍ୟ ସବୁକିଛି ଆପଣ ଶୁଣିପାରିବେ।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"ଆଲାର୍ମ ବ୍ୟତୀତ ଆପଣଙ୍କ ଧ୍ୟାନ ଅନ୍ୟ କୌଣସି ଧ୍ୱନୀ ଏବଂ ଭାଇବ୍ରେଶନ୍‌ରେ ଆକର୍ଷଣ କରାଯିବନାହିଁ। ମ୍ୟୁଜିକ୍‍, ଭିଡିଓ ଏବଂ ଗେମ୍‌ ସମେତ ନିଜେ ଚଲାଇବାକୁ ବାଛିଥିବା ଅନ୍ୟ ସବୁକିଛି ଆପଣ ଶୁଣିପାରିବେ।"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ଦ୍ୱାରା ଅନ୍‌ଲକ୍ ରହିଛି"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ଡିଭାଇସ ଲକ କରାଯାଇଛି, ଅନେକଗୁଡ଼ିଏ ପ୍ରମାଣୀକରଣ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ଡିଭାଇସ ଲକ ହୋଇଛି\nପ୍ରମାଣୀକରଣ ବିଫଳ ହୋଇଛି"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ଆପଣଙ୍କ ୱାଚ ଦ୍ୱାରା ଲକ କରାଯାଇଛି"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ସାଉଣ୍ଡ ସେଟିଂସ୍"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ସ୍ବଚାଳିତ କ୍ୟାପ୍ସନ୍ ମିଡିଆ"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ଆପଣଙ୍କ ଟାବଲେଟ୍‌ରେ କୀ’ବୋର୍ଡ ସଂଯୋଗ କରିବା ପାଇଁ ଆପଣଙ୍କୁ ପ୍ରଥମେ ବ୍ଲୁଟୂଥ୍‍‍ ଅନ୍‍ କରିବାକୁ ହେବ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ଚାଲୁ ଅଛି - ଫେସ-ଆଧାରିତ"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ସାଇଲେନ୍ସ ଏବଂ ବଣ୍ଡଲ"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ସେଲ୍ସ, ନୂଆ ଫିଚର ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"ଟପ ଷ୍ଟୋରୀ, ଏଡିଟୋରିଆଲ ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"ପସନ୍ଦ, ପୋଷ୍ଟ ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ନ୍ୟୁଜଲେଟର, ସୁପାରିଶ କରାଯାଇଥିବା ମିଡିଆ ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ହୋଇଗଲା"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ଲାଗୁ କରନ୍ତୁ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ବନ୍ଦ କରନ୍ତୁ"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ଆପଣଙ୍କର ଅତିକମ୍‌ରେ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>ଟି ଟାଇଲ୍ ଆବଶ୍ୟକ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ଟାଇଲଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"ସମୟ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ଘଣ୍ଟା, ମିନିଟ୍‍ ଏବଂ ସେକେଣ୍ଡ ଦେଖାନ୍ତୁ"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"ଅନ୍ୟ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ଟାଇଲର ସାଇଜକୁ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ଟାଇଲ କାଢ଼ି ଦିଅନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ସ୍ଥାନ ଟାଇଲ"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ପ୍ଲେସମେଣ୍ଟ ମୋଡ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ଚୟନ ଟୋଗଲ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"ଶେଷ ପୋଜିସନରେ ଟାଇଲ ଯୋଗ କରନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"ଶେଷ ପୋଜିସନରେ <xliff:g id="NAME">%1$s</xliff:g>ଙ୍କୁ ଯୋଗ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ଟାଇଲ୍ ମୁଭ୍ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ଇଚ୍ଛିତ ପୋଜିସନରେ ଟାଇଲ ଯୋଗ କରନ୍ତୁ"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>କୁ ମୁଭ୍ କରନ୍ତୁ"</string>
@@ -1192,7 +1189,7 @@
     <string name="accessibility_floating_button_action_remove_menu" msgid="6730432848162552135">"କାଢ଼ି ଦିଅନ୍ତୁ"</string>
     <string name="accessibility_floating_button_action_double_tap_to_toggle" msgid="7976492639670692037">"ଟୋଗଲ୍ କରନ୍ତୁ"</string>
     <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"ଏଡିଟ କରନ୍ତୁ"</string>
-    <string name="quick_controls_title" msgid="6839108006171302273">"ଡିଭାଇସ୍ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ"</string>
+    <string name="quick_controls_title" msgid="6839108006171302273">"ଡିଭାଇସ ନିୟନ୍ତ୍ରଣ"</string>
     <string name="controls_providers_title" msgid="6879775889857085056">"ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକୁ ଯୋଗ କରିବାକୁ ଆପ୍ ବାଛନ୍ତୁ"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{#ଟି ନିୟନ୍ତ୍ରଣ ଯୋଗ କରାଯାଇଛି।}other{#ଟି ନିୟନ୍ତ୍ରଣ ଯୋଗ କରାଯାଇଛି।}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"କାଢ଼ି ଦିଆଯାଇଛି"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"ଆନିମେସନକୁ ବିରତ କରନ୍ତୁ"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ଚାଲିଥିବା କଲ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ଚାଲୁଥିବା"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"ବିଜ୍ଞପ୍ତିକୁ ବିସ୍ତାର କରନ୍ତୁ"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"ବିଜ୍ଞପ୍ତିକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ମୋବାଇଲ ଡାଟା"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"ସଂଯୋଗ କରାଯାଇଛି"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"ଅସ୍ଥାୟୀ ରୂପେ କନେକ୍ଟ କରାଯାଇଛି"</string>
@@ -1475,7 +1474,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"ଡିସପ୍ଲେ ମିରର କରନ୍ତୁ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ଖାରଜ କରନ୍ତୁ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ଡିସପ୍ଲେ କନେକ୍ଟ କରାଯାଇଛି"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"ମାଇକ୍ରୋଫୋନ ଏବଂ କେମେରା"</string>
+    <string name="privacy_dialog_title" msgid="7839968133469098311">"Microphone ଏବଂ Camera"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ବର୍ତ୍ତମାନର ଆପ ବ୍ୟବହାର"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ବର୍ତ୍ତମାନର ଆକ୍ସେସ ଦେଖନ୍ତୁ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"ହୋଇଗଲା"</string>

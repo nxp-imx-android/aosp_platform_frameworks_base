@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ခွင့်ပြုရန်"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ကြိုးမဲ့ အမှားရှာပြင်ခြင်းကို ခွင့်မပြုပါ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ဤစက်သို့ လက်ရှိလက်မှတ်ထိုးဝင်ထားသူသည် ကြိုးမဲ့ အမှားရှာပြင်ခြင်းကို ဖွင့်၍မရပါ။ ဤဝန်ဆောင်မှု အသုံးပြုရန် စီမံခန့်ခွဲသူအဖြစ်ပြောင်းပါ။"</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ပို့တ် ပိတ်ပြီးပြီ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"USB ပို့တ်ကို ပိတ်၍ သင့်ကိရိယာသို့ အရည် သို့မဟုတ် အမှိုက်စများ မဝင်စေရန် ကာကွယ်ပါ၊ မည်သည့် အပိုပစ္စည်းကိုမျှ အာရုံခံသိရှိနိုင်တော့မည် မဟုတ်ပါ။\n\nUSB ပို့တ်ကို ပြန်အသုံးပြုနိုင်သည့်အခါ သင့်ကိုအကြောင်းကြားပါမည်။"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"အားသွင်းကိရိယာနှင့် ဆက်စပ်ပစ္စည်းများ သိရှိရန် USB ပို့တ် ဖွင့်ထားသည်"</string>
@@ -360,7 +362,7 @@
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"အလင်းတောက်ပမှု"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"အရောင်ပြောင်းပြန်ပြုလုပ်ရန်"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"အရောင် အမှန်ပြင်ခြင်း"</string>
-    <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ဖောင့်အရွယ်အစား"</string>
+    <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ဖောင့်အရွယ်"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"အသုံးပြုသူများ စီမံရန်"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"ပြီးပါပြီ"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"ပိတ်ရန်"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"သတ်မှတ်မထားပါ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ဆက်တင်များတွင် စီမံရန်"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{မုဒ် သုံးမနေပါ}=1{{mode} ကို သုံးနေသည်}other{မုဒ် # ခု သုံးနေသည်}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"မုဒ် <xliff:g id="NUMBER">%s</xliff:g> ခု"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ဖွင့်"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"နှိုးစက်သံ၊ သတိပေးချက်အသံများ၊ ပွဲစဉ်သတိပေးသံများနှင့် သင်ခွင့်ပြုထားသူများထံမှ ဖုန်းခေါ်မှုများမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"နှိုးစက်သံမှလွဲ၍ အခြားအသံများနှင့် တုန်ခါမှုများက သင့်ကို အနှောင့်အယှက်ပြုမည် မဟုတ်ပါ။ သို့သော်လည်း သီချင်း၊ ဗီဒီယိုနှင့် ဂိမ်းများအပါအဝင် သင်ကရွေးချယ်ဖွင့်ထားသည့် အရာတိုင်း၏ အသံကိုမူ ကြားနေရဆဲဖြစ်ပါလိမ့်မည်။"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ဖြင့် ဆက်ဖွင့်ထားရန်"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"လော့ခ်ကျနေသည်၊ အထောက်အထားစိစစ်ရန် ကြိုးပမ်းကြိမ် များလွန်းသည်"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"စက်လော့ခ်ကျနေသည်\nအထောက်အထားစိစစ်၍ မရပါ"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"သင့်နာရီဖြင့် လော့ခ်ချထားသည်"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>။ <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"အသံဆက်တင်များ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"အလိုအလျောက် စာတန်းထိုးရန်"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ကီးဘုတ်ကို တပ်ဘလက်နှင့် ချိတ်ဆက်ရန်၊ ပမထဦးစွာ ဘလူးတုသ်ကို ဖွင့်ပါ။"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ဖွင့်ပါ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ဖွင့် - မျက်နှာအခြေခံ"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"အသံတိတ်ပြီး စုစည်းခြင်း"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"အရောင်း၊ တူးလ်အသစ်စသည်"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"ထိပ်တန်းသတင်း၊ အယ်ဒီတာ့အာဘော်စသည်"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"လိုက်ခ်များ၊ ပို့စ်များစသည်"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"သတင်းလွှာ၊ အကြံပြုထားသော မီဒီယာစသည်"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ပြီးပြီ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"အသုံးပြုရန်"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ပိတ်ရန်"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
     <string name="qs_edit" msgid="5583565172803472437">"တည်းဖြတ်ရန်"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"အကွက်ငယ်များ တည်းဖြတ်ခြင်း"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"အချိန်"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"နာရီ၊ မိနစ်နှင့် စက္ကန့်ကိုပြပါ"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"အခြား"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"အကွက်ငယ်၏ အရွယ်အစားကို ပြောင်းရန်"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"အကွက်ငယ်ကို ဖယ်ရှားရန်"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"အကွက်ငယ် နေရာချရန်"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"နေရာချထားမှုမုဒ် ဖွင့်ရန်"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ရွေးချယ်မှု ပြောင်းရန်"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"နောက်ဆုံးနေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> ကို နောက်ဆုံးနေရာသို့ ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"အကွက်ငယ်ကို ရွှေ့ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ဆန္ဒရှိရာ နေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> သို့ ရွှေ့ရန်"</string>
@@ -1136,7 +1133,7 @@
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"စခရင်ရိုက်ကူးမှု"</string>
     <string name="music_controls_no_title" msgid="4166497066552290938">"ခေါင်းစဉ် မရှိပါ"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"အသင့်အနေအထား"</string>
-    <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ဖောင့်အရွယ်အစား"</string>
+    <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ဖောင့်အရွယ်"</string>
     <string name="font_scaling_smaller" msgid="1012032217622008232">"ချုံ့ရန်"</string>
     <string name="font_scaling_larger" msgid="5476242157436806760">"ချဲ့ရန်"</string>
     <string name="magnification_window_title" msgid="4863914360847258333">"ဝင်းဒိုး ချဲ့ခြင်း"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"လှုပ်ရှားသက်ဝင်ပုံ ခဏရပ်ရန်"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"လက်ရှိခေါ်ဆိုမှု"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"လုပ်ဆောင်နေဆဲ"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"အကြောင်းကြားချက်ကို ချဲ့မည်"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"အကြောင်းကြားချက်ကို ချုံ့မည်"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"မိုဘိုင်းဒေတာ"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"ချိတ်ဆက်ထားသည်"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"ယာယီချိတ်ဆက်ထားသည်"</string>
@@ -1373,7 +1372,7 @@
     <string name="see_all_networks" msgid="3773666844913168122">"အားလုံးကြည့်ရန်"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"ကွန်ရက်ပြောင်းရန် အီသာနက်ကို ချိတ်ဆက်မှုဖြုတ်ပါ"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Wi-Fi ပိတ်ထားသည့်တိုင် စက်ပစ္စည်းကို ပိုမိုကောင်းမွန်စွာ အသုံးပြုနိုင်ရန်အတွက် အက်ပ်နှင့် ဝန်ဆောင်မှုများက Wi-Fi ကွန်ရက်များကို အချိန်မရွေး စကင်ဖတ်နိုင်သည်။ ၎င်းကို Wi-Fi ရှာဖွေခြင်း ဆက်တင်များတွင် ပြောင်းနိုင်သည်။ "<annotation id="link">"ပြောင်းရန်"</annotation></string>
-    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"လေယာဉ်ပျံမုဒ်ကို ပိတ်ရန်"</string>
+    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"လေယာဉ်ပျံမုဒ် ပိတ်ရန်"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> က ‘အမြန် ဆက်တင်များ’ တွင် အောက်ပါအကွက်ငယ်ကို ထည့်လိုသည်"</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"အကွက်ငယ် ထည့်ရန်"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"အကွက်ငယ် မထည့်ပါ"</string>

@@ -120,9 +120,6 @@ public class RavenwoodRuntimeEnvironmentController {
     private static final String ANDROID_LOG_TAGS = "ANDROID_LOG_TAGS";
     private static final String RAVENWOOD_ANDROID_LOG_TAGS = "RAVENWOOD_" + ANDROID_LOG_TAGS;
 
-    static volatile Thread sTestThread;
-    static volatile Thread sMainThread;
-
     /**
      * When enabled, attempt to dump all thread stacks just before we hit the
      * overall Tradefed timeout, to aid in debugging deadlocks.
@@ -209,11 +206,21 @@ public class RavenwoodRuntimeEnvironmentController {
 
     private static final int DEFAULT_TARGET_SDK_LEVEL = VERSION_CODES.CUR_DEVELOPMENT;
     private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
+    private static final String DEFAULT_INSTRUMENTATION_CLASS =
+            "androidx.test.runner.AndroidJUnitRunner";
+
+    static volatile Thread sTestThread;
+    static volatile HandlerThread sMainThread;
 
     private static final int sMyPid = new Random().nextInt(100, 32768);
     private static int sTargetSdkLevel;
+
     private static String sTestPackageName;
     private static String sTargetPackageName;
+    private static String sInstrumentationClass;
+
+    static volatile RavenwoodContext sInstContext;
+    static volatile RavenwoodContext sTargetContext;
     private static Instrumentation sInstrumentation;
     private static final long sCallingIdentity =
             packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
@@ -377,20 +384,20 @@ public class RavenwoodRuntimeEnvironmentController {
             };
         }
 
-        var instContext = new RavenwoodContext(
+        sInstContext = new RavenwoodContext(
                 sTestPackageName, main, instResourcesLoader);
-        var targetContext = new RavenwoodContext(
+        sTargetContext = new RavenwoodContext(
                 sTargetPackageName, main, targetResourcesLoader);
 
         // Set up app context.
         var appContext = new RavenwoodContext(sTargetPackageName, main, targetResourcesLoader);
         appContext.setApplicationContext(appContext);
         if (isSelfInstrumenting) {
-            instContext.setApplicationContext(appContext);
-            targetContext.setApplicationContext(appContext);
+            sInstContext.setApplicationContext(appContext);
+            sTargetContext.setApplicationContext(appContext);
         } else {
             // When instrumenting into another APK, the test context doesn't have an app context.
-            targetContext.setApplicationContext(appContext);
+            sTargetContext.setApplicationContext(appContext);
         }
 
         // Set up ActivityThread.currentSystemContext(), which is technically a different
@@ -404,16 +411,22 @@ public class RavenwoodRuntimeEnvironmentController {
 
         var instArgs = Bundle.EMPTY;
         RavenwoodUtils.runOnMainThreadSync(() -> {
+            var instClassName = withDefault(sInstrumentationClass, DEFAULT_INSTRUMENTATION_CLASS);
             try {
-                // TODO We should get the instrumentation class name from the build file or
-                // somewhere.
-                var InstClass = Class.forName("android.app.Instrumentation");
-                sInstrumentation = (Instrumentation) InstClass.getConstructor().newInstance();
-                sInstrumentation.basicInit(instContext, targetContext, null);
-                sInstrumentation.onCreate(instArgs);
-            } catch (Exception e) {
-                SneakyThrow.sneakyThrow(e);
+                var clazz = Class.forName(instClassName);
+                sInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
+            } catch (ReflectiveOperationException e) {
+                if (sInstrumentationClass != null) {
+                    // If the class is explicitly set, it is an error if the class is not found
+                    SneakyThrow.sneakyThrow(e);
+                } else {
+                    // Fallback to the platform instrumentation
+                    sInstrumentation = new Instrumentation();
+                }
             }
+
+            initInstrumentation();
+            sInstrumentation.onCreate(instArgs);
         });
         InstrumentationRegistry.registerInstance(sInstrumentation, instArgs);
 
@@ -441,6 +454,7 @@ public class RavenwoodRuntimeEnvironmentController {
                 parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
         sTargetPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
         sTestPackageName = withDefault(props.get("instPackageName"), sTargetPackageName);
+        sInstrumentationClass = props.get("instrumentationClass");
 
         // TODO(b/377765941) Read them from the manifest too?
     }
@@ -452,15 +466,17 @@ public class RavenwoodRuntimeEnvironmentController {
         }
     }
 
+    private static void initInstrumentation() {
+        // We need to recreate the mocks for each test class, because sometimes tests
+        // will call Mockito.framework().clearInlineMocks() after execution.
+        sInstrumentation.basicInit(sInstContext, sTargetContext, createMockUiAutomation());
+    }
+
     /**
      * Partially reset and initialize before each test class invocation
      */
     public static void initForRunner() {
-        var targetContext = sInstrumentation.getTargetContext();
-        var instContext = sInstrumentation.getContext();
-        // We need to recreate the mock UiAutomation for each test class, because sometimes tests
-        // will call Mockito.framework().clearInlineMocks() after execution.
-        sInstrumentation.basicInit(instContext, targetContext, createMockUiAutomation());
+        initInstrumentation();
 
         // Reset some global state
         Process_ravenwood.reset();
@@ -732,7 +748,7 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void dumpCommandLineArgs() {
-        Log.v(TAG, "JVM arguments:");
+        Log.i(TAG, "JVM arguments:");
 
         // Note, we use the wrapper in JUnit4, not the actual class (
         // java.lang.management.ManagementFactory), because we can't see the later at the build
@@ -741,7 +757,7 @@ public class RavenwoodRuntimeEnvironmentController {
         var args = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
         for (var arg : args) {
-            Log.v(TAG, "  " + arg);
+            Log.i(TAG, "  " + arg);
         }
     }
 
@@ -776,31 +792,31 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void dumpJavaProperties() {
-        Log.v(TAG, "JVM properties:");
+        Log.i(TAG, "JVM properties:");
         dumpMap(System.getProperties());
     }
 
     private static void dumpEnvironment() {
-        Log.v(TAG, "Environment:");
+        Log.i(TAG, "Environment:");
         dumpMap(System.getenv());
     }
 
     private static void dumpMap(Map<?, ?> map) {
         for (var key : map.keySet().stream().sorted().toList()) {
-            Log.v(TAG, "  " + key + "=" + map.get(key));
+            Log.i(TAG, "  " + key + "=" + map.get(key));
         }
     }
     private static void dumpOtherInfo() {
-        Log.v(TAG, "Other key information:");
+        Log.i(TAG, "Other key information:");
         var jloc = Locale.getDefault();
-        Log.v(TAG, "  java.util.Locale=" + jloc + " / " + jloc.toLanguageTag());
+        Log.i(TAG, "  java.util.Locale=" + jloc + " / " + jloc.toLanguageTag());
         var uloc = ULocale.getDefault();
-        Log.v(TAG, "  android.icu.util.ULocale=" + uloc + " / " + uloc.toLanguageTag());
+        Log.i(TAG, "  android.icu.util.ULocale=" + uloc + " / " + uloc.toLanguageTag());
 
         var jtz = java.util.TimeZone.getDefault();
-        Log.v(TAG, "  java.util.TimeZone=" + jtz.getDisplayName() + " / " + jtz);
+        Log.i(TAG, "  java.util.TimeZone=" + jtz.getDisplayName() + " / " + jtz);
 
         var itz = android.icu.util.TimeZone.getDefault();
-        Log.v(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
+        Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
     }
 }

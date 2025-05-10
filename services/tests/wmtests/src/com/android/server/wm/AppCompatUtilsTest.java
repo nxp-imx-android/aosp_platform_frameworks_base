@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
+import static android.view.Surface.ROTATION_270;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -219,6 +220,23 @@ public class AppCompatUtilsTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            Flags.FLAG_ENABLE_CAMERA_COMPAT_CHECK_DEVICE_ROTATION_BUGFIX})
+    public void testTopActivityInCameraCompatMode_rotationFlagEnabled_rotationSet() {
+        runTestScenario((robot) -> {
+            robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
+            robot.applyOnActivity(
+                    AppCompatActivityRobot::createActivityWithComponentInNewTaskAndDisplay);
+            robot.setCameraCompatTreatmentEnabledForActivity(/* enabled= */ true);
+            robot.setFreeformCameraCompatMode(CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE);
+
+            final int expectedDisplayRotation = ROTATION_270;
+            robot.activity().rotateDisplayForTopActivity(expectedDisplayRotation);
+            robot.checkTaskInfoCameraCompatDisplayRotationSet(expectedDisplayRotation);
+        });
+    }
+
+    @Test
     public void testTopActivityLetterboxed_hasBounds() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a) -> {
@@ -334,6 +352,11 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         void checkTaskInfoFreeformCameraCompatMode(@FreeformCameraCompatMode int mode) {
             Assert.assertEquals(mode, getTopTaskInfo().appCompatTaskInfo
                     .cameraCompatTaskInfo.freeformCameraCompatMode);
+        }
+
+        void checkTaskInfoCameraCompatDisplayRotationSet(@Surface.Rotation int expectedRotation) {
+            Assert.assertEquals(expectedRotation, getTopTaskInfo().appCompatTaskInfo
+                    .cameraCompatTaskInfo.displayRotation);
         }
 
         void checkTaskInfoTopActivityHasBounds(Rect bounds) {

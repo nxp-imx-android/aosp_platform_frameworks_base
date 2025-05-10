@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Engedélyezés"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"A vezeték nélküli hibakeresés nem engedélyezett"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Az eszközre jelenleg bejelentkezett felhasználó nem engedélyezheti a vezeték nélküli hibakeresést. A funkció használatához váltson adminisztrátor felhasználóra."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-port letiltva"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Az eszköz folyadéktól és szennyeződésektől való megóvása érdekében az USB-portot letiltottuk, így az nem észleli a kiegészítőket.\n\nÉrtesítést küldünk, amikor ismét rendben használhatja az USB-portot."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Az USB-csatlakozó számára engedélyezve van a töltők és más tartozékok észlelése"</string>
@@ -124,7 +126,7 @@
     <string name="screenrecord_mic_label" msgid="2111264835791332350">"Mikrofon"</string>
     <string name="screenrecord_device_audio_and_mic_label" msgid="1831323771978646841">"Eszköz hangja és mikrofon"</string>
     <string name="screenrecord_continue" msgid="4055347133700593164">"Indítás"</string>
-    <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"Kép rögzítése folyamatban"</string>
+    <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"Képernyőfelvétel folyamatban"</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"Kép és hang rögzítése folyamatban"</string>
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"A képernyőn végzett érintések mutatása"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Leállítás"</string>
@@ -361,7 +363,7 @@
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Színek invertálása"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Színkorrekció"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Betűméret"</string>
-    <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Kezelés"</string>
+    <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Felhasználók kezelése"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Kész"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Bezárás"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Csatlakoztatva"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nincs beállítva"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"A Beállítások között kezelheti"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nincs aktív mód}=1{{mode} aktív}other{# mód aktív}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> mód"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Be"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Az Ön által meghatározott ébresztéseken, emlékeztetőkön, eseményeken és hívókon kívül nem fogja Önt más hang vagy rezgés megzavarni. Továbbra is lesz hangjuk azoknak a tartalmaknak, amelyeket Ön elindít, például zenék, videók és játékok."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Az ébresztéseken kívül nem fogja Önt más hang és rezgés megzavarni. Továbbra is lesz hangjuk azoknak a tartalmaknak, amelyeket Ön elindít, például zenék, videók és játékok."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Feloldva tartva TrustAgent által"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Az eszköz túl sok hitelesítési kísérlet miatt zárolva lett."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Eszköz zárolva\nSikertelen hitelesítés"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Kizárta az órája"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Hangbeállítások"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatikus feliratozás"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Ha a billentyűzetet csatlakoztatni szeretné táblagépéhez, először engedélyeznie kell a Bluetooth-kapcsolatot."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bekapcsolás"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Be: Arcalapú"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Némítás és csomagolás"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Értékesítés, új funkciók és egyebek"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Népszerű történetek, vezércikkek és egyebek"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Lájkok, bejegyzések és egyebek"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Hírlevelek, ajánlott médiatartalmak és egyebek"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Kész"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Alkalmaz"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kikapcsolás"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Legalább <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> kártya szükséges"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Szerkesztés"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Mozaikok szerkesztése"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Idő"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Óra, perc és másodperc megjelenítése"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Egyéb"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"a mozaik méretének módosítása"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Mozaik eltávolítása"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Mozaik elhelyezése"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"elhelyezési mód be- vagy kikapcsolása"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"kiválasztás be- vagy kikapcsolása"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Mozaik hozzáadása az utolsó pozícióhoz"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"A következő hozzáadása az utolsó pozícióhoz: <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Mozaik áthelyezése"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Mozaik hozzáadása a kívánt pozícióhoz"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Áthelyezés ide: <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Animáció szüneteltetése"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Hívás folyamatban"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Folyamatban van"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"értesítés kibontása"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"értesítés összecsukása"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobiladat"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Csatlakozva"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Ideiglenesen csatlakoztatva"</string>
@@ -1400,7 +1399,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Kép előnézete"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"szerkesztés"</string>
     <string name="add" msgid="81036585205287996">"Hozzáadás"</string>
-    <string name="manage_users" msgid="1823875311934643849">"Kezelés"</string>
+    <string name="manage_users" msgid="1823875311934643849">"Felhasználók kezelése"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Az értesítés nem támogatja az osztott képernyőre való áthúzást."</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"A helyinformáció aktív"</string>
     <string name="dream_overlay_status_bar_wifi_off" msgid="4497069245055003582">"A Wi‑Fi nem áll rendelkezésre"</string>
@@ -1487,7 +1486,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Hozzáférés kezelése"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Telefonhívás által használatban"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Legutóbb telefonhívás során volt használva"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Használatban a következő által: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"A következő használja: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Legutóbb használta: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Használatban a következő által: <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Legutóbb használta: <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>

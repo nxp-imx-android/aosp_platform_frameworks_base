@@ -738,8 +738,8 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"មិនអាចបង្កើតគំរូមុខរបស់អ្នកបានទេ។ សូមព្យាយាមម្ដងទៀត។"</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ភ្លឺពេក។ សូមសាកល្បង​ប្រើ​ពន្លឺស្រាលជាងនេះ។"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"មិនមាន​ពន្លឺគ្រប់គ្រាន់"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"ដាក់​ទូរសព្ទឱ្យឆ្ងាយ​ជាងមុន"</string>
-    <string name="face_acquired_too_far" msgid="2922278214231064859">"ដាក់​ទូរសព្ទ​ឱ្យជិត​ជាងមុន"</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"ដាក់​ទូរសព្ទឱ្យឆ្ងាយ​ជាងនេះ"</string>
+    <string name="face_acquired_too_far" msgid="2922278214231064859">"ដាក់​ទូរសព្ទ​ឱ្យជិត​ជាងនេះ"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"រំកិល​ទូរសព្ទឡើងលើ"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"រំកិល​ទូរសព្ទចុះក្រោម"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"រំកិលទូរសព្ទ​ទៅខាងឆ្វេង"</string>
@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"មុខងារប្រើដៃម្ខាង"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ងងឹតខ្លាំង"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"ចុចស្វ័យប្រវត្តិ"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"គ្រាប់ចុចម៉ៅស៍"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"បាន​ផ្ដាច់"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"បានភ្ជាប់"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ប្រូម៉ូសិន"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"សង្គម"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ព័ត៌មាន"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"បាន​ណែនាំ"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"អ្នកបានកំណត់សារៈសំខាន់នៃការជូនដំណឹងទាំងនេះ"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"វាមានសារៈសំខាន់ដោយសារតែមនុស្សដែលពាក់ព័ន្ធ"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ការជូន​ដំណឹងកម្មវិធី​ផ្ទាល់ខ្លួន"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ឆ្វេង"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad ស្ដាំ"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad កណ្ដាល"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"ផ្ទាំងការកំណត់ប្រភេទចុចស្វ័យប្រវត្តិ"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"ចុចម៉ៅស៍ខាងឆ្វេង"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"ចុចម៉ៅស៍ខាងស្ដាំ"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"ចុចពីរដង"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"អូស"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"រំកិល"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ចុចឱ្យយូរ"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ផ្អាក"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ទីតាំង"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"រំកិលឡើងលើ"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"រំកិលចុះក្រោម"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"រំកិល​ទៅ​ឆ្វេង"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"រំកិល​ទៅ​ស្ដាំ"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"ចាកចេញពី​មុខងារ​រំកិល"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ផ្អាក"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"បន្ត"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ផ្ទាំងរំកិល"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ត្រូវបានដាក់​ទៅក្នុងធុង​ដែលបានដាក់កំហិត"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>៖"</string>

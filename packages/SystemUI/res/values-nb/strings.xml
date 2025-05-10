@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Tillat"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Trådløs feilsøking er ikke tillatt"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Brukeren som for øyeblikket er logget på denne enheten, kan ikke slå på trådløs feilsøking. For å bruke denne funksjonen, bytt til en administratorbruker."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-porten er deaktivert"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"For å beskytte enheten din mot væsker eller rusk er USB-porten deaktivert og kan ikke oppdage tilbehør.\n\nDu blir varslet når det er trygt å bruke USB-porten igjen."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Registrering av ladere og tilbehør er slått på for USB-porten"</string>
@@ -341,7 +343,7 @@
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Sted"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Skjermsparer"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kameratilgang"</string>
-    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofon&amp;#173;tilgang"</string>
+    <string name="quick_settings_mic_label" msgid="8392773746295266375">"Mikrofontilgang"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Tilgjengelig"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Blokkert"</string>
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"Medieenhet"</string>
@@ -359,7 +361,7 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ingen wifi- eller Ethernet-tilkobling"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Lysstyrke"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Farge&amp;#173;invertering"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Farge&amp;#173;korrigering"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Fargekorrigering"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Skriftstørrelse"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Brukervalg"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Ferdig"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ikke angitt"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Administrer i innstillingene"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Ingen aktive moduser}=1{{mode} er aktiv}other{# moduser er aktive}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> moduser"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"På"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Du blir ikke forstyrret av lyder og vibrasjoner, med unntak av alarmer, påminnelser, aktiviteter og oppringere du angir. Du kan fremdeles høre alt du velger å spille av, for eksempel musikk, videoer og spill."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Du blir ikke forstyrret av lyder og vibrasjoner, med unntak av alarmer. Du kan fremdeles høre alt du velger å spille av, for eksempel musikk, videoer og spill."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Holdes opplåst med TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Enheten er låst – for mange autentiseringsforsøk"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Enheten er låst\nKunne ikke autentisere"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Låst ute av klokken"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Lydinnstillinger"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Automatisk medieteksting"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"For å koble tastaturet til nettbrettet ditt må du først slå på Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Slå på"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"På – ansiktsbasert"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Kutt lyden og samle"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Salg, nye funksjoner med mer"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Hovedoppslag, redaksjonelle artikler med mer"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Liker-klikk, innlegg med mer"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nyhetsbrev, anbefalt innhold med mer"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Ferdig"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Bruk"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Slå av"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Du trenger minst <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> infobrikker"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Endre"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Rediger infobrikker"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Tid"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Vis timer, minutter og sekunder"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Annet"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"bytt størrelse på brikken"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Fjern brikken"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Plasser brikken"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"slå plasseringsmodusen av/på"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"slå valget av/på"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Legg til en brikke på den siste posisjonen"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Legg til <xliff:g id="NAME">%1$s</xliff:g> på den siste posisjonen"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytt infobrikken"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Legg til brikken på ønsket posisjon"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Flytt til <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Sett animasjonen på pause"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Aktiv samtale"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Kontinuerlig"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"vis varselet"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"skjul varselet"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobildata"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Tilkoblet"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Koblet til midlertidig"</string>

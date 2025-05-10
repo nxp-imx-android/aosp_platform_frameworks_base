@@ -6711,6 +6711,8 @@ public abstract class BatteryStats {
         // This constant MUST be incremented whenever the history dump format changes.
         private static final int FORMAT_VERSION = 2;
 
+        private static final boolean DEBUG_TIMELINE = false;
+
         private final boolean mPerformanceBaseline;
         private final HistoryLogTimeFormatter mHistoryLogTimeFormatter;
         private final SimpleDateFormat mHistoryItemTimestampFormat;
@@ -6811,6 +6813,12 @@ public abstract class BatteryStats {
                     } else {
                         mHistoryLogTimeFormatter.append(item, rec.currentTime);
                         item.append(' ');
+                        if (DEBUG_TIMELINE) {
+                            if (rec.time < lastTime) {
+                                item.append("[Earlier timestamp by ")
+                                        .append(rec.time - lastTime).append("] ");
+                            }
+                        }
                     }
                 }
             } else {
@@ -6821,8 +6829,8 @@ public abstract class BatteryStats {
                 } else {
                     item.append(rec.time - lastTime);
                 }
-                lastTime = rec.time;
             }
+            lastTime = rec.time;
             if (rec.cmd == HistoryItem.CMD_START) {
                 if (checkin) {
                     item.append(":");
@@ -7787,7 +7795,7 @@ public abstract class BatteryStats {
     // This is called from BatteryStatsService.
     @SuppressWarnings("unused")
     public void dumpCheckin(Context context, PrintWriter pw, List<ApplicationInfo> apps, int flags,
-            long histStart, BatteryStatsDumpHelper dumpHelper) {
+            long histStart, BatteryStatsDumpHelper dumpHelper, long monotonicCheckinStartTime) {
         synchronized (this) {
             prepareForDumpLocked();
 
@@ -7797,7 +7805,7 @@ public abstract class BatteryStats {
         }
 
         if ((flags & (DUMP_INCLUDE_HISTORY | DUMP_HISTORY_ONLY)) != 0) {
-            dumpHistory(pw, flags, histStart, true, 0);
+            dumpHistory(pw, flags, histStart, true, monotonicCheckinStartTime);
         }
 
         if ((flags & DUMP_HISTORY_ONLY) != 0) {

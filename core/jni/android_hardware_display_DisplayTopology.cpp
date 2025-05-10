@@ -36,6 +36,7 @@ static struct {
     jclass clazz;
     jfieldID displayId;
     jfieldID density;
+    jfieldID boundsInGlobalDp;
     jfieldID adjacentDisplays;
 } gDisplayTopologyGraphNodeClassInfo;
 
@@ -46,7 +47,29 @@ static struct {
     jfieldID offsetDp;
 } gDisplayTopologyGraphAdjacentDisplayClassInfo;
 
+static struct {
+    jclass clazz;
+    jfieldID left;
+    jfieldID top;
+    jfieldID right;
+    jfieldID bottom;
+} gDisplayTopologyGraphDisplayBoundsClassInfo;
+
 // ----------------------------------------------------------------------------
+
+status_t android_hardware_display_DisplayTopologyDisplayBounds_toNative(JNIEnv* env,
+                                                                        jobject displayBoundsObj,
+                                                                        FloatRect* displayBounds) {
+    displayBounds->left =
+            env->GetFloatField(displayBoundsObj, gDisplayTopologyGraphDisplayBoundsClassInfo.left);
+    displayBounds->top =
+            env->GetFloatField(displayBoundsObj, gDisplayTopologyGraphDisplayBoundsClassInfo.top);
+    displayBounds->right =
+            env->GetFloatField(displayBoundsObj, gDisplayTopologyGraphDisplayBoundsClassInfo.right);
+    displayBounds->bottom = env->GetFloatField(displayBoundsObj,
+                                               gDisplayTopologyGraphDisplayBoundsClassInfo.bottom);
+    return OK;
+}
 
 status_t android_hardware_display_DisplayTopologyAdjacentDisplay_toNative(
         JNIEnv* env, jobject adjacentDisplayObj, DisplayTopologyAdjacentDisplay* adjacentDisplay) {
@@ -66,12 +89,20 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
         JNIEnv* env, jobject nodeObj,
         std::unordered_map<ui::LogicalDisplayId, std::vector<DisplayTopologyAdjacentDisplay>>&
                 graph,
-        std::unordered_map<ui::LogicalDisplayId, int>& displaysDensity) {
+        std::unordered_map<ui::LogicalDisplayId, int>& displaysDensity,
+        std::unordered_map<ui::LogicalDisplayId, FloatRect>& displayBoundsDp) {
     ui::LogicalDisplayId displayId = ui::LogicalDisplayId{
             env->GetIntField(nodeObj, gDisplayTopologyGraphNodeClassInfo.displayId)};
 
     displaysDensity[displayId] =
             env->GetIntField(nodeObj, gDisplayTopologyGraphNodeClassInfo.density);
+
+    ScopedLocalRef<jobject> displayBounds(env,
+                                          env->GetObjectField(nodeObj,
+                                                              gDisplayTopologyGraphNodeClassInfo
+                                                                      .boundsInGlobalDp));
+    android_hardware_display_DisplayTopologyDisplayBounds_toNative(env, displayBounds.get(),
+                                                                   &displayBoundsDp[displayId]);
 
     jobjectArray adjacentDisplaysArray = static_cast<jobjectArray>(
             env->GetObjectField(nodeObj, gDisplayTopologyGraphNodeClassInfo.adjacentDisplays));
@@ -101,6 +132,7 @@ base::Result<const DisplayTopologyGraph> android_hardware_display_DisplayTopolog
     std::unordered_map<ui::LogicalDisplayId, std::vector<DisplayTopologyAdjacentDisplay>>
             topologyGraph;
     std::unordered_map<ui::LogicalDisplayId, int> displaysDensity;
+    std::unordered_map<ui::LogicalDisplayId, FloatRect> absoluteDisplayBoundsDp;
     ui::LogicalDisplayId primaryDisplayId = ui::LogicalDisplayId{
             env->GetIntField(topologyObj, gDisplayTopologyGraphClassInfo.primaryDisplayId)};
 
@@ -117,11 +149,14 @@ base::Result<const DisplayTopologyGraph> android_hardware_display_DisplayTopolog
 
             android_hardware_display_DisplayTopologyGraphNode_toNative(env, nodeObj.get(),
                                                                        /*byRef*/ topologyGraph,
-                                                                       /*byRef*/ displaysDensity);
+                                                                       /*byRef*/ displaysDensity,
+                                                                       /*byRef*/
+                                                                       absoluteDisplayBoundsDp);
         }
     }
     return DisplayTopologyGraph::create(primaryDisplayId, std::move(topologyGraph),
-                                        std::move(displaysDensity));
+                                        std::move(displaysDensity),
+                                        std::move(absoluteDisplayBoundsDp));
 }
 
 // ----------------------------------------------------------------------------
@@ -143,6 +178,9 @@ int register_android_hardware_display_DisplayTopology(JNIEnv* env) {
             GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "displayId", "I");
     gDisplayTopologyGraphNodeClassInfo.density =
             GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "density", "I");
+    gDisplayTopologyGraphNodeClassInfo.boundsInGlobalDp =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "boundsInGlobalDp",
+                            "Landroid/graphics/RectF;");
     gDisplayTopologyGraphNodeClassInfo.adjacentDisplays =
             GetFieldIDOrDie(env, gDisplayTopologyGraphNodeClassInfo.clazz, "adjacentDisplays",
                             "[Landroid/hardware/display/DisplayTopologyGraph$AdjacentDisplay;");
@@ -160,6 +198,17 @@ int register_android_hardware_display_DisplayTopology(JNIEnv* env) {
     gDisplayTopologyGraphAdjacentDisplayClassInfo.offsetDp =
             GetFieldIDOrDie(env, gDisplayTopologyGraphAdjacentDisplayClassInfo.clazz, "offsetDp",
                             "F");
+
+    jclass displayBoundsClazz = FindClassOrDie(env, "android/graphics/RectF");
+    gDisplayTopologyGraphDisplayBoundsClassInfo.clazz = MakeGlobalRefOrDie(env, displayBoundsClazz);
+    gDisplayTopologyGraphDisplayBoundsClassInfo.left =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphDisplayBoundsClassInfo.clazz, "left", "F");
+    gDisplayTopologyGraphDisplayBoundsClassInfo.top =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphDisplayBoundsClassInfo.clazz, "top", "F");
+    gDisplayTopologyGraphDisplayBoundsClassInfo.right =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphDisplayBoundsClassInfo.clazz, "right", "F");
+    gDisplayTopologyGraphDisplayBoundsClassInfo.bottom =
+            GetFieldIDOrDie(env, gDisplayTopologyGraphDisplayBoundsClassInfo.clazz, "bottom", "F");
     return 0;
 }
 

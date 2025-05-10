@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.call.domain.interactor
 
+import android.app.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
@@ -26,6 +27,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /** Interactor for the ongoing phone call chip shown in the status bar. */
@@ -43,5 +45,20 @@ constructor(
             } else {
                 repository.ongoingCallState
             })
+            .map { state ->
+                if (
+                    // TODO(b/415070395): Change to the ui_rich_ongoing flag instead.
+                    Flags.optInRichOngoing() &&
+                        state is OngoingCallModel.InCall &&
+                        state.requestedPromotion
+                ) {
+                    // If this notification requested promotion, then the promoted notification
+                    // chips will handle everything and we don't ever need to show a call chip. See
+                    // b/414830065.
+                    OngoingCallModel.NoCall
+                } else {
+                    state
+                }
+            }
             .stateIn(scope, SharingStarted.Lazily, OngoingCallModel.NoCall)
 }

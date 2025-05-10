@@ -18,6 +18,7 @@
 package com.android.systemui.user.ui.dialog
 
 import android.app.Dialog
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.users.UserCreatingDialog
@@ -41,7 +42,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Coordinates dialogs for user switcher logic. */
 @SysUISingleton
@@ -71,7 +71,7 @@ constructor(
     private fun startHandlingDialogShowRequests() {
         applicationScope.get().launch {
             interactor.get().dialogShowRequests.filterNotNull().collect { request ->
-                val context = shadeDialogContextInteractor.get().context
+                val context = request.context ?: shadeDialogContextInteractor.get().context
                 val (dialog, dialogCuj) =
                     when (request) {
                         is ShowDialogRequestModel.ShowAddUserDialog ->
@@ -91,13 +91,7 @@ constructor(
                                 ),
                             )
                         is ShowDialogRequestModel.ShowUserCreationDialog ->
-                            Pair(
-                                UserCreatingDialog(
-                                    context,
-                                    request.isGuest,
-                                ),
-                                null,
-                            )
+                            Pair(UserCreatingDialog(context, request.isGuest), null)
                         is ShowDialogRequestModel.ShowExitGuestDialog ->
                             Pair(
                                 ExitGuestDialog(

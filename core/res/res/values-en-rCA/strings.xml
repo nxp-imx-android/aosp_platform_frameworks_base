@@ -1804,7 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"One-Handed mode"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Extra dim"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Hearing devices"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"Autoclick"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Autoclick (dwell timing)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Mouse keys"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Disconnected"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connected"</string>
@@ -2267,21 +2267,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad Left"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad Right"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad Center"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Autoclick type settings panel"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Left click"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Right click"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Double click"</string>
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Autoclick options menu"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Left-click"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Right-click"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Double-click"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Drag"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Scroll"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Long press"</string>
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"Touch &amp; hold"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pause"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Resume"</string>
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Position"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Scroll Up"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Scroll Down"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Scroll Left"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Scroll Right"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Exit Scroll Mode"</string>
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"Change menu position"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"Scroll up"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"Scroll down"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"Scroll left"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"Scroll right"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"Exit scroll mode"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Scroll Panel"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> has been put into the RESTRICTED bucket"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

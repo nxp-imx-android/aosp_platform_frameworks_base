@@ -16,24 +16,31 @@
 
 package android.app.supervision;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
 
 import androidx.annotation.Keep;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
- * Contains the information needed for recovering the device supervision pin.
+ * Contains the information needed for recovering the device supervision PIN.
  *
  * <p>Returned by {@link SupervisionManager#getSupervisionRecoveryInfo}.
  *
  * @hide
  */
+@SystemApi
+@FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
 public final class SupervisionRecoveryInfo implements Parcelable {
     /**
      * Extra key used to pass supervision recovery information within an intent.
@@ -70,9 +77,14 @@ public final class SupervisionRecoveryInfo implements Parcelable {
                 }
             };
 
-    /** An IntDef which describes the various states of the recovery information. */
+    /**
+     * An IntDef which describes the various states of the recovery information.
+     *
+     * @hide
+     */
     @Keep
     @IntDef({STATE_PENDING, STATE_VERIFIED})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface State {}
 
     /** Indicates that the recovery information is pending verification. */
@@ -86,6 +98,15 @@ public final class SupervisionRecoveryInfo implements Parcelable {
     @Nullable private PersistableBundle mAccountData;
     @State private int mState;
 
+    /**
+     * Constructor for SupervisionRecoveryInfo.
+     *
+     * @param accountName The name of the account. See {@link android.accounts.Account#name}.
+     * @param accountType The type of the account. See {@link android.accounts.Account#type}.
+     * @param state The state of the recovery information.
+     * @param accountData Authenticator-specific data for recovery. This contains additional
+     *     information that the recovery method needs to recover the device supervision PIN.
+     */
     public SupervisionRecoveryInfo(
             @NonNull String accountName,
             @NonNull String accountType,

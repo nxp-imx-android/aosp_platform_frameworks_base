@@ -83,7 +83,6 @@ class SectionStyleProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SORT_SECTION_BY_TIME)
     fun testIsSilent_silentPeople() {
         val listEntry = fakeNotification(peopleMixedSectioner)
         whenever(highPriorityProvider.isHighPriorityConversation(listEntry)).thenReturn(false)

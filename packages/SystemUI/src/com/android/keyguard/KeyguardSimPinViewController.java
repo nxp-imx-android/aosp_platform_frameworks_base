@@ -68,6 +68,8 @@ public class KeyguardSimPinViewController
     private AlertDialog mRemainingAttemptsDialog;
     private ImageView mSimImageView;
 
+    protected boolean mIsInTestMode = false;
+
     KeyguardUpdateMonitorCallback mUpdateMonitorCallback = new KeyguardUpdateMonitorCallback() {
         @Override
         public void onSimStateChanged(int subId, int slotId, int simState) {
@@ -321,6 +323,7 @@ public class KeyguardSimPinViewController
 
         @Override
         public void run() {
+            if (mIsInTestMode) return;
             Log.v(TAG, "call supplyIccLockPin(subid=" + mSubId + ")");
             TelephonyManager telephonyManager = mTelephonyManager.createForSubscriptionId(mSubId);
             final PinResult result = telephonyManager.supplyIccLockPin(mPin);

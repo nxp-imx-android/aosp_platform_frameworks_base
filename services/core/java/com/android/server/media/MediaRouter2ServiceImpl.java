@@ -1295,7 +1295,7 @@ class MediaRouter2ServiceImpl {
             throw new RuntimeException("MediaRouter2 died prematurely.", ex);
         }
 
-        userRecord.mRouterRecords.add(routerRecord);
+        userRecord.addRouterRecord(routerRecord);
         mAllRouterRecords.put(binder, routerRecord);
 
         userRecord.mHandler.sendMessage(
@@ -1328,11 +1328,10 @@ class MediaRouter2ServiceImpl {
         Slog.i(
                 TAG,
                 TextUtils.formatSimple(
-                        "unregisterRouter2 | package: %s, router id: %d, died: %b",
-                        routerRecord.mPackageName, routerRecord.mRouterId, died));
+                        "unregisterRouter2 | %s, died: %b", routerRecord.getDebugString(), died));
 
         UserRecord userRecord = routerRecord.mUserRecord;
-        userRecord.mRouterRecords.remove(routerRecord);
+        userRecord.removeRouterRecord(routerRecord);
         routerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::notifyDiscoveryPreferenceChangedToManagers,
                         routerRecord.mUserRecord.mHandler,
@@ -1899,11 +1898,8 @@ class MediaRouter2ServiceImpl {
         Slog.i(
                 TAG,
                 TextUtils.formatSimple(
-                        "unregisterManager | package: %s, user: %d, manager: %d, died: %b",
-                        managerRecord.mOwnerPackageName,
-                        userRecord.mUserId,
-                        managerRecord.mManagerId,
-                        died));
+                        "unregisterManager | %s, user: %d, died: %b",
+                        managerRecord.getDebugString(), userRecord.mUserId, died));
 
         userRecord.mManagerRecords.remove(managerRecord);
         managerRecord.dispose();
@@ -2330,7 +2326,7 @@ class MediaRouter2ServiceImpl {
     final class UserRecord {
         public final int mUserId;
         //TODO: make records private for thread-safety
-        final ArrayList<RouterRecord> mRouterRecords = new ArrayList<>();
+        private final ArrayList<RouterRecord> mRouterRecords = new ArrayList<>();
         final ArrayList<ManagerRecord> mManagerRecords = new ArrayList<>();
 
         // @GuardedBy("mLock")
@@ -2354,6 +2350,17 @@ class MediaRouter2ServiceImpl {
             mHandler.init();
         }
 
+        void addRouterRecord(RouterRecord routerRecord) {
+            mRouterRecords.add(routerRecord);
+        }
+
+        void removeRouterRecord(RouterRecord routerRecord) {
+            mRouterRecords.remove(routerRecord);
+            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()) {
+                mHandler.removeRouterRecord(routerRecord);
+            }
+        }
+
         // TODO: This assumes that only one router exists in a package.
         //       Do this in Android S or later.
         @GuardedBy("mLock")
@@ -2364,6 +2371,16 @@ class MediaRouter2ServiceImpl {
                 }
             }
             return null;
+        }
+
+        /** Returns true if the given RouterRecord is binded to the service. */
+        boolean isRouterRecordBinded(RouterRecord routerRecordToCheck) {
+            for (RouterRecord routerRecord : mRouterRecords) {
+                if (routerRecord.mRouterId == routerRecordToCheck.mRouterId) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         // @GuardedBy("mLock")
@@ -3046,6 +3063,12 @@ class MediaRouter2ServiceImpl {
         @Override
         public void onSessionCreated(@NonNull MediaRoute2Provider provider,
                 long uniqueRequestId, @NonNull RoutingSessionInfo sessionInfo) {
+            Slog.i(
+                    TAG,
+                    "onSessionCreated with uniqueRequestId: "
+                            + uniqueRequestId
+                            + ", sessionInfo: "
+                            + sessionInfo);
             sendMessage(PooledLambda.obtainMessage(UserHandler::onSessionCreatedOnHandler,
                     this, provider, uniqueRequestId, sessionInfo));
         }
@@ -3109,6 +3132,24 @@ class MediaRouter2ServiceImpl {
             if (isUidRelevant) {
                 sendMessage(PooledLambda.obtainMessage(
                         UserHandler::updateDiscoveryPreferenceOnHandler, this));
+            }
+        }
+
+        public void removeRouterRecord(RouterRecord routerRecord) {
+            for (String sessionId : mSessionToRouterMap.keySet()) {
+                RouterRecord routerRecordWithSession = mSessionToRouterMap.get(sessionId);
+                if (routerRecordWithSession.mRouterId == routerRecord.mRouterId) {
+                    // Release the session associated with the RouterRecord being removed. The
+                    // onSessionReleasedOnHandler callback will then remove the RouterRecord from
+                    // mSessionToRouterMap.
+                    sendMessage(
+                            PooledLambda.obtainMessage(
+                                    UserHandler::releaseSessionOnHandler,
+                                    this,
+                                    DUMMY_REQUEST_ID,
+                                    routerRecordWithSession,
+                                    sessionId));
+                }
             }
         }
 
@@ -3580,6 +3621,16 @@ class MediaRouter2ServiceImpl {
             }
 
             mSessionCreationRequests.remove(matchingRequest);
+
+            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()
+                    && !mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
+                Slog.w(
+                        TAG,
+                        "Ignoring session creation request for unbound router:"
+                                + matchingRequest.mRouterRecord.getDebugString());
+                return;
+            }
+
             // Not to show old session
             MediaRoute2Provider oldProvider =
                     findProvider(matchingRequest.mOldSession.getProviderId());
@@ -3650,7 +3701,10 @@ class MediaRouter2ServiceImpl {
                         + sessionInfo);
                 return;
             }
-            notifySessionInfoChangedToRouters(Arrays.asList(routerRecord), sessionInfo);
+            if (!Flags.cleanUpDeadRouterRecordsAfterUnbinding()
+                    || mUserRecord.isRouterRecordBinded(routerRecord)) {
+                notifySessionInfoChangedToRouters(Arrays.asList(routerRecord), sessionInfo);
+            }
         }
 
         private void onSessionReleasedOnHandler(@NonNull MediaRoute2Provider provider,
@@ -3666,7 +3720,15 @@ class MediaRouter2ServiceImpl {
                         + sessionInfo);
                 return;
             }
-            routerRecord.notifySessionReleased(sessionInfo);
+
+            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()) {
+                if (mUserRecord.isRouterRecordBinded(routerRecord)) {
+                    routerRecord.notifySessionReleased(sessionInfo);
+                }
+                mSessionToRouterMap.remove(sessionInfo.getId());
+            } else {
+                routerRecord.notifySessionReleased(sessionInfo);
+            }
         }
 
         private void onRequestFailedOnHandler(@NonNull MediaRoute2Provider provider,
@@ -3720,6 +3782,15 @@ class MediaRouter2ServiceImpl {
             }
 
             mSessionCreationRequests.remove(matchingRequest);
+
+            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()
+                    && !mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
+                Slog.w(
+                        TAG,
+                        "handleSessionCreationRequestFailed | Ignoring with unbound router:"
+                                + matchingRequest.mRouterRecord.getDebugString());
+                return false;
+            }
 
             // Notify the requester about the failure.
             // The call should be made by either MediaRouter2 or MediaRouter2Manager.
@@ -3894,7 +3965,7 @@ class MediaRouter2ServiceImpl {
                 } catch (RemoteException ex) {
                     Slog.w(
                             TAG,
-                            "Failed to notify preferred features changed."
+                            "Failed to notify route listing preference changed."
                                     + " Manager probably died.",
                             ex);
                 }

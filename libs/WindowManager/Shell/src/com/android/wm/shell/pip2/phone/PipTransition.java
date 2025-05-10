@@ -80,10 +80,12 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipDisplayChangeObserver;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -142,6 +144,7 @@ public class PipTransition extends PipTransitionController implements
     // Internal state and relevant cached info
     //
     private final PipExpandHandler mExpandHandler;
+    private final PipDisplayChangeObserver mPipDisplayChangeObserver;
 
     private Transitions.TransitionFinishCallback mFinishCallback;
 
@@ -188,12 +191,15 @@ public class PipTransition extends PipTransitionController implements
                 pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
                 splitScreenControllerOptional);
+        mPipDisplayChangeObserver = new PipDisplayChangeObserver(pipTransitionState,
+                pipBoundsState);
     }
 
     @Override
     protected void onInit() {
-        if (PipUtils.isPip2ExperimentEnabled()) {
+        if (PipFlags.isPip2ExperimentEnabled()) {
             mTransitions.addHandler(this);
+            mTransitions.registerObserver(mPipDisplayChangeObserver);
         }
     }
 

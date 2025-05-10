@@ -307,15 +307,15 @@ public final class UserManagerTest {
         mainsExpected.add(mainUserId);
         if (profile != null) mainsExpected.add(profile.id);
         if (communalProfile != null) mainsExpected.add(communalProfile.getIdentifier());
-        assertEquals(mainsExpected.stream().sorted().toList(),
-                mainsActual.stream().map(ui -> ui.id).sorted().toList());
+        assertEquals(mainsActual.stream().map(ui -> ui.id).sorted().toList(),
+                mainsExpected.stream().sorted().toList());
 
 
         final List<Integer> othersExpected = new ArrayList<>();
         othersExpected.add(otherUser.id);
         if (communalProfile != null) othersExpected.add(communalProfile.getIdentifier());
-        assertEquals(othersExpected.stream().sorted().toList(),
-                othersActual.stream().map(ui -> ui.id).sorted().toList());
+        assertEquals(othersActual.stream().map(ui -> ui.id).sorted().toList(),
+                othersExpected.stream().sorted().toList());
     }
 
     @Test
@@ -450,16 +450,39 @@ public final class UserManagerTest {
         assertThat(hasUser(user2.id)).isTrue();
     }
 
-    /**
-     * Tests that UserManager knows how many users can be created.
-     *
-     * We can only test this with regular secondary users, since some other user types have weird
-     * rules about when or if they count towards the max.
-     */
     @MediumTest
     @Test
-    public void testAddTooManyUsers() throws Exception {
-        final String userType = UserManager.USER_TYPE_FULL_SECONDARY;
+    public void testAddTooManyUsers_Secondary() {
+        testAddTooManyUsers(UserManager.USER_TYPE_FULL_SECONDARY);
+    }
+
+    @MediumTest
+    @Test
+    public void testAddTooManyUsers_Guest() {
+        testAddTooManyUsers(UserManager.USER_TYPE_FULL_GUEST);
+    }
+
+    @MediumTest
+    @Test
+    @RequiresFlagsEnabled(android.multiuser.Flags.FLAG_CONSISTENT_MAX_USERS)
+    public void testAddTooManyUsers_Demo() {
+        // RequiresFlagsEnabled doesn't seem to work, so we need this assumption.
+        assumeTrue("ConsistentMaxUsers flag not set", android.multiuser.Flags.consistentMaxUsers());
+
+        testAddTooManyUsers(UserManager.USER_TYPE_FULL_DEMO);
+    }
+
+    /**
+     * Tests that UserManager knows how many users can be created for the given userType.
+     *
+     * This tests that the following methods are correct and consistent with each other, and
+     * with createUser:<ul>
+     *   <li>{@link UserManager#canAddMoreUsers(String)}
+     *   <li>{@link UserManager#getRemainingCreatableUserCount(String)}
+     *   <li>{@link UserManager#getCurrentAllowedNumberOfUsers(String)}
+     * </ul>
+     */
+    private void testAddTooManyUsers(String userType) {
         final UserTypeDetails userTypeDetails = UserTypeFactory.getUserTypes().get(userType);
 
         final int maxUsersForType = userTypeDetails.getMaxAllowed();
@@ -479,6 +502,7 @@ public final class UserManagerTest {
                 Integer.MAX_VALUE : maxUsersForType - currentUsersOfType;
         final int remainingOverall = maxUsersOverall - currentUsersOverall;
         final int remaining = Math.min(remainingUserType, remainingOverall);
+        final int maxAllowedInPractice = currentUsersOfType + remaining;
 
         Slog.v(TAG, "maxUsersForType=" + maxUsersForType
                 + ", maxUsersOverall=" + maxUsersOverall
@@ -486,13 +510,22 @@ public final class UserManagerTest {
                 + ", currentUsersOverall=" + currentUsersOverall
                 + ", remaining=" + remaining);
 
-        assumeTrue("Device supports too many users for this test to be practical", remaining < 20);
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
+                    .isEqualTo(maxAllowedInPractice);
+        }
+
+        if (remaining >= 20) {
+            Slog.w(TAG, "Device claims to support a very high number of users of type "
+                    + userType + ". Was such a high user limit intended?");
+        }
 
         int usersAdded;
         for (usersAdded = 0; usersAdded < remaining; usersAdded++) {
             Slog.v(TAG, "Adding user " + usersAdded);
-            assertThat(mUserManager.canAddMoreUsers()).isTrue();
             assertThat(mUserManager.canAddMoreUsers(userType)).isTrue();
+            assertThat(mUserManager.getRemainingCreatableUserCount(userType))
+                    .isEqualTo(remaining - usersAdded);
 
             final UserInfo user = createUser("User " + usersAdded, userType, 0);
             assertThat(user).isNotNull();
@@ -502,13 +535,37 @@ public final class UserManagerTest {
 
         assertWithMessage("Still thinks more users of that type can be added")
                 .that(mUserManager.canAddMoreUsers(userType)).isFalse();
-        if (currentUsersOverall + usersAdded >= maxUsersOverall) {
-            assertThat(mUserManager.canAddMoreUsers()).isFalse();
+        assertThat(mUserManager.getRemainingCreatableUserCount(userType)).isEqualTo(0);
+
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
+                    .isEqualTo(maxAllowedInPractice);
         }
 
         assertThat(createUser("User beyond", userType, 0)).isNull();
 
-        assertThat(mUserManager.canAddMoreUsers(mUserManager.USER_TYPE_FULL_GUEST)).isTrue();
+        if (!android.multiuser.Flags.consistentMaxUsersIncludingGuests()
+                && !UserManager.isUserTypeGuest(userType)) {
+            assertThat(mUserManager.canAddMoreUsers(UserManager.USER_TYPE_FULL_GUEST)).isTrue();
+        }
+
+        // We've maxed out this usertype. Can we add a user of a different type now?
+        final String otherType = !userType.equals(UserManager.USER_TYPE_FULL_GUEST) ?
+                UserManager.USER_TYPE_FULL_GUEST : UserManager.USER_TYPE_FULL_SECONDARY;
+        if (remainingOverall > usersAdded) {
+            Slog.v(TAG, "Expecting to be able to add a user of a different type.");
+            assertThat(mUserManager.canAddMoreUsers(otherType)).isTrue();
+            assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isGreaterThan(0);
+            assertThat(createUser("Other beyond", otherType, 0)).isNotNull();
+        } else {
+            if (android.multiuser.Flags.consistentMaxUsersIncludingGuests()
+                    || !UserManager.isUserTypeGuest(otherType)) {
+                Slog.v(TAG, "Expecting not to be able to add a user of a different type.");
+                assertThat(mUserManager.canAddMoreUsers(otherType)).isFalse();
+                assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isEqualTo(0);
+                assertThat(createUser("Other beyond", otherType, 0)).isNull();
+            }
+        }
     }
 
     @MediumTest
@@ -1462,6 +1519,7 @@ public final class UserManagerTest {
         mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE,
                 true, mainUserHandle);
         try {
+            assertThat(mUserManager.canAddPrivateProfile()).isFalse();
             UserInfo privateProfileInfo = createProfileForUser("Private",
                     UserManager.USER_TYPE_PROFILE_PRIVATE, mainUserId);
             assertThat(privateProfileInfo).isNull();
@@ -1666,23 +1724,6 @@ public final class UserManagerTest {
         }
     }
 
-
-    @MediumTest
-    @Test
-    public void testMaxUsers() {
-        int N = UserManager.getMaxSupportedUsers();
-        int count = mUserManager.getUsers().size();
-        // Create as many users as permitted and make sure creation passes
-        while (count < N) {
-            UserInfo ui = createUser("User " + count, 0);
-            assertThat(ui).isNotNull();
-            count++;
-        }
-        // Try to create one more user and make sure it fails
-        UserInfo extra = createUser("One more", 0);
-        assertThat(extra).isNull();
-    }
-
     @MediumTest
     @Test
     public void testGetUserCount() {
@@ -1802,9 +1843,9 @@ public final class UserManagerTest {
     @MediumTest
     @Test
     public void testConcurrentUserCreate() throws Exception {
-        int userCount = mUserManager.getUsers().size();
-        int maxSupportedUsers = UserManager.getMaxSupportedUsers();
-        int canBeCreatedCount = maxSupportedUsers - userCount;
+        final int canBeCreatedCount = mUserManager.getRemainingCreatableUserCount(
+                UserManager.USER_TYPE_FULL_SECONDARY);
+
         // Test exceeding the limit while running in parallel
         int createUsersCount = canBeCreatedCount + 5;
         ExecutorService es = Executors.newCachedThreadPool();
@@ -1825,7 +1866,7 @@ public final class UserManagerTest {
                 "Could not create " + createUsersCount + " users in " + timeout + " seconds")
                 .that(es.awaitTermination(timeout, TimeUnit.SECONDS))
                 .isTrue();
-        assertThat(mUserManager.getUsers().size()).isEqualTo(maxSupportedUsers);
+        assertThat(mUserManager.canAddMoreUsers(UserManager.USER_TYPE_FULL_SECONDARY)).isFalse();
         assertThat(created.get()).isEqualTo(canBeCreatedCount);
     }
 

@@ -210,6 +210,13 @@ flag {
 }
 
 flag {
+    name: "bugreport_multi_display_screenshot_enabled"
+    namespace: "crumpet"
+    description: "Enable a flag taking screenshots of all displays in bugreport."
+    bug: "364767133"
+}
+
+flag {
     name: "cpu_gpu_headrooms"
     namespace: "game"
     description: "Feature flag for adding CPU/GPU headroom API"

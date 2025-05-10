@@ -28,6 +28,7 @@ import android.provider.Settings
 import android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS
 import android.util.Log
 import android.util.MathUtils
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +46,7 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
+import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -352,6 +354,7 @@ constructor(
                 this::updateSeekbarListening,
                 this::closeGuts,
                 falsingManager,
+                this::onCarouselVisibleToUser,
                 logger,
             )
         carouselLocale = context.resources.configuration.locales.get(0)
@@ -768,6 +771,8 @@ constructor(
             if (existingPlayer == null) {
                 bgExecutor.execute {
                     val mediaViewHolder = createMediaViewHolderInBg()
+                    mediaViewHolder.titleText.gravity = if (isRtl) Gravity.RIGHT else Gravity.LEFT
+                    mediaViewHolder.artistText.gravity = if (isRtl) Gravity.RIGHT else Gravity.LEFT
                     // Add the new player in the main thread.
                     uiExecutor.execute {
                         setupNewPlayer(key, data, curVisibleMediaKey, mediaViewHolder)
@@ -1211,6 +1216,17 @@ constructor(
             mediaCarousel.layout(0, 0, width, mediaCarousel.measuredHeight)
             // Update the padding after layout; view widths are used in RTL to calculate scrollX
             mediaCarouselScrollHandler.playerWidthPlusPadding = playerWidthPlusPadding
+        }
+    }
+
+    fun onCarouselVisibleToUser() {
+        if (!enableSuggestedDeviceUi() || !mediaCarouselScrollHandler.visibleToUser) {
+            return
+        }
+        val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
+        if (MediaPlayerData.players().size > visibleMediaIndex) {
+            val mediaControlPanel = MediaPlayerData.getMediaControlPanel(visibleMediaIndex)
+            mediaControlPanel?.onSuggestionSpaceVisible()
         }
     }
 

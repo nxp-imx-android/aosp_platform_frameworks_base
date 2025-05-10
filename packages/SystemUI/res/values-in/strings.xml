@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Izinkan"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Proses debug nirkabel tidak diizinkan"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Pengguna yang sedang login ke perangkat ini tidak dapat mengaktifkan proses debug nirkabel. Beralihlah ke pengguna admin untuk menggunakan fitur ini."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"Port USB dinonaktifkan"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Untuk melindungi perangkat dari cairan atau kotoran, port USB dinonaktifkan dan tidak akan mendeteksi aksesori apa pun.\n\nAnda akan diberi tahu jika port USB sudah dapat digunakan kembali."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Port USB diaktifkan untuk mendeteksi pengisi daya dan aksesori"</string>
@@ -114,8 +116,8 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Rekam satu aplikasi"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Rekam layar ini"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Rekam %s"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Saat Anda merekam seluruh layar, semua hal yang ditampilkan di layar akan direkam. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
-    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Jika Anda merekam aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan direkam. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Saat Anda merekam seluruh layar, semua hal yang ditampilkan di layar akan direkam. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Saat Anda merekam suatu aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan direkam. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Rekam layar"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Pilih aplikasi yang akan direkam"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"Rekam audio"</string>
@@ -321,7 +323,7 @@
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_activate" msgid="3724301751036877403">"aktifkan"</string>
     <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"Aktifkan otomatis besok"</string>
     <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"Fitur seperti Quick Share dan Temukan Perangkat Saya menggunakan Bluetooth"</string>
-    <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"Bluetooth akan dinyalakan besok pagi"</string>
+    <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"Bluetooth akan diaktifkan besok pagi"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"Bagikan audio"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"Berbagi audio"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"masuk ke setelan berbagi audio"</string>
@@ -352,7 +354,7 @@
     <string name="quick_settings_networks_unavailable" msgid="1167847013337940082">"Jaringan tidak tersedia"</string>
     <string name="quick_settings_wifi_detail_empty_text" msgid="483130889414601732">"Tidak ada jaringan Wi-Fi yang tersedia"</string>
     <string name="quick_settings_wifi_secondary_label_transient" msgid="7501659015509357887">"Mengaktifkan…"</string>
-    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Transmisikan"</string>
+    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Transmisi"</string>
     <string name="quick_settings_casting" msgid="1435880708719268055">"Melakukan transmisi"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Perangkat tanpa nama"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Perangkat tak tersedia"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Tidak disetel"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Kelola di setelan"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Tidak ada mode yang aktif}=1{{mode} aktif}other{# mode aktif}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> Mode"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Aktif"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Anda tidak akan terganggu oleh suara dan getaran, kecuali dari alarm, pengingat, acara, dan penelepon yang Anda tentukan. Anda akan tetap mendengar apa pun yang telah dipilih untuk diputar, termasuk musik, video, dan game."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Anda tidak akan terganggu oleh suara dan getaran, kecuali dari alarm. Anda akan tetap mendengar apa pun yang telah dipilih untuk diputar, termasuk musik, video, dan game."</string>
@@ -527,7 +528,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Geser ke kiri untuk memulai tutorial komunal"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Sesuaikan"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Tutup"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Tambahkan, hapus, dan susun ulang widget Anda di ruang ini"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Tambahkan, hapus, dan susun ulang widget di ruang ini"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Tambahkan widget lainnya"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"Tekan lama untuk menyesuaikan widget"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"Sesuaikan widget"</string>
@@ -593,8 +594,8 @@
     <string name="screen_share_permission_dialog_option_text_entire_screen_for_display" msgid="1545850238689169166">"Bagikan <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
-    <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"JIka Anda membagikan seluruh layar, semua hal yang ada di layar Anda akan terlihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
-    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Jika Anda membagikan aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan terlihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"Saat Anda membagikan seluruh layar, semua hal yang ada di layar akan terlihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Saat Anda membagikan suatu aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan terlihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Bagikan layar"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> telah menonaktifkan opsi ini"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Tidak didukung oleh aplikasi"</string>
@@ -603,13 +604,13 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Transmisikan satu aplikasi"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Transmisikan seluruh layar"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Transmisikan <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"JIka Anda mentransmisikan seluruh layar, semua hal yang ada di layar Anda akan terlihat. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Jika Anda mentransmisikan aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan terlihat. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Saat Anda mentransmisikan seluruh layar, semua hal yang ada di layar akan terlihat. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"Saat Anda mentransmisikan suatu aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan terlihat. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"Transmisikan layar"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"Pilih aplikasi yang akan ditransmisikan"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"Mulai berbagi?"</string>
-    <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Jika Anda membagikan, merekam, atau mentransmisikan, Android akan memiliki akses ke semua hal yang ditampilkan di layar atau yang diputar di perangkat Anda. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
-    <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Jika Anda membagikan, merekam, atau mentransmisikan suatu aplikasi, Android akan memiliki akses ke semua hal yang ditampilkan atau yang diputar di aplikasi tersebut. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Saat Anda membagikan, merekam, atau melakukan transmisi, Android memiliki akses ke semua hal yang ditampilkan di layar atau diputar di perangkat. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
+    <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Saat Anda membagikan, merekam, atau mentransmisikan suatu aplikasi, Android memiliki akses ke semua hal yang ditampilkan atau diputar di aplikasi tersebut. Jadi, berhati-hatilah saat menangani sandi, detail pembayaran, pesan, foto, audio, dan video."</string>
     <string name="media_projection_entry_generic_permission_dialog_continue" msgid="8640381403048097116">"Mulai"</string>
     <string name="media_projection_entry_generic_permission_dialog_continue_single_app" msgid="5920814988611877051">"Berikutnya"</string>
     <string name="media_projection_task_switcher_text" msgid="590885489897412359">"Berbagi akan dijeda saat Anda beralih aplikasi"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Tetap terbuka kuncinya oleh TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Perangkat dikunci, terlalu banyak upaya autentikasi"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Perangkat dikunci\nAutentikasi gagal"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Dikunci oleh smartwatch Anda"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Setelan suara"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Otomatis beri teks di media"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Untuk menghubungkan keyboard dengan tablet, terlebih dahulu aktifkan Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktifkan"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aktif - Berbasis deteksi wajah"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Senyapkan dan gabungkan"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Promo, fitur baru, dan lainnya"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Berita utama, editorial, dan lainnya"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Suka, postingan, dan lainnya"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletter, media yang direkomendasikan, dan lainnya"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Selesai"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Terapkan"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Nonaktifkan"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Anda membutuhkan setidaknya <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> kartu"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Edit kartu"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Waktu"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Tampilkan jam, menit, dan detik"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Lainnya"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"mengubah ukuran kartu"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Hapus kartu"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Tempatkan kartu"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"aktifkan/nonaktifkan mode penempatan"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"aktifkan/nonaktifkan pilihan"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Tambahkan kartu ke posisi terakhir"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Tambahkan <xliff:g id="NAME">%1$s</xliff:g> ke posisi terakhir"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Pindahkan kartu"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Tambahkan kartu ke posisi yang diinginkan"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Pindahkan ke <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Jeda animasi"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Panggilan sedang berlangsung"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Sedang berlangsung"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"luaskan notifikasi"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"ciutkan notifikasi"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Data seluler"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Terhubung"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Terhubung sementara"</string>

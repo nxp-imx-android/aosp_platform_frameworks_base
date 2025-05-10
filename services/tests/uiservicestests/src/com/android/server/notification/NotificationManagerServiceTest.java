@@ -27,7 +27,6 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
-import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -5276,6 +5275,41 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void
+        testUpdateNotificationChannelFromPrivilegedListener_oldSoundNoUriPerm_newSoundHasUriPerm()
+                throws Exception {
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+        when(mPreferencesHelper.getNotificationChannel(eq(mPkg), anyInt(),
+                eq(mTestNotificationChannel.getId()), anyBoolean()))
+                .thenReturn(mTestNotificationChannel);
+
+        // Missing Uri permissions for the old channel sound
+        final Uri oldSoundUri = Settings.System.DEFAULT_NOTIFICATION_URI;
+        doThrow(new SecurityException("no access")).when(mUgmInternal)
+                .checkGrantUriPermission(eq(Process.myUid()), any(), eq(oldSoundUri),
+                anyInt(), eq(Process.myUserHandle().getIdentifier()));
+
+        // Has Uri permissions for the old channel sound
+        final Uri newSoundUri = Uri.parse("content://media/test/sound/uri");
+        final NotificationChannel updatedNotificationChannel = new NotificationChannel(
+                TEST_CHANNEL_ID, TEST_CHANNEL_ID, IMPORTANCE_DEFAULT);
+        updatedNotificationChannel.setSound(newSoundUri,
+                updatedNotificationChannel.getAudioAttributes());
+
+        mBinderService.updateNotificationChannelFromPrivilegedListener(
+                null, mPkg, Process.myUserHandle(), updatedNotificationChannel);
+
+        verify(mPreferencesHelper, times(1)).updateNotificationChannel(
+                anyString(), anyInt(), any(), anyBoolean(),  anyInt(), anyBoolean());
+
+        verify(mListeners, never()).notifyNotificationChannelChanged(eq(mPkg),
+                eq(Process.myUserHandle()), eq(mTestNotificationChannel),
+                eq(NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_UPDATED));
+    }
+
+    @Test
     public void testGetNotificationChannelFromPrivilegedListener_cdm_success() throws Exception {
         mService.setPreferencesHelper(mPreferencesHelper);
         when(mCompanionMgr.getAssociations(mPkg, mUserId))
@@ -6906,7 +6940,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Clone", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_CLONE;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        // the parent ID needs to be different from the profile ID to identify it as a profile
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
@@ -6933,7 +6968,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Work", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_MANAGED;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
@@ -6962,7 +6997,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         UserInfo ui = new UserInfo(10, "Private", UserInfo.FLAG_PROFILE);
         ui.userType = USER_TYPE_PROFILE_PRIVATE;
         when(mUmInternal.getUserInfo(10)).thenReturn(ui);
-        when(mUmInternal.getProfileParentId(10)).thenReturn(mUserId);
+        when(mUmInternal.getProfileParentId(10)).thenReturn(11);
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
@@ -8688,7 +8723,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.app.Flags.FLAG_SORT_SECTION_BY_TIME})
     public void testVisualDifference_userInitiatedJob() {
         Notification.Builder nb1 = new Notification.Builder(mContext, "")
                 .setContentTitle("foo");
@@ -16989,7 +17023,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     public void setNotificationPolicy_fromSystemApp_appliesPriorityChannelsAllowed()
             throws Exception {
         setUpRealZenTest();
@@ -17019,7 +17052,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI)
     @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_fromRegularAppThatCanModifyPolicy_ignoresState()
             throws Exception {
@@ -17360,7 +17392,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_newNotification_noisy_matchesSbn() throws Exception {
         NotificationRecord nr = generateNotificationRecord(mTestNotificationChannel, mUserId);
 
@@ -17374,7 +17405,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_newNotification_silent_matchesSbn() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);
@@ -17389,7 +17419,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_silentSameText_originalPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);
@@ -17409,7 +17438,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_silentNewText_newPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, 0, mUserId);
@@ -17434,7 +17462,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_SORT_SECTION_BY_TIME)
     public void rankingTime_updatedNotification_noisySameText_newPostTime() throws Exception {
         NotificationChannel low = new NotificationChannel("low", "low", IMPORTANCE_LOW);
         NotificationRecord nr = generateNotificationRecord(low, mUserId);

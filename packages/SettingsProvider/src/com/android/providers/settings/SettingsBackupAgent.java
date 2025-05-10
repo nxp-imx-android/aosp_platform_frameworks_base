@@ -979,7 +979,7 @@ public class SettingsBackupAgent extends BackupAgentHelper {
 
             if (LargeScreenSettings.doNotRestoreIfLargeScreenSetting(key, getBaseContext())) {
                 Log.i(TAG, "Skipping restore for setting " + key + " as the target device "
-                        + "is a large screen (i.e tablet or foldable in unfolded state)");
+                        + "is a large screen (i.e tablet or foldable)");
                 if (areAgentMetricsEnabled) {
                     mBackupRestoreEventLogger.logItemsRestoreFailed(
                             settingsKey, /* count= */ 1, ERROR_SKIPPED_DUE_TO_LARGE_SCREEN);

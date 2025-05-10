@@ -18,6 +18,8 @@ package com.android.server.am;
 
 import android.annotation.NonNull;
 import android.app.ActivityThread;
+import android.companion.virtual.VirtualDevice;
+import android.companion.virtual.VirtualDeviceManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -44,7 +46,6 @@ import java.util.Objects;
  * in {@link Settings.Secure}.
  */
 final class CoreSettingsObserver extends ContentObserver {
-    private static final String LOG_TAG = CoreSettingsObserver.class.getSimpleName();
 
     private static class DeviceConfigEntry<T> {
         String namespace;
@@ -65,15 +66,12 @@ final class CoreSettingsObserver extends ContentObserver {
 
     // mapping form property name to its type
     @VisibleForTesting
-    static final Map<String, Class<?>> sSecureSettingToTypeMap = new HashMap<
-            String, Class<?>>();
+    static final Map<String, Class<?>> sSecureSettingToTypeMap = new HashMap<>();
     @VisibleForTesting
-    static final Map<String, Class<?>> sSystemSettingToTypeMap = new HashMap<
-            String, Class<?>>();
+    static final Map<String, Class<?>> sSystemSettingToTypeMap = new HashMap<>();
     @VisibleForTesting
-    static final Map<String, Class<?>> sGlobalSettingToTypeMap = new HashMap<
-            String, Class<?>>();
-    static final List<DeviceConfigEntry> sDeviceConfigEntries = new ArrayList<DeviceConfigEntry>();
+    static final Map<String, Class<?>> sGlobalSettingToTypeMap = new HashMap<>();
+    static final List<DeviceConfigEntry> sDeviceConfigEntries = new ArrayList<>();
     static {
         sSecureSettingToTypeMap.put(Settings.Secure.LONG_PRESS_TIMEOUT, int.class);
         sSecureSettingToTypeMap.put(Settings.Secure.MULTI_PRESS_TIMEOUT, int.class);
@@ -170,6 +168,7 @@ final class CoreSettingsObserver extends ContentObserver {
     private final Bundle mCoreSettings = new Bundle();
 
     private final ActivityManagerService mActivityManagerService;
+    private VirtualDeviceManager mVirtualDeviceManager;
 
     public CoreSettingsObserver(ActivityManagerService activityManagerService) {
         super(activityManagerService.mHandler);
@@ -197,7 +196,7 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     public Bundle getCoreSettingsLocked() {
-        return (Bundle) mCoreSettings.clone();
+        return mCoreSettings.deepCopy();
     }
 
     @Override
@@ -208,10 +207,46 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     private void sendCoreSettings() {
-        populateSettings(mCoreSettings, sSecureSettingToTypeMap);
-        populateSettings(mCoreSettings, sSystemSettingToTypeMap);
-        populateSettings(mCoreSettings, sGlobalSettingToTypeMap);
-        populateSettingsFromDeviceConfig();
+        final Context context = mActivityManagerService.mContext;
+        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
+            final List<Integer> deviceIds = new ArrayList<>();
+            if (mVirtualDeviceManager == null) {
+                mVirtualDeviceManager = mActivityManagerService.mContext.getSystemService(
+                        VirtualDeviceManager.class);
+            }
+            if (mVirtualDeviceManager != null) {
+                final List<VirtualDevice> virtualDevices =
+                        mVirtualDeviceManager.getVirtualDevices();
+                for (VirtualDevice virtualDevice : virtualDevices) {
+                    deviceIds.add(virtualDevice.getDeviceId());
+                }
+            }
+
+            Bundle globalSettingsBundle = new Bundle();
+            populateSettings(context, globalSettingsBundle, sGlobalSettingToTypeMap);
+            Bundle deviceConfigBundle = new Bundle();
+            populateSettingsFromDeviceConfig(deviceConfigBundle);
+
+            deviceIds.add(Context.DEVICE_ID_DEFAULT);
+            for (int deviceId : deviceIds) {
+                final Bundle deviceBundle = new Bundle();
+                final Context deviceContext = context.createDeviceContext(deviceId);
+                populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
+                populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
+
+                // Copy global settings and device config values, as they don't vary across devices.
+                deviceBundle.putAll(globalSettingsBundle);
+                deviceBundle.putAll(deviceConfigBundle);
+
+                mCoreSettings.putBundle(String.valueOf(deviceId), deviceBundle);
+            }
+        } else {
+            populateSettings(context, mCoreSettings, sSecureSettingToTypeMap);
+            populateSettings(context, mCoreSettings, sSystemSettingToTypeMap);
+            populateSettings(context, mCoreSettings, sGlobalSettingToTypeMap);
+            populateSettingsFromDeviceConfig(mCoreSettings);
+        }
+
         mActivityManagerService.onCoreSettingsChange(mCoreSettings);
     }
 
@@ -246,8 +281,7 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     @VisibleForTesting
-    void populateSettings(Bundle snapshot, Map<String, Class<?>> map) {
-        final Context context = mActivityManagerService.mContext;
+    void populateSettings(Context context, Bundle snapshot, Map<String, Class<?>> map) {
         final ContentResolver cr = context.getContentResolver();
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
             String setting = entry.getKey();
@@ -277,27 +311,27 @@ final class CoreSettingsObserver extends ContentObserver {
     }
 
     @SuppressWarnings("unchecked")
-    private void populateSettingsFromDeviceConfig() {
+    private static void populateSettingsFromDeviceConfig(Bundle bundle) {
         for (DeviceConfigEntry<?> entry : sDeviceConfigEntries) {
             if (entry.type == String.class) {
                 String defaultValue = ((DeviceConfigEntry<String>) entry).defaultValue;
-                mCoreSettings.putString(entry.coreSettingKey,
+                bundle.putString(entry.coreSettingKey,
                         DeviceConfig.getString(entry.namespace, entry.flag, defaultValue));
             } else if (entry.type == int.class) {
                 int defaultValue = ((DeviceConfigEntry<Integer>) entry).defaultValue;
-                mCoreSettings.putInt(entry.coreSettingKey,
+                bundle.putInt(entry.coreSettingKey,
                         DeviceConfig.getInt(entry.namespace, entry.flag, defaultValue));
             } else if (entry.type == float.class) {
                 float defaultValue = ((DeviceConfigEntry<Float>) entry).defaultValue;
-                mCoreSettings.putFloat(entry.coreSettingKey,
+                bundle.putFloat(entry.coreSettingKey,
                         DeviceConfig.getFloat(entry.namespace, entry.flag, defaultValue));
             } else if (entry.type == long.class) {
                 long defaultValue = ((DeviceConfigEntry<Long>) entry).defaultValue;
-                mCoreSettings.putLong(entry.coreSettingKey,
+                bundle.putLong(entry.coreSettingKey,
                         DeviceConfig.getLong(entry.namespace, entry.flag, defaultValue));
             } else if (entry.type == boolean.class) {
                 boolean defaultValue = ((DeviceConfigEntry<Boolean>) entry).defaultValue;
-                mCoreSettings.putInt(entry.coreSettingKey,
+                bundle.putInt(entry.coreSettingKey,
                         DeviceConfig.getBoolean(entry.namespace, entry.flag, defaultValue) ? 1 : 0);
             }
         }

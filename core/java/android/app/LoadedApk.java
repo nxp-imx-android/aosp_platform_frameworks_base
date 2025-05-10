@@ -955,7 +955,8 @@ public final class LoadedApk {
                             .getApplicationInfo(mPackageName, PackageManager.GET_META_DATA,
                                     UserHandle.myUserId());
                     final String debugLayerPath = GraphicsEnvironment.getInstance()
-                            .getDebugLayerPathsFromSettings(mActivityThread.getCoreSettings(),
+                            .getDebugLayerPathsFromSettings(
+                                    mActivityThread.getDefaultDeviceCoreSettings(),
                                     ActivityThread.getPackageManager(), mPackageName, ai);
                     if (debugLayerPath != null) {
                         libraryPermittedPath += File.pathSeparator + debugLayerPath;
@@ -2080,11 +2081,11 @@ public final class LoadedApk {
                 mDispatcher = new WeakReference<LoadedApk.ServiceDispatcher>(sd);
             }
 
-            public void connected(ComponentName name, IBinder service, boolean dead)
-                    throws RemoteException {
+            public void connected(ComponentName name, IBinder service, IBinderSession binderSession,
+                    boolean dead) throws RemoteException {
                 LoadedApk.ServiceDispatcher sd = mDispatcher.get();
                 if (sd != null) {
-                    sd.connected(name, service, dead);
+                    sd.connected(name, service, binderSession, dead);
                 }
             }
         }
@@ -2172,27 +2173,29 @@ public final class LoadedApk {
             return mUnbindLocation;
         }
 
-        public void connected(ComponentName name, IBinder service, boolean dead) {
+        public void connected(ComponentName name, IBinder service, IBinderSession session,
+                boolean dead) {
             if (mActivityExecutor != null) {
-                mActivityExecutor.execute(new RunConnection(name, service, 0, dead));
+                mActivityExecutor.execute(new RunConnection(name, service, session, 0, dead));
             } else if (mActivityThread != null) {
-                mActivityThread.post(new RunConnection(name, service, 0, dead));
+                mActivityThread.post(new RunConnection(name, service, session, 0, dead));
             } else {
-                doConnected(name, service, dead);
+                doConnected(name, service, session, dead);
             }
         }
 
         public void death(ComponentName name, IBinder service) {
             if (mActivityExecutor != null) {
-                mActivityExecutor.execute(new RunConnection(name, service, 1, false));
+                mActivityExecutor.execute(new RunConnection(name, service, null, 1, false));
             } else if (mActivityThread != null) {
-                mActivityThread.post(new RunConnection(name, service, 1, false));
+                mActivityThread.post(new RunConnection(name, service, null, 1, false));
             } else {
                 doDeath(name, service);
             }
         }
 
-        public void doConnected(ComponentName name, IBinder service, boolean dead) {
+        public void doConnected(ComponentName name, IBinder service, IBinderSession session,
+                boolean dead) {
             ServiceDispatcher.ConnectionInfo old;
             ServiceDispatcher.ConnectionInfo info;
 
@@ -2242,7 +2245,7 @@ public final class LoadedApk {
             } else {
                 // If there is a new viable service, it is now connected.
                 if (service != null) {
-                    mConnection.onServiceConnected(name, service);
+                    mConnection.onServiceConnected(name, service, session);
                 } else {
                     // The binding machinery worked, but the remote returned null from onBind().
                     mConnection.onNullBinding(name);
@@ -2266,16 +2269,18 @@ public final class LoadedApk {
         }
 
         private final class RunConnection implements Runnable {
-            RunConnection(ComponentName name, IBinder service, int command, boolean dead) {
+            RunConnection(ComponentName name, IBinder service, IBinderSession session, int command,
+                    boolean dead) {
                 mName = name;
                 mService = service;
+                mBinderSession = session;
                 mCommand = command;
                 mDead = dead;
             }
 
             public void run() {
                 if (mCommand == 0) {
-                    doConnected(mName, mService, mDead);
+                    doConnected(mName, mService, mBinderSession, mDead);
                 } else if (mCommand == 1) {
                     doDeath(mName, mService);
                 }
@@ -2283,6 +2288,7 @@ public final class LoadedApk {
 
             final ComponentName mName;
             final IBinder mService;
+            final IBinderSession mBinderSession;
             final int mCommand;
             final boolean mDead;
         }

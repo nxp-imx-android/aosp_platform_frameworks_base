@@ -272,7 +272,12 @@ constructor(
      * @param hide TRUE hides smartspace, FALSE shows smartspace
      */
     fun hideSmartspace(hide: Boolean) {
-        mainHandler.post { smartSpaceView?.visibility = if (hide) View.INVISIBLE else View.VISIBLE }
+        mainHandler.post {
+            smartSpaceView?.visibility = if (hide) View.INVISIBLE else View.VISIBLE
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                clockViewModel.setShowClock(!hide)
+            }
+        }
     }
 
     /**
@@ -493,7 +498,6 @@ constructor(
     }
 
     private fun setUpClock(previewContext: Context, parentView: ViewGroup) {
-        val resources = parentView.resources
         val receiver =
             object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {

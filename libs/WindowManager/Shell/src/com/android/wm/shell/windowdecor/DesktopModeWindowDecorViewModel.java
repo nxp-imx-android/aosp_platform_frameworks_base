@@ -37,6 +37,7 @@ import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.Indica
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer.MANAGE_WINDOWS_MINIMUM_INSTANCES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
@@ -60,11 +61,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Choreographer;
 import android.view.GestureDetector;
-import android.view.ISystemGestureExclusionListener;
 import android.view.IWindowManager;
 import android.view.InputChannel;
 import android.view.InputEvent;
@@ -148,6 +147,7 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
@@ -241,27 +241,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     private final AppToWebGenericLinksParser mGenericLinksParser;
     private final DisplayInsetsController mDisplayInsetsController;
-    private final Region mExclusionRegion = Region.obtain();
+
+    private final WindowDecorationGestureExclusionTracker mGestureExclusionTracker;
     private boolean mInImmersiveMode;
     private final String mSysUIPackageName;
     private final AssistContentRequester mAssistContentRequester;
     private final WindowDecorViewHostSupplier<WindowDecorViewHost> mWindowDecorViewHostSupplier;
 
     private final DisplayChangeController.OnDisplayChangingListener mOnDisplayChangingListener;
-    private final ISystemGestureExclusionListener mGestureExclusionListener =
-            new ISystemGestureExclusionListener.Stub() {
-                @Override
-                public void onSystemGestureExclusionChanged(int displayId,
-                        Region systemGestureExclusion, Region systemGestureExclusionUnrestricted) {
-                    if (mContext.getDisplayId() != displayId) {
-                        return;
-                    }
-                    mMainExecutor.execute(() -> {
-                        mExclusionRegion.set(systemGestureExclusion);
-                        onExclusionRegionChanged(displayId, mExclusionRegion);
-                    });
-                }
-            };
     private final WindowDecorationActions mWindowDecorationActions;
     private final TaskPositionerFactory mTaskPositionerFactory;
     private final FocusTransitionObserver mFocusTransitionObserver;
@@ -510,6 +497,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mWindowDecorationActions =
                 new DefaultWindowDecorationActions(this, mDesktopTasksController,
                         mContext, mDesktopModeUiEventLogger, mCompatUI);
+        mGestureExclusionTracker =
+                new WindowDecorationGestureExclusionTracker(mContext, mWindowManager,
+                        mDisplayController, mMainExecutor, shellInit, (displayId, region) -> {
+                    onExclusionRegionChanged(displayId, region);
+                    return Unit.INSTANCE;
+                });
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -529,12 +522,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     new DesktopModeRecentsTransitionStateListener());
         }
         mDisplayController.addDisplayChangingController(mOnDisplayChangingListener);
-        try {
-            mWindowManager.registerSystemGestureExclusionListener(mGestureExclusionListener,
-                    mContext.getDisplayId());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to register window manager callbacks", e);
-        }
         if (mDesktopState.canEnterDesktopModeOrShowAppHandle()
                 && Flags.enableDesktopWindowingAppHandleEducation()) {
             mAppHandleEducationController.setAppHandleEducationTooltipCallbacks(
@@ -644,7 +631,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* shouldSetTaskPositionAndCrop */,
-                    mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion);
+                    mFocusTransitionObserver.hasGlobalFocus(taskInfo),
+                    mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
+                    /* inSyncWithTransition= */ true);
         }
     }
 
@@ -687,7 +676,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                 false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion);
+                mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
+                /* inSyncWithTransition= */ true);
     }
 
     @Override
@@ -1185,8 +1175,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
                 final boolean downInCustomizableCaptionRegion =
                         decoration.checkTouchEventInCustomizableRegion(e);
-                final boolean downInExclusionRegion = mExclusionRegion.contains(
-                        (int) e.getRawX(), (int) e.getRawY());
+                final Region exclusionRegion = mGestureExclusionTracker
+                        .getExclusionRegion(e.getDisplayId());
+                final boolean downInExclusionRegion =
+                        exclusionRegion.contains((int) e.getRawX(), (int) e.getRawY());
                 final boolean isTransparentCaption =
                         TaskInfoKt.isTransparentCaptionBarAppearance(decoration.mTaskInfo);
                 // MotionEvent's coordinates are relative to view, we want location in window
@@ -1846,9 +1838,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT) {
+        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: createWindowDecoration taskId=%d surface=%s",
+                TAG, taskInfo.taskId, taskSurface);
         final DesktopModeWindowDecoration oldDecoration = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (oldDecoration != null) {
             // close the old decoration if it exists to avoid two window decorations being added
+            ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: closing old decoration", TAG);
             oldDecoration.close();
         }
         final DesktopModeWindowDecoration windowDecoration =
@@ -1910,7 +1905,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         windowDecoration.relayout(taskInfo, startT, finishT,
                 false /* applyStartTransactionOnDraw */, false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion);
+                mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
+                /* inSyncWithTransition= */ true);
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }
@@ -1932,12 +1928,17 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private void dump(PrintWriter pw, String prefix) {
         final String innerPrefix = prefix + "  ";
         pw.println(prefix + "DesktopModeWindowDecorViewModel");
-        pw.println(innerPrefix + "DesktopModeStatus="
-                + mDesktopState.canEnterDesktopMode());
+        pw.println(innerPrefix + "DesktopModeStatus=" + mDesktopState.canEnterDesktopMode());
         pw.println(innerPrefix + "mTransitionDragActive=" + mTransitionDragActive);
         pw.println(innerPrefix + "mEventReceiversByDisplay=" + mEventReceiversByDisplay);
-        pw.println(innerPrefix + "mWindowDecorByTaskId=" + mWindowDecorByTaskId);
-        pw.println(innerPrefix + "mExclusionRegion=" + mExclusionRegion);
+        pw.println(innerPrefix + "mGestureExclusionTracker="
+                + mGestureExclusionTracker);
+        for (int i = 0; i < mWindowDecorByTaskId.size(); i++) {
+            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.valueAt(i);
+            if (decor != null) {
+                decor.dump(pw, innerPrefix);
+            }
+        }
     }
 
     private class DesktopModeOnTaskRepositionAnimationListener

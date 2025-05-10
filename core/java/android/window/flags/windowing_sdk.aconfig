@@ -7,13 +7,6 @@ container: "system"
 
 flag {
     namespace: "windowing_sdk"
-    name: "task_fragment_system_organizer_flag"
-    description: "Whether the TaskFragment system organizer feature is enabled"
-    bug: "284050041"
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "activity_embedding_interactive_divider_flag"
     description: "Whether the interactive divider feature is enabled"
     bug: "293654166"
@@ -101,17 +94,6 @@ flag {
     name: "safe_region_letterboxing"
     description: "Enables letterboxing for a safe region"
     bug: "380132497"
-}
-
-flag {
-    namespace: "windowing_sdk"
-    name: "support_widget_intents_on_connected_display"
-    description: "Launch widget intents on originating display"
-    bug: "358368849"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -211,4 +193,15 @@ flag {
     description: "Using a root task to manage Bubble tasks"
     bug: "407669465"
     is_fixed_read_only: true
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "fix_fullscreen_in_multi_window"
+    description: "Let leaf task inherits the windowing mode from the root task."
+    bug: "408087047"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

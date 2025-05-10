@@ -25,6 +25,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
+import java.io.PrintWriter
 import java.util.Optional
 
 @SuppressLint("ViewConstructor")
@@ -62,5 +63,14 @@ class EffectsWindowRoot(
             appZoomOutOptional = appZoomOutOptional,
             interactionJankMonitor = interactionJankMonitor,
         )
+    }
+
+    fun dump(pw: PrintWriter, prefix: String) {
+        pw.println("$prefix$TAG:")
+        pw.println("$prefix  isAttachedToWindow=$isAttachedToWindow")
+    }
+
+    companion object {
+        private const val TAG = "EffectsWindowRoot"
     }
 }

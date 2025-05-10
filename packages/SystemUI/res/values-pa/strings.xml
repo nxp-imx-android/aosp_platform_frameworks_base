@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ਆਗਿਆ ਦਿਓ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ਫ਼ਿਲਹਾਲ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਵਰਤੋਂਕਾਰ ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਨੂੰ ਚਾਲੂ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਸ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਵਰਤਣ ਲਈ, ਪ੍ਰਸ਼ਾਸਕ ਵਰਤੋਂਕਾਰ \'ਤੇ ਸਵਿੱਚ ਕਰੋ।"</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ਪੋਰਟ ਬੰਦ ਕੀਤਾ ਗਿਆ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਣੀ ਅਤੇ ਧੂੜ-ਮਿੱਟੀ ਤੋਂ ਬਚਾਉਣ ਲਈ, USB ਪੋਰਟ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ ਅਤੇ ਕੋਈ ਵੀ ਐਕਸੈਸਰੀ ਪਛਾਣੀ ਨਹੀਂ ਜਾਵੇਗੀ।\n\nUSB ਪੋਰਟ ਨੂੰ ਦੁਬਾਰਾ ਵਰਤਣਾ ਠੀਕ ਹੋਣ \'ਤੇ ਤੁਹਾਨੂੰ ਸੂਚਿਤ ਕੀਤਾ ਜਾਵੇਗਾ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ਚਾਰਜਰਾਂ ਅਤੇ ਉਪਸਾਧਨਾਂ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ USB ਪੋਰਟ ਚਾਲੂ ਹੈ"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"ਸੈੱਟ ਨਹੀਂ ਹੈ"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ਕੋਈ ਕਿਰਿਆਸ਼ੀਲ ਮੋਡ ਨਹੀਂ ਹੈ}=1{{mode} ਕਿਰਿਆਸ਼ੀਲ ਹੈ}other{# ਮੋਡ ਕਿਰਿਆਸ਼ੀਲ ਹਨ}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> ਮੋਡ"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"ਚਾਲੂ"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"ਧੁਨੀਆਂ ਅਤੇ ਥਰਥਰਾਹਟਾਂ ਤੁਹਾਨੂੰ ਪਰੇਸ਼ਾਨ ਨਹੀਂ ਕਰਨਗੀਆਂ, ਸਿਵਾਏ ਅਲਾਰਮਾਂ, ਯਾਦ-ਦਹਾਨੀਆਂ, ਵਰਤਾਰਿਆਂ, ਅਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਨਿਰਧਾਰਤ ਕੀਤੇ ਕਾਲਰਾਂ ਦੀ ਸੂਰਤ ਵਿੱਚ। ਤੁਸੀਂ ਅਜੇ ਵੀ ਸੰਗੀਤ, ਵੀਡੀਓ ਅਤੇ ਗੇਮਾਂ ਸਮੇਤ ਆਪਣੀ ਚੋਣ ਅਨੁਸਾਰ ਕੁਝ ਵੀ ਸੁਣ ਸਕਦੇ ਹੋ।"</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"ਧੁਨੀਆਂ ਅਤੇ ਥਰਥਰਾਹਟਾਂ ਤੁਹਾਨੂੰ ਪਰੇਸ਼ਾਨ ਨਹੀਂ ਕਰਨਗੀਆਂ, ਸਿਵਾਏ ਅਲਾਰਮਾਂ ਦੀ ਸੂਰਤ ਵਿੱਚ। ਤੁਸੀਂ ਅਜੇ ਵੀ ਸੰਗੀਤ, ਵੀਡੀਓ ਅਤੇ ਗੇਮਾਂ ਸਮੇਤ ਆਪਣੀ ਚੋਣ ਅਨੁਸਾਰ ਕੁਝ ਵੀ ਸੁਣ ਸਕਦੇ ਹੋ।"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ਟਰੱਸਟ-ਏਜੰਟ ਵੱਲੋਂ ਅਣਲਾਕ ਰੱਖਿਆ ਗਿਆ"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ਬਹੁਤ ਵਾਰੀ ਪ੍ਰਮਾਣੀਕਰਨ ਦੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ ਕਰਨ ਕਰਕੇ ਡੀਵਾਈਸ ਲਾਕ ਹੋ ਗਿਆ ਸੀ"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ਡੀਵਾਈਸ ਲਾਕ ਹੈ\nਪ੍ਰਮਾਣੀਕਰਨ ਅਸਫਲ ਰਿਹਾ"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"ਤੁਹਾਡੀ ਘੜੀ ਨੇ ਲਾਕ ਕੀਤਾ"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ਧੁਨੀ ਸੈਟਿੰਗਾਂ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ਸਵੈਚਲਿਤ ਸੁਰਖੀ ਮੀਡੀਆ"</string>
@@ -799,7 +801,7 @@
     <string name="accessibility_three_bars" msgid="5143286602926069024">"ਤਿੰਨ ਸਿਗਨਲ ਪੱਟੀਆਂ"</string>
     <string name="accessibility_four_bars" msgid="8838495563822541844">"ਚਾਰ ਸਿਗਨਲ ਪੱਟੀਆਂ"</string>
     <string name="accessibility_signal_full" msgid="1519655809806462972">"ਪੂਰਾ ਸਿਗਨਲ"</string>
-    <string name="accessibility_managed_profile" msgid="4703836746209377356">"ਕਾਰਜ ਪ੍ਰੋਫਾਈਲ"</string>
+    <string name="accessibility_managed_profile" msgid="4703836746209377356">"ਕੰਮ ਸੰਬੰਧੀ ਪ੍ਰੋਫਾਈਲ"</string>
     <string name="tuner_warning_title" msgid="7721976098452135267">"ਕੁਝ ਵਾਸਤੇ ਤਾਂ ਮਜ਼ੇਦਾਰ ਹੈ ਲੇਕਿਨ ਸਾਰਿਆਂ ਵਾਸਤੇ ਨਹੀਂ"</string>
     <string name="tuner_warning" msgid="1861736288458481650">"ਸਿਸਟਮ UI ਟਿਊਨਰ ਤੁਹਾਨੂੰ Android ਵਰਤੋਂਕਾਰ ਇੰਟਰਫ਼ੇਸ ਤਬਦੀਲ ਕਰਨ ਅਤੇ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ ਵਾਧੂ ਤਰੀਕੇ ਦਿੰਦਾ ਹੈ। ਇਹ ਪ੍ਰਯੋਗਾਤਮਿਕ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਭਵਿੱਖ ਦੀ ਰੀਲੀਜ਼ ਵਿੱਚ ਬਦਲ ਸਕਦੀਆਂ ਹਨ, ਟੁੱਟ ਸਕਦੀਆਂ ਹਨ, ਜਾਂ ਅਲੋਪ ਹੋ ਸਕਦੀਆਂ ਹਨ। ਸਾਵਧਾਨੀ ਨਾਲ ਅੱਗੇ ਵੱਧੋ।"</string>
     <string name="tuner_persistent_warning" msgid="230466285569307806">"ਇਹ ਪ੍ਰਯੋਗਾਤਮਿਕ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਭਵਿੱਖ ਦੀ ਰੀਲੀਜ਼ ਵਿੱਚ ਬਦਲ ਸਕਦੀਆਂ ਹਨ, ਟੁੱਟ ਸਕਦੀਆਂ ਹਨ, ਜਾਂ ਅਲੋਪ ਹੋ ਸਕਦੀਆਂ ਹਨ। ਸਾਵਧਾਨੀ ਨਾਲ ਅੱਗੇ ਵੱਧੋ।"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ਆਪਣੇ ਟੈਬਲੈੱਟ ਨਾਲ ਆਪਣਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕਰਨ ਲਈ, ਤੁਹਾਨੂੰ ਪਹਿਲਾਂ ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ਚਾਲੂ ਕਰੋ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ਚਾਲੂ ਹੈ - ਚਿਹਰਾ-ਆਧਾਰਿਤ"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ਖਮੋਸ਼ੀ ਅਤੇ ਬੰਡਲ"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ਵਿਕਰੀਆਂ, ਨਵੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"ਪ੍ਰਮੁੱਖ ਕਹਾਣੀਆਂ, ਸੰਪਾਦਕੀਆਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"ਪਸੰਦਾਂ, ਪੋਸਟਾਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ਸੂਚਨਾ-ਪੱਤਰ, ਸਿਫ਼ਾਰਸ਼ੀ ਮੀਡੀਆ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ਹੋ ਗਿਆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ਲਾਗੂ ਕਰੋ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ਬੰਦ ਕਰੋ"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ਤੁਹਾਨੂੰ ਘੱਟੋ-ਘੱਟ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ਟਾਇਲਾਂ ਦੀ ਲੋੜ ਪਵੇਗੀ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ਟਾਇਲਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"ਸਮਾਂ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ਘੰਟੇ, ਮਿੰਟ, ਅਤੇ ਸਕਿੰਟ  ਦਿਖਾਓ"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"ਹੋਰ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ਟਾਇਲ ਦੇ ਆਕਾਰ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"ਟਾਇਲ ਹਟਾਓ"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"ਥਾਂ ਟਾਇਲ"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ਪਲੇਸਮੈਂਟ ਮੋਡ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"ਚੋਣ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"ਪਿਛਲੀ ਸਥਿਤੀ \'ਤੇ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g> ਨੂੰ ਆਖਰੀ ਪੋਜੀਸ਼ਨ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ਟਾਇਲ ਨੂੰ ਲਿਜਾਓ"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ਮਨਪਸੰਦ ਸਥਿਤੀ \'ਤੇ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> \'ਤੇ ਲਿਜਾਓ"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"ਐਨੀਮੇਸ਼ਨ ਰੋਕੋ"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"ਜਾਰੀ ਕਾਲ"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"ਜਾਰੀ"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"ਸੂਚਨਾ ਦਾ ਵਿਸਤਾਰ ਕਰੋ"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"ਸੂਚਨਾ ਨੂੰ ਸਮੇਟੋ"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"ਮੋਬਾਈਲ ਡਾਟਾ"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"ਕਨੈਕਟ ਹੈ"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"ਕੁਝ ਸਮੇਂ ਲਈ ਕਨੈਕਟ ਹੈ"</string>
@@ -1476,7 +1475,7 @@
     <string name="dismiss_dialog" msgid="2195508495854675882">"ਖਾਰਜ ਕਰੋ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ਡਿਸਪਲੇ ਨੂੰ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="privacy_dialog_title" msgid="7839968133469098311">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਤੇ ਕੈਮਰਾ"</string>
-    <string name="privacy_dialog_summary" msgid="2458769652125995409">"ਹਾਲ ਹੀ ਵਿੱਚ ਵਰਤੀ ਗਈ ਐਪ"</string>
+    <string name="privacy_dialog_summary" msgid="2458769652125995409">"ਹਾਲ ਹੀ ਵਿੱਚ ਵਰਤੋਂ ਕਰਨ ਵਾਲੀ ਐਪ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ਹਾਲੀਆ ਪਹੁੰਚ ਦੇਖੋ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"ਹੋ ਗਿਆ"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"ਵਿਸਤਾਰ ਕਰੋ ਅਤੇ ਵਿਕਲਪ ਦਿਖਾਓ"</string>
@@ -1487,7 +1486,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"ਪਹੁੰਚ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"ਫ਼ੋਨ ਕਾਲ ਵੱਲੋਂ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"ਹਾਲ ਹੀ ਵਿੱਚ ਫ਼ੋਨ ਕਾਲ ਵਿੱਚ ਵਰਤਿਆ ਗਿਆ"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਵੱਲੋਂ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਐਪ ਵੱਲੋਂ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"ਹਾਲ ਹੀ ਵਿੱਚ <xliff:g id="APP_NAME">%1$s</xliff:g> ਵੱਲੋਂ ਵਰਤਿਆ ਗਿਆ"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) ਵੱਲੋਂ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"ਹਾਲ ਹੀ ਵਿੱਚ <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) ਵੱਲੋਂ ਵਰਤਿਆ ਗਿਆ"</string>

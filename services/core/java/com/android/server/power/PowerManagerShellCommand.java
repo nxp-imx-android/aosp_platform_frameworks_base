@@ -46,8 +46,25 @@ class PowerManagerShellCommand extends ShellCommand {
 
     private final Context mContext;
     private final PowerManagerService.BinderService mService;
-    private final IAlarmListener mAlarmListener;
     private IAlarmManager mAlarmManager;
+
+    class PowerManagerShellCommandAlarmListener extends IAlarmListener.Stub {
+            public boolean restoreWakelocks = false;
+            @Override
+            public void doAlarm(IAlarmCompleteListener callback) throws RemoteException {
+                mService.wakeUp(
+                        SystemClock.uptimeMillis(),
+                        PowerManager.WAKE_REASON_APPLICATION,
+                        "PowerManagerShellCommand",
+                        mContext.getOpPackageName());
+                if (restoreWakelocks) {
+                    PowerManagerInternal pmInternal =
+                            LocalServices.getService(PowerManagerInternal.class);
+                    pmInternal.setForceDisableWakelocks(false);
+                }
+            }
+    }
+    private final PowerManagerShellCommandAlarmListener mAlarmListener;
 
     private SparseArray<WakeLock> mProxWakelocks = new SparseArray<>();
 
@@ -56,16 +73,7 @@ class PowerManagerShellCommand extends ShellCommand {
         mService = service;
         mAlarmManager =
             IAlarmManager.Stub.asInterface(ServiceManager.getService(Context.ALARM_SERVICE));
-        mAlarmListener = new IAlarmListener.Stub() {
-            @Override
-            public void doAlarm(IAlarmCompleteListener callback) throws RemoteException {
-                mService.wakeUp(
-                        SystemClock.uptimeMillis(),
-                        PowerManager.WAKE_REASON_APPLICATION,
-                        "PowerManagerShellCommand",
-                        mContext.getOpPackageName());
-            }
-        };
+        mAlarmListener = new PowerManagerShellCommandAlarmListener();
     }
 
     @Override
@@ -248,6 +256,11 @@ class PowerManagerShellCommand extends ShellCommand {
     }
 
     private int runSleep() {
+        boolean disableWakelocks = "--disable-wakelocks".equals(getNextArg());
+        if (disableWakelocks) {
+            PowerManagerInternal pmInternal = LocalServices.getService(PowerManagerInternal.class);
+            pmInternal.setForceDisableWakelocks(true);
+        }
         try {
             mService.goToSleep(
                     SystemClock.uptimeMillis(),
@@ -263,7 +276,16 @@ class PowerManagerShellCommand extends ShellCommand {
 
     private int runWakeUp() {
         final PrintWriter pw = getOutPrintWriter();
-        String delay = getNextArg();
+        String delay = null;
+        boolean restoreWakelocks = false;
+        while (peekNextArg() != null) {
+            String arg = getNextArg();
+            if (arg.equals("--restore-wakelocks")) {
+                restoreWakelocks = true;
+            } else if (arg.chars().allMatch(Character::isDigit)) {
+                delay = arg;
+            }
+        }
         if (delay == null) {
             try {
                 mService.wakeUp(
@@ -274,6 +296,11 @@ class PowerManagerShellCommand extends ShellCommand {
             } catch (Exception e) {
                 pw.println("Error: " + e);
                 return -1;
+            }
+            if (restoreWakelocks) {
+                PowerManagerInternal pmInternal =
+                        LocalServices.getService(PowerManagerInternal.class);
+                pmInternal.setForceDisableWakelocks(false);
             }
         } else {
             long delayMillis;
@@ -306,6 +333,7 @@ class PowerManagerShellCommand extends ShellCommand {
                 }
                 pw.println("Schedule an alarm to wakeup in " + delayMillis +
                         " ms, on behalf of " + callingPackage.getPackageName());
+                mAlarmListener.restoreWakelocks = restoreWakelocks;
                 mAlarmManager.set(callingPackage.getPackageName(),
                         AlarmManager.RTC_WAKEUP, wakeUpTime,
                         0, 0, AlarmManager.FLAG_PRIORITIZE,
@@ -349,11 +377,14 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("    created by set-prox including their held status.");
         pw.println("  set-face-down-detector [true|false]");
         pw.println("    sets whether we use face down detector timeouts or not");
-        pw.println("  sleep");
+        pw.println("  sleep (--disable-wakelocks)");
         pw.println("    requests to sleep the device");
-        pw.println("  wakeup <delay>");
+        pw.println("      --disable-wakelocks: Force disable wakelocks before going to sleep.");
+        pw.println("  wakeup (<delay>) (--restore-wakelocks)");
         pw.println("    requests to wake up the device. If a delay of milliseconds is specified,");
         pw.println("    alarm manager will schedule a wake up after the delay.");
+        pw.println("      --restore-wakelocks: Restore force-disabled wakelocks after wakeup.");
+        pw.println("        It will not restore wakelocks that are generically disabled.");
 
         pw.println();
         Intent.printIntentArgsHelp(pw , "");

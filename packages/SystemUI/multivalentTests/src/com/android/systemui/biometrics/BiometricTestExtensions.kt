@@ -19,6 +19,7 @@ package com.android.systemui.biometrics
 import android.graphics.Bitmap
 import android.hardware.biometrics.BiometricManager.Authenticators
 import android.hardware.biometrics.ComponentInfoInternal
+import android.hardware.biometrics.FallbackOption
 import android.hardware.biometrics.PromptContentView
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.SensorProperties
@@ -142,6 +143,7 @@ internal fun promptInfo(
     credentialSubtitle: String? = "cred sub",
     credentialDescription: String? = "cred desc",
     negativeButton: String = "neg",
+    fallbackOptions: List<FallbackOption> = emptyList(),
 ): PromptInfo {
     val info = PromptInfo()
     if (logoBitmap != null) {
@@ -156,6 +158,8 @@ internal fun promptInfo(
     credentialSubtitle?.let { info.deviceCredentialSubtitle = it }
     credentialDescription?.let { info.deviceCredentialDescription = it }
     info.negativeButtonText = negativeButton
+    fallbackOptions.forEach { option -> info.addFallbackOption(option) }
+
     return info
 }
 

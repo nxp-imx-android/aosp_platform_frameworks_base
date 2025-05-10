@@ -79,6 +79,7 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
                 expandedViewManager,
                 positioner,
                 /* isOverflow= */ true,
+                /* bubble= */ null,
                 /* bubbleTaskView= */ null,
                 /* mainExecutor= */ null,
                 /* backgroundExecutor= */ null,

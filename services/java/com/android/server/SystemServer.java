@@ -134,6 +134,7 @@ import com.android.server.appop.AppOpMigrationHelper;
 import com.android.server.appop.AppOpMigrationHelperImpl;
 import com.android.server.appprediction.AppPredictionManagerService;
 import com.android.server.appwidget.AppWidgetService;
+import com.android.server.appwindowlayout.AppWindowLayoutSettingsService;
 import com.android.server.art.ArtModuleServiceInitializer;
 import com.android.server.art.DexUseManagerLocal;
 import com.android.server.attention.AttentionManagerService;
@@ -1912,6 +1913,16 @@ public final class SystemServer implements Dumpable {
             reportWtf("starting LocaleManagerService service", e);
         }
         t.traceEnd();
+
+        if (com.android.window.flags.Flags.restoreUserAspectRatioSettingsUsingService()) {
+            t.traceBegin("StartUAppWindowLayoutSettingsService");
+            try {
+                mSystemServiceManager.startService(AppWindowLayoutSettingsService.class);
+            } catch (Throwable e) {
+                reportWtf("starting AppWindowLayoutSettingsService service", e);
+            }
+            t.traceEnd();
+        }
 
         t.traceBegin("StartGrammarInflectionService");
         try {

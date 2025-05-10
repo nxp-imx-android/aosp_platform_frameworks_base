@@ -90,6 +90,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
@@ -269,6 +270,28 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
                 eq(Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING),
                 /* def */ eq(1), /* userHandle= */ anyInt());
         assertThat(mWindowMagnificationController.isDiagonalScrollingEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void initWindowMagnificationController_checkAllowMagnifyTypingWithSecureSettings() {
+        verify(mSecureSettings).getIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                /* def */ eq(1), /* userHandle= */ anyInt());
+        assertThat(mWindowMagnificationController.isMagnifyTypingEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void initWindowMagnificationController_checkAllowMagnifyKeyboardWithSecureSettings() {
+        int defaultValue = AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext);
+        verify(mSecureSettings).getIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                /* def */ eq(defaultValue), /* userHandle= */ anyInt());
+        assertThat(mWindowMagnificationController.isMagnifyKeyboardEnabled()).isEqualTo(
+                defaultValue == 1);
     }
 
     @Test

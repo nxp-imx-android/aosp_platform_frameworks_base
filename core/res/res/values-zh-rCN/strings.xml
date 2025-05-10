@@ -731,7 +731,7 @@
     <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"人脸解锁"</string>
     <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"人脸解锁存在问题"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"请点按以删除您的脸部模型，然后再添加您的脸部模型"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"如需使用人脸解锁功能，请在“设置”&gt;“隐私权”中开启"<b>"摄像头使用权限"</b></string>
+    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"如需使用人脸解锁功能，请在“设置”&gt;“隐私权”中开启"<b>"相机权限"</b></string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"指纹解锁"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"无法使用指纹传感器"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"请联系维修服务提供商。"</string>
@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"无法创建您的脸部模型，请重试。"</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"检测到墨镜，您的脸部必须完全可见。"</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"检测到面部被遮挡，请露出整个面部。"</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"检测到面部被遮挡，请露出整个面部"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"无法验证人脸。硬件无法使用。"</string>
@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"单手模式"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"极暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听装置"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"自动点击"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"鼠标键"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已断开连接"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已连接"</string>
@@ -1972,7 +1973,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"为了减少流量消耗，省流模式会阻止某些应用在后台收发数据。您当前使用的应用可以收发数据，但频率可能会降低。举例而言，这可能意味着图片只有在您点按之后才会显示。"</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"省流模式会阻止部分应用在后台收发数据，以减少流量消耗。您正在使用的应用可以收发数据，但频率可能会降低。例如，图片可能需要点按才会显示。"</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"要开启省流模式吗？"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"开启"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{1 分钟（直到 {formattedTime}）}other{# 分钟（直到 {formattedTime}）}}"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"促销"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"社交"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"资讯"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"建议"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"这些通知的重要程度由您来设置。"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"这条通知涉及特定的人，因此被归为重要通知。"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"自定义应用通知"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"向左方向键"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"向右方向键"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"方向键中心"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"自动点击类型设置面板"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"点击鼠标左键"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"右键点击"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"双击"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"拖动"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"滚动"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"长按"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暂停"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"位置"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"向上滚动"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"向下滚动"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"向左滚动"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"向右滚动"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"退出滚动模式"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暂停"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"继续"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"滚动面板"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> 已被放入受限存储分区"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>："</string>

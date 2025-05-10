@@ -155,6 +155,7 @@ public class DreamBackend {
     private final boolean mDreamsActivatedOnSleepByDefault;
     private final boolean mDreamsActivatedOnDockByDefault;
     private final boolean mDreamsActivatedOnPosturedByDefault;
+    private final boolean mDreamOnlyOnWirelssChargingDefault;
     private final boolean mLowLightDisplayBehaviorEnabledDefault;
     private final int mLowLightDisplayBehaviorDefault;
     private final Set<ComponentName> mDisabledDreams;
@@ -184,6 +185,8 @@ public class DreamBackend {
                 com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault);
         mDreamsActivatedOnPosturedByDefault = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
+        mDreamOnlyOnWirelssChargingDefault = resources.getBoolean(
+                com.android.internal.R.bool.config_onlyDreamWhenWirelessChargingDefault);
         mLowLightDisplayBehaviorEnabledDefault = resources.getBoolean(
                 com.android.internal.R.bool.config_lowLightDisplayBehaviorEnabledDefault);
         mLowLightDisplayBehaviorDefault = resources.getInteger(
@@ -440,9 +443,9 @@ public class DreamBackend {
 
     /** Get whether to restrict showing dreams to only when charging wirelessly. */
     public boolean getRestrictToWirelessCharging() {
-        return Settings.Secure.getInt(
-                mContext.getContentResolver(),
-                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING, 0) == 1;
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING,
+                mDreamOnlyOnWirelssChargingDefault ? 1 : 0) == 1;
     }
 
     /** Gets all dream complications which are supported on this device. **/

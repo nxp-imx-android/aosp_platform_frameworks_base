@@ -94,6 +94,7 @@ import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.Looper;
@@ -2011,9 +2012,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             // already been reset by the original hiding-transition's finishTransaction (we can't
             // show in the finishTransaction because by then the activity doesn't hide until
             // surface placement).
-            for (WindowContainer p = ar.getParent();
-                 p != null && !containsChangeFor(p, mTargets) && !p.isOrganized();
-                 p = p.getParent()) {
+            for (WindowContainer<?> p = ar.getParent();
+                    p != null && p.asDisplayArea() == null; p = p.getParent()) {
+                if (p.isOrganized() || !p.canCreateRemoteAnimationTarget()) continue;
                 if (p.getSurfaceControl() != null) {
                     transaction.show(p.getSurfaceControl());
                 }
@@ -2625,22 +2626,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     private static boolean isInputMethod(WindowContainer wc) {
         return wc.getWindowType() == TYPE_INPUT_METHOD;
-    }
-
-    private static boolean occludesKeyguard(WindowContainer wc) {
-        final ActivityRecord ar = wc.asActivityRecord();
-        if (ar != null) {
-            return ar.canShowWhenLocked();
-        }
-        final Task t = wc.asTask();
-        if (t != null) {
-            // Get the top activity which was visible (since this is going away, it will remain
-            // client visible until the transition is finished).
-            // skip hidden (or about to hide) apps
-            final ActivityRecord top = t.getActivity(WindowToken::isClientVisible);
-            return top != null && top.canShowWhenLocked();
-        }
-        return false;
     }
 
     private static boolean isTranslucent(@NonNull WindowContainer wc) {
@@ -3861,6 +3846,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     void deferTransitionReady() {
         ++mReadyTrackerOld.mDeferReadyDepth;
+
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                "deferTransitionReady deferReadyDepth=%d stack=%s",
+                mReadyTrackerOld.mDeferReadyDepth, Debug.getCallers(5));
+
         // Make sure it wait until #continueTransitionReady() is called.
         mSyncEngine.setReady(mSyncId, false);
     }
@@ -3868,6 +3858,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     /** This undoes one call to {@link #deferTransitionReady}. */
     void continueTransitionReady() {
         --mReadyTrackerOld.mDeferReadyDepth;
+
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                "continueTransitionReady deferReadyDepth=%d stack=%s",
+                mReadyTrackerOld.mDeferReadyDepth, Debug.getCallers(5));
+
         // Apply ready in case it is waiting for the previous defer call.
         applyReady();
     }
@@ -3881,7 +3876,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (!mController.useFullReadyTracking()) {
             Slog.e(TAG, "#" + mSyncId + " readiness timeout, used=" + mReadyTrackerOld.mUsed
                     + " deferReadyDepth=" + mReadyTrackerOld.mDeferReadyDepth
-                    + " group=" + mReadyTrackerOld.mReadyGroups);
+                    + " group=" + mReadyTrackerOld.mReadyGroups
+                    + " state=" + mState);
         } else {
             Slog.e(TAG, "#" + mSyncId + " met conditions: " + mReadyTracker.mMet);
             Slog.e(TAG, "#" + mSyncId + " unmet conditions: " + mReadyTracker.mConditions);

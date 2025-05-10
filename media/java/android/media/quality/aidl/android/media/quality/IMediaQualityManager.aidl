@@ -54,6 +54,8 @@ interface IMediaQualityManager {
     void notifyPictureProfileHandleSelection(in long handle, int userId);
 
     long getPictureProfileForTvInput(in String inputId, int userId);
+    PictureProfile getCurrentPictureProfileForTvInput(in String inputId, int userId);
+    List<PictureProfile> getAllPictureProfilesForTvInput(in String inputId, int userId);
 
     void createSoundProfile(in SoundProfile pp, int userId);
     void updateSoundProfile(in String id, in SoundProfile pp, int userId);

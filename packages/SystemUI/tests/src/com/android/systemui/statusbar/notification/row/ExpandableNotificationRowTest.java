@@ -662,7 +662,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                 .thenReturn(true);
         row.performDismiss(false);
         TestableLooper.get(this).processAllMessages();
-        verify(mKosmos.getMockNotifCollection()).registerFutureDismissal(any(), anyInt(), any());
+        verify(mKosmos.getMockNotifCollection())
+                .registerFutureDismissal(any(NotificationEntry.class), anyInt(), any());
     }
 
     @Test
@@ -672,7 +673,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                 row.getKey()))
                 .thenReturn(true);
         row.performDismiss(false);
-        verify(mKosmos.getMockNotifCollection()).registerFutureDismissal(any(), anyInt(), any());
+        verify(mKosmos.getMockNotifCollection())
+                .registerFutureDismissal(any(NotificationEntry.class), anyInt(), any());
     }
 
     @Test

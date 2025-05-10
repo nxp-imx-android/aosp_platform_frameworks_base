@@ -27,7 +27,7 @@
     <string name="keyguard_enter_your_password" msgid="7225626204122735501">"Entrez votre mot de passe"</string>
     <string name="keyguard_enter_password" msgid="6483623792371009758">"Entrez le mot de passe"</string>
     <string name="keyguard_sim_error_message_short" msgid="633630844240494070">"Cette carte n\'est pas valide."</string>
-    <string name="keyguard_charged" msgid="5478247181205188995">"Chargée"</string>
+    <string name="keyguard_charged" msgid="5478247181205188995">"Chargé"</string>
     <string name="keyguard_plugged_in_wireless" msgid="2537874724955057383">"<xliff:g id="PERCENTAGE">%s</xliff:g> • En recharge sans fil"</string>
     <string name="keyguard_plugged_in_dock" msgid="2122073051904360987">"<xliff:g id="PERCENTAGE">%s</xliff:g> • Recharge en cours…"</string>
     <string name="keyguard_plugged_in" msgid="8169926454348380863">"En recharge : <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>

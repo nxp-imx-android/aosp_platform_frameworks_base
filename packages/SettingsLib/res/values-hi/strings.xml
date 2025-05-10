@@ -361,7 +361,7 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"विकास सेटिंग की अनुमति दें?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ये सेटिंग केवल विकास संबंधी उपयोग के प्रयोजन से हैं. वे आपके डिवाइस और उस पर स्‍थित ऐप्लिकेशन  को खराब कर सकती हैं या उनके दुर्व्यवहार का कारण हो सकती हैं."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"यूएसबी से इंस्टॉल ऐप की पुष्टि करें"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"नुकसान पहुंचाने वाली गतिविधियों के लिए ADB/ADT से इंस्टॉल किए गए ऐप्लिकेशन जांचें."</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"इस बात की जांच की जाती है कि ADB/ADT से इंस्टॉल किए गए ऐप्लिकेशन कोई नुकसान तो नहीं पहुंचा सकते."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"बिना नाम वाले ब्लूटूथ डिवाइस (सिर्फ़ MAC पते वाले) दिखाए जाएंगे"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"रिमोट डिवाइस पर आवाज़ बहुत बढ़ जाने या उससे कंट्रोल हटने जैसी समस्याएं होने पर, यह ब्लूटूथ के ज़रिए आवाज़ के कंट्रोल की सुविधा रोक देता है."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"ब्लूटूथ सेटिंग में Gabeldorsche सुविधा को चालू करता है."</string>
@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"ऐप्लिकेशन  को चुनें"</string>
     <string name="no_application" msgid="9038334538870247690">"कुछ भी नहीं"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"डीबगर का इंतज़ार करें"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"डीबग किया गया ऐप्लिकेशन प्रोसेस के पहले डीबगर के अटैच होने का इंतज़ार करता है"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"डीबग किया गया ऐप्लिकेशन तब तक कोड एक्ज़ीक्यूट नहीं करता, जब तक उससे डीबगर अटैच नहीं हो जाता"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"इनपुट"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"ड्रॉइंग"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"जीपीयू रेंडरिंग"</string>
@@ -524,13 +524,13 @@
     <string name="power_remaining_fast_charging_duration_only_v2" msgid="6270950195810579563">"बैटरी <xliff:g id="TIME">%1$s</xliff:g> तक पूरी चार्ज हो जाएगी"</string>
     <string name="battery_info_status_unknown" msgid="268625384868401114">"अज्ञात"</string>
     <string name="battery_info_status_charging" msgid="4279958015430387405">"चार्ज हो रही है"</string>
-    <string name="battery_info_status_charging_fast" msgid="8027559755902954885">"तेज़ चार्ज हो रही है"</string>
+    <string name="battery_info_status_charging_fast" msgid="8027559755902954885">"तेज़ी से चार्ज हो रही है"</string>
     <string name="battery_info_status_charging_slow" msgid="3190803837168962319">"धीरे चार्ज हो रही है"</string>
     <string name="battery_info_status_charging_wireless" msgid="8924722966861282197">"वायरलेस चार्जिंग"</string>
     <string name="battery_info_status_charging_dock" msgid="8573274094093364791">"चार्ज हो रहा है"</string>
     <string name="battery_info_status_discharging" msgid="6962689305413556485">"चार्ज नहीं हो रही है"</string>
     <string name="battery_info_status_not_charging" msgid="1103084691314264664">"फ़ोन कनेक्ट है, लेकिन चार्ज नहीं हो रहा"</string>
-    <string name="battery_info_status_full" msgid="1339002294876531312">"बैटरी चार्ज हो गई"</string>
+    <string name="battery_info_status_full" msgid="1339002294876531312">"चार्ज हो गई"</string>
     <string name="battery_info_status_full_charged" msgid="3536054261505567948">"बैटरी पूरी चार्ज है"</string>
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"फ़ोन को चार्ज होने से रोक दिया गया है"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"चार्ज हो रही है"</string>

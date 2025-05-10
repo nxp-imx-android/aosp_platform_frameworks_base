@@ -88,7 +88,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
@@ -117,12 +116,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 /**
  * Tests for {@link NotificationStackScrollLayout}.
@@ -431,47 +430,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    public void updateEmptyView_dndSuppressing() {
-        when(mEmptyShadeView.willBeGone()).thenReturn(true);
-
-        mStackScroller.updateEmptyShadeView(/* visible = */ true,
-                /* areNotificationsHiddenInShade = */ true,
-                /* hasFilteredOutSeenNotifications = */ false);
-
-        verify(mEmptyShadeView).setText(R.string.dnd_suppressing_shade_text);
-    }
-
-    @Test
-    @DisableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    public void updateEmptyView_dndNotSuppressing() {
-        mStackScroller.setEmptyShadeView(mEmptyShadeView);
-        when(mEmptyShadeView.willBeGone()).thenReturn(true);
-
-        mStackScroller.updateEmptyShadeView(/* visible = */ true,
-                /* areNotificationsHiddenInShade = */ false,
-                /* hasFilteredOutSeenNotifications = */ false);
-
-        verify(mEmptyShadeView).setText(R.string.empty_shade_text);
-    }
-
-    @Test
-    @DisableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    public void updateEmptyView_noNotificationsToDndSuppressing() {
-        mStackScroller.setEmptyShadeView(mEmptyShadeView);
-        when(mEmptyShadeView.willBeGone()).thenReturn(true);
-        mStackScroller.updateEmptyShadeView(/* visible = */ true,
-                /* areNotificationsHiddenInShade = */ false,
-                /* hasFilteredOutSeenNotifications = */ false);
-        verify(mEmptyShadeView).setText(R.string.empty_shade_text);
-
-        mStackScroller.updateEmptyShadeView(/* visible = */ true,
-                /* areNotificationsHiddenInShade = */ true,
-                /* hasFilteredOutSeenNotifications = */ false);
-        verify(mEmptyShadeView).setText(R.string.dnd_suppressing_shade_text);
-    }
-
-    @Test
     @EnableSceneContainer
     public void setExpandFraction_fullyCollapsed() {
         // Given: NSSL has a height
@@ -617,16 +575,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         // Expecting the footer to be the last child
         int expected = mStackScroller.getChildCount() - 1;
         verify(mStackScroller).changeViewPosition(any(FooterView.class), eq(expected));
-    }
-
-    @Test
-    @DisableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    public void testReInflatesEmptyShadeView() {
-        when(mEmptyShadeView.getTextResource()).thenReturn(R.string.empty_shade_text);
-        clearInvocations(mStackScroller);
-        mStackScroller.reinflateViews();
-        verify(mStackScroller, never()).setFooterView(any());
-        verify(mStackScroller).setEmptyShadeView(any());
     }
 
     @Test

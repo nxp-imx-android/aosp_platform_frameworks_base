@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Payagan"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Hindi pinapayagan ang wireless na pag-debug"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Hindi mao-on ng user na kasalukuyang naka-sign in sa device na ito ang wireless na pag-debug. Para magamit ang feature na ito, lumipat sa admin user."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"Na-disable ang USB port"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Para protektahan ang iyong device sa likido o dumi, na-disable ang USB port at hindi ito makaka-detect ng anumang accessory.\n\nAabisuhan ka kapag ayos nang gamitin ulit ang USB port."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Na-enable ang USB port para ma-detect ang mga charger at accessory"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Hindi nakatakda"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Pamahalaan sa mga setting"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Walang aktibong mode}=1{Aktibo ang {mode}}one{# mode ang aktibo}other{# na mode ang aktibo}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> (na) Mode"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Naka-on"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban mula sa mga alarm, paalala, event, at tumatawag na tutukuyin mo. Maririnig mo pa rin ang kahit na anong piliin mong i-play kabilang ang mga musika, video, at laro."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Hindi ka maiistorbo ng mga tunog at pag-vibrate, maliban sa mga alarm. Maririnig mo pa rin ang anumang pipiliin mong i-play kabilang ang mga musika, video, at laro."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pinanatiling naka-unlock ng TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Na-lock ang device, masyadong maraming pagsubok sa pag-authenticate"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Na-lock ang device\nHindi pumasa sa pag-authenticate"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Na-lock out ng iyong relo"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Mga setting ng tunog"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"I-autocaption ang media"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Upang ikonekta ang iyong keyboard sa iyong tablet, kailangan mo munang i-on ang Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"I-on"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Naka-on - Batay sa mukha"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Pag-silent at bundle"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Mga sale, bagong feature, at higit pa"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Mga nangungunang kuwento, editorial, at higit pa"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Mga like, post, at higit pa"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Mga newsletter, inirerekomendang media, at higit pa"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"I-off"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Kailangan mo ng kahit <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> (na) tile"</string>
     <string name="qs_edit" msgid="5583565172803472437">"I-edit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"I-edit ang mga tile"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Oras"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Ipakita ang oras, minuto at segundo"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Iba pa"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"i-toggle ang laki ng tile"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Alisin ang tile"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Ilagay ang tile"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"i-toggle ang placement mode"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"i-toggle ang pagpili"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Magdagdag ng tile sa huling posisyon"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Idagdag ang <xliff:g id="NAME">%1$s</xliff:g> sa huling posisyon"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Ilipat ang tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Magdagdag ng tile sa gustong posisyon"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Ilipat sa <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"I-pause ang animation"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Kasalukuyang tawag"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Kasalukuyan"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"i-expand ang notification"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"i-collapse ang notification"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Mobile data"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Nakakonekta"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Pansamantalang nakakonekta"</string>

@@ -18,10 +18,6 @@ package com.android.systemui.notifications.ui.composable.row
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.view.View
-import androidx.activity.OnBackPressedDispatcher
-import androidx.activity.OnBackPressedDispatcherOwner
-import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -55,8 +51,8 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 
 object BundleHeader {
@@ -77,7 +73,7 @@ fun createComposeView(viewModel: BundleHeaderViewModel, context: Context): Compo
     return ComposeView(context).apply {
         repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
-                initOnBackPressureDispatcherOwner(this@repeatWhenAttached.lifecycle)
+                initOnBackPressedDispatcherOwner(this@repeatWhenAttached.lifecycle)
                 setContent {
                     // TODO(b/399588047): Check if we can init PlatformTheme once instead of once
                     //  per ComposeView
@@ -85,21 +81,6 @@ fun createComposeView(viewModel: BundleHeaderViewModel, context: Context): Compo
                 }
             }
         }
-    }
-}
-
-private fun View.initOnBackPressureDispatcherOwner(lifecycle: Lifecycle) {
-    if (!SceneContainerFlag.isEnabled) {
-        setViewTreeOnBackPressedDispatcherOwner(
-            object : OnBackPressedDispatcherOwner {
-                override val onBackPressedDispatcher =
-                    OnBackPressedDispatcher().apply {
-                        setOnBackInvokedDispatcher(viewRootImpl.onBackInvokedDispatcher)
-                    }
-
-                override val lifecycle: Lifecycle = lifecycle
-            }
-        )
     }
 }
 
@@ -151,9 +132,15 @@ private fun ContentScope.BundleHeaderContent(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(vertical = 16.dp),
     ) {
-        BundleIcon(viewModel.bundleIcon, modifier = Modifier.padding(horizontal = 16.dp))
+        BundleIcon(
+            viewModel.bundleIcon,
+            modifier =
+                Modifier.padding(horizontal = 16.dp)
+                    // Has to be a shared element because we may have a semi-transparent background
+                    .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
+        )
         Text(
-            text = stringResource(viewModel.titleTextResId),
+            text = stringResource(viewModel.titleText),
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
             overflow = TextOverflow.Ellipsis,

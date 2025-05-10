@@ -40,8 +40,6 @@ import static android.os.Process.SYSTEM_UID;
 
 import static com.android.internal.util.FrameworkStatsLog.BOOT_TIME_EVENT_ELAPSED_TIME__EVENT__FRAMEWORK_LOCKED_BOOT_COMPLETED;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_MU;
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
 import static com.android.server.am.UserState.STATE_BOOTING;
 import static com.android.server.am.UserState.STATE_RUNNING_LOCKED;
@@ -112,6 +110,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.IStorageManager;
 import android.os.storage.StorageManager;
+import android.security.KeyStoreAuthorization;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
@@ -174,7 +173,7 @@ import java.util.function.BiConsumer;
  * may cause lock inversion.
  */
 class UserController implements Handler.Callback {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "UserController" : TAG_AM;
+    private static final String TAG = UserController.class.getSimpleName();
 
     // Amount of time we wait for observers to handle a user switch before
     // giving up on them and dismissing the user switching dialog.
@@ -290,7 +289,7 @@ class UserController implements Handler.Callback {
     // switching to that same user and cannot stop that user, then we flip this flag to true, so
     // that when the ongoing user-switch is finished, we would stop the user then.
     @GuardedBy("mLock")
-    private boolean mPendingLogoutTargetUser = false;
+    private boolean mPendingLogoutTargetUser;
 
     /**
      * LRU list of history of running users, in order of when we last needed to start them.
@@ -375,8 +374,6 @@ class UserController implements Handler.Callback {
     //  the system user in HSUM.
     @GuardedBy("mLock")
     private boolean mIsBroadcastSentForSystemUserStarting;
-
-    volatile boolean mBootCompleted;
 
     /**
      * In this mode, user is always stopped when switched out (unless overridden by the
@@ -716,19 +713,18 @@ class UserController implements Handler.Callback {
     }
 
     private void sendLockedBootCompletedBroadcast(IIntentReceiver receiver, @UserIdInt int userId) {
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            final UserInfo userInfo = getUserInfo(userId);
-            if (userInfo != null && userInfo.isPrivateProfile()) {
-                Slogf.i(TAG, "Skipping LOCKED_BOOT_COMPLETED for private profile user #" + userId);
-                return;
-            }
-        }
         final Intent intent = new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED, null);
         intent.putExtra(Intent.EXTRA_USER_HANDLE, userId);
         intent.addFlags(Intent.FLAG_RECEIVER_NO_ABORT
                 | Intent.FLAG_RECEIVER_OFFLOAD
                 | Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+
+        final UserInfo userInfo = getUserInfo(userId);
+        if (userInfo != null && userInfo.isPrivateProfile()) {
+            sendBroadcastLockedBootCompleteForPrivateProfileApps(intent, userId, receiver);
+            return;
+        }
+
         mInjector.broadcastIntent(intent, null, receiver, 0, null, null,
                 new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
                 AppOpsManager.OP_NONE,
@@ -736,6 +732,44 @@ class UserController implements Handler.Callback {
                         .toBundle(),
                 false, MY_PID, SYSTEM_UID,
                 Binder.getCallingUid(), Binder.getCallingPid(), userId);
+    }
+
+    /**
+     * Only broadcast the LOCKED_BOOT_COMPLETED intent to allowlisted immediate receivers. Other
+     * packages will receive the intent after they are started.
+     */
+    private void sendBroadcastLockedBootCompleteForPrivateProfileApps(Intent bootIntent,
+            int userId,
+            IIntentReceiver receiver) {
+        if (!android.multiuser.Flags.enableMovingContentIntoPrivateSpace()) {
+            Slogf.i(TAG, "Skipping LOCKED_BOOT_COMPLETED for private profile user #" + userId);
+            return;
+        }
+
+        String[] packages = mInjector.getContext().getResources().getStringArray(
+                R.array.config_privateSpaceBootCompletedImmediateReceivers);
+
+        AtomicInteger remainingPackages = new AtomicInteger(packages.length);
+        for (String packageName : packages) {
+            Intent intent = new Intent(bootIntent);
+            intent.setPackage(packageName);
+            IIntentReceiver packageReceiver = new IIntentReceiver.Stub() {
+                @Override
+                public void performReceive(Intent intent, int resultCode, String data,
+                        Bundle extras, boolean ordered, boolean sticky, int sendingUser)
+                        throws RemoteException {
+                    if (remainingPackages.decrementAndGet() == 0 && !Objects.isNull(receiver)) {
+                        receiver.performReceive(intent, resultCode, data, extras, ordered, sticky,
+                                sendingUser);
+                    }
+                }
+            };
+            mInjector.broadcastIntent(intent, null, packageReceiver, 0, null, null,
+                    new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                    AppOpsManager.OP_NONE, getTemporaryAppAllowlistBroadcastOptions(
+                            REASON_LOCKED_BOOT_COMPLETED).toBundle(), false, MY_PID, SYSTEM_UID,
+                    Binder.getCallingUid(), Binder.getCallingPid(), userId);
+        }
     }
 
     /**
@@ -930,13 +964,6 @@ class UserController implements Handler.Callback {
 
         mHandler.obtainMessage(USER_UNLOCKED_MSG, userId, 0).sendToTarget();
 
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            if (userInfo.isPrivateProfile()) {
-                Slogf.i(TAG, "Skipping BOOT_COMPLETED for private profile user #" + userId);
-                return;
-            }
-        }
         Slogf.i(TAG, "Posting BOOT_COMPLETED user #" + userId);
         // Do not report secondary users, runtime restarts or first boot/upgrade
         if (userId == UserHandle.USER_SYSTEM
@@ -955,23 +982,58 @@ class UserController implements Handler.Callback {
         // we also send the boot_completed broadcast from that thread.
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
+
+        if (userInfo.isPrivateProfile()) {
+            sendBroadcastBootCompleteForPrivateProfileApps(bootIntent, userId, callingUid,
+                    callingPid);
+            return;
+        }
         FgThread.getHandler().post(() -> {
-            mInjector.broadcastIntent(bootIntent, null,
-                    new IIntentReceiver.Stub() {
-                        @Override
-                        public void performReceive(Intent intent, int resultCode, String data,
-                                Bundle extras, boolean ordered, boolean sticky, int sendingUser)
-                                        throws RemoteException {
-                            Slogf.i(UserController.TAG, "Finished processing BOOT_COMPLETED for u"
-                                    + userId);
-                            mBootCompleted = true;
-                        }
-                    }, 0, null, null,
-                    new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
-                    AppOpsManager.OP_NONE,
-                    getTemporaryAppAllowlistBroadcastOptions(REASON_BOOT_COMPLETED).toBundle(),
-                    false, MY_PID, SYSTEM_UID, callingUid, callingPid, userId);
+            broadcastBootCompletedIntent(bootIntent, userId, callingUid, callingPid);
         });
+    }
+
+    /**
+     * Only broadcast the BOOT_COMPLETED intent to allowlisted immediate receivers. Other packages
+     * will receive the intent after they are started.
+     */
+    private void sendBroadcastBootCompleteForPrivateProfileApps(Intent bootIntent, int userId,
+            int callingUid, int callingPid) {
+        if (!android.multiuser.Flags.enableMovingContentIntoPrivateSpace()) {
+            Slogf.i(TAG, "Skipping BOOT_COMPLETED for private profile user #" + userId);
+            return;
+        }
+
+        FgThread.getHandler().post(() -> {
+            String[] packages = mInjector.getContext().getResources().getStringArray(
+                    R.array.config_privateSpaceBootCompletedImmediateReceivers);
+
+            for (String packageName : packages) {
+                Intent intent = new Intent(bootIntent);
+                intent.setPackage(packageName);
+                broadcastBootCompletedIntent(intent, userId, callingUid, callingPid);
+            }
+        });
+    }
+
+    private void broadcastBootCompletedIntent(Intent bootIntent, int userId, int callingUid,
+            int callingPid) {
+        mInjector.broadcastIntent(bootIntent, null,
+                new IIntentReceiver.Stub() {
+                    @Override
+                    public void performReceive(Intent intent, int resultCode, String data,
+                            Bundle extras, boolean ordered, boolean sticky, int sendingUser)
+                            throws RemoteException {
+                        Slogf.i(UserController.TAG,
+                                "Finished processing BOOT_COMPLETED for u" + userId
+                                        + (Objects.isNull(bootIntent.getPackage()) ? ""
+                                        : ", package: " + bootIntent.getPackage()));
+                    }
+                }, 0, null, null,
+                new String[]{android.Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                AppOpsManager.OP_NONE,
+                getTemporaryAppAllowlistBroadcastOptions(REASON_BOOT_COMPLETED).toBundle(),
+                false, MY_PID, SYSTEM_UID, callingUid, callingPid, userId);
     }
 
     /**
@@ -981,23 +1043,23 @@ class UserController implements Handler.Callback {
      *
      * <ol>
      *   <li>If {@code userId} is the foreground user, first switching to an appropriate, active
-     *       user.
+     *       user. Currently it's always switching to the system user.
      *   <li>Stopping the specified {@code userId}.
      * </ol>
      *
      * <p>The logout operation will fail under the following conditions:
      *
      * <ul>
-     *   <li>No suitable user can be found to switch to, when user switch is needed.
+     *   <li>Trying to logout the system user.
+     *   <li>Device cannot switch to the system user.
      *   <li>The user switch operation fails for any reason.
      *   <li>The stop user operation fails for any reason.
      * </ul>
      *
-     * <p>The logoutUser API does not support HSUM devices that cannot switch to system user.
-     *
      * @see ActivityManager#logoutUser(int)
      * @param userId The ID of the user to log out.
      * @return true if logout is successfully initiated.
+     * @throws UnsupportedOperationException if device is in HSUM and cannot switch to system user.
      */
     boolean logoutUser(@UserIdInt int userId) {
         // TODO(b/380125011): To handle the edge case of trying to logout the user that the device
@@ -1005,6 +1067,8 @@ class UserController implements Handler.Callback {
         // system user (not the previous foreground user). Thus we cannot support HSUM devices
         // without interactive headless system user. To solve it for the long term, a refactor might
         // be needed, see more details in the bug.
+        // TODO(b/411696141): Use the more proper API to check if headless system user is
+        // interactive, once it's ready.
         if (mInjector.isHeadlessSystemUserMode()
                 && !mInjector.getUserManager().canSwitchToHeadlessSystemUser()) {
             throw new UnsupportedOperationException("device does not support logoutUser");
@@ -1020,41 +1084,24 @@ class UserController implements Handler.Callback {
             mPendingTargetUserIds.removeIf(id -> id == userId);
 
             if (userId == mTargetUserId) {
-                Slogf.i(TAG, "Cannot logout user %d now as we're in the process of switching to it,"
+                Slogf.w(TAG, "Cannot logout user %d now as we're in the process of switching to it,"
                         + " it will be logged out when the ongoing user-switch is complete.",
                         userId);
                 mPendingLogoutTargetUser = true;
                 return true;
             }
-
             if (userId == getCurrentUserId() && mTargetUserId == UserHandle.USER_NULL) {
                 shouldSwitchUser = true;
             }
         }
+
         if (shouldSwitchUser) {
-            final int switchToUserId =
-                    mInjector.getUserManagerInternal().getUserToLogoutCurrentUserTo();
-            if (switchToUserId == UserHandle.USER_NULL) {
-                Slogf.w(TAG, "Logout has no suitable user to switch to, to logout user %d.",
-                        userId);
+            if (!switchUser(UserHandle.USER_SYSTEM)) {
+                Slogf.e(TAG, "Cannot logout user %d; switch to system user failed", userId);
                 return false;
             }
-            // Due to possible race condition, switchToUserId could be equal to userId. When this is
-            // true:
-            // 1. if they are the current user (due to race condition), then we cannot logout
-            // userId, as we can't switch to another user.
-            // 2. if they are not the current user, we simply need to stop this userId (without
-            // switch user).
-            if (switchToUserId != userId) {
-                if (!switchUser(switchToUserId)) {
-                    Slogf.e(TAG, "Cannot logout user %d; switch to user %d failed", userId,
-                            switchToUserId);
-                    return false;
-                }
-            }
         }
-        // Now, userId is not current, so we can simply stop it. Attempting to stop system user
-        // will fail.
+        // Now, userId is not current, so we can simply stop it.
         final int result = stopUser(userId, /* allowDelayedLocking= */ false,
                 /* stopUserCallback= */ null, /* keyEvictedCallback */ null);
         if (result != USER_OP_SUCCESS) {
@@ -1539,9 +1586,10 @@ class UserController implements Handler.Callback {
 
     private void dispatchUserLocking(@UserIdInt int userId,
             @Nullable List<KeyEvictedCallback> keyEvictedCallbacks) {
-        // Evict the user's credential encryption key. Performed on FgThread to make it
-        // serialized with call to UserManagerService.onBeforeUnlockUser in finishUserUnlocking
-        // to prevent data corruption.
+        // Evict user secrets that require strong authentication to unlock. This includes locking
+        // the user's credential-encrypted storage and evicting the user's keystore super keys.
+        // Performed on FgThread to make it serialized with call to
+        // UserManagerService.onBeforeUnlockUser in finishUserUnlocking to prevent data corruption.
         FgThread.getHandler().post(() -> {
             synchronized (mLock) {
                 if (mStartedUsers.get(userId) != null) {
@@ -1554,6 +1602,10 @@ class UserController implements Handler.Callback {
                 mInjector.getStorageManager().lockCeStorage(userId);
             } catch (RemoteException re) {
                 throw re.rethrowAsRuntimeException();
+            }
+            if (com.android.server.flags.Flags.userDataRefactoring()) {
+                // Send communication to keystore to wipe key cache for the given userId.
+                mInjector.getKeyStoreAuthorization().onUserStorageLocked(userId);
             }
             if (keyEvictedCallbacks == null) {
                 return;
@@ -4058,6 +4110,10 @@ class UserController implements Handler.Callback {
 
         KeyguardManager getKeyguardManager() {
             return mService.mContext.getSystemService(KeyguardManager.class);
+        }
+
+        KeyStoreAuthorization getKeyStoreAuthorization() {
+            return KeyStoreAuthorization.getInstance();
         }
 
         void batteryStatsServiceNoteEvent(int code, String name, int uid) {

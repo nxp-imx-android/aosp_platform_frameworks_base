@@ -16,8 +16,6 @@
 
 package com.android.server.notification;
 
-import static android.app.Flags.FLAG_MODES_UI;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertEquals;
@@ -28,11 +26,9 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import android.app.AutomaticZenRule;
-import android.app.Flags;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.net.Uri;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -76,14 +72,19 @@ public class ZenModeDiffTest extends UiServiceTestCase {
     // version is not included in the diff; manual & automatic rules have special handling;
     // deleted rules are not included in the diff.
     public static final Set<String> ZEN_MODE_CONFIG_EXEMPT_FIELDS =
-            Set.of("version", "manualRule", "automaticRules", "deletedRules");
+            Set.of("version", "manualRule", "automaticRules", "deletedRules",
+                    // TODO: b/368247671 - Delete these exemptions once fields are gone.
+                    "allowAlarms", "allowMedia", "allowSystem", "allowCalls", "allowReminders",
+                    "allowEvents", "allowRepeatCallers", "allowMessages", "allowConversations",
+                    "allowCallsFrom", "allowMessagesFrom", "allowConversationsFrom",
+                    "suppressedVisualEffects");
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.progressionOf(FLAG_MODES_UI);
+        return FlagsParameterization.progressionOf();
     }
 
     public ZenModeDiffTest(FlagsParameterization flags) {
@@ -139,7 +140,6 @@ public class ZenModeDiffTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI)
     public void testRuleDiff_toStringNoChangeAddRemove() throws Exception {
         // Start with two identical rules
         ZenModeConfig.ZenRule r1 = makeRule();
@@ -156,7 +156,6 @@ public class ZenModeDiffTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI)
     public void testRuleDiff_toString() throws Exception {
         // Start with two identical rules
         ZenModeConfig.ZenRule r1 = makeRule();
@@ -232,7 +231,6 @@ public class ZenModeDiffTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_MODES_UI)
     public void testRuleDiff_toStringNullStartPolicy() throws Exception {
         // Start with two identical rules
         ZenModeConfig.ZenRule r1 = makeRule();
@@ -478,13 +476,6 @@ public class ZenModeDiffTest extends UiServiceTestCase {
                         "zenDeviceEffectsUserModifiedFields", "deletionInstant", "disabledOrigin",
                         "lastActivation", "lastManualActivation", "lastDeactivation",
                         "lastManualDeactivation"));
-        // Flagged fields are only compared if their flag is on.
-        if (Flags.modesUi()) {
-            exemptFields.add(RuleDiff.FIELD_SNOOZING); // Obsolete.
-        } else {
-            exemptFields.add(RuleDiff.FIELD_CONDITION_OVERRIDE);
-            exemptFields.add(RuleDiff.FIELD_LEGACY_SUPPRESSED_EFFECTS);
-        }
         return exemptFields;
     }
 
@@ -555,20 +546,10 @@ public class ZenModeDiffTest extends UiServiceTestCase {
         ZenModeDiff.ConfigDiff d = new ZenModeDiff.ConfigDiff(c1, c2);
         assertTrue(d.hasDiff());
 
-        if (!Flags.modesUi()) {
-            // Diff in top-level fields
-            assertTrue(d.getDiffForField("allowMessagesFrom").hasDiff());
-            assertTrue(d.getDiffForField("allowConversationsFrom").hasDiff());
-
-            // Bonus testing of stringification of people senders and conversation senders
-            assertTrue(d.toString().contains("allowMessagesFrom:stars->contacts"));
-            assertTrue(d.toString().contains("allowConversationsFrom:important->none"));
-        } else {
-            RuleDiff r = d.getManualRuleDiff();
-            assertNotNull(r);
-            ZenModeDiff.FieldDiff p = r.getDiffForField(RuleDiff.FIELD_ZEN_POLICY);
-            assertNotNull(p);
-        }
+        RuleDiff r = d.getManualRuleDiff();
+        assertNotNull(r);
+        ZenModeDiff.FieldDiff p = r.getDiffForField(RuleDiff.FIELD_ZEN_POLICY);
+        assertNotNull(p);
     }
 
     @Test

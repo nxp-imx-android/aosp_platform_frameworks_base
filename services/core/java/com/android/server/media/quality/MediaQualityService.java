@@ -88,10 +88,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -140,6 +142,7 @@ public class MediaQualityService extends SystemService {
 
     private final Map<Long, PictureProfile> mHandleToPictureProfile = new HashMap<>();
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
+    private final Set<Long> mPictureProfileForHal = new HashSet<>();
 
     public MediaQualityService(Context context) {
         super(context);
@@ -332,8 +335,11 @@ public class MediaQualityService extends SystemService {
                             pp.getPackageName(),
                             pp.getInputId(),
                             pp.getParameters());
-                    updateDatabaseOnPictureProfileAndNotifyManager(
-                            values, pp.getParameters(), callingUid, callingPid, true);
+                    if (mPictureProfileForHal
+                            .contains(values.getAsLong(BaseParameters.PARAMETER_ID))) {
+                        updateDatabaseOnPictureProfileAndNotifyManager(
+                                values, pp.getParameters(), callingUid, callingPid, true);
+                    }
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
                             pp.getPackageName(), pp.getHandle().getId());
@@ -582,6 +588,7 @@ public class MediaQualityService extends SystemService {
             synchronized (mPictureProfileLock) {
                 Long value = mPictureProfileTempIdMap.getKey(id);
                 if (value != null) {
+                    mPictureProfileForHal.add(value);
                     mHalNotifier.notifyHalOnPictureProfileChange(value, null);
                 }
                 return value != null ? value : -1;
@@ -598,6 +605,7 @@ public class MediaQualityService extends SystemService {
                 if (packageName != null) {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
                     if (value != null) {
+                        mPictureProfileForHal.add(value);
                         mHalNotifier.notifyHalOnPictureProfileChange(value, null);
                     }
                 }
@@ -610,6 +618,7 @@ public class MediaQualityService extends SystemService {
         public void notifyPictureProfileHandleSelection(long handle, int userId) {
             PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle, true);
             if (profile != null) {
+                mPictureProfileForHal.add(handle);
                 mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
             }
         }
@@ -641,11 +650,60 @@ public class MediaQualityService extends SystemService {
                     }
                     long handle = -1;
                     cursor.moveToFirst();
-                    int colIndex = cursor.getColumnIndex(BaseParameters.PARAMETER_ID);
-                    if (colIndex != -1) {
-                        handle = cursor.getLong(colIndex);
+                    PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
+                            cursor, mPictureProfileTempIdMap);
+                    handle = p.getHandle().getId();
+                    PictureProfile current = mHandleToPictureProfile.get(handle);
+                    if (current != null) {
+                        long currentHandle = current.getHandle().getId();
+                        mHalNotifier.notifyHalOnPictureProfileChange(
+                                currentHandle, current.getParameters());
+                        return currentHandle;
                     }
+                    mHalNotifier.notifyHalOnPictureProfileChange(handle, p.getParameters());
                     return handle;
+                }
+            }
+        }
+
+        public PictureProfile getCurrentPictureProfileForTvInput(String inputId, int userId) {
+            long profileHandle = getPictureProfileForTvInput(inputId, userId);
+            if (profileHandle == -1) {
+                return null;
+            }
+            return mMqDatabaseUtils.getPictureProfile(profileHandle);
+        }
+
+        public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId, int userId) {
+            // TODO: cache profiles
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
+                mMqManagerNotifier.notifyOnPictureProfileError(
+                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+            }
+            String[] columns = {BaseParameters.PARAMETER_ID};
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+            String[] selectionArguments = {
+                    Integer.toString(PictureProfile.TYPE_SYSTEM),
+                    inputId
+            };
+            List<PictureProfile> profiles = new ArrayList<>();
+            synchronized (mPictureProfileLock) {
+                try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                        columns, selection, selectionArguments)) {
+                    int count = cursor.getCount();
+                    if (count == 0) {
+                        return profiles;
+                    }
+                    cursor.moveToFirst();
+                    while (cursor.moveToNext()) {
+                        profiles.add(MediaQualityUtils.convertCursorToPictureProfileWithTempId(
+                                cursor, mPictureProfileTempIdMap));
+                    }
+                    return profiles;
                 }
             }
         }
@@ -2041,8 +2099,11 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        mPictureProfileForHal.add(profileHandle);
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString("stream_status", newStatus);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                current.getParameters());
+                                currentProfileParameters);
                     } else {
                         // handle SDR status
                         if (isSdr(profileStatus)) {
@@ -2075,8 +2136,12 @@ public class MediaQualityService extends SystemService {
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
 
+                        mPictureProfileForHal.add(profileHandle);
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString(
+                                "stream_status", PictureProfile.STATUS_SDR);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
-                                current.getParameters());
+                                currentProfileParameters);
                     }
                 }
             });

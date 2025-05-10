@@ -25,6 +25,7 @@ import android.power.PowerStatsInternal;
 import android.util.Slog;
 import android.util.SparseArray;
 
+import com.android.internal.os.Clock;
 import com.android.server.LocalServices;
 
 import java.util.HashMap;
@@ -42,6 +43,7 @@ class BatteryHistoryStepDetailsProvider {
     private final BatteryStatsImpl mBatteryStats;
 
     private final BatteryStats.HistoryStepDetails mDetails = new BatteryStats.HistoryStepDetails();
+    private final Clock mClock;
 
     private boolean mHasHistoryStepDetails;
 
@@ -78,10 +80,11 @@ class BatteryHistoryStepDetailsProvider {
     private Map<Integer, Map<Integer, String>> mStateNames;
 
     private boolean mFirstUpdate = true;
-    private final Runnable mUpdateRunnable = this::update;
+    private final Object mUpdateToken = new Object();
 
-    BatteryHistoryStepDetailsProvider(BatteryStatsImpl batteryStats) {
+    BatteryHistoryStepDetailsProvider(BatteryStatsImpl batteryStats, Clock clock) {
         mBatteryStats = batteryStats;
+        mClock = clock;
     }
 
     void onSystemReady() {
@@ -89,22 +92,33 @@ class BatteryHistoryStepDetailsProvider {
     }
 
     void requestUpdate() {
-        mBatteryStats.mHandler.removeCallbacks(mUpdateRunnable);
+        mBatteryStats.mHandler.removeCallbacksAndMessages(mUpdateToken);
         if (!mSystemReady || mFirstUpdate) {
-            mBatteryStats.mHandler.postDelayed(mUpdateRunnable, BOOT_TIME_UPDATE_DELAY_MILLIS);
+            // System is busy; schedule an update at a later time.
+            mBatteryStats.mHandler.postDelayed(() -> {
+                synchronized (mClock) {
+                    long elapsedRealtimeMs = mClock.elapsedRealtime();
+                    long uptimeMs = mClock.uptimeMillis();
+                    update(elapsedRealtimeMs, uptimeMs);
+                }
+            }, mUpdateToken, BOOT_TIME_UPDATE_DELAY_MILLIS);
         } else {
-            mBatteryStats.mHandler.post(mUpdateRunnable);
+            synchronized (mClock) {
+                // Grab the timestamp before posting to the handler to keep the timeline consistent
+                long elapsedRealtimeMs = mClock.elapsedRealtime();
+                long uptimeMs = mClock.uptimeMillis();
+                mBatteryStats.mHandler.postDelayed(() -> update(elapsedRealtimeMs, uptimeMs),
+                        mUpdateToken, 0);
+            }
         }
     }
 
-    void update() {
+    void update(long elapsedRealtimeMs, long uptimeMs) {
         mHasHistoryStepDetails = false;
         mBatteryStats.updateCpuDetails();
         calculateHistoryStepDetails();
         updateStateResidency();
-        mBatteryStats.getHistory().recordHistoryStepDetails(mDetails,
-                mBatteryStats.mClock.elapsedRealtime(),
-                mBatteryStats.mClock.uptimeMillis());
+        mBatteryStats.getHistory().recordHistoryStepDetails(mDetails, elapsedRealtimeMs, uptimeMs);
         mFirstUpdate = false;
     }
 

@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.footer.ui.viewmodel
 
-import android.content.Intent
-import android.provider.Settings
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -25,7 +23,6 @@ import com.android.systemui.shared.notifications.domain.interactor.NotificationS
 import com.android.systemui.statusbar.notification.NotificationActivityStarter.SettingsIntent
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
@@ -103,20 +100,16 @@ constructor(
         notificationSettingsInteractor.isNotificationHistoryEnabled
 
     val manageOrHistoryButtonClick: Flow<SettingsIntent> by lazy {
-        if (ModesEmptyShadeFix.isUnexpectedlyInLegacyMode()) {
-            flowOf(SettingsIntent(Intent(Settings.ACTION_NOTIFICATION_SETTINGS)))
-        } else {
-            notificationSettingsInteractor.isNotificationHistoryEnabled.map {
-                isNotificationHistoryEnabled ->
-                if (isNotificationHistoryEnabled) {
-                    SettingsIntent.forNotificationHistory(
-                        cujType = InteractionJankMonitor.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON
-                    )
-                } else {
-                    SettingsIntent.forNotificationSettings(
-                        cujType = InteractionJankMonitor.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON
-                    )
-                }
+        notificationSettingsInteractor.isNotificationHistoryEnabled.map {
+            isNotificationHistoryEnabled ->
+            if (isNotificationHistoryEnabled) {
+                SettingsIntent.forNotificationHistory(
+                    cujType = InteractionJankMonitor.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON
+                )
+            } else {
+                SettingsIntent.forNotificationSettings(
+                    cujType = InteractionJankMonitor.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON
+                )
             }
         }
     }

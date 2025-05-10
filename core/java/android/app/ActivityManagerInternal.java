@@ -501,6 +501,11 @@ public abstract class ActivityManagerInternal {
      */
     public static final int OOM_ADJ_REASON_RECONFIGURATION = 24;
 
+    /**
+     * Oom Adj Reason: Either a binder call has started or finished.
+     */
+    public static final int OOM_ADJ_REASON_SERVICE_BINDER_CALL = 25;
+
     @IntDef(prefix = {"OOM_ADJ_REASON_"}, value = {
         OOM_ADJ_REASON_NONE,
         OOM_ADJ_REASON_ACTIVITY,
@@ -527,6 +532,7 @@ public abstract class ActivityManagerInternal {
         OOM_ADJ_REASON_COMPONENT_DISABLED,
         OOM_ADJ_REASON_FOLLOW_UP,
         OOM_ADJ_REASON_RECONFIGURATION,
+        OOM_ADJ_REASON_SERVICE_BINDER_CALL,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface OomAdjReason {}

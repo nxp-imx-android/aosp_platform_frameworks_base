@@ -167,6 +167,7 @@ constructor(
                 intent = currentInfo.intent,
                 notificationKey = currentInfo.key,
                 appName = currentInfo.appName,
+                requestedPromotion = currentInfo.requestedPromotion,
                 promotedContent = currentInfo.promotedContent,
                 // [hasOngoingCall()] filters out the case in which the call is ongoing but the app
                 // is visible (we issue [OngoingCallModel.NoCall] below in that case), so this can
@@ -231,6 +232,7 @@ constructor(
                     notifModel.uid,
                     notifModel.appName,
                     notifModel.instanceId,
+                    notifModel.requestedPromotion,
                     notifModel.promotedContent,
                     isOngoing = true,
                     statusBarSwipedAway = callNotificationInfo?.statusBarSwipedAway ?: false,
@@ -353,6 +355,7 @@ constructor(
         val uid: Int,
         val appName: String,
         val instanceId: InstanceId?,
+        val requestedPromotion: Boolean,
         /**
          * If the call notification also meets promoted notification criteria, this field is filled
          * in with the content related to promotion. Otherwise null.

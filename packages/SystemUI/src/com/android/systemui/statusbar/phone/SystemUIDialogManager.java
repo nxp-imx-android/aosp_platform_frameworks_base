@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone;
 
+
 import androidx.annotation.NonNull;
 
 import com.android.keyguard.KeyguardViewController;
@@ -56,6 +57,13 @@ public class SystemUIDialogManager implements Dumpable {
      */
     public boolean shouldHideAffordance() {
         return !mDialogsShowing.isEmpty();
+    }
+
+    /** Dismisses all dialogs on a specific display. */
+    public void dismissDialogsForDisplayId(int displayId) {
+        mDialogsShowing.stream().filter(
+                dialog -> dialog.getContext().getDisplayId() == displayId).forEach(
+                SystemUIDialog::dismissWithoutAnimation);
     }
 
     /**

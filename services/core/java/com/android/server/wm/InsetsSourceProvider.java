@@ -355,7 +355,7 @@ class InsetsSourceProvider {
         }
         if (mInsetsHintStale) {
             final Rect bounds = mWindowContainer.getBounds();
-            mInsetsHint = mSource.calculateInsets(bounds, true /* ignoreVisibility */);
+            mInsetsHint = mSource.calculateInsets(bounds, bounds, true /* ignoreVisibility */);
             mInsetsHintStale = false;
         }
         return mInsetsHint;

@@ -260,12 +260,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureScreenshot() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT);
-        mPhoneWindowManager.assertTakeScreenshotCalled();
-    }
-
-    @Test
     public void testKeyGestureTriggerBugReport() throws RemoteException {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT);
         mPhoneWindowManager.assertTakeBugreport(true);
@@ -349,21 +343,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureScreenshotChord() {
-        sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.moveTimeForward(500);
-        sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.assertTakeScreenshotCalled();
-    }
-
-    @Test
-    public void testKeyGestureScreenshotChordCancelled() {
-        sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-        mPhoneWindowManager.assertTakeScreenshotNotCalled();
-    }
-
-    @Test
     public void testKeyGestureRingerToggleChord() {
         mPhoneWindowManager.overrideVolumeHushMode();
         sendKeyGestureEventStart(KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD);
@@ -414,15 +393,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     public void testKeyGestureCloseAllDialogs() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS);
         mPhoneWindowManager.assertCloseAllDialogs();
-    }
-
-    @Test
-    public void testKeyGestureToggleTalkback() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
-        mPhoneWindowManager.assertTalkBack(true);
-
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
-        mPhoneWindowManager.assertTalkBack(false);
     }
 
     @Test

@@ -178,7 +178,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private static final boolean DEFAULT_HAS_GLOBAL_FOCUS = true;
     private static final boolean DEFAULT_SHOULD_IGNORE_CORNER_RADIUS = false;
     private static final boolean DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS = false;
-
+    private static final boolean DEFAULT_IN_SYNC_WITH_TRANSITION = true;
 
     @Mock
     private DisplayController mMockDisplayController;
@@ -319,10 +319,10 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHandleViewHolder);
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         when(mMockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mDesktopRepository);
@@ -455,7 +455,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 /* shouldIgnoreCornerRadius= */ true,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mCornerRadius).isEqualTo(INVALID_CORNER_RADIUS);
     }
@@ -555,7 +556,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 /* shouldIgnoreCornerRadius= */ true,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
     }
@@ -774,7 +776,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 /* shouldExcludeCaptionFromAppBounds */ true,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         // Force consuming flags are disabled.
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) == 0).isTrue();
@@ -810,7 +813,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) != 0).isTrue();
         assertThat(
@@ -890,7 +894,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         // Takes status bar inset as padding, ignores caption bar inset.
         assertThat(relayoutParams.mCaptionTopPadding).isEqualTo(50);
@@ -919,7 +924,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsInsetSource).isFalse();
     }
@@ -947,7 +953,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         // Header is always shown because it's assumed the status bar is always visible.
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
@@ -975,7 +982,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -1002,7 +1010,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1029,7 +1038,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1057,7 +1067,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
 
@@ -1077,7 +1088,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1105,7 +1117,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -1133,7 +1146,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1853,7 +1867,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mExclusionRegion,
                 DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig);
+                mDesktopConfig,
+                DEFAULT_IN_SYNC_WITH_TRANSITION);
     }
 
     private DesktopModeWindowDecoration createWindowDecoration(

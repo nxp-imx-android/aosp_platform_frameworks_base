@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Benarkan"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Penyahpepijatan wayarles tidak dibenarkan"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Pengguna yang log masuk ke peranti ini pada masa ini tidak boleh menghidupkan penyahpepijatan wayarles. Untuk menggunakan ciri ini, tukar kepada pengguna pentadbir."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"Port USB dilumpuhkan"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Untuk melindungi peranti anda daripada cecair atau serpihan, port USB dilumpuhkan dan tidak akan mengesan sebarang aksesori.\n\nAnda akan dimaklumi apabila selamat untuk menggunakan port USB lagi."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Port USB didayakan untuk mengesan pengecas dan aksesori"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Tidak ditetapkan"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Urus dalam tetapan"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Tiada mod yang aktif}=1{{mode} aktif}other{# mod aktif}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> Mod"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Hidup"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Anda tidak akan diganggu oleh bunyi dan getaran, kecuali daripada penggera, peringatan, acara dan pemanggil yang anda tetapkan. Anda masih mendengar item lain yang anda pilih untuk dimainkan termasuk muzik, video dan permainan."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Anda tidak akan diganggu oleh bunyi dan getaran, kecuali daripada penggera. Anda masih mendengar item lain yang anda pilih untuk dimainkan termasuk muzik, video dan permainan."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Dibiarkan tidak berkunci oleh TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Peranti telah dikunci, terlalu banyak percubaan pengesahan"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Peranti dikunci\nPengesahan gagal"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Dikunci oleh jam tangan anda"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Tetapan bunyi"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Sari kata media automatik"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Anda memerlukan sekurang-kurangnya <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> jubin"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Edit jubin"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Masa"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Tunjukkan jam, minit dan saat"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Lain-lain"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"togol saiz jubin"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Alih keluar jubin"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Letakkan jubin"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"mod peletakan togol"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"togol pilihan"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Tambahkan jubin pada kedudukan terakhir"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Tambahkan <xliff:g id="NAME">%1$s</xliff:g> pada kedudukan terakhir"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Alihkan jubin"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Tambahkan jubin pada kedudukan yang dikehendaki"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Alih ke <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1351,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Jeda animasi"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Panggilan sedang berlangsung"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Sedang berlangsung"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"kembangkan pemberitahuan"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"kuncupkan pemberitahuan"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Data mudah alih"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Disambungkan"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Disambungkan buat sementara waktu"</string>
@@ -1482,7 +1486,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Urus akses"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Digunakan oleh panggilan telefon"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Digunakan baru-baru ini dalam panggilan telefon"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Digunakan oleh <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Sedang digunakan oleh <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Digunakan baru-baru ini oleh <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Digunakan oleh <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Digunakan baru-baru ini oleh <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>

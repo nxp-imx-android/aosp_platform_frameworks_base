@@ -1381,10 +1381,23 @@ public class ResourcesManager {
                     // constructions.
                     final ResourcesImpl resourcesImpl =
                             findOrCreateResourcesImplForKeyLocked(newKey);
-                    if (resourcesImpl != null && resourcesImpl != resources.getImpl()) {
+                    if (resourcesImpl == null) {
+                        continue;
+                    }
+                    if (resourcesImpl != resources.getImpl()) {
                         // Set the ResourcesImpl, updating it for all users of this Resources
                         // object.
                         resources.setImpl(resourcesImpl);
+                    } else if (android.content.res.Flags
+                            .ignoreNonPublicConfigDiffForResourcesKey()) {
+                        // If the ResourcesImpl is reused, also update fields not related to
+                        // resources in case the app accesses WindowConfiguration, e.g. rotation.
+                        final Configuration resConfig = resourcesImpl.getConfiguration();
+                        resConfig.windowConfiguration.updateFrom(
+                                newKey.mOverrideConfiguration.windowConfiguration);
+                        if (newKey.mOverrideConfiguration.seq != 0) {
+                            resConfig.seq = newKey.mOverrideConfiguration.seq;
+                        }
                     }
                 }
             }

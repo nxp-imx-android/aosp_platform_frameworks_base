@@ -38,6 +38,7 @@ import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThr
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import com.android.wm.shell.appzoomout.AppZoomOut
+import java.io.PrintWriter
 import java.util.Optional
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -175,6 +176,12 @@ constructor(
         lp.gravity = Gravity.TOP
 
         return lp
+    }
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("$TAG:")
+        pw.println("  isInvocationEffectHappening=$isInvocationEffectHappening")
+        root?.dump(pw, "  ") ?: pw.println("  root=null")
     }
 
     companion object {

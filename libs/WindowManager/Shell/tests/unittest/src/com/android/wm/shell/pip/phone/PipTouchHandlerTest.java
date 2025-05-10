@@ -28,6 +28,7 @@ import android.util.Size;
 import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
@@ -88,6 +89,9 @@ public class PipTouchHandlerTest extends ShellTestCase {
     @Mock
     private ShellExecutor mMainExecutor;
 
+    @Mock
+    private DisplayController mDisplayController;
+
     private PipBoundsState mPipBoundsState;
     private PipBoundsAlgorithm mPipBoundsAlgorithm;
     private PipSnapAlgorithm mPipSnapAlgorithm;
@@ -108,7 +112,7 @@ public class PipTouchHandlerTest extends ShellTestCase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
         mPipSnapAlgorithm = new PipSnapAlgorithm();

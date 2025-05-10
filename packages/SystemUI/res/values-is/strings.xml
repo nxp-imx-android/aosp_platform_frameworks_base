@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Leyfa"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Þráðlaus villuleit er ekki leyfð"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Notandinn sem er skráður inn í þetta tæki núna getur ekki kveikt á þráðlausri villuleit. Skiptu yfir í stjórnanda til að nota þennan eiginleika."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-tengi gert óvirkt"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Til að vernda tækið fyrir vökva og óhreinindum er USB-tengið óvirkt og mun ekki greina aukabúnað.\n\nÞú færð tilkynningu þegar öruggt er að nota USB-tengið aftur."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Kveikt var á USB-tengi til að greina hleðslutæki og aukabúnað"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Ekki stillt"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Stjórna í stillingum"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Engar virkar stillingar}=1{{mode} er virk}one{# stilling er virk}other{# stillingar eru virkar}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> stillingar"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Kveikt"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Þú verður ekki fyrir truflunum frá hljóðmerkjum og titringi, fyrir utan vekjara, áminningar, viðburði og símtöl frá þeim sem þú leyfir fyrirfram. Þú heyrir áfram í öllu sem þú velur að spila, svo sem tónlist, myndskeiðum og leikjum."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Þú verður ekki fyrir truflunum frá hljóðmerkjum og titringi, fyrir utan vekjara. Þú heyrir áfram í öllu sem þú velur að spila, svo sem tónlist, myndskeiðum og leikjum."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Haldið opnu af TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Tæki var læst, of margar auðkenningartilraunir"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Tæki læst\nAuðkenning mistókst"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Læst af úrinu"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Hljóðstillingar"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Sjálfvirkir skjátextar"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Til að geta tengt lyklaborðið við spjaldtölvuna þarftu fyrst að kveikja á Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Kveikja"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Kveikt – út frá andliti"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Þagga og flokka"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sölur, nýir eiginleikar og fleira"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"Aðalfréttir, leiðarar og fleira"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"Læk, færslur og fleira"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Fréttabréf, efni sem mælt er með og fleira"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Lokið"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Nota"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Slökkva"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Flísarnar mega ekki vera færri en <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Breyta"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Breyta flísum"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Tími"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Sýna klukkustundir, mínútur og sekúndur"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Annað"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"breyta stærð reitsins"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Fjarlægja reit"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Staðsetja reit"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"kveikja/slökkva á staðsetningarstillingu"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"breyta vali"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Bæta reit við aftast"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Bæta „<xliff:g id="NAME">%1$s</xliff:g>“ við aftast"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Færa flís"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Bæta reit við óskaða stöðu"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Færa í <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Gera hlé á hreyfimynd"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Símtal í gangi"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Í gangi"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"stækka tilkynningu"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"minnka tilkynningu"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Farsímagögn"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Tengt"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Tímabundin tenging"</string>

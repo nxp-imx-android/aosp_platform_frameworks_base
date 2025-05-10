@@ -48,7 +48,7 @@ public abstract class InternalCleanupClient<S extends BiometricAuthenticator.Ide
         extends HalClientMonitor<T> implements EnumerateConsumer, RemovalConsumer,
         EnrollmentModifier {
 
-    private static final String TAG = "Biometrics/InternalCleanupClient";
+    private static final String TAG = "InternalCleanupClient";
 
     /**
      * Container for enumerated templates. Used to keep track when cleaning up unknown

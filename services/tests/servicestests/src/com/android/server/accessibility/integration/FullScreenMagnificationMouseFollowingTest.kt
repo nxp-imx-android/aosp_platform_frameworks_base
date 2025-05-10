@@ -25,6 +25,7 @@ import android.accessibilityservice.MagnificationConfig
 import android.app.Activity
 import android.app.Instrumentation
 import android.app.UiAutomation
+import android.app.WindowConfiguration
 import android.companion.virtual.VirtualDeviceManager
 import android.graphics.PointF
 import android.hardware.display.DisplayManager
@@ -313,10 +314,16 @@ class FullScreenMagnificationMouseFollowingTest {
                 TestActivity::class.java
             )
         instrumentation.runOnMainSync {
-            activity.requestFullscreenMode(
-                Activity.FULLSCREEN_MODE_REQUEST_ENTER,
-                fullscreenCallback
-            )
+            val windowingMode = activity.resources.configuration.windowConfiguration.windowingMode
+            if (windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN) {
+                // Already fullscreen. No need to toggle.
+                future.complete(null)
+            } else {
+                activity.requestFullscreenMode(
+                    Activity.FULLSCREEN_MODE_REQUEST_ENTER,
+                    fullscreenCallback
+                )
+            }
         }
         future.get(UI_IDLE_GLOBAL_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS)
 

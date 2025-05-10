@@ -254,8 +254,8 @@ import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.org.conscrypt.TrustedCertificateStore;
-import com.android.server.am.MemInfoDumpProto;
 import com.android.server.am.BitmapDumpProto;
+import com.android.server.am.MemInfoDumpProto;
 
 import dalvik.annotation.optimization.NeverCompile;
 import dalvik.system.AppSpecializationHooks;
@@ -562,17 +562,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
     // The lock of mProviderMap protects the following variables.
     @UnsupportedAppUsage
-    final ArrayMap<ProviderKey, ProviderClientRecord> mProviderMap
-        = new ArrayMap<ProviderKey, ProviderClientRecord>();
+    final ArrayMap<ProviderKey, ProviderClientRecord> mProviderMap = new ArrayMap<>();
     @UnsupportedAppUsage
-    final ArrayMap<IBinder, ProviderRefCount> mProviderRefCountMap
-        = new ArrayMap<IBinder, ProviderRefCount>();
+    final ArrayMap<IBinder, ProviderRefCount> mProviderRefCountMap = new ArrayMap<>();
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders
-        = new ArrayMap<IBinder, ProviderClientRecord>();
+    final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders = new ArrayMap<>();
     @UnsupportedAppUsage
-    final ArrayMap<ComponentName, ProviderClientRecord> mLocalProvidersByName
-            = new ArrayMap<ComponentName, ProviderClientRecord>();
+    final ArrayMap<ComponentName, ProviderClientRecord> mLocalProvidersByName = new ArrayMap<>();
 
     // Mitigation for b/74523247: Used to serialize calls to AM.getContentProvider().
     // Note we never removes items from this map but that's okay because there are only so many
@@ -580,8 +576,8 @@ public final class ActivityThread extends ClientTransactionHandler
     @GuardedBy("mGetProviderKeys")
     final ArrayMap<ProviderKey, ProviderKey> mGetProviderKeys = new ArrayMap<>();
 
-    final ArrayMap<Activity, ArrayList<OnActivityPausedListener>> mOnPauseListeners
-        = new ArrayMap<Activity, ArrayList<OnActivityPausedListener>>();
+    final ArrayMap<Activity, ArrayList<OnActivityPausedListener>> mOnPauseListeners =
+            new ArrayMap<>();
 
     private SplashScreen.SplashScreenManagerGlobal mSplashScreenGlobal;
 
@@ -595,7 +591,7 @@ public final class ActivityThread extends ClientTransactionHandler
     static volatile Handler sMainThreadHandler;  // set once in main()
     private long mStartSeq; // Only accesssed from the main thread
 
-    Bundle mCoreSettings = null;
+    private Bundle mCoreSettings = null;
 
     /**
      * The lock word for the {@link #mCoreSettings}.
@@ -881,11 +877,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     assumeDelivered, token, sendingUser, intent.getFlags(), sendingUid,
                     sendingPackage);
             this.intent = intent;
-            if (com.android.window.flags.Flags.supportWidgetIntentsOnConnectedDisplay()) {
-                mOptions = ActivityOptions.fromBundle(resultExtras);
-            } else {
-                mOptions = null;
-            }
+            mOptions = ActivityOptions.fromBundle(resultExtras);
         }
 
         @UnsupportedAppUsage
@@ -3018,12 +3010,12 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public final LoadedApk getPackageInfo(String packageName, CompatibilityInfo compatInfo,
+    public LoadedApk getPackageInfo(String packageName, CompatibilityInfo compatInfo,
             int flags) {
         return getPackageInfo(packageName, compatInfo, flags, UserHandle.myUserId());
     }
 
-    public final LoadedApk getPackageInfo(String packageName, CompatibilityInfo compatInfo,
+    public LoadedApk getPackageInfo(String packageName, CompatibilityInfo compatInfo,
             int flags, int userId) {
         final boolean differentUser = (UserHandle.myUserId() != userId);
         ApplicationInfo ai = PackageManager.getApplicationInfoAsUserCached(
@@ -3070,7 +3062,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage(trackingBug = 171933273)
-    public final LoadedApk getPackageInfo(ApplicationInfo ai, CompatibilityInfo compatInfo,
+    public LoadedApk getPackageInfo(ApplicationInfo ai, CompatibilityInfo compatInfo,
             int flags) {
         boolean includeCode = (flags&Context.CONTEXT_INCLUDE_CODE) != 0;
         boolean securityViolation = includeCode && ai.uid != 0
@@ -3097,7 +3089,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    public final LoadedApk getPackageInfoNoCheck(ApplicationInfo ai,
+    public LoadedApk getPackageInfoNoCheck(ApplicationInfo ai,
             CompatibilityInfo compatInfo) {
         return getPackageInfo(ai, compatInfo, null, false, true, false);
     }
@@ -3109,7 +3101,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public final LoadedApk peekPackageInfo(String packageName, boolean includeCode) {
+    public LoadedApk peekPackageInfo(String packageName, boolean includeCode) {
         synchronized (mResourcesManager) {
             WeakReference<LoadedApk> ref;
             if (includeCode) {
@@ -3957,7 +3949,7 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    public final ActivityInfo resolveActivityInfo(Intent intent) {
+    public ActivityInfo resolveActivityInfo(Intent intent) {
         ActivityInfo aInfo = intent.resolveActivityInfo(
                 mInitialApplication.getPackageManager(), PackageManager.GET_SHARED_LIBRARY_FILES);
         if (aInfo == null) {
@@ -5145,10 +5137,6 @@ public final class ActivityThread extends ClientTransactionHandler
     @VisibleForTesting(visibility = PRIVATE)
     public Context createDisplayContextIfNeeded(@NonNull Context context,
             @NonNull ReceiverData data) {
-        if (!com.android.window.flags.Flags.supportWidgetIntentsOnConnectedDisplay()) {
-            return context;
-        }
-
         final ActivityOptions options = data.mOptions;
         if (options == null) {
             return context;
@@ -5698,7 +5686,7 @@ public final class ActivityThread extends ClientTransactionHandler
         return true;
     }
 
-    static final void cleanUpPendingRemoveWindows(ActivityClientRecord r, boolean force) {
+    static void cleanUpPendingRemoveWindows(ActivityClientRecord r, boolean force) {
         if (r.mPreserveWindow && !force) {
             return;
         }
@@ -6206,12 +6194,13 @@ public final class ActivityThread extends ClientTransactionHandler
 
         // mCoreSettings is only updated from the main thread, while this function is only called
         // from main thread as well, so no need to lock here.
-        View.sDebugViewAttributesApplicationPackage = mCoreSettings.getString(
+        final Bundle defaultDeviceCoreSettings = getCoreSettingsForDefaultDeviceLocked();
+        View.sDebugViewAttributesApplicationPackage = defaultDeviceCoreSettings.getString(
                 Settings.Global.DEBUG_VIEW_ATTRIBUTES_APPLICATION_PACKAGE, "");
         String currentPackage = (mBoundApplication != null && mBoundApplication.appInfo != null)
                 ? mBoundApplication.appInfo.packageName : "<unknown-app>";
         View.sDebugViewAttributes =
-                mCoreSettings.getInt(Settings.Global.DEBUG_VIEW_ATTRIBUTES, 0) != 0
+                defaultDeviceCoreSettings.getInt(Settings.Global.DEBUG_VIEW_ATTRIBUTES, 0) != 0
                         || View.sDebugViewAttributesApplicationPackage.equals(currentPackage);
         return previousState != View.sDebugViewAttributes;
     }
@@ -7257,7 +7246,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 r.mActivityWindowInfo);
     }
 
-    final void handleProfilerControl(boolean start, ProfilerInfo profilerInfo, int profileType) {
+    void handleProfilerControl(boolean start, ProfilerInfo profilerInfo, int profileType) {
         if (start) {
             switch (profileType) {
                 case ProfilerInfo.PROFILE_TYPE_LOW_OVERHEAD:
@@ -7358,7 +7347,7 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    final void handleDispatchPackageBroadcast(int cmd, String[] packages) {
+    void handleDispatchPackageBroadcast(int cmd, String[] packages) {
         boolean hasPkgInfo = false;
         switch (cmd) {
             case ApplicationThreadConstants.PACKAGE_REMOVED:
@@ -7472,7 +7461,7 @@ public final class ActivityThread extends ClientTransactionHandler
         ApplicationPackageManager.handlePackageBroadcast(cmd, packages, hasPkgInfo);
     }
 
-    final void handleLowMemory() {
+    void handleLowMemory() {
         final ArrayList<ComponentCallbacks2> callbacks =
                 collectComponentCallbacks(true /* includeUiContexts */);
 
@@ -7569,7 +7558,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         // mCoreSettings is only updated from the main thread, while this function is only called
         // from main thread as well, so no need to lock here.
-        GraphicsEnvironment.getInstance().setup(context, mCoreSettings);
+        GraphicsEnvironment.getInstance().setup(context, getCoreSettingsForDefaultDeviceLocked());
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
@@ -7743,7 +7732,8 @@ public final class ActivityThread extends ClientTransactionHandler
 
         // mCoreSettings is only updated from the main thread, while this function is only called
         // from main thread as well, so no need to lock here.
-        final String use24HourSetting = mCoreSettings.getString(Settings.System.TIME_12_24);
+        final String use24HourSetting = getCoreSettingsForDefaultDeviceLocked().getString(
+                Settings.System.TIME_12_24);
         Boolean is24Hr = null;
         if (use24HourSetting != null) {
             is24Hr = "24".equals(use24HourSetting) ? Boolean.TRUE : Boolean.FALSE;
@@ -8219,7 +8209,7 @@ public final class ActivityThread extends ClientTransactionHandler
         mInstrumentingWithoutRestart = false;
     }
 
-    /*package*/ final void finishInstrumentation(int resultCode, Bundle results) {
+    /*package*/ void finishInstrumentation(int resultCode, Bundle results) {
         IActivityManager am = ActivityManager.getService();
         if (mProfiler.profileFile != null && mProfiler.handlingProfiling
                 && mProfiler.profileFd == null) {
@@ -8268,7 +8258,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    public final IContentProvider acquireProvider(
+    public IContentProvider acquireProvider(
             Context c, String auth, int userId, boolean stable) {
         final IContentProvider provider = acquireExistingProvider(c, auth, userId, stable);
         if (provider != null) {
@@ -8340,7 +8330,7 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    private final void incProviderRefLocked(ProviderRefCount prc, boolean stable) {
+    private void incProviderRefLocked(ProviderRefCount prc, boolean stable) {
         if (stable) {
             prc.stableCount += 1;
             if (prc.stableCount == 1) {
@@ -8420,7 +8410,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    public final IContentProvider acquireExistingProvider(
+    public IContentProvider acquireExistingProvider(
             Context c, String auth, int userId, boolean stable) {
         synchronized (mProviderMap) {
             final ProviderKey key = new ProviderKey(auth, userId);
@@ -8451,7 +8441,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    public final boolean releaseProvider(IContentProvider provider, boolean stable) {
+    public boolean releaseProvider(IContentProvider provider, boolean stable) {
         if (provider == null) {
             return false;
         }
@@ -8548,7 +8538,7 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    final void completeRemoveProvider(ProviderRefCount prc) {
+    void completeRemoveProvider(ProviderRefCount prc) {
         synchronized (mProviderMap) {
             if (!prc.removePending) {
                 // There was a race!  Some other client managed to acquire
@@ -8592,13 +8582,13 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    final void handleUnstableProviderDied(IBinder provider, boolean fromClient) {
+    void handleUnstableProviderDied(IBinder provider, boolean fromClient) {
         synchronized (mProviderMap) {
             handleUnstableProviderDiedLocked(provider, fromClient);
         }
     }
 
-    final void handleUnstableProviderDiedLocked(IBinder provider, boolean fromClient) {
+    void handleUnstableProviderDiedLocked(IBinder provider, boolean fromClient) {
         ProviderRefCount prc = mProviderRefCountMap.get(provider);
         if (prc != null) {
             if (DEBUG_PROVIDER) Slog.v(TAG, "Cleaning up dead provider "
@@ -8951,7 +8941,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
-    public final void installSystemProviders(List<ProviderInfo> providers) {
+    public void installSystemProviders(List<ProviderInfo> providers) {
         if (providers != null) {
             installContentProviders(mInitialApplication, providers);
         }
@@ -8960,16 +8950,19 @@ public final class ActivityThread extends ClientTransactionHandler
     /**
      * Caller should NEVER mutate the Bundle returned from here
      */
-    Bundle getCoreSettings() {
+    Bundle getDefaultDeviceCoreSettings() {
         synchronized (mCoreSettingsLock) {
-            return mCoreSettings;
+            return getCoreSettingsForDefaultDeviceLocked();
         }
     }
 
     public int getIntCoreSetting(String key, int defaultValue) {
         synchronized (mCoreSettingsLock) {
             if (mCoreSettings != null) {
-                return mCoreSettings.getInt(key, defaultValue);
+                Bundle bundle = getCoreSettingsForDeviceLocked(mLastReportedDeviceId);
+                if (bundle != null) {
+                    return bundle.getInt(key, defaultValue);
+                }
             }
             return defaultValue;
         }
@@ -8981,7 +8974,10 @@ public final class ActivityThread extends ClientTransactionHandler
     public String getStringCoreSetting(String key, String defaultValue) {
         synchronized (mCoreSettingsLock) {
             if (mCoreSettings != null) {
-                return mCoreSettings.getString(key, defaultValue);
+                Bundle bundle = getCoreSettingsForDeviceLocked(mLastReportedDeviceId);
+                if (bundle != null) {
+                    return bundle.getString(key, defaultValue);
+                }
             }
             return defaultValue;
         }
@@ -8990,10 +8986,24 @@ public final class ActivityThread extends ClientTransactionHandler
     float getFloatCoreSetting(String key, float defaultValue) {
         synchronized (mCoreSettingsLock) {
             if (mCoreSettings != null) {
-                return mCoreSettings.getFloat(key, defaultValue);
+                Bundle bundle = getCoreSettingsForDeviceLocked(mLastReportedDeviceId);
+                if (bundle != null) {
+                    return bundle.getFloat(key, defaultValue);
+                }
             }
             return defaultValue;
         }
+    }
+
+    private Bundle getCoreSettingsForDefaultDeviceLocked() {
+        return getCoreSettingsForDeviceLocked(Context.DEVICE_ID_DEFAULT);
+    }
+
+    private Bundle getCoreSettingsForDeviceLocked(int deviceId) {
+        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
+            return mCoreSettings.getBundle(String.valueOf(deviceId));
+        }
+        return mCoreSettings;
     }
 
     private static class AndroidOs extends ForwardingOs {

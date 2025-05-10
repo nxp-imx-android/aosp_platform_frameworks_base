@@ -126,6 +126,7 @@ import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.CallbackController;
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder;
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInterface;
@@ -165,6 +166,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final Lazy<ShadeViewController> mShadeViewControllerLazy;
     private final PerDisplayRepository<SysUiState> mPerDisplaySysUiStateRepository;
     private final DisplayRepository mDisplayRepository;
+    private final HeadlessSystemUserMode mHeadlessSystemUserMode;
     private SysUiState mDefaultDisplaySysUIState;
     private final Handler mHandler;
     private final Lazy<NavigationBarController> mNavBarControllerLazy;
@@ -745,8 +747,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             Optional<BackAnimation> backAnimation,
             ProcessWrapper processWrapper,
             DisplayRepository displayRepository,
-            DesktopState desktopState
+            DesktopState desktopState,
+            HeadlessSystemUserMode headlessSystemUserMode
     ) {
+        mHeadlessSystemUserMode = headlessSystemUserMode;
         // b/241601880: This component should only be running for primary users or
         // secondaryUsers when visibleBackgroundUsers are supported.
         boolean isSystemUser = processWrapper.isSystemUser();
@@ -851,6 +855,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         // Listen for assistant changes
         assistUtils.registerVoiceInteractionSessionListener(mVoiceInteractionSessionListener);
+    }
+
+    public boolean isSystemOrVisibleBgUser() {
+        return mIsSystemOrVisibleBgUser;
     }
 
     public void onVoiceSessionWindowVisibilityChanged(boolean visible) {
@@ -1022,7 +1030,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         // Avoid creating TouchInteractionService because the System user in HSUM mode does not
         // interact with UI elements
         UserHandle currentUser = UserHandle.of(mUserTracker.getUserId());
-        if (UserManager.isHeadlessSystemUserMode() && currentUser.isSystem()) {
+        if (mHeadlessSystemUserMode.isHeadlessSystemUserMode() && currentUser.isSystem()) {
             Log.w(TAG_OPS,
                     "Skipping connection to TouchInteractionService for the System user in HSUM "
                             + "mode.");

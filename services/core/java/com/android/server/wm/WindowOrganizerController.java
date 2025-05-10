@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.app.ActivityManager.isStartResultSuccessful;
+import static android.app.TaskInfo.SELF_MOVABLE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -854,11 +855,20 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 } else if (newBounds.right > display.right) {
                                     task.mOffsetXForInsets = display.right - newBounds.right;
                                 }
+                                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                        "Applying inset offsets for task=%d offsetX=%d offsetY=%d",
+                                        task.mTaskId, task.mOffsetXForInsets,
+                                        task.mOffsetYForInsets);
                             } else {
                                 task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
+                                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                        "Resetting inset offsets for in-bounds task=%d",
+                                        task.mTaskId);
                             }
                         } else {
                             task.mOffsetXForInsets = task.mOffsetYForInsets = 0;
+                            ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                    "Resetting inset offsets for task=%d", task.mTaskId);
                         }
                     }
                 }
@@ -874,6 +884,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             if (container.setFocusable(change.getFocusable())) {
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
             }
+        }
+
+        if ((change.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
+            container.setIsTaskMoveAllowed(change.getIsTaskMoveAllowed());
         }
 
         if (windowingMode > -1) {
@@ -996,6 +1011,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     activity.supportsEnterPipOnTaskSwitch = lastSupportsEnterPipOnTaskSwitch;
                 }
             }
+        }
+
+        if (c.getSelfMovable() != SELF_MOVABLE_UNSET) {
+            tr.setSelfMovable(c.getSelfMovable());
         }
 
         return effects;

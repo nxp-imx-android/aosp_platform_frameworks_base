@@ -210,7 +210,7 @@ class TestPhoneWindowManager {
         }
 
         @Override
-        boolean toggleTalkback(int currentUserId, ShortcutSource source) {
+        boolean toggleTalkback(int currentUserId) {
             mIsTalkBackEnabled = !mIsTalkBackEnabled;
             return mIsTalkBackEnabled;
         }
@@ -358,7 +358,6 @@ class TestPhoneWindowManager {
         doReturn(mDisplay).when(mDisplayManager).getDisplay(eq(DEFAULT_DISPLAY));
         doReturn(STATE_ON).when(mDisplay).getState();
         doReturn(true).when(mDisplayPolicy).isAwake();
-        doNothing().when(mDisplayPolicy).takeScreenshot(anyInt(), anyInt());
         doReturn(mDisplayPolicy).when(mDisplayRotation).getDisplayPolicy();
         doReturn(mScreenOnListener).when(mDisplayPolicy).getScreenOnListener();
         mPhoneWindowManager.setDefaultDisplay(new WindowManagerPolicy.DisplayContentInfo() {
@@ -680,19 +679,6 @@ class TestPhoneWindowManager {
 
     void overrideKeyEventPolicyFlags(int flags) {
         mKeyEventPolicyFlags = flags;
-    }
-
-    /**
-     * Below functions will check the policy behavior could be invoked.
-     */
-    void assertTakeScreenshotCalled() {
-        mTestLooper.dispatchAll();
-        verify(mDisplayPolicy).takeScreenshot(anyInt(), anyInt());
-    }
-
-    void assertTakeScreenshotNotCalled() {
-        mTestLooper.dispatchAll();
-        verify(mDisplayPolicy, never()).takeScreenshot(anyInt(), anyInt());
     }
 
     void assertShowGlobalActionsCalled() {

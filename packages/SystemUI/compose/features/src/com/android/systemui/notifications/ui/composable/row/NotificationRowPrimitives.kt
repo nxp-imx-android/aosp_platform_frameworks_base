@@ -72,20 +72,12 @@ object NotificationRowPrimitives {
 
 /** The Icon displayed at the start of any notification row. */
 @Composable
-fun ContentScope.BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
+fun BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
     val surfaceColor = notificationElementSurfaceColor()
-    Box(
-        modifier =
-            modifier
-                // Has to be a shared element because we may have semi-transparent background color
-                .element(NotificationRowPrimitives.Elements.NotificationIconBackground)
-                .size(40.dp)
-                .background(color = surfaceColor, shape = CircleShape)
-    ) {
+    Box(modifier = modifier.size(40.dp).background(color = surfaceColor, shape = CircleShape)) {
         if (drawable == null) return@Box
-        val painter = painterResource(drawable)
         Image(
-            painter = painter,
+            painter = painterResource(drawable),
             contentDescription = null,
             modifier = Modifier.padding(10.dp).fillMaxSize(),
             contentScale = ContentScale.Fit,

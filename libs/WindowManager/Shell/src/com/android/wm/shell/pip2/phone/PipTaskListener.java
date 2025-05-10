@@ -41,6 +41,7 @@ import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.pip.PipFlags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +89,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         mMainExecutor = mainExecutor;
 
         mPipTransitionState.addPipTransitionStateChangedListener(this);
-        if (PipUtils.isPip2ExperimentEnabled()) {
+        if (PipFlags.isPip2ExperimentEnabled()) {
             mMainExecutor.execute(() -> {
                 shellTaskOrganizer.addListenerForType(this,
                         ShellTaskOrganizer.TASK_LISTENER_TYPE_PIP);

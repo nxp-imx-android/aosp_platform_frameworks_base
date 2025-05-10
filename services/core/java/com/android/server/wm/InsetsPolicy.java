@@ -25,6 +25,8 @@ import static android.view.InsetsSource.ID_IME;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
+import static com.android.window.flags.Flags.relativeInsets;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
@@ -321,7 +323,7 @@ class InsetsPolicy {
             }
         }
 
-        if (!attrs.isFullscreen() || attrs.getFitInsetsTypes() != 0) {
+        if (!relativeInsets() && (!attrs.isFullscreen() || attrs.getFitInsetsTypes() != 0)) {
             if (state == originalState) {
                 state = new InsetsState(originalState);
             }

@@ -17,11 +17,11 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/customTitle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="vertical"
-    style="@style/Widget.PackageInstaller.ViewGroup.CustomTitle">
+    android:paddingTop="@dimen/alert_dialog_inner_padding">
 
     <ImageView
         android:layout_width="@dimen/lock_icon_dimen"
@@ -31,7 +31,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/title_install_failed_blocked"
-        style="@style/Widget.PackageInstaller.WindowTitle.Custom"/>
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:text="@string/title_install_failed_blocked" />
 
 </LinearLayout>

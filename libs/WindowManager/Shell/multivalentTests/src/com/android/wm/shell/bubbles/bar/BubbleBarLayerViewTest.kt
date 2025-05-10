@@ -295,6 +295,25 @@ class BubbleBarLayerViewTest {
     }
 
     @Test
+    fun twoBubbles_removeBubbleInTransition_skipCollapse() {
+        val firstBubble = createBubble("first")
+        val secondBubble = createBubble("second")
+
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(firstBubble) }
+        waitForExpandedViewAnimation()
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(secondBubble) }
+        waitForExpandedViewAnimation()
+
+        firstBubble.preparingTransition = object : BubbleTransitions.BubbleTransition {}
+
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.removeBubble(firstBubble) {} }
+
+        assertThat(bubbleBarLayerView.isExpanded).isTrue()
+    }
+
+    @Test
     fun testEventLogging_dismissExpandedViewViaDrag() {
         val bubble = createBubble("first")
         getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
@@ -473,12 +492,16 @@ class BubbleBarLayerViewTest {
     }
 
     private fun createBubble(key: String): Bubble {
+        val bubble = FakeBubbleFactory.createChatBubble(context, key).also {
+            testBubblesList.add(it)
+        }
         val bubbleTaskView = FakeBubbleTaskViewFactory(context, mainExecutor).create()
         val bubbleBarExpandedView =
             FakeBubbleFactory.createExpandedView(
                 context,
                 bubblePositioner,
                 expandedViewManager,
+                bubble,
                 bubbleTaskView,
                 mainExecutor,
                 bgExecutor,
@@ -487,10 +510,7 @@ class BubbleBarLayerViewTest {
         // Mark visible so we don't wait for task view before animations can start
         bubbleBarExpandedView.onContentVisibilityChanged(true /* visible */)
 
-        val viewInfo = FakeBubbleFactory.createViewInfo(bubbleBarExpandedView)
-        return FakeBubbleFactory.createChatBubble(context, key, viewInfo).also {
-            testBubblesList.add(it)
-        }
+        return bubble
     }
 
     private fun leftEdge(): PointF {

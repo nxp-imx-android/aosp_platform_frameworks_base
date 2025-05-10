@@ -18,6 +18,7 @@ package android.appwidget;
 
 import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
 import static android.appwidget.flags.Flags.engagementMetrics;
+import static android.content.res.Flags.selfTargetingAndroidResourceFrro;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -42,6 +43,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -960,16 +962,22 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      *
      * Calling this method will trigger a full re-inflation of the App Widget.
      *
-     * The color resources that can be overloaded are the ones whose name is prefixed with
-     * {@code system_neutral} or {@code system_accent}, for example
-     * {@link android.R.color#system_neutral1_500}.
+     * If flag {@code android.content.res.self_targeting_android_resource_frro} is set, any colors
+     * in {@code colorMapping} will be overloaded, otherwise the color resources that can
+     * be overloaded are the ones whose name is prefixed with {@code system_neutral} or
+     * {@code system_accent}, for example {@link android.R.color#system_neutral1_500}.
      */
     public void setColorResources(@NonNull SparseIntArray colorMapping) {
         if (mColorResources != null
                 && isSameColorMapping(mColorResources.getColorMapping(), colorMapping)) {
             return;
         }
-        setColorResources(RemoteViews.ColorResources.create(mContext, colorMapping));
+        if (selfTargetingAndroidResourceFrro()) {
+            setColorResources(
+                    RemoteViews.ColorResources.createWithOverlay(mContext, colorMapping));
+        } else {
+            setColorResources(RemoteViews.ColorResources.create(mContext, colorMapping));
+        }
     }
 
     private void setColorResourcesStates(RemoteViews.ColorResources colorResources) {
@@ -1043,11 +1051,16 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
      * This function returns the current set of widget event data being tracked by this widget. The
      * tracked data is cleared is returned here.
      *
+     * This should always be called on the main thread.
+     *
      * @hide
      */
     @FlaggedApi(FLAG_ENGAGEMENT_METRICS)
     @Override
     public AppWidgetEvent collectWidgetEvent() {
+        if (!Looper.getMainLooper().isCurrentThread()) {
+            throw new IllegalStateException("collectWidgetEvent must be called from main thread");
+        }
         return mInteractionLogger.collectWidgetEvent();
     }
 

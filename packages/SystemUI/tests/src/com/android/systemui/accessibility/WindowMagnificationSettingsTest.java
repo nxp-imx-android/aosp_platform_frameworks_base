@@ -49,6 +49,7 @@ import android.database.ContentObserver;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.View;
@@ -65,7 +66,9 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
+import com.android.server.accessibility.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView.OnSeekBarWithIconButtonsChangeListener;
@@ -149,6 +152,26 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
                 eq(Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING),
                 /* def */ eq(1), /* userHandle= */ anyInt());
         assertThat(mWindowMagnificationSettings.isDiagonalScrollingEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void initSettingPanel_checkAllowMagnifyTypingWithSecureSettings() {
+        verify(mSecureSettings).getIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                /* def */ eq(1), /* userHandle= */ anyInt());
+        assertThat(mWindowMagnificationSettings.isMagnifyTypingEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void initSettingPanel_checkAllowMagnifyKeyboardWithSecureSettings() {
+        int defaultValue = AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext);
+        verify(mSecureSettings).getIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                /* def */ eq(defaultValue), /* userHandle= */ anyInt());
+        assertThat(mWindowMagnificationSettings.isMagnifyKeyboardEnabled()).isEqualTo(
+                defaultValue == 1);
     }
 
     @Test
@@ -303,6 +326,52 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
                 /* value= */ eq(isAllowed ? 1 : 0),
                 /* userHandle= */ anyInt());
         verify(mWindowMagnificationSettingsCallback).onSetDiagonalScrolling(isAllowed);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void performClick_setMagnifyTypingSwitch_toggleMagnifyTypingSwitchMode() {
+        CompoundButton magnifyTypingSwitch =
+                getInternalView(R.id.magnifier_typing_switch);
+        final boolean currentCheckedState = magnifyTypingSwitch.isChecked();
+
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        // Perform click
+        magnifyTypingSwitch.performClick();
+
+        final boolean isAllowed = !currentCheckedState;
+        verify(mSecureSettings).putIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                /* value= */ eq(isAllowed ? 1 : 0),
+                /* userHandle= */ anyInt());
+        verify(mWindowMagnificationSettingsCallback).onSetMagnifyTyping(isAllowed);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void performClick_setMagnifyKeyboardSwitch_toggleMagnifyKeyboardSwitchMode() {
+        CompoundButton magnifyKeyboardSwitch =
+                getInternalView(R.id.magnifier_keyboard_switch);
+        final boolean currentCheckedState = magnifyKeyboardSwitch.isChecked();
+
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        // Perform click
+        magnifyKeyboardSwitch.performClick();
+
+        final boolean isAllowed = !currentCheckedState;
+        verify(mSecureSettings).putIntForUser(
+                eq(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                /* value= */ eq(isAllowed ? 1 : 0),
+                /* userHandle= */ anyInt());
+        verify(mWindowMagnificationSettingsCallback).onSetMagnifyKeyboard(isAllowed);
     }
 
     @Test

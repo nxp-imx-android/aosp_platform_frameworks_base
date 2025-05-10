@@ -121,7 +121,7 @@
     <string name="bluetooth_battery_level_untethered_lea_support" msgid="803110681688633362">"କନେକ୍ଟ କରାଯାଇଛି (ଅଡିଓ ସେୟାରିଂକୁ ସମର୍ଥନ କରେ)। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"କନେକ୍ଟ କରାଯାଇଛି (ଅଡିଓ ସେୟାରିଂକୁ ସମର୍ଥନ କରେ)। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"କନେକ୍ଟ କରାଯାଇଛି (ଅଡିଓ ସେୟାରିଂକୁ ସପୋର୍ଟ କରେ)। ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
-    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"କନେକ୍ଟ କରାଯାଇଛି (ଅଡିଓ ସେୟାରିଂକୁ ସମର୍ଥନ କରେ)"</string>
+    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"କନେକ୍ଟ କରାଯାଇଛି (ଅଡିଓ ସେୟାରିଂକୁ ସପୋର୍ଟ କରେ)"</string>
     <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"ଅତିଥି ଡିଭାଇସ (ଅଡିଓ ସେୟାରିଂକୁ ସପୋର୍ଟ କରେ)। <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"ଅତିଥି ଡିଭାଇସ (ଅଡିଓ ସେୟାରିଂକୁ ସପୋର୍ଟ କରେ)। ବାମ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, ଡାହାଣ: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> ବେଟେରୀ।"</string>
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"ଅତିଥି ଡିଭାଇସ (ଅଡିଓ ସେୟାରିଂକୁ ସପୋର୍ଟ କରେ)"</string>
@@ -290,7 +290,7 @@
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"adb, ଡିବଗ୍, dev"</string>
     <string name="bugreport_in_power" msgid="8664089072534638709">"ବଗ୍ ରିପୋର୍ଟ ସର୍ଟକଟ୍‌"</string>
     <string name="bugreport_in_power_summary" msgid="1885529649381831775">"ବଗ୍ ରିପୋର୍ଟ ଦେବା ପାଇଁ ପାୱାର୍‌ ମେନୁରେ ଏକ ବଟନ୍‌ ଦେଖାନ୍ତୁ"</string>
-    <string name="keep_screen_on" msgid="1187161672348797558">"ସତର୍କ ରୁହନ୍ତୁ"</string>
+    <string name="keep_screen_on" msgid="1187161672348797558">"ସ୍କ୍ରିନକୁ ଚାଲୁ ରଖନ୍ତୁ"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"ଚାର୍ଜ ହେବାବେଳେ ସ୍କ୍ରିନ କେବେ ବି ବନ୍ଦ ହେବନାହିଁ"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"ବ୍ଲୁଟୁଥ HCI ସ୍ନୁପ ଲଗ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="bt_hci_snoop_log_summary" msgid="6808538971394092284">"ବ୍ଲୁଟୁଥ୍‌ ପ୍ୟାକେଟ୍ କ୍ୟାପଚର୍ କରନ୍ତୁ (ଏହି ସେଟିଂ ବଦଳାଇବା ପରେ ବ୍ଲୁଟୁଥ୍‍‌କୁ ଟୋଗଲ୍ କରନ୍ତୁ)"</string>

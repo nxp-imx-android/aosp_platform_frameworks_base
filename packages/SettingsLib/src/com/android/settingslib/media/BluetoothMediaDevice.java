@@ -46,8 +46,9 @@ public class BluetoothMediaDevice extends MediaDevice {
             @NonNull Context context,
             @NonNull CachedBluetoothDevice device,
             @Nullable MediaRoute2Info info,
+            @Nullable DynamicRouteAttributes dynamicRouteAttributes,
             @Nullable RouteListingPreference.Item item) {
-        super(context, info, item);
+        super(context, info, dynamicRouteAttributes, item);
         mCachedDevice = device;
         mAudioManager = context.getSystemService(AudioManager.class);
         initDeviceRecord();

@@ -53,6 +53,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.window.DesktopExperienceFlags;
 
 import androidx.annotation.RequiresPermission;
 
@@ -459,7 +460,14 @@ public final class Icon implements Parcelable {
                         resPackage = context.getPackageName();
                     }
                     if ("android".equals(resPackage)) {
-                        mObj1 = Resources.getSystem();
+                        if (DesktopExperienceFlags
+                                .USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS.isTrue()) {
+                            // Gets display aware resources from the context, that is already
+                            // supposed to be associated with the display the icon will be shown in.
+                            mObj1 = context.getResources();
+                        } else {
+                            mObj1 = Resources.getSystem();
+                        }
                     } else {
                         final PackageManager pm = context.getPackageManager();
                         try {

@@ -32,8 +32,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.flags.Flags.disableDrawWakeLock;
 
 import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
-import static com.android.window.flags.Flags.noDuplicateSurfaceDestroyedEvents;
-import static com.android.window.flags.Flags.noConsecutiveVisibilityEvents;
 import static com.android.window.flags.Flags.offloadColorExtraction;
 
 import android.animation.AnimationHandler;
@@ -1129,9 +1127,7 @@ public abstract class WallpaperService extends Service {
             out.print(prefix); out.print("mDisplay="); out.println(mDisplay);
             out.print(prefix); out.print("mCreated="); out.print(mCreated);
                     out.print(" mSurfaceCreated="); out.print(mSurfaceCreated);
-                    if (noDuplicateSurfaceDestroyedEvents()) {
-                        out.print(" mReportedSurfaceCreated="); out.print(mReportedSurfaceCreated);
-                    }
+                    out.print(" mReportedSurfaceCreated="); out.print(mReportedSurfaceCreated);
                     out.print(" mIsCreating="); out.print(mIsCreating);
                     out.print(" mDrawingAllowed="); out.println(mDrawingAllowed);
             out.print(prefix); out.print("mWidth="); out.print(mWidth);
@@ -1395,10 +1391,10 @@ public abstract class WallpaperService extends Service {
                     final Rect visibleFrame = new Rect(mWinFrames.frame);
                     visibleFrame.intersect(mInsetsState.getDisplayFrame());
                     WindowInsets windowInsets = mInsetsState.calculateInsets(visibleFrame,
-                            null /* ignoringVisibilityState */, config.isScreenRound(),
-                            mLayout.softInputMode, mLayout.flags, SYSTEM_UI_FLAG_VISIBLE,
-                            mLayout.type, config.windowConfiguration.getActivityType(),
-                            null /* idSideMap */);
+                            null /* hostBounds */, null /* ignoringVisibilityState */,
+                            config.isScreenRound(), mLayout.softInputMode, mLayout.flags,
+                            SYSTEM_UI_FLAG_VISIBLE, mLayout.type,
+                            config.windowConfiguration.getActivityType(), null /* idSideMap */);
 
                     if (!fixedSize) {
                         final Rect padding = mIWallpaperEngine.mDisplayPadding;
@@ -1526,27 +1522,10 @@ public abstract class WallpaperService extends Service {
                                 // Trigger onVisibilityChanged(true) then onVisibilityChanged(false)
                                 // to make sure the wallpaper is stopped even after the events
                                 // onSurfaceCreated() and onSurfaceChanged().
-                                if (noConsecutiveVisibilityEvents()) {
-                                    if (DEBUG) Log.v(TAG, "toggling onVisibilityChanged");
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
-                                    onVisibilityChanged(true);
-                                    Trace.endSection();
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-false");
-                                    onVisibilityChanged(false);
-                                    Trace.endSection();
-                                } else {
-                                    if (DEBUG) {
-                                        Log.v(TAG, "onVisibilityChanged(true) at surface: " + this);
-                                    }
-                                    Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
-                                    onVisibilityChanged(true);
-                                    Trace.endSection();
-                                }
-                            }
-                            if (!noConsecutiveVisibilityEvents()) {
-                                if (DEBUG) {
-                                    Log.v(TAG, "onVisibilityChanged(false) at surface: " + this);
-                                }
+                                if (DEBUG) Log.v(TAG, "toggling onVisibilityChanged");
+                                Trace.beginSection("WPMS.Engine.onVisibilityChanged-true");
+                                onVisibilityChanged(true);
+                                Trace.endSection();
                                 Trace.beginSection("WPMS.Engine.onVisibilityChanged-false");
                                 onVisibilityChanged(false);
                                 Trace.endSection();
@@ -2343,8 +2322,7 @@ public abstract class WallpaperService extends Service {
         }
 
         void reportSurfaceDestroyed() {
-            if ((!noDuplicateSurfaceDestroyedEvents() && mSurfaceCreated)
-                    || (noDuplicateSurfaceDestroyedEvents() && mReportedSurfaceCreated)) {
+            if (mReportedSurfaceCreated) {
                 mSurfaceCreated = false;
                 mReportedSurfaceCreated = false;
                 mSurfaceHolder.ungetCallbacks();

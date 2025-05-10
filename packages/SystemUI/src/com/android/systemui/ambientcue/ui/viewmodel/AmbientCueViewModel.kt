@@ -1,0 +1,115 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.ambientcue.ui.viewmodel
+
+import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.coroutineScopeTraced
+import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+
+class AmbientCueViewModel
+@AssistedInject
+constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
+    private val hydrator = Hydrator("OverlayViewModel.hydrator")
+
+    val isVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isVisible",
+            initialValue = false,
+            source = ambientCueInteractor.isVisible,
+        )
+
+    var isExpanded: Boolean by mutableStateOf(false)
+        private set
+
+    val actions: List<ActionViewModel> by
+        hydrator.hydratedStateOf(
+            traceName = "actions",
+            initialValue = listOf(),
+            source =
+                ambientCueInteractor.actions.map { actions ->
+                    actions.map { action ->
+                        ActionViewModel(
+                            icon = action.icon,
+                            label = action.label,
+                            attribution = action.attribution,
+                            onClick = {
+                                action.onPerformAction()
+                                collapse()
+                            },
+                        )
+                    }
+                },
+        )
+
+    fun show() {
+        ambientCueInteractor.setIsVisible(true)
+        isExpanded = false
+    }
+
+    fun expand() {
+        isExpanded = true
+    }
+
+    fun collapse() {
+        isExpanded = false
+    }
+
+    fun hide() {
+        ambientCueInteractor.setIsVisible(false)
+        isExpanded = false
+    }
+
+    override suspend fun onActivated(): Nothing {
+        coroutineScopeTraced("AmbientCueViewModel") {
+            launch { hydrator.activate() }
+            launch {
+                // Hide the UI if the user doesn't interact with it after N seconds
+                ambientCueInteractor.isVisible.collectLatest { isVisible ->
+                    if (!isVisible) return@collectLatest
+                    delay(AMBIENT_CUE_TIMEOUT_SEC)
+                    if (!isExpanded) {
+                        ambientCueInteractor.setIsVisible(false)
+                    }
+                }
+            }
+            awaitCancellation()
+        }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): AmbientCueViewModel
+    }
+
+    companion object {
+        private const val TAG = "AmbientCueViewModel"
+        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 15.seconds
+    }
+}

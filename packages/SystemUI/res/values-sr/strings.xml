@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Дозволи"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Бежично отклањање грешака није дозвољено"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Корисник који је тренутно пријављен на овај уређај не може да укључи бежично отклањање грешака. Да бисте користили ову функцију, пређите на корисника са администраторским правима."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB порт је онемогућен"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Да би се уређај заштитио од течности или нечистоће, USB порт је онемогућен и неће откривати додатну опрему.\n\nОбавестићемо вас када поново будете могли да користите USB порт."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB порт је омогућен ради откривања пуњача и додатне опреме"</string>
@@ -410,7 +412,7 @@
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Снимање екрана"</string>
     <string name="performance" msgid="6552785217174378320">"Перформансе"</string>
     <string name="user_interface" msgid="3712869377953950887">"Кориснички интерфејс"</string>
-    <string name="thermal" msgid="6758074791325414831">"Термална камера"</string>
+    <string name="thermal" msgid="6758074791325414831">"Загревање"</string>
     <string name="custom" msgid="3337456985275158299">"Прилагођено"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Подешавања прилагођеног праћења"</string>
     <string name="restore_default" msgid="5259420807486239755">"Врати подразумевано"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Није подешено"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Управљајте у подешавањима"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Нема активних режима}=1{Активан је {mode} режим}one{Активан је # режим}few{Активна су # режима}other{Активно је # режима}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> режим/а"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Укључено"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Неће вас узнемиравати звукови и вибрације осим за аларме, подсетнике, догађаје и позиваоце које наведете. И даље ћете чути све што одаберете да пустите, укључујући музику, видео снимке и игре."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Неће вас узнемиравати звукови и вибрације осим за аларме. И даље ћете чути све што одаберете да пустите, укључујући музику, видео снимке и игре."</string>
@@ -525,7 +526,7 @@
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"Виџети на закључаном екрану"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"Виџет <xliff:g id="WIDGET_NAME">%1$s</xliff:g> је додат на закључани екран"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Превуците улево да бисте започели заједнички водич"</string>
-    <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Прилагодите"</string>
+    <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Прилагоди"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Одбаци"</string>
     <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Додајте, уклоните и преуредите виџете овде"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Додајте још виџета"</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поуздани агент спречава закључавање"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Уређај је закључан, превише покушаја потврде идентитета"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Уређај је закључан\nПотврда идентитета није успела"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"Сат је онемогућио приступ"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Подешавања звука"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Аутоматски титл за медије"</string>
@@ -1007,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Минималан број плочица је <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Измени"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Измените плочице"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Време"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Прикажи сате, минуте и секунде"</item>
@@ -1022,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"Друго"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"укључивање или искључивање величине плочице"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"Уклоните плочицу"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Поставите плочицу"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"укључивање или искључивање режима постављања"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"потврдили или опозвали избор"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Додајте плочицу на последњу позицију"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Додајте <xliff:g id="NAME">%1$s</xliff:g> на последњу позицију"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместите плочицу"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Додајте плочицу на жељену позицију"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Преместите на <xliff:g id="POSITION">%1$d</xliff:g>. позицију"</string>
@@ -1351,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"Паузирајте анимацију"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"Позив је у току"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Активно"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"проширите обавештење"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"скупите обавештење"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"Мобилни подаци"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Повезано"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Привремено повезано"</string>
@@ -1471,7 +1475,7 @@
     <string name="dismiss_dialog" msgid="2195508495854675882">"Одбаци"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Екран је повезан"</string>
     <string name="privacy_dialog_title" msgid="7839968133469098311">"Микрофон и камера"</string>
-    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Недавно користила апликација"</string>
+    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Недавно коришћено у апликацијама"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Прикажи недавни приступ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Готово"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Прошири и прикажи опције"</string>

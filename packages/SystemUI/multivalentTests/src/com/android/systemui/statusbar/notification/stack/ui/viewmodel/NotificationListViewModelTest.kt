@@ -30,7 +30,6 @@ import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakefulnessState
-import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -39,11 +38,9 @@ import com.android.systemui.statusbar.data.repository.fakeRemoteInputRepository
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
-import com.android.systemui.statusbar.policy.fakeConfigurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.value
@@ -70,7 +67,6 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     private val testScope = kosmos.testScope
 
     private val activeNotificationListRepository = kosmos.activeNotificationListRepository
-    private val fakeConfigurationController = kosmos.fakeConfigurationController
     private val fakeKeyguardRepository = kosmos.fakeKeyguardRepository
     private val fakePowerRepository = kosmos.fakePowerRepository
     private val fakeRemoteInputRepository = kosmos.fakeRemoteInputRepository
@@ -151,7 +147,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenNoNotifs() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
@@ -166,7 +163,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenNotifs() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -179,7 +177,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenQsExpandedDefault() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -194,17 +192,17 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenQsExpandedInSplitShade() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
             // AND quick settings are expanded
             shadeTestUtil.setQsExpansion(1f)
-            // AND split shade is expanded
-            overrideResource(R.bool.config_use_split_notification_shade, true)
+            // AND split shade is enabled
             shadeTestUtil.setShadeExpansion(1f)
-            fakeConfigurationController.notifyConfigurationChanged()
+            shadeTestUtil.setSplitShade(true)
             runCurrent()
 
             // THEN empty shade is visible
@@ -215,7 +213,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_trueWhenLockedShade() =
         testScope.runTest {
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
 
             // WHEN has no notifs
@@ -232,7 +231,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenKeyguard() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -247,7 +246,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun shouldShowEmptyShadeView_falseWhenStartingToSleep() =
         testScope.runTest {
-            val shouldShow by collectEmptyShadeViewVisibility()
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
@@ -265,7 +264,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -283,7 +283,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenLockedShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -371,7 +372,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun shouldIncludeFooterView_trueWhenQsExpandedSplitShade() =
         testScope.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
-            val shouldShowEmptyShadeView by collectEmptyShadeViewVisibility()
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has notifs
             activeNotificationListRepository.setActiveNotifs(count = 2)
@@ -381,8 +383,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
             shadeTestUtil.setShadeExpansion(1f)
             // AND split shade is enabled
-            overrideResource(R.bool.config_use_split_notification_shade, true)
-            fakeConfigurationController.notifyConfigurationChanged()
+            shadeTestUtil.setSplitShade(true)
             runCurrent()
 
             // THEN footer is visible
@@ -668,12 +669,5 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         collectLastValue(
             if (SceneContainerFlag.isEnabled) underTest.shouldShowFooterView
             else underTest.shouldIncludeFooterView
-        )
-
-    private fun TestScope.collectEmptyShadeViewVisibility() =
-        collectLastValue(
-            if (ModesEmptyShadeFix.isEnabled)
-                underTest.shouldShowEmptyShadeViewAnimated.map { it.value }
-            else underTest.shouldShowEmptyShadeView
         )
 }

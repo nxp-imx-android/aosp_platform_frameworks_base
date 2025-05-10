@@ -1805,7 +1805,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Режим једном руком"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Додатно затамни"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слушни апарати"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"Аутоматски клик"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Тастери миша"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Веза је прекинута"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Повезано"</string>
@@ -1827,7 +1828,7 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Можете да користите микрофон слушног апарата за хендсфри позивање. Тиме се микрофон мења само током позива."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Промени"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Подешавања"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Пребацивање на <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Пребацивање на: <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Одјављује се <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Власник"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гост"</string>
@@ -2268,22 +2269,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"налево на D-pad-у"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"надесно на D-pad-у"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"центар на D-pad-у"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Окно са подешавањима типа аутоматског клика"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Леви клик"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Кликните десним тастером"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Двапут кликните"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Превуците"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Скролујте"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Дуг притисак"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Паузирај"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Позиција"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Скролуј нагоре"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Скролуј надоле"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Скролуј улево"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Скролуј удесно"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Изађи из режима скроловања"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Паузирај"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Настави"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Окно за скроловање"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Пакет <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> је додат у сегмент ОГРАНИЧЕНО"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

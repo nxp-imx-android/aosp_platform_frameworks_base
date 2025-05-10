@@ -95,6 +95,7 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip.PipTransitionState;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.KeyguardChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -237,6 +238,11 @@ public class PipController implements PipTransitionController.PipTransitionCallb
          * Notifies the listener that user leaves PiP by tapping on the expand button.
          */
         void onExpandPip();
+
+        /**
+         * Notifies the listener that the PiP has exited.
+         */
+        void onExitPip();
     }
 
     /**
@@ -485,7 +491,7 @@ public class PipController implements PipTransitionController.PipTransitionCallb
         mDisplayInsetsController = displayInsetsController;
         mTabletopModeController = tabletopModeController;
 
-        if (!PipUtils.isPip2ExperimentEnabled()) {
+        if (!PipFlags.isPip2ExperimentEnabled()) {
             shellInit.addInitCallback(this::onInit, this);
         }
     }
@@ -1303,6 +1309,11 @@ public class PipController implements PipTransitionController.PipTransitionCallb
             @Override
             public void onExpandPip() {
                 mListener.call(l -> l.onExpandPip());
+            }
+
+            @Override
+            public void onExitPip() {
+                mListener.call(l -> l.onExitPip());
             }
         };
 

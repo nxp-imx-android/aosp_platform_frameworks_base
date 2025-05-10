@@ -60,7 +60,10 @@ object StackedMobileIconBinder {
                         setContent {
                             val viewModel: StackedMobileIconViewModel =
                                 if (Flags.statusBarMobileIconKairos()) {
-                                    rememberKairosActivatable(kairosNetwork) {
+                                    rememberKairosActivatable(
+                                        "StackedMobileIconBinder",
+                                        kairosNetwork,
+                                    ) {
                                         kairosViewModelFactory.create()
                                     }
                                 } else {

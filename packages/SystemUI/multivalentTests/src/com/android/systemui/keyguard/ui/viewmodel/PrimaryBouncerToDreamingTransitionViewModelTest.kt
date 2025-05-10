@@ -23,15 +23,19 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.transitions.blurConfig
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.collectValues
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.phone.ScrimState
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -41,24 +45,21 @@ import org.junit.runner.RunWith
 @DisableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class PrimaryBouncerToDreamingTransitionViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
-    private lateinit var keyguardTransitionRepository: FakeKeyguardTransitionRepository
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private lateinit var underTest: PrimaryBouncerToDreamingTransitionViewModel
 
     @Before
     fun setUp() {
-        keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
         underTest = kosmos.primaryBouncerToDreamingTransitionViewModel
     }
 
     @Test
     fun blurRadiusGoesToMinImmediately() =
-        testScope.runTest {
+        kosmos.runTest {
             val values by collectValues(underTest.windowBlurRadius)
-            kosmos.keyguardWindowBlurTestUtil.shadeExpanded(false)
+            keyguardWindowBlurTestUtil.shadeExpanded(false)
 
-            kosmos.keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
+            keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
                 transitionProgress = listOf(0.0f, 0.2f, 0.3f, 0.65f, 0.7f, 1.0f),
                 startValue = kosmos.blurConfig.maxBlurRadiusPx,
                 endValue = kosmos.blurConfig.minBlurRadiusPx,
@@ -70,11 +71,11 @@ class PrimaryBouncerToDreamingTransitionViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_NOTIFICATION_SHADE_BLUR)
     fun blurRadiusRemainsAtMaxIfShadeIsExpandedAndShadeBlurIsEnabled() =
-        testScope.runTest {
+        kosmos.runTest {
             val values by collectValues(underTest.windowBlurRadius)
-            kosmos.keyguardWindowBlurTestUtil.shadeExpanded(true)
+            keyguardWindowBlurTestUtil.shadeExpanded(true)
 
-            kosmos.keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
+            keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
                 transitionProgress = listOf(0.0f, 0.2f, 0.3f, 0.65f, 0.7f, 1.0f),
                 startValue = kosmos.blurConfig.maxBlurRadiusPx,
                 endValue = kosmos.blurConfig.maxBlurRadiusPx,
@@ -86,10 +87,10 @@ class PrimaryBouncerToDreamingTransitionViewModelTest : SysuiTestCase() {
 
     @Test
     fun notificationBlurDropsToMinWhenGoingBackFromPrimaryBouncerToDreaming() =
-        testScope.runTest {
+        kosmos.runTest {
             val values by collectValues(underTest.notificationBlurRadius)
 
-            kosmos.keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
+            keyguardWindowBlurTestUtil.assertTransitionToBlurRadius(
                 transitionProgress = listOf(0.0f, 0.2f, 0.3f, 0.65f, 0.7f, 1.0f),
                 startValue = kosmos.blurConfig.minBlurRadiusPx,
                 endValue = kosmos.blurConfig.minBlurRadiusPx,
@@ -97,6 +98,18 @@ class PrimaryBouncerToDreamingTransitionViewModelTest : SysuiTestCase() {
                 transitionFactory = ::step,
                 checkInterpolatedValues = false,
             )
+        }
+
+    @Test
+    fun scrimAlpha() =
+        kosmos.runTest {
+            val value by collectLastValue(underTest.scrimAlpha)
+
+            for (step in listOf(0f, 0.2f, 0.5f, 0.8f, 1.0f)) {
+                fakeKeyguardTransitionRepository.sendTransitionStep(step(step))
+                assertThat(value?.behindAlpha)
+                    .isEqualTo((1 - step) * ScrimState.KEYGUARD.behindAlpha)
+            }
         }
 
     private fun step(value: Float, state: TransitionState = RUNNING): TransitionStep {

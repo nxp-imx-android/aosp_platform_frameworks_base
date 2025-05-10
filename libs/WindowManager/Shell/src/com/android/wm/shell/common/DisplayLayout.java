@@ -422,8 +422,10 @@ public class DisplayLayout {
 
         // Only navigation bar
         if (hasNavigationBar) {
+            final Rect displayFrame = insetsState.getDisplayFrame();
             final Insets insets = insetsState.calculateInsets(
-                    insetsState.getDisplayFrame(),
+                    displayFrame,
+                    displayFrame,
                     WindowInsets.Type.navigationBars(),
                     false /* ignoreVisibility */);
             int position = navigationBarPosition(res, displayWidth, displayHeight, displayRotation);

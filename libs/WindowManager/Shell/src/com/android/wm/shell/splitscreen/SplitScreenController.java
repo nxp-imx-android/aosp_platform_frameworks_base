@@ -859,7 +859,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             @SplitPosition int position, @Nullable Bundle options,
             @Nullable WindowContainerToken hideTaskToken, @SplitIndex int index) {
         startIntent(intent, userId1, fillInIntent, position, options, hideTaskToken,
-                false /* forceLaunchNewTask */, index);
+                false /* forceLaunchNewTask */, index, DEFAULT_DISPLAY);
     }
 
     /**
@@ -873,7 +873,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public void startIntent(PendingIntent intent, int userId1, @Nullable Intent fillInIntent,
             @SplitPosition int position, @Nullable Bundle options,
             @Nullable WindowContainerToken hideTaskToken, boolean forceLaunchNewTask,
-            @SplitIndex int index) {
+            @SplitIndex int index, int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
                 "startIntent(): intent=%s user=%d fillInIntent=%s position=%d", intent, userId1,
                 fillInIntent, position);
@@ -925,7 +925,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         }
 
         mStageCoordinator.startIntent(intent, fillInIntent, position, options, hideTaskToken,
-                index);
+                index, displayId);
     }
 
     /**

@@ -30,7 +30,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.asynclayoutinflater.view.AsyncLayoutFactory;
-import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 
 import com.android.systemui.Flags;
 import com.android.systemui.res.R;
@@ -49,8 +48,7 @@ import javax.inject.Inject;
 /**
  * An inflater task that asynchronously inflates a ExpandableNotificationRow
  */
-public class RowInflaterTask implements InflationTask,
-        AsyncLayoutInflater.OnInflateFinishedListener, AsyncRowInflater.OnInflateFinishedListener {
+public class RowInflaterTask implements InflationTask, AsyncRowInflater.OnInflateFinishedListener {
 
     private static final String TAG = "RowInflaterTask";
     private static final boolean TRACE_ORIGIN = true;
@@ -95,17 +93,11 @@ public class RowInflaterTask implements InflationTask,
         }
         mBundleEntry = entry;
         mListener = listener;
-        RowAsyncLayoutInflater asyncLayoutFactory = new RowAsyncLayoutInflater(
+        RowAsyncLayoutFactory asyncLayoutFactory = new RowAsyncLayoutFactory(
                 entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
-        if (Flags.useNotifInflationThreadForRow()) {
-            debugBundleLog(TAG,  () -> "mAsyncRowInflater.inflate bundle: " + entry.getKey());
-            mAsyncRowInflater.inflate(context, asyncLayoutFactory,
-                    R.layout.status_bar_notification_row, parent, this);
-        } else {
-            debugBundleLog(TAG,  () -> "AsyncLayoutInflater.inflate bundle: " + entry.getKey());
-            AsyncLayoutInflater inflater = new AsyncLayoutInflater(context, asyncLayoutFactory);
-            inflater.inflate(R.layout.status_bar_notification_row, parent, listenerExecutor, this);
-        }
+        debugBundleLog(TAG,  () -> "mAsyncRowInflater.inflate bundle: " + entry.getKey());
+        mAsyncRowInflater.inflate(context, asyncLayoutFactory,
+                R.layout.status_bar_notification_row, parent, this);
     }
 
     /**
@@ -120,19 +112,14 @@ public class RowInflaterTask implements InflationTask,
             mInflateOrigin = new Throwable("inflate requested here");
         }
         mListener = listener;
-        RowAsyncLayoutInflater asyncLayoutFactory = makeRowInflater(entry);
+        RowAsyncLayoutFactory asyncLayoutFactory = makeRowFactory(entry);
         mEntry = entry;
         entry.setInflationTask(this);
 
         mLogger.logInflateStart(entry);
         mInflateStartTimeMs = mSystemClock.elapsedRealtime();
-        if (Flags.useNotifInflationThreadForRow()) {
-            mAsyncRowInflater.inflate(context, asyncLayoutFactory,
-                    R.layout.status_bar_notification_row, parent, this);
-        } else {
-            AsyncLayoutInflater inflater = new AsyncLayoutInflater(context, asyncLayoutFactory);
-            inflater.inflate(R.layout.status_bar_notification_row, parent, listenerExecutor, this);
-        }
+        mAsyncRowInflater.inflate(context, asyncLayoutFactory,
+                R.layout.status_bar_notification_row, parent, this);
     }
 
     /**
@@ -143,7 +130,7 @@ public class RowInflaterTask implements InflationTask,
     public ExpandableNotificationRow inflateSynchronously(@NonNull Context context,
             @Nullable ViewGroup parent, @NonNull NotificationEntry entry) {
         final LayoutInflater inflater = new BasicRowInflater(context);
-        inflater.setFactory2(makeRowInflater(entry));
+        inflater.setFactory2(makeRowFactory(entry));
         final ExpandableNotificationRow inflate = (ExpandableNotificationRow) inflater.inflate(
                 R.layout.status_bar_notification_row,
                 parent /* root */,
@@ -151,20 +138,20 @@ public class RowInflaterTask implements InflationTask,
         return inflate;
     }
 
-    private RowAsyncLayoutInflater makeRowInflater(NotificationEntry entry) {
-        return new RowAsyncLayoutInflater(
+    private RowAsyncLayoutFactory makeRowFactory(NotificationEntry entry) {
+        return new RowAsyncLayoutFactory(
                 entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
     }
 
     @VisibleForTesting
-    public static class RowAsyncLayoutInflater implements AsyncLayoutFactory {
+    public static class RowAsyncLayoutFactory implements AsyncLayoutFactory {
         private  NotificationEntry mEntry = null;
         private  BundleEntry mBundleEntry = null;
         private final SystemClock mSystemClock;
         private final RowInflaterTaskLogger mLogger;
         private final UserHandle mTargetUser;
 
-        public RowAsyncLayoutInflater(NotificationEntry entry, SystemClock systemClock,
+        public RowAsyncLayoutFactory(NotificationEntry entry, SystemClock systemClock,
                 RowInflaterTaskLogger logger, UserHandle targetUser) {
             mEntry = entry;
             mSystemClock = systemClock;
@@ -172,7 +159,7 @@ public class RowInflaterTask implements InflationTask,
             mTargetUser = targetUser;
         }
 
-        public RowAsyncLayoutInflater(BundleEntry entry, SystemClock systemClock,
+        public RowAsyncLayoutFactory(BundleEntry entry, SystemClock systemClock,
                 RowInflaterTaskLogger logger, UserHandle targetUser) {
             mBundleEntry = entry;
             mSystemClock = systemClock;

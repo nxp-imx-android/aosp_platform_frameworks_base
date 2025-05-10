@@ -18,8 +18,8 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
-import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_ACTIVITY;
@@ -825,6 +825,41 @@ public class MockingOomAdjusterTests {
         assertCpuTime(app);
         assertCpuTime(app2);
         assertNoCpuTime(app3);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testUpdateOomAdjFreezeState_allowFreezeBinding_ongoingBinderCalls() {
+        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        WindowProcessController wpc = app.getWindowProcessController();
+        doReturn(true).when(wpc).hasActivities();
+        doReturn(ACTIVITY_STATE_FLAG_IS_VISIBLE).when(wpc).getActivityStateFlags();
+
+        final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
+
+        // App with a visible activity binds to app2 with ALLOW_FREEZE.
+        final IBinder mockBinder = mock(IBinder.class);
+        final ServiceRecord sr = bindService(app2, app, null, null, Context.BIND_ALLOW_FREEZE,
+                mockBinder);
+
+        setProcessesToLru(app, app2);
+
+        updateOomAdj(app);
+        assertCpuTime(app);
+        assertNoCpuTime(app2);
+
+        final ConnectionRecord cr = sr.getConnections().get(mockBinder).get(0);
+        mProcessStateController.updateBinderServiceCalls(cr, true);
+
+        updateOomAdj(app);
+        assertCpuTime(app2);
+
+        mProcessStateController.updateBinderServiceCalls(cr, false);
+        updateOomAdj(app);
+        assertNoCpuTime(app2);
     }
 
     @SuppressWarnings("GuardedBy")

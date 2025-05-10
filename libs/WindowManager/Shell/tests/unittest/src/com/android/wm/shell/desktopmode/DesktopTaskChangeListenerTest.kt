@@ -73,7 +73,19 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         verify(desktopUserRepositories.current, never())
             .addTask(task.displayId, task.taskId, task.isVisible)
-        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
+    }
+
+    @Test
+    fun onTaskOpening_fullscreenTaskInNewDisplay_activeFreeformTask_removeTaskFromRepo() {
+        val task = createFullscreenTask().apply { isVisible = true }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        desktopUserRepositories.current.addTask(task.displayId, task.taskId, task.isVisible)
+
+        task.displayId += 1
+        desktopTaskChangeListener.onTaskOpening(task)
+
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -83,7 +95,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskOpening(task)
 
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -126,7 +138,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskChanging(task)
 
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -136,7 +148,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskChanging(task)
 
-        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
     @Test
@@ -166,7 +178,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -176,7 +188,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
-        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
     @Test
@@ -242,7 +254,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         desktopTaskChangeListener.onTaskClosing(task)
 
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -256,7 +268,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         verify(desktopUserRepositories.current)
             .updateTask(task.displayId, task.taskId, /* isVisible= */ false)
-        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
     @Test
@@ -270,7 +282,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
         verify(desktopUserRepositories.current, never()).minimizeTask(task.displayId, task.taskId)
         verify(desktopUserRepositories.current).removeClosingTask(task.taskId)
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -283,7 +295,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskClosing(task)
 
         verify(desktopUserRepositories.current).removeClosingTask(task.taskId)
-        verify(desktopUserRepositories.current).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
@@ -299,7 +311,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskClosing(task)
 
         verify(desktopUserRepositories.current, never()).removeClosingTask(task.taskId)
-        verify(desktopUserRepositories.current, never()).removeTask(task.displayId, task.taskId)
+        verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
 
     companion object {

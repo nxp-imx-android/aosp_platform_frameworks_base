@@ -18,6 +18,7 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.graphics.Rect
+import android.view.View
 import android.widget.FrameLayout
 import androidx.core.animation.AnimatorTestRule
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -459,6 +460,89 @@ class DropTargetManagerTest {
             animatorTestRule.advanceTimeBy(250)
         }
 
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(dropTargetView.alpha).isEqualTo(1)
+        assertThat(secondDropTargetView!!.alpha).isEqualTo(1)
+        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget.rect)
+        verifyDropTargetPosition(
+            secondDropTargetView!!,
+            bubbleRightDragZoneWithSecondDropTarget.secondDropTarget!!.rect
+        )
+    }
+
+    @Test
+    fun runOnDropTargetsRemoved_dropTargetViewsAdded_notExecutedUntilAllViewsRemoved() {
+        var runnableExecuted = false
+        val action = Runnable { runnableExecuted = true }
+        dropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
+        )
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        dropTargetManager.onDropTargetRemoved(action)
+        assertThat(runnableExecuted).isFalse()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragEnded()
+        }
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(runnableExecuted).isFalse()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            animatorTestRule.advanceTimeBy(200)
+        }
+
+        assertThat(container.childCount).isEqualTo(0)
+        assertThat(runnableExecuted).isTrue()
+    }
+
+    @Test
+    fun onDropTargetsRemoved_dropTargetViewsAbsent_actionExecuted() {
+        var runnableExecuted = false
+        val action = Runnable { runnableExecuted = true }
+        assertThat(container.childCount).isEqualTo(0)
+        dropTargetManager.onDropTargetRemoved(action)
+        assertThat(runnableExecuted).isTrue()
+    }
+
+    @Test
+    fun onDropTargetsRemoved_NonDropTargetViewPresent_actionExecuted() {
+        var runnableExecuted = false
+        val action = Runnable { runnableExecuted = true }
+        container.addView(View(context))
+        assertThat(container.childCount).isEqualTo(1)
+        dropTargetManager.onDropTargetRemoved(action)
+        assertThat(runnableExecuted).isTrue()
+    }
+
+    @Test
+    fun onDragUpdated_reEnterZoneWithMultipleDropTargetViews_dropTargetsShown() {
+        dropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
+        )
+        val pointX = 200
+        val pointY = 200
+        assertThat(bubbleLeftDragZone.contains(pointX, pointY)).isFalse()
+        assertThat(bubbleRightDragZone.contains(pointX, pointY)).isFalse()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerX(),
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerY()
+            )
+            animatorTestRule.advanceTimeBy(250)
+        }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(pointX, pointY)
+            animatorTestRule.advanceTimeBy(250)
+        }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerX(),
+                bubbleRightDragZoneWithSecondDropTarget.bounds.rect.centerY()
+            )
+            animatorTestRule.advanceTimeBy(250)
+        }
         assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
         assertThat(dropTargetView.alpha).isEqualTo(1)
         assertThat(secondDropTargetView!!.alpha).isEqualTo(1)

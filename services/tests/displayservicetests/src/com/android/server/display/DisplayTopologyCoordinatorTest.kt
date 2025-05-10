@@ -206,6 +206,57 @@ class DisplayTopologyCoordinatorTest {
     }
 
     @Test
+    fun addNonDefaultDisplay_defaultDisplayInTopologySwitchDisabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
+
+        // Add default display and a non-default display into the topology
+        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+        coordinator.onDisplayAdded(displayInfos[0])
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        coordinator.onDisplayAdded(displayInfos[1])
+
+        verify(mockTopology).removeDisplay(displayInfos[0].displayId)
+    }
+
+    @Test
+    fun addNonDefaultDisplay_defaultDisplayInTopologySwitchEnabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
+
+        // Add default display and a non-default display into the topology
+        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+        coordinator.onDisplayAdded(displayInfos[0])
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        coordinator.onDisplayAdded(displayInfos[1])
+
+        verify(mockTopology, never()).removeDisplay(anyInt())
+    }
+
+    @Test
+    fun addNonDefaultDisplay_flagDisabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(false)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
+
+        // Add default display and a non-default display into the topology
+        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+        coordinator.onDisplayAdded(displayInfos[0])
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        coordinator.onDisplayAdded(displayInfos[1])
+
+        verify(mockTopology, never()).removeDisplay(anyInt())
+    }
+
+    @Test
     fun updateDisplay() {
         whenever(mockTopology.updateDisplay(eq(displayInfos[0].displayId),
                                             anyInt(), anyInt(), anyInt()))
@@ -347,6 +398,62 @@ class DisplayTopologyCoordinatorTest {
     }
 
     @Test
+    fun removeNonDefaultDisplay_defaultDisplayInTopologySwitchDisabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
+
+        // Set up the default display
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+
+        // Remove a non-default display from the topology
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
+        whenever(mockTopology.isEmpty()).thenReturn(true)
+        coordinator.onDisplayRemoved(displayInfos[1].displayId)
+
+        verify(mockTopology).addDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
+            displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
+    }
+
+    @Test
+    fun removeNonDefaultDisplay_defaultDisplayInTopologySwitchEnabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
+
+        // Set up the default display
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+
+        // Remove a non-default display from the topology
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
+        coordinator.onDisplayRemoved(displayInfos[1].displayId)
+
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+    }
+
+    @Test
+    fun removeNonDefaultDisplay_flagDisabled() {
+        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(false)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
+
+        // Set up the default display
+        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
+        displayInfos[0].type = Display.TYPE_INTERNAL
+
+        // Remove a non-default display from the topology
+        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        displayInfos[1].type = Display.TYPE_EXTERNAL
+        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
+        coordinator.onDisplayRemoved(displayInfos[1].displayId)
+
+        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+    }
+
+    @Test
     fun getTopology_copy() {
         assertThat(coordinator.topology).isEqualTo(mockTopologyCopy)
     }
@@ -371,79 +478,5 @@ class DisplayTopologyCoordinatorTest {
         )
         verify(mockTopologyStore).saveTopology(topology)
         verify(mockTopologySavedCallback).invoke()
-    }
-
-    @Test
-    fun addAndRemoveNonDefaultDisplay_defaultDisplayInTopologySwitchDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
-        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
-
-        // Add default display and a non-default display into the topology
-        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
-        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
-        displayInfos[0].type = Display.TYPE_INTERNAL
-        coordinator.onDisplayAdded(displayInfos[0])
-        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
-        displayInfos[0].type = Display.TYPE_EXTERNAL
-        coordinator.onDisplayAdded(displayInfos[1])
-
-        verify(mockTopology).removeDisplay(displayInfos[0].displayId)
-
-        // Remove the non-default display from the topology
-        clearInvocations(mockTopology)
-        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
-        whenever(mockTopology.isEmpty()).thenReturn(true)
-        coordinator.onDisplayRemoved(displayInfos[1].displayId)
-
-        verify(mockTopology).addDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
-            displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
-    }
-
-    @Test
-    fun addAndRemoveNonDefaultDisplay_defaultDisplayInTopologySwitchEnabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true)
-        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
-
-        // Add default display and a non-default display into the topology
-        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
-        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
-        displayInfos[0].type = Display.TYPE_INTERNAL
-        coordinator.onDisplayAdded(displayInfos[0])
-        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
-        displayInfos[0].type = Display.TYPE_EXTERNAL
-        coordinator.onDisplayAdded(displayInfos[1])
-
-        verify(mockTopology, never()).removeDisplay(anyInt())
-
-        // Remove the non-default display from the topology
-        clearInvocations(mockTopology)
-        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
-        coordinator.onDisplayRemoved(displayInfos[1].displayId)
-
-        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
-    }
-
-    @Test
-    fun addAndRemoveNonDefaultDisplay_flagDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(false)
-        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
-
-        // Add default display and a non-default display into the topology
-        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
-        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
-        displayInfos[0].type = Display.TYPE_INTERNAL
-        coordinator.onDisplayAdded(displayInfos[0])
-        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
-        displayInfos[0].type = Display.TYPE_EXTERNAL
-        coordinator.onDisplayAdded(displayInfos[1])
-
-        verify(mockTopology, never()).removeDisplay(anyInt())
-
-        // Remove the non-default display from the topology
-        clearInvocations(mockTopology)
-        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
-        coordinator.onDisplayRemoved(displayInfos[1].displayId)
-
-        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
     }
 }

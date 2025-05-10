@@ -128,7 +128,7 @@
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"البلوتوث مفعَّل (للوسائط فقط)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"جهاز ضيف"</string>
     <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"جهاز ضيف (للوسائط فقط)"</string>
-    <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"تتوفّر ميزة \"مشاركة الصوت\""</string>
+    <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"ميزة \"مشاركة الصوت\" متاحة"</string>
     <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"جهاز ضيف. يوفِّر ميزة \"مشاركة الصوت\""</string>
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"السماعة اليسرى فقط مشغَّلة (للوسائط فقط)"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"السماعة اليمنى فقط مشغَّلة (للوسائط فقط)"</string>

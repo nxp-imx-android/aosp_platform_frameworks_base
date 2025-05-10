@@ -132,10 +132,10 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
+import static com.android.window.flags.Flags.fixViewRootCallTrace;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
-import static com.android.window.flags.Flags.fixViewRootCallTrace;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -187,7 +187,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.RenderNode;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.SyncFence;
@@ -289,7 +288,6 @@ import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.DecorView;
 import com.android.internal.policy.PhoneFallbackEventHandler;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
@@ -2065,21 +2063,12 @@ public final class ViewRootImpl implements ViewParent,
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
                 if (shouldApplyForceInvertDark()) {
-                    // TODO: b/368725782 - Use hwui color area detection instead of / in
-                    //  addition to these heuristics.
+                    // We will use HWUI color area detection to determine if it should actually be
+                    // inverted. Checking light theme simply gives the developer a way to "opt-out"
+                    // of force invert.
                     final boolean isLightTheme =
                             a.getBoolean(R.styleable.Theme_isLightTheme, false);
-                    final boolean isBackgroundColorLight;
-                    if (mView != null && mView.getBackground()
-                            instanceof ColorDrawable colorDrawable) {
-                        isBackgroundColorLight =
-                                !ContrastColorUtil.isColorDarkLab(colorDrawable.getColor());
-                    } else {
-                        // Treat unknown as light, so that only isLightTheme is used to determine
-                        // force dark treatment.
-                        isBackgroundColorLight = true;
-                    }
-                    if (isLightTheme && isBackgroundColorLight) {
+                    if (isLightTheme) {
                         return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                     } else {
                         return ForceDarkType.NONE;
@@ -3497,7 +3486,7 @@ public final class ViewRootImpl implements ViewParent,
         final Rect bounds = new Rect(
                 mContext.getResources().getConfiguration().windowConfiguration.getBounds());
         bounds.inset(mInsetsController.getState().calculateInsets(
-                bounds, Type.systemBars(), false /* ignoreVisibility */));
+                bounds, bounds, Type.systemBars(), false /* ignoreVisibility */));
         return bounds;
     }
 
@@ -6696,6 +6685,14 @@ public final class ViewRootImpl implements ViewParent,
             }
             updateConfiguration(newDisplayId);
         }
+
+        if (com.android.window.flags.Flags.relativeInsets()) {
+            // Notify the insets controller about bounds change for insets calculation.
+            final Rect bounds = mergedConfiguration.getMergedConfiguration().windowConfiguration
+                    .getBounds();
+            mInsetsController.onBoundsChanged(bounds);
+        }
+
         mForceNextConfigUpdate = false;
     }
 
@@ -8023,6 +8020,11 @@ public final class ViewRootImpl implements ViewParent,
             }
             if (direction != 0) {
                 View focused = mView.findFocus();
+                if (a11ySequentialFocusStartingPoint()
+                        && focused == null
+                        && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
+                    focused = ViewRootImpl.this.mAccessibilityFocusedHost;
+                }
                 if (focused != null) {
                     mAttachInfo.mNextFocusLooped = false;
                     View v = focused.focusSearch(direction);
@@ -8062,11 +8064,6 @@ public final class ViewRootImpl implements ViewParent,
                         return true;
                     }
                 } else {
-                    if (a11ySequentialFocusStartingPoint()
-                            && ViewRootImpl.this.mAccessibilityFocusedHost != null) {
-                        ViewRootImpl.this.mAccessibilityFocusedHost.requestFocus(direction);
-                        return true;
-                    }
                     if (mView.restoreDefaultFocus()) {
                         return true;
                     } else if (moveFocusToAdjacentWindow(direction)) {

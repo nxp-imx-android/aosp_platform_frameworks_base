@@ -107,7 +107,6 @@ import static com.android.server.wm.TaskProto.SURFACE_WIDTH;
 import static com.android.server.wm.TaskProto.TASK_FRAGMENT;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT;
@@ -128,6 +127,7 @@ import android.app.AppGlobals;
 import android.app.IActivityController;
 import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
+import android.app.TaskInfo.SelfMovable;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -526,6 +526,12 @@ class Task extends TaskFragment {
      * the activity that started this task.
      */
     private boolean mForceNonResizeOverride;
+
+    /**
+     * If the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    private @SelfMovable int mSelfMovable = TaskInfo.SELF_MOVABLE_DEFAULT;
 
     private static final int TRANSLUCENT_TIMEOUT_MSG = FIRST_ACTIVITY_TASK_MSG + 1;
 
@@ -3322,7 +3328,8 @@ class Task extends TaskFragment {
         // have enough information until we finish shell transitions.
         // In the mean time we do an easy fix here.
         final boolean visible = isVisible();
-        final boolean show = visible || isAnimating(TRANSITION | PARENTS | CHILDREN);
+        final boolean show = visible || isAnimating(PARENTS | CHILDREN,
+                SurfaceAnimator.ANIMATION_TYPE_ALL);
         if (mSurfaceControl != null) {
             if (show != mLastSurfaceShowing) {
                 t.setVisibility(mSurfaceControl, show);
@@ -3856,6 +3863,7 @@ class Task extends TaskFragment {
         if (mReparentLeafTaskIfRelaunch) {
             pw.println(prefix + "mReparentLeafTaskIfRelaunch=true");
         }
+        pw.println(prefix + "mSelfMovable=" + mSelfMovable);
     }
 
     @Override
@@ -6403,6 +6411,22 @@ class Task extends TaskFragment {
         return mRequiredDisplayCategory != null && mRequiredDisplayCategory.equals(
                 info.requiredDisplayCategory)
                 || (mRequiredDisplayCategory == null && info.requiredDisplayCategory == null);
+    }
+
+    /**
+     * Sets whether the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    void setSelfMovable(@SelfMovable int selfMovable) {
+        mSelfMovable = selfMovable;
+    }
+
+    /**
+     * Gets whether the window is allowed to be repositioned by {@link
+     * android.app.ActivityManager.AppTask#moveTaskTo}.
+     */
+    @SelfMovable int getSelfMovable() {
+        return mSelfMovable;
     }
 
     @Override

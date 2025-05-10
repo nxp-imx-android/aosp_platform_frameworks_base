@@ -133,8 +133,6 @@ import com.android.internal.policy.GestureNavigationSettingsObserver;
 import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.LetterboxDetails;
-import com.android.internal.util.ScreenshotHelper;
-import com.android.internal.util.ScreenshotRequest;
 import com.android.internal.util.function.TriFunction;
 import com.android.internal.view.AppearanceRegion;
 import com.android.internal.widget.PointerLocationView;
@@ -198,7 +196,6 @@ public class DisplayPolicy {
     private final boolean mCarDockEnablesAccelerometer;
     private final boolean mDeskDockEnablesAccelerometer;
     private final AccessibilityManager mAccessibilityManager;
-    private final ScreenshotHelper mScreenshotHelper;
 
     private final Object mServiceAcquireLock = new Object();
     private long mPanicTime;
@@ -468,7 +465,8 @@ public class DisplayPolicy {
                     if (provider == null) {
                         return Insets.NONE;
                     }
-                    return provider.getSource().calculateInsets(win.getBounds(),
+                    final Rect bounds = win.getBounds();
+                    return provider.getSource().calculateInsets(bounds, bounds,
                             true /* ignoreVisibility */);
                 }
 
@@ -657,10 +655,6 @@ public class DisplayPolicy {
             }
         };
         displayContent.mTransitionController.registerLegacyListener(mAppTransitionListener);
-
-        // TODO: Make it can take screenshot on external display
-        mScreenshotHelper = displayContent.isDefaultDisplay
-                ? new ScreenshotHelper(mContext) : null;
 
         if (mDisplayContent.isDefaultDisplay) {
             mHasStatusBar = true;
@@ -1283,7 +1277,7 @@ public class DisplayPolicy {
      * @param inOutFrame the source frame.
      * @param insetsSize the insets size. Only the first non-zero value will be taken.
      */
-    private static void calculateInsetsFrame(Rect inOutFrame, Insets insetsSize) {
+    static void calculateInsetsFrame(Rect inOutFrame, Insets insetsSize) {
         if (insetsSize == null) {
             return;
         }
@@ -1541,7 +1535,8 @@ public class DisplayPolicy {
                         && mRightGestureHost != null && mBottomGestureHost != null) {
                     continue;
                 }
-                final Insets insets = source.calculateInsets(bounds, false /* ignoreVisibility */);
+                final Insets insets = source.calculateInsets(bounds, bounds,
+                        false /* ignoreVisibility */);
                 if (mLeftGestureHost == null && insets.left > 0) {
                     mLeftGestureHost = win;
                 }
@@ -2083,21 +2078,21 @@ public class DisplayPolicy {
                 dc.getDisplayPolicy().simulateLayoutDisplay(df);
                 final InsetsState insetsState = df.mInsetsState;
                 final Rect displayFrame = insetsState.getDisplayFrame();
-                final Insets decor = insetsState.calculateInsets(displayFrame,
+                final Insets decor = insetsState.calculateInsets(displayFrame, displayFrame,
                         dc.mWmService.mDecorTypes, true /* ignoreVisibility */);
                 final Insets configInsets = dc.mWmService.mConfigTypes == dc.mWmService.mDecorTypes
                         ? decor
-                        : insetsState.calculateInsets(displayFrame, dc.mWmService.mConfigTypes,
-                                true /* ignoreVisibility */);
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
+                                dc.mWmService.mConfigTypes, true /* ignoreVisibility */);
                 final Insets overrideConfigInsets = dc.mWmService.mConfigTypes
                         == dc.mWmService.mOverrideConfigTypes
                         ? configInsets
-                        : insetsState.calculateInsets(displayFrame,
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
                                 dc.mWmService.mOverrideConfigTypes, true /* ignoreVisibility */);
                 final Insets overrideDecorInsets = dc.mWmService.mDecorTypes
                         == dc.mWmService.mOverrideDecorTypes
                         ? decor
-                        : insetsState.calculateInsets(displayFrame,
+                        : insetsState.calculateInsets(displayFrame, displayFrame,
                                 dc.mWmService.mOverrideDecorTypes, true /* ignoreVisibility */);
                 mNonDecorInsets.set(decor.left, decor.top, decor.right, decor.bottom);
                 mConfigInsets.set(configInsets.left, configInsets.top, configInsets.right,
@@ -2226,6 +2221,7 @@ public class DisplayPolicy {
             ArrayList<InsetsSource> mPreservedInsets;
             ArrayList<InsetsSource> mRegularBarsInsets;
             PrivacyIndicatorBounds mPrivacyIndicatorBounds;
+            int mRotation;
 
             Cache(DisplayContent dc) {
                 mDecorInsets = new DecorInsets(dc);
@@ -2328,7 +2324,9 @@ public class DisplayPolicy {
             prevCache = new DecorInsets(mDisplayContent);
             prevCache.setTo(mCachedDecorInsets.mDecorInsets);
             privacyIndicatorBounds = mCachedDecorInsets.mPrivacyIndicatorBounds;
-            mCachedDecorInsets.mPreservedInsets = mCachedDecorInsets.mRegularBarsInsets;
+            mCachedDecorInsets.mPreservedInsets =
+                    mCachedDecorInsets.mRotation == mDisplayContent.mDisplayFrames.mRotation
+                            ? mCachedDecorInsets.mRegularBarsInsets : null;
         }
         // Set a special id to preserve it before a real id is available from transition.
         mCachedDecorInsets.mPreserveId = DecorInsets.Cache.ID_UPDATING_CONFIG;
@@ -2337,6 +2335,7 @@ public class DisplayPolicy {
         if (com.android.window.flags.Flags.useCachedInsetsForDisplaySwitch()) {
             mCachedDecorInsets.mRegularBarsInsets = DecorInsets.Cache.copyRegularBarInsets(
                     mDisplayContent.mDisplayFrames.mInsetsState);
+            mCachedDecorInsets.mRotation = mDisplayContent.mDisplayFrames.mRotation;
             mCachedDecorInsets.mPrivacyIndicatorBounds =
                     mDisplayContent.mCurrentPrivacyIndicatorBounds;
         } else {
@@ -2398,8 +2397,9 @@ public class DisplayPolicy {
     }
 
     boolean hasBottomNavigationBar() {
+        final Rect displayFrame = mDisplayContent.mDisplayFrames.mUnrestricted;
         Insets navBarInsets = mDisplayContent.getInsetsStateController().getRawInsetsState()
-                .calculateInsets(mDisplayContent.mDisplayFrames.mUnrestricted,
+                .calculateInsets(displayFrame, displayFrame,
                         Type.navigationBars(), true /* ignoreVisibilities */);
         return navBarInsets.bottom > 0;
     }
@@ -2850,7 +2850,7 @@ public class DisplayPolicy {
             }
             if (type == Type.statusBars()) {
                 safe.set(displayFrames.mDisplayCutoutSafe);
-                final Insets insets = source.calculateInsets(df, true /* ignoreVisibility */);
+                final Insets insets = source.calculateInsets(df, df, true /* ignoreVisibility */);
                 // The status bar content can extend into regular display cutout insets if they are
                 // at the same side, but the content cannot extend into waterfall insets.
                 if (insets.left > 0) {
@@ -3048,22 +3048,6 @@ public class DisplayPolicy {
         // state temporarily to make the process more responsive.
         final WindowState w = mNotificationShade;
         mService.mAtmService.setProcessAnimatingWhileDozing(w != null ? w.getProcess() : null);
-    }
-
-    /**
-     * Request a screenshot be taken.
-     *
-     * @param screenshotType The type of screenshot, for example either
-     *                       {@link WindowManager#TAKE_SCREENSHOT_FULLSCREEN} or
-     *                       {@link WindowManager#TAKE_SCREENSHOT_PROVIDED_IMAGE}
-     * @param source Where the screenshot originated from (see WindowManager.ScreenshotSource)
-     */
-    public void takeScreenshot(int screenshotType, int source) {
-        if (mScreenshotHelper != null) {
-            ScreenshotRequest request =
-                    new ScreenshotRequest.Builder(screenshotType, source).build();
-            mScreenshotHelper.takeScreenshot(request, mHandler, null /* completionConsumer */);
-        }
     }
 
     RefreshRatePolicy getRefreshRatePolicy() {

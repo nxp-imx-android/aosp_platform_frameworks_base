@@ -243,7 +243,7 @@ class RecentTasks {
                     final InsetsState insetsState = dc.getInsetsStateController()
                             .getRawInsetsState();
                     mTmpRect.set(win.getFrame());
-                    mTmpRect.inset(insetsState.calculateInsets(win.getFrame(),
+                    mTmpRect.inset(insetsState.calculateInsets(win.getFrame(), win.getBounds(),
                             mandatorySystemGestures(), false /* ignoreVisibility */));
                     if (!mTmpRect.contains(x, y)) {
                         return;

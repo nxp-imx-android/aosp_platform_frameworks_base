@@ -31,8 +31,6 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED_DECELERATE;
 
-import static java.lang.Math.max;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -238,7 +236,7 @@ public class BubbleBarAnimationHelper {
                 })
                 .withEndActions(() -> {
                     bbev.setAnimationMatrix(null);
-                    bbev.updateBottomClip(0);
+                    bbev.resetBottomClip();
                     if (endRunnable != null) {
                         endRunnable.run();
                     }
@@ -664,9 +662,7 @@ public class BubbleBarAnimationHelper {
             Log.w(TAG, "Bubble bar expanded view was null when IME top changed");
             return;
         }
-        int bbevBottom = bbev.getContentBottomOnScreen();
-        int clip = max(bbevBottom - imeTop, 0);
-        bbev.updateBottomClip(clip);
+        bbev.onImeTopChanged(imeTop);
     }
 
     private @Nullable BubbleBarExpandedView getExpandedView() {

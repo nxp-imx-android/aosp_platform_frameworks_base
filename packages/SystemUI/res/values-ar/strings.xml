@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"سماح"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"غير مسموح باستخدام ميزة \"تصحيح الأخطاء اللاسلكي\""</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"لا يمكن للمستخدم المسجِّل دخوله حاليًا على هذا الجهاز تفعيل ميزة \"تصحيح الأخطاء اللاسلكي\". لاستخدام هذه الميزة، يمكنك التبديل إلى مستخدم مشرف."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"‏تمّ إيقاف منفذ USB"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"‏لحماية جهازك من السوائل أو الشوائب، سيتمّ إيقاف منفذ USB ولن يتم رصد أيّ ملحقات.\n\nوسيتمّ إعلامك عندما يُسمح باستخدام منفذ USB مرة أخرى."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"‏تم تفعيل منفذ USB لاكتشاف أجهزة الشحن والملحقات."</string>
@@ -315,7 +317,7 @@
     <string name="turn_on_bluetooth" msgid="5681370462180289071">"استخدام البلوتوث"</string>
     <string name="quick_settings_bluetooth_device_connected" msgid="7884777006729260996">"متّصل"</string>
     <string name="quick_settings_bluetooth_device_audio_sharing" msgid="1496358082943301670">"مشاركة الصوت"</string>
-    <string name="quick_settings_bluetooth_device_audio_sharing_or_switch_active" msgid="8680997711431098238">"تتوفّر ميزة \"مشاركة الصوت\""</string>
+    <string name="quick_settings_bluetooth_device_audio_sharing_or_switch_active" msgid="8680997711431098238">"ميزة \"مشاركة الصوت\" متاحة"</string>
     <string name="quick_settings_bluetooth_device_saved" msgid="7549938728928069477">"محفوظ"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_disconnect" msgid="415980329093277342">"إلغاء الربط"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_activate" msgid="3724301751036877403">"تفعيل"</string>
@@ -402,7 +404,7 @@
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"بدء"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"إيقاف"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"تسجيل المشكلة"</string>
-    <string name="qs_record_issue_start" msgid="2979831312582567056">"بدء"</string>
+    <string name="qs_record_issue_start" msgid="2979831312582567056">"البدء"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"إيقاف"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"تقرير خطأ"</string>
     <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"بأي جانب من تجربة استخدام الجهاز تتعلّق المشكلة؟"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"لم يتم ضبط الوضع"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"الإدارة في الإعدادات"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{ما مِن أوضاع مفعَّلة}=1{‫\"{mode}\" مفعَّل}two{وضعان مفعَّلان}few{‫# أوضاع مفعَّلة}many{‫# وضعًا مفعَّلاً}other{‫# وضع مفعَّل}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"عدد الأوضاع: <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"مفعّلة"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"لن يتم إزعاجك بالأصوات والاهتزاز، باستثناء المُنبِّهات والتذكيرات والأحداث والمتصلين الذين تحددهم. وسيظل بإمكانك سماع أي عناصر أخرى تختار تشغيلها، بما في ذلك الموسيقى والفيديوهات والألعاب."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"لن يتم إزعاجك بالأصوات والاهتزاز، باستثناء المُنبِّهات. وسيظل بإمكانك سماع أي عناصر أخرى تختار تشغيلها، بما في ذلك الموسيقى والفيديوهات والألعاب."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"‏فتح القفل باستمرار بواسطة TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"تم قفل الجهاز بسبب إجراء العديد من محاولات المصادقة"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"تم قفل الجهاز\nتعذّرت المصادقة"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"تم قفله من خلال ساعتك"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"إعدادات الصوت"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"شرح تلقائي للوسائط"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"لتوصيل لوحة المفاتيح بالجهاز اللوحي، يلزمك تفعيل بلوتوث أولاً."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"تفعيل"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"تفعيل - استنادًا للوجه"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"كتم صوت الإشعارات وتجميعها"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"التخفيضات والميزات الجديدة والمزيد"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"أهم الأخبار والمقالات التحريرية والمزيد"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"الإعجابات والمنشورات والمزيد"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"النشرات الإخبارية والوسائط المقترَحة والمزيد"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"تمّ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"تطبيق"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"إيقاف"</string>
@@ -1012,6 +1009,8 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"الحدّ الأدنى من عدد المربعات الذي تحتاج إليه هو <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"تعديل"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"تعديل المربّعات"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"الوقت"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"عرض الساعات والدقائق والثواني"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"غير ذلك"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"تبديل حجم المربّع"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"إزالة مربّع"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"اختيار مكان المربّع"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"تفعيل أو إيقاف وضع الترتيب"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"تفعيل أو إيقاف الاختيار"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"إضافة مربّع إلى الموضع الأخير"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"إضافة \"<xliff:g id="NAME">%1$s</xliff:g>\" إلى الموضع الأخير"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"نقل بطاقة"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"إضافة مربّع إلى الموضع المطلوب"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"الانتقال إلى <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"إيقاف الصورة المتحركة مؤقتًا"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"مكالمة جارية"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"مستمر"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"توسيع الإشعار"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"تصغير الإشعار"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"بيانات الجوّال"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"متصلة بالإنترنت"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"متصلة مؤقتًا"</string>

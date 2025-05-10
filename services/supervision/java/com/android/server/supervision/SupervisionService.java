@@ -74,8 +74,6 @@ import java.util.List;
 
 /** Service for handling system supervision. */
 public class SupervisionService extends ISupervisionManager.Stub {
-    private static final String LOG_TAG = "SupervisionService";
-
     /**
      * Activity action: Requests user confirmation of supervision credentials.
      *
@@ -98,8 +96,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private final Injector mInjector;
     final SupervisionManagerInternal mInternal = new SupervisionManagerInternalImpl();
 
+    @GuardedBy("getLockObject()")
+    final SupervisionSettings mSupervisionSettings = SupervisionSettings.getInstance();
+
     public SupervisionService(Context context) {
-        mContext = context.createAttributionContext(LOG_TAG);
+        mContext = context.createAttributionContext(SupervisionLog.TAG);
         mInjector = new Injector(context);
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
     }
@@ -181,12 +182,19 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Set the Supervision Recovery Info. */
     @Override
     public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
-        SupervisionRecoveryInfoStorage.getInstance(mContext).saveRecoveryInfo(recoveryInfo);
+        if (Flags.persistentSupervisionSettings()) {
+            mSupervisionSettings.saveRecoveryInfo(recoveryInfo);
+        } else {
+            SupervisionRecoveryInfoStorage.getInstance(mContext).saveRecoveryInfo(recoveryInfo);
+        }
     }
 
     /** Returns the Supervision Recovery Info or null if recovery is not set. */
     @Override
     public SupervisionRecoveryInfo getSupervisionRecoveryInfo() {
+        if (Flags.persistentSupervisionSettings()) {
+            return mSupervisionSettings.getRecoveryInfo();
+        }
         return SupervisionRecoveryInfoStorage.getInstance(mContext).loadRecoveryInfo();
     }
 
@@ -199,9 +207,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         synchronized (getLockObject()) {
-            for (int i = 0; i < mUserData.size(); i++) {
-                if (mUserData.valueAt(i).supervisionEnabled) {
+            if (Flags.persistentSupervisionSettings()) {
+                if (mSupervisionSettings.anySupervisedUser()) {
                     return false;
+                }
+            } else {
+                for (int i = 0; i < mUserData.size(); i++) {
+                    if (mUserData.valueAt(i).supervisionEnabled) {
+                        return false;
+                    }
                 }
             }
         }
@@ -262,7 +276,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @Override
     protected void dump(
             @NonNull FileDescriptor fd, @NonNull PrintWriter printWriter, @Nullable String[] args) {
-        if (!DumpUtils.checkDumpPermission(mContext, LOG_TAG, printWriter)) return;
+        if (!DumpUtils.checkDumpPermission(mContext, SupervisionLog.TAG, printWriter)) return;
 
         try (var pw = new IndentingPrintWriter(printWriter, "  ")) {
             pw.println("SupervisionService state:");
@@ -285,13 +299,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @NonNull
     @GuardedBy("getLockObject()")
     SupervisionUserData getUserDataLocked(@UserIdInt int userId) {
-        SupervisionUserData data = mUserData.get(userId);
-        if (data == null) {
-            // TODO(b/362790738): Do not create user data for nonexistent users.
-            data = new SupervisionUserData(userId);
-            mUserData.append(userId, data);
+        if (Flags.persistentSupervisionSettings()) {
+            return mSupervisionSettings.getUserData(userId);
+        } else {
+            SupervisionUserData data = mUserData.get(userId);
+            if (data == null) {
+                // TODO(b/362790738): Do not create user data for nonexistent users.
+                data = new SupervisionUserData(userId);
+                mUserData.append(userId, data);
+            }
+            return data;
         }
-        return data;
     }
 
     /**
@@ -304,6 +322,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
             SupervisionUserData data = getUserDataLocked(userId);
             data.supervisionEnabled = enabled;
             data.supervisionAppPackage = enabled ? supervisionAppPackage : null;
+            if (Flags.persistentSupervisionSettings()) {
+                mSupervisionSettings.saveUserData();
+            }
         }
         final long token = Binder.clearCallingIdentity();
         try {
@@ -318,7 +339,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                             (ISupervisionAppService) conn.getServiceBinder();
                     if (binder == null) {
                         Slog.d(
-                                LOG_TAG,
+                                SupervisionLog.TAG,
                                 TextUtils.formatSimple(
                                         "Unable to toggle supervision for package %s. Binder is"
                                                 + " null.",
@@ -333,7 +354,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         }
                     } catch (RemoteException e) {
                         Slog.d(
-                                LOG_TAG,
+                                SupervisionLog.TAG,
                                 TextUtils.formatSimple(
                                         "Unable to toggle supervision for package %s. e = %s",
                                         targetPackage, e));
@@ -574,6 +595,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 SupervisionUserData data = getUserDataLocked(userId);
                 data.supervisionLockScreenEnabled = enabled;
                 data.supervisionLockScreenOptions = options;
+                if (Flags.persistentSupervisionSettings()) {
+                    mSupervisionSettings.saveUserData();
+                }
             }
         }
     }
@@ -583,7 +607,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
         @Override
         public void onUserRemoved(UserInfo user) {
             synchronized (getLockObject()) {
-                mUserData.remove(user.id);
+                if (Flags.persistentSupervisionSettings()) {
+                    mSupervisionSettings.removeUserData(user.id);
+                } else {
+                    mUserData.remove(user.id);
+                }
             }
         }
     }

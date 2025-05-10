@@ -17,14 +17,13 @@
 package com.android.systemui.statusbar.policy
 
 import android.app.NotificationManager
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.modes.shared.ModesUi
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
-import com.android.app.tracing.coroutines.launchTraced as launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -41,9 +40,6 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        if (!ModesUi.isEnabled) {
-            return
-        }
         applicationCoroutineScope.launch { deleteObsoleteGamingMode() }
     }
 

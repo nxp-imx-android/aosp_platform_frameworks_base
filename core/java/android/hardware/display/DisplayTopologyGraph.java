@@ -18,6 +18,8 @@ package android.hardware.display;
 
 import static android.hardware.display.DisplayTopology.TreeNode.positionToString;
 
+import android.graphics.RectF;
+
 /**
  * Graph of the displays in {@link android.hardware.display.DisplayTopology} tree.
  *
@@ -30,6 +32,7 @@ public record DisplayTopologyGraph(int primaryDisplayId, DisplayNode[] displayNo
     public record DisplayNode(
             int displayId,
             int density,
+            RectF boundsInGlobalDp,
             AdjacentDisplay[] adjacentDisplays) {}
 
     /**

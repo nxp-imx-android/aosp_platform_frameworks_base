@@ -212,15 +212,6 @@ public abstract class UserManagerInternal {
     public abstract void setForceEphemeralUsers(boolean forceEphemeralUsers);
 
     /**
-     * Switches to the system user and deletes all other users.
-     *
-     * <p>Called by the {@link com.android.server.devicepolicy.DevicePolicyManagerService} when
-     * the force-ephemeral-users policy is toggled on to make sure there are no pre-existing
-     * non-ephemeral users left.
-     */
-    public abstract void removeAllUsers();
-
-    /**
      * Called by the activity manager when the ephemeral user goes to background and its removal
      * starts as a result.
      *
@@ -545,14 +536,6 @@ public abstract class UserManagerInternal {
      * would make such call).
      */
     public abstract @UserIdInt int getUserAssignedToDisplay(int displayId);
-
-    /**
-     * Returns the user to switch to, when logging out current user. If in HSUM and has interactive
-     * system user, then logout would switch to the system user. Otherwise, logout would switch to
-     * the previous foreground user. Will return USER_NULL if the current user is the SYSTEM or if
-     * no suitable user can be found.
-     */
-    public abstract @UserIdInt int getUserToLogoutCurrentUserTo();
 
     /**
      * Gets the user-friendly representation of the {@code result} of a

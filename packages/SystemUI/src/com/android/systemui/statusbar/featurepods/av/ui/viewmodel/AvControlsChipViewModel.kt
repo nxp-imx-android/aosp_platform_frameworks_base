@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.ui.viewmodel
+package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.statusbar.featurepods.popups.shared.model.ChipIcon
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
@@ -36,6 +36,11 @@ class AvControlsChipViewModel
 @AssistedInject
 constructor(avControlsChipInteractor: AvControlsChipInteractor) :
     StatusBarPopupChipViewModel, ExclusiveActivatable() {
+    companion object {
+        val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera
+        val MICROPHONE_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_microphone
+    }
+
     private val hydrator: Hydrator = Hydrator("AvControlsChipViewModel.hydrator")
 
     override val chip: PopupChipModel by
@@ -58,34 +63,23 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
                 PopupChipModel.Shown(
                     // TODO: Pass in color when the api supports it
                     chipId = chipId,
-                    icons = listOf(ChipIcon(icon(sensorActivityModel = sensorActivityModel))),
-                    chipText = chipText(sensorActivityModel = sensorActivityModel),
+                    icons = icons(sensorActivityModel = sensorActivityModel),
+                    // TODO(405903665): Remove text after api change
+                    chipText = "",
                 )
         }
     }
 
-    private fun icon(sensorActivityModel: SensorActivityModel.Active): Icon {
-        val imageRes =
-            when (sensorActivityModel.sensors) {
-                SensorActivityModel.Active.Sensors.CAMERA ->
-                    com.android.internal.R.drawable.perm_group_camera
-                SensorActivityModel.Active.Sensors.MICROPHONE ->
-                    com.android.internal.R.drawable.perm_group_microphone
-                // TODO(405903665): Pass both camera and microphone icons when it is supported.
-                SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE ->
-                    com.android.internal.R.drawable.perm_group_camera
-            }
-        return Icon.Resource(res = imageRes, contentDescription = null)
-    }
-
-    // TODO(405903665): Remove text after api change
-    private fun chipText(sensorActivityModel: SensorActivityModel.Active): String {
-        return when (sensorActivityModel.sensors) {
-            SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE -> "Cam & Mic"
-            SensorActivityModel.Active.Sensors.CAMERA -> "Camera"
-            SensorActivityModel.Active.Sensors.MICROPHONE -> "Microphone"
+    private fun icons(sensorActivityModel: SensorActivityModel.Active): List<ChipIcon> =
+        when (sensorActivityModel.sensors) {
+            SensorActivityModel.Active.Sensors.CAMERA -> listOf(CAMERA_DRAWABLE)
+            SensorActivityModel.Active.Sensors.MICROPHONE -> listOf(MICROPHONE_DRAWABLE)
+            SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE ->
+                listOf(CAMERA_DRAWABLE, MICROPHONE_DRAWABLE)
+        }.map {
+            // TODO(b/414566470): Add content description for accessibility.
+            ChipIcon(Icon.Resource(res = it, contentDescription = null))
         }
-    }
 
     @AssistedFactory
     interface Factory {

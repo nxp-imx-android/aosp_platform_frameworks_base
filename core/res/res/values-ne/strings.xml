@@ -200,9 +200,9 @@
     <string name="ssl_ca_cert_noti_by_unknown" msgid="4961102218216815242">"अज्ञात तेस्रो पक्ष द्वारा"</string>
     <string name="ssl_ca_cert_noti_by_administrator" msgid="4564941950768783879">"तपाईंको कार्य प्रोफाइलका प्रशासकद्वारा"</string>
     <string name="ssl_ca_cert_noti_managed" msgid="217337232273211674">"<xliff:g id="MANAGING_DOMAIN">%s</xliff:g> द्वारा"</string>
-    <string name="work_profile_deleted" msgid="5891181538182009328">"कार्य प्रोफाइल मेटियो"</string>
-    <string name="work_profile_deleted_details" msgid="3773706828364418016">"उक्त कार्य प्रोफाइलको प्रशासकीय एप छैन वा बिग्रेको छ। त्यसले गर्दा, तपाईंको कार्य प्रोफाइल र सम्बन्धित डेटालाई मेटिएको छ। सहायताका लागि आफ्ना प्रशासकलाई सम्पर्क गर्नुहोस्।"</string>
-    <string name="work_profile_deleted_description_dpm_wipe" msgid="2477244968924647232">"तपाईंको कार्य प्रोफाइल अब उप्रान्त यस डिभाइसमा उपलब्ध छैन"</string>
+    <string name="work_profile_deleted" msgid="5891181538182009328">"वर्क प्रोफाइल मेटियो"</string>
+    <string name="work_profile_deleted_details" msgid="3773706828364418016">"उक्त वर्क प्रोफाइलको प्रशासकीय एप छैन वा बिग्रेको छ। त्यसले गर्दा, तपाईंको वर्क प्रोफाइल र सम्बन्धित डेटालाई मेटिएको छ। सहायताका लागि आफ्ना प्रशासकलाई सम्पर्क गर्नुहोस्।"</string>
+    <string name="work_profile_deleted_description_dpm_wipe" msgid="2477244968924647232">"तपाईंको वर्क प्रोफाइल अब उप्रान्त यस डिभाइसमा उपलब्ध छैन"</string>
     <string name="work_profile_deleted_reason_maximum_password_failure" msgid="1080323158315663167">"पासवर्ड प्रविष्ट गर्ने अत्यधिक गलत प्रयासहरू भए"</string>
     <string name="device_ownership_relinquished" msgid="4080886992183195724">"व्यवस्थापकले यन्त्रलाई व्यक्तिगत प्रयोगका लागि अस्वीकार गर्नुभयो"</string>
     <string name="private_space_deleted_by_admin" msgid="1484365588862066939">"निजी स्पेस हटाइएको छ"</string>
@@ -223,9 +223,9 @@
     <string name="factory_reset_warning" msgid="6858705527798047809">"तपाईंको यन्त्र मेटिनेछ"</string>
     <string name="factory_reset_message" msgid="2657049595153992213">"प्रशासकको एप प्रयोग गर्न मिल्दैन। तपाईंको डिभाइसको डेटा अब मेटाइने छ।\n\nतपाईंसँग प्रश्नहरू भएका खण्डमा आफ्नो संगठनका प्रशासकसँग सम्पर्क गर्नुहोस्।"</string>
     <string name="printing_disabled_by" msgid="3517499806528864633">"<xliff:g id="OWNER_APP">%s</xliff:g> ले छाप्ने कार्यलाई असक्षम पार्यो।"</string>
-    <string name="personal_apps_suspension_title" msgid="7561416677884286600">"आफ्नो कार्य प्रोफाइल अन गर्नुहोस्"</string>
-    <string name="personal_apps_suspension_text" msgid="6115455688932935597">"तपाईंले आफ्नो कार्य प्रोफाइल सक्रिय नगरुन्जेल तपाईंका व्यक्तिगत एपहरूलाई रोक लगाइन्छ"</string>
-    <string name="personal_apps_suspension_soon_text" msgid="8123898693479590">"मिति <xliff:g id="DATE">%1$s</xliff:g> <xliff:g id="TIME">%2$s</xliff:g> बजे व्यक्तिगत एपहरूलाई रोक लगाइने छ। तपाईंका IT एड्मिन तपाईंलाई आफ्नो कार्य प्रोफाइल <xliff:g id="NUMBER">%3$d</xliff:g> भन्दा धेरै दिन निष्क्रिय राख्ने अनुमति दिनुहुन्न।"</string>
+    <string name="personal_apps_suspension_title" msgid="7561416677884286600">"आफ्नो वर्क प्रोफाइल अन गर्नुहोस्"</string>
+    <string name="personal_apps_suspension_text" msgid="6115455688932935597">"तपाईंले आफ्नो वर्क प्रोफाइल सक्रिय नगरुन्जेल तपाईंका व्यक्तिगत एपहरूलाई रोक लगाइन्छ"</string>
+    <string name="personal_apps_suspension_soon_text" msgid="8123898693479590">"मिति <xliff:g id="DATE">%1$s</xliff:g> <xliff:g id="TIME">%2$s</xliff:g> बजे व्यक्तिगत एपहरूलाई रोक लगाइने छ। तपाईंका IT एड्मिन तपाईंलाई आफ्नो वर्क प्रोफाइल <xliff:g id="NUMBER">%3$d</xliff:g> भन्दा धेरै दिन निष्क्रिय राख्ने अनुमति दिनुहुन्न।"</string>
     <string name="personal_apps_suspended_turn_profile_on" msgid="2758012869627513689">"अन गर्नुहोस्"</string>
     <string name="work_profile_telephony_paused_title" msgid="7690804479291839519">"कल वा म्यासेज अफ गरिएको छ"</string>
     <string name="work_profile_telephony_paused_text" msgid="8065762301100978221">"तपाईंले कामसम्बन्धी एपहरू पज गर्नुभएको छ। तपाईं फोन कल वा टेक्स्ट म्यासेजहरू प्राप्त गर्नु हुने छैन।"</string>
@@ -321,9 +321,9 @@
     <string name="safeMode" msgid="8974401416068943888">"सुरक्षित मोड"</string>
     <string name="android_system_label" msgid="5974767339591067210">"Android सिस्टम"</string>
     <string name="user_owner_label" msgid="8628726904184471211">"व्यक्तिगत प्रोफाइलमा बदल्नुहोस्"</string>
-    <string name="managed_profile_label" msgid="7316778766973512382">"कार्य प्रोफाइलमा बदल्नुहोस्"</string>
+    <string name="managed_profile_label" msgid="7316778766973512382">"वर्क प्रोफाइलमा बदल्नुहोस्"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"<xliff:g id="APP_NAME">%1$s</xliff:g> को व्यक्तिगत प्रोफाइल प्रयोग गर्नुहोस्"</string>
-    <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> को कार्य प्रोफाइल प्रयोग गर्नुहोस्"</string>
+    <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> को वर्क प्रोफाइल प्रयोग गर्नुहोस्"</string>
     <string name="permgrouplab_contacts" msgid="4254143639307316920">"कन्ट्याक्टहरू"</string>
     <string name="permgroupdesc_contacts" msgid="9163927941244182567">"तपाईँको सम्पर्कमाथि पहुँच गर्नुहोस्"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"लोकेसन"</string>
@@ -1571,8 +1571,8 @@
     <string name="permission_request_notification_title" msgid="1810025922441048273">"अनुरोध गरिएको अनुमति"</string>
     <string name="permission_request_notification_with_subtitle" msgid="3743417870360129298">\n"खाता <xliff:g id="ACCOUNT">%s</xliff:g>को लागि अनुरोध गरिएको अनुमति।"</string>
     <string name="permission_request_notification_for_app_with_subtitle" msgid="1298704005732851350">"<xliff:g id="APP">%1$s</xliff:g> ले <xliff:g id="ACCOUNT">%2$s</xliff:g> खाता चलाउने\nअनुमति मागेको छ।"</string>
-    <string name="forward_intent_to_owner" msgid="4620359037192871015">"तपाईं तपाईंको कार्य प्रोफाइल बाहिर यो एप प्रयोग गरिरहनु भएको छ"</string>
-    <string name="forward_intent_to_work" msgid="3620262405636021151">"तपाईं आफ्नो कार्य प्रोफाइलमा यो एप प्रयोग गरिरहनु भएको छ"</string>
+    <string name="forward_intent_to_owner" msgid="4620359037192871015">"तपाईं तपाईंको वर्क प्रोफाइल बाहिर यो एप प्रयोग गरिरहनु भएको छ"</string>
+    <string name="forward_intent_to_work" msgid="3620262405636021151">"तपाईं आफ्नो वर्क प्रोफाइलमा यो एप प्रयोग गरिरहनु भएको छ"</string>
     <string name="input_method_binding_label" msgid="1166731601721983656">"इनपुट विधि"</string>
     <string name="sync_binding_label" msgid="469249309424662147">"सिंक गर्नुहोस्"</string>
     <string name="accessibility_binding_label" msgid="1974602776545801715">"उपलब्धता"</string>
@@ -1701,7 +1701,7 @@
     <string name="SetupCallDefault" msgid="5581740063237175247">"कल स्वीकार गर्नुहुन्छ?"</string>
     <string name="activity_resolver_use_always" msgid="5575222334666843269">"सधैँ"</string>
     <string name="activity_resolver_use_once" msgid="948462794469672658">"एक पटक मात्र"</string>
-    <string name="activity_resolver_work_profiles_support" msgid="4071345609235361269">"%1$s  कार्य प्रोफाइल समर्थन गर्दैन"</string>
+    <string name="activity_resolver_work_profiles_support" msgid="4071345609235361269">"%1$s  वर्क प्रोफाइल समर्थन गर्दैन"</string>
     <string name="default_audio_route_name" product="tablet" msgid="367936735632195517">"ट्याब्लेट"</string>
     <string name="default_audio_route_name" product="tv" msgid="4908971385068087367">"टिभी"</string>
     <string name="default_audio_route_name" product="default" msgid="9213546147739983977">"फोन"</string>
@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"एक हाते मोड"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"अझै मधुरो"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"हियरिङ डिभाइसहरू"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"अटोक्लिक"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"माउस कीहरू"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"डिस्कनेक्ट गरिएको"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"कनेक्ट गरिएको"</string>
@@ -1826,7 +1827,7 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"तपाईं ह्यान्ड्सफ्री तरिकाले कल गर्न आफ्नो हियरिङ एडको माइक्रोफोन प्रयोग गर्न सक्नुहुन्छ। यसले कल भइरहेका बेला मात्र तपाईंको माइक बदल्छ।"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"बदल्नुहोस्"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"सेटिङ"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> मा स्विच गरिँदै छ…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"बदलेर <xliff:g id="NAME">%1$s</xliff:g> बनाइँदै छ…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"लग आउट गर्दै <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"मालिक"</string>
     <string name="guest_name" msgid="8502103277839834324">"अतिथि"</string>
@@ -2017,7 +2018,7 @@
     <string name="stk_cc_ss_to_ussd" msgid="8417905193112944760">"SS अनुरोधलाई USSD अनुरोधमा परिवर्तन गरियो"</string>
     <string name="stk_cc_ss_to_ss" msgid="132040645206514450">"नयाँ SS अनुरोधमा परिवर्तन गरियो"</string>
     <string name="notification_phishing_alert_content_description" msgid="494227305355958790">"फिसिङसम्बन्धी अलर्ट"</string>
-    <string name="notification_work_profile_content_description" msgid="5296477955677725799">"कार्य प्रोफाइल"</string>
+    <string name="notification_work_profile_content_description" msgid="5296477955677725799">"वर्क प्रोफाइल"</string>
     <string name="notification_alerted_content_description" msgid="6139691253611265992">"सतर्कता गरियो"</string>
     <string name="notification_verified_content_description" msgid="6401483602782359391">"पुष्टि गरिएको"</string>
     <string name="expand_button_content_description_collapsed" msgid="3873368935659010279">"विस्तृत गर्नुहोस्"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"प्रवर्धनहरू"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"सोसल मिडिया"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"समाचार"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"सिफारिस गरिएको"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"तपाईंले यी सूचनाहरूको महत्त्व सेट गर्नुहोस् ।"</string>
     <string name="importance_from_person" msgid="4235804979664465383">"यसमा सङ्लग्न भएका मानिसहरूको कारणले गर्दा यो महत्वपूर्ण छ।"</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"एपसम्बन्धी आफ्नो रोजाइअनुसारको सूचना"</string>
@@ -2102,15 +2102,15 @@
     <string name="new_sms_notification_title" msgid="6528758221319927107">"तपाईंलाई नयाँ सन्देश आएको छ"</string>
     <string name="new_sms_notification_content" msgid="3197949934153460639">"हेर्नका लागि SMS एप खोल्नुहोस्"</string>
     <string name="profile_encrypted_title" msgid="9001208667521266472">"केही सुविधा राम्ररी नचल्न सक्छन्"</string>
-    <string name="profile_encrypted_detail" msgid="5279730442756849055">"कार्य प्रोफाइल लक भयो"</string>
-    <string name="profile_encrypted_message" msgid="1128512616293157802">"कार्य प्रोफाइल अनलक गर्न ट्याप गर्नुहोस्"</string>
+    <string name="profile_encrypted_detail" msgid="5279730442756849055">"वर्क प्रोफाइल लक भयो"</string>
+    <string name="profile_encrypted_message" msgid="1128512616293157802">"वर्क प्रोफाइल अनलक गर्न ट्याप गर्नुहोस्"</string>
     <string name="usb_mtp_launch_notification_title" msgid="774319638256707227">"<xliff:g id="PRODUCT_NAME">%1$s</xliff:g> मा जडान गरिएको छ"</string>
     <string name="usb_mtp_launch_notification_description" msgid="6942535713629852684">"फाइलहरू हेर्न ट्याप गर्नुहोस्"</string>
     <string name="pin_target" msgid="8036028973110156895">"पिन गर्नुहोस्"</string>
     <string name="pin_specific_target" msgid="7824671240625957415">"<xliff:g id="LABEL">%1$s</xliff:g> लाई पिन गर्नुहोस्"</string>
     <string name="unpin_target" msgid="3963318576590204447">"अनपिन गर्नुहोस्"</string>
     <string name="unpin_specific_target" msgid="3859828252160908146">"<xliff:g id="LABEL">%1$s</xliff:g> लाई अनपिन गर्नुहोस्"</string>
-    <string name="app_info" msgid="6113278084877079851">"एपका बारे जानकारी"</string>
+    <string name="app_info" msgid="6113278084877079851">"एपका बारेमा जानकारी"</string>
     <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"सामग्री सीधै सेयर गर्नका निम्ति चयन गरिएका व्यक्ति वा समूहहरू"</string>
     <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"सिफारिस गरिएका एपहरू"</string>
     <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"एपहरूको सूची"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad को बायाँको बटन"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad को दायाँको बटन"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad को बिचको बटन"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"अटोक्लिकको प्रकारसम्बन्धी सेटिङको प्यानल"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"बायाँ क्लिक गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"राइट क्लिक गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"डबल क्लिक गर्नुहोस्"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ड्र्याग गर्नुहोस्"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"केही बेरसम्म थिच्नुहोस्"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"पज गर्नुहोस्"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"स्थिति"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"माथितिर स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"तलतिर स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"बायाँतिर स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"दायाँतिर स्क्रोल गर्नुहोस्"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"स्क्रोल मोडबाट बाहिरिनुहोस्"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"पज गर्नुहोस्"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"सुचारु गर्नुहोस्"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"प्यानल स्क्रोल गर्नुहोस्"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> लाई प्रतिबन्धित बाल्टीमा राखियो"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
@@ -2302,13 +2312,13 @@
     <string name="resolver_cant_access_personal_apps_explanation" msgid="1679399548862724359">"यो सामग्री व्यक्तिगत एपहरूमार्फत खोल्न मिल्दैन"</string>
     <string name="resolver_turn_on_work_apps" msgid="1535946298236678122">"कामसम्बन्धी एपहरू पज गरिएका छन्"</string>
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"अनपज गर्नुहोस्"</string>
-    <string name="resolver_no_work_apps_available" msgid="3298291360133337270">"यो सामग्री खोल्न मिल्ने कुनै पनि कामसम्बन्धी एप छैन"</string>
+    <string name="resolver_no_work_apps_available" msgid="3298291360133337270">"यो सामग्री खोल्न मिल्ने कुनै पनि वर्क एप छैन"</string>
     <string name="resolver_no_personal_apps_available" msgid="6284837227019594881">"यो सामग्री खोल्न मिल्ने कुनै पनि व्यक्तिगत एप छैन"</string>
     <string name="miniresolver_open_work" msgid="6286176185835401931">"कामसम्बन्धी <xliff:g id="APP">%s</xliff:g> खोल्ने हो?"</string>
     <string name="miniresolver_open_in_personal" msgid="807427577794490375">"व्यक्तिगत <xliff:g id="APP">%s</xliff:g> मा खोल्ने हो?"</string>
     <string name="miniresolver_open_in_work" msgid="941341494673509916">"कामसम्बन्धी <xliff:g id="APP">%s</xliff:g> मा खोल्ने हो?"</string>
     <string name="miniresolver_call_in_work" msgid="528779988307529039">"कामसम्बन्धी एपबाट कल गर्ने हो?"</string>
-    <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"कामसम्बन्धी एप प्रयोग गर्ने हो?"</string>
+    <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"वर्क एप प्रयोग गर्ने हो?"</string>
     <string name="miniresolver_call_information" msgid="6739417525304184083">"तपाईंको सङ्गठनले तपाईंलाई कामसम्बन्धी एपहरूमार्फत मात्र कल गर्ने अनुमति दिएको छ"</string>
     <string name="miniresolver_sms_information" msgid="4311292661329483088">"तपाईंको सङ्गठनले तपाईंलाई कामसम्बन्धी एपहरूमार्फत मात्र म्यासेज पठाउने अनुमति दिएको छ"</string>
     <string name="miniresolver_private_space_phone_information" msgid="4469511223312488570">"तपाईं आफ्नो व्यक्तिगत फोन एपबाट मात्र फोन कल गर्न सक्नुहुन्छ। व्यक्तिगत फोन एपमार्फत गरिएका कलहरू तपाईंको व्यक्तिगत कल हिस्ट्रीमा राखिने छन्।"</string>
@@ -2488,12 +2498,12 @@
     <string name="profile_label_private" msgid="6463418670715290696">"निजी स्पेस"</string>
     <string name="profile_label_clone" msgid="769106052210954285">"क्लोन"</string>
     <string name="profile_label_work" msgid="3495359133038584618">"कार्य"</string>
-    <string name="profile_label_work_2" msgid="4691533661598632135">"कार्य प्रोफाइल २"</string>
-    <string name="profile_label_work_3" msgid="4834572253956798917">"कार्य प्रोफाइल ३"</string>
+    <string name="profile_label_work_2" msgid="4691533661598632135">"वर्क प्रोफाइल २"</string>
+    <string name="profile_label_work_3" msgid="4834572253956798917">"वर्क प्रोफाइल ३"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"परीक्षण"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"सामुदायिक"</string>
     <string name="profile_label_supervising" msgid="5649312778545745371">"सुपरिवेक्षण गरिँदै छ"</string>
-    <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"कार्य प्रोफाइल"</string>
+    <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"वर्क प्रोफाइल"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"निजी स्पेस"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"क्लोन"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"सामुदायिक"</string>

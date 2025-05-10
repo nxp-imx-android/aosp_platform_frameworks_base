@@ -222,7 +222,6 @@ constructor(
                 lottie.addLottieOnCompositionLoadedListener { composition: LottieComposition ->
                     if (overlayView.visibility != View.VISIBLE) {
                         viewModel.setLottieBounds(composition.bounds)
-                        overlayView.visibility = View.VISIBLE
                     }
                 }
                 it.alpha = 0f
@@ -234,7 +233,7 @@ constructor(
 
                 overlayShowAnimator.start()
 
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repeatOnLifecycle(Lifecycle.State.CREATED) {
                     launch {
                         viewModel.lottieCallbacks.collect { callbacks ->
                             lottie.addOverlayDynamicColor(callbacks)
@@ -245,6 +244,7 @@ constructor(
                         viewModel.overlayViewParams.collect { params ->
                             windowManager.updateViewLayout(it, params)
                             lottie.resumeAnimation()
+                            overlayView.visibility = View.VISIBLE
                         }
                     }
 

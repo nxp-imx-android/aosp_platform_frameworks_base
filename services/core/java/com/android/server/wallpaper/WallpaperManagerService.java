@@ -3251,8 +3251,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             int[] screenOrientations, List<Rect> crops, boolean allowBackup,
             Bundle extras, int which, IWallpaperManagerCallback completion, int userId) {
 
+        Slog.v(TAG, "setWallpaper: name = " + name + ", which = " + which);
         if (DEBUG) {
-            Slog.d(TAG, "setWallpaper: name = " + name + ", callingPackage = " + callingPackage
+            Slog.d(TAG, "setWallpaper: callingPackage = " + callingPackage
                     + ", screenOrientations = "
                     + (screenOrientations == null ? null
                             : Arrays.stream(screenOrientations).boxed().toList())

@@ -74,6 +74,8 @@ import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
 import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.viewmodel.AlternateBouncerToGoneTransitionViewModel;
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel;
+import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToDreamingTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -142,9 +144,12 @@ public class ScrimControllerTest extends SysuiTestCase {
     @Mock private DockManager mDockManager;
     @Mock private ScreenOffAnimationController mScreenOffAnimationController;
     @Mock private KeyguardUnlockAnimationController mKeyguardUnlockAnimationController;
+    @Mock private PrimaryBouncerToDreamingTransitionViewModel
+            mPrimaryBouncerToDreamingTransitionViewModel;
     @Mock private PrimaryBouncerToGoneTransitionViewModel mPrimaryBouncerToGoneTransitionViewModel;
     @Mock private AlternateBouncerToGoneTransitionViewModel
             mAlternateBouncerToGoneTransitionViewModel;
+    @Mock private LockscreenToDreamingTransitionViewModel mLockscreenToDreamingTransitionViewModel;
     @Mock private KeyguardInteractor mKeyguardInteractor;
 
     private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
@@ -263,9 +268,13 @@ public class ScrimControllerTest extends SysuiTestCase {
         when(mDelayedWakeLockFactory.create(any(String.class))).thenReturn(mWakeLock);
         when(mDockManager.isDocked()).thenReturn(false);
 
+        when(mPrimaryBouncerToDreamingTransitionViewModel.getScrimAlpha())
+                .thenReturn(emptyFlow());
         when(mPrimaryBouncerToGoneTransitionViewModel.getScrimAlpha())
                 .thenReturn(emptyFlow());
         when(mAlternateBouncerToGoneTransitionViewModel.getScrimAlpha())
+                .thenReturn(emptyFlow());
+        when(mLockscreenToDreamingTransitionViewModel.getScrimAlpha())
                 .thenReturn(emptyFlow());
 
         mKeyguardTransitionRepository = mKosmos.getKeyguardTransitionRepository();
@@ -283,8 +292,10 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mScreenOffAnimationController,
                 mKeyguardUnlockAnimationController,
                 mStatusBarKeyguardViewManager,
+                mPrimaryBouncerToDreamingTransitionViewModel,
                 mPrimaryBouncerToGoneTransitionViewModel,
                 mAlternateBouncerToGoneTransitionViewModel,
+                mLockscreenToDreamingTransitionViewModel,
                 mKeyguardTransitionInteractor,
                 mKeyguardInteractor,
                 mKosmos.getTestDispatcher(),
@@ -1233,8 +1244,10 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mScreenOffAnimationController,
                 mKeyguardUnlockAnimationController,
                 mStatusBarKeyguardViewManager,
+                mPrimaryBouncerToDreamingTransitionViewModel,
                 mPrimaryBouncerToGoneTransitionViewModel,
                 mAlternateBouncerToGoneTransitionViewModel,
+                mLockscreenToDreamingTransitionViewModel,
                 mKeyguardTransitionInteractor,
                 mKeyguardInteractor,
                 mKosmos.getTestDispatcher(),

@@ -15,13 +15,17 @@
 
 package com.android.systemui.statusbar.notification.domain.interactor
 
+import android.app.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.shared.ActiveBundleModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.ActivePipelineEntryModel
 import com.android.systemui.statusbar.notification.shared.CallType
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -39,24 +43,14 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) {
     /**
-     * Top level list of Notifications actively presented to the user in the notification stack, in
-     * order.
+     * List of top-level entries in the notification stack that are backed by a notification.
+     *
+     * This omits bundles and bundled notifications; the bundle is top-level, and it is not backed
+     * by a notification.
      */
     val topLevelRepresentativeNotifications: Flow<List<ActiveNotificationModel>> =
         repository.activeNotifications
-            .map { store ->
-                store.renderList.map { key ->
-                    val entry =
-                        store[key]
-                            ?: error(
-                                "Could not find notification with key $key in active notif store."
-                            )
-                    when (entry) {
-                        is ActiveNotificationGroupModel -> entry.summary
-                        is ActiveNotificationModel -> entry
-                    }
-                }
-            }
+            .map { store -> topLevelRepresentativeModels(store) }
             .flowOn(backgroundDispatcher)
 
     /**
@@ -106,15 +100,20 @@ constructor(
             .map { notifMap ->
                 notifMap.values
                     .filter { it.isOngoingCallNotification() }
+                    // TODO(b/415070395): Remove this filter once we inline the behavior of
+                    //  optInRichOngoing.
                     .filter {
-                        if (PromotedNotificationUi.isEnabled) {
-                            // When promoted notifications are enabled, CallStyle.Ongoing
+                        if (PromotedNotificationUi.isEnabled && !Flags.optInRichOngoing()) {
+                            // When opt-*out* promoted notifications are enabled, CallStyle.Ongoing
                             // notifications will be marked as promoted by default. If a user later
                             // bans an app from showing promoted notifications (which would result
                             // in promotedContent=null here), then we should stop showing call
                             // notifications from that app as well.
                             it.promotedContent != null
                         } else {
+                            // When opt-*in* promoted notifications are enabled, ignore promotion
+                            // status for CallStyle.Ongoing notifications here. CallChipInteractor
+                            // will filter them correctly.
                             true
                         }
                     }
@@ -170,6 +169,28 @@ constructor(
 
     fun setNotifStats(notifStats: NotifStats) {
         repository.notifStats.value = notifStats
+    }
+
+    /**
+     * Returns the representative model for each top-level entry in the [store]. By definition, this
+     * will omit bundles, which are always top-level and do not have a representative entry.
+     */
+    private fun topLevelRepresentativeModels(
+        store: ActiveNotificationsStore
+    ): List<ActiveNotificationModel> =
+        store.renderList.mapNotNull { key -> representativeModelForKey(store, key) }
+
+    private fun representativeModelForKey(
+        store: ActiveNotificationsStore,
+        key: ActiveNotificationsStore.Key,
+    ): ActiveNotificationModel? {
+        val entry: ActivePipelineEntryModel =
+            store[key] ?: error("Could not find entry with key=$key in active notif store.")
+        return when (entry) {
+            is ActiveNotificationGroupModel -> entry.summary
+            is ActiveNotificationModel -> entry
+            is ActiveBundleModel -> null
+        }
     }
 
     companion object {

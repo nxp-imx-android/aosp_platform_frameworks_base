@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +47,7 @@ public class PromptInfo implements Parcelable {
     @Nullable private CharSequence mDeviceCredentialSubtitle;
     @Nullable private CharSequence mDeviceCredentialDescription;
     @Nullable private CharSequence mNegativeButtonText;
+    private List<FallbackOption> mFallbackOptions = new ArrayList<>();
     private boolean mConfirmationRequested = true; // default to true
     private boolean mDeviceCredentialAllowed;
     private @BiometricManager.Authenticators.Types int mAuthenticators;
@@ -84,7 +86,8 @@ public class PromptInfo implements Parcelable {
         mAuthenticators = in.readInt();
         mDisallowBiometricsIfPolicyExists = in.readBoolean();
         mReceiveSystemEvents = in.readBoolean();
-        mAllowedSensorIds = in.readArrayList(Integer.class.getClassLoader(), java.lang.Integer.class);
+        mAllowedSensorIds = in.readArrayList(Integer.class.getClassLoader(),
+                java.lang.Integer.class);
         mAllowBackgroundAuthentication = in.readBoolean();
         mIgnoreEnrollmentState = in.readBoolean();
         mIsForLegacyFingerprintManager = in.readBoolean();
@@ -93,6 +96,11 @@ public class PromptInfo implements Parcelable {
         mRealCallerForConfirmDeviceCredentialActivity = in.readParcelable(
                 ComponentName.class.getClassLoader(), ComponentName.class);
         mClassNameIfItIsConfirmDeviceCredentialActivity = in.readString();
+        if (Flags.addFallback()) {
+            ArrayList<FallbackOption> options = new ArrayList<>();
+            in.readTypedList(options, FallbackOption.CREATOR);
+            mFallbackOptions = options;
+        }
     }
 
     public static final Creator<PromptInfo> CREATOR = new Creator<PromptInfo>() {
@@ -140,6 +148,9 @@ public class PromptInfo implements Parcelable {
         dest.writeBoolean(mUseParentProfileForDeviceCredential);
         dest.writeParcelable(mRealCallerForConfirmDeviceCredentialActivity, 0);
         dest.writeString(mClassNameIfItIsConfirmDeviceCredentialActivity);
+        if (Flags.addFallback()) {
+            dest.writeTypedList(mFallbackOptions);
+        }
     }
 
     // LINT.IfChange
@@ -472,5 +483,16 @@ public class PromptInfo implements Parcelable {
      */
     public String getClassNameIfItIsConfirmDeviceCredentialActivity() {
        return mClassNameIfItIsConfirmDeviceCredentialActivity;
+    }
+
+    public List<FallbackOption> getFallbackOptions() {
+        return Collections.unmodifiableList(mFallbackOptions);
+    }
+
+    /**
+     * Adds a fallback option
+     */
+    public void addFallbackOption(FallbackOption fallbackOption) {
+        mFallbackOptions.add(fallbackOption);
     }
 }

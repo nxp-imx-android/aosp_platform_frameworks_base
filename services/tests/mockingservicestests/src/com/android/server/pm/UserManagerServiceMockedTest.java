@@ -34,6 +34,8 @@ import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.pm.UserManagerService.BOOT_TO_HSU_FOR_PROVISIONED_DEVICE;
+import static com.android.server.pm.UserManagerService.BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -85,6 +87,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.LocalServices;
 import com.android.server.am.UserState;
 import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.UserManagerService.BootStrategy;
 import com.android.server.pm.UserManagerService.UserData;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 
@@ -96,7 +99,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -199,7 +201,6 @@ public final class UserManagerServiceMockedTest {
     @Before
     @UiThreadTest // Needed to initialize main handler
     public void setFixtures() {
-        MockitoAnnotations.initMocks(this);
         mSpiedContext = spy(mRealContext);
 
         // Disable binder caches in this process.
@@ -220,10 +221,9 @@ public final class UserManagerServiceMockedTest {
         // Called when getting boot user. config_hsumBootStrategy is 0 by default.
         mSpyResources = spy(mSpiedContext.getResources());
         when(mSpiedContext.getResources()).thenReturn(mSpyResources);
-        doReturn(0)
-                .when(mSpyResources)
-                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
-        doReturn(mSpyResources).when(() -> Resources.getSystem());
+        mockHsumBootStrategy(BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER);
+
+        doReturn(mSpyResources).when(Resources::getSystem);
 
         // Must construct UserManagerService in the UiThread
         mTestDir = new File(mRealContext.getDataDir(), "umstest");
@@ -942,9 +942,7 @@ public final class UserManagerServiceMockedTest {
         addUser(USER_ID);
         addUser(OTHER_USER_ID);
         mockProvisionedDevice(true);
-        doReturn(1)
-                .when(mSpyResources)
-                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
 
         assertThat(mUms.getBootUser()).isEqualTo(UserHandle.USER_SYSTEM);
     }
@@ -955,9 +953,7 @@ public final class UserManagerServiceMockedTest {
         addUser(USER_ID);
         addUser(OTHER_USER_ID);
         mockProvisionedDevice(false);
-        doReturn(1)
-                .when(mSpyResources)
-                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
         // Even if the headless system user switchable flag is true, the boot user should be the
         // first switchable full user.
         mockCanSwitchToHeadlessSystemUser(true);
@@ -971,9 +967,7 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(true);
         removeNonSystemUsers();
         mockProvisionedDevice(false);
-        doReturn(1)
-                .when(mSpyResources)
-                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
 
         assertThrows(ServiceSpecificException.class,
                 () -> mUms.getBootUser());
@@ -1053,41 +1047,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    public void testGetUserToLogoutCurrentUserTo_HsumAndInteractiveHeadlessSystemUser()
-            throws Exception {
-        setSystemUserHeadless(true);
-        mockCanSwitchToHeadlessSystemUser(true);
-        addUser(USER_ID);
-        mockCurrentUser(USER_ID);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_SYSTEM);
-    }
-
-    @Test
-    public void testGetUserToLogoutCurrentUserTo_HsumAndNonInteractiveHeadlessSystemUser()
-            throws Exception {
-        setSystemUserHeadless(true);
-        mockCanSwitchToHeadlessSystemUser(false);
-        addUser(USER_ID);
-        mockCurrentUser(USER_ID);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(UserHandle.USER_NULL);
-    }
-
-    @Test
-    public void testGetUserToLogoutCurrentUserTo_NonHsum() throws Exception {
-        setSystemUserHeadless(false);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
-        addUser(THIRD_USER_ID);
-        mockCurrentUser(USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
-        setLastForegroundTime(THIRD_USER_ID, 900_000L);
-
-        assertThat(mUmi.getUserToLogoutCurrentUserTo()).isEqualTo(OTHER_USER_ID);
-    }
-
-    @Test
     public void testGetOwnerName() {
         assertThat(mUms.getOwnerName()).isNotEmpty();
     }
@@ -1148,7 +1107,8 @@ public final class UserManagerServiceMockedTest {
      * {@code null} name.
      */
     @Test
-    public void testUserWithName_withDefaultName() {
+    public void testUserWithName_withDefaultName_nonHsum() {
+        setSystemUserHeadless(false);
         int initialAllocations = getCurrentNumberOfUser0Allocations();
 
         var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
@@ -1199,6 +1159,21 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_LOGOUT_USER_API)
+    public void testUserWithName_withDefaultName_hsum() {
+        setSystemUserHeadless(true);
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        UserInfo systemUserWithName = mUms.userWithName(systemUser);
+        assertWithMessage("userWithName(systemUser)").that(systemUserWithName).isNotNull();
+        expect.withMessage("userWithName(systemUser)").that(systemUserWithName)
+                .isNotSameInstanceAs(systemUser);
+        expect.withMessage("systemUserWithName.name").that(systemUserWithName.name)
+                .isEqualTo(mUms.getHeadlessSystemUserName());
+        expect.withMessage("system.name").that(systemUser.name).isNull();
+    }
+
+    @Test
     public void testGetName_null() {
         assertThrows(NullPointerException.class, () -> mUms.getName(null));
     }
@@ -1223,10 +1198,33 @@ public final class UserManagerServiceMockedTest {
 
     /** Tests what happens when the {@link UserInfo} has a {@code null} name. */
     @Test
-    public void testGetName_withDefaultNames() {
+    public void testGetName_withDefaultNames_nonHsum() {
+        setSystemUserHeadless(false);
+
         var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
         expect.withMessage("name of system user").that(mUms.getName(systemUser))
                 .isEqualTo(mUms.getOwnerName());
+
+        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        expect.withMessage("name of main user").that(mUms.getName(mainUser))
+                .isEqualTo(mUms.getOwnerName());
+
+        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        expect.withMessage("name of guest user").that(mUms.getName(guestUser))
+                .isEqualTo(mUms.getGuestName());
+
+        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_LOGOUT_USER_API)
+    public void testGetName_withDefaultNames_hsum() {
+        setSystemUserHeadless(true);
+
+        var systemUser = new UserInfo(UserHandle.USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        expect.withMessage("name of system user").that(mUms.getName(systemUser))
+                .isEqualTo(mUms.getHeadlessSystemUserName());
 
         var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
         expect.withMessage("name of main user").that(mUms.getName(mainUser))
@@ -1372,9 +1370,24 @@ public final class UserManagerServiceMockedTest {
     }
 
     private void mockCanSwitchToHeadlessSystemUser(boolean canSwitch) {
+        boolean previousValue = mSpyResources
+                .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser);
+
+        Log.d(TAG, "mockCanSwitchToHeadlessSystemUser(): will return " + canSwitch + " instad of "
+                + previousValue);
         doReturn(canSwitch)
                 .when(mSpyResources)
                 .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser);
+    }
+
+    private void mockHsumBootStrategy(@BootStrategy int strategy) {
+        int previousValue = mSpyResources
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        Log.d(TAG,
+                "mockHsumBootStrategy(): will return " + strategy + " instead of " + previousValue);
+        doReturn(strategy)
+                .when(mSpyResources)
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
     }
 
     private void mockUserIsInCall(boolean isInCall) {

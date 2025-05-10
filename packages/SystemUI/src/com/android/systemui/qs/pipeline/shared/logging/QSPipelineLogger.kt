@@ -43,6 +43,7 @@ constructor(
         const val TILE_LIST_TAG = "QSTileListLog"
         const val AUTO_ADD_TAG = "QSAutoAddableLog"
         const val RESTORE_TAG = "QSRestoreLog"
+        const val REPOSITORY_TAG = "TileSpecRepositoryLog"
     }
 
     /**
@@ -268,6 +269,15 @@ constructor(
                 str2 = step.name
             },
             { "Restore $str2 processed by $str1" },
+        )
+    }
+
+    fun logTileSpecRespoitoryCreatedForUser(userId: Int) {
+        tileListLogBuffer.log(
+            REPOSITORY_TAG,
+            LogLevel.DEBUG,
+            { int1 = userId },
+            { "UserTileSpecRepository created for user $int1" },
         )
     }
 

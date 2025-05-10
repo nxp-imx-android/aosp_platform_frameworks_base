@@ -41,6 +41,7 @@ import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSI
 import static com.android.wm.shell.shared.ShellSharedConstants.KEY_EXTRA_SHELL_CAN_HAND_OFF_ANIMATION;
 import static com.android.wm.shell.shared.split.SplitBounds.KEY_EXTRA_SPLIT_BOUNDS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import android.annotation.Nullable;
@@ -80,10 +81,10 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
@@ -987,6 +988,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 cancel("transit_sleep");
                 return;
             }
+
+            if (info.getType() == TRANSIT_REMOVE_PIP && PipFlags.isPip2ExperimentEnabled()) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                        "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
+                // Cancel the merge if transition is removing PiP; PiP is on top of everything else.
+                cancel(mWillFinishToHome /* toHome */, mWillFinishToHome /* withScreenshots */,
+                        "transit_remove_pip");
+                return;
+            }
+
             if (mKeyguardLocked || (info.getFlags() & KEYGUARD_VISIBILITY_TRANSIT_FLAGS) != 0) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: keyguard is locked", mInstanceId);
@@ -1521,7 +1532,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "RecentsController.finishInner: PiP transaction %s merged",
                                 mPipTransaction);
-                        if (PipUtils.isPip2ExperimentEnabled()) {
+                        if (PipFlags.isPip2ExperimentEnabled()) {
                             // If this path is triggered, we are in auto-enter PiP flow in gesture
                             // navigation mode, which means "Recents" transition should be followed
                             // by a TRANSIT_PIP. Hence, we take the WCT was about to be sent

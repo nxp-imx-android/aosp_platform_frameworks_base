@@ -169,6 +169,7 @@ import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.ExceptionUtils;
+import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
@@ -212,6 +213,7 @@ import com.android.server.SystemConfig;
 import com.android.server.ThreadPriorityBooster;
 import com.android.server.Watchdog;
 import com.android.server.apphibernation.AppHibernationManagerInternal;
+import com.android.server.appwindowlayout.AppWindowLayoutSettingsService;
 import com.android.server.art.DexUseManagerLocal;
 import com.android.server.art.model.DeleteResult;
 import com.android.server.compat.CompatChange;
@@ -4063,14 +4065,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         // packageName -> list of components to send broadcasts now
         final ArrayMap<String, ArrayList<String>> sendNowBroadcasts = new ArrayMap<>(targetSize);
-        final List<PackageMetrics.ComponentStateMetrics> componentStateMetricsList =
-                new ArrayList<PackageMetrics.ComponentStateMetrics>();
+        final IntArray changedComponentIndices = new IntArray();
         boolean scheduleBroadcastMessage = false;
         boolean isSynchronous = false;
-        synchronized (mLock) {
-            Computer computer = snapshotComputer();
-            boolean anyChanged = false;
 
+        Computer computer = snapshotComputer();
+        boolean anyChanged = false;
+        synchronized (mLock) {
             for (int i = 0; i < targetSize; i++) {
                 if (!updateAllowed[i]) {
                     continue;
@@ -4079,18 +4080,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 final ComponentEnabledSetting setting = settings.get(i);
                 final String packageName = setting.getPackageName();
                 final PackageSetting packageSetting = pkgSettings.get(packageName);
-                final PackageMetrics.ComponentStateMetrics componentStateMetrics =
-                        new PackageMetrics.ComponentStateMetrics(setting,
-                                UserHandle.getUid(userId, packageSetting.getAppId()),
-                                setting.isComponent() ? computer.getComponentEnabledSettingInternal(
-                                        setting.getComponentName(), callingUid, userId)
-                                        : packageSetting.getEnabled(userId), callingUid);
                 if (!setEnabledSettingInternalLocked(computer, packageSetting, setting, userId,
                         callingPackage)) {
                     continue;
                 }
+
                 anyChanged = true;
-                componentStateMetricsList.add(componentStateMetrics);
+                changedComponentIndices.add(i);
 
                 if ((setting.getEnabledFlags() & PackageManager.SYNCHRONOUS) != 0) {
                     isSynchronous = true;
@@ -4111,7 +4107,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 } else {
                     mPendingBroadcasts.addComponent(userId, packageName, componentName);
                     Trace.instant(Trace.TRACE_TAG_PACKAGE_MANAGER, "setEnabledSetting broadcast: "
-                                   + componentName + ": " + setting.getEnabledState());
+                            + componentName + ": " + setting.getEnabledState());
                     scheduleBroadcastMessage = true;
                 }
             }
@@ -4141,6 +4137,27 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                                 0 /* arg2 */, "component_state_changed" /* obj */),
                         broadcastDelay);
             }
+        }
+
+        final List<PackageMetrics.ComponentStateMetrics> componentStateMetricsList =
+                new ArrayList<PackageMetrics.ComponentStateMetrics>();
+        final int listSize = changedComponentIndices.size();
+        for (int i = 0; i < listSize; i++) {
+            final int index = changedComponentIndices.get(i);
+            final ComponentEnabledSetting setting = settings.get(index);
+            final String packageName = setting.getPackageName();
+            final PackageStateInternal psi = computer.getPackageStateInternal(packageName);
+            // Gets component state from the old snapshot which was taken before the state change,
+            // because the metrics want to use the old state
+            final int componentOldState =
+                    setting.isComponent() ? computer.getComponentEnabledSettingInternal(
+                            setting.getComponentName(), callingUid, userId)
+                            : psi.getUserStateOrDefault(userId).getEnabledState();
+            final PackageMetrics.ComponentStateMetrics componentStateMetrics =
+                    new PackageMetrics.ComponentStateMetrics(setting,
+                            UserHandle.getUid(userId, psi.getAppId()),
+                            componentOldState, callingUid);
+            componentStateMetricsList.add(componentStateMetrics);
         }
 
         // Log the metrics when the component state is changed.
@@ -6481,6 +6498,20 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final PackageStateInternal packageState = snapshot
                     .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
             if (packageState == null) {
+                if (com.android.window.flags.Flags.restoreUserAspectRatioSettingsUsingService()) {
+                    // Pass along the request to `AppWindowLayoutSettingsService`, which will retry
+                    // to set the user aspect ratio after the package has been installed.
+                    final AppWindowLayoutSettingsService appWindowLayoutSettingsService =
+                            LocalServices.getService(AppWindowLayoutSettingsService.class);
+                    if (appWindowLayoutSettingsService == null) {
+                        Slog.w(TAG, "Could not find AppWindowLayoutSettingsService.");
+                        return;
+                    }
+                    // TODO(b/414381398): expose this API to the Settings app to call directly, so
+                    //  that `setUserMinAspectRatio()` becomes a no-op when app is not installed.
+                    appWindowLayoutSettingsService.awaitPackageInstallForAspectRatio(packageName,
+                            userId, aspectRatio);
+                }
                 return;
             }
 

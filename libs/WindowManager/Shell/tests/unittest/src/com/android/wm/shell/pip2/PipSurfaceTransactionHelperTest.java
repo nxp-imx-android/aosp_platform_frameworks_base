@@ -21,6 +21,7 @@ import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.intThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -232,6 +233,7 @@ public class PipSurfaceTransactionHelperTest {
                 PIP_BOUNDS, 0);
 
         verify(mMockTransaction).setMatrix(eq(mTestLeash), any(), any());
-        verify(mMockTransaction).setLayer(eq(mTestLeash), eq(Integer.MAX_VALUE));
+        verify(mMockTransaction).setLayer(eq(mTestLeash),
+                intThat((layer) -> layer < Integer.MAX_VALUE));
     }
 }

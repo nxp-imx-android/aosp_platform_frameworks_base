@@ -108,6 +108,7 @@ import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.CaptioningManager;
+import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.textclassifier.TextClassificationManager;
 
@@ -816,5 +817,12 @@ public class FrameworkServicesModule {
     @Nullable
     static SupervisionManager provideSupervisionManager(Context context) {
         return (SupervisionManager) context.getSystemService(Context.SUPERVISION_SERVICE);
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    static AutofillManager provideAutofillManager(Context context) {
+        return context.getSystemService(AutofillManager.class);
     }
 }

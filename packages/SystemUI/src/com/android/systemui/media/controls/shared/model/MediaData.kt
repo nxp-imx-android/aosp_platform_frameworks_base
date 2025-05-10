@@ -221,17 +221,46 @@ constructor(
 
     /** Action to invoke to transfer media playback to this device. */
     val connect: () -> Unit,
-)
+) {
+    fun equalsWithoutConnect(other: SuggestedMediaDeviceData?): Boolean {
+        if (other == null) {
+            return false
+        }
+
+        return name == other.name && connectionState == other.connectionState && icon == other.icon
+    }
+}
 
 /** Wrapper for data needed to support suggestions in the media player. */
 data class SuggestionData
 constructor(
     /** The suggested device for playback. Null if no suggestion exists. */
-    val suggestedMediaDeviceData: SuggestedMediaDeviceData?,
+    val suggestedMediaDeviceData: SuggestedMediaDeviceData? = null,
 
     /**
      * Callback to be invoked when the area to surface the suggestion becomes visible. Suggestion
      * providers are notified of the visibility update and can provide suggestions.
      */
     val onSuggestionSpaceVisible: Runnable,
-)
+) {
+
+    /**
+     * Check whether [SuggestionData] objects are equal in all fields except the underlying connect
+     * method, which can't be easily compared for equality, and is based on the underlying
+     * suggestion anyway.
+     */
+    fun equalsWithoutConnect(other: SuggestionData?): Boolean {
+        if (other == null) {
+            return false
+        }
+        if (onSuggestionSpaceVisible != other.onSuggestionSpaceVisible) {
+            return false
+        }
+
+        if (suggestedMediaDeviceData == null) {
+            return other.suggestedMediaDeviceData == null
+        }
+
+        return suggestedMediaDeviceData.equalsWithoutConnect(other.suggestedMediaDeviceData)
+    }
+}

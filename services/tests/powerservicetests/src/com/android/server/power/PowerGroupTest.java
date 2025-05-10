@@ -41,6 +41,8 @@ import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_BRIG
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -115,11 +117,13 @@ public class PowerGroupTest {
         when(mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()).thenReturn(true);
         mPowerGroup = new PowerGroup(GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
-                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags);
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  true);
     }
 
     @Test
     public void testWakePowerGroup() {
+        assertTrue(mPowerGroup.isDefaultGroupAdjacent());
         mPowerGroup.sleepLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_APPLICATION);
         verify(mWakefulnessCallbackMock).onWakefulnessChangedLocked(eq(GROUP_ID),
                 eq(WAKEFULNESS_ASLEEP), eq(TIMESTAMP1), eq(GO_TO_SLEEP_REASON_APPLICATION),
@@ -135,6 +139,7 @@ public class PowerGroupTest {
 
     @Test
     public void testDreamPowerGroup() {
+        assertTrue(mPowerGroup.isDefaultGroupAdjacent());
         assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
         mPowerGroup.dreamLocked(TIMESTAMP1, UID, /* allowWake= */ false);
         assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
@@ -147,6 +152,7 @@ public class PowerGroupTest {
 
     @Test
     public void testDozePowerGroup() {
+        assertTrue(mPowerGroup.isDefaultGroupAdjacent());
         assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
         mPowerGroup.dozeLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_TIMEOUT);
         assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_DOZING);
@@ -772,12 +778,25 @@ public class PowerGroupTest {
 
         mPowerGroup = new PowerGroup(NON_DEFAULT_GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
-                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags);
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  true);
 
         assertThat(mPowerGroup.getScreenDimDurationOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(DEFAULT_TIMEOUT);
         assertThat(mPowerGroup.getScreenOffTimeoutOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(DEFAULT_TIMEOUT);
+    }
+
+    @Test
+    public void test_isNotDefaultGroupAdjacent() {
+        LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
+        LocalServices.addService(VirtualDeviceManagerInternal.class, null);
+
+        mPowerGroup = new PowerGroup(NON_DEFAULT_GROUP_ID, mWakefulnessCallbackMock, mNotifier,
+                mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  false);
+        assertFalse(mPowerGroup.isDefaultGroupAdjacent());
     }
 
     @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
@@ -795,7 +814,8 @@ public class PowerGroupTest {
 
         mPowerGroup = new PowerGroup(NON_DEFAULT_GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
-                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags);
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  true);
 
         assertThat(mPowerGroup.getScreenDimDurationOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(DEFAULT_TIMEOUT);
@@ -825,7 +845,8 @@ public class PowerGroupTest {
 
         mPowerGroup = new PowerGroup(NON_DEFAULT_GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
-                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags);
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  true);
 
         assertThat(mPowerGroup.getScreenDimDurationOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(dimDurationOverride);
@@ -855,7 +876,8 @@ public class PowerGroupTest {
 
         mPowerGroup = new PowerGroup(NON_DEFAULT_GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
-                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags);
+                /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
+                /* isDefaultGroupAdjacent */  true);
 
         assertThat(mPowerGroup.getScreenDimDurationOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(screenOffTimeoutOverride);

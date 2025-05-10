@@ -1108,6 +1108,7 @@
   <java-symbol type="string" name="media_route_status_in_use" />
   <java-symbol type="string" name="owner_name" />
   <java-symbol type="string" name="guest_name" />
+  <java-symbol type="string" name="headless_system_user_name" />
   <java-symbol type="string" name="config_chooseAccountActivity" />
   <java-symbol type="string" name="config_chooseTypeAndAccountActivity" />
   <java-symbol type="string" name="config_chooserActivity" />
@@ -1692,7 +1693,6 @@
   <java-symbol type="xml" name="sms_short_codes" />
   <java-symbol type="xml" name="audio_assets" />
   <java-symbol type="xml" name="global_keys" />
-  <java-symbol type="xml" name="default_zen_mode_config" />
   <java-symbol type="xml" name="sms_7bit_translation_table" />
   <java-symbol type="xml" name="color_extraction" />
 
@@ -2362,6 +2362,7 @@
   <java-symbol type="string" name="config_dreamsDefaultComponent" />
   <java-symbol type="bool" name="config_dreamsDisabledByAmbientModeSuppressionConfig" />
   <java-symbol type="bool" name="config_dreamsOnlyEnabledForDockUser" />
+  <java-symbol type="bool" name="config_onlyDreamWhenWirelessChargingDefault" />
   <java-symbol type="integer" name="config_dreamOpenAnimationDuration" />
   <java-symbol type="integer" name="config_dreamCloseAnimationDuration" />
   <java-symbol type="array" name="config_supportedDreamComplications" />
@@ -3396,6 +3397,9 @@
   <java-symbol type="string" name="private_space_set_up_screen_lock_message" />
   <!-- Message shown in the dialog prompting the user to set up a screen lock to delete private space from Reset Options [CHAR LIMIT=120] -->
   <java-symbol type="string" name="private_space_set_up_screen_lock_for_reset" />
+
+  <!-- Allowlist of private space apps to receive ACTION_(LOCKED_)BOOT_COMPLETED intents immediately -->
+  <java-symbol type="array" name="config_privateSpaceBootCompletedImmediateReceivers" />
 
   <java-symbol type="string" name="deprecated_target_sdk_message" />
   <java-symbol type="string" name="deprecated_target_sdk_app_store" />
@@ -5457,6 +5461,7 @@
   <java-symbol type="string" name="screen_not_shared_sensitive_content"/>
 
   <java-symbol type="bool" name="config_batteryStatsResetOnUnplugHighBatteryLevel" />
+  <java-symbol type="integer" name="config_batteryStatsHighBatteryLevelAfterCharge" />
   <java-symbol type="bool" name="config_batteryStatsResetOnUnplugAfterSignificantCharge" />
   <java-symbol type="string" name="config_powerStatsThrottlePeriods" />
   <java-symbol type="integer" name="config_powerStatsAggregationPeriod" />
@@ -5464,6 +5469,8 @@
   <java-symbol type="integer" name="config_accumulatedBatteryUsageStatsSpanSize" />
   <java-symbol type="integer" name="config_batteryHistoryStorageSize" />
   <java-symbol type="integer" name="config_batteryHistoryDumpWindowSize" />
+  <java-symbol type="integer" name="config_batteryHistoryDumpCheckinWindowSize" />
+  <java-symbol type="integer" name="config_batteryHistoryDumpRealCheckinWindowSize" />
 
   <!--Dynamic Tokens-->
   <java-symbol name="system_accent1_0_light" type="color"/>
@@ -6202,4 +6209,10 @@
 
   <!-- The selection toolbar render service component name -->
   <java-symbol type="string" name="config_systemUiSelectionToolbarRenderService" />
+
+  <!-- Whether Sys UI reboot UI is prioritized for reocvery triggered UI. -->
+  <java-symbol type="bool" name="config_prioritizeSysUiForRecoveryRebootUi" />
+
+  <!-- Maximum number of devices that allows for audio sharing. -->
+  <java-symbol type="integer" name="config_audio_sharing_maximum_sinks" />
 </resources>

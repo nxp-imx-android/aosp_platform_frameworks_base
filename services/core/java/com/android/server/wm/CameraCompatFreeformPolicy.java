@@ -93,6 +93,11 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompa
         mIsRunning = true;
     }
 
+    int getCameraDeviceRotation() {
+        // TODO(b/276432441): Check device orientation when running on an external display.
+        return mDisplayContent.getRotation();
+    }
+
     /** Releases camera callback listener. */
     void dispose() {
         mCameraStateMonitor.removeCameraStateListener(this);

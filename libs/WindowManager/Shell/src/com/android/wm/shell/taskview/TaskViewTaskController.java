@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.gui.TrustedOverlay;
 import android.os.Binder;
@@ -426,10 +427,15 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                 // should always be consumed, otherwise the handle may block app content.
                 flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
             }
-            wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                    WindowInsets.Type.captionBar(), mCaptionInsets, null /* boundingRects */,
-                    flags);
-
+            if (com.android.window.flags.Flags.relativeInsets()) {
+                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                        WindowInsets.Type.captionBar(), Insets.of(0, mCaptionInsets.height(), 0, 0),
+                        null /* boundingRects */, flags);
+            } else {
+                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                        WindowInsets.Type.captionBar(), mCaptionInsets, null /* boundingRects */,
+                        flags);
+            }
         } else {
             wct.removeInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
                     WindowInsets.Type.captionBar());

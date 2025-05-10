@@ -42,7 +42,6 @@ import static com.android.server.wm.IdentifierProto.USER_ID;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainerChildProto.WINDOW_CONTAINER;
 import static com.android.server.wm.WindowContainerProto.CONFIGURATION_CONTAINER;
 import static com.android.server.wm.WindowContainerProto.IDENTIFIER;
@@ -227,14 +226,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     /** Interface for {@link #isAnimating} to check which cases for the container is animating. */
     public interface AnimationFlags {
         /**
-         * A bit flag indicates that {@link #isAnimating} should also return {@code true}
-         * even though the container is not yet animating, but the window container or its
-         * relatives as specified by PARENTS or CHILDREN are part of an {@link AppTransition}
-         * that is pending so an animation starts soon.
-         */
-        int TRANSITION = 1;
-
-        /**
          * A bit flag indicates that {@link #isAnimating} should also check if one of the
          * ancestors of the container are animating in addition to the container itself.
          */
@@ -287,6 +278,12 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * interface to other processes.
      */
     RemoteToken mRemoteToken = null;
+
+    /**
+     * This indicates whether this Container can hold tasks that can be repositioned on screen
+     * using the {@link android.app.ActivityManager.AppTask#moveTaskTo} method.
+     */
+    private boolean mIsTaskMoveAllowed = false;
 
     /** This isn't participating in a sync. */
     public static final int SYNC_STATE_NONE = 0;
@@ -398,6 +395,21 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             return;
         }
 
+        final int id = provider.getId();
+        final InsetsSource source = new InsetsSource(id, provider.getType());
+        final int frameSource = provider.getSource();
+        if (frameSource == InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE) {
+            source.setFrame(provider.getArbitraryRectangle());
+        } else if (frameSource == InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS) {
+            source.setAttachedInsets(provider.getInsetsSize());
+        } else {
+            throw new IllegalArgumentException("The local insets source is using an unsupported"
+                    + " source: " + provider);
+        }
+        source.updateSideHint(getBounds()).setBoundingRects(provider.getBoundingRects());
+        if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
+            source.setFlags(provider.getFlags());
+        }
         if (mInsetsOwnerDeathRecipientMap == null) {
             mInsetsOwnerDeathRecipientMap = new ArrayMap<>();
         }
@@ -412,7 +424,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             }
             mInsetsOwnerDeathRecipientMap.put(owner, deathRecipient);
         }
-        final int id = provider.getId();
         deathRecipient.addSourceId(id);
         if (mLocalInsetsSources == null) {
             mLocalInsetsSources = new SparseArray<>();
@@ -422,13 +433,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
                 Slog.d(TAG, "The local insets source for this " + provider
                         + " already exists. Overwriting.");
             }
-        }
-        final InsetsSource source = new InsetsSource(id, provider.getType());
-        source.setFrame(provider.getArbitraryRectangle())
-                .updateSideHint(getBounds())
-                .setBoundingRects(provider.getBoundingRects());
-        if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
-            source.setFlags(provider.getFlags());
         }
         mLocalInsetsSources.put(id, source);
         mDisplayContent.getInsetsStateController().updateAboveInsetsState(true);
@@ -1228,9 +1232,8 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      *
      * Note that you can give a combination of bitmask flags to specify targets and condition for
      * checking animating status.
-     * e.g. {@code isAnimating(TRANSITION | PARENT)} returns {@code true} if either this
-     * container itself or one of its parents is running an animation or waiting for an app
-     * transition.
+     * e.g. {@code isAnimating(PARENT)} returns {@code true} if either thiscontainer itself or one
+     * of its parents is running an animation.
      *
      * Note that TRANSITION propagates to parents and children as well.
      *
@@ -1239,7 +1242,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * @param typesToCheck The combination of bitmask {@link AnimationType} to compare when
      *                     determining if animating.
      *
-     * @see AnimationFlags#TRANSITION
      * @see AnimationFlags#PARENTS
      * @see AnimationFlags#CHILDREN
      */
@@ -1248,19 +1250,10 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     /**
-     * @deprecated Use {@link #isAnimating(int, int)}
-     * TODO (b/152333373): Migrate calls to use isAnimating with specified animation type
-     */
-    @Deprecated
-    final boolean isAnimating(int flags) {
-        return isAnimating(flags, ANIMATION_TYPE_ALL);
-    }
-
-    /**
      * @return Whether our own container running an animation at the moment.
      */
     final boolean isAnimating() {
-        return isAnimating(0 /* self only */);
+        return isAnimating(0 /* self only */, ANIMATION_TYPE_ALL);
     }
 
     /** Returns {@code true} if itself or its parent container of the window is in transition. */
@@ -1269,9 +1262,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     boolean isExitAnimationRunningSelfOrChild() {
-        if (!mTransitionController.isShellTransitionsEnabled()) {
-            return isAnimating(TRANSITION | CHILDREN, WindowState.EXIT_ANIMATING_TYPES);
-        }
         // Only check leaf containers because inTransition() includes parent.
         if (mChildren.isEmpty() && inTransition()) {
             return true;
@@ -3130,9 +3120,8 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      *
      * Note that you can give a combination of bitmask flags to specify targets and condition for
      * checking animating status.
-     * e.g. {@code isAnimating(TRANSITION | PARENT)} returns {@code true} if either this
-     * container itself or one of its parents is running an animation or waiting for an app
-     * transition.
+     * e.g. {@code isAnimating(PARENT)} returns {@code true} if either this container itself or one
+     * of its parents is running an animation.
      *
      * Note that TRANSITION propagates to parents and children as well.
      *
@@ -3141,7 +3130,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * @param typesToCheck The combination of bitmask {@link AnimationType} to compare when
      *                     determining if animating.
      *
-     * @see AnimationFlags#TRANSITION
      * @see AnimationFlags#PARENTS
      * @see AnimationFlags#CHILDREN
      */
@@ -3247,6 +3235,9 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
         if (mSafeRegionBounds != null) {
             pw.println(prefix + "mSafeRegionBounds=" + mSafeRegionBounds);
+        }
+        if (mIsTaskMoveAllowed) {
+            pw.println(prefix + "TaskMoveAllowed");
         }
     }
 
@@ -3900,5 +3891,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
     int getSyncTransactionCommitCallbackDepth() {
         return mSyncTransactionCommitCallbackDepth;
+    }
+
+    void setIsTaskMoveAllowed(boolean isTaskMoveAllowed) {
+        mIsTaskMoveAllowed = isTaskMoveAllowed;
+    }
+
+    boolean getIsTaskMoveAllowed() {
+        return mIsTaskMoveAllowed;
     }
 }

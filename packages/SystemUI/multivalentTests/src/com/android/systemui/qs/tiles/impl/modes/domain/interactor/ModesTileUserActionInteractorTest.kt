@@ -52,7 +52,6 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(android.app.Flags.FLAG_MODES_UI)
 class ModesTileUserActionInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope

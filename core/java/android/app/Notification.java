@@ -813,6 +813,10 @@ public class Notification implements Parcelable
             return style.getClass() == ProgressStyle.class;
         }
 
+        if (Flags.apiMetricStyle()) {
+            return style.getClass() == MetricStyle.class;
+        }
+
         return false;
     }
 
@@ -2774,12 +2778,9 @@ public class Notification implements Parcelable
     public Notification()
     {
         this.when = System.currentTimeMillis();
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        } else {
-            this.creationTime = System.currentTimeMillis();
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
+
         this.priority = PRIORITY_DEFAULT;
     }
 
@@ -2790,10 +2791,9 @@ public class Notification implements Parcelable
     public Notification(Context context, int icon, CharSequence tickerText, long when,
             CharSequence contentTitle, CharSequence contentText, Intent contentIntent)
     {
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
+
         new Builder(context)
                 .setWhen(when)
                 .setSmallIcon(icon)
@@ -2823,12 +2823,8 @@ public class Notification implements Parcelable
         this.icon = icon;
         this.tickerText = tickerText;
         this.when = when;
-        if (Flags.sortSectionByTime()) {
-            creationTime = when;
-            extras.putBoolean(EXTRA_SHOW_WHEN, true);
-        } else {
-            this.creationTime = System.currentTimeMillis();
-        }
+        creationTime = when;
+        extras.putBoolean(EXTRA_SHOW_WHEN, true);
     }
 
     /**
@@ -3298,6 +3294,7 @@ public class Notification implements Parcelable
         return notificationStyle == null
                 || BigTextStyle.class.equals(notificationStyle)
                 || CallStyle.class.equals(notificationStyle)
+                || MetricStyle.class.equals(notificationStyle)
                 || ProgressStyle.class.equals(notificationStyle);
     }
 
@@ -7657,10 +7654,6 @@ public class Notification implements Parcelable
                 mN.extras.putAll(saveExtras);
             }
 
-            if (!Flags.sortSectionByTime()) {
-                mN.creationTime = System.currentTimeMillis();
-            }
-
             // lazy stuff from mContext; see comment in Builder(Context, Notification)
             Notification.addFieldsFromContext(mContext, mN);
 
@@ -8258,10 +8251,8 @@ public class Notification implements Parcelable
      * @hide
      */
     public long getWhen() {
-        if (Flags.sortSectionByTime()) {
-            if (when == 0) {
-                return creationTime;
-            }
+        if (when == 0) {
+            return creationTime;
         }
         return when;
     }
@@ -8271,10 +8262,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean showsTime() {
-        if (Flags.sortSectionByTime()) {
-            return extras.getBoolean(EXTRA_SHOW_WHEN);
-        }
-        return when != 0 && extras.getBoolean(EXTRA_SHOW_WHEN);
+        return extras.getBoolean(EXTRA_SHOW_WHEN);
     }
 
     /**
@@ -8282,10 +8270,7 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean showsChronometer() {
-        if (Flags.sortSectionByTime()) {
-            return extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
-        }
-        return when != 0 && extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
+        return extras.getBoolean(EXTRA_SHOW_CHRONOMETER);
     }
 
     /**
@@ -8328,6 +8313,11 @@ public class Notification implements Parcelable
         if (Flags.apiRichOngoing()) {
             if (templateClass.equals(ProgressStyle.class.getName())) {
                 return ProgressStyle.class;
+            }
+        }
+        if (Flags.apiMetricStyle()) {
+            if (templateClass.equals(MetricStyle.class.getName())) {
+                return MetricStyle.class;
             }
         }
         return null;
@@ -11460,6 +11450,85 @@ public class Notification implements Parcelable
             return !Objects.equals(mCallType, otherS.mCallType)
                     || !Objects.equals(mPerson, otherS.mPerson)
                     || !Objects.equals(mVerificationText, otherS.mVerificationText);
+        }
+    }
+
+    /**
+     * A notification style which shows up to 3 metrics when expanded.
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    public static class MetricStyle extends Notification.Style {
+        // TODO(b/415828647): Implement this class
+
+        /** @hide */
+        @Override
+        public boolean areNotificationsVisiblyDifferent(Style other) {
+            if (other == null || getClass() != other.getClass()) {
+                return true;
+            }
+            // TODO(b/415828647): Implement for MetricStyle
+            return false;
+        }
+
+        /** @hide */
+        @Override
+        public void purgeResources() {
+            super.purgeResources();
+            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
+        }
+
+        /** @hide */
+        @Override
+        public void reduceImageSizes(Context context) {
+            super.reduceImageSizes(context);
+            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
+        }
+
+        /** @hide */
+        @Override
+        public void addExtras(Bundle extras) {
+            super.addExtras(extras);
+            // TODO(b/415828647): Implement for MetricStyle
+        }
+
+        /** @hide */
+        @Override
+        protected void restoreFromExtras(Bundle extras) {
+            super.restoreFromExtras(extras);
+            // TODO(b/415828647): Implement for MetricStyle
+        }
+
+        /** @hide */
+        @Override
+        public boolean displayCustomViewInline() {
+            // This is a lie; True is returned for metric notifications to make sure
+            // that the custom view is not used instead of the template, but it will not
+            // actually be included.
+            return true;
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeHeadsUpContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeExpandedContentView() {
+            return null;
+            // TODO(b/415828647): Implement for MetricStyle
+            // Remember: Add new layout resources to isStandardLayout()
         }
     }
 

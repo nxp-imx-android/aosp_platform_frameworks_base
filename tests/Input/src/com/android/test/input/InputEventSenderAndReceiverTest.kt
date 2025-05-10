@@ -22,6 +22,8 @@ import android.view.InputChannel
 import android.view.InputEvent
 import android.view.InputEventReceiver
 import android.view.KeyEvent
+import com.android.cts.input.inputeventmatchers.withKeyAction
+import com.android.cts.input.inputeventmatchers.withKeyCode
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -62,6 +64,19 @@ private class CrashingInputEventReceiver(channel: InputChannel, looper: Looper) 
     }
 }
 
+/**
+ * When this input receiver gets an input event, it will call "dispose" on itself. This could happen
+ * when a window wants to close itself when the user presses Esc or clicks the "close" button, for
+ * example.
+ */
+private class DisposingInputEventReceiver(channel: InputChannel, looper: Looper) :
+    SpyInputEventReceiver(channel, looper) {
+    override fun onInputEvent(event: InputEvent) {
+        super.onInputEvent(event)
+        dispose()
+    }
+}
+
 class InputEventSenderAndReceiverTest {
     companion object {
         private const val TAG = "InputEventSenderAndReceiverTest"
@@ -91,10 +106,9 @@ class InputEventSenderAndReceiverTest {
         val key = getTestKeyEvent()
         val seq = 10
         mSender.sendInputEvent(seq, key)
-        val receivedKey = mReceiver.getInputEvent() as KeyEvent
 
         // Check receiver
-        assertKeyEvent(key, receivedKey)
+        mReceiver.assertReceivedKey(withKeyAction(key.getAction()))
 
         // Check sender
         mSender.assertReceivedFinishedSignal(seq, handled = true)
@@ -153,6 +167,48 @@ class InputEventSenderAndReceiverTest {
         val seq = 11
         sender.sendInputEvent(seq, key)
         sender.assertReceivedFinishedSignal(seq, handled = true)
+
+        // Clean up
+        sender.dispose()
+        receiverThread.quitSafely()
+    }
+
+    /**
+     * If a receiver calls "dispose", it should not receive any more events.
+     *
+     * In this test, we are reusing the 'mHandlerThread', but we are creating new sender and
+     * receiver.
+     *
+     * The receiver calls "dispose" after it receives the first event. So if the sender sends more
+     * events, the receiver shouldn't get any more because it will have already called "dispose"
+     * after the first one.
+     *
+     * To reduce the flakiness in the test (so that it doesn't falsely pass), we only create the
+     * receiver after we are done writing the events to the socket. This ensures that there's a
+     * second event available for consumption after the first one is processed.
+     */
+    @Test
+    fun testNoEventsAfterDispose() {
+        val channels = InputChannel.openInputChannelPair("TestChannel2")
+        val sender = SpyInputEventSender(channels[0], mHandlerThread.looper)
+        val key = getTestKeyEvent()
+        val seq = 11
+        sender.sendInputEvent(seq, key)
+        sender.sendInputEvent(seq + 1, key)
+        sender.sendInputEvent(seq + 2, key)
+
+        // Need a separate thread for the receiver so that the events can be processed in parallel
+        val receiverThread = HandlerThread("Dispose when input event comes in")
+        receiverThread.start()
+        val disposingReceiver = DisposingInputEventReceiver(channels[1], receiverThread.looper)
+
+        disposingReceiver.assertReceivedKey(withKeyCode(key.keyCode))
+        // We can't safely check for the arrival of the "Finished" signal here. Since the receiver
+        // closed the input channel, the finished event may or may not arrive.
+        // See InputChannel_test for an explanation, and a smaller unit test that illustrates this.
+        // No more events should be delivered because the receiver has disposed itself after the
+        // first one.
+        disposingReceiver.assertNoEvents()
 
         // Clean up
         sender.dispose()

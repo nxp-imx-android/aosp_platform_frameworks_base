@@ -16,32 +16,44 @@
 
 package com.android.systemui.media.remedia.data.repository
 
+import android.content.packageManager
 import android.media.session.MediaController
 import android.media.session.MediaSession
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
+import com.android.systemui.media.remedia.shared.model.MediaColorScheme
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MediaRepositoryTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val drawable = context.getDrawable(R.drawable.ic_music_note)!!
+    private val kosmos =
+        testKosmos().apply {
+            whenever(packageManager.getApplicationIcon(anyString())).thenReturn(drawable)
+            context.setMockPackageManager(packageManager)
+        }
     private val testScope = kosmos.testScope
     private val session = MediaSession(context, "MediaRepositoryTestSession")
 
@@ -62,11 +74,11 @@ class MediaRepositoryTest : SysuiTestCase() {
                 MediaData()
                     .copy(token = session.sessionToken, active = true, instanceId = instanceId)
 
-            underTest.addCurrentUserMediaEntry(userMedia)
+            addCurrentUserMediaEntry(userMedia)
 
             assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
 
-            underTest.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            addCurrentUserMediaEntry(userMedia.copy(active = false))
 
             assertThat(currentUserEntries?.get(instanceId)).isNotEqualTo(userMedia)
             assertThat(currentUserEntries?.get(instanceId)?.active).isFalse()
@@ -80,7 +92,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(123)
             val userMedia = MediaData().copy(token = session.sessionToken, instanceId = instanceId)
 
-            underTest.addCurrentUserMediaEntry(userMedia)
+            addCurrentUserMediaEntry(userMedia)
 
             assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
             assertThat(underTest.removeCurrentUserMediaEntry(instanceId, userMedia)).isTrue()
@@ -94,7 +106,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(123)
             val userMedia = MediaData().copy(token = session.sessionToken, instanceId = instanceId)
 
-            underTest.addCurrentUserMediaEntry(userMedia)
+            addCurrentUserMediaEntry(userMedia)
 
             assertThat(currentUserEntries?.get(instanceId)).isEqualTo(userMedia)
 
@@ -140,15 +152,20 @@ class MediaRepositoryTest : SysuiTestCase() {
             val playingData = createMediaData("app1", true, LOCAL, false, playingInstanceId)
             val remoteData = createMediaData("app2", true, REMOTE, false, remoteInstanceId)
 
-            underTest.addCurrentUserMediaEntry(playingData)
-            underTest.addCurrentUserMediaEntry(remoteData)
-            runCurrent()
+            addCurrentUserMediaEntry(playingData)
+            addCurrentUserMediaEntry(remoteData)
 
             assertThat(underTest.currentMedia.size).isEqualTo(2)
             assertThat(underTest.currentMedia)
                 .containsExactly(
-                    playingData.toDataModel(underTest.currentMedia[0].controller),
-                    remoteData.toDataModel(underTest.currentMedia[1].controller),
+                    playingData.toDataModel(
+                        underTest.currentMedia[0].controller,
+                        underTest.currentMedia[0].colorScheme,
+                    ),
+                    remoteData.toDataModel(
+                        underTest.currentMedia[1].controller,
+                        underTest.currentMedia[1].colorScheme,
+                    ),
                 )
                 .inOrder()
         }
@@ -161,30 +178,40 @@ class MediaRepositoryTest : SysuiTestCase() {
             var playingData1 = createMediaData("app1", true, LOCAL, false, playingInstanceId1)
             var playingData2 = createMediaData("app2", false, LOCAL, false, playingInstanceId2)
 
-            underTest.addCurrentUserMediaEntry(playingData1)
-            underTest.addCurrentUserMediaEntry(playingData2)
-            runCurrent()
+            addCurrentUserMediaEntry(playingData1)
+            addCurrentUserMediaEntry(playingData2)
 
             assertThat(underTest.currentMedia.size).isEqualTo(2)
             assertThat(underTest.currentMedia)
                 .containsExactly(
-                    playingData1.toDataModel(underTest.currentMedia[0].controller),
-                    playingData2.toDataModel(underTest.currentMedia[1].controller),
+                    playingData1.toDataModel(
+                        underTest.currentMedia[0].controller,
+                        underTest.currentMedia[0].colorScheme,
+                    ),
+                    playingData2.toDataModel(
+                        underTest.currentMedia[1].controller,
+                        underTest.currentMedia[1].colorScheme,
+                    ),
                 )
                 .inOrder()
 
             playingData1 = createMediaData("app1", false, LOCAL, false, playingInstanceId1)
             playingData2 = createMediaData("app2", true, LOCAL, false, playingInstanceId2)
 
-            underTest.addCurrentUserMediaEntry(playingData1)
-            underTest.addCurrentUserMediaEntry(playingData2)
-            runCurrent()
+            addCurrentUserMediaEntry(playingData1)
+            addCurrentUserMediaEntry(playingData2)
 
             assertThat(underTest.currentMedia.size).isEqualTo(2)
             assertThat(underTest.currentMedia)
                 .containsExactly(
-                    playingData1.toDataModel(underTest.currentMedia[0].controller),
-                    playingData2.toDataModel(underTest.currentMedia[1].controller),
+                    playingData1.toDataModel(
+                        underTest.currentMedia[0].controller,
+                        underTest.currentMedia[0].colorScheme,
+                    ),
+                    playingData2.toDataModel(
+                        underTest.currentMedia[1].controller,
+                        underTest.currentMedia[1].colorScheme,
+                    ),
                 )
                 .inOrder()
 
@@ -194,8 +221,14 @@ class MediaRepositoryTest : SysuiTestCase() {
             assertThat(underTest.currentMedia.size).isEqualTo(2)
             assertThat(underTest.currentMedia)
                 .containsExactly(
-                    playingData2.toDataModel(underTest.currentMedia[0].controller),
-                    playingData1.toDataModel(underTest.currentMedia[1].controller),
+                    playingData2.toDataModel(
+                        underTest.currentMedia[0].controller,
+                        underTest.currentMedia[0].colorScheme,
+                    ),
+                    playingData1.toDataModel(
+                        underTest.currentMedia[1].controller,
+                        underTest.currentMedia[1].colorScheme,
+                    ),
                 )
                 .inOrder()
         }
@@ -214,15 +247,15 @@ class MediaRepositoryTest : SysuiTestCase() {
             val stoppedAndRemoteData = createMediaData("app4", false, REMOTE, false, instanceId4)
             val canResumeData = createMediaData("app5", false, LOCAL, true, instanceId5)
 
-            underTest.addCurrentUserMediaEntry(stoppedAndLocalData)
+            addCurrentUserMediaEntry(stoppedAndLocalData)
 
-            underTest.addCurrentUserMediaEntry(stoppedAndRemoteData)
+            addCurrentUserMediaEntry(stoppedAndRemoteData)
 
-            underTest.addCurrentUserMediaEntry(canResumeData)
+            addCurrentUserMediaEntry(canResumeData)
 
-            underTest.addCurrentUserMediaEntry(playingAndLocalData)
+            addCurrentUserMediaEntry(playingAndLocalData)
 
-            underTest.addCurrentUserMediaEntry(playingAndRemoteData)
+            addCurrentUserMediaEntry(playingAndRemoteData)
 
             underTest.reorderMedia()
             runCurrent()
@@ -230,14 +263,34 @@ class MediaRepositoryTest : SysuiTestCase() {
             assertThat(underTest.currentMedia.size).isEqualTo(5)
             assertThat(underTest.currentMedia)
                 .containsExactly(
-                    playingAndLocalData.toDataModel(underTest.currentMedia[0].controller),
-                    playingAndRemoteData.toDataModel(underTest.currentMedia[1].controller),
-                    stoppedAndRemoteData.toDataModel(underTest.currentMedia[2].controller),
-                    stoppedAndLocalData.toDataModel(underTest.currentMedia[3].controller),
-                    canResumeData.toDataModel(underTest.currentMedia[4].controller),
+                    playingAndLocalData.toDataModel(
+                        underTest.currentMedia[0].controller,
+                        underTest.currentMedia[0].colorScheme,
+                    ),
+                    playingAndRemoteData.toDataModel(
+                        underTest.currentMedia[1].controller,
+                        underTest.currentMedia[1].colorScheme,
+                    ),
+                    stoppedAndRemoteData.toDataModel(
+                        underTest.currentMedia[2].controller,
+                        underTest.currentMedia[2].colorScheme,
+                    ),
+                    stoppedAndLocalData.toDataModel(
+                        underTest.currentMedia[3].controller,
+                        underTest.currentMedia[3].colorScheme,
+                    ),
+                    canResumeData.toDataModel(
+                        underTest.currentMedia[4].controller,
+                        underTest.currentMedia[4].colorScheme,
+                    ),
                 )
                 .inOrder()
         }
+
+    private fun TestScope.addCurrentUserMediaEntry(data: MediaData) {
+        underTest.addCurrentUserMediaEntry(data)
+        runCurrent()
+    }
 
     private fun createMediaData(
         app: String,
@@ -248,6 +301,7 @@ class MediaRepositoryTest : SysuiTestCase() {
     ): MediaData {
         return MediaData(
             token = session.sessionToken,
+            packageName = "packageName",
             playbackLocation = playbackLocation,
             resumption = isResume,
             notificationKey = "key: $app",
@@ -256,16 +310,20 @@ class MediaRepositoryTest : SysuiTestCase() {
         )
     }
 
-    private fun MediaData.toDataModel(mediaController: MediaController): MediaDataModel {
+    private fun MediaData.toDataModel(
+        mediaController: MediaController,
+        colorScheme: MediaColorScheme?,
+    ): MediaDataModel {
         return MediaDataModel(
             instanceId = instanceId,
             appUid = appUid,
             packageName = packageName,
             appName = app.toString(),
-            appIcon = null,
+            appIcon = Icon.Loaded(drawable, null),
             background = null,
             title = song.toString(),
             subtitle = artist.toString(),
+            colorScheme = colorScheme,
             notificationActions = actions,
             playbackStateActions = semanticActions,
             outputDevice = device,

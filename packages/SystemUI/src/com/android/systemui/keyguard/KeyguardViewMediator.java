@@ -870,6 +870,10 @@ public class KeyguardViewMediator implements CoreStartable,
 
         @Override
         public void onStrongAuthStateChanged(int userId) {
+            // Do not react to strong auth changes of users that aren't the current user
+            if (userId != mSelectedUserInteractor.getSelectedUserId()) {
+                return;
+            }
             if (mLockPatternUtils.isUserInLockdown(mSelectedUserInteractor.getSelectedUserId())) {
                 doKeyguardLocked(null);
             }

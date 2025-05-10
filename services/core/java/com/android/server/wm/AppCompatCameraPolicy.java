@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
@@ -25,6 +26,7 @@ import android.annotation.Nullable;
 import android.app.CameraCompatTaskInfo;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
+import android.view.Surface;
 import android.widget.Toast;
 import android.window.DesktopModeFlags;
 
@@ -269,6 +271,14 @@ class AppCompatCameraPolicy {
         return cameraPolicy != null && cameraPolicy.mCameraCompatFreeformPolicy != null
                 ? cameraPolicy.mCameraCompatFreeformPolicy.getCameraCompatMode(activity)
                 : CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE;
+    }
+
+    @Surface.Rotation
+    static int getCameraDeviceRotation(@NonNull ActivityRecord activity) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        return cameraPolicy != null && cameraPolicy.mCameraCompatFreeformPolicy != null
+                ? cameraPolicy.mCameraCompatFreeformPolicy.getCameraDeviceRotation()
+                : ROTATION_UNDEFINED;
     }
 
     /**

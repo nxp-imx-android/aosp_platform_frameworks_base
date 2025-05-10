@@ -63,6 +63,12 @@ public class InsetsFrameProvider implements Parcelable {
      */
     public static final int SOURCE_ARBITRARY_RECTANGLE = 3;
 
+    /**
+     * Uses the container bounds to which the insets attached as the source.
+     * Only use this if the insets is a local insets only applied to the children of the container.
+     */
+    public static final int SOURCE_ATTACHED_CONTAINER_BOUNDS = 4;
+
     private final int mId;
 
     /**
@@ -277,6 +283,8 @@ public class InsetsFrameProvider implements Parcelable {
                 return "FRAME";
             case SOURCE_ARBITRARY_RECTANGLE:
                 return "ARBITRARY_RECTANGLE";
+            case SOURCE_ATTACHED_CONTAINER_BOUNDS:
+                return "ATTACHED_CONTAINER_BOUNDS";
         }
         return "UNDEFINED";
     }

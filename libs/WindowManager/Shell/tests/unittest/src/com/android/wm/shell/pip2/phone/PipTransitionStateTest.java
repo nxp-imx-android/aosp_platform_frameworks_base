@@ -268,6 +268,27 @@ public class PipTransitionStateTest extends ShellTestCase {
     }
 
     @Test
+    public void testSetIsPipBoundsChangingWithDisplay_toFalse_thenIdle() {
+        when(mMainHandler.obtainMessage(anyInt())).thenAnswer(invocation ->
+                new Message().setWhat(invocation.getArgument(0)));
+
+        // Pick an initially idle ENTERED_PIP state
+        mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
+        // Enter an non-idle state as PiP bounds change with the display
+        mPipTransitionState.setIsPipBoundsChangingWithDisplay(true);
+
+        final Runnable onIdleRunnable = mock(Runnable.class);
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(onIdleRunnable);
+
+        // We are supposed to be in a non-idle state, so the runnable should not be posted yet.
+        verify(mMainHandler, never()).sendMessage(any());
+
+        mPipTransitionState.setIsPipBoundsChangingWithDisplay(false);
+        verify(mMainHandler, times(1))
+                .sendMessage(argThat(msg -> msg.getCallback() == onIdleRunnable));
+    }
+
+    @Test
     public void testPostState_noImmediateStateChange_postedOnHandler() {
         mPipTransitionState.setState(PipTransitionState.UNDEFINED);
         mPipTransitionState.postState(PipTransitionState.SCHEDULED_ENTER_PIP);

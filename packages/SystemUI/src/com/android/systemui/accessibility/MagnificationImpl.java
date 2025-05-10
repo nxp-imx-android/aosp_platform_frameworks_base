@@ -532,6 +532,16 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 }
 
                 @Override
+                public void onSetMagnifyTyping(int displayId, boolean enable) {
+                    mHandler.post(() -> onSetMagnifyTypingInternal(displayId, enable));
+                }
+
+                @Override
+                public void onSetMagnifyKeyboard(int displayId, boolean enable) {
+                    mHandler.post(() -> onSetMagnifyKeyboardInternal(displayId, enable));
+                }
+
+                @Override
                 public void onEditMagnifierSizeMode(int displayId, boolean enable) {
                     mHandler.post(() -> onEditMagnifierSizeModeInternal(displayId, enable));
                     mA11yLogger.log(enable
@@ -580,6 +590,24 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 mWindowMagnificationControllerSupplier.get(displayId);
         if (windowMagnificationController != null) {
             windowMagnificationController.setDiagonalScrolling(enable);
+        }
+    }
+
+    @MainThread
+    private void onSetMagnifyTypingInternal(int displayId, boolean enable) {
+        final WindowMagnificationController windowMagnificationController =
+                mWindowMagnificationControllerSupplier.get(displayId);
+        if (windowMagnificationController != null) {
+            windowMagnificationController.setMagnifyTyping(enable);
+        }
+    }
+
+    @MainThread
+    private void onSetMagnifyKeyboardInternal(int displayId, boolean enable) {
+        final WindowMagnificationController windowMagnificationController =
+                mWindowMagnificationControllerSupplier.get(displayId);
+        if (windowMagnificationController != null) {
+            windowMagnificationController.setMagnifyKeyboard(enable);
         }
     }
 

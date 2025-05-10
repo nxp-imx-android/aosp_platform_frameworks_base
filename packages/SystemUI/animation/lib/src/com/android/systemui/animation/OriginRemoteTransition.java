@@ -57,7 +57,6 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
     private final boolean mIsEntry;
     private final UIComponent mOrigin;
     private final TransitionPlayer mPlayer;
-    private final long mDuration;
     private final Handler mHandler;
 
     @Nullable private SurfaceControl.Transaction mStartTransaction;
@@ -74,13 +73,11 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             boolean isEntry,
             UIComponent origin,
             TransitionPlayer player,
-            long duration,
             Handler handler) {
         mContext = context;
         mIsEntry = isEntry;
         mOrigin = origin;
         mPlayer = player;
-        mDuration = duration;
         mHandler = handler;
     }
 
@@ -143,23 +140,25 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             finishAnimation(/* finished= */ false);
             return;
         }
+        // Initialized anim controller and configure for player
+        mAnimationController = new TransitionAnimationController(mHandler, this);
+
         // Notify player that we are starting.
-        mPlayer.onStart(info, states, mStartTransaction, mOrigin, mOriginTransaction);
+        mPlayer.onStart(mAnimationController,
+                info,
+                states,
+                mStartTransaction,
+                mOrigin,
+                mOriginTransaction);
 
         // Apply the initial transactions in case the player forgot to apply them.
         mOriginTransaction.commit();
         mStartTransaction.apply();
 
-        // configure/start animation controller
-        mAnimationController = new TransitionAnimationController(mHandler, this);
-        mAnimationController.addValueAnimation(
-                TAG + (mIsEntry ? "-entryAnimator" : "-exitAnimator"),
-                TransitionAnimationController.LINEAR_INTERPOLATOR,
-                mDuration,
-                0,
-                0f,
-                1f);
-        mAnimationController.startAnimations();
+        // start animators which were configured in onStart
+        if (!mAnimationController.startAnimations()) {
+            finishAnimation(/* finished= */ false);
+        }
     }
 
     /**
@@ -169,7 +168,14 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
      */
     @Override
     public void onAnimationFinished(String animatorId, boolean canceled) {
-        finishAnimation(/* finished= */ !canceled);
+        Log.d(TAG, "onAnimationFinished: " + animatorId + " canceled: " + canceled);
+        maybeFinishAnimation(canceled);
+    }
+
+    private void maybeFinishAnimation(boolean canceled) {
+        if (!mAnimationController.checkAnimationsRunning()) {
+            finishAnimation(/* finished= */ !canceled);
+        }
     }
 
     /**
@@ -180,7 +186,7 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
      */
     @Override
     public void onAnimationProgressUpdate(String animatorId, float progress, boolean isFirstFrame) {
-        mPlayer.onProgress(progress);
+        mPlayer.onProgress(animatorId, progress);
     }
 
     private boolean prepareUIs(TransitionInfo info) {
@@ -441,7 +447,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
                 /* alpha= */ 1.0f,
                 /* visible= */ true,
                 /* bounds= */ maxBounds,
-                /* baseBounds= */ maxBounds);
+                /* baseBounds= */ maxBounds,
+                /* enableBackgroundDimming= */ isOpening);
     }
 
     private static void applyWindowAnimationStates(
@@ -529,6 +536,7 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
          * expected to apply the {@link WindowAnimationState} before continuing the transition.
          */
         default void onStart(
+                TransitionAnimationController animationController,
                 TransitionInfo transitionInfo,
                 @Nullable WindowAnimationState[] states,
                 SurfaceControl.Transaction sfTransaction,
@@ -549,21 +557,30 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             applyWindowAnimationStates(transitionInfo, states, closingApp, openingApp);
 
             // Start.
-            onStart(transactions, origin, closingApp, openingApp);
+            onStart(animationController, transactions, origin, closingApp, openingApp);
         }
 
         /**
          * Called when an origin transition starts. This method exposes the opening and closing
          * windows as wrapped {@link UIComponent} to provide simplified interface to clients.
+         *
+         * Animators associated with the transition/animation should be configured using the
+         * TransitionAnimationController provided. Note that animators (easing or spring) are added
+         * e controller via {@link TransitionAnimationController#addValueAnimation(String,
+         * BaseInterpolator, long, long)} and
+         * {@link TransitionAnimationController#addSpringAnimation(String, float, float)}
+         * respectively.
          */
         void onStart(
+                TransitionAnimationController animationController,
                 UIComponent.Transaction transaction,
                 UIComponent origin,
                 UIComponent closingApp,
                 UIComponent openingApp);
 
+
         /** Called to update the transition frame. */
-        void onProgress(float progress);
+        void onProgress(String animatorId, float progress);
 
         /** Called when the transition ended. */
         void onEnd(boolean finished);

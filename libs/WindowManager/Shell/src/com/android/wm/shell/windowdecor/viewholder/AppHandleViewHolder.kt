@@ -17,12 +17,14 @@ package com.android.wm.shell.windowdecor.viewholder
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Point
 import android.hardware.input.InputManager
 import android.os.Bundle
 import android.os.Handler
+import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.SurfaceControl
 import android.view.View
@@ -33,6 +35,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -43,6 +46,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.windowdecor.AppHandleAnimator
+import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 
@@ -51,13 +55,14 @@ import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystem
  * It hosts a simple handle bar from which to initiate a drag motion to enter desktop mode.
  */
 class AppHandleViewHolder(
-    rootView: View,
+    appHandleView: View?,
+    private val context: Context,
     onCaptionTouchListener: View.OnTouchListener,
     onCaptionButtonClickListener: OnClickListener,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val handler: Handler,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
-) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>(rootView) {
+) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>() {
 
     data class HandleData(
         val taskInfo: RunningTaskInfo,
@@ -69,6 +74,13 @@ class AppHandleViewHolder(
     ) : Data()
 
     private lateinit var taskInfo: RunningTaskInfo
+    override val rootView =
+        appHandleView ?: if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
+            LayoutInflater.from(context)
+                .inflate(R.layout.desktop_mode_app_handle, null) as WindowDecorLinearLayout
+        } else {
+            error("App Handle root view should not be null")
+        }
     private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
     private val captionHandle: ImageButton = rootView.requireViewById(R.id.caption_handle)
     private val inputManager = context.getSystemService(InputManager::class.java)
@@ -262,7 +274,7 @@ class AppHandleViewHolder(
         }
         // TODO(b/405251465): animate app handle visibility change after creation and animation are
         //  moved to a background thread.
-        captionHandle.visibility = v
+        captionView.visibility = v
     }
 
     private fun getCaptionHandleBarColor(taskInfo: RunningTaskInfo): Int {
@@ -301,7 +313,8 @@ class AppHandleViewHolder(
          * input layer logic.
          */
         fun create(
-            rootView: View,
+            rootView: View?,
+            context: Context,
             onCaptionTouchListener: View.OnTouchListener,
             onCaptionButtonClickListener: OnClickListener,
             windowManagerWrapper: WindowManagerWrapper,
@@ -309,6 +322,7 @@ class AppHandleViewHolder(
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
         ): AppHandleViewHolder = AppHandleViewHolder(
             rootView,
+            context,
             onCaptionTouchListener,
             onCaptionButtonClickListener,
             windowManagerWrapper,

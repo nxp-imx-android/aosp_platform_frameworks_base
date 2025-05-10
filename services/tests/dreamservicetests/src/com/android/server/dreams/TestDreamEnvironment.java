@@ -33,6 +33,7 @@ import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.Looper;
@@ -175,9 +176,7 @@ public class TestDreamEnvironment {
         @Mock
         private ServiceInfo mServiceInfo;
 
-        @Mock
-        private DreamService.WakefulHandler mWakefulHandler;
-
+        private final Handler mHandler;
         private final IDreamManager mDreamManager;
         private final DreamOverlayConnectionHandler mDreamOverlayConnectionHandler;
 
@@ -186,6 +185,7 @@ public class TestDreamEnvironment {
                 DreamOverlayConnectionHandler dreamOverlayConnectionHandler,
                 boolean shouldShowComplications) {
             MockitoAnnotations.initMocks(this);
+            mHandler = new Handler(looper);
             mDreamManager = dreamManager;
             mDreamOverlayConnectionHandler = dreamOverlayConnectionHandler;
             mServiceInfo.packageName = FAKE_DREAM_PACKAGE_NAME;
@@ -198,10 +198,6 @@ public class TestDreamEnvironment {
                     .thenReturn(FAKE_DREAM_SETTINGS_ACTIVITY);
             when(mPackageManager.extractPackageItemInfoAttributes(any(), any(), any(), any()))
                     .thenReturn(mAttributes);
-            doAnswer(invocation -> {
-                ((Runnable) invocation.getArgument(0)).run();
-                return null;
-            }).when(mWakefulHandler).postIfNeeded(any());
         }
         @Override
         public void init(Context context) {
@@ -239,6 +235,11 @@ public class TestDreamEnvironment {
         }
 
         @Override
+        public Handler getHandler() {
+            return mHandler;
+        }
+
+        @Override
         public PackageManager getPackageManager() {
             return mPackageManager;
         }
@@ -246,11 +247,6 @@ public class TestDreamEnvironment {
         @Override
         public Resources getResources() {
             return mResources;
-        }
-
-        @Override
-        public DreamService.WakefulHandler getWakefulHandler() {
-            return mWakefulHandler;
         }
     }
 

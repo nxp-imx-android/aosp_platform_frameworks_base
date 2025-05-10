@@ -6980,6 +6980,10 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
+  @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {
+    ctor public Notification.MetricStyle();
+  }
+
   @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
     ctor public Notification.ProgressStyle();
     method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
@@ -19425,6 +19429,14 @@ package android.hardware.biometrics {
     field @FlaggedApi("android.hardware.biometrics.identity_check_api") public static final int IDENTITY_CHECK = 65536; // 0x10000
   }
 
+  @FlaggedApi("android.hardware.biometrics.add_fallback") public static interface BiometricManager.IconType {
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ACCOUNT = 2; // 0x2
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int GENERIC = 3; // 0x3
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int PASSWORD = 0; // 0x0
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int QR_CODE = 1; // 0x1
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int SETTING = 4; // 0x4
+  }
+
   public static class BiometricManager.Strings {
     method @Nullable @RequiresPermission(android.Manifest.permission.USE_BIOMETRIC) public CharSequence getButtonLabel();
     method @Nullable @RequiresPermission(android.Manifest.permission.USE_BIOMETRIC) public CharSequence getPromptMessage();
@@ -19437,9 +19449,11 @@ package android.hardware.biometrics {
     method @Nullable public int getAllowedAuthenticators();
     method @Nullable public android.hardware.biometrics.PromptContentView getContentView();
     method @Nullable public CharSequence getDescription();
+    method @FlaggedApi("android.hardware.biometrics.add_fallback") @NonNull public java.util.List<android.hardware.biometrics.FallbackOption> getFallbackOptions();
     method @Nullable @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public android.graphics.Bitmap getLogoBitmap();
     method @Nullable @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public String getLogoDescription();
     method @DrawableRes @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public int getLogoRes();
+    method @FlaggedApi("android.hardware.biometrics.add_fallback") public static int getMaxFallbackOptions();
     method @Nullable public CharSequence getNegativeButtonText();
     method @Nullable public CharSequence getSubtitle();
     method @NonNull public CharSequence getTitle();
@@ -19485,6 +19499,7 @@ package android.hardware.biometrics {
 
   public static class BiometricPrompt.Builder {
     ctor public BiometricPrompt.Builder(android.content.Context);
+    method @FlaggedApi("android.hardware.biometrics.add_fallback") @NonNull public android.hardware.biometrics.BiometricPrompt.Builder addFallbackOption(@NonNull CharSequence, int, @NonNull java.util.concurrent.Executor, @NonNull android.content.DialogInterface.OnClickListener);
     method @NonNull public android.hardware.biometrics.BiometricPrompt build();
     method @NonNull public android.hardware.biometrics.BiometricPrompt.Builder setAllowedAuthenticators(int);
     method @NonNull public android.hardware.biometrics.BiometricPrompt.Builder setConfirmationRequired(boolean);
@@ -19514,6 +19529,15 @@ package android.hardware.biometrics {
     method @FlaggedApi("android.hardware.biometrics.get_op_id_crypto_object") public long getOperationHandle();
     method @Nullable public android.security.identity.PresentationSession getPresentationSession();
     method @Nullable public java.security.Signature getSignature();
+  }
+
+  @FlaggedApi("android.hardware.biometrics.add_fallback") public final class FallbackOption implements android.os.Parcelable {
+    ctor public FallbackOption(@NonNull CharSequence, int);
+    method public int describeContents();
+    method public int getIconType();
+    method @NonNull public CharSequence getText();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.biometrics.FallbackOption> CREATOR;
   }
 
   public interface PromptContentItem {
@@ -45037,6 +45061,7 @@ package android.telephony {
     field public static final String KEY_APN_EXPAND_BOOL = "apn_expand_bool";
     field public static final String KEY_APN_SETTINGS_DEFAULT_APN_TYPES_STRING_ARRAY = "apn_settings_default_apn_types_string_array";
     field public static final String KEY_AUTO_RETRY_ENABLED_BOOL = "auto_retry_enabled_bool";
+    field @FlaggedApi("android.net.platform.flags.avoid_bad_wifi_from_carrier_config") public static final String KEY_AVOID_BAD_WIFI_BOOL = "avoid_bad_wifi_bool";
     field public static final String KEY_CALL_BARRING_DEFAULT_SERVICE_CLASS_INT = "call_barring_default_service_class_int";
     field public static final String KEY_CALL_BARRING_SUPPORTS_DEACTIVATE_ALL_BOOL = "call_barring_supports_deactivate_all_bool";
     field public static final String KEY_CALL_BARRING_SUPPORTS_PASSWORD_CHANGE_BOOL = "call_barring_supports_password_change_bool";
@@ -53723,7 +53748,9 @@ package android.view {
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int BUFFER_TRANSFORM_IDENTITY = 0; // 0x0
     field public static final int BUFFER_TRANSFORM_MIRROR_HORIZONTAL = 1; // 0x1
+    field @FlaggedApi("com.android.graphics.hwui.flags.add_surfacecontrol_constants") public static final int BUFFER_TRANSFORM_MIRROR_HORIZONTAL_ROTATE_90 = 5; // 0x5
     field public static final int BUFFER_TRANSFORM_MIRROR_VERTICAL = 2; // 0x2
+    field @FlaggedApi("com.android.graphics.hwui.flags.add_surfacecontrol_constants") public static final int BUFFER_TRANSFORM_MIRROR_VERTICAL_ROTATE_90 = 6; // 0x6
     field public static final int BUFFER_TRANSFORM_ROTATE_180 = 3; // 0x3
     field public static final int BUFFER_TRANSFORM_ROTATE_270 = 7; // 0x7
     field public static final int BUFFER_TRANSFORM_ROTATE_90 = 4; // 0x4

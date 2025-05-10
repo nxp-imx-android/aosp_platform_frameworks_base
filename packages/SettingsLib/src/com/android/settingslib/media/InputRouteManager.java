@@ -127,7 +127,31 @@ public final class InputRouteManager {
 
                 @Override
                 public void onAudioDevicesRemoved(@NonNull AudioDeviceInfo[] removedDevices) {
-                    applyDefaultSelectedTypeToAllPresets();
+                    for (AudioDeviceInfo info : removedDevices) {
+                        Slog.v(TAG,
+                                "onAudioDevicesRemoved: enumerating"
+                                + ": type=" + info.getType()
+                                + ", name=" + info.getProductName()
+                                + ", isSource=" + info.isSource()
+                                + ", isSink=" + info.isSink());
+
+                        if (!info.isSource()) {
+                            continue;
+                        }
+
+                        @AudioDeviceType int type = info.getType();
+                        String addr = info.getAddress();
+                        // Only when the selected input got removed, apply default as fallback.
+                        if (InputMediaDevice.isSupportedInputDevice(type)
+                                && (mSelectedInputDeviceType == type)
+                                && (mSelectedInputDeviceAddr == addr)) {
+                            Slog.v(TAG,
+                                    "selected input is removed: updated type="
+                                    + type + ", addr=" + addr);
+                            applyDefaultSelectedTypeToAllPresets();
+                            break;
+                        }
+                    }
                 }
             };
 

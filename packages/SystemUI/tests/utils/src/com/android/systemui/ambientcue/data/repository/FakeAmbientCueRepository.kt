@@ -1,0 +1,46 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.ambientcue.data.repository
+
+import com.android.systemui.ambientcue.shared.model.ActionModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+val AmbientCueRepository.fake
+    get() = this as FakeAmbientCueRepository
+
+class FakeAmbientCueRepository : AmbientCueRepository {
+    private val _actions = MutableStateFlow(emptyList<ActionModel>())
+    override val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
+
+    override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    private val _globallyFocusedTaskId = MutableStateFlow(0)
+    override val globallyFocusedTaskId: StateFlow<Int> = _globallyFocusedTaskId.asStateFlow()
+
+    fun setActions(actions: List<ActionModel>) {
+        _actions.update { actions }
+    }
+
+    fun setGloballyFocusedTaskId(taskId: Int) {
+        _globallyFocusedTaskId.update { taskId }
+    }
+}

@@ -302,6 +302,11 @@ public class WindowAnimator {
             // Let the transition handle surface visibility.
             return;
         }
+        if (controller.isParticipantOfPlayingTransition(wc)) {
+            // Non-target participants will still be updated when the transition is finished, so
+            // skip the intermediate state.
+            return;
+        }
         wc.updateSurfaceVisibility(mTransaction);
     }
 

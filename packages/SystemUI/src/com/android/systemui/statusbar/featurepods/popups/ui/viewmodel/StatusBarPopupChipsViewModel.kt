@@ -21,11 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
-import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
-import com.android.systemui.statusbar.featurepods.vc.ui.viewmodel.AvControlsChipViewModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
+import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation

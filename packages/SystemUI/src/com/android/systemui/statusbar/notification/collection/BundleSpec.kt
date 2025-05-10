@@ -28,7 +28,8 @@ import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
 data class BundleSpec(
     val key: String,
-    @StringRes val titleTextResId: Int,
+    @StringRes val titleText: Int,
+    @StringRes val summaryText: Int,
     @DrawableRes val icon: Int,
     @PriorityBucket val bucket: Int,
 ) {
@@ -36,28 +37,33 @@ data class BundleSpec(
         val PROMOTIONS =
             BundleSpec(
                 key = NotificationChannel.PROMOTIONS_ID,
-                titleTextResId = R.string.promotional_notification_channel_label,
+                titleText = R.string.promotional_notification_channel_label,
+                summaryText =
+                    com.android.systemui.res.R.string.notification_guts_promotions_summary,
                 icon = com.android.settingslib.R.drawable.ic_promotions,
                 bucket = BUCKET_PROMO,
             )
         val SOCIAL_MEDIA =
             BundleSpec(
                 key = NotificationChannel.SOCIAL_MEDIA_ID,
-                titleTextResId = R.string.social_notification_channel_label,
+                titleText = R.string.social_notification_channel_label,
+                summaryText = com.android.systemui.res.R.string.notification_guts_social_summary,
                 icon = com.android.settingslib.R.drawable.ic_social,
                 bucket = BUCKET_SOCIAL,
             )
         val NEWS =
             BundleSpec(
                 key = NotificationChannel.NEWS_ID,
-                titleTextResId = R.string.news_notification_channel_label,
+                titleText = R.string.news_notification_channel_label,
+                summaryText = com.android.systemui.res.R.string.notification_guts_news_summary,
                 icon = com.android.settingslib.R.drawable.ic_news,
                 bucket = BUCKET_NEWS,
             )
         val RECOMMENDED =
             BundleSpec(
                 key = NotificationChannel.RECS_ID,
-                titleTextResId = R.string.recs_notification_channel_label,
+                titleText = R.string.recs_notification_channel_label,
+                summaryText = com.android.systemui.res.R.string.notification_guts_recs_summary,
                 icon = com.android.settingslib.R.drawable.ic_recs,
                 bucket = BUCKET_RECS,
             )

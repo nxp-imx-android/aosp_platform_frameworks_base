@@ -24,8 +24,6 @@ import android.app.admin.DevicePolicyResourcesManager
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.UserManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.service.notification.SystemZenRules
 import android.service.notification.ZenModeConfig
@@ -291,7 +289,6 @@ class PhoneStatusBarPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI, android.app.Flags.FLAG_MODES_UI_ICONS)
     fun zenModeInteractorActiveModeChanged_showsModeIcon() =
         testScope.runTest {
             statusBarPolicy.init()
@@ -350,7 +347,6 @@ class PhoneStatusBarPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_MODES_UI, android.app.Flags.FLAG_MODES_UI_ICONS)
     fun zenModeControllerOnGlobalZenChanged_doesNotUpdateDndIcon() {
         statusBarPolicy.init()
         reset(iconController)
@@ -361,38 +357,6 @@ class PhoneStatusBarPolicyTest : SysuiTestCase() {
         verify(iconController, never()).setIcon(eq(ZEN_SLOT), anyInt(), any())
         verify(iconController, never())
             .setResourceIcon(eq(ZEN_SLOT), any(), any(), any(), any(), any())
-    }
-
-    @Test
-    @DisableFlags(android.app.Flags.FLAG_MODES_UI_ICONS)
-    fun zenModeInteractorActiveModeChanged_withFlagDisabled_ignored() =
-        testScope.runTest {
-            statusBarPolicy.init()
-            reset(iconController)
-
-            zenModeRepository.addMode(id = "Bedtime", active = true)
-            runCurrent()
-
-            verify(iconController, never()).setIconVisibility(eq(ZEN_SLOT), any())
-            verify(iconController, never()).setIcon(eq(ZEN_SLOT), anyInt(), any())
-            verify(iconController, never())
-                .setResourceIcon(eq(ZEN_SLOT), any(), any(), any(), any(), any())
-        }
-
-    @Test
-    @DisableFlags(android.app.Flags.FLAG_MODES_UI_ICONS)
-    fun zenModeControllerOnGlobalZenChanged_withFlagDisabled_updatesDndIcon() {
-        statusBarPolicy.init()
-        reset(iconController)
-
-        zenModeController.setZen(Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS, null, null)
-
-        verify(iconController).setIconVisibility(eq(ZEN_SLOT), eq(true))
-        verify(iconController).setIcon(eq(ZEN_SLOT), anyInt(), eq("Priority only"))
-
-        zenModeController.setZen(Settings.Global.ZEN_MODE_OFF, null, null)
-
-        verify(iconController).setIconVisibility(eq(ZEN_SLOT), eq(false))
     }
 
     private fun createAlarmInfo(): AlarmManager.AlarmClockInfo {

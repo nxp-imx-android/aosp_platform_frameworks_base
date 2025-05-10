@@ -65,7 +65,6 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.plugins.VolumeDialogController;
-import com.android.systemui.qs.tiles.DndTile;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.VibratorHelper;
@@ -280,7 +279,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     public void register() {
         setVolumeController();
         setVolumePolicy(mVolumePolicy);
-        showDndTile();
         try {
             mMediaSessions.init();
         } catch (SecurityException e) {
@@ -829,11 +827,6 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
 
     private void onDismissRequestedW(int reason) {
         mCallbacks.onDismissRequested(reason);
-    }
-
-    public void showDndTile() {
-        if (D.BUG) Log.d(TAG, "showDndTile");
-        DndTile.setVisible(mContext, true);
     }
 
     void handleAudioSharingStreamVolumeChanges(@Nullable Integer volume) {

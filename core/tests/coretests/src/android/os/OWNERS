@@ -21,3 +21,6 @@ per-file RemoteCallbackListTest.java = shayba@google.com
 
 # MessageQueue
 per-file MessageQueueTest.java = mfasheh@google.com, shayba@google.com
+
+# PerfettoTraceTest
+per-file PerfettoTraceTest.java = zezeozue@google.com, ktimofeev@google.com

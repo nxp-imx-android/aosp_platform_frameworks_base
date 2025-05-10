@@ -40,7 +40,7 @@ import java.util.function.Supplier;
  */
 public abstract class EnrollClient<T> extends AcquisitionClient<T> implements EnrollmentModifier {
 
-    private static final String TAG = "Biometrics/EnrollClient";
+    private static final String TAG = "EnrollClient";
 
     protected final byte[] mHardwareAuthToken;
     protected final int mTimeoutSec;

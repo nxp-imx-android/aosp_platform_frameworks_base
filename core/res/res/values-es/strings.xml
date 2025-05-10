@@ -1034,7 +1034,7 @@
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Vuelve a intentarlo"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloquear para todos los datos y funciones"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Se ha superado el número máximo de intentos de Desbloqueo facial."</string>
-    <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"No hay ninguna SIM."</string>
+    <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"No hay ninguna SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"No hay ninguna SIM en la tablet."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"No hay ninguna SIM en tu dispositivo Android TV."</string>
     <string name="lockscreen_missing_sim_message" product="default" msgid="6184187634180854181">"No hay ninguna SIM en el teléfono."</string>
@@ -1805,7 +1805,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo Una mano"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuación extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Audífonos"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automático"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas de ratón"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
@@ -2045,8 +2046,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promociones"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Social"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Noticias"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"Sugerencias"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"Tú determinas la importancia de estas notificaciones."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"Esto es importante por los usuarios implicados."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"Notificación de aplicación personalizada"</string>
@@ -2066,7 +2066,7 @@
     <string name="app_suspended_title" msgid="888873445010322650">"La aplicación no está disponible"</string>
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> no está disponible en este momento. Esta opción se administra en <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Más información"</string>
-    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Anular pausa de aplicación"</string>
+    <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Dejar de pausar aplicación"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"¿Reactivar apps de trabajo?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Reactivar"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergencia"</string>
@@ -2269,22 +2269,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Cruceta: izquierda"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Cruceta: derecha"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Cruceta: centro"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"Panel de ajustes del tipo de clic automático"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"Clic izquierdo"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"Hacer clic con el botón derecho"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"Hacer doble clic"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastrar"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desplazarse"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"Mantener pulsado"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Desplazarse hacia arriba"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Desplazarse hacia abajo"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Desplazarse a la izquierda"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Desplazarse a la derecha"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Salir del modo de desplazamiento"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Reanudar"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Panel de desplazamiento"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> se ha incluido en el grupo de restringidos"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

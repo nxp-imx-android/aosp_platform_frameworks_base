@@ -9,20 +9,6 @@ flag {
 }
 
 flag {
-    name: "fgs_boot_completed"
-    namespace: "backstage_power"
-    description: "Disable BOOT_COMPLETED broadcast FGS start for certain types"
-    bug: "296558535"
-}
-
-flag {
-    name: "fgs_disable_saw"
-    namespace: "backstage_power"
-    description: "Disable System Alert Window FGS start"
-    bug: "296558535"
-}
-
-flag {
     name: "bfgs_managed_network_access"
     namespace: "backstage_power"
     description: "Restrict network access for certain applications in BFGS process state"
@@ -67,17 +53,6 @@ flag {
     name: "log_excessive_binder_proxies"
     description: "Log the excessive incoming binder proxies into statsd"
     bug: "298263955"
-}
-
-flag {
-    namespace: "backstage_power"
-    name: "trace_receiver_registration"
-    description: "Add tracing for broadcast receiver registration and un-registration"
-    bug: "336385821"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -262,12 +237,4 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "dump_bitmaps"
-    namespace: "system_performance"
-    is_fixed_read_only: true
-    description: "Allow am to dump information and contents of bitmaps"
-    bug: "369619160"
 }

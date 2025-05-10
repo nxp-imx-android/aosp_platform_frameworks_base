@@ -17,12 +17,17 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
 import android.view.Display.INVALID_DISPLAY
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_TO_BACK
+import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
+import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.transition.Transitions
 
 /**
  * Observer of desk-related transitions, such as adding, removing or activating a whole desk. It
@@ -31,6 +36,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 class DesksTransitionObserver(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desksOrganizer: DesksOrganizer,
+    private val transitions: Transitions,
 ) {
     private val deskTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
 
@@ -51,6 +57,11 @@ class DesksTransitionObserver(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val deskTransitions = deskTransitions.remove(transition)
         deskTransitions?.forEach { deskTransition -> handleDeskTransition(info, deskTransition) }
+        if (deskTransitions == null || deskTransitions.isEmpty()) {
+            // A desk transition could also occur without shell having started it or intercepting
+            // it, check for that here in case launch roots need to be updated.
+            handleIndependentDeskTransitionIfNeeded(info)
+        }
     }
 
     /**
@@ -92,6 +103,10 @@ class DesksTransitionObserver(
 
     private fun handleDeskTransition(info: TransitionInfo, deskTransition: DeskTransition) {
         logD("Desk transition ready: %s", deskTransition)
+        // TODO: b/415381304 - don't use |current|. It can point to the old user during user-switch
+        //   transitions while transition info changes can be for the new user. Transitions can
+        //   even contain changes for tasks of different users. Instead, add a |userId| argument
+        //   in |DeskTransition|, since |TaskInfo#mUserId| is also unreliable on non leaf tasks.
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
@@ -213,6 +228,40 @@ class DesksTransitionObserver(
         desktopUserRepositories.forAllRepositories { desktopRepository ->
             desktopRepository.removeDisplay(deskTransition.displayId)
         }
+    }
+
+    private fun handleIndependentDeskTransitionIfNeeded(info: TransitionInfo) {
+        val deskChanges = info.changes.filter { c -> desksOrganizer.isDeskChange(c) }
+        if (deskChanges.isEmpty()) return
+        logD(
+            "handleIndependentDeskTransitionIfNeeded %d desk related changes found",
+            deskChanges.size,
+        )
+        val wct = WindowContainerTransaction()
+        for (change in deskChanges.reversed()) {
+            val deskId = desksOrganizer.getDeskIdFromChange(change) ?: continue
+            when (change.mode) {
+                TRANSIT_TO_BACK -> {
+                    logD("handleIndependentDeskTransitionIfNeeded desk=%d moved to back", deskId)
+                    desksOrganizer.deactivateDesk(wct, deskId, skipReorder = true)
+                }
+                TRANSIT_TO_FRONT -> {
+                    logD("handleIndependentDeskTransitionIfNeeded desk=%d moved to front", deskId)
+                    desksOrganizer.activateDesk(wct, deskId, skipReorder = true)
+                }
+                else -> {
+                    logW(
+                        "Unexpected change for desk=%d with mode=%",
+                        deskId,
+                        TransitionInfo.modeToString(change.mode),
+                    )
+                }
+            }
+        }
+        if (wct.isEmpty) {
+            return
+        }
+        transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {

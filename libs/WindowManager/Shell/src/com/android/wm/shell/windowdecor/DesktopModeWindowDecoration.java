@@ -29,6 +29,7 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge;
@@ -58,6 +59,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.util.IndentingPrintWriter;
 import android.util.Size;
 import android.view.Choreographer;
 import android.view.Display;
@@ -77,6 +79,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.SystemBarUtils;
+import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -123,6 +126,7 @@ import kotlin.jvm.functions.Function1;
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -414,7 +418,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // causes flickering. See b/270202228.
         final boolean applyTransactionOnDraw = taskInfo.isFreeform();
         relayout(taskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
-                hasGlobalFocus, displayExclusionRegion);
+                hasGlobalFocus, displayExclusionRegion, /* inSyncWithTransition= */ false);
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -440,8 +444,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void relayout(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
-            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion) {
+            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
+            boolean inSyncWithTransition) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
+        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: relayout of taskId=%d startT=%s finishT=%s "
+                + "applyStartTransactionOnDraw=%b "
+                + "shouldSetTaskVisibilityPositionAndCrop=%b hasGlobalFocus=%b taskVisible=%b",
+                TAG, taskInfo.taskId, startT.getId(), finishT.getId(), applyStartTransactionOnDraw,
+                shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, taskInfo.isVisible);
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
             setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
@@ -479,7 +489,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         && DesktopModeFlags
                         .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
-                mDesktopConfig);
+                mDesktopConfig, inSyncWithTransition);
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -859,6 +869,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) {
             return mAppHandleViewHolderFactory.create(
                     mResult.mRootView,
+                    mDecorWindowContext,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
                     mWindowManagerWrapper,
@@ -868,6 +879,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(
                     mResult.mRootView,
+                    mDecorWindowContext,
                     mWindowDecorationActions,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
@@ -923,7 +935,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @NonNull Region displayExclusionRegion,
             boolean shouldIgnoreCornerRadius,
             boolean shouldExcludeCaptionFromAppBounds,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            boolean inSyncWithTransition) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -1008,8 +1021,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
             if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
                     && inFullImmersiveMode) {
+                final Rect taskBounds = taskInfo.getConfiguration().windowConfiguration.getBounds();
                 final Insets systemBarInsets = displayInsetsState.calculateInsets(
-                        taskInfo.getConfiguration().windowConfiguration.getBounds(),
+                        taskBounds, taskBounds,
                         WindowInsets.Type.systemBars() & ~WindowInsets.Type.captionBar(),
                         false /* ignoreVisibility */);
                 relayoutParams.mCaptionTopPadding = systemBarInsets.top;
@@ -1084,6 +1098,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         relayoutParams.mApplyStartTransactionOnDraw = applyStartTransactionOnDraw;
         relayoutParams.mSetTaskVisibilityPositionAndCrop = shouldSetTaskVisibilityPositionAndCrop;
+        relayoutParams.mInSyncWithTransition = inSyncWithTransition;
 
         // The configuration used to layout the window decoration. A copy is made instead of using
         // the original reference so that the configuration isn't mutated on config changes and
@@ -1911,14 +1926,30 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return !animatingTaskResizeOrReposition && !inImmersiveAndRequesting;
     }
 
-    @Override
-    public String toString() {
-        return "{"
-                + "mPositionInParent=" + mPositionInParent + ", "
-                + "taskId=" + mTaskInfo.taskId + ", "
-                + "windowingMode=" + windowingModeToString(mTaskInfo.getWindowingMode()) + ", "
-                + "isFocused=" + isFocused()
-                + "}";
+    void dump(@NonNull PrintWriter originalWriter, @NonNull String prefix) {
+        final IndentingPrintWriter pw = new IndentingPrintWriter(originalWriter, "  ", prefix);
+        pw.println("DesktopModeWindowDecoration (task#" + mTaskInfo.taskId + ")");
+        pw.increaseIndent();
+        pw.println("mPositionInParent=" + mPositionInParent);
+        pw.println("windowingMode=" + windowingModeToString(mTaskInfo.getWindowingMode()));
+        pw.println("isFocused=" + isFocused());
+        pw.println("taskVisible=" + mTaskInfo.isVisible);
+        pw.println("mIsRecentsTransitionRunning=" + mIsRecentsTransitionRunning);
+        pw.println("mIsDragging=" + mIsDragging);
+        pw.println("mIsAppHeaderMaximizeButtonHovered=" + mIsAppHeaderMaximizeButtonHovered);
+        pw.println("mIsMaximizeMenuHovered=" + mIsMaximizeMenuHovered);
+        pw.println("mMinimumInstancesFound=" + mMinimumInstancesFound);
+        pw.println("mDisabledResizingEdge=" + mDisabledResizingEdge);
+        pw.println("mCapturedLink=" + mCapturedLink);
+        pw.println("mGenericLink=" + mGenericLink);
+        pw.println("mWebUri=" + mWebUri);
+        if (mRelayoutParams != null) {
+            mRelayoutParams.dump(pw, mContext);
+        }
+        pw.decreaseIndent();
+        if (mResult != null) {
+            mResult.dump(pw);
+        }
     }
 
     static class Factory {

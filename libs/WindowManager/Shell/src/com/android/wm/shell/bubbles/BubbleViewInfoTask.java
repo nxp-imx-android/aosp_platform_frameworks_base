@@ -221,7 +221,7 @@ public class BubbleViewInfoTask {
                 ProtoLog.v(WM_SHELL_BUBBLES, "Task initializing bubble bar expanded view key=%s",
                         mBubble.getKey());
                 viewInfo.bubbleBarExpandedView.initialize(mExpandedViewManager.get(),
-                        mPositioner.get(), false /* isOverflow */,
+                        mPositioner.get(), false /* isOverflow */, mBubble,
                         viewInfo.taskView, mMainExecutor, mBgExecutor,
                         new RegionSamplingProvider() {
                             @Override

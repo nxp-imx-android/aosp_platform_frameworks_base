@@ -18,7 +18,9 @@ package com.android.systemui.animation;
 
 import android.annotation.Nullable;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Outline;
+import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -56,16 +58,18 @@ public class ViewUIComponent implements UIComponent {
     private final LifecycleListener mLifecycleListener = new LifecycleListener();
     private final View mView;
     private final Handler mMainHandler;
-
     @Nullable private SurfaceControl mSurfaceControl;
     @Nullable private Surface mSurface;
     @Nullable private Rect mViewBoundsOverride;
     private boolean mVisibleOverride;
+    private final boolean mEnableBackgroundDimming;
+    private final Paint mPaint = new Paint();
     private boolean mDirty;
 
-    public ViewUIComponent(View view) {
+    public ViewUIComponent(View view, boolean enableBackgroundDimming) {
         mView = view;
         mMainHandler = new Handler(Looper.getMainLooper());
+        mEnableBackgroundDimming = enableBackgroundDimming;
     }
 
     /**
@@ -208,6 +212,21 @@ public class ViewUIComponent implements UIComponent {
             canvas.scale(
                     (float) renderBounds.width() / realBounds.width(),
                     (float) renderBounds.height() / realBounds.height());
+
+            if (mEnableBackgroundDimming) {
+                // draw backing layer for background dimming using bounds/radius
+                mPaint.setColor(Color.BLACK);
+                mPaint.setStyle(Paint.Style.FILL);
+                // TODO: use corner radius for drawing
+                canvas.drawRoundRect(
+                        renderBounds.left,
+                        renderBounds.top,
+                        renderBounds.right,
+                        renderBounds.bottom,
+                        renderBounds.width() / 2,
+                        renderBounds.height() / 2,
+                        mPaint);
+            }
 
             if (mView.getClipToOutline()) {
                 mView.getOutlineProvider().getOutline(mView, mClippingOutline);

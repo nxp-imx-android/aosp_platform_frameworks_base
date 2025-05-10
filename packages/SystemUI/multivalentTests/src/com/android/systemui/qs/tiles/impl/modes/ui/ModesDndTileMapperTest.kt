@@ -16,9 +16,7 @@
 
 package com.android.systemui.qs.tiles.impl.modes.ui
 
-import android.app.Flags
 import android.graphics.drawable.TestStubDrawable
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -34,7 +32,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_MODES_UI)
 class ModesDndTileMapperTest : SysuiTestCase() {
     val config =
         QSTileConfigTestBuilder.build {

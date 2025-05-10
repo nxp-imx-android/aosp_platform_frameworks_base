@@ -140,6 +140,12 @@
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"הגדלת המסך"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"שינוי הגודל"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"לא ניתן להעביר את האפליקציה לכאן"</string>
+    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"נפתח חלון חדש באפליקציה"</string>
+    <!-- no translation found for desktop_mode_talkback_state_closing (6791583518636526904) -->
+    <skip />
+    <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"חלון האפליקציה התמזער"</string>
+    <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (במיקוד)"</string>
+    <string name="desktop_mode_talkback_state_not_focused" msgid="4640618691603218929">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (לא במיקוד)"</string>
     <string name="desktop_mode_maximize_menu_immersive_button_text" msgid="559492223133829481">"הטמעה"</string>
     <string name="desktop_mode_maximize_menu_immersive_restore_button_text" msgid="4900114367354709257">"שחזור"</string>
     <string name="desktop_mode_maximize_menu_maximize_button_text" msgid="3090199175564175845">"הגדלה"</string>

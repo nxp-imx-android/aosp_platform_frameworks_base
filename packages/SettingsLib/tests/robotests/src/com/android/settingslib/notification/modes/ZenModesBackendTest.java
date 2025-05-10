@@ -36,12 +36,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.AutomaticZenRule;
-import android.app.Flags;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.content.Context;
 import android.net.Uri;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.notification.Condition;
@@ -66,7 +64,6 @@ import java.time.Instant;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
-@EnableFlags(Flags.FLAG_MODES_UI)
 public class ZenModesBackendTest {
 
     private static final String ZEN_RULE_ID = "rule";

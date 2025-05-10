@@ -262,11 +262,13 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
             if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
                 DiscreteOpsSqlRegistry sqlRegistry = (DiscreteOpsSqlRegistry) mDiscreteRegistry;
                 DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
+                xmlRegistry.systemReady();
                 DiscreteOpsMigrationHelper.migrateDiscreteOpsToSqlite(xmlRegistry, sqlRegistry);
             }
         } else {
             if (DiscreteOpsDbHelper.getDatabaseFile().exists()) { // roll-back sqlite
                 DiscreteOpsSqlRegistry sqlRegistry = new DiscreteOpsSqlRegistry(mContext);
+                sqlRegistry.systemReady();
                 DiscreteOpsXmlRegistry xmlRegistry = (DiscreteOpsXmlRegistry) mDiscreteRegistry;
                 DiscreteOpsMigrationHelper.migrateDiscreteOpsToXml(sqlRegistry, xmlRegistry);
             }

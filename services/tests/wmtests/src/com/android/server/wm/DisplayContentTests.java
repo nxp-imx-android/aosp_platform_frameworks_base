@@ -187,8 +187,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final WindowState exitingAppWindow = newWindowBuilder("exiting app",
                 TYPE_BASE_APPLICATION).setDisplay(mDisplayContent).build();
         final ActivityRecord exitingApp = exitingAppWindow.mActivityRecord;
-        exitingApp.startAnimation(exitingApp.getPendingTransaction(), mock(AnimationAdapter.class),
-                false /* hidden */, SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION);
+        doReturn(true).when(exitingApp).isExitAnimationRunningSelfOrChild();
         exitingApp.mIsExiting = true;
         // If the activity is animating, its window should not be removed.
         mDisplayContent.handleCompleteDeferredRemoval();
@@ -207,7 +206,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 mNavBarWindow));
         assertForAllWindowsOrder(windows);
 
-        exitingApp.cancelAnimation();
+        doReturn(false).when(exitingApp).isExitAnimationRunningSelfOrChild();
         // The exiting window will be removed because its parent is no longer animating.
         mDisplayContent.handleCompleteDeferredRemoval();
         windows.remove(exitingAppWindow);
@@ -1824,7 +1823,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
             // Check that secondary display registered callback
             assertEquals(secondaryDisplayRotation.mDefaultDisplayRotationChangedCallback,
-                    coordinator.mDefaultDisplayRotationChangedCallback);
+                    coordinator.mDefaultDisplayRotationChangedCallbacks.get(
+                            secondaryDisplayContent.getDisplayId()));
 
             // Set the default display to a known orientation. This may be a zero or non-zero
             // rotation since mDisplayInfo.logicalWidth/Height depends on the DUT's default display
@@ -1863,9 +1863,9 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Create secondary non-internal displays
         createSecondaryDisplayContent(Display.TYPE_EXTERNAL, deviceStateController);
-        assertNull(coordinator.mDefaultDisplayRotationChangedCallback);
+        assertEquals(0, coordinator.mDefaultDisplayRotationChangedCallbacks.size());
         createSecondaryDisplayContent(Display.TYPE_VIRTUAL, deviceStateController);
-        assertNull(coordinator.mDefaultDisplayRotationChangedCallback);
+        assertEquals(0, coordinator.mDefaultDisplayRotationChangedCallbacks.size());
     }
 
     private DisplayContent createSecondaryDisplayContent(int displayType,

@@ -111,6 +111,7 @@ class KeyguardSimPinViewControllerTest : SysuiTestCase() {
                 mUserActivityNotifier,
                 inputManager,
             )
+        underTest.mIsInTestMode = true
         underTest.init()
         underTest.onViewAttached()
         underTest.onResume(0)

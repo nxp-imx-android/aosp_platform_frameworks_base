@@ -20,6 +20,8 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
+import static java.lang.Math.max;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Insets;
@@ -54,6 +56,7 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.handles.RegionSamplingHelper;
 import com.android.wm.shell.taskview.TaskView;
 
+import java.io.PrintWriter;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -169,6 +172,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
 
     private boolean mIsClipping = false;
     private int mBottomClip = 0;
+    private int mImeTop = 0;
 
     /** An enum value that tracks the visibility state of the task view */
     private enum TaskViewVisibilityState {
@@ -233,10 +237,12 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     public void initialize(BubbleExpandedViewManager expandedViewManager,
             BubblePositioner positioner,
             boolean isOverflow,
+            @Nullable Bubble bubble,
             @Nullable BubbleTaskView bubbleTaskView,
             @Nullable Executor mainExecutor,
             @Nullable Executor backgroundExecutor,
             @Nullable RegionSamplingProvider regionSamplingProvider) {
+        mBubble = bubble;
         mManager = expandedViewManager;
         mPositioner = positioner;
         mIsOverflow = isOverflow;
@@ -693,9 +699,21 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         return mTempBounds.bottom;
     }
 
-    /** Update the amount by which to clip the expanded view at the bottom. */
-    public void updateBottomClip(int bottomClip) {
-        mBottomClip = bottomClip;
+    /** Notifies the expanded view that the IME top changed. */
+    public void onImeTopChanged(int imeTop) {
+        mImeTop = imeTop;
+        mBottomClip = max(getContentBottomOnScreen() - mImeTop, 0);
+        onClipUpdate();
+    }
+
+    void updateBottomClip() {
+        if (mIsClipping) {
+            onImeTopChanged(mImeTop);
+        }
+    }
+
+    void resetBottomClip() {
+        mBottomClip = 0;
         onClipUpdate();
     }
 
@@ -804,5 +822,18 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
             return false;
         }
+    }
+
+    /**
+     * Description of current expanded view state.
+     */
+    public void dump(@android.annotation.NonNull PrintWriter pw,
+            @android.annotation.NonNull String prefix) {
+        pw.print(prefix); pw.println("BubbleBarExpandedView:");
+        pw.print(prefix); pw.print("  taskId: "); pw.println(getTaskId());
+        pw.print(prefix); pw.print("  contentVisibility: "); pw.println(mIsContentVisible);
+        pw.print(prefix); pw.print("  isAnimating: "); pw.println(mIsAnimating);
+        pw.print(prefix); pw.print("  isDragging: "); pw.println(mIsDragging);
+        pw.print(prefix); pw.print("  visibilityState: "); pw.println(mVisibilityState);
     }
 }

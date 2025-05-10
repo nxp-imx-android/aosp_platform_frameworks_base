@@ -240,6 +240,9 @@
     <!-- Size of the view displaying the mobile roam icon in the status bar. This value should
         match the viewport size of drawable stat_sys_roaming -->
     <dimen name="status_bar_mobile_roam_size">8sp</dimen>
+    <!-- Size of the roaming indicator. This indicator is positioned at the end of the mobile
+        group -->
+    <dimen name="status_bar_mobile_roam_size_updated">10sp</dimen>
 
     <!-- Spacing before the airplane mode icon if there are any icons preceding it. -->
     <dimen name="status_bar_airplane_spacer_width">4sp</dimen>
@@ -2253,6 +2256,8 @@
 
     <!-- Tile Details start-->
     <dimen name="internet_details_toggle_row_height">48dp</dimen>
+    <dimen name="bluetooth_details_toggle_row_margin_start">32dp</dimen>
+    <dimen name="bluetooth_details_toggle_row_margin_end">26dp</dimen>
     <dimen name="tile_details_switch_container_width">52dp</dimen>
     <dimen name="tile_details_switch_track_height">24dp</dimen>
     <dimen name="tile_details_button_row_height">40dp</dimen>

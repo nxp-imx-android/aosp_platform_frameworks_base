@@ -23,6 +23,9 @@ import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
+
+import android.annotation.IdRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -40,6 +43,7 @@ import android.gui.BoxShadowSettings;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.Trace;
+import android.util.IndentingPrintWriter;
 import android.view.Display;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -56,6 +60,7 @@ import android.window.TaskConstants;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.BoxShadowHelper;
 import com.android.wm.shell.common.DisplayController;
@@ -90,6 +95,8 @@ import java.util.function.Supplier;
  */
 public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         implements AutoCloseable {
+
+    private static final String TAG = "WindowDecoration";
 
     /**
      * The Z-order of the caption surface.
@@ -256,6 +263,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     void relayout(RelayoutParams params, SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT, WindowContainerTransaction wct, T rootView,
             RelayoutResult<T> outResult) {
+        ProtoLog.v(WM_SHELL_WINDOW_DECORATION,
+                "%s: relayout params=%s startT=%s finishT=%s",
+                TAG, params.toString(mContext.getResources()), startT.getId(), finishT.getId());
         Trace.beginSection("WindowDecoration#relayout");
         outResult.reset();
         if (params.mRunningTaskInfo != null) {
@@ -529,6 +539,37 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                     .setPosition(mTaskSurface, taskPosition.x, taskPosition.y);
         }
 
+        if (params.mSetTaskVisibilityPositionAndCrop) {
+            startT.show(mTaskSurface);
+        }
+
+        if (params.mShouldSetBackground) {
+            final int backgroundColorInt = mTaskInfo.taskDescription != null
+                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
+            mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
+            mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
+            mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
+            startT.setColor(mTaskSurface, mTmpColor);
+        } else {
+            startT.unsetColor(mTaskSurface);
+        }
+
+        updateTaskSurfaceOutline(params, startT, finishT, outResult);
+    }
+
+    private void updateTaskSurfaceOutline(
+            RelayoutParams params, SurfaceControl.Transaction startT,
+            SurfaceControl.Transaction finishT, RelayoutResult<T> outResult) {
+        if ((DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()
+                || DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue())
+                && !params.mInSyncWithTransition) {
+            // Update these outline properties only when the relayout is driven by Transition
+            // callbacks because they must be updated together with some of other properties (e.g.,
+            // position) which is set by transition handler although the outline properties are
+            // expected to be set by WindowDecoration instead of the transition handler.
+            return;
+        }
+
         if (outResult.mBorderSettings != null
                 && outResult.mBorderSettings.strokeWidth > 0) {
             startT.setBorderSettings(mTaskSurface, outResult.mBorderSettings);
@@ -546,34 +587,15 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 startT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
                 finishT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
             }
-        } else {
-            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-            }
-        }
-
-        if (params.mSetTaskVisibilityPositionAndCrop) {
-            startT.show(mTaskSurface);
-        }
-
-        if (params.mShouldSetBackground) {
-            final int backgroundColorInt = mTaskInfo.taskDescription != null
-                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
-            mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
-            mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
-            mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
-            startT.setColor(mTaskSurface, mTmpColor);
-        } else {
-            startT.unsetColor(mTaskSurface);
-        }
-
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             if (outResult.mCornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
                 finishT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
             }
         } else {
+            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
+                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+            }
             if (params.mCornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(mTaskSurface, params.mCornerRadius);
                 finishT.setCornerRadius(mTaskSurface, params.mCornerRadius);
@@ -910,6 +932,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         boolean mShouldSetAppBounds;
         boolean mShouldSetBackground;
 
+        boolean mInSyncWithTransition;
+
         void reset() {
             mLayoutResId = Resources.ID_NULL;
             mCaptionHeightCalculator = (ctx, display) -> 0;
@@ -941,10 +965,81 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mHasGlobalFocus = false;
             mShouldSetAppBounds = false;
             mShouldSetBackground = false;
+            mInSyncWithTransition = false;
         }
 
         boolean hasInputFeatureSpy() {
             return (mInputFeatures & WindowManager.LayoutParams.INPUT_FEATURE_SPY) != 0;
+        }
+
+        void dump(@NonNull IndentingPrintWriter pw, @NonNull Context context) {
+            pw.println("RelayoutParams");
+            pw.increaseIndent();
+            final Resources resources = context.getResources();
+            pw.println("mTaskId=" + (mRunningTaskInfo != null ? mRunningTaskInfo.taskId : null));
+            pw.println("mLayoutResId=" + resToString(mLayoutResId, resources));
+            pw.println("mCaptionWidthId=" + resToString(mCaptionWidthId, resources));
+            pw.println("mOccludingCaptionElements=" + occludingCaptionElementsToString(resources));
+            pw.println("mLimitTouchRegionToSystemAreas=" + mLimitTouchRegionToSystemAreas);
+            pw.println("mInputFeatures=" + Integer.toHexString(mInputFeatures));
+            pw.println("mIsInsetSource=" + mIsInsetSource);
+            pw.println("mInsetSourceFlags=" + InsetsSource.flagsToString(mInsetSourceFlags));
+            pw.println("mDisplayExclusionRegion=" + mDisplayExclusionRegion);
+            pw.println("mShadowRadiusId=" + resToString(mShadowRadiusId, resources));
+            pw.println("mCornerRadiusId=" + resToString(mCornerRadiusId, resources));
+            pw.println("mBorderSettingsId=" + resToString(mBorderSettingsId, resources));
+            pw.println("mCaptionTopPadding=" + mCaptionTopPadding);
+            pw.println("mIsCaptionVisible=" + mIsCaptionVisible);
+            pw.println("mAsyncViewHost=" + mAsyncViewHost);
+            pw.println("mApplyStartTransactionOnDraw=" + mApplyStartTransactionOnDraw);
+            pw.println("mSetTaskVisibilityPositionAndCrop=" + mSetTaskVisibilityPositionAndCrop);
+            pw.println("mHasGlobalFocus=" + mHasGlobalFocus);
+            pw.println("mShouldSetAppBounds=" + mShouldSetAppBounds);
+            pw.println("mShouldSetBackground=" + mShouldSetBackground);
+        }
+
+        public String toString(@NonNull Resources resources) {
+            return "RelayoutParams{"
+                    + "mTaskId=" + (mRunningTaskInfo != null ? mRunningTaskInfo.taskId : null) + " "
+                    + "mLayoutResId=" + resToString(mLayoutResId, resources) + " "
+                    + "mCaptionWidthId=" + resToString(mCaptionWidthId, resources) + " "
+                    + "mOccludingCaptionElements="
+                    + occludingCaptionElementsToString(resources) + " "
+                    + "mLimitTouchRegionToSystemAreas=" + mLimitTouchRegionToSystemAreas + " "
+                    + "mInputFeatures=" + Integer.toHexString(mInputFeatures) + " "
+                    + "mIsInsetSource=" + mIsInsetSource + " "
+                    + "mInsetSourceFlags=" + InsetsSource.flagsToString(mInsetSourceFlags) + " "
+                    + "mDisplayExclusionRegion=" + mDisplayExclusionRegion + " "
+                    + "mShadowRadiusId=" + resToString(mShadowRadiusId, resources) + " "
+                    + "mCornerRadiusId=" + resToString(mCornerRadiusId, resources) + " "
+                    + "mBorderSettingsId=" + resToString(mBorderSettingsId, resources) + " "
+                    + "mCaptionTopPadding=" + mCaptionTopPadding + " "
+                    + "mIsCaptionVisible=" + mIsCaptionVisible + " "
+                    + "mAsyncViewHost=" + mAsyncViewHost + " "
+                    + "mApplyStartTransactionOnDraw=" + mApplyStartTransactionOnDraw + " "
+                    + "mSetTaskVisibilityPositionAndCrop=" + mSetTaskVisibilityPositionAndCrop + " "
+                    + "mHasGlobalFocus=" + mHasGlobalFocus + " "
+                    + "mShouldSetAppBounds=" + mShouldSetAppBounds + " "
+                    + "mShouldSetBackground=" + mShouldSetBackground
+                    + "}";
+        }
+
+        private static String resToString(@IdRes int resId, @NonNull Resources resources) {
+            return resId != 0 ? resources.getResourceName(resId) : "ID_NULL";
+        }
+
+        private String occludingCaptionElementsToString(@NonNull Resources resources) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (int i = 0; i < mOccludingCaptionElements.size(); i++) {
+                final OccludingCaptionElement element = mOccludingCaptionElements.get(i);
+                sb.append(element.toString(resources));
+                if (i < mOccludingCaptionElements.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append("]");
+            return sb.toString();
         }
 
         /**
@@ -957,6 +1052,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
             enum Alignment {
                 START, END
+            }
+
+            String toString(@NonNull Resources resources) {
+                return "OccludingCaptionElement{"
+                        + "mWidthResId=" + resToString(mWidthResId, resources) + " "
+                        + "mAlignment=" + mAlignment
+                        + "}";
             }
         }
     }
@@ -992,6 +1094,21 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 mCornerRadius = INVALID_CORNER_RADIUS;
                 mShadowRadius = INVALID_SHADOW_RADIUS;
             }
+        }
+
+        void dump(@NonNull IndentingPrintWriter pw) {
+            pw.println("RelayoutResult");
+            pw.increaseIndent();
+            pw.println("mCaptionWidth=" + mCaptionWidth);
+            pw.println("mCaptionHeight=" + mCaptionHeight);
+            pw.println("mCaptionX=" + mCaptionX);
+            pw.println("mCaptionY=" + mCaptionY);
+            pw.println("mCaptionTopPadding=" + mCaptionTopPadding);
+            pw.println("mCustomizableCaptionRegion=" + mCustomizableCaptionRegion);
+            pw.println("mWidth=" + mWidth);
+            pw.println("mHeight=" + mHeight);
+            pw.println("mCornerRadius=" + mCornerRadius);
+            pw.println("mShadowRadius=" + mShadowRadius);
         }
     }
 

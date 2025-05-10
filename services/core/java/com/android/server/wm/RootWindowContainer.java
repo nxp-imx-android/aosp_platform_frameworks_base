@@ -1203,6 +1203,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             addChild(displayContent, POSITION_BOTTOM);
             if (displayContent.mDisplayId == DEFAULT_DISPLAY) {
                 mDefaultDisplay = displayContent;
+            } else {
+                setShouldShowSystemDecorationsForNewDisplay(displayContent);
             }
         }
 
@@ -1856,8 +1858,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (DesktopModeFlags.ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING.isTrue()) {
             final IntArray visibleRootTasks = new IntArray();
             forAllRootTasks(rootTask -> {
-                if ((mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
-                        && rootTask.isVisible()) {
+                final boolean restoreTask;
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                    // If the task is visible, it should have activities that are visible to
+                    // the current user, so don't check for task's user id since it is
+                    // redundant and might accidentally exclude a non-leaf tasks that
+                    // aren't associated with one particular user.
+                    restoreTask = rootTask.isVisible();
+                } else {
+                    restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
+                            && rootTask.isVisible();
+                }
+                if (restoreTask) {
                     visibleRootTasks.add(rootTask.getRootTaskId());
                 }
             }, /* traverseTopToBottom */ false);
@@ -2765,20 +2777,23 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 return;
             }
 
-            if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                display.updateShouldShowSystemDecorations();
-
-                final boolean inTopology = mWindowManager.mDisplayWindowSettings
-                        .shouldShowSystemDecorsLocked(display);
-                mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(displayId,
-                        inTopology);
-            }
+            setShouldShowSystemDecorationsForNewDisplay(display);
 
             startSystemDecorations(display, "displayAdded");
 
             // Drop any cached DisplayInfos associated with this display id - the values are now
             // out of date given this display added event.
             mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(displayId);
+        }
+    }
+
+    private void setShouldShowSystemDecorationsForNewDisplay(DisplayContent displayContent) {
+        if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+            displayContent.updateShouldShowSystemDecorations();
+            final boolean inTopology = mWindowManager.mDisplayWindowSettings
+                    .shouldShowSystemDecorsLocked(displayContent);
+            mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(
+                    displayContent.mDisplayId, inTopology);
         }
     }
 

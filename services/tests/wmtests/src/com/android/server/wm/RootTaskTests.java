@@ -52,8 +52,6 @@ import static com.android.server.wm.TaskDisplayArea.getRootTaskAbove;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
-import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
@@ -67,7 +65,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -192,8 +189,7 @@ public class RootTaskTests extends WindowTestsBase {
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
 
         // Root task removal is deferred if one of its child is animating.
-        doReturn(rootTask).when(task).getAnimatingContainer(
-                eq(TRANSITION | CHILDREN), anyInt());
+        doReturn(true).when(task).inTransition();
 
         rootTask.removeIfPossible();
         // For the case of deferred removal the task controller will still be connected to its

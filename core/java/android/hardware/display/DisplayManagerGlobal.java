@@ -463,8 +463,8 @@ public final class DisplayManagerGlobal {
                 mDisplayListeners.get(index).setEventsMask(internalEventFlagsMask);
             }
             updateCallbackIfNeededLocked();
-            maybeLogAllDisplayListeners();
         }
+        maybeLogAllDisplayListeners();
     }
 
 
@@ -511,8 +511,10 @@ public final class DisplayManagerGlobal {
         }
 
         Slog.i(TAG, "Currently Registered Display Listeners:");
-        for (int i = 0; i < mDisplayListeners.size(); i++) {
-            Slog.i(TAG, i + ": " + mDisplayListeners.get(i));
+        int i = 0;
+        for (DisplayListenerDelegate d : mDisplayListeners) {
+            Slog.i(TAG, i + ": " + d);
+            i++;
         }
     }
 
@@ -1453,8 +1455,8 @@ public final class DisplayManagerGlobal {
                 registerCallbackIfNeededLocked();
                 updateCallbackIfNeededLocked();
             }
-            maybeLogAllTopologyListeners();
         }
+        maybeLogAllTopologyListeners();
     }
 
     /**

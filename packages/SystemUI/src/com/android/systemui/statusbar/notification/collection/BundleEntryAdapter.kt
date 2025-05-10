@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class BundleEntryAdapter(
     private val highPriorityProvider: HighPriorityProvider,
+    private val onUserInteractionCallback: OnUserInteractionCallback,
     val entry: BundleEntry,
 ) : EntryAdapter {
 
@@ -189,10 +190,8 @@ class BundleEntryAdapter(
         Log.wtf(TAG, "onNotificationActionClicked() called")
     }
 
-    override fun getDismissState(): NotificationEntry.DismissState {
-        // TODO(b/394483200): setDismissState is only called in NotifCollection so it does not
-        //  work on bundles yet
-        return NotificationEntry.DismissState.NOT_DISMISSED
+    override fun isParentDismissed(): Boolean {
+        return false
     }
 
     override fun onEntryClicked(row: ExpandableNotificationRow) {
@@ -227,12 +226,8 @@ class BundleEntryAdapter(
         Log.wtf(TAG, "onEntryAnimatingAwayEnded() called")
     }
 
-    override fun registerFutureDismissal(
-        callback: OnUserInteractionCallback,
-        reason: Int,
-    ): Runnable? {
-        // TODO(b/389839319): what should the pipeline do when a bundle is dismissed?
-        return null
+    override fun registerFutureDismissal(): Runnable {
+        return onUserInteractionCallback.registerFutureDismissal(entry)
     }
 
     override fun markForReinflation(stage: RowContentBindStage) {

@@ -16,6 +16,12 @@
 
 package com.android.wm.shell.common.split;
 
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FIXED_RATIO;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_SPLIT;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_MODE_16_9;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_MODE_MINIMIZED;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_ONLY_1_1;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_33_66;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
@@ -24,6 +30,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_9
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_10_45_45;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_33_33_33;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_45_45_10;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_MINIMIZE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.stateToString;
 
 import android.graphics.Rect;
@@ -52,7 +59,19 @@ public class SplitSpec {
     /** A 50-50 split ratio. */
     public static final float MIDDLE_RATIO = 0.5f;
 
+    public static final List<Integer> ONE_TARGET = List.of(SNAP_TO_2_50_50);
+    public static final List<Integer> ONE_TARGET_MINIMIZED = List.of(SNAP_TO_MINIMIZE);
+    public static final List<Integer> THREE_TARGETS_ONSCREEN =
+            List.of(SNAP_TO_2_33_66, SNAP_TO_2_50_50, SNAP_TO_2_66_33);
+    public static final List<Integer> THREE_TARGETS_OFFSCREEN =
+            List.of(SNAP_TO_2_10_90, SNAP_TO_2_50_50, SNAP_TO_2_90_10);
+    public static final List<Integer> FIVE_TARGETS =
+            List.of(SNAP_TO_2_10_90, SNAP_TO_2_33_66, SNAP_TO_2_50_50, SNAP_TO_2_66_33,
+                    SNAP_TO_2_90_10);
+
     private final boolean mIsLeftRightSplit;
+    /** The physical size of the display. */
+    private final Rect mDisplayBounds;
     /** The usable display area, considering insets that affect split bounds. */
     private final RectF mUsableArea;
     /** Half the divider size. */
@@ -65,6 +84,7 @@ public class SplitSpec {
     public SplitSpec(Rect displayBounds, int dividerSize, boolean isLeftRightSplit,
             Rect pinnedTaskbarInsets) {
         mIsLeftRightSplit = isLeftRightSplit;
+        mDisplayBounds = new Rect(displayBounds);
         mUsableArea = new RectF(displayBounds);
         mUsableArea.left += pinnedTaskbarInsets.left;
         mUsableArea.top += pinnedTaskbarInsets.top;
@@ -179,5 +199,28 @@ public class SplitSpec {
     /** Returns the layout associated with a given split state. */
     List<RectF> getSpec(@SplitScreenState int state) {
         return mLayouts.get(state);
+    }
+
+    /** Returns whether a given Rect is partially offscreen on the current display. */
+    boolean isOffscreen(Rect rect) {
+        return !mDisplayBounds.contains(rect);
+    }
+
+    /**
+     * Returns the expected layout of snap targets for a particular snap mode as a List of
+     * SnapPositions.
+     */
+    public static List<Integer> getSnapTargetLayout(
+            int snapMode, boolean areOffscreenRatiosSupported) {
+        return switch (snapMode) {
+            case SNAP_ONLY_1_1 -> ONE_TARGET;
+            case SNAP_MODE_MINIMIZED -> ONE_TARGET_MINIMIZED;
+            case SNAP_MODE_16_9, SNAP_FIXED_RATIO -> THREE_TARGETS_ONSCREEN;
+            case SNAP_FLEXIBLE_SPLIT ->
+                    areOffscreenRatiosSupported ? THREE_TARGETS_OFFSCREEN : THREE_TARGETS_ONSCREEN;
+            case SNAP_FLEXIBLE_HYBRID ->
+                    areOffscreenRatiosSupported ? FIVE_TARGETS : THREE_TARGETS_ONSCREEN;
+            default -> throw new IllegalStateException("unrecognized snap mode");
+        };
     }
 }

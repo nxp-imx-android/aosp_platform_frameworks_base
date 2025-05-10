@@ -340,20 +340,20 @@ class BubbleBarAnimationHelperTest {
         val taskView = TaskView(context, taskViewController, taskViewTaskController)
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
+        val bubble = FakeBubbleFactory.createChatBubble(context, key)
         val bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
 
-        val bubbleBarExpandedView =
-            FakeBubbleFactory.createExpandedView(
-                context,
-                bubblePositioner,
-                expandedViewManager,
-                bubbleTaskView,
-                mainExecutor,
-                bgExecutor,
-                bubbleLogger,
-            )
-        val viewInfo = FakeBubbleFactory.createViewInfo(bubbleBarExpandedView)
-        return FakeBubbleFactory.createChatBubble(context, key, viewInfo)
+        FakeBubbleFactory.createExpandedView(
+            context,
+            bubblePositioner,
+            expandedViewManager,
+            bubble,
+            bubbleTaskView,
+            mainExecutor,
+            bgExecutor,
+            bubbleLogger,
+        )
+        return bubble
     }
 
     private fun createOverflow(): BubbleOverflow {

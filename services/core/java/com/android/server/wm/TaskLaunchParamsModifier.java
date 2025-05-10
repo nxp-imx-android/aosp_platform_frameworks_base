@@ -303,6 +303,17 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         } else {
             if (DEBUG) appendLog("non-freeform-task-display-area");
         }
+        boolean isNonRootLeafTask =
+                com.android.window.flags.Flags.fixFullscreenInMultiWindow() ? task != null
+                        && !task.isRootTask() : false;
+        if (launchMode == WINDOWING_MODE_FULLSCREEN && isNonRootLeafTask
+                && task.getRootTask().inMultiWindowMode()) {
+            // Seems not making sense to have a fullscreen task in a multi-window Task, let it
+            // inherits from the root task.
+            launchMode = WINDOWING_MODE_UNDEFINED;
+            if (DEBUG) appendLog("inherit-rootTask");
+        }
+
         // If launch mode matches display windowing mode, let it inherit from display.
         outParams.mWindowingMode = launchMode == suggestedDisplayArea.getWindowingMode()
                 && !shouldUpdateExistingTaskWindowingMode(task, launchMode)
@@ -314,8 +325,14 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
 
         // STEP 3: Finalize the display area. Here we allow WM shell route all launches that match
         // certain criteria to specific task display areas.
-        final int resolvedMode = (launchMode != WINDOWING_MODE_UNDEFINED) ? launchMode
-                : suggestedDisplayArea.getWindowingMode();
+        final int resolvedMode;
+        if (launchMode == WINDOWING_MODE_UNDEFINED) {
+            resolvedMode = isNonRootLeafTask ? task.getRootTask().getWindowingMode()
+                    : suggestedDisplayArea.getWindowingMode();
+        } else {
+            resolvedMode = launchMode;
+        }
+
         TaskDisplayArea taskDisplayArea = suggestedDisplayArea;
         // If launch task display area is set in options we should just use it. We assume the
         // suggestedDisplayArea has the right one in this case.

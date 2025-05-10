@@ -23,7 +23,8 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 val TEST_BUNDLE_SPEC =
     BundleSpec(
         key = "Test Bundle",
-        titleTextResId = R.string.recs_notification_channel_label,
+        titleText = R.string.recs_notification_channel_label,
+        summaryText = R.string.redacted_notification_action_title,
         icon = R.drawable.ic_settings,
         bucket = BUCKET_RECS,
     )

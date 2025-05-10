@@ -237,7 +237,7 @@
     <string name="silent_mode" msgid="8796112363642579333">"સાઇલેન્ટ મોડ"</string>
     <string name="turn_on_radio" msgid="2961717788170634233">"વાયરલેસ ચાલુ કરો"</string>
     <string name="turn_off_radio" msgid="7222573978109933360">"વાયરલેસ બંધ કરો"</string>
-    <string name="screen_lock" msgid="2072642720826409809">"સ્ક્રીન લૉક કરો"</string>
+    <string name="screen_lock" msgid="2072642720826409809">"સ્ક્રીન લૉક"</string>
     <string name="power_off" msgid="4111692782492232778">"પાવર બંધ કરો"</string>
     <string name="silent_mode_silent" msgid="5079789070221150912">"રિંગર બંધ"</string>
     <string name="silent_mode_vibrate" msgid="8821830448369552678">"રિંગર વાઇબ્રેટ"</string>
@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"એક-હાથે વાપરો મોડ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"એક્સ્ટ્રા ડિમ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"સાંભળવામાં સહાય કરતા ડિવાઇસ"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"ઑટોક્લિક"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"માઉસ કી"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ડિસ્કનેક્ટેડ છે"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"કનેક્ટેડ છે"</string>
@@ -1972,7 +1973,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ઓકે"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"બૅટરી સેવર ઘેરી થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ પ્રવૃત્તિ, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"બૅટરી સેવર ઘેરી થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ પ્રવૃત્તિ, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"ડેટા વપરાશને ઘટાડવામાં સહાય માટે, ડેટા સેવર કેટલીક ઍપને બૅકગ્રાઉન્ડમાં ડેટા મોકલવા અથવા પ્રાપ્ત કરવાથી અટકાવે છે. તમે હાલમાં ઉપયોગ કરી રહ્યાં છો તે ઍપ ડેટાને ઍક્સેસ કરી શકે છે, પરંતુ તે આ ક્યારેક જ કરી શકે છે. આનો અર્થ એ હોઈ શકે છે, ઉદાહરણ તરીકે, છબીઓ ત્યાં સુધી પ્રદર્શિત થશે નહીં જ્યાં સુધી તમે તેમને ટૅપ નહીં કરો."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"ડેટા વપરાશને ઘટાડવામાં સહાય માટે, ડેટા સેવર કેટલીક ઍપને બૅકગ્રાઉન્ડમાં ડેટા મોકલવા અથવા પ્રાપ્ત કરવાથી અટકાવે છે. તમે હાલમાં ઉપયોગ કરી રહ્યાં છો તે ઍપ ડેટાને ઍક્સેસ કરી શકે છે, પરંતુ તે આ ક્યારેક જ કરી શકે છે. આનો અર્થ એ હોઈ શકે છે, ઉદાહરણ તરીકે, છબીઓ ત્યાં સુધી ડિસ્પ્લે થશે નહીં જ્યાં સુધી તમે તેમને ટૅપ નહીં કરો."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ડેટા સેવર ચાલુ કરીએ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ચાલુ કરો"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{એક મિનિટ માટે ({formattedTime} સુધી)}one{# મિનિટ માટે ({formattedTime} સુધી)}other{# મિનિટ માટે ({formattedTime} સુધી)}}"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"પ્રમોશન"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"સામાજિક"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"ન્યૂઝ"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"સૂચવેલા"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"તમે આ સૂચનાઓનું મહત્વ સેટ કર્યું છે."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"શામેલ થયેલ લોકોને કારણે આ મહત્વપૂર્ણ છે."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"ઍપનું કસ્ટમ નોટિફિકેશન"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"ડી-પૅડ ડાબે"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"ડી-પૅડ જમણે"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"ડી-પૅડ મધ્યમાં"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"ઑટોક્લિક પ્રકારના સેટિંગની પૅનલ"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"ડાબું ક્લિક કરો"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"રાઇટ ક્લિક કરો"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"બે વાર ક્લિક કરો"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ખેંચો"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"સ્ક્રોલ કરો"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"થોડીવાર દબાવી રાખો"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"થોભાવો"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"સ્થિતિ"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ઉપર સ્ક્રોલ કરો"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"નીચે સ્ક્રોલ કરો"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"ડાબે સ્ક્રોલ કરો"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"જમણે સ્ક્રોલ કરો"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"સ્ક્રોલ મોડમાંથી બહાર નીકળો"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"થોભાવો"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"ફરી શરૂ કરો"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"સ્ક્રોલ પૅનલ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g>ને પ્રતિબંધિત સમૂહમાં મૂકવામાં આવ્યું છે"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

@@ -11,6 +11,7 @@ android_library {
     name: "SettingsLibProgressBar",
     use_resource_processor: true,
     defaults: [
+        "SettingsLibApexDefaults",
         "SettingsLintDefaults",
     ],
 
@@ -25,8 +26,4 @@ android_library {
     ],
     sdk_version: "system_current",
     min_sdk_version: "21",
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.permission",
-    ],
 }

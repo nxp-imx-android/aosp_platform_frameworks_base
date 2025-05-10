@@ -73,3 +73,18 @@ flag {
   description: "Enables offloading Bitmaps to disk"
   bug: "398153219"
 }
+
+
+
+
+
+# Start: Flags that have been cleaned up in code but need to remain for CTS
+
+flag {
+  name: "ranking_update_ashmem"
+  namespace: "systemui"
+  description: "This flag controls moving ranking update contents into ashmem"
+  bug: "249848655"
+}
+
+# End: Flags that have been cleaned up in code but need to remain for CTS

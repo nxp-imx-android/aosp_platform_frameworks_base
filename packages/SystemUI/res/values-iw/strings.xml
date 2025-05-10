@@ -67,6 +67,8 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"אישור"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"אין הרשאה לניפוי באגים אלחוטי"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"למשתמש המחובר לחשבון במכשיר הזה אין אפשרות להפעיל ניפוי באגים אלחוטי. כדי להשתמש בתכונה הזו, יש לעבור אל משתמש עם הרשאת אדמין."</string>
+    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
+    <skip />
     <string name="usb_contaminant_title" msgid="894052515034594113">"‏יציאת ה-USB מושבתת"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"‏כדי להגן על המכשיר שלך מנוזלים או חלקיקים, יציאת ה-USB מושבתת ולא מזהה אביזרים כלל.\n\nתתקבל התראה כשניתן יהיה להשתמש ביציאת ה-USB."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"‏יציאת USB הופעלה לזיהוי מטענים ואביזרים"</string>
@@ -320,7 +322,7 @@
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_disconnect" msgid="415980329093277342">"ניתוק"</string>
     <string name="accessibility_quick_settings_bluetooth_device_tap_to_activate" msgid="3724301751036877403">"הפעלה"</string>
     <string name="turn_on_bluetooth_auto_tomorrow" msgid="3345758139235739006">"הפעלה אוטומטית ביום הבא"</string>
-    <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"‏תכונות כמו \'שיתוף מהיר\' ו\'איפה המכשיר שלי\' משתמשות ב-Bluetooth"</string>
+    <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"‏תכונות כמו \"שיתוף מהיר\" ו\"איפה המכשיר שלי\" משתמשות ב-Bluetooth"</string>
     <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"‏חיבור ה-Bluetooth יופעל מחר בבוקר"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"שיתוף האודיו"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"מתבצע שיתוף של האודיו"</string>
@@ -405,12 +407,12 @@
     <string name="qs_record_issue_start" msgid="2979831312582567056">"קדימה"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"עצירה"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"דיווח על באג"</string>
-    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"איזה חלק בחוויית השימוש שלך במכשיר הושפע?"</string>
+    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"באיזו בעיה נתקלת בחוויית השימוש שלך במכשיר?"</string>
     <string name="qs_record_issue_dropdown_prompt" msgid="2526949919167046219">"בחירה בסוג הבעיה"</string>
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"הקלטת המסך"</string>
     <string name="performance" msgid="6552785217174378320">"ביצועים"</string>
     <string name="user_interface" msgid="3712869377953950887">"ממשק משתמש"</string>
-    <string name="thermal" msgid="6758074791325414831">"תרמי"</string>
+    <string name="thermal" msgid="6758074791325414831">"טמפרטורה"</string>
     <string name="custom" msgid="3337456985275158299">"בהתאמה אישית"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"הגדרות מעקב מותאמות אישית"</string>
     <string name="restore_default" msgid="5259420807486239755">"שחזור של ברירת המחדל"</string>
@@ -482,8 +484,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"לא הוגדר"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"שינוי ב\'הגדרות\'"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{אין מצבים פעילים}=1{מצב פעיל אחד ({mode})}one{‫# מצבים פעילים}two{‫# מצבים פעילים}other{‫# מצבים פעילים}}"</string>
-    <!-- no translation found for zen_modes_multiple_on_title (4918235362988982304) -->
-    <skip />
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"‫<xliff:g id="NUMBER">%s</xliff:g> מצבים"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"מופעלים"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"כדי לא להפריע לך, המכשיר לא ירטוט ולא ישמיע שום צליל, חוץ מהתראות, תזכורות, אירועים ושיחות ממתקשרים מסוימים לבחירתך. המצב הזה לא ישפיע על צלילים שהם חלק מתוכן שבחרת להפעיל, כמו מוזיקה, סרטונים ומשחקים."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"כדי לא להפריע לך, המכשיר לא ירטוט ולא ישמיע שום צליל, חוץ מהתראות. המצב הזה לא ישפיע על צלילים שהם חלק מתוכן שבחרת להפעיל, כמו מוזיקה, סרטונים ומשחקים."</string>
@@ -492,7 +493,7 @@
     <string name="zen_silence_introduction" msgid="6117517737057344014">"הפעולה הזו מבטלת את כל הצלילים והרטט, כולל בהתראות, מוזיקה, סרטונים ומשחקים."</string>
     <string name="notification_tap_again" msgid="4477318164947497249">"יש ללחוץ שוב כדי לפתוח את ההתראה"</string>
     <string name="tap_again" msgid="1315420114387908655">"צריך ללחוץ פעם נוספת"</string>
-    <string name="keyguard_unlock" msgid="8031975796351361601">"צריך להחליק כדי לפתוח"</string>
+    <string name="keyguard_unlock" msgid="8031975796351361601">"אפשר להחליק כדי לפתוח"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"לפתיחה, לוחצים על סמל ביטול הנעילה"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"הנעילה בוטלה באמצעות זיהוי הפנים. צריך להחליק כדי לפתוח."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"הנעילה בוטלה בזיהוי פנים. פותחים בלחיצה על סמל ביטול הנעילה."</string>
@@ -683,7 +684,8 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"הנעילה נמנעת על ידי סביבה מהימנה"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"המכשיר ננעל, יותר מדי ניסיונות אימות"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"המכשיר ננעל\nהאימות נכשל"</string>
-    <string name="keyguard_indication_after_watch_disconnected" msgid="6329761892437377710">"נחסם על ידי השעון"</string>
+    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>‏. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"הגדרות צליל"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"הוספת כתוביות באופן אוטומטי למדיה"</string>
@@ -811,16 +813,11 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"‏כדי לחבר את המקלדת לטאבלט, תחילה עליך להפעיל את ה-Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"הפעלה"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"פועל – מבוסס על זיהוי פנים"</string>
-    <!-- no translation found for notification_guts_bundle_title (5252530007273079591) -->
-    <skip />
-    <!-- no translation found for notification_guts_promotions_summary (1565750619813325885) -->
-    <skip />
-    <!-- no translation found for notification_guts_news_summary (638697931043407835) -->
-    <skip />
-    <!-- no translation found for notification_guts_social_summary (3749147631983977040) -->
-    <skip />
-    <!-- no translation found for notification_guts_recs_summary (8391881843238947007) -->
-    <skip />
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"השתקה וצירוף לחבילה"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"מכירות, תכונות חדשות ועוד"</string>
+    <string name="notification_guts_news_summary" msgid="638697931043407835">"כתבות מובילות, מאמרי דעה ועוד"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"לייקים, פוסטים ועוד"</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ניוזלטרים, המלצות על מדיה ועוד"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"סיום"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"אישור"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"השבתה"</string>
@@ -1004,14 +1001,16 @@
     <string name="right_keycode" msgid="2480715509844798438">"קוד מפתח ימני"</string>
     <string name="left_icon" msgid="5036278531966897006">"סמל שמאלי"</string>
     <string name="right_icon" msgid="1103955040645237425">"סמל ימני"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"יש ללחוץ ולגרור כדי להוסיף כפתורים"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"יש ללחוץ ולגרור כדי לסדר מחדש את כרטיסי המידע"</string>
+    <string name="drag_to_add_tiles" msgid="8933270127508303672">"צריך ללחוץ ולגרור כדי להוסיף משבצות"</string>
+    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"צריך ללחוץ ולגרור כדי לסדר מחדש את המשבצות"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"אפשר לבחור כפתורים כדי לשנות את הסדר והגודל שלהם"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"יש להקיש כדי למקם את המשבצת"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"אפשר לגרור לכאן כדי להסיר"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"יש צורך ב-<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> אריחים לפחות"</string>
     <string name="qs_edit" msgid="5583565172803472437">"עריכה"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת הכפתורים"</string>
+    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"שעה"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"הצגת שעות, דקות ושניות"</item>
@@ -1027,13 +1026,11 @@
     <string name="other" msgid="429768510980739978">"אחר"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"שינוי גודל הלחצן"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"הסרת הכפתור"</string>
-    <!-- no translation found for accessibility_qs_edit_place_tile_action (7073332873378207231) -->
-    <skip />
+    <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"בחירת מיקום לכפתור"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"להפעיל או להשבית את מצב המיקום"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"לבחור או לבטל את הבחירה"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"הוספת כפתור במיקום האחרון"</string>
-    <!-- no translation found for accessibility_qs_edit_named_tile_add_action (7929752125913967625) -->
-    <skip />
+    <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"הוספת <xliff:g id="NAME">%1$s</xliff:g> במיקום האחרון"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"העברת הלחצן"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"הוספת הלחצן במיקום הרצוי"</string>
     <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"העברה למיקום <xliff:g id="POSITION">%1$d</xliff:g>"</string>
@@ -1093,7 +1090,7 @@
     <string name="mobile_data" msgid="4564407557775397216">"חבילת גלישה"</string>
     <string name="mobile_data_text_format" msgid="6806501540022589786">"<xliff:g id="ID_1">%1$s</xliff:g> ‏— <xliff:g id="ID_2">%2$s</xliff:g>"</string>
     <string name="mobile_carrier_text_format" msgid="8912204177152950766">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="MOBILE_DATA_TYPE">%2$s</xliff:g>"</string>
-    <string name="wifi_is_off" msgid="5389597396308001471">"‏Wi-Fi כבוי"</string>
+    <string name="wifi_is_off" msgid="5389597396308001471">"‏ה-Wi-Fi כבוי"</string>
     <string name="bt_is_off" msgid="7436344904889461591">"‏Bluetooth כבוי"</string>
     <string name="dnd_is_off" msgid="3185706903793094463">"מצב \'נא לא להפריע\' כבוי"</string>
     <string name="dnd_is_on" msgid="7009368176361546279">"מצב \'נא לא להפריע\' מופעל"</string>
@@ -1356,6 +1353,8 @@
     <string name="pause_animation" msgid="1919705510058107504">"השהיית האנימציה"</string>
     <string name="ongoing_call_content_description" msgid="6394763878322348560">"שיחה פעילה"</string>
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"בתהליך"</string>
+    <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"הרחבת ההתראה"</string>
+    <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"כיווץ ההתראה"</string>
     <string name="mobile_data_settings_title" msgid="3955246641380064901">"חבילת גלישה"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"מחובר"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"מחובר באופן זמני"</string>
@@ -1375,8 +1374,8 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"‏כדי לשפר את חוויית השימוש במכשיר, אפליקציות ושירותים יוכלו לחפש רשתות Wi-Fi בכל שלב, גם כאשר ה-Wi-Fi כבוי. אפשר לשנות את זה בהגדרות של חיפוש נקודות Wi-Fi. "<annotation id="link">"שינוי"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"השבתה של מצב טיסה"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"אפליקציית <xliff:g id="APPNAME">%1$s</xliff:g> מבקשת להוסיף להגדרות המהירות את הלחצן הבא"</string>
-    <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"להוסיף לחצן"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"לא להוסיף לחצן"</string>
+    <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"להוסיף כפתור"</string>
+    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"לא להוסיף כפתור"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"בחירת משתמש"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{אפליקציה אחת (#) פעילה}one{# אפליקציות פעילות}two{# אפליקציות פעילות}other{# אפליקציות פעילות}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"מידע חדש"</string>

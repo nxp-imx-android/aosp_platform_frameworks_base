@@ -68,7 +68,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsetsTop() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500),
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
@@ -76,7 +76,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsetsBottom() {
         mSource.setFrame(new Rect(0, 400, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500),
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
@@ -84,7 +84,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsetsLeft() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500),
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
@@ -92,7 +92,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsetsRight() {
         mSource.setFrame(new Rect(400, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500),
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 100, 0), insets);
     }
@@ -100,7 +100,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsets_overextend() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500),
+        Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
@@ -108,7 +108,7 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsets_ime_leftCutout() {
         mImeSource.setFrame(new Rect(100, 400, 500, 500));
-        Insets insets = mImeSource.calculateInsets(new Rect(0, 0, 500, 500),
+        Insets insets = mImeSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,
                 false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
@@ -116,23 +116,43 @@ public class InsetsSourceTest {
     @Test
     public void testCalculateInsets_imeCaptionBar() {
         mImeCaptionSource.setFrame(new Rect(0, 400, 500, 500));
-        Insets insets = mImeCaptionSource.calculateInsets(new Rect(0, 0, 500, 500), false);
+        Insets insets = mImeCaptionSource.calculateInsets(new Rect(0, 0, 500, 500),
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
 
         // Place caption bar at top; IME caption bar must always return bottom insets
         mImeCaptionSource.setFrame(new Rect(0, 0, 500, 100));
-        insets = mImeCaptionSource.calculateInsets(new Rect(0, 0, 500, 500), false);
+        insets = mImeCaptionSource.calculateInsets(new Rect(0, 0, 500, 500),
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
 
     @Test
     public void testCalculateInsets_caption_resizing() {
         mCaptionSource.setFrame(new Rect(0, 0, 100, 100));
-        Insets insets = mCaptionSource.calculateInsets(new Rect(0, 0, 200, 200), false);
+        Insets insets = mCaptionSource.calculateInsets(new Rect(0, 0, 200, 200),
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
-        insets = mCaptionSource.calculateInsets(new Rect(0, 0, 50, 200), false);
+        insets = mCaptionSource.calculateInsets(new Rect(0, 0, 50, 200),
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
-        insets = mCaptionSource.calculateInsets(new Rect(100, 100, 200, 500), false);
+        insets = mCaptionSource.calculateInsets(new Rect(100, 100, 200, 500),
+                null /* hostBounds */, false /* ignoreVisibility */);
+        assertEquals(Insets.of(0, 100, 0, 0), insets);
+    }
+
+    @Test
+    public void testCalculateInsets_relativeCaption_resizing() {
+        mCaptionSource.setFrame(new Rect(0, 0, 100, 100));
+        mCaptionSource.setAttachedInsets(Insets.of(0, 100, 0, 0));
+        Insets insets = mCaptionSource.calculateInsets(new Rect(0, 0, 200, 200),
+                new Rect(0, 0, 200, 200), false);
+        assertEquals(Insets.of(0, 100, 0, 0), insets);
+        insets = mCaptionSource.calculateInsets(new Rect(0, 0, 50, 200),
+                new Rect(0, 0, 50, 200), false);
+        assertEquals(Insets.of(0, 100, 0, 0), insets);
+        insets = mCaptionSource.calculateInsets(new Rect(100, 100, 200, 500),
+                new Rect(100, 100, 200, 500), false);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
@@ -141,7 +161,7 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.setVisible(false);
         Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500),
-                false /* ignoreVisibility */);
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 0), insets);
     }
 
@@ -150,63 +170,70 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.setVisible(false);
         Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500),
-                true /* ignoreVisibility */);
+                null /* hostBounds */, true /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
     @Test
     public void testCalculateVisibleInsets_default() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500));
+        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500), null);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
     @Test
     public void testCalculateInsets_noIntersection_vertical() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.NONE, insets);
     }
 
     @Test
     public void testCalculateInsets_zeroWidthIntersection_vertical_start() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 0, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 0, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
     @Test
     public void testCalculateInsets_zeroWidthIntersection_vertical_end() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
-        Insets insets = mSource.calculateInsets(new Rect(500, 0, 500, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(500, 0, 500, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
     @Test
     public void testCalculateInsets_noIntersection_horizontal() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
-        Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(100, 0, 500, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.NONE, insets);
     }
 
     @Test
     public void testCalculateInsetsForIme_noIntersection_horizontal() {
         mImeSource.setFrame(new Rect(0, 0, 100, 500));
-        Insets insets = mImeSource.calculateInsets(new Rect(100, 0, 500, 500), false);
+        Insets insets = mImeSource.calculateInsets(new Rect(100, 0, 500, 500),
+                null /* hostBounds */, false /* ignoreVisibility */);
         assertEquals(Insets.NONE, insets);
     }
 
     @Test
     public void testCalculateInsets_zeroWidthIntersection_horizontal_start() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 0), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 0), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
 
     @Test
     public void testCalculateInsets_zeroWidthIntersection_horizontal_end() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 500, 500, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 500, 500, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
 
@@ -214,7 +241,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_leftCenter() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 400), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 400), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
 
@@ -222,7 +250,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_leftTop() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, -100, 500, 400), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, -100, 500, 400), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
 
@@ -230,7 +259,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_leftBottom() {
         mSource.setFrame(new Rect(0, 0, 100, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 600), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 600), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(100, 0, 0, 0), insets);
     }
 
@@ -238,7 +268,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_topCenter() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 600, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 600, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
@@ -246,7 +277,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_topLeft() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 400, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 400, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
@@ -254,7 +286,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_topRight() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(100, 0, 600, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(100, 0, 600, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 100, 0, 0), insets);
     }
 
@@ -262,7 +295,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_rightCenter() {
         mSource.setFrame(new Rect(400, 0, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 400), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 400), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 100, 0), insets);
     }
 
@@ -270,7 +304,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_rightTop() {
         mSource.setFrame(new Rect(400, 0, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, -100, 500, 400), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, -100, 500, 400), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 100, 0), insets);
     }
 
@@ -278,7 +313,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_rightBottom() {
         mSource.setFrame(new Rect(400, 0, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 600), false);
+        Insets insets = mSource.calculateInsets(new Rect(0, 100, 500, 600), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 100, 0), insets);
     }
 
@@ -286,7 +322,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_bottomCenter() {
         mSource.setFrame(new Rect(0, 400, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 600, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 600, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
 
@@ -294,7 +331,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_bottomLeft() {
         mSource.setFrame(new Rect(0, 400, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 400, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(-100, 0, 400, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
 
@@ -302,7 +340,8 @@ public class InsetsSourceTest {
     public void testCalculateInsets_partialSideIntersection_bottomRight() {
         mSource.setFrame(new Rect(0, 400, 500, 500));
         mSource.updateSideHint(new Rect(0, 0, 500, 500));
-        Insets insets = mSource.calculateInsets(new Rect(100, 0, 600, 500), false);
+        Insets insets = mSource.calculateInsets(new Rect(100, 0, 600, 500), null /* hostBounds */,
+                false /* ignoreVisibility */);
         assertEquals(Insets.of(0, 0, 0, 100), insets);
     }
 
@@ -310,7 +349,8 @@ public class InsetsSourceTest {
     public void testCalculateVisibleInsets_override() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.setVisibleFrame(new Rect(0, 0, 500, 200));
-        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500));
+        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500),
+                null /* hostBounds */);
         assertEquals(Insets.of(0, 200, 0, 0), insets);
     }
 
@@ -319,7 +359,8 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         mSource.setVisibleFrame(new Rect(0, 0, 500, 200));
         mSource.setVisible(false);
-        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500));
+        Insets insets = mSource.calculateVisibleInsets(new Rect(100, 0, 500, 500),
+                null /* hostBounds */);
         assertEquals(Insets.of(0, 0, 0, 0), insets);
     }
 

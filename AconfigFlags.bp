@@ -1287,6 +1287,18 @@ java_aconfig_library {
 }
 
 java_aconfig_library {
+    name: "android.net.platform.flags-aconfig-java-export",
+    aconfig_declarations: "android.net.platform.flags-aconfig",
+    mode: "exported",
+    min_sdk_version: "30",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.tethering",
+    ],
+}
+
+java_aconfig_library {
     name: "com.android.net.thread.platform.flags-aconfig-java",
     aconfig_declarations: "com.android.net.thread.platform.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],

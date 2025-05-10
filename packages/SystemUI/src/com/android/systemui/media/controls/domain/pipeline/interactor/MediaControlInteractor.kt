@@ -98,6 +98,7 @@ constructor(
                 showExplicit = isExplicit,
                 artwork = artwork,
                 deviceData = device,
+                suggestionData = suggestionData,
                 semanticActionButtons = semanticActions,
                 notificationActionButtons = getNotificationActions(data.actions, activityStarter),
                 actionsToShowInCollapsed = actionsToShowInCompact,

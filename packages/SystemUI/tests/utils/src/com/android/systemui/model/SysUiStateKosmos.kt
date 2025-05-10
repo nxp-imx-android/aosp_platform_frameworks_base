@@ -17,8 +17,8 @@
 package com.android.systemui.model
 
 import android.view.Display
+import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
-import com.android.systemui.display.data.repository.FakePerDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos

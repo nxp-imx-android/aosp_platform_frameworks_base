@@ -620,6 +620,7 @@
     <protected-broadcast android:name="android.app.action.NOTIFICATION_POLICY_CHANGED" />
     <protected-broadcast android:name="android.app.action.NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED" />
     <protected-broadcast android:name="android.app.action.AUTOMATIC_ZEN_RULE_STATUS_CHANGED" />
+    <protected-broadcast android:name="android.app.action.ZEN_CONFIGURATION_CHANGED_INTERNAL" />
     <protected-broadcast android:name="android.os.action.ACTION_EFFECTS_SUPPRESSOR_CHANGED" />
     <protected-broadcast android:name="android.app.action.NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED" />
     <protected-broadcast android:name="android.app.action.NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED" />
@@ -1851,6 +1852,15 @@
                 android:label="@string/permlab_highSamplingRateSensors"
                 android:description="@string/permdesc_highSamplingRateSensors"
                 android:protectionLevel="normal" />
+
+    <!-- Allows an app to access moisture intrusion sensor data
+        <p>Protection level: normal
+         @hide
+    -->
+    <permission android:name="android.permission.READ_MOISTURE_INTRUSION"
+                android:permissionGroup="android.permission-group.SENSORS"
+                android:protectionLevel="normal"
+                android:featureFlag="com.android.tradeinmode.flags.trade_in_mode_2025q4"/>
 
     <!-- Allows an application to access data from sensors that the user uses to
          measure what is happening inside their body, such as heart rate.

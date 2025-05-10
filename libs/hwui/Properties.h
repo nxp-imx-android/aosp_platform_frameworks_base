@@ -351,6 +351,7 @@ public:
     static bool isHighEndGfx;
     static bool isLowRam;
     static bool isSystemOrPersistent;
+    static bool isForceInvertEnabled;
 
     static float maxHdrHeadroomOn8bit;
 
@@ -383,6 +384,10 @@ public:
      */
     static void setStretchEffectBehavior(StretchEffectBehavior behavior) {
         stretchEffectBehavior = behavior;
+    }
+
+    static void setIsForceInvertEnabled(bool forceInvertEnabled) {
+        Properties::isForceInvertEnabled = forceInvertEnabled;
     }
 
     // Represents if drawing is enabled. Should only be Off in headless testing environments

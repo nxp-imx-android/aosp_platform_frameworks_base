@@ -38,11 +38,11 @@ class MultiDisplayDragMoveIndicatorController(
         mutableMapOf<Int, MutableMap<Int, MultiDisplayDragMoveIndicatorSurface>>()
 
     /**
-     * Called during drag move, which started at [startDisplayId] and currently
-     * at [currentDisplayid]. Updates the position and visibility of the drag move indicators
-     * for the [taskInfo] based on [boundsDp] on the destination displays ([displayIds])
-     * as the dragged window moves. [transactionSupplier] provides a [SurfaceControl.Transaction]
-     * for applying changes to the indicator surfaces.
+     * Called during drag move, which started at [startDisplayId] and currently at
+     * [currentDisplayid]. Updates the position and visibility of the drag move indicators for the
+     * [taskInfo] based on [boundsDp] on the destination displays ([displayIds]) as the dragged
+     * window moves. [transactionSupplier] provides a [SurfaceControl.Transaction] for applying
+     * changes to the indicator surfaces.
      *
      * It is executed on the [desktopExecutor] to prevent blocking the main thread and avoid jank,
      * as creating and manipulating surfaces can be expensive.
@@ -100,23 +100,24 @@ class MultiDisplayDragMoveIndicatorController(
                     val transaction = transactionSupplier()
                     existingIndicator.relayout(boundsPx, transaction, visibility)
                     transaction.apply()
-                } ?: run {
-                    val newIndicator =
-                        indicatorSurfaceFactory.create(
-                            taskInfo,
-                            displayController.getDisplay(displayId),
-                            displayContext,
-                        )
-                    newIndicator.show(
-                        transactionSupplier(),
-                        taskInfo,
-                        rootTaskDisplayAreaOrganizer,
-                        displayId,
-                        boundsPx,
-                        visibility,
-                    )
-                    dragIndicatorsForTask[displayId] = newIndicator
                 }
+                    ?: run {
+                        val newIndicator =
+                            indicatorSurfaceFactory.create(
+                                taskInfo,
+                                displayController.getDisplay(displayId),
+                                displayContext,
+                            )
+                        newIndicator.show(
+                            transactionSupplier(),
+                            taskInfo,
+                            rootTaskDisplayAreaOrganizer,
+                            displayId,
+                            boundsPx,
+                            visibility,
+                        )
+                        dragIndicatorsForTask[displayId] = newIndicator
+                    }
             }
         }
     }
@@ -131,13 +132,15 @@ class MultiDisplayDragMoveIndicatorController(
      */
     fun onDragEnd(taskId: Int, transactionSupplier: () -> SurfaceControl.Transaction) {
         desktopExecutor.execute {
-            dragIndicators.remove(taskId)?.values?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                val transaction = transactionSupplier()
-                indicators.forEach { indicator ->
-                    indicator.dispose(transaction)
+            dragIndicators
+                .remove(taskId)
+                ?.values
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { indicators ->
+                    val transaction = transactionSupplier()
+                    indicators.forEach { indicator -> indicator.dispose(transaction) }
+                    transaction.apply()
                 }
-                transaction.apply()
-            }
         }
     }
 }

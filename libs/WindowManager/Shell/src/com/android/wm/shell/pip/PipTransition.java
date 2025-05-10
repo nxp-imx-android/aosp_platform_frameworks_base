@@ -75,6 +75,7 @@ import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.pip.PipContentOverlay;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.CounterRotatorHelper;
@@ -188,7 +189,7 @@ public class PipTransition extends PipTransitionController {
 
     @Override
     protected void onInit() {
-        if (!PipUtils.isPip2ExperimentEnabled()) {
+        if (!PipFlags.isPip2ExperimentEnabled()) {
             mTransitions.addHandler(this);
         }
     }

@@ -375,9 +375,26 @@ public class ResourcesManagerTest {
 
     @Test
     @SmallTest
+    public void testUpdateResourcesForActivityUpdateWindowConfiguration() {
+        final Binder activity = new Binder();
+        final Configuration overrideConfig = new Configuration();
+        final Resources resources = mResourcesManager.getResources(
+                activity, APP_ONE_RES_DIR, null, null, null, null, Display.DEFAULT_DISPLAY,
+                overrideConfig, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        overrideConfig.windowConfiguration.getBounds().set(100, 100, 600, 1200);
+        mResourcesManager.updateResourcesForActivity(activity, overrideConfig,
+                Display.DEFAULT_DISPLAY);
+
+        assertEquals(overrideConfig.windowConfiguration,
+                resources.getConfiguration().windowConfiguration);
+    }
+
+    @Test
+    @SmallTest
     @RequiresFlagsEnabled(Flags.FLAG_IGNORE_NON_PUBLIC_CONFIG_DIFF_FOR_RESOURCES_KEY)
     public void testNonPublicDiffOverrideConfigShareImpl() {
         final Configuration overrideConfig1 = new Configuration();
+        overrideConfig1.densityDpi = 100;
         overrideConfig1.windowConfiguration.setAppBounds(0, 0, 500, 1000);
         final Resources resources1 = mResourcesManager.getResources(
                 null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig1,
@@ -390,9 +407,18 @@ public class ResourcesManagerTest {
                 null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig2,
                 CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
 
+        // Verify that ResourcesKey distinguishes undefined fields.
+        final Configuration emptyConfig = new Configuration();
+        final Resources resources3 = mResourcesManager.getResources(
+                null, APP_ONE_RES_DIR, null, null, null, null, null, emptyConfig,
+                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+
         assertNotNull(resources1);
         assertNotNull(resources2);
+        assertNotNull(emptyConfig);
         assertSame(resources1.getImpl(), resources2.getImpl());
+        assertNotSame(resources3.getImpl(), resources1.getImpl());
+        assertNotSame(resources3.getImpl(), resources2.getImpl());
     }
 
     @Test

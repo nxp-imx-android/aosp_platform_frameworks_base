@@ -37,6 +37,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @hide
@@ -55,6 +56,9 @@ public final class NetworkSecurityConfig {
     @FlaggedApi(android.sdk.Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
     static final long DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY = 407952621L;
+
+    private static final AtomicReference<Boolean>
+            sCertificateTransparencyVerificationRequiredDefault = new AtomicReference<>();
 
     private final boolean mCleartextTrafficPermitted;
     private final boolean mHstsEnforced;
@@ -192,9 +196,14 @@ public final class NetworkSecurityConfig {
      * @hide
      */
     public static boolean certificateTransparencyVerificationRequiredDefault() {
-        return certificateTransparencyDefaultEnabled()
-                && majorMinorVersioningScheme()
-                && CompatChanges.isChangeEnabled(DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY);
+        return sCertificateTransparencyVerificationRequiredDefault.updateAndGet(
+                defaultEnabled ->
+                        defaultEnabled != null
+                                ? defaultEnabled
+                                : certificateTransparencyDefaultEnabled()
+                                        && majorMinorVersioningScheme()
+                                        && CompatChanges.isChangeEnabled(
+                                                DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY));
     }
 
     /**

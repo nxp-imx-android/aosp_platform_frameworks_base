@@ -17,6 +17,8 @@
 package com.android.systemui.bluetooth.qsdialog
 
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,9 +31,9 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.Button
+import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.ProgressBar
-import android.widget.Switch
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
@@ -124,15 +126,19 @@ constructor(
 
     private var lastItemRow: Int = -1
 
+    private var showSeeAll: Boolean = false
+
+    private var lastConnectedDeviceIndex: Int = -1
+
     private lateinit var coroutineScope: CoroutineScope
 
     // UI Components
     private lateinit var contentView: View
-    private lateinit var bluetoothToggle: Switch
+    private lateinit var bluetoothToggle: CompoundButton
     private lateinit var seeAllButton: View
     private lateinit var pairNewDeviceButton: View
     private lateinit var deviceListView: RecyclerView
-    private lateinit var autoOnToggle: Switch
+    private lateinit var autoOnToggle: CompoundButton
     private lateinit var autoOnToggleLayout: View
     private lateinit var autoOnToggleInfoTextView: TextView
     private lateinit var audioSharingButton: Button
@@ -144,6 +150,16 @@ constructor(
     private var doneButton: Button? = null
     private var titleTextView: TextView? = null
     private var subtitleTextView: TextView? = null
+
+    // UI Components that only exist in tile details view, but not in dialog.
+    private var entryBackgroundActive: Drawable? = null
+    private var entryBackgroundActiveStart: Drawable? = null
+    private var entryBackgroundActiveEnd: Drawable? = null
+    private var entryBackgroundActiveMiddle: Drawable? = null
+    private var entryBackgroundInactive: Drawable? = null
+    private var entryBackgroundInactiveStart: Drawable? = null
+    private var entryBackgroundInactiveEnd: Drawable? = null
+    private var entryBackgroundInactiveMiddle: Drawable? = null
 
     @AssistedFactory
     interface Factory {
@@ -190,6 +206,23 @@ constructor(
             subtitleTextView = contentView.requireViewById(R.id.bluetooth_tile_dialog_subtitle)
             // If rendering with tile details view, done button shouldn't exist.
             doneButton = contentView.requireViewById(R.id.done_button)
+        } else {
+            entryBackgroundActive =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on)
+            entryBackgroundActiveStart =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_start)
+            entryBackgroundActiveEnd =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_end)
+            entryBackgroundActiveMiddle =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on_middle)
+            entryBackgroundInactive =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_off)
+            entryBackgroundInactiveStart =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_off_start)
+            entryBackgroundInactiveEnd =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_off_end)
+            entryBackgroundInactiveMiddle =
+                contentView.context.getDrawable(R.drawable.settingslib_entry_bg_off_middle)
         }
 
         setupToggle()
@@ -316,6 +349,7 @@ constructor(
         showSeeAll: Boolean,
         showPairNewDevice: Boolean,
     ) {
+        this.showSeeAll = showSeeAll
         withContext(mainDispatcher) {
             val start = systemClock.elapsedRealtime()
             val itemRow = deviceItem.size + showSeeAll.toInt() + showPairNewDevice.toInt()
@@ -331,6 +365,22 @@ constructor(
                     scrollViewContent.layoutParams.height = WRAP_CONTENT
                     lastUiUpdateMs = systemClock.elapsedRealtime()
                     lastItemRow = itemRow
+                    if (!isInDialog) {
+                        lastConnectedDeviceIndex = deviceItem.indexOfLast(::isDeviceConnected)
+                        // The seeAllButton's UI will be grouped together with unconnected devices.
+                        seeAllButton.background =
+                            if (lastConnectedDeviceIndex != deviceItem.size - 1) {
+                                // If the last device is unconnected, seeAllButton should use the
+                                // end drawable.
+                                entryBackgroundInactiveEnd
+                            } else {
+                                // If the last device is connected, seeAllButton will be the only
+                                // item using the inactive drawable, so it should use the default
+                                // inactive one.
+                                entryBackgroundInactive
+                            }
+                        deviceListView.invalidateItemDecorations()
+                    }
                     logger.logDeviceUiUpdate(lastUiUpdateMs - start, deviceItem)
                 }
             }
@@ -398,6 +448,65 @@ constructor(
         deviceListView.apply {
             layoutManager = LinearLayoutManager(contentView.context)
             adapter = deviceItemAdapter
+        }
+        if (!isInDialog) {
+            deviceListView.addItemDecoration(
+                object : RecyclerView.ItemDecoration() {
+                    override fun onDraw(
+                        c: Canvas,
+                        parent: RecyclerView,
+                        state: RecyclerView.State,
+                    ) {
+                        // `itemCount` represents the total number of items in your adapter's data
+                        // set, regardless of what's visible.
+                        val adapter = parent.adapter ?: return
+                        val itemCount = adapter.itemCount
+
+                        // `parent.childCount` is the number of child views currently visible on
+                        // screen. Often less than itemCount since RecyclerView recycles views that
+                        // scroll off-screen.
+                        for (i in 0 until parent.childCount) {
+                            val child = parent.getChildAt(i) ?: continue
+                            val adapterPosition = parent.getChildAdapterPosition(child)
+                            if (adapterPosition == RecyclerView.NO_POSITION) continue
+                            val background: Drawable?
+                            if (adapterPosition > lastConnectedDeviceIndex) {
+                                // Set up background for unconnected devices
+                                background =
+                                    when {
+                                        // Use the default inactive drawable, if there is only one
+                                        // unconnected device and no seeAllButton.
+                                        lastConnectedDeviceIndex + 1 == itemCount - 1 &&
+                                            !showSeeAll -> entryBackgroundInactive
+                                        // Use the start drawable, if this is the first unconnected
+                                        // device.
+                                        adapterPosition == lastConnectedDeviceIndex + 1 ->
+                                            entryBackgroundInactiveStart
+                                        // Use the end drawable, if this is the last unconnected
+                                        // device and no seeAllButton.
+                                        adapterPosition == itemCount - 1 && !showSeeAll ->
+                                            entryBackgroundInactiveEnd
+
+                                        else -> entryBackgroundInactiveMiddle
+                                    }
+                            } else {
+                                // Set up background for connected devices
+                                background =
+                                    when {
+                                        lastConnectedDeviceIndex == 0 -> entryBackgroundActive
+                                        adapterPosition == 0 -> entryBackgroundActiveStart
+                                        adapterPosition == lastConnectedDeviceIndex ->
+                                            entryBackgroundActiveEnd
+
+                                        else -> entryBackgroundActiveMiddle
+                                    }
+                            }
+                            background?.setBounds(child.left, child.top, child.right, child.bottom)
+                            background?.draw(c)
+                        }
+                    }
+                }
+            )
         }
     }
 
@@ -482,6 +591,7 @@ constructor(
             private val divider = view.requireViewById<View>(R.id.divider)
 
             internal fun bind(item: DeviceItem) {
+                val isDeviceConnected = isDeviceConnected(item)
                 container.apply {
                     isEnabled = item.isEnabled
                     background = item.background?.let { context.getDrawable(it) }
@@ -493,10 +603,18 @@ constructor(
 
                     // updating icon colors
                     val tintColor =
-                        context.getColor(
-                            if (item.isActive) InternalR.color.materialColorOnPrimaryContainer
-                            else InternalR.color.materialColorOnSurface
-                        )
+                        if (isInDialog) {
+                            context.getColor(
+                                if (item.isActive) InternalR.color.materialColorOnPrimaryContainer
+                                else InternalR.color.materialColorOnSurface
+                            )
+                        } else {
+                            context.getColor(
+                                if (isDeviceConnected)
+                                    InternalR.color.materialColorOnPrimaryContainer
+                                else InternalR.color.materialColorOnSurface
+                            )
+                        }
 
                     // update icons
                     iconView.apply {
@@ -514,14 +632,27 @@ constructor(
                     divider.setBackgroundColor(tintColor)
 
                     // update text styles
-                    nameView.setTextAppearance(
-                        if (item.isActive) R.style.TextAppearance_BluetoothTileDialog_Active
-                        else R.style.TextAppearance_BluetoothTileDialog
-                    )
-                    summaryView.setTextAppearance(
-                        if (item.isActive) R.style.TextAppearance_BluetoothTileDialog_Active
-                        else R.style.TextAppearance_BluetoothTileDialog
-                    )
+                    if (isInDialog) {
+                        nameView.setTextAppearance(
+                            if (item.isActive) R.style.TextAppearance_BluetoothTileDialog_Active
+                            else R.style.TextAppearance_BluetoothTileDialog
+                        )
+                        summaryView.setTextAppearance(
+                            if (item.isActive) R.style.TextAppearance_BluetoothTileDialog_Active
+                            else R.style.TextAppearance_BluetoothTileDialog
+                        )
+                    } else {
+                        nameView.setTextAppearance(
+                            if (isDeviceConnected)
+                                R.style.TextAppearance_TileDetailsEntryTitle_Active
+                            else R.style.TextAppearance_TileDetailsEntryTitle
+                        )
+                        summaryView.setTextAppearance(
+                            if (isDeviceConnected)
+                                R.style.TextAppearance_TileDetailsEntrySubTitle_Active
+                            else R.style.TextAppearance_TileDetailsEntrySubTitle
+                        )
+                    }
 
                     accessibilityDelegate =
                         object : AccessibilityDelegate() {
@@ -550,6 +681,10 @@ constructor(
                 }
             }
         }
+    }
+
+    private fun isDeviceConnected(item: DeviceItem): Boolean {
+        return item.type == DeviceItemType.CONNECTED_BLUETOOTH_DEVICE
     }
 
     internal companion object {

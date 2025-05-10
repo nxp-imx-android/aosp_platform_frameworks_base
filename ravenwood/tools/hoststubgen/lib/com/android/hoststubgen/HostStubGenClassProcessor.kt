@@ -29,7 +29,6 @@ import com.android.hoststubgen.filters.SanitizationFilter
 import com.android.hoststubgen.filters.TextFileFilterPolicyBuilder
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.utils.ClassPredicate
-import com.android.hoststubgen.visitors.BaseAdapter
 import com.android.hoststubgen.visitors.ImplGeneratingAdapter
 import com.android.hoststubgen.visitors.JdkPatchVisitor
 import com.android.hoststubgen.visitors.PackageRedirectRemapper
@@ -70,7 +69,7 @@ class HostStubGenClassProcessor(
         // Remapping should happen at the end.
         outVisitor = ClassRemapper(outVisitor, remapper)
 
-        val visitorOptions = BaseAdapter.Options(
+        val visitorOptions = ImplGeneratingAdapter.Options(
             errors = errors,
             deleteClassFinals = options.deleteFinals.get,
             deleteMethodFinals = options.deleteFinals.get,

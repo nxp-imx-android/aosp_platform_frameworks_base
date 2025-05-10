@@ -23,6 +23,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.MediaNotificationAction
+import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 
 /** Data model representing a media data. */
 data class MediaDataModel(
@@ -33,10 +34,11 @@ data class MediaDataModel(
     /** Package name of the app that's posting the media, used for logging. */
     val packageName: String,
     val appName: String,
-    val appIcon: Icon?,
+    val appIcon: Icon,
     val background: Icon?,
     val title: String,
     val subtitle: String,
+    val colorScheme: MediaColorScheme?,
     /** List of generic action buttons for the media player, based on notification actions */
     val notificationActions: List<MediaNotificationAction>,
     /**

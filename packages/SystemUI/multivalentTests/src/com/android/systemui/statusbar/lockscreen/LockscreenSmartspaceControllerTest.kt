@@ -31,7 +31,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
 import android.provider.Settings
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
@@ -42,7 +41,6 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.BcSmartspaceConfigPlugin
 import com.android.systemui.plugins.BcSmartspaceDataPlugin
@@ -69,13 +67,14 @@ import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.time.FakeSystemClock
+import java.util.Optional
+import java.util.concurrent.Executor
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.mock
@@ -83,9 +82,8 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import java.util.Optional
-import java.util.concurrent.Executor
 
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
@@ -98,89 +96,62 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         const val SMARTSPACE_CREATION_TIME = 1234L
         const val SMARTSPACE_EXPIRY_TIME = 5678L
     }
-    @Mock
-    private lateinit var featureFlags: FeatureFlags
-    @Mock
-    private lateinit var smartspaceManager: SmartspaceManager
-    @Mock
-    private lateinit var smartspaceSession: SmartspaceSession
-    @Mock
-    private lateinit var activityStarter: ActivityStarter
-    @Mock
-    private lateinit var falsingManager: FalsingManager
 
-    @Mock
-    private lateinit var secureSettings: SecureSettings
+    @Mock private lateinit var featureFlags: FeatureFlags
+    @Mock private lateinit var smartspaceManager: SmartspaceManager
+    @Mock private lateinit var smartspaceSession: SmartspaceSession
+    @Mock private lateinit var activityStarter: ActivityStarter
+    @Mock private lateinit var falsingManager: FalsingManager
 
-    @Mock
-    private lateinit var userTracker: UserTracker
+    @Mock private lateinit var secureSettings: SecureSettings
 
-    @Mock
-    private lateinit var contentResolver: ContentResolver
+    @Mock private lateinit var userTracker: UserTracker
 
-    @Mock
-    private lateinit var configurationController: ConfigurationController
+    @Mock private lateinit var contentResolver: ContentResolver
 
-    @Mock
-    private lateinit var statusBarStateController: StatusBarStateController
+    @Mock private lateinit var configurationController: ConfigurationController
 
-    @Mock
-    private lateinit var keyguardBypassController: KeyguardBypassController
+    @Mock private lateinit var statusBarStateController: StatusBarStateController
 
-    @Mock
-    private lateinit var keyguardUpdateMonitor: KeyguardUpdateMonitor
+    @Mock private lateinit var keyguardBypassController: KeyguardBypassController
 
-    @Mock
-    private lateinit var deviceProvisionedController: DeviceProvisionedController
+    @Mock private lateinit var keyguardUpdateMonitor: KeyguardUpdateMonitor
 
-    @Mock
-    private lateinit var bgExecutor: Executor
+    @Mock private lateinit var deviceProvisionedController: DeviceProvisionedController
 
-    @Mock
-    private lateinit var handler: Handler
+    @Mock private lateinit var bgExecutor: Executor
 
-    @Mock
-    private lateinit var bgHandler: Handler
+    @Mock private lateinit var handler: Handler
 
-    @Mock
-    private lateinit var datePlugin: BcSmartspaceDataPlugin
+    @Mock private lateinit var bgHandler: Handler
 
-    @Mock
-    private lateinit var weatherPlugin: BcSmartspaceDataPlugin
+    @Mock private lateinit var datePlugin: BcSmartspaceDataPlugin
 
-    @Mock
-    private lateinit var plugin: BcSmartspaceDataPlugin
+    @Mock private lateinit var weatherPlugin: BcSmartspaceDataPlugin
 
-    @Mock
-    private lateinit var configPlugin: BcSmartspaceConfigPlugin
+    @Mock private lateinit var plugin: BcSmartspaceDataPlugin
 
-    @Mock
-    private lateinit var dumpManager: DumpManager
+    @Mock private lateinit var configPlugin: BcSmartspaceConfigPlugin
 
-    @Mock
-    private lateinit var controllerListener: SmartspaceTargetListener
+    @Mock private lateinit var dumpManager: DumpManager
 
-    @Captor
-    private lateinit var sessionListenerCaptor: ArgumentCaptor<OnTargetsAvailableListener>
+    @Mock private lateinit var controllerListener: SmartspaceTargetListener
 
-    @Captor
-    private lateinit var userTrackerCaptor: ArgumentCaptor<UserTracker.Callback>
+    @Captor private lateinit var sessionListenerCaptor: ArgumentCaptor<OnTargetsAvailableListener>
 
-    @Captor
-    private lateinit var settingsObserverCaptor: ArgumentCaptor<ContentObserver>
+    @Captor private lateinit var userTrackerCaptor: ArgumentCaptor<UserTracker.Callback>
 
-    @Captor
-    private lateinit var configChangeListenerCaptor: ArgumentCaptor<ConfigurationListener>
+    @Captor private lateinit var settingsObserverCaptor: ArgumentCaptor<ContentObserver>
 
-    @Captor
-    private lateinit var statusBarStateListenerCaptor: ArgumentCaptor<StateListener>
+    @Captor private lateinit var configChangeListenerCaptor: ArgumentCaptor<ConfigurationListener>
+
+    @Captor private lateinit var statusBarStateListenerCaptor: ArgumentCaptor<StateListener>
 
     @Captor
     private lateinit var bypassStateChangedListenerCaptor:
         ArgumentCaptor<KeyguardBypassController.OnBypassStateChangedListener>
 
-    @Captor
-    private lateinit var deviceProvisionedCaptor: ArgumentCaptor<DeviceProvisionedListener>
+    @Captor private lateinit var deviceProvisionedCaptor: ArgumentCaptor<DeviceProvisionedListener>
 
     private lateinit var sessionListener: OnTargetsAvailableListener
     private lateinit var userListener: UserTracker.Callback
@@ -194,7 +165,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     private lateinit var dateSmartspaceView: SmartspaceView
     private lateinit var weatherSmartspaceView: SmartspaceView
     private lateinit var smartspaceView: SmartspaceView
-    private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
     private lateinit var smartspaceViewModelFactory: SmartspaceViewModel.Factory
 
     private val clock = FakeSystemClock()
@@ -211,11 +181,12 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     @Mock private lateinit var userContextPrimary: Context
     @Mock private lateinit var userContextSecondary: Context
 
-    private val userList = listOf(
+    private val userList =
+        listOf(
             mockUserInfo(userHandlePrimary, isManagedProfile = false),
             mockUserInfo(userHandleManaged, isManagedProfile = true),
-            mockUserInfo(userHandleSecondary, isManagedProfile = false)
-    )
+            mockUserInfo(userHandleSecondary, isManagedProfile = false),
+        )
 
     private lateinit var controller: LockscreenSmartspaceController
 
@@ -224,23 +195,22 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
 
         `when`(secureSettings.getUriFor(PRIVATE_LOCKSCREEN_SETTING))
-                .thenReturn(fakePrivateLockscreenSettingUri)
+            .thenReturn(fakePrivateLockscreenSettingUri)
         `when`(secureSettings.getUriFor(NOTIF_ON_LOCKSCREEN_SETTING))
-                .thenReturn(fakeNotifOnLockscreenSettingUri)
+            .thenReturn(fakeNotifOnLockscreenSettingUri)
         `when`(smartspaceManager.createSmartspaceSession(any())).thenReturn(smartspaceSession)
-        `when`(datePlugin.getView(any())).thenReturn(
-                createDateSmartspaceView(), createDateSmartspaceView())
-        `when`(weatherPlugin.getView(any())).thenReturn(
-                createWeatherSmartspaceView(), createWeatherSmartspaceView())
+        `when`(datePlugin.getView(any()))
+            .thenReturn(createDateSmartspaceView(), createDateSmartspaceView())
+        `when`(weatherPlugin.getView(any()))
+            .thenReturn(createWeatherSmartspaceView(), createWeatherSmartspaceView())
         `when`(plugin.getView(any())).thenReturn(createSmartspaceView(), createSmartspaceView())
         `when`(userTracker.userProfiles).thenReturn(userList)
         `when`(statusBarStateController.dozeAmount).thenReturn(0.5f)
         `when`(deviceProvisionedController.isDeviceProvisioned).thenReturn(true)
         `when`(deviceProvisionedController.isCurrentUserSetup).thenReturn(true)
 
-        `when`(userContextPrimary.getSystemService(SmartspaceManager::class.java)).thenReturn(
-            smartspaceManager
-        )
+        `when`(userContextPrimary.getSystemService(SmartspaceManager::class.java))
+            .thenReturn(smartspaceManager)
 
         setActiveUser(userHandlePrimary, userContextPrimary)
         setAllowPrivateNotifications(userHandlePrimary, true)
@@ -248,16 +218,10 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         setAllowPrivateNotifications(userHandleSecondary, true)
         setShowNotifications(userHandlePrimary, true)
 
-        // Use the real wakefulness lifecycle instead of a mock
-        wakefulnessLifecycle = WakefulnessLifecycle(
-            context,
-            /* wallpaper= */ null,
-            clock,
-            dumpManager
-        )
         smartspaceViewModelFactory = testKosmos().smartspaceViewModelFactory
 
-        controller = LockscreenSmartspaceController(
+        controller =
+            LockscreenSmartspaceController(
                 context,
                 featureFlags,
                 activityStarter,
@@ -271,7 +235,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 deviceProvisionedController,
                 keyguardBypassController,
                 keyguardUpdateMonitor,
-                wakefulnessLifecycle,
                 smartspaceViewModelFactory,
                 dumpManager,
                 execution,
@@ -283,7 +246,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 Optional.of(weatherPlugin),
                 Optional.of(plugin),
                 Optional.of(configPlugin),
-        )
+            )
 
         verify(deviceProvisionedController).addCallback(capture(deviceProvisionedCaptor))
         deviceProvisionedListener = deviceProvisionedCaptor.value
@@ -434,11 +397,12 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
 
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandleManaged, isSensitive = true),
-                makeTarget(3, userHandlePrimary, isSensitive = true)
-        )
+                makeTarget(3, userHandlePrimary, isSensitive = true),
+            )
         sessionListener.onTargetsAvailable(targets)
 
         // THEN all sensitive content is still shown
@@ -452,11 +416,12 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
 
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary),
                 makeTarget(2, userHandlePrimary),
-                makeTarget(3, userHandlePrimary)
-        )
+                makeTarget(3, userHandlePrimary),
+            )
         sessionListener.onTargetsAvailable(targets)
 
         // THEN all non-sensitive content is still shown
@@ -470,12 +435,13 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
 
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandlePrimary),
                 makeTarget(3, userHandleManaged),
-                makeTarget(4, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER)
-        )
+                makeTarget(4, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER),
+            )
 
         sessionListener.onTargetsAvailable(targets)
 
@@ -491,23 +457,20 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
 
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(0, userHandlePrimary),
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandleManaged, isSensitive = true),
                 makeTarget(3, userHandleManaged),
                 makeTarget(4, userHandlePrimary, isSensitive = true),
                 makeTarget(5, userHandlePrimary),
-                makeTarget(6, userHandleSecondary, isSensitive = true)
-        )
+                makeTarget(6, userHandleSecondary, isSensitive = true),
+            )
         sessionListener.onTargetsAvailable(targets)
 
         // THEN only non-sensitive content from those accounts is shown
-        verify(plugin).onTargetsAvailable(eq(listOf(
-                targets[0],
-                targets[3],
-                targets[5]
-        )))
+        verify(plugin).onTargetsAvailable(eq(listOf(targets[0], targets[3], targets[5])))
     }
 
     @Test
@@ -515,12 +478,13 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
 
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandlePrimary),
                 makeTarget(3, userHandleManaged),
-                makeTarget(4, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER)
-        )
+                makeTarget(4, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER),
+            )
 
         sessionListener.onTargetsAvailable(targets)
 
@@ -537,11 +501,11 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         connectSession()
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_JUST_RIGHT)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
-                makeTarget(2, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER)
-
-        )
+                makeTarget(2, userHandlePrimary, featureType = SmartspaceTarget.FEATURE_WEATHER),
+            )
         sessionListener.onTargetsAvailable(targets)
         verify(keyguardUpdateMonitor, times(0)).sendWeatherData(any())
     }
@@ -552,17 +516,18 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_JUST_RIGHT)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeWeatherTargetWithExtras(
-                        id = 2,
-                        userHandle = userHandlePrimary,
-                        description = null,
-                        state = WeatherData.WeatherStateIcon.SUNNY.id,
-                        temperature = "32",
-                        useCelsius = null)
-
-        )
+                    id = 2,
+                    userHandle = userHandlePrimary,
+                    description = null,
+                    state = WeatherData.WeatherStateIcon.SUNNY.id,
+                    temperature = "32",
+                    useCelsius = null,
+                ),
+            )
 
         sessionListener.onTargetsAvailable(targets)
 
@@ -575,15 +540,17 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_TOO_EARLY)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeWeatherTargetWithExtras(
-                        id = 1,
-                        userHandle = userHandleManaged,
-                        description = "Sunny",
-                        state = WeatherData.WeatherStateIcon.SUNNY.id,
-                        temperature = "32",
-                        useCelsius = false)
-        )
+                    id = 1,
+                    userHandle = userHandleManaged,
+                    description = "Sunny",
+                    state = WeatherData.WeatherStateIcon.SUNNY.id,
+                    temperature = "32",
+                    useCelsius = false,
+                )
+            )
         sessionListener.onTargetsAvailable(targets)
         verify(keyguardUpdateMonitor, times(0)).sendWeatherData(any())
     }
@@ -594,21 +561,27 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_JUST_RIGHT)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeWeatherTargetWithExtras(
-                        id = 1,
-                        userHandle = userHandleManaged,
-                        description = "Snow Showers",
-                        state = WeatherData.WeatherStateIcon.SNOW_SHOWERS_SNOW.id,
-                        temperature = "-1",
-                        useCelsius = false)
-        )
+                    id = 1,
+                    userHandle = userHandleManaged,
+                    description = "Snow Showers",
+                    state = WeatherData.WeatherStateIcon.SNOW_SHOWERS_SNOW.id,
+                    temperature = "-1",
+                    useCelsius = false,
+                )
+            )
         sessionListener.onTargetsAvailable(targets)
-        verify(keyguardUpdateMonitor).sendWeatherData(argThat { w ->
-            w.description == "Snow Showers" &&
-                    w.state == WeatherData.WeatherStateIcon.SNOW_SHOWERS_SNOW &&
-                    w.temperature == -1 && !w.useCelsius
-        })
+        verify(keyguardUpdateMonitor)
+            .sendWeatherData(
+                argThat { w ->
+                    w.description == "Snow Showers" &&
+                        w.state == WeatherData.WeatherStateIcon.SNOW_SHOWERS_SNOW &&
+                        w.temperature == -1 &&
+                        !w.useCelsius
+                }
+            )
     }
 
     @Test
@@ -617,15 +590,17 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_TOO_LATE)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeWeatherTargetWithExtras(
-                        id = 1,
-                        userHandle = userHandleManaged,
-                        description = "Sunny",
-                        state = WeatherData.WeatherStateIcon.SUNNY.id,
-                        temperature = "72",
-                        useCelsius = false)
-        )
+                    id = 1,
+                    userHandle = userHandleManaged,
+                    description = "Sunny",
+                    state = WeatherData.WeatherStateIcon.SUNNY.id,
+                    temperature = "72",
+                    useCelsius = false,
+                )
+            )
         sessionListener.onTargetsAvailable(targets)
         verify(keyguardUpdateMonitor, times(0)).sendWeatherData(any())
     }
@@ -636,28 +611,35 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_JUST_RIGHT)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeWeatherTargetWithExtras(
-                        id = 1,
-                        userHandle = userHandleManaged,
-                        description = "Sunny",
-                        state = WeatherData.WeatherStateIcon.SUNNY.id,
-                        temperature = "72",
-                        useCelsius = false),
+                    id = 1,
+                    userHandle = userHandleManaged,
+                    description = "Sunny",
+                    state = WeatherData.WeatherStateIcon.SUNNY.id,
+                    temperature = "72",
+                    useCelsius = false,
+                ),
                 makeWeatherTargetWithExtras(
-                        id = 2,
-                        userHandle = userHandleManaged,
-                        description = "Showers",
-                        state = WeatherData.WeatherStateIcon.SHOWERS_RAIN.id,
-                        temperature = "62",
-                        useCelsius = true)
-        )
+                    id = 2,
+                    userHandle = userHandleManaged,
+                    description = "Showers",
+                    state = WeatherData.WeatherStateIcon.SHOWERS_RAIN.id,
+                    temperature = "62",
+                    useCelsius = true,
+                ),
+            )
         sessionListener.onTargetsAvailable(targets)
-        verify(keyguardUpdateMonitor).sendWeatherData(argThat { w ->
-            w.description == "Sunny" &&
-                    w.state == WeatherData.WeatherStateIcon.SUNNY &&
-                    w.temperature == 72 && !w.useCelsius
-        })
+        verify(keyguardUpdateMonitor)
+            .sendWeatherData(
+                argThat { w ->
+                    w.description == "Sunny" &&
+                        w.state == WeatherData.WeatherStateIcon.SUNNY &&
+                        w.temperature == 72 &&
+                        !w.useCelsius
+                }
+            )
     }
 
     @Test
@@ -666,26 +648,32 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         clock.setCurrentTimeMillis(SMARTSPACE_TIME_JUST_RIGHT)
         // WHEN we receive a list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandlePrimary),
                 makeTarget(3, userHandleManaged),
                 makeWeatherTargetWithExtras(
-                        id = 4,
-                        userHandle = userHandlePrimary,
-                        description = "Flurries",
-                        state = WeatherData.WeatherStateIcon.FLURRIES.id,
-                        temperature = "0",
-                        useCelsius = true)
-        )
+                    id = 4,
+                    userHandle = userHandlePrimary,
+                    description = "Flurries",
+                    state = WeatherData.WeatherStateIcon.FLURRIES.id,
+                    temperature = "0",
+                    useCelsius = true,
+                ),
+            )
 
         sessionListener.onTargetsAvailable(targets)
 
-        verify(keyguardUpdateMonitor).sendWeatherData(argThat { w ->
-            w.description == "Flurries" &&
-                    w.state == WeatherData.WeatherStateIcon.FLURRIES &&
-                    w.temperature == 0 && w.useCelsius
-        })
+        verify(keyguardUpdateMonitor)
+            .sendWeatherData(
+                argThat { w ->
+                    w.description == "Flurries" &&
+                        w.state == WeatherData.WeatherStateIcon.FLURRIES &&
+                        w.temperature == 0 &&
+                        w.useCelsius
+                }
+            )
     }
 
     @Test
@@ -697,11 +685,12 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         settingsObserver.onChange(true, fakePrivateLockscreenSettingUri)
 
         // WHEN we receive a new list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(1, userHandlePrimary, isSensitive = true),
                 makeTarget(2, userHandleManaged, isSensitive = true),
-                makeTarget(4, userHandlePrimary, isSensitive = true)
-        )
+                makeTarget(4, userHandlePrimary, isSensitive = true),
+            )
         sessionListener.onTargetsAvailable(targets)
 
         // THEN we filter based on the new settings values
@@ -721,22 +710,20 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         userListener.onUserChanged(userHandleSecondary.identifier, context)
 
         // WHEN we receive a new list of targets
-        val targets = listOf(
+        val targets =
+            listOf(
                 makeTarget(0, userHandlePrimary),
                 makeTarget(1, userHandleSecondary),
                 makeTarget(2, userHandleSecondary, isSensitive = true),
                 makeTarget(3, userHandleManaged),
                 makeTarget(4, userHandleSecondary),
                 makeTarget(5, userHandleManaged),
-                makeTarget(6, userHandlePrimary)
-        )
+                makeTarget(6, userHandlePrimary),
+            )
         sessionListener.onTargetsAvailable(targets)
 
         // THEN only non-sensitive content from the secondary user is shown
-        verify(plugin).onTargetsAvailable(listOf(
-                targets[1],
-                targets[4]
-        ))
+        verify(plugin).onTargetsAvailable(listOf(targets[1], targets[4]))
     }
 
     @Test
@@ -758,7 +745,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(configurationController).removeCallback(configChangeListener)
         verify(statusBarStateController).removeCallback(statusBarStateListener)
         verify(keyguardBypassController)
-                .unregisterOnBypassStateChangedListener(bypassStateChangeListener)
+            .unregisterOnBypassStateChangedListener(bypassStateChangeListener)
     }
 
     @Test
@@ -811,48 +798,13 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(configurationController, never()).addCallback(any())
     }
 
-    @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_SMARTSPACE_LOCKSCREEN_VIEWMODEL)
-    fun testWakefulnessLifecycleDispatch_wake_setsSmartspaceScreenOnTrue() {
-        // Connect session
-        connectSession()
-
-        // Add mock views
-        val mockSmartspaceView = mock(SmartspaceView::class.java)
-        controller.smartspaceViews.add(mockSmartspaceView)
-
-        // Initiate wakefulness change
-        wakefulnessLifecycle.dispatchStartedWakingUp(0)
-
-        // Verify smartspace views receive screen on
-        verify(mockSmartspaceView).setScreenOn(true)
-    }
-
-    @Test
-    @DisableFlags(com.android.systemui.Flags.FLAG_SMARTSPACE_LOCKSCREEN_VIEWMODEL)
-    fun testWakefulnessLifecycleDispatch_sleep_setsSmartspaceScreenOnFalse() {
-        // Connect session
-        connectSession()
-
-        // Add mock views
-        val mockSmartspaceView = mock(SmartspaceView::class.java)
-        controller.smartspaceViews.add(mockSmartspaceView)
-
-        // Initiate wakefulness change
-        wakefulnessLifecycle.dispatchFinishedGoingToSleep()
-
-        // Verify smartspace views receive screen on
-        verify(mockSmartspaceView).setScreenOn(false)
-    }
-
     private fun connectSession() {
         val dateView = controller.buildAndConnectDateView(fakeParent, false)
         dateSmartspaceView = dateView as SmartspaceView
         fakeParent.addView(dateView)
         controller.stateChangeListener.onViewAttachedToWindow(dateView)
 
-        verify(dateSmartspaceView).setUiSurface(
-                BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)
+        verify(dateSmartspaceView).setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)
         verify(dateSmartspaceView).setTimeChangedDelegate(any())
         verify(dateSmartspaceView).setBgHandler(bgHandler)
         verify(dateSmartspaceView).registerDataProvider(datePlugin)
@@ -865,8 +817,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         fakeParent.addView(weatherView)
         controller.stateChangeListener.onViewAttachedToWindow(weatherView)
 
-        verify(weatherSmartspaceView).setUiSurface(
-                BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)
+        verify(weatherSmartspaceView)
+            .setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)
         verify(weatherSmartspaceView).setTimeChangedDelegate(any())
         verify(weatherSmartspaceView).setBgHandler(bgHandler)
         verify(weatherSmartspaceView).registerDataProvider(weatherPlugin)
@@ -885,7 +837,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(smartspaceView).registerDataProvider(plugin)
         verify(smartspaceView).registerConfigProvider(configPlugin)
         verify(smartspaceSession)
-                .addOnTargetsAvailableListener(any(), capture(sessionListenerCaptor))
+            .addOnTargetsAvailableListener(any(), capture(sessionListenerCaptor))
         sessionListener = sessionListenerCaptor.value
 
         verify(smartspaceManager).createSmartspaceSession(any())
@@ -893,11 +845,13 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(userTracker).addCallback(capture(userTrackerCaptor), any())
         userListener = userTrackerCaptor.value
 
-        verify(contentResolver).registerContentObserver(
+        verify(contentResolver)
+            .registerContentObserver(
                 eq(fakePrivateLockscreenSettingUri),
                 eq(true),
                 capture(settingsObserverCaptor),
-                eq(UserHandle.USER_ALL))
+                eq(UserHandle.USER_ALL),
+            )
         settingsObserver = settingsObserverCaptor.value
 
         verify(configurationController).addCallback(configChangeListenerCaptor.capture())
@@ -937,186 +891,179 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         id: Int,
         userHandle: UserHandle,
         isSensitive: Boolean = false,
-        featureType: Int = 0
+        featureType: Int = 0,
     ): SmartspaceTarget {
         return SmartspaceTarget.Builder(
                 "target$id",
                 ComponentName("testpackage", "testclass$id"),
-                userHandle)
-                .setSensitive(isSensitive)
-                .setFeatureType(featureType)
-                .build()
+                userHandle,
+            )
+            .setSensitive(isSensitive)
+            .setFeatureType(featureType)
+            .build()
     }
 
     private fun makeWeatherTargetWithExtras(
-            id: Int,
-            userHandle: UserHandle,
-            description: String?,
-            state: Int?,
-            temperature: String?,
-            useCelsius: Boolean?
+        id: Int,
+        userHandle: UserHandle,
+        description: String?,
+        state: Int?,
+        temperature: String?,
+        useCelsius: Boolean?,
     ): SmartspaceTarget {
-        val mockWeatherBundle = mock(Bundle::class.java).apply {
-            `when`(getString(WeatherData.DESCRIPTION_KEY)).thenReturn(description)
-            if (state != null)
-                `when`(getInt(eq(WeatherData.STATE_KEY), any())).thenReturn(state)
-            `when`(getString(WeatherData.TEMPERATURE_KEY)).thenReturn(temperature)
-            `when`(containsKey(WeatherData.USE_CELSIUS_KEY)).thenReturn(useCelsius != null)
-            if (useCelsius != null)
-                `when`(getBoolean(WeatherData.USE_CELSIUS_KEY)).thenReturn(useCelsius)
-        }
+        val mockWeatherBundle =
+            mock(Bundle::class.java).apply {
+                `when`(getString(WeatherData.DESCRIPTION_KEY)).thenReturn(description)
+                if (state != null)
+                    `when`(getInt(eq(WeatherData.STATE_KEY), any())).thenReturn(state)
+                `when`(getString(WeatherData.TEMPERATURE_KEY)).thenReturn(temperature)
+                `when`(containsKey(WeatherData.USE_CELSIUS_KEY)).thenReturn(useCelsius != null)
+                if (useCelsius != null)
+                    `when`(getBoolean(WeatherData.USE_CELSIUS_KEY)).thenReturn(useCelsius)
+            }
 
         val mockBaseAction = mock(SmartspaceAction::class.java)
         `when`(mockBaseAction.extras).thenReturn(mockWeatherBundle)
         return SmartspaceTarget.Builder(
                 "targetWithWeatherExtras$id",
                 ComponentName("testpackage", "testclass$id"),
-                userHandle)
-                .setSensitive(false)
-                .setFeatureType(SmartspaceTarget.FEATURE_WEATHER)
-                .setBaseAction(mockBaseAction)
-                .setExpiryTimeMillis(SMARTSPACE_EXPIRY_TIME)
-                .setCreationTimeMillis(SMARTSPACE_CREATION_TIME)
-                .build()
+                userHandle,
+            )
+            .setSensitive(false)
+            .setFeatureType(SmartspaceTarget.FEATURE_WEATHER)
+            .setBaseAction(mockBaseAction)
+            .setExpiryTimeMillis(SMARTSPACE_EXPIRY_TIME)
+            .setCreationTimeMillis(SMARTSPACE_CREATION_TIME)
+            .build()
     }
 
     private fun setAllowPrivateNotifications(user: UserHandle, value: Boolean) {
-        `when`(secureSettings.getIntForUser(
-                eq(PRIVATE_LOCKSCREEN_SETTING),
-                anyInt(),
-                eq(user.identifier))
-        ).thenReturn(if (value) 1 else 0)
+        `when`(
+                secureSettings.getIntForUser(
+                    eq(PRIVATE_LOCKSCREEN_SETTING),
+                    anyInt(),
+                    eq(user.identifier),
+                )
+            )
+            .thenReturn(if (value) 1 else 0)
     }
 
     private fun setShowNotifications(user: UserHandle, value: Boolean) {
-        `when`(secureSettings.getIntForUser(
-                eq(NOTIF_ON_LOCKSCREEN_SETTING),
-                anyInt(),
-                eq(user.identifier))
-        ).thenReturn(if (value) 1 else 0)
+        `when`(
+                secureSettings.getIntForUser(
+                    eq(NOTIF_ON_LOCKSCREEN_SETTING),
+                    anyInt(),
+                    eq(user.identifier),
+                )
+            )
+            .thenReturn(if (value) 1 else 0)
     }
 
     // Separate function for the date view, which implements a specific subset of all functions.
     private fun createDateSmartspaceView(): SmartspaceView {
-        return spy(object : View(context), SmartspaceView {
-            override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {
-            }
+        return spy(
+            object : View(context), SmartspaceView {
+                override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {}
 
-            override fun setPrimaryTextColor(color: Int) {
-            }
+                override fun setPrimaryTextColor(color: Int) {}
 
-            override fun setUiSurface(uiSurface: String) {
-            }
+                override fun setUiSurface(uiSurface: String) {}
 
-            override fun setBgHandler(bgHandler: Handler?) {
-            }
+                override fun setBgHandler(bgHandler: Handler?) {}
 
-            override fun setTimeChangedDelegate(
-                delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
-            ) {}
+                override fun setTimeChangedDelegate(
+                    delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
+                ) {}
 
-            override fun setDozeAmount(amount: Float) {
-            }
+                override fun setDozeAmount(amount: Float) {}
 
-            override fun setIntentStarter(intentStarter: BcSmartspaceDataPlugin.IntentStarter?) {
-            }
+                override fun setIntentStarter(
+                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
+                ) {}
 
-            override fun setFalsingManager(falsingManager: FalsingManager?) {
-            }
+                override fun setFalsingManager(falsingManager: FalsingManager?) {}
 
-            override fun setDnd(image: Drawable?, description: String?) {
-            }
+                override fun setDnd(image: Drawable?, description: String?) {}
 
-            override fun setNextAlarm(image: Drawable?, description: String?) {
+                override fun setNextAlarm(image: Drawable?, description: String?) {}
             }
-        })
+        )
     }
+
     // Separate function for the weather view, which implements a specific subset of all functions.
     private fun createWeatherSmartspaceView(): SmartspaceView {
-        return spy(object : View(context), SmartspaceView {
-            override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {
-            }
+        return spy(
+            object : View(context), SmartspaceView {
+                override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {}
 
-            override fun setPrimaryTextColor(color: Int) {
-            }
+                override fun setPrimaryTextColor(color: Int) {}
 
-            override fun setUiSurface(uiSurface: String) {
-            }
+                override fun setUiSurface(uiSurface: String) {}
 
-            override fun setBgHandler(bgHandler: Handler?) {
-            }
+                override fun setBgHandler(bgHandler: Handler?) {}
 
-            override fun setTimeChangedDelegate(
-                delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
-            ) {}
+                override fun setTimeChangedDelegate(
+                    delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
+                ) {}
 
-            override fun setDozeAmount(amount: Float) {
-            }
+                override fun setDozeAmount(amount: Float) {}
 
-            override fun setIntentStarter(intentStarter: BcSmartspaceDataPlugin.IntentStarter?) {
-            }
+                override fun setIntentStarter(
+                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
+                ) {}
 
-            override fun setFalsingManager(falsingManager: FalsingManager?) {
+                override fun setFalsingManager(falsingManager: FalsingManager?) {}
             }
-        })
+        )
     }
+
     private fun createSmartspaceView(): SmartspaceView {
-        return spy(object : View(context), SmartspaceView {
-            override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {
-            }
+        return spy(
+            object : View(context), SmartspaceView {
+                override fun registerDataProvider(plugin: BcSmartspaceDataPlugin?) {}
 
-            override fun registerConfigProvider(plugin: BcSmartspaceConfigPlugin?) {
-            }
+                override fun registerConfigProvider(plugin: BcSmartspaceConfigPlugin?) {}
 
-            override fun setPrimaryTextColor(color: Int) {
-            }
+                override fun setPrimaryTextColor(color: Int) {}
 
-            override fun setUiSurface(uiSurface: String) {
-            }
+                override fun setUiSurface(uiSurface: String) {}
 
-            override fun setBgHandler(bgHandler: Handler?) {
-            }
+                override fun setBgHandler(bgHandler: Handler?) {}
 
-            override fun setTimeChangedDelegate(
-                delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
-            ) {}
+                override fun setTimeChangedDelegate(
+                    delegate: BcSmartspaceDataPlugin.TimeChangedDelegate?
+                ) {}
 
-            override fun setDozeAmount(amount: Float) {
-            }
+                override fun setDozeAmount(amount: Float) {}
 
-            override fun setKeyguardBypassEnabled(enabled: Boolean) {
-            }
+                override fun setKeyguardBypassEnabled(enabled: Boolean) {}
 
-            override fun setIntentStarter(intentStarter: BcSmartspaceDataPlugin.IntentStarter?) {
-            }
+                override fun setIntentStarter(
+                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
+                ) {}
 
-            override fun setFalsingManager(falsingManager: FalsingManager?) {
-            }
+                override fun setFalsingManager(falsingManager: FalsingManager?) {}
 
-            override fun setDnd(image: Drawable?, description: String?) {
-            }
+                override fun setDnd(image: Drawable?, description: String?) {}
 
-            override fun setNextAlarm(image: Drawable?, description: String?) {
-            }
+                override fun setNextAlarm(image: Drawable?, description: String?) {}
 
-            override fun setMediaTarget(target: SmartspaceTarget?) {
-            }
+                override fun setMediaTarget(target: SmartspaceTarget?) {}
 
-            override fun getSelectedPage(): Int {
-                return -1
-            }
+                override fun getSelectedPage(): Int {
+                    return -1
+                }
 
-            override fun getCurrentCardTopPadding(): Int {
-                return 0
-            }
+                override fun getCurrentCardTopPadding(): Int {
+                    return 0
+                }
 
-            override fun setHorizontalPaddings(horizontalPadding: Int) {
+                override fun setHorizontalPaddings(horizontalPadding: Int) {}
             }
-        })
+        )
     }
 }
 
 private const val PRIVATE_LOCKSCREEN_SETTING =
-        Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS
-private const val NOTIF_ON_LOCKSCREEN_SETTING =
-        Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS
+    Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS
+private const val NOTIF_ON_LOCKSCREEN_SETTING = Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS

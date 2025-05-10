@@ -180,8 +180,8 @@ public class ActivityOptions extends ComponentOptions {
     public static final String KEY_PACKAGE_NAME = "android:activity.packageName";
 
     /**
-     * The bounds (window size) that the activity should be launched in. Set to null explicitly for
-     * full screen. If the key is not found, previous bounds will be preserved.
+     * The bounds (window size) that the activity should be launched in.
+     * If the key is not found, previous bounds will be preserved.
      * NOTE: This value is ignored on devices that don't have
      * {@link android.content.pm.PackageManager#FEATURE_FREEFORM_WINDOW_MANAGEMENT} or
      * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled.
@@ -596,6 +596,7 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mIsEligibleForLegacyPermissionPrompt;
     private boolean mRemoveWithTaskOrganizer;
     private boolean mLaunchedFromBubble;
+    // TODO(b/407669465): remove it once migrated to the new approach
     private boolean mLaunchNextToBubble;
     private boolean mTransientLaunch;
     private PictureInPictureParams mLaunchIntoPipParams;
@@ -1479,12 +1480,11 @@ public class ActivityOptions extends ComponentOptions {
     /**
      * Sets the bounds (window size and position) that the activity should be launched in.
      * Rect position should be provided in pixels and in screen coordinates.
-     * Set to {@code null} to explicitly launch fullscreen.
      * <p>
      * <strong>NOTE:</strong> This value is ignored on devices that don't have
      * {@link android.content.pm.PackageManager#FEATURE_FREEFORM_WINDOW_MANAGEMENT} or
      * {@link android.content.pm.PackageManager#FEATURE_PICTURE_IN_PICTURE} enabled.
-     * @param screenSpacePixelRect launch bounds or {@code null} for fullscreen
+     * @param screenSpacePixelRect launch bounds
      * @return {@code this} {@link ActivityOptions} instance
      */
     public ActivityOptions setLaunchBounds(@Nullable Rect screenSpacePixelRect) {

@@ -45,3 +45,11 @@ flag {
   description: "Flags the TYPE_VPN_OEM_SERVICE and TYPE_VPN_OEM_LEGACY VpnManager API constants"
   bug: "389829981"
 }
+
+flag {
+  name: "avoid_bad_wifi_from_carrier_config"
+  namespace: "android_core_networking"
+  is_exported: true
+  description: "Flag for reading avoid bad Wi-Fi customization from carrier config"
+  bug: "410976315"
+}

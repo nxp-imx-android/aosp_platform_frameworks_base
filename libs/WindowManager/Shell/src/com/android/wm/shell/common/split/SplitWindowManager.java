@@ -69,6 +69,8 @@ public final class SplitWindowManager extends WindowlessWindowManager {
         void onLeashReady(SurfaceControl leash);
         /** Inflates the given touch zone on the appropriate stage root. */
         void inflateOnStageRoot(OffscreenTouchZone touchZone);
+        /** Called when any visual animations w/ split layout are happening. */
+        void onSplitLayoutAnimating(boolean animating);
     }
 
     public SplitWindowManager(String windowName, Context context, Configuration config,

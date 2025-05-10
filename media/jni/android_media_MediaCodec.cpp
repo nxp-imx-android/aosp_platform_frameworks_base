@@ -3657,7 +3657,7 @@ static jobject getJavaResources(
         ScopedLocalRef<jobject> object{env, env->NewObject(
                 gGlobalResourceInfo.clazz, gGlobalResourceInfo.ctorId)};
         ScopedLocalRef<jstring> nameStr{env, env->NewStringUTF(res.mName.c_str())};
-        env->SetObjectField(object.get(), gInstanceResourceInfo.resourceId, nameStr.get());
+        env->SetObjectField(object.get(), gGlobalResourceInfo.resourceId, nameStr.get());
         env->SetLongField(object.get(), gGlobalResourceInfo.capacityId, (jlong)res.mCapacity);
         env->SetLongField(object.get(), gGlobalResourceInfo.availableId, (jlong)res.mAvailable);
         (void)env->CallBooleanMethod(resourcesObj, gArrayListInfo.addId, object.get());

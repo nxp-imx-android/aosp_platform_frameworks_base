@@ -292,7 +292,7 @@
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"రిప్లయి ఇవ్వండి"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"కొత్త నోటిఫికేషన్"</string>
-    <string name="notification_channel_physical_keyboard" msgid="5417306456125988096">"భౌతిక కీబోర్డ్"</string>
+    <string name="notification_channel_physical_keyboard" msgid="5417306456125988096">"ఫిజికల్‌ కీబోర్డ్"</string>
     <string name="notification_channel_security" msgid="8516754650348238057">"సెక్యూరిటీ"</string>
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"కార్‌ మోడ్"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"ఖాతా స్టేటస్‌"</string>
@@ -311,7 +311,7 @@
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"యాప్ అమలవుతోంది"</string>
     <string name="notification_channel_foreground_service" msgid="7102189948158885178">"బ్యాటరీని ఉపయోగిస్తున్న యాప్‌లు"</string>
     <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"మ్యాగ్నిఫికేషన్"</string>
-    <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"వినికిడి పరికరం"</string>
+    <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"వినికిడి డివైజ్"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"యాక్సెసిబిలిటీ వినియోగం"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"డిస్‌ప్లే చేయండి"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> బ్యాటరీని ఉపయోగిస్తోంది"</string>
@@ -740,7 +740,7 @@
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"తగినంత వెలుతురు లేదు"</string>
     <string name="face_acquired_too_close" msgid="4453646176196302462">"ఫోన్‌ను కాస్త దూరంగా జరపండి"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"ఫోన్‌ను దగ్గరగా పట్టుకోండి"</string>
-    <string name="face_acquired_too_high" msgid="8278815780046368576">"ఫోన్‌ను పైకి పట్టుకోండి"</string>
+    <string name="face_acquired_too_high" msgid="8278815780046368576">"ఫోన్‌ను ఇంకాస్త పైకి జరపండి"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ఫోన్‌ను కిందికి జరపండి"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ఫోన్‌ను మీ ఎడమ వైపునకు జరపండి"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ఫోన్‌ను మీ కుడి వైపునకు జరపండి"</string>
@@ -761,7 +761,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"మీ ఫేస్‌మోడల్ క్రియేషన్ కుదరదు. మళ్లీ ట్రై చేయండి."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"డార్క్ గ్లాసెస్ గుర్తించబడ్డాయి. మీ ముఖం పూర్తిగా కనిపించాలి."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"ముఖం మీద ఏదో  కవరింగ్ ఉన్నట్టు గుర్తించబడింది."</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"ముఖాన్ని ఏదో కప్పి ఉంచినట్లు  గుర్తించబడింది. మీ ముఖం పూర్తిగా కనబడాలి."</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"ముఖం ధృవీకరించలేరు. హార్డ్‌వేర్ అందుబాటులో లేదు."</string>
@@ -1804,7 +1804,8 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"వన్-హ్యాండెడ్ మోడ్"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ఎక్స్‌ట్రా డిమ్"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"హియరింగ్ డివైజ్‌‌‌లు"</string>
-    <string name="autoclick_feature_name" msgid="8149248738736949630">"ఆటో-క్లిక్"</string>
+    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
+    <skip />
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"మౌస్ కీలు"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"డిస్‌కనెక్ట్ అయింది"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"కనెక్ట్ చేయబడింది"</string>
@@ -1821,8 +1822,8 @@
     <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"తర్వాతిసారి మీరు ఈ షార్ట్‌కట్‌ను ఉపయోగించినప్పుడు ఈ ఫీచర్ తెరుచుకుంటుంది. మీ స్క్రీన్ దిగువ నుండి 3 వేళ్లతో పైకి స్వైప్ చేసి, వెంటనే వదలండి."</string>
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"మ్యాగ్నిఫికేషన్"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"ఫోన్ మైక్‌కు మారాలా?"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"వినికిడి పరికరం మైక్‌కు మారాలా?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"మెరుగైన సౌండ్ కావాల్సినప్పుడు లేదా మీ వినికిడి పరికరం బ్యాటరీ తక్కువగా ఉన్నప్పుడు ఇది ఉపయోగపడుతుంది. ఇది కాల్ సమయంలో మాత్రమే మీ మైక్‌ను మారుస్తుంది."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"వినికిడి డివైజ్ మైక్‌కు మారాలా?"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"మెరుగైన సౌండ్ కావాల్సినప్పుడు లేదా మీ వినికిడి డివైజ్ బ్యాటరీ తక్కువగా ఉన్నప్పుడు ఇది ఉపయోగపడుతుంది. ఇది కాల్ సమయంలో మాత్రమే మీ మైక్‌ను మారుస్తుంది."</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"హ్యాండ్స్-ఫ్రీ కాలింగ్ కోసం మీరు మీ వినికిడి పరికరాన్ని ఉపయోగించవచ్చు. ఇది కాల్ సమయంలో మాత్రమే మీ మైక్‌ను మారుస్తుంది."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"మారండి"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"సెట్టింగ్‌లు"</string>
@@ -1996,7 +1997,7 @@
     <string name="zen_mode_default_weekends_name" msgid="4707200272709377930">"వారాంతం"</string>
     <string name="zen_mode_default_events_name" msgid="2280682960128512257">"ఈవెంట్"</string>
     <string name="zen_mode_default_every_night_name" msgid="1467765312174275823">"స్లీప్ మోడ్"</string>
-    <string name="zen_mode_implicit_name" msgid="177586786232302019">"అంతరాయం కలిగించవద్దు (<xliff:g id="APP_NAME">%1$s</xliff:g>)"</string>
+    <string name="zen_mode_implicit_name" msgid="177586786232302019">"డిస్టర్బ్ చేయవద్దు (<xliff:g id="APP_NAME">%1$s</xliff:g>)"</string>
     <string name="zen_mode_implicit_trigger_description" msgid="5714956693073007111">"<xliff:g id="APP_NAME">%1$s</xliff:g> ద్వారా మేనేజ్ చేయబడుతోంది"</string>
     <string name="zen_mode_implicit_activated" msgid="2634285680776672994">"ఆన్‌లో ఉంది"</string>
     <string name="zen_mode_implicit_deactivated" msgid="8688441768371501750">"ఆఫ్‌లో ఉంది"</string>
@@ -2044,8 +2045,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"ప్రమోషన్లు"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"సోషల్ మీడియా"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"వార్తలు"</string>
-    <!-- no translation found for recs_notification_channel_label (4731685669194175453) -->
-    <skip />
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"సూచించినవి"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"మీరు ఈ నోటిఫికేషన్‌ల ప్రాముఖ్యతను సెట్ చేశారు."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ఇందులో పేర్కొనబడిన వ్యక్తులను బట్టి ఇది చాలా ముఖ్యమైనది."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"అనుకూల యాప్ నోటిఫికేషన్"</string>
@@ -2213,7 +2213,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"సరే"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"ఆఫ్ చేయండి"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"మరింత తెలుసుకోండి"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Android 12లో \'మెరుగైన నోటిఫికేషన్‌లు\', \'Android అనుకూల నోటిఫికేషన్‌ల\'ను రీప్లేస్ చేశాయి. చేయాల్సిన పనులను, రిప్లయిలను ఈ ఫీచర్ మీకు చూపిస్తుంది. అలాగే మీ నోటిఫికేషన్‌లను ఆర్గనైజ్ చేస్తుంది. \n\nనోటిఫికేషన్ కంటెంట్‌ను \'మెరుగైన నోటిఫికేషన్‌లు\' ఫీచర్ యాక్సెస్ చేయగలదు. కాంటాక్ట్ పేర్లు, మెసేజ్‌ల వంటి వ్యక్తిగత సమాచారం కూడా ఈ కంటెంట్‌లో ఉంటుంది. ఈ ఫీచర్, నోటిఫికేషన్‌లను విస్మరించగలదు (డిస్మిస్ చేయగలదు) లేదా వాటికి ప్రతిస్పందించగలదు (రెస్పాండ్ కాగలదు). ఫోన్ కాల్స్‌కు సమాధానమివ్వడం, \'అంతరాయం కలిగించవద్దు\' ఆప్షన్‌ను కంట్రోల్ చేయడం లాంటి పనులు కూడా ఇందులో ఉంటాయి."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"Android 12లో \'మెరుగైన నోటిఫికేషన్‌లు\', \'Android అనుకూల నోటిఫికేషన్‌ల\'ను రీప్లేస్ చేశాయి. చేయాల్సిన పనులను, రిప్లయిలను ఈ ఫీచర్ మీకు చూపిస్తుంది. అలాగే మీ నోటిఫికేషన్‌లను ఆర్గనైజ్ చేస్తుంది. \n\nనోటిఫికేషన్ కంటెంట్‌ను \'మెరుగైన నోటిఫికేషన్‌లు\' ఫీచర్ యాక్సెస్ చేయగలదు. కాంటాక్ట్ పేర్లు, మెసేజ్‌ల వంటి వ్యక్తిగత సమాచారం కూడా ఈ కంటెంట్‌లో ఉంటుంది. ఈ ఫీచర్, నోటిఫికేషన్‌లను విస్మరించగలదు (డిస్మిస్ చేయగలదు) లేదా వాటికి ప్రతిస్పందించగలదు (రెస్పాండ్ కాగలదు). ఫోన్ కాల్స్‌కు సమాధానమివ్వడం, \'డిస్టర్బ్ చేయవద్దు\' ఆప్షన్‌ను కంట్రోల్ చేయడం లాంటి పనులు కూడా ఇందులో ఉంటాయి."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"రొటీన్ మోడ్ సమాచార నోటిఫికేషన్"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"బ్యాటరీ సేవర్ ఆన్ చేయబడింది"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"బ్యాటరీ జీవితకాలాన్ని పొడిగించడానికి బ్యాటరీ వినియోగాన్ని తగ్గించడం"</string>
@@ -2268,22 +2268,32 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ఎడమవైపున"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad కుడివైపున"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"DPad మధ్యన"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="7354373370578758696">"ఆటో-క్లిక్ టైప్ సెట్టింగ్‌ల ప్యానెల్"</string>
-    <string name="accessibility_autoclick_left_click" msgid="2301793352260551080">"ఎడమ క్లిక్"</string>
-    <string name="accessibility_autoclick_right_click" msgid="4353495816526181293">"రైట్-క్లిక్"</string>
-    <string name="accessibility_autoclick_double_click" msgid="2103826849116176478">"డబుల్ క్లిక్"</string>
+    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
+    <skip />
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"లాగండి"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"స్క్రోల్ చేయండి"</string>
-    <string name="accessibility_autoclick_long_press" msgid="8757561680164116951">"ఎక్కువసేపు నొక్కి, ఉంచండి"</string>
-    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"పాజ్ చేయండి"</string>
-    <!-- no translation found for accessibility_autoclick_resume (3213396544455349247) -->
+    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
     <skip />
-    <string name="accessibility_autoclick_position" msgid="2933660969907663545">"స్థానం"</string>
-    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"పైకి స్క్రోల్ చేయండి"</string>
-    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"కిందికి స్క్రోల్ చేయండి"</string>
-    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"ఎడమ వైపునకు స్క్రోల్ చేయండి"</string>
-    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"కుడి వైపునకు స్క్రోల్ చేయండి"</string>
-    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"స్క్రోల్ మోడ్ నుండి ఎగ్జిట్ అవ్వండి"</string>
+    <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"పాజ్ చేయండి"</string>
+    <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"కొనసాగించండి"</string>
+    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
+    <skip />
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ప్యానెల్‌కు స్క్రోల్ చేయండి"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> పరిమితం చేయబడిన బకెట్‌లో ఉంచబడింది"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
@@ -2298,7 +2308,7 @@
     <string name="resolver_cross_profile_blocked" msgid="3014597376026044840">"మీ IT అడ్మిన్ ద్వారా బ్లాక్ చేయబడింది"</string>
     <string name="resolver_cant_share_with_work_apps_explanation" msgid="9071442683080586643">"ఈ కంటెంట్ వర్క్ యాప్‌తో షేర్ చేయడం సాధ్యం కాదు"</string>
     <string name="resolver_cant_access_work_apps_explanation" msgid="1129960195389373279">"ఈ కంటెంట్ వర్క్ యాప్‌తో తెరవడం సాధ్యం కాదు"</string>
-    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"ఈ కంటెంట్ వ్యక్తిగత యాప్‌తో షేర్ చేయడం సాధ్యం కాదు"</string>
+    <string name="resolver_cant_share_with_personal_apps_explanation" msgid="6349766201904601544">"ఈ కంటెంట్‌ను వ్యక్తిగత (పర్సనల్) యాప్స్‌కు షేర్ చేయడం సాధ్యపడదు"</string>
     <string name="resolver_cant_access_personal_apps_explanation" msgid="1679399548862724359">"ఈ కంటెంట్ వ్యక్తిగత యాప్‌తో తెరవడం సాధ్యం కాదు"</string>
     <string name="resolver_turn_on_work_apps" msgid="1535946298236678122">"వర్క్ యాప్‌లు పాజ్ అయ్యాయి"</string>
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"అన్‌పాజ్ చేయండి"</string>
@@ -2468,7 +2478,7 @@
     <string name="mic_access_off_toast" msgid="8111040892954242437">"మైక్రోఫోన్ బ్లాక్ చేయబడింది"</string>
     <string name="connected_display_unavailable_notification_title" msgid="5265409360902073556">"డిస్‌ప్లే చేయడానికి మిర్రర్ చేయడం సాధ్యపడదు"</string>
     <string name="connected_display_unavailable_notification_content" msgid="3845903313751217516">"వేరే కేబుల్‌ను ఉపయోగించి, మళ్లీ ట్రై చేయండి"</string>
-    <string name="connected_display_thermally_unavailable_notification_content" msgid="9205758199439955949">"మీ పరికరం చాలా వెచ్చగా ఉంది, అది చల్లబడే వరకు డిస్‌ప్లే చేయడానికి మిర్రర్ చేయడం సాధ్యపడదు"</string>
+    <string name="connected_display_thermally_unavailable_notification_content" msgid="9205758199439955949">"మీ డివైజ్ చాలా వెచ్చగా ఉంది, అది చల్లబడే వరకు డిస్‌ప్లే చేయడానికి మిర్రర్ చేయడం సాధ్యపడదు"</string>
     <string name="concurrent_display_notification_name" msgid="1526911253558311131">"Dual Screen"</string>
     <string name="concurrent_display_notification_active_title" msgid="4892473462327943673">"Dual Screen ఆన్‌లో ఉంది"</string>
     <string name="concurrent_display_notification_active_content" msgid="5889355473710601270">"కంటెంట్‌ను చూపడం కోసం <xliff:g id="APP_NAME">%1$s</xliff:g> రెండు డిస్‌ప్లేలనూ ఉపయోగిస్తోంది"</string>

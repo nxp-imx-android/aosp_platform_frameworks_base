@@ -86,6 +86,7 @@ import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxCleanupAdapter;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.pip.PipModule;
@@ -1407,11 +1408,13 @@ public abstract class WMShellModule {
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer,
+            @NonNull Transitions transitions,
             DesktopState desktopState
     ) {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
-                    new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
+                    new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
+                            transitions));
         }
         return Optional.empty();
     }
@@ -1796,6 +1799,7 @@ public abstract class WMShellModule {
             DragAndDropController dragAndDropController,
             @NonNull DelegateLetterboxTransitionObserver letterboxTransitionObserver,
             @NonNull LetterboxCommandHandler letterboxCommandHandler,
+            @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,

@@ -1365,6 +1365,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (mExpandedWhenPinned) {
             setUserExpanded(true);
         }
+
+        // With row transparency, when the shade is expanded while a HUN is pinned,
+        // that HUN will become unpinned, so it must update its bg (opaque --> transparent)
+        if (notificationRowTransparency() && !isPinned()) {
+            updateBackgroundColors();
+        }
+
         setChronometerRunning(mLastChronometerRunning);
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -1559,8 +1566,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setGutsView(MenuItem item) {
-        if (getGuts() != null && item.getGutsView() instanceof NotificationGuts.GutsContent) {
-            getGuts().setGutsContent((NotificationGuts.GutsContent) item.getGutsView());
+        if (getGuts() != null
+                && item.getGutsContent() instanceof NotificationGuts.GutsContent gutsContent) {
+            getGuts().setGutsContent(gutsContent);
         }
     }
 
@@ -1824,7 +1832,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     /** @return true if the User has dismissed this notif's parent */
     public boolean isParentDismissed() {
         if (NotificationBundleUi.isEnabled()) {
-            return getEntryAdapter().getDismissState() == PARENT_DISMISSED;
+            return getEntryAdapter().isParentDismissed();
         } else {
             return getEntryLegacy().getDismissState() == PARENT_DISMISSED;
         }
@@ -1964,8 +1972,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (canEntryBeDismissed()) {
             if (mOnUserInteractionCallback != null) {
                 Runnable futureDismissal = NotificationBundleUi.isEnabled()
-                        ? getEntryAdapter().registerFutureDismissal(
-                        mOnUserInteractionCallback, REASON_CANCEL)
+                        ? getEntryAdapter().registerFutureDismissal()
                         : mOnUserInteractionCallback.registerFutureDismissal(
                                 getEntryLegacy(), REASON_CANCEL);
                 if (futureDismissal != null) {
@@ -2598,10 +2605,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             menuItem = provider.getLongpressMenuItem(mContext);
         }
         if (SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY == semanticAction
-                && menuItem.getGutsView() instanceof NotificationConversationInfo) {
-            NotificationConversationInfo info =
-                    (NotificationConversationInfo) menuItem.getGutsView();
-            info.setSelectedAction(NotificationConversationInfo.ACTION_FAVORITE);
+                && menuItem.getGutsContent() instanceof NotificationConversationInfo gutsContent) {
+            gutsContent.setSelectedAction(NotificationConversationInfo.ACTION_FAVORITE);
         }
         doLongClickCallback(x, y, menuItem);
     }
@@ -2876,6 +2881,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mGuts == null) {
             mGutsStub.inflate();
         }
+    }
+
+    public boolean isBundle() {
+        return mIsBundle;
     }
 
     private void updateChildrenVisibility() {
@@ -4084,22 +4093,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         updateBackgroundForGroupState();
     }
 
-    /** @return whether a HUN expansion has completed outside the shade, with row transparency. */
-    private boolean isHUNGroupExpanded() {
-        return mIsHeadsUp
-                && isGroupExpanded()
-                && !isGroupExpansionChanging();
-    }
-
     /**
      * Updates the parent and children backgrounds in a group based on the expansion state.
      */
     public void updateBackgroundForGroupState() {
         if (mIsSummaryWithChildren) {
-            // When the group has finished expanding, we hide its background.
-            // Exception: when row transparency is enabled, and a HUN group is expanded,
-            // we want to preserve the background at the end of the expansion animation.
-            if (notificationRowTransparency() && isHUNGroupExpanded()) {
+            // With row transparency, a pinned notification should not hide its background.
+            if (notificationRowTransparency() && isPinned()) {
                 mShowNoBackground = false;
             } else {
                 mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
@@ -4806,6 +4806,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     protected boolean usesTransparentBackground() {
         // Row background should be opaque when it's displayed as a heads-up notification or
         // displayed on keyguard.
-        return super.usesTransparentBackground() && !mIsHeadsUp && !mOnKeyguard;
+        // Also, for an unpinned HUN on the unlocked shade, the row bg should be transparent.
+        return (super.usesTransparentBackground() && !isPinned() && !mOnKeyguard);
     }
 }

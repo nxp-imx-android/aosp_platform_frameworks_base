@@ -22,13 +22,18 @@ import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.customization.clocks.ViewUtils.animateToAlpha
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewSmartspaceViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import kotlinx.coroutines.flow.combine
 
 /** Binder for the small clock view, large clock view and smartspace. */
 object KeyguardPreviewSmartspaceViewBinder {
+
+    // Track the current show smartsapce flag. If it turns from false to true, animate fade-in.
+    private var currentShowSmartspace: Boolean? = null
 
     @JvmStatic
     fun bind(parentView: View, viewModel: KeyguardPreviewSmartspaceViewModel) {
@@ -42,19 +47,50 @@ object KeyguardPreviewSmartspaceViewBinder {
             parentView.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     launch("$TAG#viewModel.previewClockSize") {
-                        viewModel.previewClockSize.collect {
-                            when (it) {
-                                ClockSizeSetting.DYNAMIC -> {
-                                    smallDateView?.visibility = View.GONE
-                                    largeDateView?.visibility = View.VISIBLE
+                        combine(viewModel.previewClockSize, viewModel.showSmartspace, ::Pair)
+                            .collect { (clockSize, showSmartspace) ->
+                                val shouldFadeIn =
+                                    (currentShowSmartspace == false) && showSmartspace
+                                val largeDateViewVisibility =
+                                    if (showSmartspace) {
+                                        when (clockSize) {
+                                            ClockSizeSetting.DYNAMIC -> View.VISIBLE
+                                            ClockSizeSetting.SMALL -> View.INVISIBLE
+                                        }
+                                    } else {
+                                        View.INVISIBLE
+                                    }
+                                val smallDateViewVisibility =
+                                    if (showSmartspace) {
+                                        when (clockSize) {
+                                            ClockSizeSetting.DYNAMIC -> View.INVISIBLE
+                                            ClockSizeSetting.SMALL -> View.VISIBLE
+                                        }
+                                    } else {
+                                        View.INVISIBLE
+                                    }
+                                largeDateView?.let {
+                                    if (shouldFadeIn && largeDateViewVisibility == View.VISIBLE) {
+                                        it.alpha = 0F
+                                    }
+                                    it.visibility = largeDateViewVisibility
                                 }
-
-                                ClockSizeSetting.SMALL -> {
-                                    smallDateView?.visibility = View.VISIBLE
-                                    largeDateView?.visibility = View.GONE
+                                smallDateView?.let {
+                                    if (shouldFadeIn && smallDateViewVisibility == View.VISIBLE) {
+                                        it.alpha = 0F
+                                    }
+                                    it.visibility = smallDateViewVisibility
                                 }
+                                if (shouldFadeIn) {
+                                    if (largeDateViewVisibility == View.VISIBLE) {
+                                        largeDateView?.animateToAlpha(1F)
+                                    }
+                                    if (smallDateViewVisibility == View.VISIBLE) {
+                                        smallDateView?.animateToAlpha(1F)
+                                    }
+                                }
+                                currentShowSmartspace = showSmartspace
                             }
-                        }
                     }
                 }
             }

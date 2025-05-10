@@ -431,6 +431,7 @@ import com.android.internal.os.TransferPipe;
 import com.android.internal.os.Zygote;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.policy.AttributeCache;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.FrameworkStatsLog;
@@ -5077,26 +5078,40 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     private void maybeSendBootCompletedLocked(ProcessRecord app, boolean isRestrictedBackupMode) {
         boolean sendBroadcast = false;
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            final UserManagerInternal umInternal =
-                    LocalServices.getService(UserManagerInternal.class);
-            UserInfo userInfo = umInternal.getUserInfo(app.userId);
 
-            if (userInfo != null && userInfo.isPrivateProfile()) {
-                // Packages in private space get deferred boot completed whenever they start the
-                // first time since profile start
-                if (!mPrivateSpaceBootCompletedPackages.contains(app.info.packageName)) {
-                    mPrivateSpaceBootCompletedPackages.add(app.info.packageName);
+        final UserManagerInternal umInternal =
+                LocalServices.getService(UserManagerInternal.class);
+        UserInfo userInfo = umInternal.getUserInfo(app.userId);
+        String packageName = app.info.packageName;
+
+        if (userInfo != null && userInfo.isPrivateProfile()) {
+            // Packages in private space get deferred boot completed whenever they start the
+            // first time since profile start
+            if (!mPrivateSpaceBootCompletedPackages.contains(packageName)) {
+                // Skipping the apps that are allowlisted to receive LOCKED_BOOT_COMPLETED and
+                // BOOT_COMPLETED immediately after the profile unlock
+                if (android.multiuser.Flags.enableMovingContentIntoPrivateSpace()) {
+                    String[] allowlistedPackages = mContext.getResources().getStringArray(
+                            com.android.internal
+                                    .R.array.config_privateSpaceBootCompletedImmediateReceivers);
+                    if (!ArrayUtils.contains(allowlistedPackages, packageName)) {
+                        mPrivateSpaceBootCompletedPackages.add(packageName);
+                        sendBroadcast = true;
+                    } else {
+                        mPrivateSpaceBootCompletedPackages.addAll(List.of(allowlistedPackages));
+                    }
+                } else {
+                    mPrivateSpaceBootCompletedPackages.add(packageName);
                     sendBroadcast = true;
-                } // else, stopped packages in private space may still hit the logic below
+                }
             }
+            // else, stopped packages in private space may still hit the logic below
         }
 
         final boolean wasForceStopped = app.wasForceStopped()
                 || app.getWindowProcessController().wasForceStopped();
         if (android.app.Flags.appRestrictionsApi() && wasForceStopped) {
-            noteAppRestrictionEnabled(app.info.packageName, app.uid,
+            noteAppRestrictionEnabled(packageName, app.uid,
                     RESTRICTION_LEVEL_FORCE_STOPPED, false,
                     RESTRICTION_REASON_USAGE, "unknown", RESTRICTION_SOURCE_USER, 0L);
         }
@@ -6510,8 +6525,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             case REASON_INSTR_BACKGROUND_ACTIVITY_PERMISSION:
                 return true;
             case REASON_SYSTEM_ALERT_WINDOW_PERMISSION:
-                if (!Flags.fgsDisableSaw()
-                        || !CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid)) {
+                if (!CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid)) {
                     return true;
                 } else {
                     // With the new SAW restrictions starting Android V, only allow the app to
@@ -6620,8 +6634,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             final UidRecord uidRecord = mProcessList.getUidRecordLOSP(uid);
             final boolean hasSawPermission = mAtmInternal.hasSystemAlertWindowPermission(uid, pid,
                                                             pkgName);
-            final boolean strictSawCheckEnabled = Flags.fgsDisableSaw()
-                            && CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid);
+            final boolean strictSawCheckEnabled =
+                    CompatChanges.isChangeEnabled(FGS_SAW_RESTRICTIONS, uid);
             if (uidRecord != null) {
                 for (int i = uidRecord.getNumOfProcs() - 1; i >= 0; --i) {
                     ProcessRecord pr = uidRecord.getProcessRecordByIndex(i);

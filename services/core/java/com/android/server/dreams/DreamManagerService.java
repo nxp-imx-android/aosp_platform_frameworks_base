@@ -282,8 +282,8 @@ public final class DreamManagerService extends SystemService {
                 com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault);
         mDreamsActivatedOnPosturedByDefault = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
-        // TODO(b/407768891): use default config when added.
-        mOnlyDreamOnWirelessChargingDefault = false;
+        mOnlyDreamOnWirelessChargingDefault = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_onlyDreamWhenWirelessChargingDefault);
         mSettingsObserver = new SettingsObserver(mHandler);
         mKeepDreamingWhenUnpluggingDefault = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_keepDreamingWhenUnplugging);

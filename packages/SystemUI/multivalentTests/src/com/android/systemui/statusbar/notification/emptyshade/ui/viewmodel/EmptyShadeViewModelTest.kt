@@ -16,12 +16,9 @@
 
 package com.android.systemui.statusbar.notification.emptyshade.ui.viewmodel
 
-import android.app.Flags
 import android.app.NotificationManager.Policy
 import android.content.res.Configuration
 import android.os.LocaleList
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
 import android.service.notification.ZenPolicy.VISUAL_EFFECT_NOTIFICATION_LIST
@@ -35,7 +32,6 @@ import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -139,31 +135,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME)
-    @DisableFlags(Flags.FLAG_MODES_UI)
-    fun text_changesWhenNotifsHiddenInShade() =
-        testScope.runTest {
-            val text by collectLastValue(underTest.text)
-
-            zenModeRepository.updateNotificationPolicy(
-                suppressedVisualEffects = Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST
-            )
-            zenModeRepository.updateZenMode(Settings.Global.ZEN_MODE_OFF)
-            runCurrent()
-
-            assertThat(text).isEqualTo("No notifications")
-
-            zenModeRepository.updateNotificationPolicy(
-                suppressedVisualEffects = Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST
-            )
-            zenModeRepository.updateZenMode(Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)
-            runCurrent()
-
-            assertThat(text).isEqualTo("Notifications paused by Do Not Disturb")
-        }
-
-    @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun text_changesWhenLocaleChanges() =
         testScope.runTest {
             val text by collectLastValue(underTest.text)
@@ -186,7 +157,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun text_reflectsModesHidingNotifications() =
         testScope.runTest {
             val text by collectLastValue(underTest.text)
@@ -233,7 +203,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME)
     fun footer_isVisibleWhenSeenNotifsAreFilteredOut() =
         testScope.runTest {
             val footerVisible by collectLastValue(underTest.footer.isVisible)
@@ -250,7 +219,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenHistoryDisabled_leadsToSettingsPage() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -264,7 +232,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenHistoryEnabled_leadsToHistoryPage() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -279,7 +246,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenOneModeHidingNotifications_leadsToModeSettings() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)
@@ -305,7 +271,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(ModesEmptyShadeFix.FLAG_NAME, Flags.FLAG_MODES_UI)
     fun onClick_whenMultipleModesHidingNotifications_leadsToGeneralModesSettings() =
         testScope.runTest {
             val onClick by collectLastValue(underTest.onClick)

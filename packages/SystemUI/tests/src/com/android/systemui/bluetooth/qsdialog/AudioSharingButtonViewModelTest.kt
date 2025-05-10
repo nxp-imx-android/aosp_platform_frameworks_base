@@ -159,6 +159,8 @@ class AudioSharingButtonViewModelTest : SysuiTestCase() {
             val actual by
                 collectLastValue(audioSharingButtonViewModel.audioSharingButtonStateUpdate)
             kosmos.bluetoothTileDialogAudioSharingRepository.setAudioSharingAvailable(true)
+            whenever(cachedBluetoothDevice.isConnectedLeAudioBroadcastAssistantDevice)
+                .thenReturn(true)
             whenever(deviceItem.cachedBluetoothDevice).thenReturn(cachedBluetoothDevice)
             whenever(
                     BluetoothUtils.hasConnectedBroadcastSource(
@@ -167,7 +169,6 @@ class AudioSharingButtonViewModelTest : SysuiTestCase() {
                     )
                 )
                 .thenReturn(false)
-            whenever(BluetoothUtils.isActiveLeAudioDevice(cachedBluetoothDevice)).thenReturn(true)
             bluetoothState.value = true
             runCurrent()
             deviceItemUpdate.emit(listOf(deviceItem))

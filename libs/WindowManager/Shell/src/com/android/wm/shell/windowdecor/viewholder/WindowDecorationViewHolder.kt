@@ -16,7 +16,6 @@
 package com.android.wm.shell.windowdecor.viewholder
 
 import android.app.ActivityManager.RunningTaskInfo
-import android.content.Context
 import android.view.View
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder.Data
 
@@ -24,8 +23,9 @@ import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder.Da
  * Encapsulates the root [View] of a window decoration and its children to facilitate looking up
  * children (via findViewById) and updating to the latest data from [RunningTaskInfo].
  */
-abstract class WindowDecorationViewHolder<T : Data>(rootView: View) : AutoCloseable {
-  val context: Context = rootView.context
+abstract class WindowDecorationViewHolder<T : Data> : AutoCloseable {
+  /** The root view of the window decoration. */
+  abstract val rootView: View
 
   /**
    * A signal to the view holder that new data is available and that the views should be updated to

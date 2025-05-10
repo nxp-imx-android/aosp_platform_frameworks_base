@@ -16,10 +16,13 @@
 
 package com.android.systemui.statusbar.chips.call.domain.interactor
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -30,19 +33,28 @@ import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCall
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
-import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class CallChipInteractorTest : SysuiTestCase() {
-    val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    val repo = kosmos.ongoingCallRepository
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val Kosmos.repo by Kosmos.Fixture { kosmos.ongoingCallRepository }
 
-    val underTest = kosmos.callChipInteractor
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.callChipInteractor }
 
     @Test
-    fun ongoingCallState_matchesState() =
+    fun ongoingCallState_noCall_isNoCall() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            removeOngoingCallState(key = "testKey")
+
+            assertThat(latest).isEqualTo(OngoingCallModel.NoCall)
+        }
+
+    @Test
+    fun ongoingCallState_updatesCorrectly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 
@@ -51,5 +63,49 @@ class CallChipInteractorTest : SysuiTestCase() {
 
             removeOngoingCallState(key = "testKey")
             assertThat(latest).isEqualTo(OngoingCallModel.NoCall)
+        }
+
+    @Test
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_noRequestedPromotion_optInFlagOff_isInCall() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            addOngoingCallState(key = "testKey", requestedPromotion = false)
+
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+        }
+
+    @Test
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_noRequestedPromotion_optInFlagOn_isInCall() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            addOngoingCallState(key = "testKey", requestedPromotion = false)
+
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+        }
+
+    @Test
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_requestedPromotion_optInFlagOff_isInCall() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            addOngoingCallState(key = "testKey", requestedPromotion = true)
+
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+        }
+
+    @Test
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_requestedPromotion_optInFlagOn_isNoCall() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            addOngoingCallState(key = "testKey", requestedPromotion = true)
+
+            assertThat(latest).isInstanceOf(OngoingCallModel.NoCall::class.java)
         }
 }

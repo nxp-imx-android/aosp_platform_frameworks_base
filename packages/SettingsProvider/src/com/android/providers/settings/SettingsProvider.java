@@ -396,6 +396,9 @@ public class SettingsProvider extends ContentProvider {
     private PackageMonitor mPackageMonitor;
 
     @GuardedBy("mLock")
+    private VirtualDeviceManager.VirtualDeviceListener mVirtualDeviceListener;
+
+    @GuardedBy("mLock")
     private boolean mSyncConfigDisabledUntilReboot;
 
     @ChangeId
@@ -3192,9 +3195,50 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private int getDeviceId() {
-        return android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
+        int deviceId = android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
                 && canUidAccessDeviceAwareSettings(Binder.getCallingUid())
                 ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
+        if (deviceId != Context.DEVICE_ID_DEFAULT) {
+            // We have received a call for a non-default device id, so now would be a good time
+            // to initialize a virtual device listener.
+            initVirtualDeviceListener();
+        }
+        return deviceId;
+    }
+
+    private void initVirtualDeviceListener() {
+        synchronized (mLock) {
+            // We already have a listener, just return.
+            if (mVirtualDeviceListener != null) {
+                return;
+            }
+        }
+
+        VirtualDeviceManager virtualDeviceManager =
+                getContext().getSystemService(VirtualDeviceManager.class);
+        if (virtualDeviceManager == null) {
+            return;
+        }
+
+        VirtualDeviceManager.VirtualDeviceListener listener;
+        synchronized (mLock) {
+            mVirtualDeviceListener = new VirtualDeviceManager.VirtualDeviceListener() {
+                @Override
+                public void onVirtualDeviceClosed(int deviceId) {
+                    // Clean up any device-specific settings when a virtual device is closed.
+                    List<UserInfo> userInfos = mUserManager.getAliveUsers();
+                    for (UserInfo userInfo : userInfos) {
+                        synchronized (mLock) {
+                            mSettingsRegistry.removeUserAndDeviceStateLocked(
+                                    userInfo.id, deviceId, true /* permanently */);
+                        }
+                    }
+                }
+            };
+            listener = mVirtualDeviceListener;
+        }
+        virtualDeviceManager.registerVirtualDeviceListener(
+                mHandlerThread.getThreadExecutor(), listener);
     }
 
     private List<Integer> getDeviceIds() {
@@ -3215,7 +3259,9 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private static boolean canUidAccessDeviceAwareSettings(int uid) {
-        return uid == SYSTEM_UID || uid == SHELL_UID;
+        // Allow root, system and shell (for testing) to access device-aware settings (i.e.,
+        // settings for virtual devices).
+        return uid == ROOT_UID || uid == SYSTEM_UID || uid == SHELL_UID;
     }
 
     final class SettingsRegistry {

@@ -62,7 +62,6 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.WmProtoLogGroups;
-import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -540,8 +539,7 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
     @Override
     public void registerOrganizer(@NonNull ITaskFragmentOrganizer organizer,
             boolean isSystemOrganizer, @NonNull Bundle outSavedState) {
-        registerOrganizerInternal(organizer,
-                Flags.taskFragmentSystemOrganizerFlag() && isSystemOrganizer, outSavedState);
+        registerOrganizerInternal(organizer, isSystemOrganizer, outSavedState);
     }
 
     private void registerOrganizerInternal(

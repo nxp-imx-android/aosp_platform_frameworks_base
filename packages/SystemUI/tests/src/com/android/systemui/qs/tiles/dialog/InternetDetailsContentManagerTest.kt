@@ -27,6 +27,7 @@ import android.telephony.telephonyManager
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -39,15 +40,18 @@ import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wifitrackerlib.WifiEntry
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -68,13 +72,15 @@ import org.mockito.kotlin.whenever
 class InternetDetailsContentManagerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val handler: Handler = kosmos.fakeExecutorHandler
-    private val scope: CoroutineScope = mock<CoroutineScope>()
+    private val testDispatcher = kosmos.testDispatcher
+    private val testScope = kosmos.testScope
     private val telephonyManager: TelephonyManager = kosmos.telephonyManager
     private val internetWifiEntry: WifiEntry = mock<WifiEntry>()
     private val wifiEntries: List<WifiEntry> = mock<List<WifiEntry>>()
     private val internetAdapter = mock<InternetAdapter>()
     private val internetDetailsContentController: InternetDetailsContentController =
         mock<InternetDetailsContentController>()
+    private val selectedUserInteractor = mock<SelectedUserInteractor>()
     private val keyguard: KeyguardStateController = mock<KeyguardStateController>()
     private val bgExecutor = FakeExecutor(FakeSystemClock())
     private lateinit var internetDetailsContentManager: InternetDetailsContentManager
@@ -85,6 +91,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     private var wifiToggleSwitch: MaterialSwitch? = null
     private var wifiToggleSummary: TextView? = null
     private var connectedWifi: LinearLayout? = null
+    private var wifiSettingsIcon: ImageView? = null
     private var wifiList: RecyclerView? = null
     private var seeAll: LinearLayout? = null
     private var wifiScanNotify: LinearLayout? = null
@@ -135,9 +142,12 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
                 handler = handler,
                 backgroundExecutor = bgExecutor,
                 keyguard = keyguard,
+                mainDispatcher = testDispatcher,
+                selectedUserInteractor = selectedUserInteractor,
+                hsum = kosmos.fakeHeadlessSystemUserMode,
             )
 
-        internetDetailsContentManager.bind(contentView, scope)
+        internetDetailsContentManager.bind(contentView, testScope)
         internetDetailsContentManager.adapter = internetAdapter
         internetDetailsContentManager.connectedWifiEntry = internetWifiEntry
         internetDetailsContentManager.wifiEntriesCount = wifiEntries.size
@@ -149,6 +159,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
         wifiToggleSwitch = contentView.requireViewById(R.id.wifi_toggle)
         wifiToggleSummary = contentView.requireViewById(R.id.wifi_toggle_summary)
         connectedWifi = contentView.requireViewById(R.id.wifi_connected_layout)
+        wifiSettingsIcon = contentView.requireViewById(R.id.wifi_settings_icon)
         wifiList = contentView.requireViewById(R.id.wifi_list_layout)
         seeAll = contentView.requireViewById(R.id.see_all_layout)
         wifiScanNotify = contentView.requireViewById(R.id.wifi_scan_notify_layout)
@@ -392,6 +403,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndHasInternetWifi_showConnectedWifi() {
         whenever(internetDetailsContentController.activeAutoSwitchNonDdsSubId).thenReturn(1)
         whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
@@ -414,6 +426,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndNoConnectedWifi_hideConnectedWifi() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -431,6 +444,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndNoWifiEntry_showWifiListAndSeeAllArea() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -451,6 +465,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndOneWifiEntry_showWifiListAndSeeAllArea() {
         // The precondition WiFi ON is already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -471,6 +486,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndHasConnectedWifi_showAllWifiAndSeeAllArea() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.wifiEntriesCount = 0
@@ -490,6 +506,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndHasMaxWifiList_showWifiListAndSeeAll() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.connectedWifiEntry = null
@@ -511,6 +528,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun updateContent_wifiOnAndHasBothWifiEntry_showBothWifiEntryAndSeeAll() {
         // The preconditions WiFi ON and WiFi entries are already in setUp()
         internetDetailsContentManager.wifiEntriesCount =
@@ -761,6 +779,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_QS_WIFI_CONFIG)
     fun onClickSeeMoreButton_clickSeeAll_verifyLaunchNetworkSetting() {
         seeAll!!.performClick()
 

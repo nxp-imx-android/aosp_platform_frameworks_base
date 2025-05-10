@@ -23,6 +23,9 @@ import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STA
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.display.DisplayGroupAllocator.GROUP_TYPE_PRIMARY;
+import static com.android.server.display.DisplayGroupAllocator.REASON_EXTENDED;
+import static com.android.server.display.DisplayGroupAllocator.REASON_NON_DESKTOP;
+import static com.android.server.display.DisplayGroupAllocator.REASON_PROJECTED;
 import static com.android.server.display.DisplayGroupAllocator.calculateGroupId;
 
 import android.annotation.NonNull;
@@ -816,13 +819,13 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         for (int i = mLogicalDisplays.size() - 1; i >= 0; i--) {
             final int displayId = mLogicalDisplays.keyAt(i);
             LogicalDisplay display = mLogicalDisplays.valueAt(i);
-            assignDisplayGroupLocked(display);
-
             boolean wasDirty = display.isDirtyLocked();
             mTempDisplayInfo.copyFrom(display.getDisplayInfoLocked());
             display.getNonOverrideDisplayInfoLocked(mTempNonOverrideDisplayInfo);
 
             display.updateLocked(mDisplayDeviceRepo, mSyntheticModeManager);
+            assignDisplayGroupLocked(display);
+
             final DisplayInfo newDisplayInfo = display.getDisplayInfoLocked();
             final int updateState = mUpdatedLogicalDisplays.get(displayId, UPDATE_STATE_NEW);
             final boolean wasPreviouslyUpdated = updateState != UPDATE_STATE_NEW;
@@ -1125,6 +1128,13 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             newGroup = new DisplayGroup(groupId);
             newGroup.setGroupName(groupName);
             mDisplayGroups.append(groupId, newGroup);
+
+            int reason = mDisplayGroupAllocator.getContentModeForDisplayLocked(
+                    display, displayDeviceInfo.type);
+            if (reason == REASON_PROJECTED || reason == REASON_EXTENDED
+                    || reason == REASON_NON_DESKTOP) {
+                newGroup.setFlags(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
+            }
         }
         if (oldGroup != newGroup) {
             if (oldGroup != null) {

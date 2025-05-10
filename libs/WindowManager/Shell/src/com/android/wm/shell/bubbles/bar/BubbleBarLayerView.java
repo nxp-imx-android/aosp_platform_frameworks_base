@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.bar;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE;
@@ -23,6 +24,7 @@ import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDE
 
 import android.annotation.Nullable;
 import android.content.Context;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -39,6 +41,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleController;
@@ -106,6 +109,7 @@ public class BubbleBarLayerView extends FrameLayout
     // Used to ensure touch target size for the menu shown on a bubble expanded view
     private TouchDelegate mHandleTouchDelegate;
     private final Rect mHandleTouchBounds = new Rect();
+    private Insets mInsets;
 
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
             BubbleLogger bubbleLogger) {
@@ -491,18 +495,25 @@ public class BubbleBarLayerView extends FrameLayout
         mAnimationHelper.getExpandedViewRestBounds(out);
     }
 
-    /** Removes the given {@code bubble}. */
-    public void removeBubble(Bubble bubble, Runnable endAction) {
+    public void removeBubble(@NonNull Bubble bubble, @NonNull Runnable endAction) {
         final boolean inTransition = bubble.getPreparingTransition() != null;
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                "BBLayerView.removeBubble(): bubble=%s hasBubbles=%b inTransition=%b",
+                bubble, !mBubbleData.getBubbles().isEmpty(), inTransition);
         Runnable cleanUp = () -> {
             // The transition is already managing the task/wm state.
             bubble.cleanupViews(!inTransition);
             endAction.run();
         };
         if (mBubbleData.getBubbles().isEmpty() || inTransition) {
-            // If we are removing the last bubble or removing the current bubble via transition,
-            // collapse the expanded view and clean up bubbles at the end.
-            collapse(cleanUp);
+            if (mExpandedBubble != null && mExpandedBubble.getKey().equals(bubble.getKey())) {
+                // If we are removing the last bubble or removing the current bubble via transition,
+                // collapse the expanded view and clean up bubbles at the end.
+                collapse(cleanUp);
+            } else {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "  Skipping, does not match expanded view");
+                cleanUp.run();
+            }
         } else {
             cleanUp.run();
         }
@@ -612,6 +623,7 @@ public class BubbleBarLayerView extends FrameLayout
         mExpandedView.setX(mTempRect.left);
         mExpandedView.setY(mTempRect.top);
         mExpandedView.updateLocation();
+        mExpandedView.updateBottomClip();
     }
 
     private void showScrim(boolean show) {
@@ -662,6 +674,15 @@ public class BubbleBarLayerView extends FrameLayout
     @VisibleForTesting
     public BubbleBarExpandedViewDragController getDragController() {
         return mDragController;
+    }
+
+    /** Notifies view of device config update. */
+    public void update(DeviceConfig deviceConfig) {
+        Insets newInsets = deviceConfig.getInsets();
+        if (!newInsets.equals(mInsets)) {
+            mInsets = newInsets;
+            updateExpandedView();
+        }
     }
 
     private class LocationChangeListener implements

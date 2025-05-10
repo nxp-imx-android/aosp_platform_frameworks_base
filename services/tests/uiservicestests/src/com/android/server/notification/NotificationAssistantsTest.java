@@ -74,6 +74,7 @@ import com.android.internal.util.CollectionUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.os.AtomsProto;
+import com.android.os.notification.BundleTypes;
 import com.android.os.notification.NotificationAdjustmentPreferences;
 import com.android.os.notification.NotificationExtensionAtoms;
 import com.android.os.notification.NotificationProtoEnums;
@@ -97,9 +98,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 public class NotificationAssistantsTest extends UiServiceTestCase {
@@ -174,12 +177,13 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 com.android.internal.R.string.config_defaultAssistantAccessComponent,
                 mCn.flattenToString());
         mNm.mDefaultUnsupportedAdjustments = new String[] {};
-        mAssistants = spy(mNm.new NotificationAssistants(mContext, mLock, mUserProfiles, miPm));
-        when(mNm.getBinderService()).thenReturn(mINm);
-        mContext.ensureTestableResources();
 
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUmInternal);
+
+        mAssistants = spy(mNm.new NotificationAssistants(mContext, mLock, mUserProfiles, miPm));
+        when(mNm.getBinderService()).thenReturn(mINm);
+        mContext.ensureTestableResources();
 
         List<ResolveInfo> approved = new ArrayList<>();
         ResolveInfo resolve = new ResolveInfo();
@@ -197,6 +201,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         users.add(mTen);
         users.add(new UserInfo(11, "11", 0));
         users.add(new UserInfo(12, "12", 0));
+        users.add(new UserInfo(13, "13", 0));
         for (UserInfo user : users) {
             when(mUm.getUserInfo(eq(user.id))).thenReturn(user);
         }
@@ -207,6 +212,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         profileIds.add(11);
         profileIds.add(10);
         profileIds.add(12);
+        when(mUmInternal.getProfileParentId(13)).thenReturn(13);  // 13 is a full user
         when(mUserProfiles.getCurrentProfileIds()).thenReturn(profileIds);
         when(mUmInternal.getProfileParentId(11)).thenReturn(mZero.id);
         when(mNm.isNASMigrationDone(anyInt())).thenReturn(true);
@@ -676,8 +682,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 .doesNotContain(Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id)).contains(KEY_TYPE);
 
-        // should not affect other users
-        assertThat(mAssistants.getAllowedAssistantAdjustments(mTen.id)).contains(
+        // should not affect other (full) users
+        assertThat(mAssistants.getAllowedAssistantAdjustments(13)).contains(
                 Adjustment.KEY_RANKING_SCORE);
     }
 
@@ -690,6 +696,25 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_RANKING_SCORE);
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
                 .contains(Adjustment.KEY_RANKING_SCORE);
+    }
+
+    @Test
+    public void testIsAdjustmentAllowed_profileUser_offIfParentOff() {
+        // Even if an adjustment is allowed for a profile user, it should not be considered allowed
+        // if the profile's parent has that adjustment disabled.
+        // User 11 is set up as a profile user of mZero in setup; user 13 is not
+        mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
+        mAssistants.disallowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+
+        assertThat(mAssistants.getAllowedAssistantAdjustments(11)).doesNotContain(
+                Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
+
+        // Now turn it back on for the parent; it should be considered allowed for the profile
+        // (for which it was already on).
+        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_TYPE);
+        assertThat(mAssistants.getAllowedAssistantAdjustments(11)).contains(Adjustment.KEY_TYPE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isTrue();
     }
 
     @Test
@@ -978,34 +1003,93 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     @Test
     @SuppressWarnings("GuardedBy")
     @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
-            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
+            Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
+            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testPullAdjustmentPreferencesStats_fillsOutStatsEvent()
             throws Exception {
-        // Create the current user and enable the package
-        int userId = ActivityManager.getCurrentUser();
         mAssistants.loadDefaultsFromConfig(true);
-        mAssistants.setPackageOrComponentEnabled(mCn.flattenToString(), userId, true,
-                true, true);
-        ManagedServices.ManagedServiceInfo info =
-                mAssistants.new ManagedServiceInfo(null, mCn, userId, false, null, 35, 2345256);
 
-        // Ensure bundling is enabled
-        mAssistants.setAdjustmentTypeSupportedState(info.userid, KEY_TYPE, true);
-        // Enable these specific bundle types
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_SOCIAL_MEDIA, false);
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_PROMOTION, false);
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_NEWS, true);
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_CONTENT_RECOMMENDATION,
+        // Scenario setup: the total list of users is 0, 10, 11 (profile of 0), 12, 13
+        //   * user 0 has both bundles (KEY_TYPE) + summaries (KEY_SUMMARIZATION) supported
+        //      * KEY_TYPE is allowed; KEY_SUMMARIZATION disallowed
+        //   * user 13 has only KEY_TYPE, which is disallowed
+        //   * other users have neither supported
+        mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_TYPE, true);
+        mAssistants.allowAdjustmentType(mZero.id, KEY_TYPE);
+        mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_SUMMARIZATION, true);
+        mAssistants.disallowAdjustmentType(mZero.id, KEY_SUMMARIZATION);
+        mAssistants.setAdjustmentTypeSupportedState(13, KEY_TYPE, true);
+        mAssistants.disallowAdjustmentType(13, KEY_TYPE);
+        mAssistants.setAdjustmentTypeSupportedState(13, KEY_SUMMARIZATION, false);
+        for (int user : List.of(mTen.id, 11, 12)) {
+            mAssistants.setAdjustmentTypeSupportedState(user, KEY_TYPE, false);
+            mAssistants.setAdjustmentTypeSupportedState(user, KEY_SUMMARIZATION, false);
+        }
+
+        // Enable specific bundle types for user 0
+        mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_SOCIAL_MEDIA, false);
+        mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_PROMOTION, false);
+        mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_NEWS, true);
+        mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_CONTENT_RECOMMENDATION,
                 true);
+
+        // and different ones for user 12
+        mAssistants.setAssistantClassificationTypeState(13, TYPE_SOCIAL_MEDIA, true);
+        mAssistants.setAssistantClassificationTypeState(13, TYPE_PROMOTION, false);
+        mAssistants.setAssistantClassificationTypeState(13, TYPE_NEWS, false);
+        mAssistants.setAssistantClassificationTypeState(13, TYPE_CONTENT_RECOMMENDATION,
+                false);
 
         // When pullBundlePreferencesStats is run with the given preferences
         ArrayList<StatsEvent> events = new ArrayList<>();
         mAssistants.pullAdjustmentPreferencesStats(events);
 
         // The StatsEvent is filled out with the expected NotificationAdjustmentPreferences values.
-        assertThat(events.size()).isEqualTo(1);
-        AtomsProto.Atom atom = StatsEventTestUtils.convertToAtom(events.get(0));
+        // We expect 2 atoms for user 0 and 1 atom for user 10.
+        assertThat(events.size()).isEqualTo(3);
 
+        // Collect all the resulting atoms in a map of user ID -> adjustment type (enum) -> atom to
+        // confirm that we have the correct set of atoms without enforcing anything about ordering.
+        Map<Integer, Map<Integer, NotificationAdjustmentPreferences>> atoms =
+                new ArrayMap<>();
+        for (StatsEvent event : events) {
+            AtomsProto.Atom atom = StatsEventTestUtils.convertToAtom(event);
+            NotificationAdjustmentPreferences p = parsePulledAtom(atom);
+            int userId = p.getUserId();
+            atoms.putIfAbsent(userId, new ArrayMap<>());
+            atoms.get(userId).put(p.getKey().getNumber(), p);
+        }
+
+        // user 0, KEY_TYPE (bundles)
+        assertThat(atoms).containsKey(mZero.id);
+        Map<Integer, NotificationAdjustmentPreferences> userZeroAtoms = atoms.get(mZero.id);
+        assertThat(userZeroAtoms).containsKey(NotificationProtoEnums.KEY_TYPE);
+        NotificationAdjustmentPreferences p0b = userZeroAtoms.get(NotificationProtoEnums.KEY_TYPE);
+        assertThat(p0b.getAdjustmentAllowed()).isTrue();
+        assertThat(p0b.getAllowedBundleTypesList()).containsExactly(
+                BundleTypes.forNumber(NotificationProtoEnums.TYPE_NEWS),
+                BundleTypes.forNumber(NotificationProtoEnums.TYPE_CONTENT_RECOMMENDATION));
+
+        // user 0, KEY_SUMMARIZATION
+        assertThat(userZeroAtoms).containsKey(NotificationProtoEnums.KEY_SUMMARIZATION);
+        NotificationAdjustmentPreferences p0s = userZeroAtoms.get(
+                NotificationProtoEnums.KEY_SUMMARIZATION);
+        assertThat(p0s.getAdjustmentAllowed()).isFalse();
+
+        // user 12, KEY_TYPE (bundles)
+        assertThat(atoms).containsKey(13);
+        assertThat(atoms.get(13)).containsKey(NotificationProtoEnums.KEY_TYPE);
+        NotificationAdjustmentPreferences p13b = atoms.get(13).get(
+                NotificationProtoEnums.KEY_TYPE);
+        assertThat(p13b.getAdjustmentAllowed()).isFalse();
+        assertThat(p13b.getAllowedBundleTypesList())
+                .containsExactly(BundleTypes.forNumber(NotificationProtoEnums.TYPE_SOCIAL_MEDIA));
+    }
+
+    // Helper function for getting the NotificationAdjustmentPreferences pulled atom data from a
+    // given Atom object that's expected to have this extension.
+    private NotificationAdjustmentPreferences parsePulledAtom(AtomsProto.Atom atom)
+            throws IOException {
         // The returned atom does not have external extensions registered.
         // So we serialize and then deserialize with extensions registered.
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -1015,50 +1099,10 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         CodedInputStream codedis = CodedInputStream.newInstance(inputStream);
-        atom = AtomsProto.Atom.parseFrom(codedis, mRegistry);
-        assertTrue(atom.hasExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences));
-        NotificationAdjustmentPreferences p =
-                atom.getExtension(NotificationExtensionAtoms.notificationAdjustmentPreferences);
-        assertThat(p.getAdjustmentAllowed()).isTrue();
-        assertThat(p.getAllowedBundleTypes(0).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_NEWS);
-        assertThat(p.getAllowedBundleTypes(1).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_CONTENT_RECOMMENDATION);
-
-        // Disable the top-level bundling setting
-        mAssistants.setAdjustmentTypeSupportedState(info.userid, KEY_TYPE, false);
-        // Enable these specific bundle types
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_PROMOTION, true);
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_NEWS, false);
-        mAssistants.setAssistantClassificationTypeState(info.userid, TYPE_CONTENT_RECOMMENDATION,
-                true);
-
-        ArrayList<StatsEvent> eventsDisabled = new ArrayList<>();
-        mAssistants.pullAdjustmentPreferencesStats(eventsDisabled);
-
-        // The StatsEvent is filled out with the expected NotificationAdjustmentPreferences values.
-        assertThat(eventsDisabled.size()).isEqualTo(1);
-        AtomsProto.Atom atomDisabled = StatsEventTestUtils.convertToAtom(eventsDisabled.get(0));
-
-        // The returned atom does not have external extensions registered.
-        // So we serialize and then deserialize with extensions registered.
-        outputStream = new ByteArrayOutputStream();
-        codedos = CodedOutputStream.newInstance(outputStream);
-        atomDisabled.writeTo(codedos);
-        codedos.flush();
-
-        inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        codedis = CodedInputStream.newInstance(inputStream);
-        atomDisabled = AtomsProto.Atom.parseFrom(codedis, mRegistry);
-        assertTrue(atomDisabled.hasExtension(NotificationExtensionAtoms
-                .notificationAdjustmentPreferences));
-
-        NotificationAdjustmentPreferences p2 = atomDisabled.getExtension(
+        AtomsProto.Atom parsedAtom = AtomsProto.Atom.parseFrom(codedis, mRegistry);
+        assertTrue(parsedAtom.hasExtension(
+                NotificationExtensionAtoms.notificationAdjustmentPreferences));
+        return parsedAtom.getExtension(
                 NotificationExtensionAtoms.notificationAdjustmentPreferences);
-        assertThat(p2.getAdjustmentAllowed()).isFalse();
-        assertThat(p2.getAllowedBundleTypes(0).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_PROMOTION);
-        assertThat(p2.getAllowedBundleTypes(1).getNumber())
-                .isEqualTo(NotificationProtoEnums.TYPE_CONTENT_RECOMMENDATION);
     }
 }

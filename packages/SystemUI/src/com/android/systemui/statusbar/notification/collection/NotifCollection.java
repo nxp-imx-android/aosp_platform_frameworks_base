@@ -275,7 +275,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
      * Dismisses multiple notifications on behalf of the user.
      */
     public void dismissNotifications(
-            List<EntryWithDismissStats> entriesToDismiss) {
+            List<EntryWithDismissStats> entriesToDismiss, boolean fromBundle) {
         Assert.isMainThread();
         checkForReentrantCall();
 
@@ -284,12 +284,11 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         final int entryCount = entriesToDismiss.size();
         final List<NotificationEntry> entriesToLocallyDismiss = new ArrayList<>();
         for (int i = 0; i < entriesToDismiss.size(); i++) {
-            String key = entriesToDismiss.get(i).getKey();
-            int hashCode = entriesToDismiss.get(i).getEntryHashCode();
-            DismissedByUserStats stats = entriesToDismiss.get(i).getStats();
-
-            requireNonNull(stats);
-            NotificationEntry storedEntry = mNotificationSet.get(key);
+            final EntryWithDismissStats entryWithDismissStats = entriesToDismiss.get(i);
+            final String key = entryWithDismissStats.getKey();
+            final int hashCode = entryWithDismissStats.getEntryHashCode();
+            final DismissedByUserStats stats = requireNonNull(entryWithDismissStats.getStats());
+            final NotificationEntry storedEntry = mNotificationSet.get(key);
             if (storedEntry == null) {
                 mLogger.logDismissNonExistentNotif(key, i, entryCount);
                 continue;
@@ -318,7 +317,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
 
             entriesToLocallyDismiss.add(storedEntry);
             if (!storedEntry.isCanceled()) {
-                int finalI = i;
+                final int finalI = i;
                 // send message to system server if this notification hasn't already been cancelled
                 mBgExecutor.execute(() -> {
                     try {
@@ -338,7 +337,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             }
         }
 
-        locallyDismissNotifications(entriesToLocallyDismiss);
+        locallyDismissNotifications(entriesToLocallyDismiss, fromBundle);
         dispatchEventsAndRebuildList("dismissNotifications");
     }
 
@@ -381,8 +380,10 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     public void dismissNotification(
             NotificationEntry entry,
             @NonNull DismissedByUserStats stats) {
-        dismissNotifications(List.of(new EntryWithDismissStats(
-                entry, stats, entry.getKey(), entry.hashCode())));
+        final EntryWithDismissStats withStats = new EntryWithDismissStats(
+                NotificationBundleUi.isEnabled() ? null : entry,
+                stats, entry.getKey(), entry.hashCode());
+        dismissNotifications(List.of(withStats), /* fromBundle= */ false);
     }
 
     /**
@@ -418,7 +419,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             }
         }
 
-        locallyDismissNotifications(entries);
+        locallyDismissNotifications(entries, /* fromBundle= */ false);
         dispatchEventsAndRebuildList("dismissAllNotifications");
     }
 
@@ -426,7 +427,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
      * Optimistically marks the given notifications as dismissed -- we'll wait for the signal
      * from system server before removing it from our notification set.
      */
-    private void locallyDismissNotifications(List<NotificationEntry> entries) {
+    private void locallyDismissNotifications(List<NotificationEntry> entries,
+            boolean fromBundle) {
         final List<NotificationEntry> canceledEntries = new ArrayList<>();
         final int entryCount = entries.size();
         for (int i = 0; i < entries.size(); i++) {
@@ -445,7 +447,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
                 mLogger.logLocallyDismissAlreadyParentDismissedNotif(entry, i, entryCount);
             }
 
-            entry.setDismissState(DISMISSED);
+            entry.setDismissState(fromBundle ? PARENT_DISMISSED : DISMISSED);
             mLogger.logLocallyDismissed(entry, i, entryCount);
 
             if (entry.isCanceled()) {
@@ -1081,7 +1083,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
      * A method to alert the collection that an async operation is happening, at the end of which a
      * dismissal request will be made.  This method has the additional guarantee that if a parent
      * notification exists for a single child, then that notification will also be dismissed.
-     *
+     * <p>
      * The runnable returned must be run at the end of the async operation to enact the cancellation
      *
      * @param entry the notification we want to dismiss
@@ -1100,6 +1102,29 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         mFutureDismissals.put(entry.getKey(), dismissal);
         mLogger.logFutureDismissalRegistered(dismissal);
         return dismissal;
+    }
+
+    /**
+     * A method to alert the collection that an async operation is happening, at the end of which a
+     * dismissal request will be made.
+     * <p>
+     * The runnable returned must be run at the end of the async operation to enact the cancellation
+     *
+     * @param bundleEntry the notification bundle we want to dismiss
+     * @param statsCreator the callback for generating the stats for an entry
+     * @return the runnable to be run when the dismissal is ready to happen
+     */
+    public Runnable registerFutureDismissal(BundleEntry bundleEntry,
+            DismissedByUserStatsCreator statsCreator) {
+        // For Bundles, we don't need to go through a FutureDismissal because there is no need for
+        // coordination with the system server. We just return a Runnable that, when invoked, will
+        // perform the dismissals.
+        // TODO(b/389839319): replace with REASON_BUNDLE_CANCELED constant, when it exists
+        @CancellationReason final int cancellationReason = REASON_CANCEL;
+        BundleDismissalRunnable runnable = new BundleDismissalRunnable(bundleEntry,
+                cancellationReason, statsCreator);
+        mLogger.logBundleDismissalRegistered(runnable);
+        return runnable;
     }
 
     private void handleFutureDismissal(NotificationEntry entry) {
@@ -1124,18 +1149,34 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         DismissedByUserStats createDismissedByUserStats(NotificationEntry entry);
     }
 
+    public abstract class DismissalRunnable implements Runnable {
+        private boolean mDidRun;
+
+        @Override
+        public void run() {
+            Assert.isMainThread();
+            if (mDidRun) {
+                mLogger.logFutureDismissalDoubleRun(this);
+                return;
+            }
+            mDidRun = true;
+            onUiCancel();
+        }
+
+        /** called when the dismissal should be completed */
+        protected abstract void onUiCancel();
+        /** label used to identify this dismissal request for logging */
+        public abstract String getLabel();
+    }
+
     /** A class which tracks the double dismissal events coming in from both the system server and
      * the ui */
-    public class FutureDismissal implements Runnable {
+    public class FutureDismissal extends DismissalRunnable {
+        private boolean mDidSystemServerCancel;
+        private final String mLabel;
         private final NotificationEntry mEntry;
         private final DismissedByUserStatsCreator mStatsCreator;
-
-        @Nullable
-        private final NotificationEntry mSummaryToDismiss;
-        private final String mLabel;
-
-        private boolean mDidRun;
-        private boolean mDidSystemServerCancel;
+        @Nullable private final NotificationEntry mSummaryToDismiss;
 
         private FutureDismissal(NotificationEntry entry, @CancellationReason int cancellationReason,
                 DismissedByUserStatsCreator statsCreator) {
@@ -1161,7 +1202,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             // TODO: Internally dismiss the summary now instead of waiting for onUiCancel
         }
 
-        private void onUiCancel() {
+        @Override
+        protected void onUiCancel() {
             mFutureDismissals.remove(mEntry.getKey());
             final NotificationEntry currentEntry = getEntry(mEntry.getKey());
             // generate stats for the entry before dismissing summary, which could affect state
@@ -1188,19 +1230,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             }
         }
 
-        /** called when the dismissal should be completed */
-        @Override
-        public void run() {
-            Assert.isMainThread();
-            if (mDidRun) {
-                mLogger.logFutureDismissalDoubleRun(this);
-                return;
-            }
-            mDidRun = true;
-            onUiCancel();
-        }
-
         /** provides a debug label for this instance */
+        @Override
         public String getLabel() {
             return mLabel;
         }
@@ -1239,4 +1270,55 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     public static final int REASON_UNKNOWN = 0;
 
     private static final long INITIALIZATION_FORGIVENESS_WINDOW = TimeUnit.SECONDS.toMillis(5);
+
+    private class BundleDismissalRunnable extends DismissalRunnable {
+        private final String mLabel;
+        private final BundleEntry mBundleEntry;
+        private final DismissedByUserStatsCreator mStatsCreator;
+
+        BundleDismissalRunnable(BundleEntry bundleEntry, int cancellationReason,
+                DismissedByUserStatsCreator statsCreator) {
+            mBundleEntry = bundleEntry;
+            mStatsCreator = statsCreator;
+            mLabel = "<FutureBundleDismissal@" + Integer.toHexString(hashCode())
+                    + " key=" + bundleEntry.getKey()
+                    + " reason=" + cancellationReasonDebugString(cancellationReason)
+                    + ">";
+        }
+
+        @Override
+        public String getLabel() {
+            return mLabel;
+        }
+
+        @Override
+        protected void onUiCancel() {
+            final ArrayList<EntryWithDismissStats> toDismiss = new ArrayList<>();
+            for (ListEntry child : mBundleEntry.getChildren()) {
+                final NotificationEntry childEntry = child.getRepresentativeEntry();
+                if (childEntry == null) {
+                    continue;
+                }
+                // dismiss the summary (if it exists)
+                final NotificationEntry summaryToDismiss = fetchSummaryToDismiss(childEntry);
+                if (summaryToDismiss != null) {
+                    mLogger.logBundleDismissal(this, summaryToDismiss, "summary");
+                    final DismissedByUserStats stats =
+                            mStatsCreator.createDismissedByUserStats(summaryToDismiss);
+                    final EntryWithDismissStats entryAndStats =
+                            new EntryWithDismissStats(null, stats,
+                                    summaryToDismiss.getKey(), summaryToDismiss.hashCode());
+                    toDismiss.add(entryAndStats);
+                }
+                mLogger.logBundleDismissal(this, childEntry, "entry");
+                final DismissedByUserStats stats =
+                        mStatsCreator.createDismissedByUserStats(childEntry);
+                final EntryWithDismissStats entryAndStats =
+                        new EntryWithDismissStats(null, stats, childEntry.getKey(),
+                                childEntry.hashCode());
+                toDismiss.add(entryAndStats);
+            }
+            dismissNotifications(toDismiss, /* fromBundle= */ true);
+        }
+    }
 }

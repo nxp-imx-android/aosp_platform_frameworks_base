@@ -131,6 +131,13 @@ public class BubbleTransitions {
     }
 
     /**
+     * Returns whether the given Task should be an App Bubble.
+     */
+    public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        return mBubbleController.shouldBeAppBubble(taskInfo);
+    }
+
+    /**
      * Returns whether bubbles are showing as the bubble bar.
      */
     public boolean isShowingAsBubbleBar() {
@@ -305,7 +312,7 @@ public class BubbleTransitions {
      * in order to coordinate with the bubble view logic. These steps are communicated on this
      * interface.
      */
-    interface BubbleTransition {
+    public interface BubbleTransition {
         default void surfaceCreated() {}
         default void continueExpand() {}
         default void skip() {}
@@ -755,7 +762,13 @@ public class BubbleTransitions {
                 opts.setLaunchCookie(mLaunchCookie);
                 opts.setTaskAlwaysOnTop(true);
                 opts.setReparentLeafTaskToTda(true);
-                opts.setLaunchNextToBubble(true);
+                final ActivityManager.RunningTaskInfo rootInfo =
+                        mBubbleController.getAppBubbleRootTaskInfo();
+                if (rootInfo != null) {
+                    opts.setLaunchRootTask(rootInfo.token);
+                } else {
+                    opts.setLaunchNextToBubble(true);
+                }
                 opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
                 opts.setLaunchBounds(launchBounds);
                 if (mBubble.isShortcut()) {
@@ -1064,16 +1077,15 @@ public class BubbleTransitions {
             }
             final Rect launchBounds = new Rect();
             mLayerView.getExpandedViewRestBounds(launchBounds);
+            final boolean reparentToTda =
+                    mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
+                            && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
+
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    mTaskInfo.token, true /* isAppBubble */);
+                    mTaskInfo.token, true /* isAppBubble */, reparentToTda);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
-            if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW) {
-                if (mTaskInfo.getParentTaskId() != INVALID_TASK_ID) {
-                    wct.reparent(mTaskInfo.token, null, true);
-                }
-            }
             wct.setBounds(mTaskInfo.token, launchBounds);
 
             final TaskView tv = b.getTaskView();

@@ -313,7 +313,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         verify(taskRepository, never())
             .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
-        verify(taskRepository).removeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.taskId)
     }
 
     @Test
@@ -332,7 +332,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
 
-        verify(taskRepository, never()).removeTask(task.displayId, task.taskId)
+        verify(taskRepository, never()).removeTask(task.taskId)
     }
 
     @Test
@@ -353,7 +353,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         verify(taskRepository, never())
             .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
-        verify(taskRepository).removeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.taskId)
     }
 
     @Test
@@ -373,7 +373,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         verify(taskRepository, never())
             .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
-        verify(taskRepository).removeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.taskId)
     }
 
     @Test
@@ -392,7 +392,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         transitionObserver.onTransitionReady(transition = mock(), info = transitionInfo)
 
-        verify(taskRepository, never()).removeTask(task.displayId, task.taskId)
+        verify(taskRepository, never()).removeTask(task.taskId)
     }
 
     @Test
@@ -413,7 +413,7 @@ class DesktopBackNavTransitionObserverTest(flags: FlagsParameterization) : Shell
 
         verify(taskRepository, never())
             .minimizeTaskInDesk(displayId = task.displayId, deskId = deskId, taskId = task.taskId)
-        verify(taskRepository).removeTask(task.displayId, task.taskId)
+        verify(taskRepository).removeTask(task.taskId)
     }
 
     private fun createOpenChangeTransition(
