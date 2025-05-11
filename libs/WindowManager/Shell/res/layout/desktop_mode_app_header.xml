@@ -43,43 +43,36 @@
             android:focusable="false"
             android:scaleType="centerCrop"/>
 
-        <FrameLayout
-            android:id="@+id/app_name_layout"
-            android:layout_marginStart="8dp"
+        <TextView
+            android:id="@+id/application_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxWidth="130dp"
+            android:textSize="14sp"
+            android:textFontWeight="500"
+            android:lineHeight="20sp"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content">
+            android:layout_marginStart="8dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:clickable="false"
+            android:focusable="false"
+            tools:text="Gmail"/>
 
-            <TextView
-                android:id="@+id/application_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxWidth="@dimen/desktop_mode_header_app_name_max_width"
-                android:textSize="14sp"
-                android:textFontWeight="500"
-                android:lineHeight="20sp"
-                android:layout_gravity="start|center_vertical"
-                android:singleLine="true"
-                android:ellipsize="none"
-                android:clickable="false"
-                android:focusable="false"
-                tools:text="Gmail"/>
-
-            <ImageView
-                android:id="@+id/expand_menu_error"
-                android:src="@drawable/expand_menu_error"
-                android:layout_width="@dimen/desktop_mode_header_expand_menu_error_image_width"
-                android:layout_height="@dimen/desktop_mode_header_expand_menu_error_image_width"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginStart="@dimen/desktop_mode_header_expand_menu_error_image_margin"
-                android:clickable="false"
-                android:focusable="false"
-                android:screenReaderFocusable="false"
-                android:importantForAccessibility="no"
-                android:contentDescription="@null"
-                android:scaleType="centerCrop"/>
-        </FrameLayout>
+        <ImageView
+            android:id="@+id/expand_menu_error"
+            android:src="@drawable/expand_menu_error"
+            android:layout_width="@dimen/desktop_mode_header_expand_menu_error_image_width"
+            android:layout_height="@dimen/desktop_mode_header_expand_menu_error_image_width"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/desktop_mode_header_expand_menu_error_image_margin"
+            android:clickable="false"
+            android:focusable="false"
+            android:screenReaderFocusable="false"
+            android:importantForAccessibility="no"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"/>
 
         <ImageButton
             android:id="@+id/expand_menu_button"

@@ -663,8 +663,6 @@
 
     <!-- The max width of the app name shown on the app header -->
     <dimen name="desktop_mode_header_app_name_max_width">130dp</dimen>
-    <!-- The width of the fadeout effect applied to a long app name shown on the app header -->
-    <dimen name="desktop_mode_header_app_name_fadeout_width">48dp</dimen>
     <!-- The width of the expand menu error image on the app header -->
     <dimen name="desktop_mode_header_expand_menu_error_image_width">16dp</dimen>
     <!-- The margin added between app name and expand menu error image on the app header -->
