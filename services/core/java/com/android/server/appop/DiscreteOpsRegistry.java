@@ -176,7 +176,7 @@ abstract class DiscreteOpsRegistry {
      */
     abstract void offsetHistory(long offset);
 
-    abstract  void addFilteredDiscreteOpsToHistoricalOps(AppOpsManager.HistoricalOps result,
+    abstract void addFilteredDiscreteOpsToHistoricalOps(AppOpsManager.HistoricalOps result,
             long beginTimeMillis, long endTimeMillis,
             @AppOpsManager.HistoricalOpsRequestFilter int filter, int uidFilter,
             @Nullable String packageNameFilter, @Nullable String[] opNamesFilter,
@@ -195,7 +195,6 @@ abstract class DiscreteOpsRegistry {
 
     static long discretizeTimeStamp(long timeStamp) {
         return timeStamp / sDiscreteHistoryQuantization * sDiscreteHistoryQuantization;
-
     }
 
     static long discretizeDuration(long duration) {

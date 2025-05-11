@@ -26,20 +26,81 @@ public class DiscreteOpsMigrationHelper {
     /**
      * migrate discrete ops from xml to sqlite.
      */
-    static void migrateDiscreteOpsToSqlite(DiscreteOpsXmlRegistry xmlRegistry,
-            DiscreteOpsSqlRegistry sqlRegistry) {
-        DiscreteOpsXmlRegistry.DiscreteOps xmlOps = xmlRegistry.getAllDiscreteOps();
-        List<DiscreteOpsSqlRegistry.DiscreteOp> discreteOps = getSqlDiscreteOps(xmlOps);
-        sqlRegistry.migrateXmlData(discreteOps, xmlOps.mChainIdOffset);
-        xmlRegistry.deleteDiscreteOpsDir();
+    static void migrateFromXmlToSqlite(DiscreteOpsXmlRegistry sourceRegistry,
+            DiscreteOpsSqlRegistry targetRegistry) {
+        DiscreteOpsXmlRegistry.DiscreteOps xmlOps = sourceRegistry.getAllDiscreteOps();
+        List<DiscreteOpsSqlRegistry.DiscreteOp> discreteOps = convertXmlToSqlDiscreteOps(xmlOps);
+        targetRegistry.migrateDiscreteAppOpHistory(discreteOps, xmlOps.mChainIdOffset);
+        sourceRegistry.deleteDiscreteOpsDir();
+    }
+
+    /**
+     * migrate discrete ops from xml to unified sqlite schema.
+     */
+    static void migrateFromXmlToUnifiedSchemaSqlite(DiscreteOpsXmlRegistry sourceRegistry,
+            AppOpHistoryHelper targetRegistry) {
+        DiscreteOpsXmlRegistry.DiscreteOps xmlOps = sourceRegistry.getAllDiscreteOps();
+        List<DiscreteOpsSqlRegistry.DiscreteOp> discreteOps = convertXmlToSqlDiscreteOps(xmlOps);
+        List<AggregatedAppOpAccessEvent> convertedOps = new ArrayList<>();
+        for (DiscreteOpsSqlRegistry.DiscreteOp event: discreteOps) {
+            convertedOps.add(new AggregatedAppOpAccessEvent(event.getUid(), event.getPackageName(),
+                    event.getOpCode(), event.getDeviceId(), event.getAttributionTag(),
+                    event.getOpFlags(), event.getUidState(),
+                    event.getAttributionFlags(), event.getChainId(), event.getAccessTime(),
+                    event.getDuration(), 0, 1, 0));
+        }
+        targetRegistry.migrateDiscreteAppOpHistory(convertedOps);
+        sourceRegistry.deleteDiscreteOpsDir();
+    }
+
+    /**
+     * migrate discrete ops from sqlite to unified-schema sqlite.
+     */
+    static void migrateFromSqliteToUnifiedSchemaSqlite(DiscreteOpsSqlRegistry sourceRegistry,
+            AppOpHistoryHelper targetRegistry) {
+        List<DiscreteOpsSqlRegistry.DiscreteOp> sourceOps = sourceRegistry.getAllDiscreteOps();
+        List<AggregatedAppOpAccessEvent> convertedOps = new ArrayList<>();
+        for (DiscreteOpsSqlRegistry.DiscreteOp event: sourceOps) {
+            convertedOps.add(new AggregatedAppOpAccessEvent(event.getUid(), event.getPackageName(),
+                    event.getOpCode(), event.getDeviceId(), event.getAttributionTag(),
+                    event.getOpFlags(), event.getUidState(),
+                    event.getAttributionFlags(), event.getChainId(), event.getAccessTime(),
+                    event.getDuration(), 0, 1, 0));
+        }
+        targetRegistry.migrateDiscreteAppOpHistory(convertedOps);
+        sourceRegistry.deleteDatabase();
+    }
+
+    /**
+     * rollback discrete ops from unified schema sqlite to sqlite schema.
+     */
+    static void rollbackFromUnifiedSchemaSqliteToSqlite(AppOpHistoryHelper sourceRegistry,
+            DiscreteOpsSqlRegistry targetRegistry) {
+        List<AggregatedAppOpAccessEvent> unifiedSchemaSqliteOps =
+                sourceRegistry.getAppOpHistory();
+        List<DiscreteOpsSqlRegistry.DiscreteOp> discreteOps = new ArrayList<>();
+        long largestChainId = 0;
+        for (AggregatedAppOpAccessEvent event: unifiedSchemaSqliteOps) {
+            discreteOps.add(new DiscreteOpsSqlRegistry.DiscreteOp(event.uid(),
+                    event.packageName(), event.attributionTag(),
+                    event.deviceId(), event.opCode(), event.opFlags(),
+                    event.attributionFlags(),
+                    event.uidState(), event.attributionChainId(),
+                    event.accessTimeMillis(),
+                    event.durationMillis()));
+            largestChainId = Math.max(largestChainId, event.attributionChainId());
+        }
+        targetRegistry.migrateDiscreteAppOpHistory(discreteOps, largestChainId);
+        sourceRegistry.deleteDatabase();
+        sourceRegistry.shutdown();
     }
 
     /**
      * rollback discrete ops from sqlite to xml.
      */
-    static void migrateDiscreteOpsToXml(DiscreteOpsSqlRegistry sqlRegistry,
-            DiscreteOpsXmlRegistry xmlRegistry) {
-        List<DiscreteOpsSqlRegistry.DiscreteOp> sqlOps = sqlRegistry.getAllDiscreteOps();
+    static void rollbackFromSqliteToXml(DiscreteOpsSqlRegistry sourceRegistry,
+            DiscreteOpsXmlRegistry targetRegistry) {
+        List<DiscreteOpsSqlRegistry.DiscreteOp> sqlOps = sourceRegistry.getAllDiscreteOps();
 
         // Only migrate configured discrete ops. Sqlite may contain all runtime ops, and more.
         List<DiscreteOpsSqlRegistry.DiscreteOp> filteredList = new ArrayList<>();
@@ -50,8 +111,8 @@ public class DiscreteOpsMigrationHelper {
         }
 
         DiscreteOpsXmlRegistry.DiscreteOps xmlOps = getXmlDiscreteOps(filteredList);
-        xmlRegistry.migrateSqliteData(xmlOps);
-        sqlRegistry.deleteDatabase();
+        targetRegistry.migrateDiscreteAppOpHistory(xmlOps);
+        sourceRegistry.deleteDatabase();
     }
 
     /**
@@ -79,7 +140,7 @@ public class DiscreteOpsMigrationHelper {
     /**
      * Convert xml (hierarchical) data to flat row based data.
      */
-    private static List<DiscreteOpsSqlRegistry.DiscreteOp> getSqlDiscreteOps(
+    private static List<DiscreteOpsSqlRegistry.DiscreteOp> convertXmlToSqlDiscreteOps(
             DiscreteOpsXmlRegistry.DiscreteOps discreteOps) {
         List<DiscreteOpsSqlRegistry.DiscreteOp> opEvents = new ArrayList<>();
 

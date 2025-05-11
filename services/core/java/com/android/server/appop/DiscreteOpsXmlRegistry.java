@@ -195,7 +195,7 @@ class DiscreteOpsXmlRegistry extends DiscreteOpsRegistry {
         }
     }
 
-    void migrateSqliteData(DiscreteOps sqliteOps) {
+    void migrateDiscreteAppOpHistory(DiscreteOps sqliteOps) {
         synchronized (mOnDiskLock) {
             if (mDiscreteAccessDir == null) {
                 Slog.d(TAG, "State not saved - persistence not initialized.");
