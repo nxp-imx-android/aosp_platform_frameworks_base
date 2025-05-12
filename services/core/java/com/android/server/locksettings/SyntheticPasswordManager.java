@@ -1789,11 +1789,19 @@ class SyntheticPasswordManager {
         }
     }
 
+    /** Concatenates two arrays into a new non-movable array. */
+    private byte[] secureConcat(byte[] array1, byte[] array2) {
+        byte[] result = ArrayUtils.newNonMovableByteArray(array1.length + array2.length);
+        System.arraycopy(array1, 0, result, 0, array1.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
+    }
+
     private byte[] transformUnderWeaverSecret(byte[] data, byte[] secret) {
         final byte[] weaverSecret = SyntheticPasswordCrypto.personalizedHash(
                 PERSONALIZATION_WEAVER_PASSWORD, secret);
         try {
-            return ArrayUtils.concat(data, weaverSecret);
+            return secureConcat(data, weaverSecret);
         } finally {
             ArrayUtils.zeroize(weaverSecret);
         }
@@ -1802,7 +1810,7 @@ class SyntheticPasswordManager {
     private byte[] transformUnderSecdiscardable(byte[] data, byte[] rawSecdiscardable) {
         byte[] secdiscardable = SyntheticPasswordCrypto.personalizedHash(
                 PERSONALIZATION_SECDISCARDABLE, rawSecdiscardable);
-        return ArrayUtils.concat(data, secdiscardable);
+        return secureConcat(data, secdiscardable);
     }
 
     /**
