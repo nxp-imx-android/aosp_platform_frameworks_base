@@ -49,3 +49,13 @@ flag {
   description: "Enable wallpaper support in connected displays"
   bug: "366461618"
 }
+
+flag {
+  name: "update_recents_from_system"
+  namespace: "systemui"
+  description: "Update recent wallpapers list more reliably. Only effective after rebooting."
+  bug: "395679036"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
