@@ -215,6 +215,7 @@ public class ActivityThreadTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         assertEquals("test", editText.getText().toString());
+        assertTrue("edit text should be focused", editText.isFocused());
     }
 
     @Test
