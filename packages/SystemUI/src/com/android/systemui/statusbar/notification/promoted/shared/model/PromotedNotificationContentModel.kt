@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.promoted.shared.model
 
 import android.annotation.CurrentTimeMillisLong
-import android.annotation.DrawableRes
 import android.annotation.ElapsedRealtimeLong
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -76,7 +75,7 @@ data class PromotedNotificationContentModel(
      */
     val time: When?,
     val lastAudiblyAlertedMs: Long,
-    @DrawableRes val profileBadgeResId: Int?,
+    val profileBadgeBitmap: Bitmap?,
     val title: CharSequence?,
     val text: CharSequence?,
     val skeletonLargeIcon: ImageModel?,
@@ -100,7 +99,7 @@ data class PromotedNotificationContentModel(
         var time: When? = null
         var shortCriticalText: String? = null
         var lastAudiblyAlertedMs: Long = 0L
-        @DrawableRes var profileBadgeResId: Int? = null
+        var profileBadgeBitmap: Bitmap? = null
         var title: CharSequence? = null
         var text: CharSequence? = null
         var skeletonLargeIcon: ImageModel? = null
@@ -126,7 +125,7 @@ data class PromotedNotificationContentModel(
                 shortCriticalText = shortCriticalText,
                 time = time,
                 lastAudiblyAlertedMs = lastAudiblyAlertedMs,
-                profileBadgeResId = profileBadgeResId,
+                profileBadgeBitmap = profileBadgeBitmap,
                 title = title,
                 text = text,
                 skeletonLargeIcon = skeletonLargeIcon,
@@ -190,7 +189,7 @@ data class PromotedNotificationContentModel(
             "shortCriticalText=$shortCriticalText, " +
             "time=$time, " +
             "lastAudiblyAlertedMs=$lastAudiblyAlertedMs, " +
-            "profileBadgeResId=$profileBadgeResId, " +
+            "profileBadgeBitmap=$profileBadgeBitmap, " +
             "title=${title?.toRedactedString()}, " +
             "text=${text?.toRedactedString()}, " +
             "skeletonLargeIcon=${skeletonLargeIcon?.toRedactedString()}, " +

@@ -648,7 +648,13 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         redactionType: Int = REDACTION_TYPE_PUBLIC,
     ): PromotedNotificationContentModels? {
         val recoveredBuilder = Notification.Builder(context, entry.sbn.notification)
-        return underTest.extractContent(entry, recoveredBuilder, redactionType, imageModelProvider)
+        return underTest.extractContent(
+            entry,
+            recoveredBuilder,
+            redactionType,
+            imageModelProvider,
+            context,
+        )
     }
 
     private fun Kosmos.createEntry(

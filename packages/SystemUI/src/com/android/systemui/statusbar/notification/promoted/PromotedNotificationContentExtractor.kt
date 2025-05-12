@@ -148,7 +148,7 @@ constructor(
         publicBuilder.appName = privateModel.appName
         publicBuilder.time = privateModel.time
         publicBuilder.lastAudiblyAlertedMs = privateModel.lastAudiblyAlertedMs
-        publicBuilder.profileBadgeResId = privateModel.profileBadgeResId
+        publicBuilder.profileBadgeBitmap = privateModel.profileBadgeBitmap
         publicBuilder.colors = privateModel.colors
     }
 
@@ -222,7 +222,7 @@ constructor(
         contentBuilder.time = notification.extractWhen()
         contentBuilder.shortCriticalText = notification.shortCriticalText()
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-        contentBuilder.profileBadgeResId = null // TODO
+        contentBuilder.profileBadgeBitmap = Notification.getProfileBadge(packageContext)
         contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
         contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
