@@ -16,6 +16,7 @@
 
 package com.android.server.policy;
 
+import static android.bluetooth.BluetoothHidHost.ACTION_CONNECTION_STATE_CHANGED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
@@ -34,6 +35,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.hardware.input.Flags.FLAG_HID_BLUETOOTH_WAKEUP;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP;
@@ -46,11 +48,16 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Bundle;
@@ -110,6 +117,7 @@ public class PhoneWindowManagerTests {
 
     @Mock private IBinder mInputToken;
 
+    PhoneWindowManager mNonSpyPhoneWindowManager;
     PhoneWindowManager mPhoneWindowManager;
 
     @Mock
@@ -135,6 +143,10 @@ public class PhoneWindowManagerTests {
     private KeyguardServiceDelegate mKeyguardServiceDelegate;
     @Mock
     private LockPatternUtils mLockPatternUtils;
+    @Mock
+    private WindowWakeUpPolicy mWindowWakeUpPolicy;
+    @Mock
+    private PackageManager mPackageManager;
 
     private static final int INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY = 0;
 
@@ -143,7 +155,8 @@ public class PhoneWindowManagerTests {
         MockitoAnnotations.initMocks(this);
         when(mContext.getSystemService(Context.POWER_SERVICE)).thenReturn(mPowerManager);
 
-        mPhoneWindowManager = spy(new PhoneWindowManager());
+        mNonSpyPhoneWindowManager = new PhoneWindowManager();
+        mPhoneWindowManager = spy(mNonSpyPhoneWindowManager);
         spyOn(ActivityManager.getService());
 
         mLocalServiceKeeperRule.overrideLocalService(ActivityTaskManagerInternal.class,
@@ -488,6 +501,29 @@ public class PhoneWindowManagerTests {
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
     }
 
+    @Test
+    @EnableFlags(FLAG_HID_BLUETOOTH_WAKEUP)
+    public void testBluetoothHidConnectionBroadcastCanWakeup() {
+        when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(true);
+        initNonSpyPhoneWindowManager();
+
+        final Intent intent = new Intent(ACTION_CONNECTION_STATE_CHANGED);
+        intent.putExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_CONNECTED);
+        ArgumentCaptor<BroadcastReceiver> captor = ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mContext).registerReceiver(captor.capture(), argThat(intentFilter ->
+                                intentFilter.matchAction(ACTION_CONNECTION_STATE_CHANGED)));
+        captor.getValue().onReceive(mContext, intent);
+        verify(mWindowWakeUpPolicy).wakeUpFromBluetooth();
+    }
+
+    private void initNonSpyPhoneWindowManager() {
+        mNonSpyPhoneWindowManager.mDefaultDisplayPolicy = mDisplayPolicy;
+        mNonSpyPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);
+        mContext.getMainThreadHandler().runWithScissors(() -> mNonSpyPhoneWindowManager.init(
+                new TestInjector(mContext, mock(WindowManagerPolicy.WindowManagerFuncs.class))), 0);
+    }
+
     private void initPhoneWindowManager() {
         mPhoneWindowManager.mDefaultDisplayPolicy = mDisplayPolicy;
         mPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);
@@ -521,7 +557,7 @@ public class PhoneWindowManagerTests {
          * mock it out so we don't have to unregister it after every test.
          */
         WindowWakeUpPolicy getWindowWakeUpPolicy() {
-            return mock(WindowWakeUpPolicy.class);
+            return mWindowWakeUpPolicy;
         }
     }
 }

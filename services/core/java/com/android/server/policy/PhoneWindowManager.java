@@ -24,6 +24,8 @@ import static android.Manifest.permission.SYSTEM_APPLICATION_OVERLAY;
 import static android.app.AppOpsManager.OP_CREATE_ACCESSIBILITY_OVERLAY;
 import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
 import static android.app.AppOpsManager.OP_TOAST_WINDOW;
+import static android.bluetooth.BluetoothHidHost.ACTION_CONNECTION_STATE_CHANGED;
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
 import static android.content.PermissionChecker.PID_UNKNOWN;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
@@ -79,6 +81,7 @@ import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.hardware.input.Flags.hidBluetoothWakeup;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_UNCOVERED;
@@ -118,6 +121,7 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.app.UiModeManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -2397,6 +2401,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // register for multiuser-relevant broadcasts
         filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
         mContext.registerReceiver(mMultiuserReceiver, filter);
+
+        // register for Bluetooth HID profile broadcasts.
+        if (hidBluetoothWakeup()) {
+            filter = new IntentFilter(ACTION_CONNECTION_STATE_CHANGED);
+            mContext.registerReceiver(mBluetoothHidReceiver, filter);
+        }
 
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -5149,6 +5159,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mSettingsObserver.onChange(false);
                 mDefaultDisplayRotation.onUserSwitch();
                 mWindowManagerFuncs.onUserSwitched();
+            }
+        }
+    };
+
+    BroadcastReceiver mBluetoothHidReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTION_CONNECTION_STATE_CHANGED.equals(intent.getAction())) {
+                Integer state = (Integer) intent.getExtra(BluetoothProfile.EXTRA_STATE);
+                final boolean interactive = mDefaultDisplayPolicy.isAwake();
+                if (state != null && !interactive && state == STATE_CONNECTED) {
+                    mWindowWakeUpPolicy.wakeUpFromBluetooth();
+                }
             }
         }
     };
