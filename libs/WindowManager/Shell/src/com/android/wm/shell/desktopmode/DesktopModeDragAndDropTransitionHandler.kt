@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.desktopmode
 
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.graphics.Rect
 import android.os.IBinder
 import android.view.DragEvent
@@ -108,7 +109,9 @@ class DesktopModeDragAndDropTransitionHandler(
     }
 
     private fun isValidTaskChange(change: TransitionInfo.Change): Boolean =
-        change.taskInfo != null && change.taskInfo?.taskId != -1
+        change.taskInfo != null &&
+            change.taskInfo?.taskId != -1 &&
+            change.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM
 
     private fun extractBounds(dragEvent: DragEvent): Rect {
         return Rect(
