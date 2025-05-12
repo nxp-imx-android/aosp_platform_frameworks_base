@@ -259,8 +259,6 @@ public class CompanionDeviceManagerService extends SystemService {
             for (AssociationInfo association : associationsForPackage) {
                 mDisassociationProcessor.disassociate(association.getId(), REASON_PKG_DATA_CLEARED);
             }
-
-            mCompanionAppBinder.onPackageChanged(userId);
         }
 
         // Clear observable UUIDs for the package.
@@ -276,8 +274,6 @@ public class CompanionDeviceManagerService extends SystemService {
                 mAssociationStore.getAssociationsByPackage(userId, packageName);
         if (!associations.isEmpty()) {
             mCompanionExemptionProcessor.exemptPackage(userId, packageName, false);
-
-            mCompanionAppBinder.onPackageChanged(userId);
         }
     }
 
