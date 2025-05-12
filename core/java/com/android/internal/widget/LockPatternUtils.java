@@ -729,16 +729,6 @@ public class LockPatternUtils {
         return getBoolean(AUTO_PIN_CONFIRM, /* defaultValue= */ false, userId);
     }
 
-    /**
-     * Whether the auto pin feature is available or not.
-     * @return true. This method is always returning true due to feature flags not working
-     * properly (b/282246482). Ideally, this should check if deviceConfig flag is set to true
-     * and then return the appropriate value.
-     */
-    public static boolean isAutoPinConfirmFeatureAvailable() {
-        return true;
-    }
-
     /** Returns if the given quality maps to an alphabetic password */
     public static boolean isQualityAlphabeticPassword(int quality) {
         return quality >= PASSWORD_QUALITY_ALPHABETIC;

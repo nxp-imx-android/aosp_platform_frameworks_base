@@ -620,11 +620,6 @@ class SyntheticPasswordManager {
         return null;
     }
 
-    @VisibleForTesting
-    public boolean isAutoPinConfirmationFeatureAvailable() {
-        return LockPatternUtils.isAutoPinConfirmFeatureAvailable();
-    }
-
     /**
      * Returns a handle to the Weaver service, or null if Weaver is unavailable.  Note that not all
      * devices support Weaver.
@@ -1004,10 +999,7 @@ class SyntheticPasswordManager {
     public long createLskfBasedProtector(IGateKeeperService gatekeeper,
             LockscreenCredential credential, SyntheticPassword sp, int userId) {
         long protectorId = generateProtectorId();
-        int pinLength = PIN_LENGTH_UNAVAILABLE;
-        if (isAutoPinConfirmationFeatureAvailable()) {
-            pinLength = derivePinLength(credential.size(), credential.isPin(), userId);
-        }
+        int pinLength = derivePinLength(credential.size(), credential.isPin(), userId);
         // There's no need to store password data about an empty LSKF.
         PasswordData pwd = credential.isNone() ? null :
                 PasswordData.create(credential.getType(), pinLength);
@@ -1540,10 +1532,6 @@ class SyntheticPasswordManager {
      */
     public boolean refreshPinLengthOnDisk(PasswordMetrics passwordMetrics,
             long protectorId, int userId) {
-        if (!isAutoPinConfirmationFeatureAvailable()) {
-            return false;
-        }
-
         byte[] pwdDataBytes = loadState(PASSWORD_DATA_NAME, protectorId, userId);
         if (pwdDataBytes == null) {
             return false;
