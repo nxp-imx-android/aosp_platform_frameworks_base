@@ -32,13 +32,12 @@ import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.ClockId
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.shared.Flags
 import com.android.systemui.shared.clocks.DefaultClockController.Companion.DOZE_COLOR
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
-import com.android.systemui.util.mockito.mock
 import java.util.Locale
-import java.util.TimeZone
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import org.junit.Before
@@ -161,20 +160,10 @@ class DefaultClockProviderTest : SysuiTestCase() {
     @Test
     fun defaultClock_events_onTimeFormatChanged() {
         val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
-        clock.events.onTimeFormatChanged(true)
+        clock.events.onTimeFormatChanged(TimeFormatKind.FULL_DAY)
 
         verify(mockSmallClockView).refreshFormat(true)
         verify(mockLargeClockView).refreshFormat(true)
-    }
-
-    @Test
-    fun defaultClock_events_onTimeZoneChanged() {
-        val timeZone = mock<TimeZone>()
-        val clock = provider.createClock(context, DEFAULT_CLOCK_ID)
-        clock.events.onTimeZoneChanged(timeZone)
-
-        verify(mockSmallClockView).onTimeZoneChanged(timeZone)
-        verify(mockLargeClockView).onTimeZoneChanged(timeZone)
     }
 
     @Test

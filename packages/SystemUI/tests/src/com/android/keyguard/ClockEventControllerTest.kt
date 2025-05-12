@@ -16,6 +16,7 @@
 package com.android.keyguard
 
 import android.content.BroadcastReceiver
+import android.icu.util.TimeZone as IcuTimeZone
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
@@ -51,6 +52,7 @@ import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.plugins.clocks.ZenData.ZenMode
 import com.android.systemui.res.R
@@ -298,18 +300,17 @@ class ClockEventControllerTest : SysuiTestCase() {
             verify(keyguardUpdateMonitor).registerCallback(capture(captor))
             captor.value.onTimeFormatChanged("12h")
 
-            verify(events).onTimeFormatChanged(false)
+            verify(events).onTimeFormatChanged(TimeFormatKind.HALF_DAY)
         }
 
     @Test
     fun keyguardCallback_timezoneChanged_clockNotified() =
         runBlocking(IMMEDIATE) {
-            val mockTimeZone = mock<TimeZone>()
             val captor = argumentCaptor<KeyguardUpdateMonitorCallback>()
             verify(keyguardUpdateMonitor).registerCallback(capture(captor))
-            captor.value.onTimeZoneChanged(mockTimeZone)
+            captor.value.onTimeZoneChanged(TimeZone.getTimeZone("GMT"))
 
-            verify(events).onTimeZoneChanged(mockTimeZone)
+            verify(events).onTimeZoneChanged(IcuTimeZone.getTimeZone("GMT"))
         }
 
     @Test
@@ -319,7 +320,7 @@ class ClockEventControllerTest : SysuiTestCase() {
             verify(keyguardUpdateMonitor).registerCallback(capture(captor))
             captor.value.onUserSwitchComplete(10)
 
-            verify(events).onTimeFormatChanged(false)
+            verify(events).onTimeFormatChanged(TimeFormatKind.HALF_DAY)
         }
 
     @Test
