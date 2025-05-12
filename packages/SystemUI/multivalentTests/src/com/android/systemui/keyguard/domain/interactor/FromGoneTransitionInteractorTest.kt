@@ -88,6 +88,7 @@ class FromGoneTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testTransitionsToLockscreen_ifFinishedInGone() =
         testScope.runTest {
             keyguardTransitionRepository.sendTransitionSteps(
