@@ -85,6 +85,7 @@ constructor(
                     smartSpaceManager.createSmartspaceSession(
                         SmartspaceConfig.Builder(applicationContext, AMBIENT_CUE_SURFACE).build()
                     )
+                Log.i(TAG, "SmartSpace session created")
 
                 val smartSpaceListener = OnTargetsAvailableListener { targets ->
                     val actions =
@@ -137,9 +138,11 @@ constructor(
                 }
 
                 session.addOnTargetsAvailableListener(executor, smartSpaceListener)
+                Log.i(TAG, "SmartSpace session addOnTargetsAvailableListener")
                 awaitClose {
                     session.removeOnTargetsAvailableListener(smartSpaceListener)
                     session.close()
+                    Log.i(TAG, "SmartSpace session closed")
                 }
             }
             .onEach { actions -> isVisible.update { actions.isNotEmpty() } }
