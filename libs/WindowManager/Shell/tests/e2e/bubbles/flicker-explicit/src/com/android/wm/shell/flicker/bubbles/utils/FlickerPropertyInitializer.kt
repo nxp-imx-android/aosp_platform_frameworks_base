@@ -21,6 +21,7 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 
@@ -31,6 +32,8 @@ import com.android.server.wm.flicker.helpers.SimpleAppHelper
 open class FlickerPropertyInitializer {
 
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+
+    val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
 
     /**
      * Helper class to wait on [WindowManagerState] or [LayerTraceEntry] conditions.

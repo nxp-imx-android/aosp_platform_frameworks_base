@@ -8,6 +8,9 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest"
     }
   ]
 }

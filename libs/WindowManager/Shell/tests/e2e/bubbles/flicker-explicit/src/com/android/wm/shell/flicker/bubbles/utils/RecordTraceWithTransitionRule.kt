@@ -18,8 +18,10 @@ package com.android.wm.shell.flicker.bubbles.utils
 
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
+import android.util.Log
 import org.junit.rules.TestRule
 import org.junit.runner.Description
+import org.junit.runners.model.MultipleFailureException
 import org.junit.runners.model.Statement
 
 /**
@@ -45,20 +47,40 @@ class RecordTraceWithTransitionRule(
     override fun apply(base: Statement, description: Description?): Statement {
         return object : Statement() {
             override fun evaluate() {
-                recordTraceWithTransition()
-                base.evaluate()
+                val errors = ArrayList<Throwable>()
+                try {
+                    recordTraceWithTransition()
+                } catch (e: Throwable) {
+                    errors.add(e)
+                } finally {
+                    // In case the crash during transition and test App is not removed.
+                    removeAllTasksButHome()
+                }
+
+                try {
+                    // Ensure the base is executed even if #recordTraceWithTransition crashes.
+                    base.evaluate()
+                } catch (e: Throwable) {
+                    errors.add(e)
+                }
+                MultipleFailureException.assertEmpty(errors)
             }
         }
     }
 
     private fun recordTraceWithTransition() {
-        try {
-            setUpBeforeTransition()
-            reader = runTransitionWithTrace { transition() }
-            tearDownAfterTransition()
-        } finally {
-            // In case the crash during transition and test App is not removed.
-            removeAllTasksButHome()
+        setUpBeforeTransition()
+        reader = runTransitionWithTrace {
+            try {
+                transition()
+            } catch (e: Throwable) {
+                Log.e(TAG, "Transition is aborted due to the exception:\n $e")
+            }
         }
+        tearDownAfterTransition()
+    }
+
+    companion object {
+        private const val TAG = "TransitionRule"
     }
 }
