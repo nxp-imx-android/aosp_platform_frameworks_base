@@ -408,6 +408,19 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".TrampolineStartActivity"
+            android:exported="true"
+            android:label=".TrampolineStartActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".TrampolineFinishActivity"
+            android:exported="true"
+            android:label=".TrampolineFinishActivity" />
         <service
             android:name=".AssistantInteractionSessionService"
             android:exported="true"
