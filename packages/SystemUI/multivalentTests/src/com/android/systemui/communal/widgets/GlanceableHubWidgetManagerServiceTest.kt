@@ -23,6 +23,7 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Binder
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.widget.RemoteViews
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -138,6 +139,7 @@ class GlanceableHubWidgetManagerServiceTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS)
     fun setAppWidgetHostListener_getUpdates() =
         testScope.runTest {
             // Bind service
