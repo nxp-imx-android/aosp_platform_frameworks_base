@@ -522,6 +522,7 @@ public class MediaQualityService extends SystemService {
                 return false;
             }
 
+            mPictureProfileForHal.add(longId);
             SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
             editor.putLong(DEFAULT_PICTURE_PROFILE_ID, longId);
             editor.apply();
@@ -2059,6 +2060,7 @@ public class MediaQualityService extends SystemService {
                                 Process.INVALID_PID);
 
                         mPictureProfileForHal.add(profileHandle);
+                        mPictureProfileForHal.add(current.getHandle().getId());
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                 currentProfileParameters);
                     } else {
@@ -2102,6 +2104,7 @@ public class MediaQualityService extends SystemService {
                                 current.getProfileId(), current, Process.INVALID_UID,
                                 Process.INVALID_PID);
 
+                        mPictureProfileForHal.add(current.getHandle().getId());
                         mPictureProfileForHal.add(profileHandle);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                 currentProfileParameters);
