@@ -3648,6 +3648,7 @@ package android.companion.virtual.camera {
   }
 
   public interface VirtualCameraCallback {
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_on_open") public default void onOpenCamera();
     method public default void onProcessCaptureRequest(int, long);
     method public void onStreamClosed(int);
     method public void onStreamConfigured(int, @NonNull android.view.Surface, @IntRange(from=1) int, @IntRange(from=1) int, int);

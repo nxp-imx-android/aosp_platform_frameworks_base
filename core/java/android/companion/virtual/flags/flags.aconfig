@@ -197,3 +197,12 @@ flag {
     description: "Enable VDM access for computer control"
     bug: "410570802"
 }
+
+flag {
+    name: "virtual_camera_on_open"
+    namespace: "virtual_devices"
+    description: "Callback called when the virtual camera device is requested to be opened"
+    bug: "409241122"
+    is_exported: true
+}
+

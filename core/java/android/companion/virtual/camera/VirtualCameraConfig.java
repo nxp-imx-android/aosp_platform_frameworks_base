@@ -351,6 +351,12 @@ public final class VirtualCameraConfig implements Parcelable {
             mExecutor = executor;
         }
 
+        public void onOpenCamera() {
+            if (Flags.virtualCameraOnOpen()) {
+                mExecutor.execute(mCallback::onOpenCamera);
+            }
+        }
+
         @Override
         public void onStreamConfigured(int streamId, Surface surface, int width, int height,
                 int format) {
