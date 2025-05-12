@@ -2293,7 +2293,7 @@ public class AccessibilityManagerServiceTest {
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
 
         mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK).setAction(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER).setAction(
                 KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
 
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,

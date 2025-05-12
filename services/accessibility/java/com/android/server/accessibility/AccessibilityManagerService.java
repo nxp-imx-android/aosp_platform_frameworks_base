@@ -658,7 +658,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (enableTalkbackAndMagnifierKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
         }
         if (enableVoiceAccessKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
@@ -719,7 +719,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     R.string.config_defaultSelectToSpeakService);
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> mContext.getString(
                     R.string.config_defaultVoiceAccessService);
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK -> mContext.getString(
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> mContext.getString(
                     R.string.config_defaultAccessibilityService);
             default -> "";
         };
@@ -742,7 +742,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK:
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
+            case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER:
                 targetName = getTargetNameFromKeyGestureType(gestureType);
                 if (targetName.isEmpty()) {
                     return;
