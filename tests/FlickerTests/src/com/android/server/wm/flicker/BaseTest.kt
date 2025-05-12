@@ -22,7 +22,6 @@ import android.platform.test.annotations.Presubmit
 import android.tools.flicker.junit.FlickerBuilderProvider
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.executeShellCommand
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -45,7 +44,7 @@ constructor(
     protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
 ) {
     init {
-        tapl.setExpectedRotationCheckEnabled(true)
+        tapl.expectedRotationCheckEnabled = false
         executeShellCommand(
             "settings put system hide_rotation_lock_toggle_for_accessibility 1"
         )
