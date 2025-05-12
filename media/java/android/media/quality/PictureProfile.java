@@ -174,7 +174,7 @@ public final class PictureProfile implements Parcelable {
      * IMAX SDR status.
      * @hide
      */
-    public static final String STATUS_IMAX_SDR = " IMAX_SDR";
+    public static final String STATUS_IMAX_SDR = "IMAX_SDR";
 
     /**
      * IMAX HDR10 status.
