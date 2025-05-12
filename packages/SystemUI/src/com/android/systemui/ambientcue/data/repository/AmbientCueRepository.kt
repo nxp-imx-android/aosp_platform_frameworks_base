@@ -37,10 +37,14 @@ import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -52,13 +56,16 @@ interface AmbientCueRepository {
     val actions: StateFlow<List<ActionModel>>
 
     /** If the root view is attached to the WindowManager. */
-    val isRootViewAttached: MutableStateFlow<Boolean>
+    val isRootViewAttached: StateFlow<Boolean>
 
     /** If IME is visible or not. */
     val isImeVisible: MutableStateFlow<Boolean>
 
     /** Task Id which is globally focused on display. */
     val globallyFocusedTaskId: StateFlow<Int>
+
+    /** If the UI is deactivated, such as closed by user or not used for a long period. */
+    val isDeactivated: MutableStateFlow<Boolean>
 }
 
 @SysUISingleton
@@ -93,6 +100,8 @@ constructor(
                             .flatMap { target -> target.actionChips }
                             .map { chip ->
                                 val title = chip.title.toString()
+                                val activityId =
+                                    chip.extras?.getParcelable<ActivityId>(EXTRA_ACTIVITY_ID)
                                 ActionModel(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
@@ -103,10 +112,6 @@ constructor(
                                     attribution = chip.subtitle.toString(),
                                     onPerformAction = {
                                         val intent = chip.intent
-                                        val activityId =
-                                            chip.extras?.getParcelable<ActivityId>(
-                                                EXTRA_ACTIVITY_ID
-                                            )
                                         val autofillId =
                                             chip.extras?.getParcelable<AutofillId>(
                                                 EXTRA_AUTOFILL_ID
@@ -127,6 +132,7 @@ constructor(
                                             activityStarter.startActivity(intent, false)
                                         }
                                     },
+                                    taskId = activityId?.taskId ?: INVALID_TASK_ID,
                                 )
                             }
                     if (DEBUG) {
@@ -142,24 +148,52 @@ constructor(
                     session.close()
                 }
             }
-            .onEach { actions -> isRootViewAttached.update { actions.isNotEmpty() } }
+            .onEach { actions ->
+                if (actions.isNotEmpty()) {
+                    isDeactivated.update { false }
+                    targetTaskId.update { actions[0].taskId }
+                }
+            }
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
             )
 
-    override val isRootViewAttached: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    override val isDeactivated: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    @OptIn(FlowPreview::class)
     override val globallyFocusedTaskId: StateFlow<Int> =
         focusdDisplayRepository.globallyFocusedTask
             .map { it?.taskId ?: INVALID_TASK_ID }
+            .distinctUntilChanged()
+            // Filter out focused task quick change. For example, when user clicks ambient cue, the
+            // click event will also be sent to NavBar, so it will cause a quick change of focused
+            // task (Target App -> Launcher -> Target App).
+            .debounce(DEBOUNCE_DELAY_MS)
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = INVALID_TASK_ID,
+            )
+
+    val targetTaskId: MutableStateFlow<Int> = MutableStateFlow(INVALID_TASK_ID)
+
+    override val isRootViewAttached: StateFlow<Boolean> =
+        combine(isDeactivated, globallyFocusedTaskId, actions) {
+                isDeactivated,
+                globallyFocusedTaskId,
+                actions ->
+                actions.isNotEmpty() &&
+                    !isDeactivated &&
+                    globallyFocusedTaskId == targetTaskId.value
+            }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
             )
 
     companion object {
@@ -171,5 +205,6 @@ constructor(
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
         private const val INVALID_TASK_ID = ActivityTaskManager.INVALID_TASK_ID
+        const val DEBOUNCE_DELAY_MS = 100L
     }
 }

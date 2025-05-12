@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.shared.model
 
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.graphics.drawable.Drawable
 
 data class ActionModel(
@@ -23,4 +24,5 @@ data class ActionModel(
     val label: String,
     val attribution: String?,
     val onPerformAction: () -> Unit,
+    val taskId: Int = INVALID_TASK_ID,
 )

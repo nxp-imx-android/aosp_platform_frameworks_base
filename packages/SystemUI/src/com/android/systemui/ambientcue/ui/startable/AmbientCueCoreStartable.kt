@@ -28,7 +28,9 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -55,10 +57,12 @@ constructor(
         Log.d(TAG, "start!")
         mainScope.launch { ambientCueInteractor.actions.collect() }
         mainScope.launch {
-            ambientCueInteractor.isRootViewAttached.collect { isAttached ->
+            ambientCueInteractor.isRootViewAttached.collectLatest { isAttached ->
                 if (isAttached) {
                     createAmbientCueView()
                 } else {
+                    // Delay a while to ensure AmbientCue disappearing animation to show.
+                    delay(DELAY_MS)
                     destroyAmbientCueView()
                 }
             }
@@ -88,5 +92,6 @@ constructor(
 
     private companion object {
         const val TAG = "AmbientCueCoreStartable"
+        const val DELAY_MS = 500L
     }
 }

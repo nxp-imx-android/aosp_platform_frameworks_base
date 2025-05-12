@@ -37,19 +37,19 @@ class AmbientCueInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
-    fun isRootViewAttached_setTrue_true() =
+    fun isDeactivated_setTrue_true() =
         kosmos.runTest {
-            val isRootViewAttached by collectLastValue(ambientCueInteractor.isRootViewAttached)
-            ambientCueInteractor.setRootViewAttached(true)
-            assertThat(isRootViewAttached).isTrue()
+            val isDeactivated by collectLastValue(ambientCueRepository.isDeactivated)
+            ambientCueInteractor.setDeactivated(true)
+            assertThat(isDeactivated).isTrue()
         }
 
     @Test
-    fun isRootViewAttached_setFalse_False() =
+    fun isDeactivated_setFalse_False() =
         kosmos.runTest {
-            val isRootViewAttached by collectLastValue(ambientCueInteractor.isRootViewAttached)
-            ambientCueInteractor.setRootViewAttached(false)
-            assertThat(isRootViewAttached).isFalse()
+            val isDeactivated by collectLastValue(ambientCueRepository.isDeactivated)
+            ambientCueInteractor.setDeactivated(false)
+            assertThat(isDeactivated).isFalse()
         }
 
     @Test
