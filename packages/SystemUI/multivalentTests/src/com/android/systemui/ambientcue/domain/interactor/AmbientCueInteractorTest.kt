@@ -37,19 +37,19 @@ class AmbientCueInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
-    fun isVisible_setTrue_true() =
+    fun isRootViewAttached_setTrue_true() =
         kosmos.runTest {
-            val isVisible by collectLastValue(ambientCueInteractor.isVisible)
-            ambientCueInteractor.setIsVisible(true)
-            assertThat(isVisible).isTrue()
+            val isRootViewAttached by collectLastValue(ambientCueInteractor.isRootViewAttached)
+            ambientCueInteractor.setRootViewAttached(true)
+            assertThat(isRootViewAttached).isTrue()
         }
 
     @Test
-    fun isVisible_setFalse_False() =
+    fun isRootViewAttached_setFalse_False() =
         kosmos.runTest {
-            val isVisible by collectLastValue(ambientCueInteractor.isVisible)
-            ambientCueInteractor.setIsVisible(false)
-            assertThat(isVisible).isFalse()
+            val isRootViewAttached by collectLastValue(ambientCueInteractor.isRootViewAttached)
+            ambientCueInteractor.setRootViewAttached(false)
+            assertThat(isRootViewAttached).isFalse()
         }
 
     @Test
@@ -77,7 +77,7 @@ class AmbientCueInteractorTest : SysuiTestCase() {
     fun isImeVisible_setTrue_true() =
         kosmos.runTest {
             val isImeVisible by collectLastValue(ambientCueInteractor.isImeVisible)
-            ambientCueInteractor.setIsImeVisible(true)
+            ambientCueInteractor.setImeVisible(true)
             assertThat(isImeVisible).isTrue()
         }
 
@@ -85,7 +85,7 @@ class AmbientCueInteractorTest : SysuiTestCase() {
     fun isImeVisible_setFalse_false() =
         kosmos.runTest {
             val isImeVisible by collectLastValue(ambientCueInteractor.isImeVisible)
-            ambientCueInteractor.setIsImeVisible(false)
+            ambientCueInteractor.setImeVisible(false)
             assertThat(isImeVisible).isFalse()
         }
 }

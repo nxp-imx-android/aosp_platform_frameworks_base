@@ -38,12 +38,22 @@ class AmbientCueViewModel
 constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
     private val hydrator = Hydrator("OverlayViewModel.hydrator")
 
-    val isVisible: Boolean by
+    private val isRootViewAttached: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isVisible",
+            traceName = "isRootViewAttached",
             initialValue = false,
-            source = ambientCueInteractor.isVisible,
+            source = ambientCueInteractor.isRootViewAttached,
         )
+
+    private val isImeVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isImeVisible",
+            initialValue = false,
+            source = ambientCueInteractor.isImeVisible,
+        )
+
+    val isVisible: Boolean
+        get() = isRootViewAttached && !isImeVisible
 
     var isExpanded: Boolean by mutableStateOf(false)
         private set
@@ -69,7 +79,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
         )
 
     fun show() {
-        ambientCueInteractor.setIsVisible(true)
+        ambientCueInteractor.setRootViewAttached(true)
         isExpanded = false
     }
 
@@ -82,7 +92,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
     }
 
     fun hide() {
-        ambientCueInteractor.setIsVisible(false)
+        ambientCueInteractor.setRootViewAttached(false)
         isExpanded = false
     }
 
@@ -91,11 +101,11 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
             launch { hydrator.activate() }
             launch {
                 // Hide the UI if the user doesn't interact with it after N seconds
-                ambientCueInteractor.isVisible.collectLatest { isVisible ->
-                    if (!isVisible) return@collectLatest
+                ambientCueInteractor.isRootViewAttached.collectLatest { isAttached ->
+                    if (!isAttached) return@collectLatest
                     delay(AMBIENT_CUE_TIMEOUT_SEC)
                     if (!isExpanded) {
-                        ambientCueInteractor.setIsVisible(false)
+                        ambientCueInteractor.setRootViewAttached(false)
                     }
                 }
             }
