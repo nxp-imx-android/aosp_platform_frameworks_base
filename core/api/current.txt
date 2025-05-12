@@ -35621,6 +35621,20 @@ package android.os.strictmode {
 
 package android.os.vibrator {
 
+  @FlaggedApi("android.os.vibrator.haptic_feedback_with_custom_usage") public final class HapticFeedbackRequest {
+    method public int getFeedbackConstant();
+    method public int getFlags();
+    method public int getUsage();
+  }
+
+  public static final class HapticFeedbackRequest.Builder {
+    ctor public HapticFeedbackRequest.Builder(int);
+    ctor public HapticFeedbackRequest.Builder(@NonNull android.os.vibrator.HapticFeedbackRequest);
+    method @NonNull public android.os.vibrator.HapticFeedbackRequest build();
+    method @NonNull public android.os.vibrator.HapticFeedbackRequest.Builder setFlags(int);
+    method @NonNull public android.os.vibrator.HapticFeedbackRequest.Builder setUsage(int);
+  }
+
   @FlaggedApi("android.os.vibrator.normalized_pwle_effects") public final class VibratorEnvelopeEffectInfo implements android.os.Parcelable {
     method public int describeContents();
     method public long getMaxControlPointDurationMillis();
