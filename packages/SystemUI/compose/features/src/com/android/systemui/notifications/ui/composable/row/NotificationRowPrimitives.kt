@@ -54,7 +54,6 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.ValueKey
-import com.android.compose.animation.scene.animateElementColorAsState
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 
@@ -141,15 +140,18 @@ fun ContentScope.ExpansionControl(
 @Composable
 private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
     val surfaceColor = notificationElementSurfaceColor()
-    Box(
-        modifier =
-            Modifier.drawBehind {
-                drawRoundRect(
-                    color = surfaceColor,
-                    cornerRadius = CornerRadius(100.dp.toPx(), 100.dp.toPx()),
-                )
-            }
-    )
+    // Needs to be a shared element so it does not overlap while animating
+    ElementWithValues(NotificationRowPrimitives.Elements.PillBackground, modifier) {
+        Box(
+            modifier =
+                Modifier.drawBehind {
+                    drawRoundRect(
+                        color = surfaceColor,
+                        cornerRadius = CornerRadius(100.dp.toPx(), 100.dp.toPx()),
+                    )
+                }
+        )
+    }
 }
 
 @Composable

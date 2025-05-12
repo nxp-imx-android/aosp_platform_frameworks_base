@@ -2444,18 +2444,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     /**
-     * Retrieves an OnClickListener for the close button of a notification, which when invoked,
-     * dismisses the notificationc represented by the given ExpandableNotificationRow.
-     *
-     * @param row The ExpandableNotificationRow representing the notification to be dismissed.
-     * @return An OnClickListener instance that dismisses the notification(s) when invoked.
+     * Retrieves an OnClickListener for the dismiss button of this notification, which when invoked,
+     * dismisses the notification represented by this ExpandableNotificationRow.
      */
-    public View.OnClickListener getCloseButtonOnClickListener(ExpandableNotificationRow row) {
-        return v -> {
-            if (row != null) {
-                row.performDismiss(false);
-            }
-        };
+    public View.OnClickListener getDismissButtonOnClickListener() {
+        return v -> performDismiss(false);
     }
 
     @Override

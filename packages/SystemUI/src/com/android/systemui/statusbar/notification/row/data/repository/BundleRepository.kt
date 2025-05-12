@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.row.data.repository
 
 import android.graphics.drawable.Drawable
+import android.service.notification.Adjustment
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ class BundleRepository(
     @StringRes val titleText: Int,
     @DrawableRes val bundleIcon: Int,
     @StringRes val summaryText: Int,
+    @Adjustment.Types val bundleType: Int,
 ) {
 
     var numberOfChildren by mutableStateOf<Int?>(0)

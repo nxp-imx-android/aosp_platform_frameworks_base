@@ -24,5 +24,6 @@ val Kosmos.testBundleRepository by
             TEST_BUNDLE_SPEC.titleText,
             TEST_BUNDLE_SPEC.icon,
             TEST_BUNDLE_SPEC.summaryText,
+            TEST_BUNDLE_SPEC.bundleType,
         )
     }

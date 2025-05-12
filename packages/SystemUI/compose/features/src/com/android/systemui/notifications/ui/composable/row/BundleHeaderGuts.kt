@@ -28,6 +28,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,15 +38,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -90,10 +88,9 @@ private fun TopRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Mo
         )
 
         Image(
-            painter = painterResource(R.drawable.ic_settings_24dp),
-            // TODO(b/409748420): Add correct CD
+            imageVector = Icons.Default.Settings,
             contentDescription =
-                stringResource(com.android.systemui.res.R.string.notification_more_settings),
+                stringResource(com.android.systemui.res.R.string.accessibility_long_click_tile),
             modifier =
                 Modifier.size(24.dp)
                     .clickable(
@@ -138,22 +135,17 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
             )
         }
 
-        var checked by remember { mutableStateOf(true) }
-
         Switch(
-            checked = checked,
-            // TODO(b/409748420): Implement proper checked logic
-            onCheckedChange = { checked = !checked },
+            checked = viewModel.switchState,
+            onCheckedChange = { viewModel.switchState = !viewModel.switchState },
             thumbContent = {
                 Icon(
-                    // TODO(b/409748420): Add correct icon
-                    painter = painterResource(R.drawable.ic_check_circle_24px),
+                    imageVector = Icons.Default.Check,
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             },
-            // TODO(b/409748420): Implement correct switch colors
         )
     }
 }
@@ -172,7 +164,7 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDoneClicked,
+                        onClick = viewModel.onDismissClicked,
                         indication = null,
                         interactionSource = null,
                     ),
@@ -180,16 +172,15 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // TODO(b/409748420): Implement done/apply switch
         Text(
-            text = stringResource(R.string.done_label),
+            text = stringResource(viewModel.getDoneOrApplyButtonText()),
             style = MaterialTheme.typography.titleSmallEmphasized,
             color = MaterialTheme.colorScheme.primary,
             modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDismissClicked,
+                        onClick = { viewModel.onDoneOrApplyClicked() },
                         indication = null,
                         interactionSource = null,
                     ),

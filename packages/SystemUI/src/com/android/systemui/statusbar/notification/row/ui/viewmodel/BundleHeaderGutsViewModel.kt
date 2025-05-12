@@ -18,12 +18,33 @@ package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.android.systemui.res.R.string
 
 class BundleHeaderGutsViewModel(
     @StringRes val titleText: Int,
     @StringRes val summaryText: Int,
     @DrawableRes val bundleIcon: Int,
     val onSettingsClicked: () -> Unit = {},
-    val onDoneClicked: () -> Unit = {},
     val onDismissClicked: () -> Unit = {},
-)
+    private val closeGuts: () -> Unit = {},
+    private val disableBundle: () -> Unit = {},
+) {
+    var switchState by mutableStateOf(true)
+
+    fun getDoneOrApplyButtonText() =
+        if (switchState) string.inline_done_button else string.inline_ok_button
+
+    fun onDoneOrApplyClicked() {
+        if (switchState) {
+            closeGuts.invoke()
+        } else {
+            // The bundle always starts enabled otherwise the guts would not have been visible. Thus
+            // we only need to update settings when the switch was toggled to false.
+            disableBundle.invoke()
+            onDismissClicked.invoke()
+        }
+    }
+}

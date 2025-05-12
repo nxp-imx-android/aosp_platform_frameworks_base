@@ -27,4 +27,5 @@ val TEST_BUNDLE_SPEC =
         summaryText = R.string.redacted_notification_action_title,
         icon = R.drawable.ic_settings,
         bucket = BUCKET_RECS,
+        bundleType = 0,
     )
