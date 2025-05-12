@@ -19,11 +19,15 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
 import com.android.wm.shell.Flags
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
+import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
+import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -40,13 +44,16 @@ import org.junit.runners.MethodSorters
  *     Long press [simpleApp] icon to show [AppIconMenu].
  *     Click the bubble menu to launch [simpleApp] into bubble.
  * ```
+ * Verified tests:
+ * - [BubbleFlickerTestBase]
+ * - [BubbleAppBecomesExpandedTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase() {
+class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase(), BubbleAppBecomesExpandedTestCases {
 
     companion object : FlickerPropertyInitializer() {
 
@@ -107,112 +114,6 @@ class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase() {
             .then()
             .isVisible(ComponentNameMatcher.BUBBLE)
             .forAllEntries()
-    }
-
-// endregion
-
-// region App Launch related tests
-
-    /**
-     * Verifies the focus changed from launcher to [testApp].
-     */
-    @Test
-    fun focusChanges() {
-        EventLogSubject(
-            traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
-            traceDataReader
-        ).focusChanges(
-            ComponentNameMatcher.LAUNCHER.toWindowName(),
-            testApp.toWindowName()
-        )
-    }
-
-    /**
-     * Verifies the [testApp] replaces launcher to be the top window.
-     */
-    @Test
-    fun appWindowReplacesLauncherAsTopWindow() {
-        wmTraceSubject
-            .isAppWindowOnTop(ComponentNameMatcher.LAUNCHER)
-            .then()
-            .isAppWindowOnTop(
-                ComponentNameMatcher.SNAPSHOT
-                    .or(ComponentNameMatcher.SPLASH_SCREEN),
-                isOptional = true,
-            )
-            .then()
-            .isAppWindowOnTop(testApp)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies the [testApp] is the top window at the end of transition.
-     */
-    @Test
-    fun appWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(testApp)
-    }
-
-    /**
-     * Verifies the [testApp] becomes the top window.
-     */
-    @Test
-    fun appWindowBecomesTopWindow() {
-        wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAppWindowNotOnTop(testApp)
-            .then()
-            .isAppWindowOnTop(testApp)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies the [testApp] window becomes visible.
-     */
-    @Test
-    fun appWindowBecomesVisible() {
-        wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAppWindowInvisible(testApp)
-            .then()
-            .isAppWindowVisible(testApp)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies the [testApp] layer becomes visible.
-     */
-    @Test
-    fun appLayerBecomesVisible() {
-        layersTraceSubject
-            .isInvisible(testApp)
-            .then()
-            .isVisible(testApp)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies the [testApp] window is visible at the end of transition.
-     */
-    @Test
-    fun appWindowIsVisibleAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowVisible(testApp)
-    }
-
-    /**
-     * Verifies the [testApp] layer is visible at the end of transition.
-     */
-    @Test
-    fun appLayerIsVisibleAtEnd() {
-        layerTraceEntrySubjectAtEnd.isVisible(testApp)
-    }
-
-    /**
-     * Verifies the [testApp] layer has rounded corners
-     */
-    @Test
-    fun appLayerHasRoundedCorner() {
-        layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
     }
 
 // endregion

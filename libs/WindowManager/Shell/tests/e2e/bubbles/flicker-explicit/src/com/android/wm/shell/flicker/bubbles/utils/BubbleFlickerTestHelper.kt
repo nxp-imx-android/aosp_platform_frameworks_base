@@ -16,7 +16,7 @@
 
 @file:JvmName("BubbleFlickerTestHelper")
 
-package com.android.wm.shell.flicker.bubbles
+package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
 import android.tools.Rotation

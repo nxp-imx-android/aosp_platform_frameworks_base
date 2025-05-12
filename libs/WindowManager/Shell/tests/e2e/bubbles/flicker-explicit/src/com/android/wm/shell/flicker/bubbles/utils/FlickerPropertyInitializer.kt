@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.bubbles
+package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -48,7 +48,7 @@ open class FlickerPropertyInitializer {
     val tapl: LauncherInstrumentation = LauncherInstrumentation()
 
     /**
-     * The app used in scenario.
+     * The app used in flicker tests to verify with.
      */
     open val testApp = SimpleAppHelper(instrumentation)
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.bubbles
+package com.android.wm.shell.flicker.bubbles.utils
 
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
