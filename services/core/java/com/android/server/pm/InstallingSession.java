@@ -33,6 +33,7 @@ import static com.android.server.pm.PackageManagerService.TAG;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.apex.ApexInfo;
+import android.app.ApplicationPackageManager;
 import android.content.pm.DataLoaderType;
 import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.PackageInfoLite;
@@ -626,6 +627,7 @@ class InstallingSession {
             request.setError("APEX installation failed", e);
         }
         PackageManagerService.invalidatePackageInfoCache();
+        ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         mPm.notifyInstallObserver(request);
     }
 
