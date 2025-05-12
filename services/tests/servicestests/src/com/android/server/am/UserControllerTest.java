@@ -664,36 +664,31 @@ public class UserControllerTest {
                 ++numberOfUserSwitches,
                 /* expectOldUserStopping= */false,
                 /* expectScheduleBackgroundUserStopping= */ false);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         // Allow the post-switch processing to complete (there should be no scheduled stopping).
         assertAndProcessScheduledStopBackgroundUser(false, null);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         // Switch to TEST_USER_ID1 from TEST_USER_ID
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, TEST_USER_ID,
                 ++numberOfUserSwitches,
                 /* expectOldUserStopping= */false,
                 /* expectScheduleBackgroundUserStopping= */ true);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1);
 
         // Switch back to TEST_USER_ID from TEST_USER_ID1
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID, TEST_USER_ID1,
                 ++numberOfUserSwitches,
                 /* expectOldUserStopping= */false,
                 /* expectScheduleBackgroundUserStopping= */ true);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID1, TEST_USER_ID),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID1, TEST_USER_ID);
 
         // Allow the post-switch processing to complete.
         assertAndProcessScheduledStopBackgroundUser(false, TEST_USER_ID);
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
         assertAndProcessScheduledStopBackgroundUser(false, null);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
     }
 
     /** Test scheduling stopping of background users that were started in the background. */
@@ -714,28 +709,23 @@ public class UserControllerTest {
         setUpAndStartUserInBackground(TEST_USER_ID1);
         setUpAndStartProfileInBackground(TEST_USER_ID2, UserManager.USER_TYPE_PROFILE_MANAGED);
 
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1, TEST_USER_ID2),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1, TEST_USER_ID2);
 
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID1, TEST_USER_ID2),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID1, TEST_USER_ID2);
 
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID2),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID2);
 
         assertAndProcessScheduledStopBackgroundUser(false, TEST_USER_ID2);
         assertAndProcessScheduledStopBackgroundUser(false, null);
 
         // Now that we've processed the stops, let's make sure that a subsequent one will work too.
         setUpAndStartUserInBackground(TEST_USER_ID3);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID2, TEST_USER_ID3),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID2, TEST_USER_ID3);
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID3);
         assertAndProcessScheduledStopBackgroundUser(false, null);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID2),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID2);
     }
 
     /** Test lack of scheduling stopping of background users if config has it disabled. */
@@ -918,31 +908,27 @@ public class UserControllerTest {
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID, UserHandle.USER_SYSTEM,
                 ++numberOfUserSwitches, false,
                 /* expectScheduleBackgroundUserStopping= */ false);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         // Switch to TEST_USER_GUEST from TEST_USER_ID
         addForegroundUserAndContinueUserSwitch(TEST_USER_GUEST, TEST_USER_ID,
                 ++numberOfUserSwitches, false,
                 /* expectScheduleBackgroundUserStopping= */ true);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_GUEST),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_GUEST);
 
         // Allow the post-switch processing to complete.
         // TEST_USER_ID may be scheduled for stopping, but it shouldn't actually stop since the
         // current user is a Guest.
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
         assertAndProcessScheduledStopBackgroundUser(false, TEST_USER_GUEST);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_GUEST),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_GUEST);
 
         // Switch to TEST_USER_ID2 from TEST_USER_GUEST
         // Guests are automatically stopped in the background, so it won't be scheduled.
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, TEST_USER_GUEST,
                 ++numberOfUserSwitches, true,
                 /* expectScheduleBackgroundUserStopping= */ false);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID2),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID2);
 
         // Allow the post-switch processing to complete.
         // TEST_USER_ID should *still* be scheduled for stopping, since we skipped stopping it
@@ -950,8 +936,7 @@ public class UserControllerTest {
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
         assertAndProcessScheduledStopBackgroundUser(false, TEST_USER_GUEST);
         assertAndProcessScheduledStopBackgroundUser(false, TEST_USER_ID2);
-        assertEquals(Arrays.asList(SYSTEM_USER_ID, TEST_USER_ID2),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID2);
     }
 
     /** Test scheduling stopping of background users - reschedule if user with a scheduled alarm. */
@@ -967,22 +952,19 @@ public class UserControllerTest {
                 /* backgroundUserScheduledStopTimeSecs= */ 2);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         // Initially, the background user has an alarm that will fire soon. So don't stop the user.
         when(mInjector.mAlarmManagerInternal.getNextAlarmTriggerTimeForUser(eq(TEST_USER_ID)))
                 .thenReturn(System.currentTimeMillis() + Duration.ofMinutes(2).toMillis());
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         // Now, that alarm is gone and the next alarm isn't for a long time. Do stop the user.
         when(mInjector.mAlarmManagerInternal.getNextAlarmTriggerTimeForUser(eq(TEST_USER_ID)))
                 .thenReturn(System.currentTimeMillis() + Duration.ofDays(1).toMillis());
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
-        assertEquals(newHashSet(SYSTEM_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
 
         // No-one is scheduled to stop anymore.
         assertAndProcessScheduledStopBackgroundUser(false, null);
@@ -1004,8 +986,7 @@ public class UserControllerTest {
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         setUpAndStartUserInBackground(TEST_USER_ID1);
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1);
 
         when(mInjector.mAudioManagerInternal
                 .isUserPlayingAudio(eq(TEST_USER_ID))).thenReturn(true);
@@ -1016,8 +997,7 @@ public class UserControllerTest {
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
 
         // TEST_USER_ID1 should be stopped. But TEST_USER_ID shouldn't, since it was playing audio.
-        assertEquals(newHashSet(SYSTEM_USER_ID, TEST_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
     }
 
     /**
@@ -1064,16 +1044,14 @@ public class UserControllerTest {
                 numberOfUserSwitches, false, false);
         // running: user 0, USER_ID
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, TEST_USER_ID,
                 numberOfUserSwitches, false, false);
         // running: user 0, USER_ID, USER_ID1
         assertFalse(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID, TEST_USER_ID1}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, TEST_USER_ID1,
@@ -1085,8 +1063,7 @@ public class UserControllerTest {
         // running: user 0, USER_ID1, USER_ID2
         // USER_ID should be stopped as it is least recently used non user0.
         assertFalse(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID1, TEST_USER_ID2}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID1, TEST_USER_ID2);
         verifySystemUserVisibilityChangesNeverNotified();
     }
 
@@ -1109,8 +1086,7 @@ public class UserControllerTest {
                 numberOfUserSwitches, false, false);
         // running: user 0, USER_ID
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
         numberOfUserSwitches++;
 
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, TEST_USER_ID,
@@ -1119,8 +1095,7 @@ public class UserControllerTest {
         // stopped + unlocked: USER_ID
         numberOfUserSwitches++;
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID1}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID1);
         // Skip all other steps and test unlock delaying only
         UserState uss = mUserStates.get(TEST_USER_ID);
         uss.setState(UserState.STATE_SHUTDOWN); // necessary state change from skipped part
@@ -1137,8 +1112,7 @@ public class UserControllerTest {
         // stopped + unlocked: USER_ID1
         // stopped + locked: USER_ID
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(Arrays.asList(new Integer[] {0, TEST_USER_ID2}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID2);
         UserState ussUser1 = mUserStates.get(TEST_USER_ID1);
         ussUser1.setState(UserState.STATE_SHUTDOWN);
         mUserController.finishUserStopped(ussUser1, /* allowDelayedLocking= */ true);
@@ -1171,9 +1145,7 @@ public class UserControllerTest {
         setUpUser(BG_USER_ID, 0).profileGroupId = UserInfo.NO_PROFILE_GROUP_ID;
         mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
 
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
 
         int numberOfUserSwitches = 1;
         addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM,
@@ -1181,14 +1153,10 @@ public class UserControllerTest {
         mUserController.finishUserSwitch(mUserStates.get(PARENT_ID));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID, PARENT_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PARENT_ID);
 
         assertThat(mUserController.startProfile(PROFILE1_ID, true, null)).isTrue();
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(FG_USER_ID, PARENT_ID,
@@ -1196,14 +1164,11 @@ public class UserControllerTest {
         mUserController.finishUserSwitch(mUserStates.get(FG_USER_ID));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
         assertTrue(mUserController.canStartMoreUsers());
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID);
 
         mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, BG_USER_ID, FG_USER_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(
+                SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, BG_USER_ID, FG_USER_ID);
 
         // Now we exceed the maxRunningUsers parameter (of 5):
         assertThat(mUserController.startProfile(PROFILE2_ID, true, null)).isTrue();
@@ -1224,9 +1189,8 @@ public class UserControllerTest {
         // users. The oldest background user should be stopped (BG_USER); even though PROFILE1 was
         // older, it should not be stopped since it's a profile of the (new) current user.
         assertFalse(mUserController.canStartMoreUsers());
-        assertEquals(newHashSet(
-                SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, FG_USER_ID, PARENT_ID),
-                new HashSet<>(mUserController.getRunningUsersLU()));
+        assertRunningUsersIgnoreOrder(
+                SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, FG_USER_ID, PARENT_ID);
     }
 
     @Test
@@ -1307,33 +1271,23 @@ public class UserControllerTest {
         setUpUser(BG_USER_ID, 0).profileGroupId = UserInfo.NO_PROFILE_GROUP_ID;
         mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
 
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
 
         int numberOfUserSwitches = 1;
         addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM,
                 numberOfUserSwitches, false, false);
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, PARENT_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PARENT_ID);
 
         assertThat(mUserController.startProfile(PROFILE1_ID, true, null)).isTrue();
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(FG_USER_ID, PARENT_ID,
                 numberOfUserSwitches, false, false);
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID);
 
         mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, BG_USER_ID, FG_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, BG_USER_ID, FG_USER_ID);
 
         assertThat(mUserController.startProfile(PROFILE2_ID, true, null)).isTrue();
         // Note for the future:
@@ -1341,9 +1295,8 @@ public class UserControllerTest {
         // nor that PROFILE1 come before BG_USER. We can change that policy later if we'd like.
         // The important thing is that PROFILE1 and PROFILE2 precede PARENT,
         // and that everything precedes OTHER.
-        assertEquals(Arrays.asList(new Integer[] {
-                SYSTEM_USER_ID, PROFILE1_ID, BG_USER_ID, PROFILE2_ID, PARENT_ID, FG_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(
+                SYSTEM_USER_ID, PROFILE1_ID, BG_USER_ID, PROFILE2_ID, PARENT_ID, FG_USER_ID);
     }
 
     /**
@@ -1365,24 +1318,16 @@ public class UserControllerTest {
         setUpUser(BG_USER_ID, 0).profileGroupId = BG_USER_ID;
         mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
 
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
 
         addForegroundUserAndContinueUserSwitch(CURRENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, CURRENT_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, CURRENT_ID);
 
         mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, BG_USER_ID, CURRENT_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, BG_USER_ID, CURRENT_ID);
 
         assertThat(mUserController.startProfile(PROFILE_ID, true, null)).isTrue();
-        assertEquals(Arrays.asList(
-                new Integer[] {SYSTEM_USER_ID, BG_USER_ID, PROFILE_ID, CURRENT_ID}),
-                mUserController.getRunningUsersLU());
+        assertRunningUsersInOrder(SYSTEM_USER_ID, BG_USER_ID, PROFILE_ID, CURRENT_ID);
     }
 
     /**
@@ -1929,7 +1874,6 @@ public class UserControllerTest {
                 new HashSet<>(mUserController.getRunningUsersLU()));
     }
 
-    // TODO: Refactor this class to use this method and the above method.
     /** Asserts that the list of running users matches the input, in the same order. */
     private void assertRunningUsersInOrder(Integer... userIds) {
         assertEquals(Arrays.asList(userIds), mUserController.getRunningUsersLU());
