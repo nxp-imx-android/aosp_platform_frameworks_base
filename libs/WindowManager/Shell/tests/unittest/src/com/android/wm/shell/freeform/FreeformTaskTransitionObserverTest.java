@@ -26,6 +26,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -49,6 +50,7 @@ import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellInit;
@@ -77,6 +79,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private WindowDecorViewModel mWindowDecorViewModel;
     @Mock private TaskChangeListener mTaskChangeListener;
     @Mock private FocusTransitionObserver mFocusTransitionObserver;
+    @Mock private DesksOrganizer mDesksOrganizer;
     @Mock private DesksTransitionObserver mDesksTransitionObserver;
     @Mock private DesktopImeHandler mDesktopImeHandler;
     @Mock private DesktopBackNavTransitionObserver mDesktopBackNavTransitionObserver;
@@ -93,6 +96,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
         PackageManager pm = mock(PackageManager.class);
         doReturn(true).when(pm).hasSystemFeature(PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT);
+        doReturn(false).when(mDesksOrganizer).isDeskChange(any());
         final Context context = mock(Context.class);
         doReturn(pm).when(context).getPackageManager();
 
@@ -104,6 +108,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
                         mWindowDecorViewModel,
                         Optional.of(mTaskChangeListener),
                         mFocusTransitionObserver,
+                        mDesksOrganizer,
                         Optional.of(mDesksTransitionObserver),
                         mDesktopState,
                         Optional.of(mDesktopImeHandler),
@@ -141,6 +146,42 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
         verify(mWindowDecorViewModel)
                 .onTaskOpening(change.getTaskInfo(), change.getLeash(), startT, finishT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS)
+    public void desksChange_windowDecorNotCreatedForDesksTask() {
+        final TransitionInfo.Change change = createChange(TRANSIT_OPEN, 1, WINDOWING_MODE_FREEFORM);
+        final TransitionInfo info =
+                new TransitionInfoBuilder(TRANSIT_OPEN, 0).addChange(change).build();
+        doReturn(true).when(mDesksOrganizer).isDeskChange(change);
+
+        final IBinder transition = mock(IBinder.class);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+        mTransitionObserver.onTransitionStarting(transition);
+
+        verify(mWindowDecorViewModel, never())
+                .onTaskOpening(change.getTaskInfo(), change.getLeash(), startT, finishT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS)
+    public void desksChange_listenerNotNotifiedOfTaskChange() {
+        final TransitionInfo.Change change =
+                createChange(TRANSIT_CHANGE, /* taskId= */ 1, WINDOWING_MODE_FREEFORM);
+        final TransitionInfo info =
+                new TransitionInfoBuilder(TRANSIT_CHANGE, /* flags= */ 0).addChange(change).build();
+        doReturn(true).when(mDesksOrganizer).isDeskChange(change);
+
+        final IBinder transition = mock(IBinder.class);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+        mTransitionObserver.onTransitionStarting(transition);
+
+        verify(mTaskChangeListener, never()).onTaskChanging(change.getTaskInfo());
     }
 
     @Test

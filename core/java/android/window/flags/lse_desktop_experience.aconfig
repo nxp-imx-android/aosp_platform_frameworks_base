@@ -1281,6 +1281,16 @@ flag {
 }
 
 flag {
+    name: "enable_no_window_decoration_for_desks"
+    namespace: "lse_desktop_experience"
+    description: "Stops the creation of a window decoration for desk tasks."
+    bug: "414449402"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_window_repositioning_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
