@@ -22,6 +22,7 @@ import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -45,6 +46,7 @@ class BubbleUtilsTest : ShellTestCase() {
     private val token = mock<WindowContainerToken> {
         on { asBinder() } doReturn binder
     }
+    private val captionInsetsOwner = Binder()
 
     @EnableFlags(
         FLAG_ENABLE_CREATE_ANY_BUBBLE,
@@ -80,11 +82,12 @@ class BubbleUtilsTest : ShellTestCase() {
         FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
         FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+        FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     )
     @Test
     fun testGetExitBubbleTransaction() {
-        val wct = getExitBubbleTransaction(token)
+        val wct = getExitBubbleTransaction(token, captionInsetsOwner)
 
-        verifyExitBubbleTransaction(wct, token.asBinder())
+        verifyExitBubbleTransaction(wct, token.asBinder(), captionInsetsOwner)
     }
 }

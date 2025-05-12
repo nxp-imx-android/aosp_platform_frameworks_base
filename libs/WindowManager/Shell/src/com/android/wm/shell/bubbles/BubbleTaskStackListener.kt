@@ -107,7 +107,7 @@ class BubbleTaskStackListener(
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 
-        val wct = getExitBubbleTransaction(task.token)
+        val wct = getExitBubbleTransaction(task.token, bubble.taskView.captionInsetsOwner)
         taskOrganizer.applyTransaction(wct)
 
         taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
