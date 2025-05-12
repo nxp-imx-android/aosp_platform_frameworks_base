@@ -173,6 +173,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             switch (opt) {
                 case "-v":
                 case "--verbose":
+                    // verbose is really the normal human-readable version; avoid clutter
                     verbose = true;
                     break;
                 case "-V":
@@ -239,6 +240,8 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                     if (veryVerbose) {
                         unresolvedName = ", unresolvedName=" + user.name;
                     }
+                    // verbose is the normal standard human-readable version;
+                    // therefore, avoid clutter unless veryVerbose
                     pw.printf("%d: id=%d, name=%s%s, type=%s, "
                             + "flags=%s%s%s%s%s%s%s%s%s%s%s\n",
                             i,
