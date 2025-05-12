@@ -32,6 +32,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
+import com.android.systemui.keyguard.ui.view.layout.blueprints.transitions.IntraBlueprintTransition.Config
 import com.android.systemui.keyguard.ui.view.layout.blueprints.transitions.IntraBlueprintTransition.Type
 import com.android.systemui.keyguard.ui.view.layout.sections.ClockSection
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
@@ -157,6 +158,20 @@ object KeyguardClockViewBinder {
                                 ?.largeClock
                                 ?.events
                                 ?.onFontSettingChanged(fontSizePx = fontSizePx.toFloat())
+                        }
+                    }
+
+                    if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                        launch("$TAG#clockViewModel.shouldDateWeatherBeBelowSmallClock") {
+                            viewModel.shouldDateWeatherBeBelowSmallClock.collect {
+                                blueprintInteractor.refreshBlueprint(
+                                    Config(
+                                        Type.SmartspaceVisibility,
+                                        checkPriority = false,
+                                        terminatePrevious = false,
+                                    )
+                                )
+                            }
                         }
                     }
                 }

@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.UserHandle
 import android.provider.Settings
 import com.android.keyguard.ClockEventController
+import com.android.systemui.animation.GSFAxes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -64,6 +65,8 @@ interface KeyguardClockRepository {
 
     /** clock id, selected from clock carousel in wallpaper picker */
     val currentClockId: Flow<ClockId>
+
+    val currentClockFontAxesWidth: Float?
 
     val currentClock: StateFlow<ClockController?>
 
@@ -127,6 +130,9 @@ constructor(
                 awaitClose { clockRegistry.unregisterClockChangeListener(listener) }
             }
             .mapNotNull { it }
+
+    override val currentClockFontAxesWidth: Float?
+        get() = clockRegistry.settings?.axes?.get(GSFAxes.WIDTH.tag)
 
     override val currentClock: StateFlow<ClockController?> =
         currentClockId
