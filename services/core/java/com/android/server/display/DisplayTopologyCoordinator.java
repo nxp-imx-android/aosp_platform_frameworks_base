@@ -16,8 +16,6 @@
 
 package com.android.server.display;
 
-import android.annotation.Nullable;
-import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.DisplayTopology;
 import android.hardware.display.DisplayTopologyGraph;
 import android.util.Pair;
@@ -28,7 +26,6 @@ import android.view.DisplayInfo;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.LocalServices;
 import com.android.server.display.feature.DisplayManagerFlags;
 
 import java.io.PrintWriter;
@@ -51,8 +48,6 @@ class DisplayTopologyCoordinator {
         }
         return info.uniqueId;
     }
-
-    private final Injector mInjector;
 
     // Persistent data store for display topologies.
     private final DisplayTopologyStore mTopologyStore;
@@ -88,15 +83,17 @@ class DisplayTopologyCoordinator {
     private final DisplayManagerService.SyncRoot mSyncRoot;
     private final Runnable mTopologySavedCallback;
     private final DisplayManagerFlags mFlags;
+    private final DisplayManagerService.DisplayInfoProvider mDisplayInfoProvider;
 
     DisplayTopologyCoordinator(BooleanSupplier isExtendedDisplayAllowed,
             BooleanSupplier shouldIncludeDefaultDisplayInTopology,
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> onTopologyChangedCallback,
             Executor topologyChangeExecutor, DisplayManagerService.SyncRoot syncRoot,
-            Runnable topologySavedCallback, DisplayManagerFlags flags) {
+            Runnable topologySavedCallback, DisplayManagerFlags flags,
+            DisplayManagerService.DisplayInfoProvider displayInfoProvider) {
         this(new Injector(), isExtendedDisplayAllowed, shouldIncludeDefaultDisplayInTopology,
                 onTopologyChangedCallback, topologyChangeExecutor, syncRoot, topologySavedCallback,
-                flags);
+                flags, displayInfoProvider);
     }
 
     @VisibleForTesting
@@ -104,8 +101,8 @@ class DisplayTopologyCoordinator {
             BooleanSupplier shouldIncludeDefaultDisplayInTopology,
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> onTopologyChangedCallback,
             Executor topologyChangeExecutor, DisplayManagerService.SyncRoot syncRoot,
-            Runnable topologySavedCallback, DisplayManagerFlags flags) {
-        mInjector = injector;
+            Runnable topologySavedCallback, DisplayManagerFlags flags,
+            DisplayManagerService.DisplayInfoProvider displayInfoProvider) {
         mTopology = injector.getTopology();
         mIsExtendedDisplayAllowed = isExtendedDisplayAllowed;
         mShouldIncludeDefaultDisplayInTopology = shouldIncludeDefaultDisplayInTopology;
@@ -116,6 +113,7 @@ class DisplayTopologyCoordinator {
                 mDisplayIdToUniqueIdMapping, mUniqueIdToDisplayIdMapping);
         mTopologySavedCallback = topologySavedCallback;
         mFlags = flags;
+        mDisplayInfoProvider = displayInfoProvider;
     }
 
     /**
@@ -182,7 +180,7 @@ class DisplayTopologyCoordinator {
             if (displayId != Display.DEFAULT_DISPLAY
                     && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
                     && mTopology.isEmpty()) {
-                onDisplayAdded(mInjector.getDisplayInfo(Display.DEFAULT_DISPLAY));
+                onDisplayAdded(mDisplayInfoProvider.get(Display.DEFAULT_DISPLAY));
             }
         }
     }
@@ -318,9 +316,6 @@ class DisplayTopologyCoordinator {
 
     @VisibleForTesting
     static class Injector {
-        private final DisplayManagerInternal mDisplayManagerInternal
-                = LocalServices.getService(DisplayManagerInternal.class);
-
         DisplayTopology getTopology() {
             return new DisplayTopology();
         }
@@ -339,12 +334,6 @@ class DisplayTopologyCoordinator {
                     return uniqueIdToDisplayIdMapping;
                 }
             });
-        }
-
-        @Nullable
-        DisplayInfo getDisplayInfo(int displayId) {
-            return mDisplayManagerInternal == null ? null
-                    : mDisplayManagerInternal.getDisplayInfo(displayId);
         }
     }
 }
