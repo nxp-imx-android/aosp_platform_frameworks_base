@@ -20,8 +20,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lowlight.data.repository.LowLightSettingsRepository
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -30,19 +28,14 @@ import kotlinx.coroutines.flow.Flow
 class LowLightSettingsInteractor
 @Inject
 constructor(
-    private val userInteractor: SelectedUserInteractor,
     private val settingsRepository: LowLightSettingsRepository,
     @Background val bgScope: CoroutineScope,
 ) {
     val lowLightDisplayBehavior: Flow<LowLightDisplayBehavior> =
-        userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            settingsRepository.getLowLightDisplayBehavior(user)
-        }
+        settingsRepository.getLowLightDisplayBehavior()
 
     val lowLightDisplayBehaviorEnabled: Flow<Boolean> =
-        userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            settingsRepository.getLowLightDisplayBehaviorEnabled(user)
-        }
+        settingsRepository.getLowLightDisplayBehaviorEnabled()
 
     val allowLowLightBehaviorWhenLocked: Boolean
         get() = settingsRepository.allowLowLightBehaviorWhenLocked

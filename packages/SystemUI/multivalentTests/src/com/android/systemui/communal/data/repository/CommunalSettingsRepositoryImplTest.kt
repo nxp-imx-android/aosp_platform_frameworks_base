@@ -44,7 +44,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.mockito.whenever
-import com.android.systemui.util.settings.fakeSettings
+import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.After
@@ -212,19 +212,18 @@ class CommunalSettingsRepositoryImplTest(flags: FlagsParameterization?) : SysuiT
     @DisableFlags(FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
     fun backgroundType_defaultValue() =
         kosmos.runTest {
-            val backgroundType by collectLastValue(underTest.getBackground(PRIMARY_USER))
+            val backgroundType by collectLastValue(underTest.getBackground())
             assertThat(backgroundType).isEqualTo(CommunalBackgroundType.ANIMATED)
         }
 
     @Test
     fun backgroundType_verifyAllValues() =
         kosmos.runTest {
-            val backgroundType by collectLastValue(underTest.getBackground(PRIMARY_USER))
+            val backgroundType by collectLastValue(underTest.getBackground())
             for (type in CommunalBackgroundType.entries) {
-                fakeSettings.putIntForUser(
+                kosmos.userAwareSecureSettingsRepository.setInt(
                     GLANCEABLE_HUB_BACKGROUND_SETTING,
                     type.value,
-                    PRIMARY_USER.id,
                 )
                 assertWithMessage(
                         "Expected $type when $GLANCEABLE_HUB_BACKGROUND_SETTING is set to" +

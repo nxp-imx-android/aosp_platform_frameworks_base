@@ -16,16 +16,13 @@
 
 package com.android.systemui.lowlight.data.repository
 
-import android.content.pm.UserInfo
 import android.content.res.Resources
 import android.provider.Settings
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
 import com.android.systemui.res.R
-import com.android.systemui.util.kotlin.emitOnStart
-import com.android.systemui.util.settings.SecureSettings
-import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
+import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -41,23 +38,23 @@ import kotlinx.coroutines.flow.map
  */
 interface LowLightSettingsRepository {
     /**
-     * Returns a flow for tracking whether low-light behavior is enabled for the user. is a separate
-     * setting as the user might have a preferred behavior, but temporarily disabled the
-     * functionality.
+     * Returns a flow for tracking whether low-light behavior is enabled for the active user. This
+     * is a separate setting as the user might have a preferred behavior, but temporarily disabled
+     * the functionality.
      */
-    fun getLowLightDisplayBehaviorEnabled(user: UserInfo): Flow<Boolean>
+    fun getLowLightDisplayBehaviorEnabled(): Flow<Boolean>
 
-    /** Updates whether the user has low-light behavior enabled. */
-    fun setLowLightDisplayBehaviorEnabled(user: UserInfo, enabled: Boolean)
+    /** Updates whether the active user has low-light behavior enabled. */
+    suspend fun setLowLightDisplayBehaviorEnabled(enabled: Boolean)
 
     /**
-     * Returns the chosen {@link LowLightDisplayBehavior} for the user. Note that enabled state is
-     * tracked in {@link #getLowLightDisplayBehaviorEnabled}.
+     * Returns the chosen {@link LowLightDisplayBehavior} for the active user. Note that enabled
+     * state is tracked in {@link #getLowLightDisplayBehaviorEnabled}.
      */
-    fun getLowLightDisplayBehavior(user: UserInfo): Flow<LowLightDisplayBehavior>
+    fun getLowLightDisplayBehavior(): Flow<LowLightDisplayBehavior>
 
-    /** Sets the {@link LowLightDisplayBehavior} for the given user. */
-    fun setLowLightDisplayBehavior(user: UserInfo, behavior: LowLightDisplayBehavior)
+    /** Sets the {@link LowLightDisplayBehavior} for the active user. */
+    suspend fun setLowLightDisplayBehavior(behavior: LowLightDisplayBehavior)
 
     val allowLowLightBehaviorWhenLocked: Boolean
 }
@@ -66,7 +63,7 @@ class LowLightSettingsRepositoryImpl
 @Inject
 constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
-    private val secureSettings: SecureSettings,
+    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
     @Main private val resources: Resources,
 ) : LowLightSettingsRepository {
     private val lowLightDisplayBehaviorEnabledDefault by lazy {
@@ -79,60 +76,41 @@ constructor(
         resources.getInteger(com.android.internal.R.integer.config_lowLightDisplayBehaviorDefault)
     }
 
-    override fun getLowLightDisplayBehaviorEnabled(user: UserInfo): Flow<Boolean> =
-        secureSettings
-            .observerFlow(
-                userId = user.id,
-                names = arrayOf(Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED),
+    override fun getLowLightDisplayBehaviorEnabled(): Flow<Boolean> =
+        userAwareSecureSettingsRepository
+            .boolSetting(
+                Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
+                lowLightDisplayBehaviorEnabledDefault,
             )
-            .emitOnStart()
-            .map {
-                secureSettings.getBoolForUser(
-                    Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
-                    lowLightDisplayBehaviorEnabledDefault,
-                    user.id,
-                )
-            }
             .flowOn(bgDispatcher)
 
-    override fun setLowLightDisplayBehaviorEnabled(user: UserInfo, enabled: Boolean) {
-        secureSettings.putBoolForUser(
+    override suspend fun setLowLightDisplayBehaviorEnabled(enabled: Boolean) {
+        userAwareSecureSettingsRepository.setBoolean(
             Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
             enabled,
-            user.id,
         )
     }
 
-    override fun getLowLightDisplayBehavior(user: UserInfo): Flow<LowLightDisplayBehavior> =
-        getLowLightDisplayBehaviorEnabled(user)
+    override fun getLowLightDisplayBehavior(): Flow<LowLightDisplayBehavior> =
+        getLowLightDisplayBehaviorEnabled()
             .flatMapLatestConflated { enabled ->
                 if (enabled) {
-                    secureSettings
-                        .observerFlow(
-                            userId = user.id,
-                            names = arrayOf(Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR),
+                    userAwareSecureSettingsRepository
+                        .intSetting(
+                            Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
+                            lowLightDisplayBehaviorDefault,
                         )
-                        .emitOnStart()
-                        .map {
-                            secureSettings
-                                .getIntForUser(
-                                    Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
-                                    lowLightDisplayBehaviorDefault,
-                                    user.id,
-                                )
-                                .toLowLightDisplayBehavior()
-                        }
+                        .map { it.toLowLightDisplayBehavior() }
                 } else {
                     flowOf(LowLightDisplayBehavior.NONE)
                 }
             }
             .flowOn(bgDispatcher)
 
-    override fun setLowLightDisplayBehavior(user: UserInfo, behavior: LowLightDisplayBehavior) {
-        secureSettings.putIntForUser(
+    override suspend fun setLowLightDisplayBehavior(behavior: LowLightDisplayBehavior) {
+        userAwareSecureSettingsRepository.setInt(
             Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
             behavior.toSettingsInt(),
-            user.id,
         )
     }
 

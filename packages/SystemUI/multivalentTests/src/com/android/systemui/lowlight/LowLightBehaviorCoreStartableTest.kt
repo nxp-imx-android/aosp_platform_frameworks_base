@@ -46,13 +46,13 @@ import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.res.R
-import com.android.systemui.settings.userTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -135,14 +135,12 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             false,
         )
 
-        kosmos.lowLightSettingsRepository.setLowLightDisplayBehaviorEnabled(
-            kosmos.userTracker.userInfo,
-            true,
-        )
-        kosmos.lowLightSettingsRepository.setLowLightDisplayBehavior(
-            kosmos.userTracker.userInfo,
-            LowLightDisplayBehavior.LOW_LIGHT_DREAM,
-        )
+        runBlocking {
+            kosmos.lowLightSettingsRepository.setLowLightDisplayBehaviorEnabled(true)
+            kosmos.lowLightSettingsRepository.setLowLightDisplayBehavior(
+                LowLightDisplayBehavior.LOW_LIGHT_DREAM
+            )
+        }
         kosmos.lowLightRepository.addAction(LowLightDisplayBehavior.LOW_LIGHT_DREAM, action)
     }
 
@@ -183,10 +181,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
     @Test
     fun testSetAmbientLowLightWhenDisabledInLowLight() =
         kosmos.runTest {
-            lowLightSettingsRepository.setLowLightDisplayBehaviorEnabled(
-                userTracker.userInfo,
-                false,
-            )
+            lowLightSettingsRepository.setLowLightDisplayBehaviorEnabled(false)
             underTest.start()
 
             // Turn on screen
@@ -254,8 +249,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
         kosmos.runTest {
             lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
             lowLightSettingsRepository.setLowLightDisplayBehavior(
-                userTracker.userInfo,
-                LowLightDisplayBehavior.SCREEN_OFF,
+                LowLightDisplayBehavior.SCREEN_OFF
             )
 
             setDisplayOn(true)
@@ -269,8 +263,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
         kosmos.runTest {
             lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
             lowLightSettingsRepository.setLowLightDisplayBehavior(
-                userTracker.userInfo,
-                LowLightDisplayBehavior.SCREEN_OFF,
+                LowLightDisplayBehavior.SCREEN_OFF
             )
 
             setDisplayOn(true)

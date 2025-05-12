@@ -76,10 +76,7 @@ constructor(
             .stateIn(scope = bgScope, started = SharingStarted.Eagerly, initialValue = false)
 
     /** When to automatically start hub for the currently selected user. */
-    val whenToStartHub: Flow<WhenToStartHub> =
-        userInteractor.selectedUserInfo.flatMapLatest { user ->
-            repository.getWhenToStartHubState(user)
-        }
+    val whenToStartHub: Flow<WhenToStartHub> = repository.getWhenToStartHubState()
 
     /** Whether communal hub is allowed by device policy for the current user */
     val allowedForCurrentUserByDevicePolicy: Flow<Boolean> =
@@ -88,10 +85,7 @@ constructor(
         }
 
     /** Whether the hub is enabled for the current user */
-    val settingEnabledForCurrentUser: Flow<Boolean> =
-        userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            repository.getSettingEnabledByUser(user)
-        }
+    val settingEnabledForCurrentUser: Flow<Boolean> = repository.getSettingEnabledByUser()
 
     /**
      * Returns true if any glanceable hub functionality should be enabled via configs and flags.
@@ -132,9 +126,7 @@ constructor(
 
     /** The type of background to use for the hub. Used to experiment with different backgrounds */
     val communalBackground: Flow<CommunalBackgroundType> =
-        userInteractor.selectedUserInfo
-            .flatMapLatest { user -> repository.getBackground(user) }
-            .flowOn(bgDispatcher)
+        repository.getBackground().flowOn(bgDispatcher)
 
     private val workProfileUserInfoCallbackFlow: Flow<UserInfo?> = conflatedCallbackFlow {
         fun send(profiles: List<UserInfo>) {

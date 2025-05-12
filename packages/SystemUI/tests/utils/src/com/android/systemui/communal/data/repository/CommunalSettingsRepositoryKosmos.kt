@@ -24,7 +24,7 @@ import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.util.settings.fakeSettings
+import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 
 val Kosmos.communalDefaultBackground: CommunalBackgroundType by
     Kosmos.Fixture {
@@ -41,7 +41,7 @@ val Kosmos.communalSettingsRepository: CommunalSettingsRepository by
             bgDispatcher = testDispatcher,
             resources = mainResources,
             featureFlagsClassic = featureFlagsClassic,
-            secureSettings = fakeSettings,
+            userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
             broadcastDispatcher = broadcastDispatcher,
             devicePolicyManager = devicePolicyManager,
             defaultBackgroundType = communalDefaultBackground,
