@@ -24,7 +24,6 @@ import android.app.StatusBarManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.Insets
 import android.os.Bundle
 import android.os.Trace
@@ -37,8 +36,10 @@ import android.view.WindowInsets
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.doOnLayout
@@ -402,14 +403,14 @@ constructor(
         if (notificationShadeBlur()) {
             header.context.getColor(com.android.internal.R.color.materialColorSurfaceDim)
         } else {
-            Color.BLACK
+            android.graphics.Color.BLACK
         }
 
     private fun getFgColor() =
         if (notificationShadeBlur()) {
             header.context.getColor(com.android.internal.R.color.materialColorOnSurface)
         } else {
-            Color.WHITE
+            android.graphics.Color.WHITE
         }
 
     private fun createBatteryComposeView(): ComposeView {
@@ -440,6 +441,9 @@ constructor(
                             modifier = Modifier.wrapContentSize(),
                             viewModelFactory = unifiedBatteryViewModelFactory,
                             isDarkProvider = { IsAreaDark { true } },
+                            textColor =
+                                if (notificationShadeBlur()) MaterialTheme.colorScheme.onSurface
+                                else Color.White,
                             showEstimate = showBatteryEstimate,
                         )
                     }
