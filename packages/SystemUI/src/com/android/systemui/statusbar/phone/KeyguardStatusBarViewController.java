@@ -276,9 +276,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
     private boolean mCommunalShowing;
 
-    private final Consumer<Boolean> mCommunalConsumer = (communalShowing) -> {
-        updateCommunalShowing(communalShowing);
-    };
+    private final Consumer<Boolean> mCommunalConsumer = this::updateCommunalShowing;
 
     @VisibleForTesting
     void updateCommunalShowing(boolean communalShowing) {
@@ -287,7 +285,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         // When communal is hidden (either by transition or state change), set alpha to fully
         // visible.
         if (!mCommunalShowing) {
-            setAlpha(-1f);
+            setAlphaByCommunal(-1f);
         }
         updateViewState();
     }
@@ -316,20 +314,26 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private boolean mShowingKeyguardHeadsUp;
     private StatusBarSystemEventDefaultAnimator mSystemEventAnimator;
     private float mSystemEventAnimatorAlpha = 1;
-    private final Consumer<Float> mToGlanceableHubStatusBarAlphaConsumer = (alpha) ->
-            updateCommunalAlphaTransition(alpha);
+    private final Consumer<Float> mToGlanceableHubStatusBarAlphaConsumer =
+            this::updateCommunalAlphaTransition;
 
-    private final Consumer<Float> mFromGlanceableHubStatusBarAlphaConsumer = (alpha) ->
-            updateCommunalAlphaTransition(alpha);
+    private final Consumer<Float> mFromGlanceableHubStatusBarAlphaConsumer =
+            this::updateCommunalAlphaTransition;
 
     @VisibleForTesting  void updateCommunalAlphaTransition(float alpha) {
-        setAlpha(!mCommunalShowing || alpha == 0 ? -1 : alpha);
+        setAlphaByCommunal(alpha);
     }
 
     /**
      * The alpha value to be set on the View. If -1, this value is to be ignored.
      */
     private float mExplicitAlpha = -1f;
+
+    /**
+     * The alpha value to be set on the View requested by the glanceable hub. If -1, this value is
+     * to be ignored. Otherwise, it takes precedence over mExplicitAlpha.
+     */
+    private float mExplicitAlphaByCommunal = -1f;
 
     @Inject
     public KeyguardStatusBarViewController(
@@ -661,7 +665,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 1, mShadeViewStateProvider.getLockscreenShadeDragProgress() * 2);
 
         float newAlpha;
-        if (mExplicitAlpha != -1) {
+        if (mExplicitAlphaByCommunal != -1) {
+            newAlpha = mExplicitAlphaByCommunal;
+        } else if (mExplicitAlpha != -1) {
             newAlpha = mExplicitAlpha;
         } else {
             newAlpha = Math.min(getKeyguardContentsAlpha(), alphaQsExpansion)
@@ -687,7 +693,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                         && !mDozing
                         && !hideForBypass
                         && !mDisableStateTracker.isDisabled()
-                        && (Flags.glanceableHubV2() || (!mCommunalShowing || mExplicitAlpha != -1))
                         ? View.VISIBLE : View.INVISIBLE;
 
         updateViewState(newAlpha, newVisibility);
@@ -839,6 +844,18 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
 
         mExplicitAlpha = alpha;
+        updateViewState();
+    }
+
+    /**
+     * Sets the alpha to be set on the view when glanceable hub is showing. This value takes
+     * precedence over the value set by {@link #setAlpha(float)}.
+     *
+     * @param alpha a value between 0 and 1. -1 if the value is to be reset/ignored.
+     */
+    private void setAlphaByCommunal(float alpha) {
+        // Only set explicit alpha when communal is showing
+        mExplicitAlphaByCommunal = mCommunalShowing ? alpha : -1;
         updateViewState();
     }
 
