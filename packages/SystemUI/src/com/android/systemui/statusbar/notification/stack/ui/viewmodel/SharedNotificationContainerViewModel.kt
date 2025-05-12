@@ -866,13 +866,13 @@ constructor(
             ) { isOnLockscreen, statusBarState, showAllNotifications ->
                 (statusBarState == SHADE_LOCKED || !isOnLockscreen || showAllNotifications) to
                     isOnLockscreen
-            }
+            }.dumpWhileCollecting("showUnlimitedNotificationsAndIsOnLockScreen")
 
         @Suppress("UNCHECKED_CAST")
         return combineTransform(
                 showLimitedNotifications,
                 showUnlimitedNotificationsAndIsOnLockScreen,
-                shadeInteractor.isUserInteracting,
+                shadeInteractor.isUserInteracting.dumpWhileCollecting("isUserInteracting"),
                 availableHeight,
                 interactor.notificationStackChanged,
                 interactor.useExtraShelfSpace,
@@ -904,7 +904,7 @@ constructor(
                 }
             }
             .distinctUntilChanged()
-            .dumpWhileCollecting("maxNotifications")
+            .dumpWhileCollecting("getLockscreenDisplayConfig")
     }
 
     /**
