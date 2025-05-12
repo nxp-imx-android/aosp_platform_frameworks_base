@@ -43,6 +43,7 @@ import com.android.systemui.keyguard.data.repository.keyguardTransitionRepositor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.util.KeyguardTransitionRepositorySpySubject.Companion.assertThat
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.testKosmos
@@ -63,25 +64,26 @@ class FromOccludedTransitionInteractorTest : SysuiTestCase() {
         }
 
     private val testScope = kosmos.testScope
-    private val underTest = kosmos.fromOccludedTransitionInteractor
+    private lateinit var underTest: FromOccludedTransitionInteractor
 
-    private val powerInteractor = kosmos.powerInteractor
-    private val transitionRepository = kosmos.fakeKeyguardTransitionRepositorySpy
+    private lateinit var powerInteractor: PowerInteractor
 
     @Before
     fun setup() {
+        underTest = kosmos.fromOccludedTransitionInteractor
+        powerInteractor = kosmos.powerInteractor
         underTest.start()
 
         // Transition to OCCLUDED and set up PowerInteractor and the occlusion repository.
         powerInteractor.setAwakeForTest()
         runBlocking {
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
-            transitionRepository.sendTransitionSteps(
+            kosmos.fakeKeyguardTransitionRepositorySpy.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.OCCLUDED,
                 testScope,
             )
-            reset(transitionRepository)
+            reset(kosmos.fakeKeyguardTransitionRepositorySpy)
         }
     }
 
@@ -92,7 +94,7 @@ class FromOccludedTransitionInteractorTest : SysuiTestCase() {
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = false)
             runCurrent()
 
-            assertThat(transitionRepository)
+            assertThat(kosmos.fakeKeyguardTransitionRepositorySpy)
                 .startedTransition(from = KeyguardState.OCCLUDED, to = KeyguardState.LOCKSCREEN)
         }
 }
