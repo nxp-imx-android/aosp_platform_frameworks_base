@@ -53,6 +53,7 @@ import com.android.server.SystemService.TargetUser
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
 import com.google.common.truth.Truth.assertThat
+import java.nio.file.Files
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -103,6 +104,11 @@ class SupervisionServiceTest {
         service = SupervisionService(context)
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
+
+
+        // Creating a temporary folder to enable access to SupervisionSettings.
+        SupervisionSettings.getInstance().changeDirForTesting(
+            Files.createTempDirectory("tempSupervisionFolder").toFile())
     }
 
     @Test
@@ -364,7 +370,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @Ignore("Failing with IOException when trying to create a directory")
     @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo() {
         assertThat(service.supervisionRecoveryInfo).isNull()
