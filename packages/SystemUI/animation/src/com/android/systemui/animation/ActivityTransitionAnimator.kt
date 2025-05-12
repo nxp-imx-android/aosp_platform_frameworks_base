@@ -62,6 +62,7 @@ import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.activityTransitionUseLargestWindow
+import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.Flags.translucentOccludingActivityFix
 import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
@@ -1596,20 +1597,39 @@ constructor(
                         iCallback?.invoke()
 
                         if (reparent) {
-                            // Relying on this try-catch is not great, but the existence of
-                            // RemoteAnimationRunnerCompat means that we can't reliably assume that
-                            // the transaction will be executed while the leash is still valid.
-                            // TODO(b/397180418): remove once the RemoteAnimation wrapper is cleaned
-                            //  up.
-                            try {
-                                // Reparent to null to avoid leaking the transition leash.
-                                // TODO(b/397180418): shouldn't be needed anymore once the
-                                //  RemoteAnimation wrapper is cleaned up.
-                                SurfaceControl.Transaction().use {
-                                    it.reparent(window.leash, null).apply()
+                            val cleanUpTransitionLeash: () -> Unit = {
+                                // Relying on this try-catch is not great, but the existence of
+                                // RemoteAnimationRunnerCompat means that we can't reliably
+                                // assume that the transaction will be executed while the leash
+                                // is still valid.
+                                // TODO(b/397180418): remove once the RemoteAnimation wrapper is
+                                //  cleaned up.
+                                try {
+                                    // Reparent to null to avoid leaking the transition leash.
+                                    // TODO(b/397180418): shouldn't be needed anymore once the
+                                    //  RemoteAnimation wrapper is cleaned up.
+                                    SurfaceControl.Transaction().use {
+                                        it.reparent(window.leash, null)
+                                        it.apply(/* sync */ false)
+                                    }
+                                } catch (e: IllegalStateException) {
+                                    Log.e(
+                                        TAG,
+                                        "Failed to clean up transition leash: already released",
+                                    )
                                 }
-                            } catch (e: IllegalStateException) {
-                                Log.e(TAG, "Failed to clean up transition leash: already released")
+                            }
+                            if (animationLibraryDelayLeashCleanup()) {
+                                // This cleanup is not time-sensitive as it is just to avoid leaking
+                                // leashes. By delaying it, we make (reasonably) sure that the
+                                // finish callback above is executed before the reparent
+                                // transaction, which avoids flaky flickers. Unfortunately both are
+                                // async, so we need to resort to this hacky solution. Fortunately
+                                // none of this will be necessary as soon as b/397180418 is done.
+                                Handler(Looper.getMainLooper())
+                                    .postDelayed(cleanUpTransitionLeash, 500L)
+                            } else {
+                                cleanUpTransitionLeash()
                             }
                         }
 

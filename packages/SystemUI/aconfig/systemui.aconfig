@@ -1974,3 +1974,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "animation_library_delay_leash_cleanup"
+    namespace: "systemui"
+    description: "Clean up the transition leash with a delay to ensure that the finish callback happens first, avoiding flickers"
+    bug: "356065603"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
