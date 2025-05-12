@@ -825,6 +825,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mInsetsAnimationRunning = animatingTypes != 0;
             mWmService.scheduleAnimationLocked();
 
+            getDisplayContent().getInsetsPolicy().onAnimatingTypesChanged(
+                    this, mAnimatingTypes, animatingTypes);
             mAnimatingTypes = animatingTypes;
 
             if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {

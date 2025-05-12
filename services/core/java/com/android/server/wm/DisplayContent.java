@@ -7119,6 +7119,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         public void setAnimatingTypes(@InsetsType int animatingTypes,
                 @Nullable ImeTracker.Token statsToken) {
             if (mAnimatingTypes != animatingTypes) {
+                getInsetsPolicy().onAnimatingTypesChanged(this, mAnimatingTypes, animatingTypes);
                 mAnimatingTypes = animatingTypes;
 
                 if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {

@@ -343,7 +343,6 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
         @Override
         public void hide() {
-            clearTransient();
         }
     };
 

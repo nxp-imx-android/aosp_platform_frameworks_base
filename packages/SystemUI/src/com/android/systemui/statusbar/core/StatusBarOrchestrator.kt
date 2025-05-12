@@ -226,9 +226,7 @@ constructor(
                     return statusBarModeRepository.isTransientShown.value
                 }
 
-                override fun hide() {
-                    statusBarModeRepository.clearTransient()
-                }
+                override fun hide() {}
             }
         )
     }
