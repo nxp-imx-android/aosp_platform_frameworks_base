@@ -13117,6 +13117,12 @@ public class NotificationManagerService extends SystemService {
         protected void pullAdjustmentPreferencesStats(List<StatsEvent> events) {
             final List<UserInfo> allUsers = mUm.getUsers();
             for (UserInfo ui : allUsers) {
+                // only log for full users and managed profiles, which are the only users that have
+                // separate switches available in settings
+                if (!(ui.isFull() || ui.isManagedProfile())) {
+                    continue;
+                }
+
                 int userId = ui.getUserHandle().getIdentifier();
 
                 boolean bundlesSupported, summariesSupported;

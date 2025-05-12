@@ -132,7 +132,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     private TestableContext mContext = spy(getContext());
     Object mLock = new Object();
 
-    UserInfo mZero = new UserInfo(0, "zero", 0);
+    UserInfo mZero = new UserInfo(0, "zero", UserInfo.FLAG_FULL);
     UserInfo mTen = new UserInfo(10, "ten", UserInfo.FLAG_PROFILE);
 
     ComponentName mCn = new ComponentName("a", "b");
@@ -201,7 +201,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         users.add(mTen);
         users.add(new UserInfo(11, "11", null, UserInfo.FLAG_PROFILE, USER_TYPE_PROFILE_MANAGED));
         users.add(new UserInfo(12, "12", UserInfo.FLAG_PROFILE));
-        users.add(new UserInfo(13, "13", 0));
+        users.add(new UserInfo(13, "13", UserInfo.FLAG_FULL));
         for (UserInfo user : users) {
             when(mUm.getUserInfo(eq(user.id))).thenReturn(user);
             if (user.isProfile()) {
@@ -1058,22 +1058,30 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
             throws Exception {
         mAssistants.loadDefaultsFromConfig(true);
 
-        // Scenario setup: the total list of users is 0, 10, 11 (profile of 0), 12, 13
+        // Scenario setup: the total list of users is 0, 10, 11 (managed profile of 0), 12, 13
         //   * user 0 has both bundles (KEY_TYPE) + summaries (KEY_SUMMARIZATION) supported
-        //      * KEY_TYPE is allowed; KEY_SUMMARIZATION disallowed
-        //   * user 13 has only KEY_TYPE, which is disallowed
-        //   * other users have neither supported
-        mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_TYPE, true);
-        mAssistants.allowAdjustmentType(mZero.id, KEY_TYPE);
-        mAssistants.setAdjustmentTypeSupportedState(mZero.id, KEY_SUMMARIZATION, true);
-        mAssistants.disallowAdjustmentType(mZero.id, KEY_SUMMARIZATION);
-        mAssistants.setAdjustmentTypeSupportedState(13, KEY_TYPE, true);
-        mAssistants.disallowAdjustmentType(13, KEY_TYPE);
-        mAssistants.setAdjustmentTypeSupportedState(13, KEY_SUMMARIZATION, false);
-        for (int user : List.of(mTen.id, 11, 12)) {
-            mAssistants.setAdjustmentTypeSupportedState(user, KEY_TYPE, false);
-            mAssistants.setAdjustmentTypeSupportedState(user, KEY_SUMMARIZATION, false);
+        //      * KEY_TYPE is disallowed; KEY_SUMMARIZATION allowed
+        //   * user 13 has only KEY_TYPE, which is allowed
+        //   * user 11 (managed profile) has only KEY_SUMMARIZATION, disallowed
+        //   * other users are non-managed profiles; should not be logged even if both types are
+        //     supported
+        for (int user : List.of(mZero.id, mTen.id, 12, 13)) {
+            // users with KEY_TYPE supported: all but 11
+            mAssistants.setAdjustmentTypeSupportedState(user, KEY_TYPE, true);
         }
+        mAssistants.setAdjustmentTypeSupportedState(11, KEY_TYPE, false);
+
+        for (int user : List.of(mZero.id, mTen.id, 11, 12)) {
+            // users with KEY_SUMMARIZATION supported: all but 13
+            mAssistants.setAdjustmentTypeSupportedState(user, KEY_SUMMARIZATION, true);
+        }
+        mAssistants.setAdjustmentTypeSupportedState(13, KEY_SUMMARIZATION, false);
+
+        // permissions for adjustments as described above
+        mAssistants.disallowAdjustmentType(mZero.id, KEY_TYPE);
+        mAssistants.allowAdjustmentType(mZero.id, KEY_SUMMARIZATION);
+        mAssistants.disallowAdjustmentType(11, KEY_SUMMARIZATION);
+        mAssistants.allowAdjustmentType(13, KEY_TYPE);
 
         // Enable specific bundle types for user 0
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_SOCIAL_MEDIA, false);
@@ -1082,7 +1090,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         mAssistants.setAssistantClassificationTypeState(mZero.id, TYPE_CONTENT_RECOMMENDATION,
                 true);
 
-        // and different ones for user 12
+        // and different ones for user 13
         mAssistants.setAssistantClassificationTypeState(13, TYPE_SOCIAL_MEDIA, true);
         mAssistants.setAssistantClassificationTypeState(13, TYPE_PROMOTION, false);
         mAssistants.setAssistantClassificationTypeState(13, TYPE_NEWS, false);
@@ -1094,8 +1102,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         mAssistants.pullAdjustmentPreferencesStats(events);
 
         // The StatsEvent is filled out with the expected NotificationAdjustmentPreferences values.
-        // We expect 2 atoms for user 0 and 1 atom for user 10.
-        assertThat(events.size()).isEqualTo(3);
+        // We expect 2 atoms for user 0, 1 atom for user 11, and 1 for user 13.
+        assertThat(events.size()).isEqualTo(4);
 
         // Collect all the resulting atoms in a map of user ID -> adjustment type (enum) -> atom to
         // confirm that we have the correct set of atoms without enforcing anything about ordering.
@@ -1114,7 +1122,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         Map<Integer, NotificationAdjustmentPreferences> userZeroAtoms = atoms.get(mZero.id);
         assertThat(userZeroAtoms).containsKey(NotificationProtoEnums.KEY_TYPE);
         NotificationAdjustmentPreferences p0b = userZeroAtoms.get(NotificationProtoEnums.KEY_TYPE);
-        assertThat(p0b.getAdjustmentAllowed()).isTrue();
+        assertThat(p0b.getAdjustmentAllowed()).isFalse();
         assertThat(p0b.getAllowedBundleTypesList()).containsExactly(
                 BundleTypes.forNumber(NotificationProtoEnums.TYPE_NEWS),
                 BundleTypes.forNumber(NotificationProtoEnums.TYPE_CONTENT_RECOMMENDATION));
@@ -1123,14 +1131,21 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         assertThat(userZeroAtoms).containsKey(NotificationProtoEnums.KEY_SUMMARIZATION);
         NotificationAdjustmentPreferences p0s = userZeroAtoms.get(
                 NotificationProtoEnums.KEY_SUMMARIZATION);
-        assertThat(p0s.getAdjustmentAllowed()).isFalse();
+        assertThat(p0s.getAdjustmentAllowed()).isTrue();
 
-        // user 12, KEY_TYPE (bundles)
+        // user 11, KEY_SUMMARIZATION
+        assertThat(atoms).containsKey(11);
+        assertThat(atoms.get(11)).containsKey(NotificationProtoEnums.KEY_SUMMARIZATION);
+        NotificationAdjustmentPreferences p11s = atoms.get(11).get(
+                NotificationProtoEnums.KEY_SUMMARIZATION);
+        assertThat(p11s.getAdjustmentAllowed()).isFalse();
+
+        // user 13, KEY_TYPE (bundles)
         assertThat(atoms).containsKey(13);
         assertThat(atoms.get(13)).containsKey(NotificationProtoEnums.KEY_TYPE);
         NotificationAdjustmentPreferences p13b = atoms.get(13).get(
                 NotificationProtoEnums.KEY_TYPE);
-        assertThat(p13b.getAdjustmentAllowed()).isFalse();
+        assertThat(p13b.getAdjustmentAllowed()).isTrue();
         assertThat(p13b.getAllowedBundleTypesList())
                 .containsExactly(BundleTypes.forNumber(NotificationProtoEnums.TYPE_SOCIAL_MEDIA));
     }
