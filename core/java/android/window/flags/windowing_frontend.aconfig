@@ -528,3 +528,10 @@ flag {
     description: "WindowManagerService.getCurrentAnimatorScale() reads the animator scale from shared memory"
     bug: "406182390"
 }
+
+flag {
+    name: "always_seq_id_layout"
+    namespace: "windowing_frontend"
+    description: "Use seq-id for all client config changes"
+    bug: "385976595"
+}
