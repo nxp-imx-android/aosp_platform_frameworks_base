@@ -1627,7 +1627,6 @@ public class DeviceIdleController extends SystemService
         }
 
         private void updateConstantsLocked() {
-            if (mSmallBatteryDevice) return;
             FLEX_TIME_SHORT = mUserSettingDeviceConfigMediator.getLong(
                     KEY_FLEX_TIME_SHORT, mDefaultFlexTimeShort);
 
