@@ -46,10 +46,10 @@ public interface DeviceStateAutoRotateSettingManager extends Dumpable {
     void unregisterListener(@NonNull DeviceStateAutoRotateSettingListener settingListener);
 
     /**
-     * Write {@code deviceState}'s setting value as {@code autoRotate}, for
+     * Write {@code deviceState}'s setting value as {@code rotationLock}, for
      * {@link DEVICE_STATE_ROTATION_LOCK} setting.
      */
-    void updateSetting(int deviceState, boolean autoRotate);
+    void updateSetting(int deviceState, boolean rotationLock);
 
     /**
      * Get {@link DEVICE_STATE_ROTATION_LOCK} setting value for {@code deviceState}. Returns null if

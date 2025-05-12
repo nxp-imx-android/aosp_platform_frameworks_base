@@ -30,6 +30,7 @@ import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.android.internal.R;
+import com.android.internal.view.RotationPolicy;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
@@ -172,9 +173,8 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     }
 
     @Override
-    public void updateSetting(int deviceState, boolean autoRotate) {
-        // TODO: b/350946537 - Create IPC to update the setting, and call it here.
-        throw new UnsupportedOperationException("API updateSetting is not implemented yet");
+    public void updateSetting(int deviceState, boolean rotationLock) {
+        RotationPolicy.requestDeviceStateAutoRotateSettingChange(deviceState, !rotationLock);
     }
 
     @Override

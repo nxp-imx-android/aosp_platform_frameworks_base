@@ -458,8 +458,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDeviceStateController = new DeviceStateController(service.mContext, service.mGlobalLock);
         mDisplayRotationCoordinator = new DisplayRotationCoordinator();
         mDeviceStateAutoRotateSettingController =
-                DisplayRotation.createDeviceStateAutoRotateDependencies(mService.mContext,
-                        mDeviceStateController, mService.mH);
+                DisplayRotation.createDeviceStateAutoRotateDependencies(service.mContext,
+                        mDeviceStateController, service);
     }
 
     /**

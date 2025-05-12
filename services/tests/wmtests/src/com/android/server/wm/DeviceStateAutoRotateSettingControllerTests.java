@@ -21,6 +21,10 @@ import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_UNLOCK
 import static android.provider.Settings.System.ACCELEROMETER_ROTATION;
 import static android.provider.Settings.System.getUriFor;
 
+import static com.android.internal.view.RotationPolicy.NATURAL_ROTATION;
+import static com.android.server.wm.DisplayRotation.NO_UPDATE_USER_ROTATION;
+import static com.android.server.wm.DisplayRotation.USE_CURRENT_ROTATION;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,18 +41,19 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.hardware.devicestate.DeviceState;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
 import android.util.SparseIntArray;
+import android.view.Surface;
 
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.FakeSettingsProviderRule;
+import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.utils.DeviceStateTestUtils;
 import com.android.settingslib.devicestate.AndroidSecureSettings;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener;
@@ -87,6 +92,12 @@ public class DeviceStateAutoRotateSettingControllerTests {
     private DeviceStateController mMockDeviceStateController;
     @Mock
     private ContentResolver mMockResolver;
+    @Mock
+    private Resources mMockResources;
+    @Mock
+    private WindowManagerService mMockWm;
+    @Mock
+    private DisplayRotation mMockDisplayRotation;
 
     @Captor
     private ArgumentCaptor<DeviceStateAutoRotateSettingListener> mSettingListenerArgumentCaptor;
@@ -102,18 +113,29 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        final Handler handler = new Handler(mTestLooper.getLooper());
         final Context mockContext = mock(Context.class);
-        final Resources mockResources = mock(Resources.class);
         final FakeSettingsProvider fakeSettingsProvider = new FakeSettingsProvider();
-        final Looper looper = mTestLooper.getLooper();
-        final Handler handler = new Handler(looper);
+        final RootWindowContainer mockRoot = mock(RootWindowContainer.class);
+        final DisplayContent mockDisplayContent = mock(DisplayContent.class);
+        final ActivityTaskManagerService atmService = mock(ActivityTaskManagerService.class);
 
+        // Setup context
         when(mockContext.getContentResolver()).thenReturn(mMockResolver);
-        when(mockContext.getResources()).thenReturn(mockResources);
-        when(mockResources.getStringArray(
+        when(mockContext.getResources()).thenReturn(mMockResources);
+        when(mMockResources.getStringArray(
                 R.array.config_perDeviceStateRotationLockDefaults)).thenReturn(new String[]{});
         when(mMockResolver.acquireProvider(Settings.AUTHORITY)).thenReturn(
                 fakeSettingsProvider.getIContentProvider());
+
+        // Setup WindowManagerServices
+        WindowTestsBase.setFieldValue(mMockWm, "mContext", mockContext);
+        mockRoot.mService = atmService;
+        WindowTestsBase.setFieldValue(atmService, "mGlobalLock", new WindowManagerGlobalLock());
+        WindowTestsBase.setFieldValue(mMockWm, "mRoot", mockRoot);
+        when(mockRoot.getDefaultDisplay()).thenReturn(mockDisplayContent);
+        when(mockDisplayContent.getDisplayRotation()).thenReturn(mMockDisplayRotation);
+
         mSpyAutoRotateSettingManager = spy(
                 new DeviceStateAutoRotateSettingManagerImpl(mockContext, mock(Executor.class),
                         new AndroidSecureSettings(mMockResolver), handler,
@@ -123,8 +145,14 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
 
         mDeviceStateAutoRotateSettingController = new DeviceStateAutoRotateSettingController(
-                mockContext, looper, handler, mMockDeviceStateController,
-                mSpyAutoRotateSettingManager);
+                mMockDeviceStateController,
+                mSpyAutoRotateSettingManager,
+                mMockWm) {
+            @Override
+            Handler getHandler() {
+                return handler;
+            }
+        };
         mTestLooper.dispatchAll();
 
         verify(mSpyAutoRotateSettingManager).registerListener(
@@ -150,7 +178,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     public void requestAccelerometerRotationChange_updatesAccelerometerRotation() {
         setDeviceState(DeviceStateTestUtils.FOLDED);
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                USE_CURRENT_ROTATION);
         mTestLooper.dispatchAll();
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
@@ -169,7 +198,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Test
     public void requestAccelerometerRotationChange_updatesDSAutoRotateSetting() {
         setDeviceState(DeviceStateTestUtils.FOLDED);
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                USE_CURRENT_ROTATION);
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
@@ -277,7 +307,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
     @Test
     public void requestAccelerometerRotationChange_dSUnavailable_noSettingUpdate() {
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                USE_CURRENT_ROTATION);
         mTestLooper.dispatchAll();
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_OFF);
@@ -296,7 +327,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
     @Test
     public void requestAccelerometerRotationChange_dSUnavailable_writeAfterReceivingDSUpdate() {
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                USE_CURRENT_ROTATION);
         mTestLooper.dispatchAll();
 
         setDeviceState(DeviceStateTestUtils.FOLDED);
@@ -321,7 +353,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
     public void dSUnavailable_sendMultipleRequests_accelerometerPrecedesAfterReceivingDSUpdate() {
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 DeviceStateTestUtils.FOLDED.getIdentifier(), true);
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false,
+                USE_CURRENT_ROTATION);
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 DeviceStateTestUtils.OPEN.getIdentifier(), true);
         mTestLooper.dispatchAll();
@@ -334,7 +367,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
     @Test
     public void dSUnavailable_sendMultipleRequests_dSAutoRotatePrecedesAfterReceivingDSUpdate() {
-        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false);
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(false,
+                USE_CURRENT_ROTATION);
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
                 DeviceStateTestUtils.OPEN.getIdentifier(), true);
         mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
@@ -345,6 +379,167 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
         verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
+    }
+
+    @Test
+    public void requestAccelerometerRotationChange_turnOnAccelerometer_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                Surface.ROTATION_90);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_FREE), eq(Surface.ROTATION_90), any());
+    }
+
+    @Test
+    public void requestAccelerometerRotationChange_turnOffAccelerometer_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
+                false, Surface.ROTATION_180);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(Surface.ROTATION_180), any());
+    }
+
+    @Test
+    public void requestAccelerometerRotationChange_withCurrentRotation_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        mTestLooper.dispatchAll();
+
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(true,
+                USE_CURRENT_ROTATION);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_FREE), eq(USE_CURRENT_ROTATION), any());
+    }
+
+    @Test
+    public void requestAccelerometerRotationChange_withNaturalRotation_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
+                false, NATURAL_ROTATION);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(NATURAL_ROTATION), any());
+    }
+
+    @Test
+    public void requestDSAutoRotateSettingChange_turnsOnAccelerometer_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+
+        mDeviceStateAutoRotateSettingController.requestDeviceStateAutoRotateSettingChange(
+                DeviceStateTestUtils.FOLDED.getIdentifier(), true);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_FREE), eq(NO_UPDATE_USER_ROTATION), any());
+    }
+
+    @Test
+    public void requestAccelerometerRotationChange_noChangeInAccelerometer_setUserRotation() {
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+
+        mDeviceStateAutoRotateSettingController.requestAccelerometerRotationSettingChange(
+                false, Surface.ROTATION_90);
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(Surface.ROTATION_90), any());
+    }
+
+    @Test
+    public void foldableConfigTrue_locksRotation_usesCurrentRotation() {
+        when(mMockResources.getBoolean(com.android.internal.R.bool.config_allowAllRotations))
+                .thenReturn(true);
+        when(mMockResources.getBoolean(
+                com.android.internal.R.bool.config_useCurrentRotationOnRotationLockChange))
+                .thenReturn(true);
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
+        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(USE_CURRENT_ROTATION),
+                any());
+    }
+
+    @Test
+    public void allRotationsAllowedConfigFalse_locksRotation_usesCurrentRotation() {
+        when(mMockResources.getBoolean(com.android.internal.R.bool.config_allowAllRotations))
+                .thenReturn(false);
+        when(mMockResources.getBoolean(
+                com.android.internal.R.bool.config_useCurrentRotationOnRotationLockChange))
+                .thenReturn(true);
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
+        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(USE_CURRENT_ROTATION),
+                any());
+    }
+
+    @Test
+    public void useCurrentRotationConfigFalse_locksRotation_usesCurrentRotation() {
+        when(mMockResources.getBoolean(com.android.internal.R.bool.config_allowAllRotations))
+                .thenReturn(true);
+        when(mMockResources.getBoolean(
+                com.android.internal.R.bool.config_useCurrentRotationOnRotationLockChange))
+                .thenReturn(false);
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
+        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(USE_CURRENT_ROTATION), any());
+    }
+
+    @Test
+    public void foldableConfigFalse_locksRotation_usesNaturalRotation() {
+        when(mMockResources.getBoolean(com.android.internal.R.bool.config_allowAllRotations))
+                .thenReturn(false);
+        when(mMockResources.getBoolean(
+                com.android.internal.R.bool.config_useCurrentRotationOnRotationLockChange))
+                .thenReturn(false);
+        setDeviceState(DeviceStateTestUtils.FOLDED);
+        setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
+        mAccelerometerRotationSettingObserver.getValue().onChange(false);
+        mTestLooper.dispatchAll();
+
+        setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
+        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestLooper.dispatchAll();
+
+        verify(mMockDisplayRotation).setUserRotationSetting(
+                eq(WindowManagerPolicy.USER_ROTATION_LOCKED), eq(NATURAL_ROTATION), any());
     }
 
     private void setDeviceStateAutoRotateSetting(String deviceStateAutoRotateSetting) {
