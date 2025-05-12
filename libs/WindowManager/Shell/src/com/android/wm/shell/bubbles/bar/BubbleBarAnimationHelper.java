@@ -37,10 +37,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.NonNull;
 import android.content.Context;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
-import android.util.Size;
 import android.view.SurfaceControl;
 import android.widget.FrameLayout;
 
@@ -458,12 +456,15 @@ public class BubbleBarAnimationHelper {
             Log.w(TAG, "Trying to animate expanded view to rest position without a bubble");
             return;
         }
-        Point restPoint = getExpandedViewRestPosition(getExpandedViewSize());
+        final boolean isOverflow = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
+        final Rect rect = new Rect();
+        mPositioner.getBubbleBarExpandedViewBounds(mPositioner.isBubbleBarOnLeft(),
+                isOverflow, rect);
 
         AnimatorSet contentAnim = new AnimatorSet();
         contentAnim.playTogether(
-                ObjectAnimator.ofFloat(bbev, X, restPoint.x),
-                ObjectAnimator.ofFloat(bbev, Y, restPoint.y),
+                ObjectAnimator.ofFloat(bbev, X, rect.left),
+                ObjectAnimator.ofFloat(bbev, Y, rect.top),
                 ObjectAnimator.ofFloat(bbev, SCALE_X, 1f),
                 ObjectAnimator.ofFloat(bbev, SCALE_Y, 1f),
                 ObjectAnimator.ofFloat(bbev, CORNER_RADIUS, bbev.getRestingCornerRadius())
@@ -609,12 +610,16 @@ public class BubbleBarAnimationHelper {
         bbev.setTaskViewAlpha(1f);
         SurfaceControl tvSf = ((Bubble) mExpandedBubble).getTaskView().getSurfaceControl();
 
-        final Size size = getExpandedViewSize();
-        Point position = getExpandedViewRestPosition(size);
+        final boolean isOverflow = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
+        final Rect restBounds = new Rect();
+        mPositioner.getBubbleBarExpandedViewBounds(mPositioner.isBubbleBarOnLeft(),
+                isOverflow, restBounds);
 
-        Rect startBounds = new Rect(origBounds.left - position.x, origBounds.top - position.y,
-                origBounds.right - position.x, origBounds.bottom - position.y);
-        Rect endBounds = new Rect(0, 0, size.getWidth(), size.getHeight());
+        Rect startBounds = new Rect(origBounds.left - restBounds.left,
+                origBounds.top - restBounds.top,
+                origBounds.right - restBounds.left,
+                origBounds.bottom - restBounds.top);
+        Rect endBounds = new Rect(0, 0, restBounds.width(), restBounds.height());
         final SizeChangeAnimation sca = new SizeChangeAnimation(startBounds, endBounds,
                 origScale, /* scaleFactor= */ 1f);
         sca.initialize(bbev, taskLeash, snapshot, startT);
@@ -678,45 +683,20 @@ public class BubbleBarAnimationHelper {
             Log.w(TAG, "Trying to update the expanded view without a bubble");
             return;
         }
-
-        final Size size = getExpandedViewSize();
-        Point position = getExpandedViewRestPosition(size);
+        final boolean isOverflow = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
+        final Rect rect = new Rect();
+        mPositioner.getBubbleBarExpandedViewBounds(mPositioner.isBubbleBarOnLeft(),
+                isOverflow, rect);
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) bbev.getLayoutParams();
-        lp.width = size.getWidth();
-        lp.height = size.getHeight();
+        lp.width = rect.width();
+        lp.height = rect.height();
         bbev.setLayoutParams(lp);
-        bbev.setX(position.x);
-        bbev.setY(position.y);
+        bbev.setX(rect.left);
+        bbev.setY(rect.top);
         bbev.setScaleX(1f);
         bbev.setScaleY(1f);
         bbev.updateLocation();
         bbev.maybeShowOverflow();
-    }
-
-    void getExpandedViewRestBounds(Rect out) {
-        final int width = mPositioner.getExpandedViewWidthForBubbleBar(false /* overflow */);
-        final int height = mPositioner.getExpandedViewHeightForBubbleBar(false /* overflow */);
-        Point position = getExpandedViewRestPosition(new Size(width, height));
-        out.set(position.x, position.y, position.x + width, position.y + height);
-    }
-
-    private Point getExpandedViewRestPosition(Size size) {
-        final int padding = mPositioner.getBubbleBarExpandedViewPadding();
-        Point point = new Point();
-        if (mPositioner.isBubbleBarOnLeft()) {
-            point.x = mPositioner.getInsets().left + padding;
-        } else {
-            point.x = mPositioner.getAvailableRect().width() - size.getWidth() - padding;
-        }
-        point.y = mPositioner.getExpandedViewBottomForBubbleBar() - size.getHeight();
-        return point;
-    }
-
-    private Size getExpandedViewSize() {
-        boolean isOverflowExpanded = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
-        final int width = mPositioner.getExpandedViewWidthForBubbleBar(isOverflowExpanded);
-        final int height = mPositioner.getExpandedViewHeightForBubbleBar(isOverflowExpanded);
-        return new Size(width, height);
     }
 
     private void startNewAnimator(Animator animator) {
