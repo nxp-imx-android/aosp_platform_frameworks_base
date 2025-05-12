@@ -325,6 +325,13 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
     }
 
     @Test
+    fun updateLocale_clockUpdates() {
+        configurationController.notifyLocaleChanged()
+
+        verify(clock).onLocaleListChanged()
+    }
+
+    @Test
     fun animateOutOnStartCustomizing() {
         val animator = mock(ViewPropertyAnimator::class.java, Answers.RETURNS_SELF)
         val duration = 1000L

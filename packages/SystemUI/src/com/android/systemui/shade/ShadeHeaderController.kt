@@ -347,6 +347,10 @@ constructor(
             override fun onUiModeChanged() {
                 updateColors()
             }
+
+            override fun onLocaleListChanged() {
+                clock.onLocaleListChanged()
+            }
         }
 
     private val nextAlarmCallback =
