@@ -17,6 +17,7 @@
 package com.android.systemui.display.data.repository
 
 import android.view.IWindowManager
+import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.CommandQueue
@@ -32,12 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
-
-/** Provides the displays with decorations. */
-interface DisplaysWithDecorationsRepository {
-    /** A [StateFlow] that maintains a set of display IDs that should have system decorations. */
-    val displayIdsWithSystemDecorations: StateFlow<Set<Int>>
-}
 
 @SysUISingleton
 class DisplaysWithDecorationsRepositoryImpl
