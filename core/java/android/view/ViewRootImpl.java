@@ -7729,7 +7729,8 @@ public final class ViewRootImpl implements ViewParent,
                     }
                 }
             }
-            if (keyEvent.getAction() == KeyEvent.ACTION_UP) {
+            // Do not cancel the keyEvent if no callback can handle the back event.
+            if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
                 // forward a cancelled event so that following stages cancel their back logic
                 keyEvent.cancel();
             }
