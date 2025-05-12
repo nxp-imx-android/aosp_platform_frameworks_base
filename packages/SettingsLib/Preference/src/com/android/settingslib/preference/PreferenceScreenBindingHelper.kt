@@ -103,7 +103,17 @@ class PreferenceScreenBindingHelper(
     private val lifecycleAwarePreferences: Array<PreferenceLifecycleProvider>
     private val observables = mutableMapOf<String, KeyedObservable<String>>()
 
-    private val preferenceObserver: KeyedObserver<String?>
+    /** Observer to update UI on preference change. */
+    private val preferenceObserver =
+        KeyedObserver<String?> { key, reason -> onPreferenceChange(key, reason) }
+
+    /** Observer to update UI for screen entry points when it is updated across screens. */
+    private val screenEntryPointObserver =
+        KeyedObserver<String?> { key, reason ->
+            // Current preference screen must not be notified to avoid infinite loop.
+            // Rewrite the reason to STATE because this change comes from different screen.
+            if (key != preferenceScreen.key) onPreferenceChange(key, PreferenceChangeReason.STATE)
+        }
 
     private val observer =
         KeyedObserver<String> { key, reason ->
@@ -147,8 +157,9 @@ class PreferenceScreenBindingHelper(
         this.lifecycleAwarePreferences = lifecycleAwarePreferences.toTypedArray()
 
         val executor = HandlerExecutor.main
-        preferenceObserver = KeyedObserver { key, reason -> onPreferenceChange(key, reason) }
         addObserver(preferenceObserver, executor)
+        // register observer to update other screen entry points on current screen
+        screenEntryPointObservable.addObserver(screenEntryPointObserver, executor)
 
         preferenceScreen.forEachRecursively {
             val key = it.key ?: return@forEachRecursively
@@ -176,7 +187,11 @@ class PreferenceScreenBindingHelper(
         preferenceScreen.findPreference<Preference>(key)?.let {
             val node = preferences[key] ?: return@let
             preferenceBindingFactory.bind(it, node)
-            if (it == preferenceScreen) fragment.updateActivityTitle()
+            if (it == preferenceScreen) {
+                fragment.updateActivityTitle()
+                // Current screen is updated, notify to update entry point on previous screen
+                screenEntryPointObservable.notifyChange(key, reason)
+            }
         }
 
         // check reason to avoid potential infinite loop
@@ -229,6 +244,7 @@ class PreferenceScreenBindingHelper(
 
     fun onDestroy() {
         removeObserver(preferenceObserver)
+        screenEntryPointObservable.removeObserver(screenEntryPointObserver)
         for ((key, observable) in observables) observable.removeObserver(key, observer)
         for (preference in lifecycleAwarePreferences) {
             preference.onDestroy(preferenceLifecycleContext)
@@ -243,6 +259,16 @@ class PreferenceScreenBindingHelper(
 
     companion object {
         private const val TAG = "MetadataBindingHelper"
+
+        /**
+         * A global [KeyedObservable] to notify UI rebinding for screen entry points. This field
+         * needs to be static as screens could be shown by different activities.
+         *
+         * Ideally the screen metadata should add observers to notify change and then this logic is
+         * redundant. However, observer mechanism may not be available across screens, so introduce
+         * this enhancement to avoid potential UI consistency issue.
+         */
+        private val screenEntryPointObservable: KeyedObservable<String> = KeyedDataObservable()
 
         /** Updates preference screen that has incomplete hierarchy. */
         @JvmStatic
