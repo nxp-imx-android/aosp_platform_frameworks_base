@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.phone
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
 import android.graphics.Point
 import android.util.Log
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
@@ -39,6 +40,7 @@ import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress
 import com.android.systemui.shade.ShadeLogger
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
+import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -87,6 +89,7 @@ private constructor(
     private val darkIconDispatcher: DarkIconDispatcher,
     private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
     private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
+    private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : ViewController<PhoneStatusBarView>(view) {
 
     private lateinit var battery: BatteryMeterView
@@ -136,13 +139,20 @@ private constructor(
     override fun onViewAttached() {
         clock = mView.requireViewById(R.id.clock)
         battery = mView.requireViewById(R.id.battery)
-        addDarkReceivers()
-        if (mView.shouldAllowInteractions()) {
-            addCursorSupportToIconContainers()
 
-            if (ShadeExpandsOnStatusBarLongPress.isEnabled) {
-                mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
-            }
+        addDarkReceivers()
+
+        if (
+            StatusBarConnectedDisplays.isEnabled && mView.context.getDisplayId() != DEFAULT_DISPLAY
+        ) {
+            // With the StatusBarConnectedDisplays changes, external status bar elements are not
+            // interactive when the shade window can't change displays.
+            mView.setInteractionGate(PhoneStatusBarViewInteractionsGate())
+        }
+
+        addCursorSupportToIconContainers()
+        if (ShadeExpandsOnStatusBarLongPress.isEnabled) {
+            mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
         }
 
         progressProvider?.setReadyToHandleTransition(true)
@@ -205,10 +215,8 @@ private constructor(
     @VisibleForTesting
     public override fun onViewDetached() {
         removeDarkReceivers()
-        if (mView.shouldAllowInteractions()) {
-            startSideContainer.setOnHoverListener(null)
-            endSideContainer.setOnHoverListener(null)
-        }
+        startSideContainer.setOnHoverListener(null)
+        endSideContainer.setOnHoverListener(null)
         progressProvider?.setReadyToHandleTransition(false)
         moveFromCenterAnimationController?.onViewDetached()
         configurationController.removeCallback(configurationListener)
@@ -269,6 +277,23 @@ private constructor(
     private fun removeDarkReceivers() {
         darkIconDispatcher.removeDarkReceiver(battery)
         darkIconDispatcher.removeDarkReceiver(clock)
+    }
+
+    /**
+     * Determines whether user interaction (e.g., touch and hover events with the phone's status bar
+     * view should be allowed.
+     */
+    inner class PhoneStatusBarViewInteractionsGate {
+        /** Checks if user interactions with the status bar are currently permitted. */
+        fun shouldAllowInteractions(): Boolean {
+            // With the StatusBarConnectedDisplays changes, external status bar elements are not
+            // interactive when the shade window can't change displays.
+            val shadeDisplayPolicy =
+                if (ShadeWindowGoesAround.isEnabled) {
+                    lazyShadeDisplaysRepository.get().currentPolicy
+                } else null
+            return shadeDisplayPolicy is StatusBarTouchShadeDisplayPolicy
+        }
     }
 
     inner class PhoneStatusBarViewTouchHandler : Gefingerpoken {
@@ -384,6 +409,7 @@ private constructor(
         @DisplaySpecific private val darkIconDispatcher: DarkIconDispatcher,
         private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
         private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
+        private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     ) {
         fun create(view: PhoneStatusBarView): PhoneStatusBarViewController {
             val statusBarMoveFromCenterAnimationController =
@@ -424,6 +450,7 @@ private constructor(
                 darkIconDispatcher,
                 statusBarContentInsetsProviderStore,
                 lazyStatusBarShadeDisplayPolicy,
+                lazyShadeDisplaysRepository,
             )
         }
     }
