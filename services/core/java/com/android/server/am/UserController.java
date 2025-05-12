@@ -477,7 +477,10 @@ class UserController implements Handler.Callback {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
             mDelayUserDataLocking = delayUserDataLocking;
-            mBackgroundUserScheduledStopTimeSecs = backgroundUserScheduledStopTimeSecs;
+            if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
+                // If flag is off, default value of -1 disables scheduling (but not infrastructure).
+                mBackgroundUserScheduledStopTimeSecs = backgroundUserScheduledStopTimeSecs;
+            }
             mInitialized = true;
         }
     }
@@ -2161,7 +2164,7 @@ class UserController implements Handler.Callback {
             // of mUserLru, so we need to ensure that the foreground user isn't displaced.
             addUserToUserLru(mCurrentUserId);
         }
-        if (userStartMode == USER_START_MODE_BACKGROUND && !userInfo.isProfile()) {
+        if (userStartMode == USER_START_MODE_BACKGROUND && userInfo.isFull()) {
             scheduleStopOfBackgroundUser(userId);
         }
         t.traceEnd();

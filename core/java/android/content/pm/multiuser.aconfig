@@ -287,7 +287,14 @@ flag {
 flag {
     name: "schedule_stop_of_background_user"
     namespace: "multiuser"
-    description: "Schedule background users to be stopped at a future point."
+    description: "Schedule background users to be stopped at a future point. Infrastructure only."
+    bug: "330351042"
+}
+
+flag {
+    name: "schedule_stop_of_background_user_by_default"
+    namespace: "multiuser"
+    description: "Activates the background-stopping schedule of inactive users based on the time specified in the configuration."
     bug: "330351042"
 }
 
