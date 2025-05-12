@@ -43,7 +43,9 @@ class NoopDeviceEntryFaceAuthInteractor @Inject constructor() : DeviceEntryFaceA
 
     override fun canFaceAuthRun(): Boolean = false
 
-    override fun isRunning(): Boolean = false
+    override fun isAuthRunning(): Boolean = false
+
+    override fun isDetectRunning(): Boolean = false
 
     override fun isFaceAuthEnabledAndEnrolled(): Boolean = false
 

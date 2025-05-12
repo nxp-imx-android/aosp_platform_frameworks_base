@@ -155,6 +155,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     private lateinit var authStatus: FlowValue<FaceAuthenticationStatus?>
     private lateinit var detectStatus: FlowValue<FaceDetectionStatus?>
     private lateinit var authRunning: FlowValue<Boolean?>
+    private lateinit var detectRunning: FlowValue<Boolean?>
     private lateinit var bypassEnabled: FlowValue<Boolean?>
     private lateinit var lockedOut: FlowValue<Boolean?>
     private lateinit var canFaceAuthRun: FlowValue<Boolean?>
@@ -378,6 +379,38 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun faceDetectionRunsAndSucceeds_detectRunningStateUpdates() =
+        testScope.runTest {
+            whenever(faceManager.sensorPropertiesInternal)
+                .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
+            underTest = createDeviceEntryFaceAuthRepositoryImpl()
+            initCollectors()
+
+            underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
+            faceDetectIsCalled()
+            assertThat(detectRunning()).isTrue()
+
+            detectionCallback.value.onFaceDetected(1, 1, true)
+            assertThat(detectRunning()).isFalse()
+        }
+
+    @Test
+    fun faceDetectionRunsAndCancels_detectRunningStateUpdates() =
+        testScope.runTest {
+            whenever(faceManager.sensorPropertiesInternal)
+                .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
+            underTest = createDeviceEntryFaceAuthRepositoryImpl()
+            initCollectors()
+
+            underTest.detect(FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
+            faceDetectIsCalled()
+            assertThat(detectRunning()).isTrue()
+
+            underTest.cancel()
+            assertThat(detectRunning()).isFalse()
+        }
+
+    @Test
     fun faceDetectDoesNotRunIfDetectionIsNotSupported() =
         testScope.runTest {
             whenever(faceManager.sensorPropertiesInternal)
@@ -390,6 +423,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
             verify(faceManager, never())
                 .detectFace(any(), any(), any(FaceAuthenticateOptions::class.java))
+            assertThat(detectRunning()).isFalse()
         }
 
     @Test
@@ -786,6 +820,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             assertThat(authStatus()).isNull()
             assertThat(detectStatus()).isNull()
             assertThat(authRunning()).isNotNull()
+            assertThat(detectRunning()).isNotNull()
             assertThat(bypassEnabled()).isNotNull()
             assertThat(lockedOut()).isNotNull()
             assertThat(canFaceAuthRun()).isNotNull()
@@ -1388,6 +1423,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         authStatus = collectLastValue(underTest.authenticationStatus)
         detectStatus = collectLastValue(underTest.detectionStatus)
         authRunning = collectLastValue(underTest.isAuthRunning)
+        detectRunning = collectLastValue(underTest.isDetectRunning)
         lockedOut = collectLastValue(underTest.isLockedOut)
         canFaceAuthRun = collectLastValue(underTest.canRunFaceAuth)
         authenticated = collectLastValue(underTest.isAuthenticated)
