@@ -20,6 +20,7 @@ import android.Manifest
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_USER
+import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_DENIED
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_PREGRANTED
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_USER_GRANTED
@@ -27,6 +28,8 @@ import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_DENIED
 import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED
 import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE
 import android.content.pm.SignedPackage
+import android.os.Binder
+import android.os.UserHandle
 import android.permission.flags.Flags.appFunctionAccessServiceEnabled
 import android.util.Slog
 import com.android.server.LocalManagerRegistry
@@ -34,6 +37,7 @@ import com.android.server.LocalServices
 import com.android.server.permission.access.AccessCheckingService
 import com.android.server.permission.access.AppFunctionAccessUri
 import com.android.server.permission.access.UidUri
+import com.android.server.permission.access.collection.*
 import com.android.server.permission.access.util.PermissionEnforcer
 import com.android.server.permission.access.util.hasAnyBit
 import com.android.server.permission.access.util.hasBits
@@ -58,19 +62,6 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         permissionEnforcer = PermissionEnforcer(context)
     }
 
-    override fun checkAppFunctionAccess(
-        agentPackageName: String,
-        agentUserId: Int,
-        targetPackageName: String,
-        targetUserId: Int,
-    ): Boolean =
-        getAppFunctionAccessRequestState(
-            agentPackageName,
-            agentUserId,
-            targetPackageName,
-            targetUserId,
-        ) == ACCESS_REQUEST_STATE_GRANTED
-
     override fun getAppFunctionAccessRequestState(
         agentPackageName: String,
         agentUserId: Int,
@@ -81,20 +72,23 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
             return ACCESS_REQUEST_STATE_UNREQUESTABLE
         }
 
-        val methodName = "getAppFunctionAccessFlags"
+        val methodName = "getAppFunctionAccessRequestState"
         enforceCallingOrSelfCrossUserPermission(methodName, agentUserId, targetUserId)
         if (!allUsersExist(methodName, agentUserId, targetUserId)) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE
         }
 
-        permissionEnforcer.enforceCallingOrSelfAnyPermission(
-            methodName,
-            Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
-        )
-
         val agentPackageState =
             getFilteredPackageState(agentPackageName, agentUserId, methodName)
                 ?: return ACCESS_REQUEST_STATE_UNREQUESTABLE
+
+        if (agentPackageState.appId != UserHandle.getAppId(Binder.getCallingUid())) {
+            permissionEnforcer.enforceCallingOrSelfAnyPermission(
+                methodName,
+                Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
+            )
+        }
+
         val targetPackageState =
             getFilteredPackageState(targetPackageName, targetUserId, methodName)
                 ?: return ACCESS_REQUEST_STATE_UNREQUESTABLE
@@ -171,7 +165,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
             return false
         }
 
-        val methodName = "setAppFunctionAccessFlags"
+        val methodName = "updateAppFunctionAccessFlags"
         enforceCallingOrSelfCrossUserPermission(methodName, agentUserId, targetUserId)
         if (!allUsersExist(methodName, agentUserId, targetUserId)) {
             return false
@@ -203,19 +197,86 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         return changed
     }
 
+    override fun revokeSelfAppFunctionAccess(targetPackageName: String) {
+        val methodName = "revokeSelfAppFunctionAccess"
+        val userId = UserHandle.getUserId(Binder.getCallingUid())
+        val targetPackageState =
+            getFilteredPackageState(targetPackageName, userId, methodName) ?: return
+        val agentAppId = UserHandle.getAppId(Binder.getCallingUid())
+
+        service.getState {
+            with(policy) {
+                if (
+                    getAppFunctionAccessFlags(
+                        agentAppId,
+                        userId,
+                        targetPackageState.appId,
+                        userId,
+                    ) == 0
+                ) {
+                    // We have no state, so don't set any
+                    return
+                }
+            }
+        }
+
+        service.mutateState {
+            with(policy) {
+                // Set the OTHER_DENIED flag, so that, if this package had the PREGRANTED flag set,
+                // This flag will override, and the PREGRANT flag won't be re-added on next
+                // fingerprint change.
+                updateAppFunctionAccessFlags(
+                    agentAppId,
+                    userId,
+                    targetPackageState.appId,
+                    userId,
+                    ACCESS_FLAG_MASK_USER or ACCESS_FLAG_MASK_OTHER,
+                    ACCESS_FLAG_OTHER_DENIED,
+                )
+            }
+        }
+    }
+
+    override fun getValidAgents(userId: Int): List<String> {
+        val methodName = "getValidAgents"
+        if (!userExists(methodName, userId)) {
+            return emptyList()
+        }
+        enforceCallingOrSelfCrossUserPermission(methodName, userId)
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
+            methodName,
+            Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
+        )
+        return service.getState { with(policy) { filterPackageNames(getAgents(userId), userId) } }
+    }
+
+    override fun getValidTargets(targetUserId: Int): List<String> {
+        val methodName = "getValidTargets"
+        if (!userExists(methodName, targetUserId)) {
+            return emptyList()
+        }
+        enforceCallingOrSelfCrossUserPermission(methodName, targetUserId)
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
+            methodName,
+            Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
+        )
+        return service.getState {
+            with(policy) { filterPackageNames(getTargets(targetUserId), targetUserId) }
+        }
+    }
+
     private fun enforceCallingOrSelfCrossUserPermission(
         message: String?,
         agentUserId: Int,
         targetUserId: Int,
     ) {
+        enforceCallingOrSelfCrossUserPermission(message, agentUserId)
+        enforceCallingOrSelfCrossUserPermission(message, targetUserId)
+    }
+
+    private fun enforceCallingOrSelfCrossUserPermission(message: String?, userId: Int) {
         permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
-            agentUserId,
-            enforceFullPermission = true,
-            enforceShellRestriction = true,
-            message,
-        )
-        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
-            targetUserId,
+            userId,
             enforceFullPermission = true,
             enforceShellRestriction = true,
             message,
@@ -238,15 +299,36 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         userId: Int,
         methodName: String,
     ): PackageState? =
-        packageManagerLocal.withFilteredSnapshot().use {
-            val packageState = it.getPackageState(packageName)
-            if (packageState?.userStates[userId]?.isInstalled == true) {
-                packageState
-            } else {
-                Slog.w(LOG_TAG, "$methodName: Unknown package(s) $packageName")
-                null
+        packageManagerLocal.withFilteredSnapshot().use { snapshot ->
+            filterPackageState(snapshot, packageName, userId, methodName)
+        }
+
+    private fun filterPackageNames(packageNames: List<String>, userId: Int): List<String> =
+        packageManagerLocal.withFilteredSnapshot().use { snapshot ->
+            buildList {
+                packageNames.forEachIndexed { _, packageName ->
+                    this +=
+                        filterPackageState(snapshot, packageName, userId)?.packageName
+                            ?: return@forEachIndexed
+                }
             }
         }
+
+    private fun filterPackageState(
+        snapshot: PackageManagerLocal.FilteredSnapshot,
+        packageName: String,
+        userId: Int,
+        methodName: String? = null,
+    ): PackageState? {
+        val state = snapshot.getPackageState(packageName)
+        if (state == null || !state.getUserStateOrDefault(userId).isInstalled) {
+            if (methodName != null) {
+                Slog.w(LOG_TAG, "$methodName: Unknown package $packageName")
+            }
+            return null
+        }
+        return state
+    }
 
     companion object {
         private val LOG_TAG = AppFunctionAccessService::class.java.simpleName

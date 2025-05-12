@@ -24,7 +24,6 @@ import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_PREGRANTED
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_USER_DENIED
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_USER_GRANTED
 import android.util.ArrayMap
-import android.util.SparseArray
 import com.android.server.permission.access.GetStateScope
 import com.android.server.permission.access.MutableAccessState
 import com.android.server.permission.access.MutableUserState
@@ -38,6 +37,7 @@ import com.android.server.testutils.whenever
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito
 
 class AppIdAppFunctionAccessPolicyTest {
 
@@ -53,14 +53,15 @@ class AppIdAppFunctionAccessPolicyTest {
         whenever(this.appId).thenReturn(appId)
         whenever(this.packageName).thenReturn(packageName)
         whenever(this.androidPackage).thenReturn(null)
+        val installedState: PackageUserState =
+            mock { whenever(this.isInstalled).thenReturn(true) }
+        val uninstalledState: PackageUserState =
+            mock { whenever(this.isInstalled).thenReturn(false) }
 
-        val userStates =
-            SparseArray<PackageUserState>().apply {
-                installedUsers.forEach { user ->
-                    put(user, mock { whenever(this.isInstalled).thenReturn(true) })
-                }
-            }
-        whenever(this.userStates).thenReturn(userStates)
+        whenever(this.getUserStateOrDefault(Mockito.intThat { installedUsers.contains(it) }))
+            .thenReturn(installedState)
+        whenever(this.getUserStateOrDefault(Mockito.intThat { !installedUsers.contains(it) }))
+            .thenReturn(uninstalledState)
     }
 
     @Before

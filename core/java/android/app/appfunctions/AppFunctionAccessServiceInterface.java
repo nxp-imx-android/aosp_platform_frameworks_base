@@ -26,10 +26,6 @@ import java.util.List;
  */
 public interface AppFunctionAccessServiceInterface {
 
-    /** @see AppFunctionManager#checkAppFunctionAccess(String, String)  */
-    boolean checkAppFunctionAccess(@NonNull String agentPackageName, int agentUserId,
-            @NonNull String targetPackageName, int targetUserId);
-
     /** @see AppFunctionManager#getAppFunctionAccessRequestState(String, String)  */
     @AppFunctionManager.AppFunctionAccessState
     int getAppFunctionAccessRequestState(@NonNull String agentPackageName, int agentUserId,
@@ -46,6 +42,17 @@ public interface AppFunctionAccessServiceInterface {
             @AppFunctionManager.AppFunctionAccessFlags int flagMask,
             @AppFunctionManager.AppFunctionAccessFlags int flags) throws IllegalArgumentException;
 
+    /** @see AppFunctionManager#revokeSelfAppFunctionAccess(String) */
+    void revokeSelfAppFunctionAccess(@NonNull String targetPackageName);
+
     /** Set the agent allowlist */
     void setAgentAllowlist(@NonNull List<SignedPackage> agentAllowlist);
+
+    /** @see AppFunctionManager#getValidAgents() */
+    @NonNull
+    List<String> getValidAgents(int userId);
+
+    /** @see AppFunctionManager#getValidTargets(String) () */
+    @NonNull
+    List<String> getValidTargets(int userId);
 }
