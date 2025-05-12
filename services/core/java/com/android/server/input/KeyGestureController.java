@@ -1051,20 +1051,22 @@ final class KeyGestureController {
 
     @MainThread
     private void notifyKeyGestureEvent(AidlKeyGestureEvent event) {
-        InputDevice device = getInputDevice(event.deviceId);
-        if (device == null) {
-            return;
-        }
-        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
-        if (event.action == KeyGestureEvent.ACTION_GESTURE_COMPLETE) {
-            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
-                    event.modifierState, keyGestureEvent.getLogEvent());
-        }
         notifyAllListeners(event);
+        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
         while (mLastHandledEvents.size() >= MAX_TRACKED_EVENTS) {
             mLastHandledEvents.removeFirst();
         }
         mLastHandledEvents.addLast(keyGestureEvent);
+        boolean complete = keyGestureEvent.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
+                && !keyGestureEvent.isCancelled();
+        if (complete) {
+            InputDevice device = getInputDevice(event.deviceId);
+            if (device == null) {
+                return;
+            }
+            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
+                    event.modifierState, keyGestureEvent.getLogEvent());
+        }
     }
 
     @MainThread
