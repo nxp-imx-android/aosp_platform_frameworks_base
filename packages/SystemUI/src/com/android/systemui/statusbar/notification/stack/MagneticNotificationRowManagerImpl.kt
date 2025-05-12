@@ -484,6 +484,7 @@ constructor(
         }
 
         fun reset() {
+            direction = 0f
             translationBuffer.clear()
             acceptTranslations = true
         }

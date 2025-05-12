@@ -488,6 +488,25 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(detachDirection).isEqualTo(-1)
         }
 
+    @Test
+    fun getDetachDirection_afterADismissal_returnsCorrectDirection() =
+        kosmos.testScope.runTest {
+            // GIVEN that the swiped row is detached to the right
+            setDetachedState()
+            assertThat(underTest.getDetachDirection(swipedRow)).isEqualTo(1)
+
+            // GIVEN that the notification is dismissed
+            underTest.onMagneticInteractionEnd(swipedRow, dismissing = true, velocity = 5000f)
+
+            // WHEN we begin interacting with another row
+            swipedRow = children.attachedChildren.first()
+            setTargets()
+            underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
+
+            // THEN the detach direction is 0
+            assertThat(underTest.getDetachDirection(swipedRow)).isEqualTo(0)
+        }
+
     @After
     fun tearDown() {
         // We reset the manager so that all MagneticRowListener can cancel all animations
