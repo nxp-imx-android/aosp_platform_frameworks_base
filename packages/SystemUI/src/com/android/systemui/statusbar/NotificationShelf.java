@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar;
 
 import static com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress;
+import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.util.ColorUtilKt.hexColorString;
 
 import android.content.Context;
@@ -929,7 +930,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         iconState.setAlpha(ICON_ALPHA_INTERPOLATOR.getInterpolation(transitionAmount));
         boolean isAppearing = row.isDrawingAppearAnimation() && !row.isInShelf();
         iconState.hidden = isAppearing
-                || (view instanceof ExpandableNotificationRow
+                || (!physicalNotificationMovement() && view instanceof ExpandableNotificationRow
                 && ((ExpandableNotificationRow) view).isMinimized()
                 && mShelfIcons.areIconsOverflowing())
                 || (transitionAmount == 0.0f && !iconState.isAnimating(icon))
