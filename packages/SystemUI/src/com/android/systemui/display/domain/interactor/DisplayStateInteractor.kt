@@ -19,8 +19,8 @@ package com.android.systemui.display.domain.interactor
 import android.content.Context
 import android.content.res.Configuration
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.shared.model.DisplayRotation
@@ -84,8 +84,8 @@ interface DisplayStateInteractor {
 class DisplayStateInteractorImpl
 @Inject
 constructor(
-    @Application applicationScope: CoroutineScope,
-    @Application context: Context,
+    @DisplayAware displayScope: CoroutineScope,
+    @DisplayAware context: Context,
     @Main mainExecutor: Executor,
     displayStateRepository: DisplayStateRepository,
     displayRepository: DisplayRepository,
@@ -115,7 +115,7 @@ constructor(
                 screenSizeFoldProvider.registerCallback(callback, mainExecutor)
                 awaitClose { screenSizeFoldProvider.unregisterCallback(callback) }
             }
-            .stateIn(applicationScope, started = SharingStarted.Eagerly, initialValue = false)
+            .stateIn(displayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     override val isInRearDisplayMode: StateFlow<Boolean> =
         displayStateRepository.isInRearDisplayMode

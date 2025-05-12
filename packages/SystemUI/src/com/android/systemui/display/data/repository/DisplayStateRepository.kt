@@ -20,9 +20,8 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.util.Size
 import android.view.DisplayInfo
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.display.shared.model.toDisplayRotation
@@ -69,12 +68,12 @@ interface DisplayStateRepository {
     val isWideScreen: StateFlow<Boolean>
 }
 
-@SysUISingleton
+@PerDisplaySingleton
 class DisplayStateRepositoryImpl
 @Inject
 constructor(
-    @Background backgroundScope: CoroutineScope,
-    @Application val context: Context,
+    @DisplayAware bgDisplayScope: CoroutineScope,
+    @DisplayAware val context: Context,
     deviceStateRepository: DeviceStateRepository,
     displayRepository: DisplayRepository,
 ) : DisplayStateRepository {
@@ -84,13 +83,13 @@ constructor(
     override val isInRearDisplayMode: StateFlow<Boolean> =
         deviceStateRepository.state
             .map { it == REAR_DISPLAY }
-            .stateIn(backgroundScope, started = SharingStarted.Eagerly, initialValue = false)
+            .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val currentDisplayInfo: StateFlow<DisplayInfo> =
         displayRepository.displayChangeEvent
             .map { getDisplayInfo() }
             .stateIn(
-                backgroundScope,
+                bgDisplayScope,
                 started = SharingStarted.Eagerly,
                 initialValue = getDisplayInfo(),
             )
@@ -99,7 +98,7 @@ constructor(
         currentDisplayInfo
             .map { rotationToDisplayRotation(it.rotation) }
             .stateIn(
-                backgroundScope,
+                bgDisplayScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = rotationToDisplayRotation(currentDisplayInfo.value.rotation),
             )
@@ -108,7 +107,7 @@ constructor(
         currentDisplayInfo
             .map { Size(it.naturalWidth, it.naturalHeight) }
             .stateIn(
-                backgroundScope,
+                bgDisplayScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue =
                     Size(
@@ -124,12 +123,12 @@ constructor(
                 val smallestWidth = min(it.logicalWidth, it.logicalHeight).toDpi()
                 smallestWidth >= LARGE_SCREEN_MIN_DPS
             }
-            .stateIn(backgroundScope, started = SharingStarted.Eagerly, initialValue = false)
+            .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     override val isWideScreen: StateFlow<Boolean> =
         currentDisplayInfo
             .map { it.logicalWidth.toDpi() >= LARGE_SCREEN_MIN_DPS }
-            .stateIn(backgroundScope, started = SharingStarted.Eagerly, initialValue = false)
+            .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private fun getDisplayInfo(): DisplayInfo {
         val cachedDisplayInfo = DisplayInfo()

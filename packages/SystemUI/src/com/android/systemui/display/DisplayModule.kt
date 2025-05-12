@@ -18,6 +18,7 @@ package com.android.systemui.display
 
 import android.hardware.display.DisplayManager
 import android.os.Handler
+import android.view.Display
 import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
@@ -27,6 +28,7 @@ import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepositoryImpl
@@ -41,7 +43,6 @@ import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
-import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractorModule
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractor
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractorImpl
@@ -76,10 +77,6 @@ interface DisplayModule {
     ): DeviceStateRepository
 
     @Binds
-    @SysUISingleton
-    fun bindsDisplayStateInteractor(impl: DisplayStateInteractorImpl): DisplayStateInteractor
-
-    @Binds
     fun bindsFocusedDisplayRepository(
         focusedDisplayRepository: FocusedDisplayRepositoryImpl
     ): FocusedDisplayRepository
@@ -102,6 +99,13 @@ interface DisplayModule {
     fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
 
     companion object {
+        @Provides
+        fun displayStateInteractor(
+            displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
+        ): DisplayStateInteractor {
+            return displayComponentRepo[Display.DEFAULT_DISPLAY]!!.displayStateInteractor
+        }
+
         @Provides
         @SysUISingleton
         @IntoMap

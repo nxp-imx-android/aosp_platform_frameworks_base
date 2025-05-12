@@ -17,6 +17,8 @@
 package com.android.systemui.display.dagger
 
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.display.data.repository.DisplayStateRepository
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import dagger.BindsInstance
 import dagger.Subcomponent
 import javax.inject.Qualifier
@@ -37,6 +39,10 @@ import kotlinx.coroutines.CoroutineScope
 interface SystemUIDisplaySubcomponent {
 
     @get:DisplayAware val displayCoroutineScope: CoroutineScope
+
+    @get:DisplayAware val displayStateRepository: DisplayStateRepository
+
+    @get:DisplayAware val displayStateInteractor: DisplayStateInteractor
 
     @Subcomponent.Factory
     interface Factory {

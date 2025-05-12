@@ -27,7 +27,7 @@ import java.util.concurrent.Executor
 
 val Kosmos.displayStateInteractor by Fixture {
     DisplayStateInteractorImpl(
-        applicationScope = applicationCoroutineScope,
+        displayScope = applicationCoroutineScope,
         context = applicationContext,
         mainExecutor = mock<Executor>(),
         displayStateRepository = displayStateRepository,

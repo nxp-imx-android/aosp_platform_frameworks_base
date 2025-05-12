@@ -22,6 +22,7 @@ import android.view.Display
 import android.view.mockIWindowManager
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
@@ -33,11 +34,19 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 val Kosmos.displayRepository by Fixture { FakeDisplayRepository() }
 
 fun Kosmos.createFakeDisplaySubcomponent(
-    coroutineScope: CoroutineScope = testScope.backgroundScope
+    coroutineScope: CoroutineScope = testScope.backgroundScope,
+    displayStateRepository: DisplayStateRepository = mock<DisplayStateRepository>(),
+    displayStateInteractor: DisplayStateInteractor = mock<DisplayStateInteractor>(),
 ): SystemUIDisplaySubcomponent {
     return object : SystemUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
             get() = coroutineScope
+
+        override val displayStateRepository: DisplayStateRepository
+            get() = displayStateRepository
+
+        override val displayStateInteractor: DisplayStateInteractor
+            get() = displayStateInteractor
     }
 }
 
