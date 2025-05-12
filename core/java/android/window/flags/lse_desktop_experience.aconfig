@@ -167,6 +167,17 @@ flag {
 }
 
 flag {
+    name: "respect_fullscreen_activity_option_in_desktop_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for /n"
+                 "activities which request fullscreen via their activity options."
+    bug: "416032057"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_wallpaper_activity"
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
