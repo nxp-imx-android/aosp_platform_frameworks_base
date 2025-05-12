@@ -324,7 +324,8 @@ public interface NotificationsModule {
         if (PromotedNotificationContentModel.featureFlagEnabled()) {
             return implProvider.get();
         } else {
-            return (entry, recoveredBuilder, redactionType, imageModelProvider) -> null;
+            return (entry, recoveredBuilder, redactionType, imageModelProvider,
+                    packageContext) -> null;
         }
     }
 

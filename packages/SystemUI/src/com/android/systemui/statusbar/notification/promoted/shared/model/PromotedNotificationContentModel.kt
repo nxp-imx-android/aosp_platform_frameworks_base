@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.promoted.shared.model
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.DrawableRes
 import android.annotation.ElapsedRealtimeLong
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
