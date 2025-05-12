@@ -90,6 +90,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.text.BidiFormatter;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -3435,6 +3436,39 @@ public class Notification implements Parcelable
         }
 
         return cs.toString();
+    }
+
+    @Nullable
+    private static CharSequence stripNonStyleSpans(@Nullable CharSequence text) {
+        if (text == null) return null;
+
+        if (text instanceof Spanned) {
+            Spanned ss = (Spanned) text;
+            Object[] spans = ss.getSpans(0, ss.length(), Object.class);
+            SpannableString outString = new SpannableString(ss.toString());
+            for (Object span : spans) {
+                final Object resultSpan;
+                if (span instanceof StyleSpan
+                        || span instanceof StrikethroughSpan
+                        || span instanceof UnderlineSpan) {
+                    resultSpan = span;
+                } else if (span instanceof TextAppearanceSpan) {
+                    final TextAppearanceSpan originalSpan = (TextAppearanceSpan) span;
+                    resultSpan = new TextAppearanceSpan(
+                            null,
+                            originalSpan.getTextStyle(),
+                            -1,
+                            null,
+                            null);
+                } else {
+                    continue;
+                }
+                outString.setSpan(resultSpan, ss.getSpanStart(span), ss.getSpanEnd(span),
+                        ss.getSpanFlags(span));
+            }
+            return outString;
+        }
+        return text;
     }
 
     private static CharSequence normalizeBigText(@Nullable CharSequence charSequence) {
@@ -7406,8 +7440,10 @@ public class Notification implements Parcelable
          */
         public CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
                 int buttonFillColor) {
-            // Ongoing promoted notifications are allowed to have styling.
-            if (Flags.cleanUpSpansAndNewLines()) {
+            if ( mN.isPromotedOngoing()) {
+                // RON keeps non style spans just like MessagingStyle
+                return stripNonStyleSpans(cs);
+            } else if (Flags.cleanUpSpansAndNewLines()) {
                 return stripStyling(cs);
             }
 
@@ -9015,7 +9051,7 @@ public class Notification implements Parcelable
             // Replace the text with the big text, but only if the big text is not empty.
             CharSequence bigTextText = mBuilder.processLegacyText(mBigText);
             // Ongoing promoted notifications are allowed to have styling.
-            if (Flags.cleanUpSpansAndNewLines()) {
+            if (!mBuilder.mN.isPromotedOngoing() && Flags.cleanUpSpansAndNewLines()) {
                 bigTextText = normalizeBigText(stripStyling(bigTextText));
             }
             if (!TextUtils.isEmpty(bigTextText)) {
@@ -10148,37 +10184,6 @@ public class Notification implements Parcelable
                 } else {
                     ensureColorContrast(backgroundColor);
                 }
-            }
-
-            private CharSequence stripNonStyleSpans(CharSequence text) {
-
-                if (text instanceof Spanned) {
-                    Spanned ss = (Spanned) text;
-                    Object[] spans = ss.getSpans(0, ss.length(), Object.class);
-                    SpannableStringBuilder builder = new SpannableStringBuilder(ss.toString());
-                    for (Object span : spans) {
-                        final Object resultSpan;
-                        if (span instanceof StyleSpan
-                                || span instanceof StrikethroughSpan
-                                || span instanceof UnderlineSpan) {
-                            resultSpan = span;
-                        } else if (span instanceof TextAppearanceSpan) {
-                            final TextAppearanceSpan originalSpan = (TextAppearanceSpan) span;
-                            resultSpan = new TextAppearanceSpan(
-                                    null,
-                                    originalSpan.getTextStyle(),
-                                    -1,
-                                    null,
-                                    null);
-                        } else {
-                            continue;
-                        }
-                        builder.setSpan(resultSpan, ss.getSpanStart(span), ss.getSpanEnd(span),
-                                ss.getSpanFlags(span));
-                    }
-                    return builder;
-                }
-                return text;
             }
 
             /**
