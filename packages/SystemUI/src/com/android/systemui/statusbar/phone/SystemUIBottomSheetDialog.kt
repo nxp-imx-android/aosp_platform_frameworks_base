@@ -29,8 +29,12 @@ import android.view.WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
 import androidx.activity.ComponentDialog
 import androidx.annotation.VisibleForTesting
+import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.model.StateChange
 import com.android.systemui.res.R
+import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.onConfigChanged
 import dagger.Lazy
@@ -42,7 +46,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** A dialog shown as a bottom sheet. */
 class SystemUIBottomSheetDialog
@@ -54,6 +57,8 @@ constructor(
     private val delegate: DialogDelegate<in Dialog>,
     private val windowLayout: WindowLayout,
     theme: Int,
+    private val dialogManager: SystemUIDialogManager,
+    private val sysUIStateDisplaysInteractor: SysUIStateDisplaysInteractor,
 ) : ComponentDialog(context, theme) {
 
     private var job: Job? = null
@@ -95,12 +100,23 @@ constructor(
                     .launchIn(this)
             }
         delegate.onStart(this)
+        dialogManager.setShowing(this, /* showing= */ true)
+        setDialogShowingFlag(true)
     }
 
     override fun onStop() {
         job?.cancel()
         delegate.onStop(this)
+        dialogManager.setShowing(this, /* showing= */ false)
+        setDialogShowingFlag(false)
         super.onStop()
+    }
+
+    private fun setDialogShowingFlag(showing: Boolean) {
+        sysUIStateDisplaysInteractor.setFlags(
+            context.displayId,
+            StateChange().setFlag(QuickStepContract.SYSUI_STATE_DIALOG_SHOWING, showing),
+        )
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -115,6 +131,8 @@ constructor(
         @Application private val coroutineScope: CoroutineScope,
         private val defaultWindowLayout: Lazy<WindowLayout.LimitedEdgeToEdge>,
         private val configurationController: ConfigurationController,
+        private val dialogManager: SystemUIDialogManager,
+        private val sysUIStateDisplaysInteractor: SysUIStateDisplaysInteractor,
     ) {
 
         fun create(
@@ -129,6 +147,8 @@ constructor(
                 delegate = delegate,
                 windowLayout = windowLayout,
                 theme = theme,
+                dialogManager = dialogManager,
+                sysUIStateDisplaysInteractor = sysUIStateDisplaysInteractor,
             )
     }
 
