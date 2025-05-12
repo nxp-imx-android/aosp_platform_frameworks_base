@@ -159,7 +159,6 @@ class BackNavigationController {
      * for the animation, or null if we don't know how to animate the current window and need to
      * fallback on dispatching the key event.
      */
-    @VisibleForTesting
     @Nullable
     BackNavigationInfo startBackNavigation(@NonNull RemoteCallback navigationObserver,
             BackAnimationAdapter adapter) {
@@ -852,7 +851,7 @@ class BackNavigationController {
          * Notify focus window changed during back navigation. This will cancel the gesture for
          * scenarios like: a system window popup, or when an activity add a new window.
          *
-         * This method should only be used to check window-level change, otherwise it may cause
+         * <p>This method should only be used to check window-level change, otherwise it may cause
          * misjudgment in multi-window mode. For example: in split-screen, when user is
          * navigating on the top task, bottom task can start a new task, which will gain focus for
          * a short time, but we should not cancel the navigation.
@@ -1528,7 +1527,7 @@ class BackNavigationController {
 
         @NonNull private static BackWindowAnimationAdaptor createAdaptor(
                 @NonNull WindowContainer target, boolean isOpen, int switchType,
-                SurfaceControl.Transaction st) {
+                @NonNull SurfaceControl.Transaction st) {
             final BackWindowAnimationAdaptor adaptor =
                     new BackWindowAnimationAdaptor(target, isOpen, switchType);
             // Workaround to show TaskFragment which can be hide in Transitions and won't show
@@ -1560,7 +1559,7 @@ class BackNavigationController {
             private Transition mPreparedOpenTransition;
 
             BackWindowAnimationAdaptorWrapper(boolean isOpen, int switchType,
-                    SurfaceControl.Transaction st, @NonNull WindowContainer... targets) {
+                    @NonNull SurfaceControl.Transaction st, @NonNull WindowContainer... targets) {
                 mAdaptors = new BackWindowAnimationAdaptor[targets.length];
                 for (int i = targets.length - 1; i >= 0; --i) {
                     mAdaptors[i] = createAdaptor(targets[i], isOpen, switchType, st);
@@ -1591,7 +1590,8 @@ class BackNavigationController {
                 mPreparedOpenTransition = null;
             }
 
-            private RemoteAnimationTarget createWrapTarget(SurfaceControl.Transaction st) {
+            @NonNull
+            private RemoteAnimationTarget createWrapTarget(@NonNull SurfaceControl.Transaction st) {
                 // Special handle for opening two activities together.
                 // If we animate both activities separately, the animation area and rounded corner
                 // would also being handled separately. To make them seem like "open" together, wrap
@@ -1760,8 +1760,9 @@ class BackNavigationController {
             }
 
             @Override
-            public void startAnimation(SurfaceControl animationLeash, SurfaceControl.Transaction t,
-                    int type, SurfaceAnimator.OnAnimationFinishedCallback finishCallback) {
+            public void startAnimation(@NonNull SurfaceControl animationLeash,
+                    @NonNull SurfaceControl.Transaction t, @SurfaceAnimator.AnimationType int type,
+                    @NonNull SurfaceAnimator.OnAnimationFinishedCallback finishCallback) {
                 mCapturedLeash = animationLeash;
                 createRemoteAnimationTarget();
                 final WindowState win = mTarget.asWindowState();
@@ -1769,12 +1770,12 @@ class BackNavigationController {
                     final Rect frame = win.getFrame();
                     final Point position = new Point();
                     win.transformFrameToSurfacePosition(frame.left, frame.top, position);
-                    t.setPosition(mCapturedLeash, position.x, position.y);
+                    t.setPosition(animationLeash, position.x, position.y);
                 }
             }
 
             @Override
-            public void onAnimationCancelled(SurfaceControl animationLeash) {
+            public void onAnimationCancelled(@Nullable SurfaceControl animationLeash) {
                 if (mCapturedLeash == animationLeash) {
                     mCapturedLeash = null;
                 }
@@ -1791,15 +1792,14 @@ class BackNavigationController {
             }
 
             @Override
-            public void dump(PrintWriter pw, String prefix) {
+            public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
                 pw.print(prefix + "BackWindowAnimationAdaptor mCapturedLeash=");
                 pw.print(mCapturedLeash);
                 pw.println();
             }
 
             @Override
-            public void dumpDebug(ProtoOutputStream proto) {
-
+            public void dumpDebug(@NonNull ProtoOutputStream proto) {
             }
 
             RemoteAnimationTarget createRemoteAnimationTarget() {
