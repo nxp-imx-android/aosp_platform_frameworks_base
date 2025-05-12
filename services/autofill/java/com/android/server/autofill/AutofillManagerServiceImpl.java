@@ -1869,7 +1869,7 @@ final class AutofillManagerServiceImpl
     }
 
     @GuardedBy("mLock")
-    private int getAugmentedAutofillServiceUidLocked() {
+    int getAugmentedAutofillServiceUidLocked() {
         if (mRemoteAugmentedAutofillServiceInfo == null) {
             if (mMaster.verbose) {
                 Slog.v(TAG, "getAugmentedAutofillServiceUid(): "
