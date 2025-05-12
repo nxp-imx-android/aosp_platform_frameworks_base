@@ -69,7 +69,7 @@ public class KeyguardDisplayManager {
     private final DisplayTracker mDisplayTracker;
     private final Lazy<NavigationBarController> mNavigationBarControllerLazy;
     private final Provider<ShadeDisplaysRepository> mShadePositionRepositoryProvider;
-    private final ConnectedDisplayKeyguardPresentation.Factory
+    private final ConnectedDisplayKeyguardPresentationFactory
             mConnectedDisplayKeyguardPresentationFactory;
     private final Context mContext;
 
@@ -113,7 +113,7 @@ public class KeyguardDisplayManager {
             @UiBackground Executor uiBgExecutor,
             DeviceStateHelper deviceStateHelper,
             KeyguardStateController keyguardStateController,
-            ConnectedDisplayKeyguardPresentation.Factory
+            ConnectedDisplayKeyguardPresentationFactory
                     connectedDisplayKeyguardPresentationFactory,
             Provider<ShadeDisplaysRepository> shadePositionRepositoryProvider,
             @Application CoroutineScope appScope) {

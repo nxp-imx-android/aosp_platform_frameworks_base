@@ -45,6 +45,20 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
         return constraints
     }
 
+    override fun applyExternalDisplayPresentationConstraints(
+        constraints: ConstraintSet,
+    ): ConstraintSet {
+        return constraints.apply {
+            constrainWidth(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, WRAP_CONTENT)
+            constrainHeight(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, WRAP_CONTENT)
+
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, TOP, PARENT_ID, TOP)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, BOTTOM, PARENT_ID, BOTTOM)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, START, PARENT_ID, START)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, END, PARENT_ID, END)
+        }
+    }
+
     override fun applyPreviewConstraints(
         clockPreviewConfig: ClockPreviewConfig,
         constraints: ConstraintSet,

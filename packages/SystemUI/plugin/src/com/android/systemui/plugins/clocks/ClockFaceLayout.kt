@@ -33,6 +33,10 @@ interface ClockFaceLayout {
     fun applyConstraints(constraints: ConstraintSet): ConstraintSet
 
     @ProtectedReturn("return constraints;")
+    /** Custom constraints to apply to the external display presentation ConstraintLayout. */
+    fun applyExternalDisplayPresentationConstraints(constraints: ConstraintSet): ConstraintSet
+
+    @ProtectedReturn("return constraints;")
     /** Custom constraints to apply to preview ConstraintLayout. */
     fun applyPreviewConstraints(
         clockPreviewConfig: ClockPreviewConfig,
