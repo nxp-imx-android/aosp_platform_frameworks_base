@@ -62,6 +62,8 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -256,6 +258,20 @@ class SupervisionServiceTest {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
+    fun setSupervisionEnabledForUser_removesPoliciesWhenDisabling() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        service.setSupervisionEnabledForUser(USER_ID, true)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+
+        service.setSupervisionEnabledForUser(USER_ID, false)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        verify(mockDpmInternal)
+            .removePoliciesForAdmins(eq(systemSupervisionPackage), eq(USER_ID))
     }
 
     @Test
