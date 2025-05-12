@@ -130,7 +130,7 @@ class ScrollableToolbarItemLayout(context: Context, attrs: AttributeSet?) :
     }
 
     companion object {
-        private const val MAX_ITEMS = 2
+        private const val MAX_ITEMS = 5
         private val SELECTED_TEXT_APPEARANCE =
             com.android.settingslib.widget.theme.R.style.TextAppearance_SettingsLib_TitleSmall_Emphasized
         private val UNSELECTED_TEXT_APPEARANCE =
