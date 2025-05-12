@@ -108,7 +108,7 @@ constructor(
     }
 
     private fun cancelSqueeze() {
-        if (isAnimationInterruptible && squeezeProgress != 0f) {
+        if (isAnimationInterruptible && animator != null) {
             hapticPlayer?.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
@@ -141,6 +141,7 @@ constructor(
     }
 
     private fun finishAnimation() {
+        animator = null
         isAnimationInterruptible = true
     }
 
