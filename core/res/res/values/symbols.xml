@@ -3803,6 +3803,7 @@
   <java-symbol type="raw" name="fallback_categories" />
 
   <java-symbol type="string" name="config_icon_mask" />
+  <java-symbol type="string" name="config_banner_mask" />
   <java-symbol type="string" name="config_batterymeterPerimeterPath" />
   <java-symbol type="string" name="config_batterymeterErrorPerimeterPath" />
   <java-symbol type="string" name="config_batterymeterFillMask" />
