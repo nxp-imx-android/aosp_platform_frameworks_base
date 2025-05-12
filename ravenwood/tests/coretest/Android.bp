@@ -50,6 +50,7 @@ java_defaults {
         strip_mockito: true,
     },
     auto_gen_config: true,
+    jarjar_rules: "empty.txt",
 }
 
 android_ravenwood_test {
