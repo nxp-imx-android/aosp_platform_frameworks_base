@@ -86,6 +86,11 @@ public class PipExpandAnimator extends ValueAnimator {
             super.onAnimationEnd(animation);
             if (mFinishTransaction != null) {
                 onExpandAnimationUpdate(mFinishTransaction, 1f);
+                // Reset the corner radius at the end, if not in desktop windowing mode.
+                if (!mIsPipInDesktopMode) {
+                    mPipSurfaceTransactionHelper.round(mFinishTransaction, mLeash,
+                            false /* applyCornerRadius */);
+                }
             }
             if (mAnimationEndCallback != null) {
                 mAnimationEndCallback.run();
@@ -183,7 +188,9 @@ public class PipExpandAnimator extends ValueAnimator {
                     mAnimatedRect, insets, degrees, x, y,
                     true /* isExpanding */, mRotation == ROTATION_90);
         }
-        mPipSurfaceTransactionHelper.round(tx, mLeash, mIsPipInDesktopMode /* applyCornerRadius */)
+        // Apply round corner during the animation, it will be reset at the end if not in desktop
+        // windowing mode.
+        mPipSurfaceTransactionHelper.round(tx, mLeash, true /* applyCornerRadius */)
                 .shadow(tx, mLeash, false /* applyShadowRadius */);
     }
 
