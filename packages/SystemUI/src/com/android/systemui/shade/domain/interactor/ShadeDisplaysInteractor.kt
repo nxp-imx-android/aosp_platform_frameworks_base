@@ -81,6 +81,8 @@ constructor(
     /** Current display id of the shade window. */
     val displayId: StateFlow<Int> = shadePositionRepository.displayId
 
+    val pendingDisplayId: StateFlow<Int> = shadePositionRepository.pendingDisplayId
+
     override fun start() {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         listenForWindowContextConfigChanges()

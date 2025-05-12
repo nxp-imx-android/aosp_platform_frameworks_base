@@ -875,7 +875,12 @@ constructor(
                                     )
                         ) {
                             QuickSettingsLayout(
-                                brightness = BrightnessSlider,
+                                brightness =
+                                    if (viewModel.isBrightnessSliderVisible) {
+                                        { BrightnessSlider() }
+                                    } else {
+                                        {}
+                                    },
                                 tiles = TileGrid,
                                 media = Media,
                                 mediaInRow = viewModel.qsMediaInRow,
@@ -1381,6 +1386,7 @@ fun QuickQuickSettingsLayout(
     }
 }
 
+/** [brightness] is nullable as it might not be there (e.g. on connected displays). */
 @Composable
 @VisibleForTesting
 fun QuickSettingsLayout(
