@@ -40,11 +40,14 @@ class Dimmer {
      * The {@link WindowContainer} that our Dims are bounded to. We may be dimming on behalf of the
      * host, some controller of it, or one of the hosts children.
      */
+    @NonNull
     private final WindowContainer<?> mHost;
 
     private static final String TAG = "WindowManagerDimmer";
 
+    @Nullable
     DimState mDimState;
+    @NonNull
     final DimmerAnimationHelper.AnimationAdapterFactory mAnimationAdapterFactory;
 
     /**
@@ -57,6 +60,7 @@ class Dimmer {
         // The last container to request to dim
         private WindowState mLastDimmingWindow;
         /** Animation */
+        @NonNull
         private final DimmerAnimationHelper mAnimationHelper;
         boolean mSkipAnimation = false;
         // Determines whether the dim layer should animate before destroying.
@@ -64,6 +68,7 @@ class Dimmer {
         /** Surface visibility and bounds */
         private boolean mIsVisible = false;
         // TODO(b/64816140): Remove after confirming dimmer layer always matches its container.
+        @NonNull
         final Rect mDimBounds = new Rect();
 
         DimState() {
@@ -165,6 +170,7 @@ class Dimmer {
                     && (mHostContainer.isVisibleRequested() || !Flags.useTasksDimOnly());
         }
 
+        @NonNull
         private SurfaceControl makeDimLayer() {
             return mHost.makeChildSurface(null)
                     .setParent(mHost.getSurfaceControl())
@@ -180,8 +186,8 @@ class Dimmer {
     }
 
     @VisibleForTesting
-    Dimmer(@NonNull WindowContainer host,
-                 @NonNull DimmerAnimationHelper.AnimationAdapterFactory animationFactory) {
+    Dimmer(@NonNull WindowContainer<?> host,
+            @NonNull DimmerAnimationHelper.AnimationAdapterFactory animationFactory) {
         mHost = host;
         mAnimationAdapterFactory = animationFactory;
     }
@@ -217,7 +223,7 @@ class Dimmer {
      * @param blurRadius Blur amount
      */
     protected void adjustAppearance(@NonNull WindowState dimmingContainer,
-                                    float alpha, int blurRadius) {
+            float alpha, int blurRadius) {
         if (!mHost.isVisibleRequested()) {
             // If the host is already going away, there is no point in keeping dimming
             return;
@@ -236,7 +242,7 @@ class Dimmer {
      * If multiple containers call this method, only the changes relative to the topmost will be
      * applied.
      *
-     * For each call to {@link WindowContainer#prepareSurfaces()} the DimState will be reset, and
+     * <p>For each call to {@link WindowContainer#prepareSurfaces()} the DimState will be reset, and
      * the child of the host should call adjustRelativeLayer and {@link Dimmer#adjustAppearance} to
      * continue dimming. Indeed, this method won't be able to keep dimming or get a new DimState
      * without also adjusting the appearance.
@@ -245,7 +251,7 @@ class Dimmer {
      *                              parented below it
      */
     public void adjustPosition(@Nullable WindowContainer<?> geometryParent,
-                                    @NonNull WindowState dimmingContainer) {
+            @NonNull WindowState dimmingContainer) {
         if (mDimState != null) {
             mDimState.prepareReparent(geometryParent, dimmingContainer);
         }
@@ -301,11 +307,13 @@ class Dimmer {
     }
 
     /** Returns non-null bounds if the dimmer is showing. */
+    @Nullable
     @VisibleForTesting
     SurfaceControl getDimLayer() {
         return mDimState != null ? mDimState.mDimSurface : null;
     }
 
+    @Nullable
     Rect getDimBounds() {
         return mDimState != null ? mDimState.mDimBounds : null;
     }

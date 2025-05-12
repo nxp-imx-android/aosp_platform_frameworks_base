@@ -39,6 +39,9 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.SurfaceControl;
 import android.view.SurfaceSession;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.utils.MockAnimationAdapter;
 import com.android.window.flags.Flags;
@@ -66,11 +69,12 @@ public class DimmerTests extends WindowTestsBase {
             mVisibleRequested = true;
         }
 
-        class MockSurfaceBuilder extends SurfaceControl.Builder {
+        static class MockSurfaceBuilder extends SurfaceControl.Builder {
             MockSurfaceBuilder(SurfaceSession ss) {
                 super(ss);
             }
 
+            @NonNull
             @Override
             public SurfaceControl build() {
                 SurfaceControl mSc = mock(SurfaceControl.class);
@@ -79,26 +83,31 @@ public class DimmerTests extends WindowTestsBase {
             }
         }
 
+        @NonNull
         @Override
-        SurfaceControl.Builder makeChildSurface(WindowContainer child) {
+        SurfaceControl.Builder makeChildSurface(@Nullable WindowContainer child) {
             return new MockSurfaceBuilder(mSession);
         }
 
+        @Nullable
         @Override
         public SurfaceControl getSurfaceControl() {
             return mHostControl;
         }
 
+        @NonNull
         @Override
         public SurfaceControl.Transaction getSyncTransaction() {
             return mHostTransaction;
         }
 
+        @NonNull
         @Override
         public SurfaceControl.Transaction getPendingTransaction() {
             return mHostTransaction;
         }
 
+        @NonNull
         @Override
         public Rect getBounds() {
             return mBounds;
@@ -106,9 +115,10 @@ public class DimmerTests extends WindowTestsBase {
     }
 
     static class MockAnimationAdapterFactory extends DimmerAnimationHelper.AnimationAdapterFactory {
+        @NonNull
         @Override
-        public AnimationAdapter get(LocalAnimationAdapter.AnimationSpec alphaAnimationSpec,
-                SurfaceAnimationRunner runner) {
+        public AnimationAdapter get(@NonNull LocalAnimationAdapter.AnimationSpec alphaAnimationSpec,
+                @NonNull SurfaceAnimationRunner runner) {
             return sTestAnimation;
         }
     }
