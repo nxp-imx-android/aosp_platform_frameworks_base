@@ -23,7 +23,7 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -39,6 +39,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipFile
 
+// Enable to debug concurrency issues
+const val DISABLE_PARALLELISM = false
 const val DEFAULT_SHARD_COUNT = 20
 const val MINIMUM_BATCH_SIZE = 100
 
@@ -148,7 +150,7 @@ class ConcurrentListMapper<T>(val list: MutableList<T?>) {
 
     inline fun process(mapper: (T) -> T?) {
         while (true) {
-            val idx = currentIndex.incrementAndGet()
+            val idx = currentIndex.getAndIncrement()
             if (idx < list.size) {
                 list[idx]?.let { list[idx] = mapper(it) }
                 continue
@@ -163,7 +165,7 @@ class ConcurrentZipFile(
     parallelism: Int,
 ) {
     val entries: MutableList<ZipEntryData?>
-    val executor: ExecutorService
+    val executor: Executor
     val shardCount: Int
 
     init {
@@ -175,9 +177,15 @@ class ConcurrentZipFile(
                 .map { ZipEntryData.Entry(it, mappedBytes) }
                 .toMutableList()
         }
-        val count = min(parallelism, Runtime.getRuntime().availableProcessors())
-        shardCount = min(count, entries.size / MINIMUM_BATCH_SIZE + 1)
-        executor = Executors.newFixedThreadPool(shardCount)
+        if (DISABLE_PARALLELISM) {
+            shardCount = 1
+            // Directly run on the same thread as the caller
+            executor = Executor { r -> r.run() }
+        } else {
+            val count = min(parallelism, Runtime.getRuntime().availableProcessors())
+            shardCount = min(count, entries.size / MINIMUM_BATCH_SIZE + 1)
+            executor = Executors.newFixedThreadPool(shardCount)
+        }
     }
 
     inline fun forEach(action: (ZipEntryData) -> Unit) {
@@ -206,6 +214,7 @@ class ConcurrentZipFile(
                 } catch (e: Throwable) {
                     exception.compareAndSet(null, e)
                 } finally {
+                    log.flush()
                     latch.countDown()
                 }
             }
