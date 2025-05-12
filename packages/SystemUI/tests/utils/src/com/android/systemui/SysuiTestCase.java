@@ -193,7 +193,7 @@ public abstract class SysuiTestCase {
     private SysuiTestDependency mSysuiDependency;
 
     static {
-        assertTempFilesAreCreatable();
+        waitUntilMockitoCanBeInitialized();
     }
 
     @Before
@@ -217,6 +217,16 @@ public abstract class SysuiTestCase {
             });
             InstrumentationRegistry.registerInstance(inst, InstrumentationRegistry.getArguments());
         }
+    }
+
+    /**
+     * Due to b/404544974, it is possible for a test process to start without access to its
+     * temp folder, and then gain access later.  Mockito cannot initialize (b/391948934) if the
+     * temp folder is not writeable, so calling this method allows a test not to proceed until
+     * mockito will be workable.
+     */
+    public static void waitUntilMockitoCanBeInitialized() {
+        assertTempFilesAreCreatable();
     }
 
     private static Boolean sCanCreateTempFiles = null;
