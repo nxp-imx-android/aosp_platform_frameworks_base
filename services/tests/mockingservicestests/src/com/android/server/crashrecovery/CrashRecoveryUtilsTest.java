@@ -27,6 +27,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
+import android.util.SparseArray;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.runner.AndroidJUnit4;
@@ -45,6 +46,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 
 /**
@@ -69,12 +73,14 @@ public class CrashRecoveryUtilsTest {
         ExtendedMockito.doReturn(mCacheDir).when(() -> Environment.getDataDirectory());
 
         createCrashRecoveryEventsTempDir();
+        createKeyValuesTempDir();
     }
 
     @After
     public void tearDown() throws IOException {
         mStaticMockSession.finishMocking();
         deleteCrashRecoveryEventsTempFile();
+        deleteKeyValuesTempFile();
     }
 
     @Test
@@ -94,6 +100,16 @@ public class CrashRecoveryUtilsTest {
         String dump = sw.getBuffer().toString();
         assertThat(dump).contains(mCrashrecoveryEventTag);
         assertThat(dump).doesNotContain(mLogMsg);
+    }
+
+    @Test
+    public void testPutAndReadKeyValues() throws IOException {
+        SparseArray<String> keyValues = new SparseArray<>();
+        keyValues.put(123, "com.android.foo");
+        keyValues.put(456, "com.android.bar");
+
+        testPutKeyValue(keyValues);
+        testReadAllKeyValues(keyValues);
     }
 
     private void testLogCrashRecoveryEvent() {
@@ -126,6 +142,36 @@ public class CrashRecoveryUtilsTest {
         assertThat(dump).contains(mLogMsg);
     }
 
+    private void testPutKeyValue(SparseArray<String> keyValues) throws IOException {
+        final File keyValuesTempFile = getKeyValuesTempFile();
+        assertThat(keyValuesTempFile.exists()).isFalse();
+
+        if (keyValues.size() == 0) {
+            return;
+        }
+
+        for (int i = 0; i < keyValues.size(); i++) {
+            int key = keyValues.keyAt(i);
+            String value = keyValues.get(key);
+            CrashRecoveryUtils.putKeyValue(keyValuesTempFile, key, value);
+        }
+
+        final Path keyValuesTempFilePath = Paths.get(keyValuesTempFile.getAbsolutePath());
+        try (Stream<String> lines = Files.lines(keyValuesTempFilePath, StandardCharsets.UTF_8)) {
+            assertThat(lines.count()).isEqualTo(keyValues.size());
+        }
+    }
+
+    private void testReadAllKeyValues(SparseArray<String> keyValues) {
+        final File keyValuesTempFile = getKeyValuesTempFile();
+        SparseArray<String> readKeyValues = CrashRecoveryUtils.readAllKeyValues(keyValuesTempFile);
+        assertThat(readKeyValues.size()).isEqualTo(keyValues.size());
+        for (int i = 0; i < keyValues.size(); i++) {
+            int key = keyValues.keyAt(i);
+            assertThat(readKeyValues.get(key)).isEqualTo(keyValues.get(key));
+        }
+    }
+
     private void createCrashRecoveryEventsTempDir() throws IOException {
         Files.deleteIfExists(getCrashRecoveryEventsTempFile().toPath());
         File mMockDirectory = new File(mCacheDir, "system");
@@ -141,5 +187,22 @@ public class CrashRecoveryUtilsTest {
     private File getCrashRecoveryEventsTempFile() {
         File systemTempDir = new File(mCacheDir, "system");
         return new File(systemTempDir, "crashrecovery-events.txt");
+    }
+
+    private void createKeyValuesTempDir() throws IOException {
+        deleteKeyValuesTempFile();
+        File mockDirectory = new File(mCacheDir, "rollback-observer");
+        if (!mockDirectory.exists()) {
+            assertThat(mockDirectory.mkdir()).isTrue();
+        }
+    }
+
+    private void deleteKeyValuesTempFile() throws IOException {
+        Files.deleteIfExists(getKeyValuesTempFile().toPath());
+    }
+
+    private File getKeyValuesTempFile() {
+        File keyValuesTempDir = new File(mCacheDir, "rollback-observer");
+        return new File(keyValuesTempDir, "key-values");
     }
 }
