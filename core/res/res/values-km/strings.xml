@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"មុខងារប្រើដៃម្ខាង"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ងងឹតខ្លាំង"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ចុចស្វ័យប្រវត្តិ (រយៈពេល​នៅស្ងៀម)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"គ្រាប់ចុចម៉ៅស៍"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"បាន​ផ្ដាច់"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"បានភ្ជាប់"</string>
@@ -1831,6 +1830,8 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"កំពុងចេញ <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ម្ចាស់"</string>
     <string name="guest_name" msgid="8502103277839834324">"ភ្ញៀវ"</string>
+    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"កំហុស"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ការ​ផ្លាស់ប្ដូរ​នេះ​មិន​ត្រូវ​បាន​អនុញ្ញាត​ដោយ​អ្នក​គ្រប់គ្រង​របស់​អ្នកទេ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"រក​មិន​ឃើញ​កម្មវិធី​ ដើម្បី​គ្រប់គ្រង​សកម្មភាព​នេះ"</string>
@@ -2268,32 +2269,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ឆ្វេង"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad ស្ដាំ"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad កណ្ដាល"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"ម៉ឺនុយជម្រើសចុចស្វ័យប្រវត្តិ"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"ចុចម៉ៅស៍ខាងឆ្វេង"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"ចុចម៉ៅស៍ខាងស្ដាំ"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"ចុចពីរដង"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"អូស"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"រំកិល"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"ចុចឱ្យជាប់"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ផ្អាក"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"បន្ត"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"ផ្លាស់ប្ដូរទីតាំងម៉ឺនុយ"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"រំកិលឡើងលើ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"រំកិលចុះក្រោម"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"រំកិលទៅឆ្វេង"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"រំកិលទៅស្ដាំ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"ចាកចេញពី​មុខងារ​រំកិល"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ផ្ទាំងរំកិល"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ត្រូវបានដាក់​ទៅក្នុងធុង​ដែលបានដាក់កំហិត"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>៖"</string>
