@@ -78,7 +78,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     private val Kosmos.underTest by
         Kosmos.Fixture {
             TopLevelWindowEffects(
-                topLevelWindowEffectsScope = testScope.backgroundScope,
+                applicationScope = testScope.backgroundScope,
                 squeezeEffectInteractor =
                     SqueezeEffectInteractor(
                         squeezeEffectRepository = fakeSqueezeEffectRepository,

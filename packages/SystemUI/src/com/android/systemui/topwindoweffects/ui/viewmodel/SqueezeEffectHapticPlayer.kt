@@ -17,8 +17,8 @@
 package com.android.systemui.topwindoweffects.ui.viewmodel
 
 import android.os.VibrationEffect
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.VibratorHelper
-import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +30,7 @@ class SqueezeEffectHapticPlayer
 @AssistedInject
 constructor(
     private val vibratorHelper: VibratorHelper,
-    @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
+    @Background private val bgScope: CoroutineScope,
 ) {
 
     private val primitiveDurations =
@@ -51,7 +51,7 @@ constructor(
     fun start() {
         cancel()
         vibrationJob =
-            topLevelWindowEffectsScope.launch {
+            bgScope.launch {
                 delay(invocationHaptics.initialDelay.toLong())
                 vibratorHelper.vibrate(
                     invocationHaptics.vibration,

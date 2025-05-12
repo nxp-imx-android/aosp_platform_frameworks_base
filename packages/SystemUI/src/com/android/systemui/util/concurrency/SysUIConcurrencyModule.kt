@@ -28,7 +28,6 @@ import com.android.systemui.dagger.qualifiers.BroadcastRunning
 import com.android.systemui.dagger.qualifiers.LongRunning
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dagger.qualifiers.NotifInflation
-import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
 import dagger.Module
 import dagger.Provides
 import java.util.concurrent.Executor
@@ -152,26 +151,6 @@ object SysUIConcurrencyModule {
             )
         }
     }
-
-    @Provides
-    @SysUISingleton
-    @TopLevelWindowEffectsThread
-    fun provideTopLevelWindowEffectsLooper(): Looper {
-        val thread = HandlerThread("TopLevelWindowEffectsThread", Process.THREAD_PRIORITY_DISPLAY)
-        thread.start()
-        thread.looper.setSlowLogThresholdMs(
-            LONG_SLOW_DISPATCH_THRESHOLD,
-            LONG_SLOW_DELIVERY_THRESHOLD,
-        )
-        return thread.looper
-    }
-
-    @Provides
-    @SysUISingleton
-    @TopLevelWindowEffectsThread
-    fun provideTopLevelWindowEffectsExecutor(
-        @TopLevelWindowEffectsThread looper: Looper
-    ): Executor = ExecutorImpl(looper)
 
     /**
      * Background Handler.
