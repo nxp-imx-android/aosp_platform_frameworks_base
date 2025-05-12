@@ -16216,6 +16216,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             mSecurityLogMonitor.setInternalEventsCallback(callback);
         }
 
+        @Override
+        public void removePoliciesForAdmins(
+                @NonNull String packageName, @UserIdInt int userId) {
+            mDevicePolicyEngine.removePoliciesForAdmins(packageName, userId);
+        }
+
         private List<EnforcingUser> getEnforcingUsers(Set<EnforcingAdmin> admins) {
             List<EnforcingUser> enforcingUsers = new ArrayList();
             ComponentName deviceOwner = mOwners.getDeviceOwnerComponent();

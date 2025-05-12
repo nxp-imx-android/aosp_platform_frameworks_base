@@ -364,6 +364,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     }
                 }
             }
+            DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
+            if (Flags.enableRemovePoliciesOnSupervisionDisable() &&
+                    dpmi != null && supervisionAppPackage != null) {
+                dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
+            }
         } finally {
             Binder.restoreCallingIdentity(token);
         }
