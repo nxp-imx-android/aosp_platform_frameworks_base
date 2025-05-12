@@ -2153,8 +2153,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @VisibleForTesting
     void switchUser(int userId) {
         mMagnificationController.updateUserIdIfNeeded(userId);
-        List<AccessibilityServiceInfo> parsedAccessibilityServiceInfos = null;
-        List<AccessibilityShortcutInfo> parsedAccessibilityShortcutInfos = null;
+        List<AccessibilityServiceInfo> parsedAccessibilityServiceInfos;
+        List<AccessibilityShortcutInfo> parsedAccessibilityShortcutInfos;
 
         synchronized (mLock) {
             if (Flags.managerLifecycleUserChange()) {
