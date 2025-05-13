@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.row;
 
 import android.app.INotificationManager;
-import android.app.NotificationChannel;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.RemoteException;
@@ -79,7 +78,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
                 onUserInteractionCallback, channelEditorDialogController,
                  packageDemotionInteractor,pkg, ranking, sbn,
                 entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
-                uiEventLogger, isDeviceProvisioned, isDismissable, isNonblockable,
+                uiEventLogger, isDeviceProvisioned, isNonblockable, isDismissable,
                 wasShownHighPriority, assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
