@@ -199,6 +199,7 @@ public abstract class InfoMediaManager {
 
     private static final String TAG = "InfoMediaManager";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private final Object mLock = new Object();
     protected final List<MediaDevice> mMediaDevices = new CopyOnWriteArrayList<>();
     @NonNull protected final Context mContext;
     @NonNull protected final String mPackageName;
@@ -358,7 +359,13 @@ public abstract class InfoMediaManager {
     protected abstract List<MediaRoute2Info> getTransferableRoutes(@NonNull String packageName);
 
     protected final void rebuildDeviceList() {
-        buildAvailableRoutes();
+        if (avoidBinderCallsDuringRender()) {
+            synchronized (mLock) {
+                buildAvailableRoutes();
+            }
+        } else {
+            buildAvailableRoutes();
+        }
     }
 
     protected final void notifyCurrentConnectedDeviceChanged() {
@@ -584,7 +591,9 @@ public abstract class InfoMediaManager {
     @NonNull
     List<MediaDevice> getSelectableMediaDevices() {
         if (avoidBinderCallsDuringRender()) {
-            return mMediaDevices.stream().filter(MediaDevice::isSelectable).toList();
+            synchronized (mLock) {
+                return mMediaDevices.stream().filter(MediaDevice::isSelectable).toList();
+            }
         }
 
         final RoutingSessionInfo info = getActiveRoutingSession();
@@ -610,7 +619,9 @@ public abstract class InfoMediaManager {
     @NonNull
     List<MediaDevice> getTransferableMediaDevices() {
         if (avoidBinderCallsDuringRender()) {
-            return mMediaDevices.stream().filter(MediaDevice::isTransferable).toList();
+            synchronized (mLock) {
+                return mMediaDevices.stream().filter(MediaDevice::isTransferable).toList();
+            }
         }
 
         final RoutingSessionInfo info = getActiveRoutingSession();
@@ -636,7 +647,9 @@ public abstract class InfoMediaManager {
     @NonNull
     List<MediaDevice> getDeselectableMediaDevices() {
         if (avoidBinderCallsDuringRender()) {
-            return mMediaDevices.stream().filter(MediaDevice::isDeselectable).toList();
+            synchronized (mLock) {
+                return mMediaDevices.stream().filter(MediaDevice::isDeselectable).toList();
+            }
         }
 
         final RoutingSessionInfo info = getActiveRoutingSession();
@@ -663,7 +676,9 @@ public abstract class InfoMediaManager {
     @NonNull
     List<MediaDevice> getSelectedMediaDevices() {
         if (avoidBinderCallsDuringRender()) {
-            return mMediaDevices.stream().filter(MediaDevice::isSelected).toList();
+            synchronized (mLock) {
+                return mMediaDevices.stream().filter(MediaDevice::isSelected).toList();
+            }
         }
 
         RoutingSessionInfo info = getActiveRoutingSession();

@@ -638,6 +638,7 @@ public class InfoMediaManagerTest {
         when(cachedDevice.getName()).thenReturn("BLUETOOTH");
         when(cachedDevice.getAddress()).thenReturn("00:00:00:00:00:00");
         when(bluetoothRoute.isSystemRoute()).thenReturn(true);
+        when(bluetoothRoute.getName()).thenReturn("BLUETOOTH");
         when(bluetoothRoute.getId()).thenReturn(TEST_ID_2);
         when(bluetoothRoute.getType()).thenReturn(TYPE_BLE_HEADSET);
         when(bluetoothRoute.getAddress()).thenReturn("00:00:00:00:00:00");
