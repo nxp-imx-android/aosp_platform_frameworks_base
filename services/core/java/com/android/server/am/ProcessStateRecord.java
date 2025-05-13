@@ -268,12 +268,6 @@ final class ProcessStateRecord {
     private int mCompletedAdjSeq;
 
     /**
-     * Whether this app has encountered a cycle in the most recent update.
-     */
-    @GuardedBy("mService")
-    private boolean mContainsCycle;
-
-    /**
      * When (uptime) the process last became unimportant.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -854,16 +848,6 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     int getCompletedAdjSeq() {
         return mCompletedAdjSeq;
-    }
-
-    @GuardedBy("mService")
-    void setContainsCycle(boolean containsCycle) {
-        mContainsCycle = containsCycle;
-    }
-
-    @GuardedBy("mService")
-    boolean containsCycle() {
-        return mContainsCycle;
     }
 
     @GuardedBy({"mService", "mProcLock"})
