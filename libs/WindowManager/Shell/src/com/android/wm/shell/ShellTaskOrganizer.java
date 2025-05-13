@@ -39,6 +39,7 @@ import android.content.LocusId;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.Debug;
 import android.os.IBinder;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -49,6 +50,8 @@ import android.window.StartingWindowInfo;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskAppearedInfo;
 import android.window.TaskOrganizer;
+import android.window.WindowContainerTransaction;
+import android.window.WindowContainerTransactionCallback;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -292,6 +295,25 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (mStartingWindow != null) {
             mStartingWindow.clearAllWindows();
         }
+    }
+
+    @Override
+    public void applyTransaction(@NonNull WindowContainerTransaction t) {
+        if (!t.isEmpty()) {
+            ProtoLog.v(WM_SHELL_TASK_ORG, "applyTransaction(): wct=%s caller=%s",
+                    t, Debug.getCallers(4));
+        }
+        super.applyTransaction(t);
+    }
+
+    @Override
+    public int applySyncTransaction(@NonNull WindowContainerTransaction t,
+            @NonNull WindowContainerTransactionCallback callback) {
+        if (!t.isEmpty()) {
+            ProtoLog.v(WM_SHELL_TASK_ORG, "applySyncTransaction(): wct=%s caller=%s",
+                    t, Debug.getCallers(4));
+        }
+        return super.applySyncTransaction(t, callback);
     }
 
     /**

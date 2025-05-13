@@ -292,8 +292,13 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
         final TaskViewTaskController taskView = findTaskView(triggerTask);
         if (taskView == null) return null;
+
         // Opening types should all be initiated by shell
-        if (!TransitionUtil.isClosingType(request.getType())) return null;
+        if (!TransitionUtil.isClosingType(request.getType())) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.handleRequest(): taskView=%d "
+                    + "skipping transition=%d", taskView.hashCode(), transition.hashCode());
+            return null;
+        }
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.handleRequest(): taskView=%d "
                         + "handling transition=%d", taskView.hashCode(), transition.hashCode());
         PendingTransition pending = new PendingTransition(request.getType(), null,
@@ -406,7 +411,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         // transition in taskview and then transition is intercepted using the launchcookie.
         // The task here is already created and running, it just needs to be reparented, resized
         // and tracked correctly inside taskview. Which is done by calling
-        // prepareOpenAnimationInternal() and then manually enqueuing the resulting window container
+        // prepareOpenAnimation() and then manually enqueuing the resulting window container
         // transaction.
         prepareOpenAnimation(destination, true /* newTask */, mTransaction /* startTransaction */,
                 null /* finishTransaction */, taskInfo, leash, wct);

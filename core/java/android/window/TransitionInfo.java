@@ -1105,6 +1105,8 @@ public final class TransitionInfo implements Parcelable {
             if (mTaskInfo != null) {
                 sb.append(" taskParent=");
                 sb.append(mTaskInfo.parentTaskId);
+                sb.append(" winMode=");
+                sb.append(mTaskInfo.getWindowingMode());
             }
             if (mAnimationOptions != null) {
                 sb.append(" opt=").append(mAnimationOptions);
