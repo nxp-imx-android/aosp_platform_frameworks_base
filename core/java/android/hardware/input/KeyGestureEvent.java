@@ -132,8 +132,7 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK = 77;
     public static final int KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK = 78;
 
-    public static final int FLAG_CANCELLED = 1 << 0;
-    public static final int FLAG_LONG_PRESS = 1 << 1;
+    public static final int FLAG_CANCELLED = 1;
 
     // NOTE: Valid KeyGestureEvent streams:
     //       - GESTURE_START -> GESTURE_CANCEL
@@ -405,10 +404,6 @@ public final class KeyGestureEvent {
         return (mKeyGestureEvent.flags & FLAG_CANCELLED) != 0;
     }
 
-    public boolean isLongPress() {
-        return (mKeyGestureEvent.flags & FLAG_LONG_PRESS) != 0;
-    }
-
     public int getLogEvent() {
         if (getKeyGestureType() == KEY_GESTURE_TYPE_LAUNCH_APPLICATION) {
             return getLogEventFromLaunchAppData(getAppLaunchData());
@@ -437,9 +432,9 @@ public final class KeyGestureEvent {
                 + "keycodes = " + java.util.Arrays.toString(mKeyGestureEvent.keycodes) + ", "
                 + "modifierState = " + mKeyGestureEvent.modifierState + ", "
                 + "keyGestureType = " + keyGestureTypeToString(mKeyGestureEvent.gestureType) + ", "
-                + "action = " + actionToString(mKeyGestureEvent.action) + ", "
+                + "action = " + mKeyGestureEvent.action + ", "
                 + "displayId = " + mKeyGestureEvent.displayId + ", "
-                + "flags = " + flagsToString(mKeyGestureEvent.flags) + ", "
+                + "flags = " + mKeyGestureEvent.flags + ", "
                 + "appLaunchData = " + getAppLaunchData()
                 + " }";
     }
@@ -823,23 +818,5 @@ public final class KeyGestureEvent {
             default:
                 return Integer.toHexString(value);
         }
-    }
-
-    private static String actionToString(int action) {
-        return action == ACTION_GESTURE_START ? "START" : "COMPLETE";
-    }
-
-    private static String flagsToString(int flags) {
-        StringBuilder res = new StringBuilder();
-        if ((flags & FLAG_CANCELLED) != 0) {
-            res.append("CANCELLED");
-        }
-        if ((flags & FLAG_LONG_PRESS) != 0) {
-            if (!res.isEmpty()) {
-                res.append(" | ");
-            }
-            res.append("LONG_PRESS");
-        }
-        return res.toString();
     }
 }
