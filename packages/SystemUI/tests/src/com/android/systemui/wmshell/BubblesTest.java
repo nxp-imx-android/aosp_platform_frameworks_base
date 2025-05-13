@@ -180,6 +180,7 @@ import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.StackEducationView;
+import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -364,6 +365,7 @@ public class BubblesTest extends SysuiTestCase {
     private ShellTaskOrganizer mShellTaskOrganizer;
     private TaskViewRepository mTaskViewRepository;
     private TaskViewTransitions mTaskViewTransitions;
+    private PackageManagerBubbleAppInfoProvider mAppInfoProvider;
 
     private TestableBubblePositioner mPositioner;
 
@@ -512,6 +514,7 @@ public class BubblesTest extends SysuiTestCase {
         mTaskViewRepository = new TaskViewRepository();
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
                 mShellTaskOrganizer, mSyncQueue);
+        mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleController = new TestableBubbleController(
                 mContext,
                 mShellInit,
@@ -541,7 +544,8 @@ public class BubblesTest extends SysuiTestCase {
                 mock(SyncTransactionQueue.class),
                 mock(IWindowManager.class),
                 new BubbleResizabilityChecker(),
-                mHomeIntentProvider);
+                mHomeIntentProvider,
+                mAppInfoProvider);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 
@@ -1689,6 +1693,7 @@ public class BubblesTest extends SysuiTestCase {
                         mContext.getResources().getDimensionPixelSize(
                                 com.android.internal.R.dimen.importance_ring_stroke_width)),
                 bubble,
+                mAppInfoProvider,
                 true /* skipInflation */);
         verify(userContext, times(1)).getPackageManager();
         verify(context, times(1)).createPackageContextAsUser(eq(workPkg),

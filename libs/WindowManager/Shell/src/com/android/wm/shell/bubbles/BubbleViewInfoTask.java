@@ -25,8 +25,6 @@ import static com.android.wm.shell.shared.bubbles.FlyoutDrawableLoader.loadFlyou
 
 import android.annotation.Nullable;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -44,6 +42,8 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.R;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfo;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.shared.handles.RegionSamplingHelper;
@@ -80,6 +80,7 @@ public class BubbleViewInfoTask {
     private final Callback mCallback;
     private final Executor mMainExecutor;
     private final Executor mBgExecutor;
+    private final BubbleAppInfoProvider mAppInfoProvider;
 
     private final AtomicBoolean mStarted = new AtomicBoolean();
     private final AtomicBoolean mCancelled = new AtomicBoolean();
@@ -97,6 +98,7 @@ public class BubbleViewInfoTask {
             @Nullable BubbleStackView stackView,
             @Nullable BubbleBarLayerView layerView,
             BubbleIconFactory factory,
+            BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation,
             Callback c,
             Executor mainExecutor,
@@ -109,6 +111,7 @@ public class BubbleViewInfoTask {
         mStackView = new WeakReference<>(stackView);
         mLayerView = new WeakReference<>(layerView);
         mIconFactory = factory;
+        mAppInfoProvider = appInfoProvider;
         mSkipInflation = skipInflation;
         mCallback = c;
         mMainExecutor = mainExecutor;
@@ -199,10 +202,11 @@ public class BubbleViewInfoTask {
         ProtoLog.v(WM_SHELL_BUBBLES, "Task loading bubble view info key=%s", mBubble.getKey());
         if (mLayerView.get() != null) {
             return BubbleViewInfo.populateForBubbleBar(mContext.get(), mTaskViewFactory.get(),
-                    mLayerView.get(), mIconFactory, mBubble, mSkipInflation);
+                    mLayerView.get(), mIconFactory, mBubble, mAppInfoProvider, mSkipInflation);
         } else {
             return BubbleViewInfo.populate(mContext.get(), mTaskViewFactory.get(),
-                    mPositioner.get(), mStackView.get(), mIconFactory, mBubble, mSkipInflation);
+                    mPositioner.get(), mStackView.get(), mIconFactory, mBubble, mAppInfoProvider,
+                    mSkipInflation);
         }
     }
 
@@ -282,6 +286,7 @@ public class BubbleViewInfoTask {
                 BubbleBarLayerView layerView,
                 BubbleIconFactory iconFactory,
                 Bubble b,
+                BubbleAppInfoProvider appInfoProvider,
                 boolean skipInflation) {
             BubbleViewInfo info = new BubbleViewInfo();
 
@@ -293,7 +298,7 @@ public class BubbleViewInfoTask {
                         R.layout.bubble_bar_expanded_view, layerView, false /* attachToRoot */);
             }
 
-            if (!populateCommonInfo(info, c, b, iconFactory)) {
+            if (!populateCommonInfo(info, c, b, iconFactory, appInfoProvider)) {
                 // if we failed to update common fields return null
                 return null;
             }
@@ -313,6 +318,7 @@ public class BubbleViewInfoTask {
                 BubbleStackView stackView,
                 BubbleIconFactory iconFactory,
                 Bubble b,
+                BubbleAppInfoProvider appInfoProvider,
                 boolean skipInflation) {
             BubbleViewInfo info = new BubbleViewInfo();
 
@@ -329,7 +335,7 @@ public class BubbleViewInfoTask {
                         R.layout.bubble_expanded_view, stackView, false /* attachToRoot */);
             }
 
-            if (!populateCommonInfo(info, c, b, iconFactory)) {
+            if (!populateCommonInfo(info, c, b, iconFactory, appInfoProvider)) {
                 // if we failed to update common fields return null
                 return null;
             }
@@ -351,33 +357,21 @@ public class BubbleViewInfoTask {
      * Callers should assume that the info object is unusable if the update was unsuccessful.
      */
     private static boolean populateCommonInfo(
-            BubbleViewInfo info, Context c, Bubble b, BubbleIconFactory iconFactory) {
+            BubbleViewInfo info, Context c, Bubble b, BubbleIconFactory iconFactory,
+            BubbleAppInfoProvider appInfoProvider) {
         if (b.getShortcutInfo() != null) {
             info.shortcutInfo = b.getShortcutInfo();
         }
 
-        // App name & app icon
-        PackageManager pm = BubbleController.getPackageManagerForUser(c,
-                b.getUser().getIdentifier());
-        ApplicationInfo appInfo;
-        Drawable badgedIcon;
-        Drawable appIcon;
-        try {
-            appInfo = pm.getApplicationInfo(
-                    b.getPackageName(),
-                    PackageManager.MATCH_UNINSTALLED_PACKAGES
-                            | PackageManager.MATCH_DISABLED_COMPONENTS
-                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
-                            | PackageManager.MATCH_DIRECT_BOOT_AWARE);
-            if (appInfo != null) {
-                info.appName = String.valueOf(pm.getApplicationLabel(appInfo));
-            }
-            appIcon = pm.getApplicationIcon(b.getPackageName());
-            badgedIcon = pm.getUserBadgedIcon(appIcon, b.getUser());
-        } catch (PackageManager.NameNotFoundException exception) {
-            // If we can't find package... don't think we should show the bubble.
-            Log.w(TAG, "Unable to find package: " + b.getPackageName());
+        BubbleAppInfo appInfo = appInfoProvider.resolveAppInfo(c, b);
+        if (appInfo == null) {
             return false;
+        }
+
+        Drawable badgedIcon = appInfo.getBadgedIcon();
+        Drawable appIcon = appInfo.getAppIcon();
+        if (appInfo.getAppName() != null) {
+            info.appName = appInfo.getAppName();
         }
 
         Drawable bubbleDrawable = null;

@@ -65,6 +65,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
 import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscreen;
+import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
@@ -142,7 +143,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
                 mSyncQueue);
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
-                mRepository, mBubbleData, mTaskViewTransitions);
+                mRepository, mBubbleData, mTaskViewTransitions,
+                new PackageManagerBubbleAppInfoProvider());
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
                     mContext, mTaskOrganizer, mTaskViewTransitions, mSyncQueue);

@@ -67,6 +67,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
@@ -103,6 +104,7 @@ public class BubbleTransitions {
     @NonNull final BubbleData mBubbleData;
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
+    @NonNull final BubbleAppInfoProvider mAppInfoProvider;
 
     // Map of a launch cookie (used to start an activity) to the associated transition handler
     private final Map<IBinder, TransitionHandler> mPendingEnterTransitions =
@@ -117,7 +119,8 @@ public class BubbleTransitions {
     public BubbleTransitions(Context context,
             @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
-            @NonNull TaskViewTransitions taskViewTransitions) {
+            @NonNull TaskViewTransitions taskViewTransitions,
+            @NonNull BubbleAppInfoProvider appInfoProvider) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;
@@ -125,6 +128,7 @@ public class BubbleTransitions {
         mBubbleData = bubbleData;
         mTaskViewTransitions = taskViewTransitions;
         mContext = context;
+        mAppInfoProvider = appInfoProvider;
     }
 
     void setBubbleController(BubbleController controller) {
@@ -510,6 +514,7 @@ public class BubbleTransitions {
                     stackView,
                     layerView,
                     iconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
 
@@ -763,6 +768,7 @@ public class BubbleTransitions {
                     stackView,
                     layerView,
                     iconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
 
@@ -1102,6 +1108,7 @@ public class BubbleTransitions {
                     stackView,
                     layerView,
                     iconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
 
