@@ -1227,6 +1227,13 @@ template<>
 constexpr color_transform_fn colorTransformForOp<DrawTextBlob>() {
     return [](const void *opRaw, ColorTransform transform) {
         const DrawTextBlob *op = reinterpret_cast<const DrawTextBlob*>(opRaw);
+        if (transform == ColorTransform::Invert) {
+            // Invert the colors no matter the usages of the ops to guarantee the contrast between
+            // ops when we perform a full force invert
+            transformPaint(transform, const_cast<SkPaint*>(&(op->paint)));
+            return;
+        }
+
         switch (op->drawTextBlobMode) {
         case DrawTextBlobMode::HctOutline:
             const_cast<SkPaint&>(op->paint).setColor(SK_ColorBLACK);
