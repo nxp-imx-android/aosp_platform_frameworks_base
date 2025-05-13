@@ -24,6 +24,7 @@ import android.icu.text.DateFormat
 import android.icu.text.DisplayContext
 import android.provider.Settings
 import android.view.ViewGroup
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.IntRect
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -48,8 +49,11 @@ import com.android.systemui.shade.domain.interactor.ShadeHeaderClockInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.phone.StatusBarLocation
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
+import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
@@ -60,7 +64,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -75,6 +78,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    shadeDarkIconInteractor: ShadeDarkIconInteractor,
     mobileIconsInteractor: MobileIconsInteractor,
     val mobileIconsViewModel: MobileIconsViewModel,
     private val privacyChipInteractor: PrivacyChipInteractor,
@@ -82,12 +86,20 @@ constructor(
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,
     val statusBarIconController: StatusBarIconController,
+    val batteryViewModelFactory: UnifiedBatteryViewModel.Factory,
     val kairosNetwork: KairosNetwork,
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
+
+    val isShadeAreaDark: IsAreaDark by
+        hydrator.hydratedStateOf(
+            traceName = "isShadeAreaDark",
+            initialValue = IsAreaDark { true },
+            source = shadeDarkIconInteractor.isShadeAreaDark,
+        )
 
     val createTintedIconManager: (ViewGroup, StatusBarLocation) -> TintedIconManager =
         tintedIconManagerFactory::create
@@ -97,7 +109,12 @@ constructor(
         batteryMeterViewControllerFactory::create
 
     /** True if there is exactly one mobile connection. */
-    val isSingleCarrier: StateFlow<Boolean> = mobileIconsInteractor.isSingleCarrier
+    val isSingleCarrier: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isSingleCarrier",
+            initialValue = mobileIconsInteractor.isSingleCarrier.value,
+            source = mobileIconsInteractor.isSingleCarrier,
+        )
 
     /** The list of subscription Ids for current mobile connections. */
     val mobileSubIds: List<Int> by
@@ -111,21 +128,33 @@ constructor(
         )
 
     /** The list of PrivacyItems to be displayed by the privacy chip. */
-    val privacyItems: StateFlow<List<PrivacyItem>> = privacyChipInteractor.privacyItems
+    val privacyItems: List<PrivacyItem> by
+        hydrator.hydratedStateOf(
+            traceName = "privacyItems",
+            source = privacyChipInteractor.privacyItems,
+        )
 
     /** Whether or not mic & camera indicators are enabled in the device privacy config. */
-    val isMicCameraIndicationEnabled: StateFlow<Boolean> =
-        privacyChipInteractor.isMicCameraIndicationEnabled
+    val isMicCameraIndicationEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isMicCameraIndicationEnabled",
+            source = privacyChipInteractor.isMicCameraIndicationEnabled,
+        )
 
     /** Whether or not location indicators are enabled in the device privacy config. */
-    val isLocationIndicationEnabled: StateFlow<Boolean> =
-        privacyChipInteractor.isLocationIndicationEnabled
+    val isLocationIndicationEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isLocationIndicationEnabled",
+            source = privacyChipInteractor.isLocationIndicationEnabled,
+        )
 
     /** Whether or not the privacy chip should be visible. */
-    val isPrivacyChipVisible: StateFlow<Boolean> = privacyChipInteractor.isChipVisible
+    val isPrivacyChipVisible: Boolean by derivedStateOf { privacyItems.isNotEmpty() }
 
     /** Whether or not the privacy chip is enabled in the device privacy config. */
-    val isPrivacyChipEnabled: StateFlow<Boolean> = privacyChipInteractor.isChipEnabled
+    val isPrivacyChipEnabled: Boolean by derivedStateOf {
+        isMicCameraIndicationEnabled || isLocationIndicationEnabled
+    }
 
     val animateNotificationsChipBounce: Boolean
         get() =
