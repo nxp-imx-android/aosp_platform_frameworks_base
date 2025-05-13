@@ -65,6 +65,7 @@ import platform.test.runner.parameterized.Parameters
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
+@DisableSceneContainer // PRIMARY_BOUNCER is not used in flexi.
 class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     companion object {
@@ -171,7 +172,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer // PRIMARY_BOUNCER is not used in flexi.
     fun testReturnToLockscreen_whenBouncerHides() =
         testScope.runTest {
             underTest.start()
@@ -196,7 +196,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
     fun testReturnToGlanceableHub_whenBouncerHides_ifIdleOnCommunal() =
         testScope.runTest {
             underTest.start()
@@ -225,7 +224,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
     @Test
     @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
     @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
     fun testPrimaryBouncerToGone_whenEnteringHubEditMode_flagOn_doNothing() =
         kosmos.runTest {
             underTest.start()
@@ -246,7 +244,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
 
     @Test
     @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION, FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
     fun testPrimaryBouncerToGone_whenEnteringHubEditMode_flagOff_transitionToGone() =
         kosmos.runTest {
             underTest.start()
@@ -265,7 +262,6 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
     fun testTransitionToOccluded_bouncerHide_occludingActivityOnTop() =
         testScope.runTest {
             underTest.start()
