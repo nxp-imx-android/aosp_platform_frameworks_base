@@ -47,7 +47,6 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowMetrics;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.Button;
@@ -75,7 +74,6 @@ import java.util.Collections;
 class WindowMagnificationSettings implements MagnificationGestureDetector.OnGestureListener {
     private static final String TAG = "WindowMagnificationSettings";
     private final Context mContext;
-    private final AccessibilityManager mAccessibilityManager;
     private final WindowManager mWindowManager;
     private final SecureSettings mSecureSettings;
 
@@ -97,7 +95,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private MaterialSwitch mMagnifyKeyboardSwitch;
     private LinearLayout mMagnifyTypingView;
     private MaterialSwitch mMagnifyTypingSwitch;
-    private LinearLayout mPanelView;
     private LinearLayout mSettingView;
     private ImageButton mSmallButton;
     private ImageButton mMediumButton;
@@ -145,7 +142,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider, SecureSettings secureSettings,
             WindowManager windowManager) {
         mContext = context;
-        mAccessibilityManager = mContext.getSystemService(AccessibilityManager.class);
         mWindowManager = windowManager;
         mSfVsyncFrameProvider = sfVsyncFrameProvider;
         mCallback = callback;
@@ -551,7 +547,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         mSettingView.setAccessibilityDelegate(mPanelDelegate);
 
-        mPanelView = mSettingView.findViewById(R.id.magnifier_panel_view);
         mSmallButton = mSettingView.findViewById(R.id.magnifier_small_button);
         mMediumButton = mSettingView.findViewById(R.id.magnifier_medium_button);
         mLargeButton = mSettingView.findViewById(R.id.magnifier_large_button);

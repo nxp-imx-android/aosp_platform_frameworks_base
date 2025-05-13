@@ -106,10 +106,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     private TestableWindowManager mWindowManager;
     private WindowMagnificationSettings mWindowMagnificationSettings;
     private MotionEventHelper mMotionEventHelper = new MotionEventHelper();
-
-    private ArgumentCaptor<Float> mSecureSettingsScaleCaptor;
-    private ArgumentCaptor<String> mSecureSettingsNameCaptor;
-    private ArgumentCaptor<Integer> mSecureSettingsUserHandleCaptor;
     private ArgumentCaptor<Float> mCallbackMagnifierScaleCaptor;
 
     @Before
@@ -134,9 +130,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
         mSettingView = mWindowMagnificationSettings.getSettingView();
         mZoomSeekbar = mSettingView.findViewById(R.id.magnifier_zoom_slider);
-        mSecureSettingsScaleCaptor = ArgumentCaptor.forClass(Float.class);
-        mSecureSettingsNameCaptor = ArgumentCaptor.forClass(String.class);
-        mSecureSettingsUserHandleCaptor = ArgumentCaptor.forClass(Integer.class);
         mCallbackMagnifierScaleCaptor = ArgumentCaptor.forClass(Float.class);
     }
 
