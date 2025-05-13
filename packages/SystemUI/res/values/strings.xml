@@ -3341,8 +3341,8 @@
     <string name="media_output_dialog_single_device">1 device selected</string>
     <!-- Summary for media output group with the active device count [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_multiple_devices"><xliff:g id="count" example="2">%1$d</xliff:g> devices selected</string>
-    <!-- Summary for disconnected status [CHAR LIMIT=50] -->
-    <string name="media_output_dialog_disconnected">(disconnected)</string>
+    <!-- Accessibility label for media output item connected state [CHAR LIMIT=50] -->
+    <string name="media_output_item_connected_state">Connected</string>
     <!-- Summary for connecting error message [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_connect_failed">Can\'t switch. Tap to try again.</string>
     <!-- Title for connecting item [CHAR LIMIT=60] -->
