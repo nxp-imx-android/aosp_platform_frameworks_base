@@ -9861,13 +9861,13 @@ package android.app.usage {
   public final class UsageStatsManager {
     method public int getAppStandbyBucket();
     method public boolean isAppInactive(String);
-    method public java.util.Map<java.lang.String,android.app.usage.UsageStats> queryAndAggregateUsageStats(long, long);
-    method public java.util.List<android.app.usage.ConfigurationStats> queryConfigurations(int, long, long);
-    method public java.util.List<android.app.usage.EventStats> queryEventStats(int, long, long);
-    method public android.app.usage.UsageEvents queryEvents(long, long);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public java.util.Map<java.lang.String,android.app.usage.UsageStats> queryAndAggregateUsageStats(long, long);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public java.util.List<android.app.usage.ConfigurationStats> queryConfigurations(int, long, long);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public java.util.List<android.app.usage.EventStats> queryEventStats(int, long, long);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public android.app.usage.UsageEvents queryEvents(long, long);
     method @FlaggedApi("android.app.usage.filter_based_event_query_api") @Nullable @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public android.app.usage.UsageEvents queryEvents(@NonNull android.app.usage.UsageEventsQuery);
     method public android.app.usage.UsageEvents queryEventsForSelf(long, long);
-    method public java.util.List<android.app.usage.UsageStats> queryUsageStats(int, long, long);
+    method @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) public java.util.List<android.app.usage.UsageStats> queryUsageStats(int, long, long);
     field @FlaggedApi("android.app.usage.user_interaction_type_api") public static final String EXTRA_EVENT_ACTION = "android.app.usage.extra.EVENT_ACTION";
     field @FlaggedApi("android.app.usage.user_interaction_type_api") public static final String EXTRA_EVENT_CATEGORY = "android.app.usage.extra.EVENT_CATEGORY";
     field public static final int INTERVAL_BEST = 4; // 0x4

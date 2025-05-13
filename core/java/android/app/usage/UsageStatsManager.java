@@ -480,6 +480,7 @@ public final class UsageStatsManager {
      * @see #INTERVAL_BEST
      */
     @UserHandleAware
+    @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public List<UsageStats> queryUsageStats(int intervalType, long beginTime, long endTime) {
         try {
             @SuppressWarnings("unchecked")
@@ -511,6 +512,7 @@ public final class UsageStatsManager {
      *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
      * @return A list of {@link ConfigurationStats}
      */
+    @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public List<ConfigurationStats> queryConfigurations(int intervalType, long beginTime,
             long endTime) {
         try {
@@ -558,6 +560,7 @@ public final class UsageStatsManager {
      * @see #INTERVAL_YEARLY
      * @see #INTERVAL_BEST
      */
+    @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public List<EventStats> queryEventStats(int intervalType, long beginTime, long endTime) {
         try {
             @SuppressWarnings("unchecked")
@@ -587,6 +590,7 @@ public final class UsageStatsManager {
      *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
      * @return A {@link UsageEvents}.
      */
+    @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public UsageEvents queryEvents(long beginTime, long endTime) {
         try {
             UsageEvents iter = mService.queryEvents(beginTime, endTime,
@@ -665,6 +669,7 @@ public final class UsageStatsManager {
      *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
      * @return A {@link java.util.Map} keyed by package name
      */
+    @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public Map<String, UsageStats> queryAndAggregateUsageStats(long beginTime, long endTime) {
         List<UsageStats> stats = queryUsageStats(INTERVAL_BEST, beginTime, endTime);
         if (stats.isEmpty()) {
