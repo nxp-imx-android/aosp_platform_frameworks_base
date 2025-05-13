@@ -17874,6 +17874,7 @@ package android.telephony.ims {
     field public static final int SUGGESTED_ACTION_TRIGGER_PLMN_BLOCK = 1; // 0x1
     field public static final int SUGGESTED_ACTION_TRIGGER_PLMN_BLOCK_WITH_TIMEOUT = 2; // 0x2
     field @FlaggedApi("com.android.internal.telephony.flags.add_rat_related_suggested_action_to_ims_registration") public static final int SUGGESTED_ACTION_TRIGGER_RAT_BLOCK = 3; // 0x3
+    field @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public static final int SUGGESTED_ACTION_TRIGGER_THROTTLE_TIME = 5; // 0x5
   }
 
   public static class RegistrationManager.RegistrationCallback {
@@ -18345,6 +18346,7 @@ package android.telephony.ims.stub {
     method public final void onDeregistered(android.telephony.ims.ImsReasonInfo);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int);
     method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes);
+    method @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes, int);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, @NonNull android.telephony.ims.SipDetails);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int, @NonNull android.telephony.ims.SipDetails);
     method public final void onRegistered(int);
