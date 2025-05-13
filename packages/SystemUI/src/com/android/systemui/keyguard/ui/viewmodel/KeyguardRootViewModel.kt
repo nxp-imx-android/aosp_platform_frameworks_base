@@ -324,14 +324,15 @@ constructor(
 
     val isAodPromotedNotifVisible: StateFlow<AnimatedValue<Boolean>> =
         combine(
+                keyguardTransitionInteractor.transitionValue(AOD).map { it == 1f },
                 areNotifsFullyHiddenAnimated(),
                 isPulseExpandingAnimated(),
                 aodPromotedNotificationInteractor.isPresent,
-            ) { notifsFullyHiddenAnimated, pulseExpandingAnimated, haveAodPromotedNotif ->
+            ) { isOnAOD, notifsFullyHiddenAnimated, pulseExpandingAnimated, haveAodPromotedNotif ->
                 zip(notifsFullyHiddenAnimated, pulseExpandingAnimated) {
                     notifsFullyHidden,
                     pulseExpanding ->
-                    notifsFullyHidden && !pulseExpanding && haveAodPromotedNotif
+                    isOnAOD && notifsFullyHidden && !pulseExpanding && haveAodPromotedNotif
                 }
             }
             .stateIn(
