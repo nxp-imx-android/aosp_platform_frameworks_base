@@ -51,9 +51,9 @@ class SettingsGlobalStore private constructor(contentResolver: ContentResolver) 
                 else -> throw UnsupportedOperationException("Get $key $valueType")
             }
                 as T?
-        } catch (e: SettingNotFoundException) {
+        } catch (_: SettingNotFoundException) {
             null
-        }
+        } ?: getDefaultValue(key, valueType)
 
     override fun <T : Any> setValue(key: String, valueType: Class<T>, value: T?) {
         if (value == null) {
