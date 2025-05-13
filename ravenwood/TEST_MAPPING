@@ -157,15 +157,7 @@
       "host": true
     },
     {
-      "name": "RavenwoodBivalentTest-light",
-      "host": true
-    },
-    {
       "name": "RavenwoodCoreTest",
-      "host": true
-    },
-    {
-      "name": "RavenwoodCoreTest-light",
       "host": true
     },
     {
