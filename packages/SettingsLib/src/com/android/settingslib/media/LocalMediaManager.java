@@ -622,6 +622,8 @@ public class LocalMediaManager implements BluetoothCallback {
                         } else {
                             MediaDevice mutingExpectedDevice = getMutingExpectedDevice();
                             if (mutingExpectedDevice != null) {
+                                Log.d(TAG, "Muting expected device added, id: "
+                                        + mutingExpectedDevice.getId());
                                 mMediaDevices.add(mutingExpectedDevice);
                             }
                         }
@@ -664,7 +666,8 @@ public class LocalMediaManager implements BluetoothCallback {
                         cachedDeviceManager.findDevice(device);
                 if (isBondedMediaDevice(cachedDevice) && isMutingExpectedDevice(cachedDevice)) {
                     return new BluetoothMediaDevice(mContext, cachedDevice, /* info= */
-                            null, /* dynamicRouteAttributes= */  null, /* item= */ null);
+                            null, /* dynamicRouteAttributes= */  null, /* item= */
+                            null, /* isMutingExpectedDevice= */ true);
                 }
             }
             return null;

@@ -16,6 +16,7 @@
 package com.android.settingslib.media;
 
 import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
+import static com.android.media.flags.Flags.avoidBinderCallsForMutingExpectedDevice;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
 
 import android.annotation.NonNull;
@@ -42,6 +43,7 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     private final CachedBluetoothDevice mCachedDevice;
     private final AudioManager mAudioManager;
+    private final Boolean mIsMutingExpectedDevice;
 
     BluetoothMediaDevice(
             @NonNull Context context,
@@ -49,8 +51,20 @@ public class BluetoothMediaDevice extends MediaDevice {
             @Nullable MediaRoute2Info info,
             @Nullable DynamicRouteAttributes dynamicRouteAttributes,
             @Nullable RouteListingPreference.Item item) {
+        this(context, device, info, dynamicRouteAttributes, item,
+                /* isMutingExpectedDevice= */ false);
+    }
+
+    BluetoothMediaDevice(
+            @NonNull Context context,
+            @NonNull CachedBluetoothDevice device,
+            @Nullable MediaRoute2Info info,
+            @Nullable DynamicRouteAttributes dynamicRouteAttributes,
+            @Nullable RouteListingPreference.Item item,
+            Boolean isMutingExpectedDevice) {
         super(context, info, dynamicRouteAttributes, item);
         mCachedDevice = device;
+        mIsMutingExpectedDevice = isMutingExpectedDevice;
         mAudioManager = context.getSystemService(AudioManager.class);
         initDeviceRecord();
     }
@@ -144,6 +158,9 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     @Override
     public boolean isMutingExpectedDevice() {
+        if (avoidBinderCallsForMutingExpectedDevice()) {
+            return mIsMutingExpectedDevice;
+        }
         return mAudioManager.getMutingExpectedDevice() != null && mCachedDevice.getAddress().equals(
                 mAudioManager.getMutingExpectedDevice().getAddress());
     }

@@ -291,6 +291,16 @@ flag {
 }
 
 flag {
+    name: "avoid_binder_calls_for_muting_expected_device"
+    namespace: "media_better_together"
+    description: "Sets isMutingExpectedDevice attribute during construction of MediaDevice."
+    bug: "414668703"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_output_switcher_personal_audio_sharing"
     namespace: "cross_device_experiences"
     description: "Enables personal audio sharing in the output switcher."
