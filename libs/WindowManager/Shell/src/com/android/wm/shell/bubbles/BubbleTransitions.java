@@ -464,8 +464,8 @@ public class BubbleTransitions {
      */
     @VisibleForTesting
     class LaunchNewTaskBubbleForExistingTransition implements TransitionHandler, BubbleTransition {
-        final BubbleBarLayerView mLayerView;
         final BubblePositioner mPositioner;
+        final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
         private final TransitionProgress mTransitionProgress;
         Bubble mBubble;
         IBinder mTransition;
@@ -490,13 +490,17 @@ public class BubbleTransitions {
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
                 boolean inflateSync, IBinder transition,
                 Consumer<TransitionHandler> onInflatedCallback) {
+            if (layerView != null) {
+                mExpandedViewAnimator = layerView;
+            } else {
+                mExpandedViewAnimator = stackView;
+            }
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble(): expanded=%s",
-                    layerView.isExpanded());
+                    mExpandedViewAnimator.isExpanded());
             mBubble = bubble;
             mTransition = transition;
             mTransitionProgress = new TransitionProgress(bubble);
             mPositioner = positioner;
-            mLayerView = layerView;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
             mBubble.inflate(
@@ -646,9 +650,9 @@ public class BubbleTransitions {
         private void startExpandAnim() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.startExpandAnim(): "
                     + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
-            if (mLayerView.canExpandView(mBubble)) {
-                mPriorBubble = mLayerView.prepareConvertedView(mBubble);
-            } else if (mLayerView.isExpanded()) {
+            if (mExpandedViewAnimator.canExpandView(mBubble)) {
+                mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
+            } else if (mExpandedViewAnimator.isExpanded()) {
                 mTransitionProgress.setReadyToExpand();
             }
             if (mTransitionProgress.isReadyToAnimate()) {
@@ -699,12 +703,12 @@ public class BubbleTransitions {
 
             float startScale = 1f;
             if (mPlayConvertTaskAnimation) {
-                mLayerView.animateConvert(startT, mStartBounds, startScale, mSnapshot,
+                mExpandedViewAnimator.animateConvert(startT, mStartBounds, startScale, mSnapshot,
                         mTaskLeash,
                         this::cleanup);
             } else {
                 startT.apply();
-                mLayerView.animateExpand(null, this::cleanup);
+                mExpandedViewAnimator.animateExpand(null, this::cleanup);
             }
         }
 
@@ -720,7 +724,7 @@ public class BubbleTransitions {
      */
     @VisibleForTesting
     class LaunchOrConvertToBubble implements TransitionHandler, BubbleTransition {
-        final BubbleBarLayerView mLayerView;
+        final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
         final BubblePositioner mPositioner;
         private final TransitionProgress mTransitionProgress;
         Bubble mBubble;
@@ -750,12 +754,16 @@ public class BubbleTransitions {
                 BubblePositioner positioner, BubbleStackView stackView,
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
                 boolean inflateSync, @Nullable BubbleBarLocation bubbleBarLocation) {
+            if (layerView != null) {
+                mExpandedViewAnimator = layerView;
+            } else {
+                mExpandedViewAnimator = stackView;
+            }
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert(): expanded=%s",
-                    layerView.isExpanded());
+                    mExpandedViewAnimator.isExpanded());
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
             mPositioner = positioner;
-            mLayerView = layerView;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
             mBubbleBarLocation = bubbleBarLocation;
@@ -968,14 +976,14 @@ public class BubbleTransitions {
         private void startExpandAnim() {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.startExpandAnim(): "
                     + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
-            final boolean animate = mLayerView.canExpandView(mBubble);
+            final boolean animate = mExpandedViewAnimator.canExpandView(mBubble);
             if (animate) {
-                mPriorBubble = mLayerView.prepareConvertedView(mBubble);
+                mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             }
             if (mPriorBubble != null) {
                 // TODO: an animation. For now though, just remove it.
                 final BubbleBarExpandedView priorView = mPriorBubble.getBubbleBarExpandedView();
-                mLayerView.removeView(priorView);
+                mExpandedViewAnimator.removeViewFromTransition(priorView);
                 mPriorBubble = null;
             }
             if (!animate || mTransitionProgress.isReadyToAnimate()) {
@@ -1026,12 +1034,15 @@ public class BubbleTransitions {
             if (animate) {
                 float startScale = 1f;
                 if (mPlayConvertTaskAnimation) {
-                    mLayerView.animateConvert(startT, mStartBounds, startScale, mSnapshot,
+                    mExpandedViewAnimator.animateConvert(startT,
+                            mStartBounds,
+                            startScale,
+                            mSnapshot,
                             mTaskLeash,
                             this::cleanup);
                 } else {
                     startT.apply();
-                    mLayerView.animateExpand(null, this::cleanup);
+                    mExpandedViewAnimator.animateExpand(null, this::cleanup);
                 }
             } else {
                 startT.apply();
@@ -1068,7 +1079,7 @@ public class BubbleTransitions {
      */
     @VisibleForTesting
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
-        final BubbleBarLayerView mLayerView;
+        final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
         final BubblePositioner mPositioner;
         final HomeIntentProvider mHomeIntentProvider;
         Bubble mBubble;
@@ -1092,11 +1103,17 @@ public class BubbleTransitions {
                 BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
                 HomeIntentProvider homeIntentProvider, @Nullable DragData dragData,
                 boolean inflateSync) {
+            if (layerView != null) {
+                mExpandedViewAnimator = layerView;
+            } else {
+                mExpandedViewAnimator = stackView;
+            }
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble(): expanded=%s",
+                    mExpandedViewAnimator.isExpanded());
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
             mTaskInfo = taskInfo;
             mPositioner = positioner;
-            mLayerView = layerView;
             mHomeIntentProvider = homeIntentProvider;
             mDragData = dragData;
             mBubble.setInflateSynchronously(inflateSync);
@@ -1237,14 +1254,14 @@ public class BubbleTransitions {
         }
 
         private void startExpandAnim() {
-            final boolean animate = mLayerView.canExpandView(mBubble);
+            final boolean animate = mExpandedViewAnimator.canExpandView(mBubble);
             if (animate) {
-                mPriorBubble = mLayerView.prepareConvertedView(mBubble);
+                mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             }
             if (mPriorBubble != null) {
                 // TODO: an animation. For now though, just remove it.
                 final BubbleBarExpandedView priorView = mPriorBubble.getBubbleBarExpandedView();
-                mLayerView.removeView(priorView);
+                mExpandedViewAnimator.removeViewFromTransition(priorView);
                 mPriorBubble = null;
             }
             if (!animate || mTransitionProgress.isReadyToAnimate()) {
@@ -1288,7 +1305,11 @@ public class BubbleTransitions {
 
             if (animate) {
                 float startScale = mDragData != null ? mDragData.getTaskScale() : 1f;
-                mLayerView.animateConvert(startT, mStartBounds, startScale, mSnapshot, mTaskLeash,
+                mExpandedViewAnimator.animateConvert(startT,
+                        mStartBounds,
+                        startScale,
+                        mSnapshot,
+                        mTaskLeash,
                         () -> {
                             mFinishCb.onTransitionFinished(mFinishWct);
                             mFinishCb = null;

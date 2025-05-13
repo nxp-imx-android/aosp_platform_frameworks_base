@@ -46,6 +46,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
+import com.android.wm.shell.bubbles.BubbleExpandedViewTransitionAnimator;
 import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubblePositioner;
@@ -74,7 +75,8 @@ import java.util.function.Consumer;
  * on screen and instead shows & animates the expanded bubble for the bubble bar.
  */
 public class BubbleBarLayerView extends FrameLayout
-        implements ViewTreeObserver.OnComputeInternalInsetsListener {
+        implements ViewTreeObserver.OnComputeInternalInsetsListener,
+        BubbleExpandedViewTransitionAnimator {
 
     private static final String TAG = BubbleBarLayerView.class.getSimpleName();
 
@@ -279,6 +281,7 @@ public class BubbleBarLayerView extends FrameLayout
     }
 
     /** Whether the stack of bubbles is expanded or not. */
+    @Override
     public boolean isExpanded() {
         return mIsExpanded;
     }
@@ -298,6 +301,7 @@ public class BubbleBarLayerView extends FrameLayout
      * @return whether it's possible to expand {@param b} right now. This is {@code false} if
      *         the bubble has no view or if the bubble is already showing.
      */
+    @Override
     public boolean canExpandView(BubbleViewProvider b) {
         if (b.getBubbleBarExpandedView() == null) return false;
         if (mExpandedBubble != null && mIsExpanded && b.getKey().equals(mExpandedBubble.getKey())) {
@@ -305,6 +309,11 @@ public class BubbleBarLayerView extends FrameLayout
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void removeViewFromTransition(View view) {
+        removeView(view);
     }
 
     /**
@@ -419,6 +428,7 @@ public class BubbleBarLayerView extends FrameLayout
      *                       bubble is expanded.
      * @param animFinish If non-null, the callback triggered after the expand animation completes
      */
+    @Override
     public void animateExpand(BubbleViewProvider previousBubble,
             @Nullable Runnable animFinish) {
         if (!mIsExpanded || mExpandedBubble == null) {
@@ -457,6 +467,7 @@ public class BubbleBarLayerView extends FrameLayout
      * immediately so it gets a surface that can be animated. Since the surface may not be ready
      * yet, this keeps the TaskView alpha=0.
      */
+    @Override
     public BubbleViewProvider prepareConvertedView(BubbleViewProvider b) {
         final BubbleViewProvider prior = prepareExpandedView(b);
 
@@ -478,6 +489,7 @@ public class BubbleBarLayerView extends FrameLayout
      *
      * @param startT A transaction with first-frame work. this *will* be applied here!
      */
+    @Override
     public void animateConvert(@NonNull SurfaceControl.Transaction startT,
             @NonNull Rect startBounds, float startScale, @NonNull SurfaceControl snapshot,
             SurfaceControl taskLeash, Runnable animFinish) {
