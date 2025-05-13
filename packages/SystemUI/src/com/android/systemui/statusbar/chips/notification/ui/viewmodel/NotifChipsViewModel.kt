@@ -182,6 +182,7 @@ constructor(
                 isShowingHeadsUpFromChipTap -> {
                     // If the user tapped this chip to show the HUN, we want to just show the icon
                     // because the HUN will show the rest of the information.
+                    // Similar behavior to [CallChipViewModel].
                     OngoingActivityChipModel.Content.IconOnly
                 }
                 text != null -> OngoingActivityChipModel.Content.Text(text = text)

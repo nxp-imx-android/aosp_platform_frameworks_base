@@ -228,18 +228,28 @@ constructor(
         val instanceId = state.notificationInstanceId
 
         // This block mimics OngoingCallController#updateChip.
-        // TODO(b/414830065): If the call chip was tapped to show the notification (when
-        // PromotedNotificationUi is enabled), don't show the time and show IconOnly instead.
         val content =
-            if (state.startTimeMs <= 0L) {
-                // If the start time is invalid, don't show a timer and show just an icon.
-                // See b/192379214.
-                OngoingActivityChipModel.Content.IconOnly
-            } else {
-                val startTimeInElapsedRealtime =
-                    state.startTimeMs - systemClock.currentTimeMillis() +
-                        systemClock.elapsedRealtime()
-                OngoingActivityChipModel.Content.Timer(startTimeMs = startTimeInElapsedRealtime)
+            when {
+                state.startTimeMs <= 0L -> {
+                    // If the start time is invalid, don't show a timer and show just an icon.
+                    // See b/192379214.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                PromotedNotificationUi.isEnabled &&
+                    headsUpState.isShowingHeadsUpFromChipTap(
+                        notificationKey = state.notificationKey
+                    ) -> {
+                    // If the user tapped this chip to show the HUN, we want to just show the icon
+                    // because the HUN will show the rest of the information.
+                    // Similar behavior to [NotifChipsViewModel].
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                else -> {
+                    val startTimeInElapsedRealtime =
+                        state.startTimeMs - systemClock.currentTimeMillis() +
+                            systemClock.elapsedRealtime()
+                    OngoingActivityChipModel.Content.Timer(startTimeMs = startTimeInElapsedRealtime)
+                }
             }
 
         return OngoingActivityChipModel.Active(
