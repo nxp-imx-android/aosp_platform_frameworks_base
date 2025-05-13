@@ -427,7 +427,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         new WindowContainerTransaction());
             }
             final MixedTransition mixed = createRecentsMixedTransition(
-                    MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition);
+                    MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition,
+                    request.getTriggerTask().displayId);
             mixed.mLeftoversHandler = handler.first;
             mActiveTransitions.add(mixed);
             return handler.second;
@@ -475,13 +476,13 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         displayId));
         if (mRecentsHandler != null) {
             if (mSplitHandler.isSplitScreenVisible()) {
-                return this::setRecentsTransitionDuringSplit;
+                return transition -> setRecentsTransitionDuringSplit(transition, displayId);
             } else if (mKeyguardHandler.isKeyguardShowing()
                     && !mKeyguardHandler.isKeyguardAnimating()) {
-                return this::setRecentsTransitionDuringKeyguard;
+                return transition -> setRecentsTransitionDuringKeyguard(transition, displayId);
             } else if (mDesktopTasksController != null
                     && mDesktopTasksController.isAnyDeskActive(displayId)) {
-                return this::setRecentsTransitionDuringDesktop;
+                return transition -> setRecentsTransitionDuringDesktop(transition, displayId);
             }
         }
         return null;
@@ -505,30 +506,32 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         }
     }
 
-    private void setRecentsTransitionDuringSplit(IBinder transition) {
+    private void setRecentsTransitionDuringSplit(IBinder transition, int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
                 + "Split-Screen is foreground, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
-                MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition));
+                MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition, displayId));
     }
 
-    private void setRecentsTransitionDuringKeyguard(IBinder transition) {
+    private void setRecentsTransitionDuringKeyguard(IBinder transition, int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
                 + "keyguard is visible, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
-                MixedTransition.TYPE_RECENTS_DURING_KEYGUARD, transition));
+                MixedTransition.TYPE_RECENTS_DURING_KEYGUARD, transition, displayId));
     }
 
-    private void setRecentsTransitionDuringDesktop(IBinder transition) {
+    private void setRecentsTransitionDuringDesktop(IBinder transition, int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
                 + "desktop mode is active, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
-                MixedTransition.TYPE_RECENTS_DURING_DESKTOP, transition));
+                MixedTransition.TYPE_RECENTS_DURING_DESKTOP, transition, displayId));
     }
 
-    private MixedTransition createRecentsMixedTransition(int type, IBinder transition) {
+    private MixedTransition createRecentsMixedTransition(int type, IBinder transition,
+            int displayId) {
         return new RecentsMixedTransition(type, transition, mPlayer, this, mPipHandler,
-                mSplitHandler, mKeyguardHandler, mRecentsHandler, mDesktopTasksController);
+                mSplitHandler, mKeyguardHandler, mRecentsHandler, mDesktopTasksController,
+                displayId);
     }
 
     static TransitionInfo subCopy(@NonNull TransitionInfo info,

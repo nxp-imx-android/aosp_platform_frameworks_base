@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.transition;
 
-import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_UNOCCLUDING;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
@@ -54,13 +53,14 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
             RecentsTransitionHandler recentsHandler,
-            DesktopTasksController desktopTasksController) {
+            DesktopTasksController desktopTasksController,
+            int displayId) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler);
         mRecentsHandler = recentsHandler;
         mDesktopTasksController = desktopTasksController;
         mLeftoversHandler = mRecentsHandler;
         mActiveDeskIdOnStart = mType == TYPE_RECENTS_DURING_DESKTOP
-                ? mDesktopTasksController.getActiveDeskId(DEFAULT_DISPLAY) : null;
+                ? mDesktopTasksController.getActiveDeskId(displayId) : null;
     }
 
     @Override
