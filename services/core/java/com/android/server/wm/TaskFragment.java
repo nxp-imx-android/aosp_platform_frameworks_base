@@ -2521,7 +2521,18 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // We should just inherit the value from parent for this temporary state.
                 final boolean inPipTransition = windowingMode == WINDOWING_MODE_PINNED
                         && !mTmpFullBounds.isEmpty() && mTmpFullBounds.equals(parentBounds);
-                if (WindowConfiguration.isFloating(windowingMode) && !inPipTransition) {
+                // For floating tasks and app bubbles, calculate the smallest width from the bounds
+                // of the task, because they should not be affected by insets.
+                boolean shouldUseTaskBounds = WindowConfiguration.isFloating(windowingMode);
+                if (com.android.wm.shell.Flags.enableCreateAnyBubble()
+                        && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
+                    final Task task = getTask();
+                    if (task != null) {
+                        // TODO(b/407669465): Update isAppBubble usage once migrated.
+                        shouldUseTaskBounds |= task.getTaskInfo().isAppBubble;
+                    }
+                }
+                if (shouldUseTaskBounds && !inPipTransition) {
                     // For floating tasks, calculate the smallest width from the bounds of the
                     // task, because they should not be affected by insets.
                     inOutConfig.smallestScreenWidthDp = (int) (0.5f
