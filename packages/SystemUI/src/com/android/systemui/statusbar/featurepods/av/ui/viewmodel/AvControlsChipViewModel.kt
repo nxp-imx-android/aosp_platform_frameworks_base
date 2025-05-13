@@ -70,8 +70,7 @@ constructor(
                 PopupChipModel.Shown(
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
-                    // TODO(405903665): Remove text after api change
-                    chipText = "",
+                    chipText = null,
                     colors = ColorsModel.AvControlsTheme,
                     hoverBehavior = HoverBehavior.None,
                 )
