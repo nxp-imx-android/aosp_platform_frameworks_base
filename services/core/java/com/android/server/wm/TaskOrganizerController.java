@@ -654,16 +654,11 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         return true;
     }
 
-    void removeStartingWindow(Task task, ITaskOrganizer taskOrganizer, boolean prepareAnimation,
-            boolean hasImeSurface) {
+    StartingWindowRemovalInfo getStartingWindowRemovalInfo(Task task,
+            boolean prepareAnimation, boolean hasImeSurface) {
         final Task rootTask = task.getRootTask();
         if (rootTask == null) {
-            return;
-        }
-        final ITaskOrganizer lastOrganizer = taskOrganizer != null ? taskOrganizer
-                : getTaskOrganizer();
-        if (lastOrganizer == null) {
-            return;
+            return null;
         }
         final StartingWindowRemovalInfo removalInfo = new StartingWindowRemovalInfo();
         removalInfo.taskId = task.mTaskId;
@@ -700,6 +695,18 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                         mainWindow.mSurfacePosition.y);
             }
         }
+        return removalInfo;
+    }
+
+    void removeStartingWindow(Task task, ITaskOrganizer taskOrganizer, boolean prepareAnimation,
+            boolean hasImeSurface) {
+        final ITaskOrganizer lastOrganizer = taskOrganizer != null ? taskOrganizer
+                : getTaskOrganizer();
+        if (lastOrganizer == null) {
+            return;
+        }
+        final StartingWindowRemovalInfo removalInfo =
+                getStartingWindowRemovalInfo(task, prepareAnimation, hasImeSurface);
         try {
             lastOrganizer.removeStartingWindow(removalInfo);
         } catch (RemoteException e) {
