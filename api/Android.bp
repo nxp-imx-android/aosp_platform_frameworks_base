@@ -117,11 +117,6 @@ combined_apis {
             "framework-ranging",
         ],
         default: [],
-    }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
-        true: [
-            "framework-telephony",
-        ],
-        default: [],
     }),
     system_server_classpath: [
         "service-art",
