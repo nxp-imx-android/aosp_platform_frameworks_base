@@ -44,6 +44,12 @@ class FakeDesktopState : DesktopState {
     /** Override [canEnterDesktopMode] for a specific display. */
     val overrideDesktopModeSupportPerDisplay = mutableMapOf<Int, Boolean>()
 
+    override fun isMultipleDesktopFrontendEnabledOnDisplay(display: Display): Boolean =
+        enableMultipleDesktops && isDesktopModeSupportedOnDisplay(display)
+
+    override fun isMultipleDesktopFrontendEnabledOnDisplay(displayId: Int): Boolean =
+        enableMultipleDesktops && isDesktopModeSupportedOnDisplay(displayId)
+
     /**
      * This implementation returns [canEnterDesktopMode] unless overridden in
      * [overrideDesktopModeSupportPerDisplay].
