@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeSqueezeEffectRepository : SqueezeEffectRepository {
     var invocationEffectInitialDelayMs = 100L
+    var invocationEffectInwardsAnimationDurationMs = 800L
 
     override val isSqueezeEffectEnabled = MutableStateFlow(false)
     override var isSqueezeEffectHapticEnabled = false
@@ -27,4 +28,7 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
     override val isPowerButtonDownInKeyCombination = MutableStateFlow(false)
 
     override suspend fun getInvocationEffectInitialDelayMs() = invocationEffectInitialDelayMs
+
+    override suspend fun getInvocationEffectInwardsAnimationDurationMs() =
+        invocationEffectInwardsAnimationDurationMs
 }

@@ -30,8 +30,8 @@ import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
-import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectConfig
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.io.PrintWriter
@@ -99,12 +99,12 @@ constructor(
         setRequestTopUi(true)
         animateSqueezeProgressTo(
             targetProgress = 1f,
-            duration = SqueezeEffectConfig.INWARD_EFFECT_DURATION.toLong(),
+            duration = squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs(),
             interpolator = InterpolatorsAndroidX.LEGACY,
         ) {
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = SqueezeEffectConfig.OUTWARD_EFFECT_DURATION.toLong(),
+                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
                 interpolator = InterpolatorsAndroidX.LEGACY,
             ) {
                 finishAnimation()
@@ -123,7 +123,7 @@ constructor(
             hapticPlayer?.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = SqueezeEffectConfig.OUTWARD_EFFECT_DURATION.toLong(),
+                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
                 interpolator = InterpolatorsAndroidX.LEGACY,
             ) {
                 finishAnimation()

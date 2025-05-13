@@ -35,9 +35,8 @@ object SqueezeEffectHapticsBuilder {
         lowTickDuration: Int,
         quickRiseDuration: Int,
         tickDuration: Int,
+        totalEffectDuration: Int,
     ): SqueezeEffectHaptics {
-        val totalEffectDuration =
-            SqueezeEffectConfig.INWARD_EFFECT_DURATION + SqueezeEffectConfig.OUTWARD_EFFECT_DURATION
         // If a primitive is not supported, the duration will be 0
         val isInvocationEffectSupported =
             lowTickDuration != 0 && quickRiseDuration != 0 && tickDuration != 0
