@@ -251,7 +251,7 @@ class DesksTransitionObserver(
                 }
                 else -> {
                     logW(
-                        "Unexpected change for desk=%d with mode=%",
+                        "Unexpected change for desk=%d with mode=%s",
                         deskId,
                         TransitionInfo.modeToString(change.mode),
                     )
