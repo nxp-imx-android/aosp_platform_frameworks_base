@@ -108,6 +108,7 @@ import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.desktopmode.DesktopMode;
 import com.android.wm.shell.pip.Pip;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
@@ -317,6 +318,7 @@ public class EdgeBackGestureHandler {
 
     private final DisplayManager mDisplayManager;
     private final DisplayBackGestureHandlerImpl.Factory mDisplayBackGestureHandlerFactory;
+    private final DesktopState mDesktopState;
 
     private final GestureNavigationSettingsObserver mGestureNavigationSettingsObserver;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
@@ -477,7 +479,8 @@ public class EdgeBackGestureHandler {
             GestureInteractor gestureInteractor,
             JavaAdapter javaAdapter,
             DisplayManager displayManager,
-            DisplayBackGestureHandlerImpl.Factory displayBackGestureHandlerFactory) {
+            DisplayBackGestureHandlerImpl.Factory displayBackGestureHandlerFactory,
+            DesktopState desktopState) {
         mContext = context;
         mMainDisplayId = context.getDisplayId();
         mUiThreadContext = uiThreadContext;
@@ -502,6 +505,7 @@ public class EdgeBackGestureHandler {
         mLastReportedConfig.setTo(mContext.getResources().getConfiguration());
         mDisplayManager = displayManager;
         mDisplayBackGestureHandlerFactory = displayBackGestureHandlerFactory;
+        mDesktopState = desktopState;
 
         ComponentName recentsComponentName = ComponentName.unflattenFromString(
                 context.getString(com.android.internal.R.string.config_recentsComponentName));
@@ -703,7 +707,14 @@ public class EdgeBackGestureHandler {
                 }
                 Display display = mDisplayManager.getDisplay(displayId);
                 if (display == null) {
-                    Log.w(TAG, "createDisplayBackGestureHandler: can't find display");
+                    Log.w(TAG, "onDisplayAddSystemDecorations: can't find display with id="
+                            + displayId);
+                    return;
+                }
+                if (!mDesktopState.isDesktopModeSupportedOnDisplay(display)) {
+                    Log.w(TAG,
+                            "onDisplayAddSystemDecorations: desktop mode not supported on display"
+                                    + " with id=" + displayId);
                     return;
                 }
                 removeAndDisposeDisplayResource(displayId);
