@@ -31,12 +31,14 @@ import static android.view.WindowInsetsController.APPEARANCE_OPAQUE_NAVIGATION_B
 import static android.view.WindowInsetsController.APPEARANCE_OPAQUE_STATUS_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_SEMI_TRANSPARENT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_SEMI_TRANSPARENT_STATUS_BARS;
+import static android.view.WindowInsetsController.BEHAVIOR_DEFAULT;
 import static android.view.WindowLayout.UNSPECIFIED_LENGTH;
 import static android.view.WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW;
 import static android.view.WindowManager.LayoutParams.FIRST_SYSTEM_WINDOW;
 import static android.view.WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON;
 import static android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_CONSUME_IME_INSETS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
@@ -82,6 +84,7 @@ import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
 import android.app.ResourcesManager;
+import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -1605,7 +1608,8 @@ public class DisplayPolicy {
 
             // Record the top-fullscreen-app-window which will be used to determine the system UI
             // controlling window.
-            if (mTopFullscreenOpaqueWindowState == null && !exitingStartingWindow) {
+            if (mTopFullscreenOpaqueWindowState == null && !exitingStartingWindow
+                    && fillsDisplayWindowingMode(win)) {
                 mTopFullscreenOpaqueWindowState = win;
             }
 
@@ -2606,30 +2610,49 @@ public class DisplayPolicy {
         updateSystemBarAttributes();
     }
 
+    private boolean fillsDisplayWindowingMode(@NonNull WindowState win) {
+        if (!com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
+            return true;
+        }
+        if (!WindowConfiguration.inMultiWindowMode(win.getWindowingMode())) {
+            // Always accept the window not in multi-window mode.
+            return true;
+        }
+        // Accept the window in multi-window mode only if it fills the display.
+        // e.g., A maximized free-form window.
+        final Task task = win.getTask();
+        final Rect bounds = task != null ? task.getBounds() : win.getBounds();
+        return bounds.equals(mDisplayContent.getBounds());
+    }
+
     void updateSystemBarAttributes() {
         // If there is no window focused, there will be nobody to handle the events
         // anyway, so just hang on in whatever state we're in until things settle down.
-        WindowState winCandidate = mFocusedWindow != null ? mFocusedWindow
-                : mTopFullscreenOpaqueWindowState;
-        if (winCandidate == null) {
+        WindowState winCandidate =
+                mFocusedWindow != null && fillsDisplayWindowingMode(mFocusedWindow)
+                        ? mFocusedWindow
+                        : mTopFullscreenOpaqueWindowState;
+        if (winCandidate == null && !com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
             return;
         }
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
-        if ((winCandidate.mAttrs.privateFlags
+        if (winCandidate != null && (winCandidate.mAttrs.privateFlags
                 & PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW) != 0) {
             if (mNotificationShade != null && mNotificationShade.canReceiveKeys()) {
                 // Let notification shade control the system bar visibility.
                 winCandidate = mNotificationShade;
-            } else if (mLastFocusedWindow != null && mLastFocusedWindow.canReceiveKeys()) {
+            } else if (mLastFocusedWindow != null && mLastFocusedWindow.canReceiveKeys()
+                    && fillsDisplayWindowingMode(mLastFocusedWindow)) {
                 // Immersive mode confirmation took the focus from mLastFocusedWindow which was
                 // controlling the system bar visibility. Let it keep controlling the visibility.
                 winCandidate = mLastFocusedWindow;
             } else {
                 winCandidate = mTopFullscreenOpaqueWindowState;
             }
-            if (winCandidate == null) {
+            if (winCandidate == null
+                    && !com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
                 return;
             }
         }
@@ -2637,7 +2660,7 @@ public class DisplayPolicy {
         mSystemUiControllingWindow = win;
 
         final int displayId = getDisplayId();
-        final int disableFlags = win.getDisableFlags();
+        final int disableFlags = win != null ? win.getDisableFlags() : 0;
         final int opaqueAppearance = updateSystemBarsLw(win, disableFlags);
         if (!mRelaunchingSystemBarColorApps.isEmpty()) {
             // The appearance of system bars might change while relaunching apps. We don't report
@@ -2648,25 +2671,30 @@ public class DisplayPolicy {
                 mDisplayContent.mInputMethodWindow, mHasBottomNavigationBar);
         final boolean isNavbarColorManagedByIme =
                 navColorWin != null && navColorWin == mDisplayContent.mInputMethodWindow;
-        final int appearance = updateLightNavigationBarLw(win.mAttrs.insetsFlags.appearance,
-                navColorWin) | opaqueAppearance;
+        final int appearance = updateLightNavigationBarLw(win != null
+                        ? win.mAttrs.insetsFlags.appearance
+                        : 0, navColorWin)
+                | opaqueAppearance;
         final WindowState navBarControlWin = topAppHidesSystemBar(Type.navigationBars())
                 ? mTopFullscreenOpaqueWindowState
                 : win;
-        final int behavior = navBarControlWin.mAttrs.insetsFlags.behavior;
-        final String focusedApp = win.mAttrs.packageName;
-        final boolean isFullscreen = !win.isRequestedVisible(Type.statusBars())
-                || !win.isRequestedVisible(Type.navigationBars());
+        final int behavior = navBarControlWin != null
+                ? navBarControlWin.mAttrs.insetsFlags.behavior
+                : BEHAVIOR_DEFAULT;
+        final String focusedApp = win != null ? win.mAttrs.packageName : "none";
+        final boolean isFullscreen = win != null && (!win.isRequestedVisible(Type.statusBars())
+                || !win.isRequestedVisible(Type.navigationBars()));
         final AppearanceRegion[] statusBarAppearanceRegions =
                 new AppearanceRegion[mStatusBarAppearanceRegionList.size()];
         mStatusBarAppearanceRegionList.toArray(statusBarAppearanceRegions);
         if (mLastDisableFlags != disableFlags) {
             mLastDisableFlags = disableFlags;
-            final String cause = win.toString();
+            final String cause = win != null ? win.toString() : "null";
             callStatusBarSafely(statusBar -> statusBar.setDisableFlags(displayId, disableFlags,
                     cause));
         }
-        final @InsetsType int requestedVisibleTypes = win.getRequestedVisibleTypes();
+        final @InsetsType int requestedVisibleTypes = win != null
+                ? win.getRequestedVisibleTypes() : 0;
         final LetterboxDetails[] letterboxDetails = new LetterboxDetails[mLetterboxDetails.size()];
         mLetterboxDetails.toArray(letterboxDetails);
         if (mLastAppearance == appearance
@@ -2737,7 +2765,7 @@ public class DisplayPolicy {
 
     @VisibleForTesting
     int updateLightNavigationBarLw(int appearance, WindowState navColorWin) {
-        if (navColorWin == null || !isLightBarAllowed(navColorWin, Type.navigationBars())) {
+        if (!isLightBarAllowed(navColorWin, Type.navigationBars())) {
             // Clear the light flag while not allowed.
             appearance &= ~APPEARANCE_LIGHT_NAVIGATION_BARS;
             return appearance;
@@ -2750,7 +2778,7 @@ public class DisplayPolicy {
         return appearance;
     }
 
-    private int updateSystemBarsLw(WindowState win, int disableFlags) {
+    private int updateSystemBarsLw(@Nullable WindowState win, int disableFlags) {
         final TaskDisplayArea defaultTaskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
         // TODO(b/407898759): Migrate to have WM Shell to override the insets visibility based on
         // top focused Task.
@@ -2798,15 +2826,17 @@ public class DisplayPolicy {
         if (wasImmersiveMode != isImmersiveMode) {
             mIsImmersiveMode = isImmersiveMode;
             // The immersive confirmation window should be attached to the immersive window root.
-            final RootDisplayArea root = win.getRootDisplayArea();
-            final int rootDisplayAreaId = root == null ? FEATURE_UNDEFINED : root.mFeatureId;
+            final RootDisplayArea root = win != null ? win.getRootDisplayArea() : null;
+            final int rootDisplayAreaId = root != null ? root.mFeatureId : FEATURE_UNDEFINED;
+            final int windowType = win != null ? win.getWindowType() : INVALID_WINDOW_TYPE;
             // TODO(b/277290737): Move this to the client side, instead of using a proxy.
             callStatusBarSafely(statusBar -> statusBar.immersiveModeChanged(getDisplayId(),
-                        rootDisplayAreaId, isImmersiveMode, win.getWindowType()));
+                        rootDisplayAreaId, isImmersiveMode, windowType));
         }
 
         // Show transient bars for panic if needed.
-        final boolean requestHideNavBar = !win.isRequestedVisible(Type.navigationBars());
+        final boolean requestHideNavBar =
+                win != null && !win.isRequestedVisible(Type.navigationBars());
         final long now = SystemClock.uptimeMillis();
         final boolean pendingPanic = mPendingPanicGestureUptime != 0
                 && now - mPendingPanicGestureUptime <= PANIC_GESTURE_EXPIRATION;
@@ -3117,6 +3147,10 @@ public class DisplayPolicy {
         if (mTopFullscreenOpaqueWindowState != null) {
             pw.print(prefix); pw.print("mTopFullscreenOpaqueWindowState=");
             pw.println(mTopFullscreenOpaqueWindowState);
+        }
+        if (mSystemUiControllingWindow != null) {
+            pw.print(prefix); pw.print("mSystemUiControllingWindow=");
+            pw.println(mSystemUiControllingWindow);
         }
         if (!mSystemBarColorApps.isEmpty()) {
             pw.print(prefix); pw.print("mSystemBarColorApps=");
