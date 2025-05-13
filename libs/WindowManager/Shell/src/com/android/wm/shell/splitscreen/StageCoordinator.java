@@ -59,6 +59,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.splitPositionToString;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.splitStateToSnapPosition;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_A;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_B;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_MAIN;
@@ -1436,6 +1437,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                         updateSurfaceBounds(mSplitLayout, st, false /* applyResizingOffset */);
                         mSplitLayout.populateTouchZones();
                         notifySplitAnimationStatus(false /*animationRunning*/);
+
+                        if (enableFlexibleTwoAppSplit() &&
+                                mSplitState.currentStateHasOffscreenApps()) {
+                            // Stages have changed positions, but layout hasn't so update
+                            // focus on the same layout type as before. NOTE: this needs to happen
+                            // AFTER we make the window's focusable, otherwise it's a no-op
+                            grantFocusForSnapPosition(splitStateToSnapPosition(mSplitState.get()));
+                        }
 
                         // updateSurfaceBounds(), above, officially puts the two apps in their new
                         // stages. Starting on the next frame, all calculations are made using the
