@@ -2314,7 +2314,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         boolean mUseOverrideInsetsForConfig;
 
         void resolveTmpOverrides(DisplayContent dc, Configuration parentConfig,
-                boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds) {
+                boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds,
+                boolean shouldApplyLegacyInsets) {
             mParentAppBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
                     parentConfig.windowConfiguration.getAppBounds());
             mParentBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
@@ -2326,8 +2327,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 mTmpOverrideConfigOrientation =
                         mParentAppBoundsOverride.height() >= mParentAppBoundsOverride.width()
                                 ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
-            } else if (mUseOverrideInsetsForConfig && dc != null
-                    && !isFloating(parentConfig.windowConfiguration.getWindowingMode())) {
+            } else if (shouldApplyLegacyInsets && mUseOverrideInsetsForConfig && dc != null) {
                 // Insets are decoupled from configuration by default from V+, use legacy
                 // compatibility behaviour for apps targeting SDK earlier than 35
                 // (see applySizeOverrideIfNeeded).
