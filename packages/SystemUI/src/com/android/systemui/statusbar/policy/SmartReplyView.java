@@ -1,7 +1,7 @@
 package com.android.systemui.statusbar.policy;
 
 import static java.lang.Float.NaN;
-
+import com.android.systemui.Flags;
 import android.annotation.ColorInt;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -242,14 +242,42 @@ public class SmartReplyView extends ViewGroup {
                 0 /* maxChildHeight */);
         int displayedChildCount = 0;
 
-        // Set up a list of suggestions where actions come before replies. Note that the Buttons
-        // themselves have already been added to the view hierarchy in an order such that Smart
-        // Replies are shown before Smart Actions. The order of the list below determines which
-        // suggestions will be shown at all - only the first X elements are shown (where X depends
-        // on how much space each suggestion button needs).
+        // Determine which smart suggestions (replies and actions of various types)
+        // can be displayed within the available space.
+        //
+        // A prioritized list of all potential suggestion buttons (`smartSuggestions`) is
+        // constructed to define the *selection priority* for fitting buttons onto a single line.
+        // When `Flags.notificationAnimatedActionsTreatment()` is enabled, this selection
+        // priority is:
+        //   1. Animated Replies
+        //   2. Animated Actions
+        //   3. Standard Actions
+        //   4. Standard Replies
+        // Otherwise, if the flag is disabled, the selection priority is:
+        //   1. Standard Actions
+        //   2. Standard Replies
+        //
+        // Buttons are iterated in this selection priority order. If a button fits (possibly after
+        // squeezing preceding, lower-priority, single-line buttons that are candidates for
+        // squeezing),
+        // it's marked for display by setting its `LayoutParams.show = true`.
+        //
+        // The final left-to-right visual layout of the *displayed* buttons is determined by
+        // their initial sequence when added to this ViewGroup via `addPreInflatedButtons`.
+        // Refer to that method and the `SmartReplyStateInflater` for how that initial
+        // button order is established.
+        List<View> smartSuggestions = new ArrayList<>();
         List<View> smartActions = filterActionsOrReplies(SmartButtonType.ACTION);
         List<View> smartReplies = filterActionsOrReplies(SmartButtonType.REPLY);
-        List<View> smartSuggestions = new ArrayList<>(smartActions);
+
+        if (Flags.notificationAnimatedActionsTreatment()) {
+            List<View> animatedReplies = filterActionsOrReplies(SmartButtonType.ANIMATED_REPLY);
+            List<View> animatedActions = filterActionsOrReplies(SmartButtonType.ANIMATED_ACTION);
+            smartSuggestions.addAll(animatedReplies);
+            smartSuggestions.addAll(animatedActions);
+        }
+
+        smartSuggestions.addAll(smartActions);
         smartSuggestions.addAll(smartReplies);
         List<View> coveredSuggestions = new ArrayList<>();
 
@@ -764,7 +792,10 @@ public class SmartReplyView extends ViewGroup {
 
     enum SmartButtonType {
         REPLY,
-        ACTION
+        ACTION,
+        ANIMATED_ACTION,
+        ANIMATED_REPLY
+
     }
 
     @VisibleForTesting
