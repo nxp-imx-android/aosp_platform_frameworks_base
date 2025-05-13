@@ -790,7 +790,7 @@ public class PipTransition extends PipTransitionController implements
             // app icon overlay animation.
             float aspectRatio = mPipBoundsAlgorithm.getAspectRatioOrDefault(params);
             adjustedSourceRectHint.set(
-                    PipUtils.getEnterPipWithOverlaySrcRectHint(startBounds, aspectRatio));
+                    PipUtils.getPseudoSourceRectHint(startBounds, aspectRatio));
         }
         return adjustedSourceRectHint;
     }

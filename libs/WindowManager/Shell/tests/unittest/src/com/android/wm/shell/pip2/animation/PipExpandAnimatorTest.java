@@ -174,6 +174,58 @@ public class PipExpandAnimatorTest {
     }
 
     @Test
+    public void onAnimationStart_withSourceRectHint_cropToHint() {
+        mRotation = Surface.ROTATION_0;
+        mBaseBounds = new Rect(0, 0, 1_000, 2_000);
+        mSourceRectHint = new Rect(0, 0, 1_000, 1_000);
+        mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
+        mEndBounds = new Rect(mBaseBounds);
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mMockStartTransaction, mMockFinishTransaction,
+                mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
+                mRotation, false /* isPipInDesktopMode */);
+        mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
+        mPipExpandAnimator.setAnimationEndCallback(mMockEndCallback);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            // animator is not started intentionally to avoid double invocation
+            clearInvocations(mMockTransaction);
+            mPipExpandAnimator.setCurrentFraction(0f);
+        });
+
+        verify(mMockTransaction).setCrop(mTestLeash, mSourceRectHint);
+    }
+
+    @Test
+    public void onAnimationStart_withoutSourceRectHint_cropToPseudoHint() {
+        mRotation = Surface.ROTATION_0;
+        mBaseBounds = new Rect(0, 0, 1_000, 2_000);
+        mSourceRectHint = null;
+        // Set the aspect ratio to be 1:1, pseudo bounds would be (0, 0 - 1000, 1000)
+        mStartBounds = new Rect(500, 1_000, 1_000, 1_500);
+        final Rect pseudoSourceRectHint = new Rect(0, 0, 1_000, 1_000);
+        mEndBounds = new Rect(mBaseBounds);
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mMockStartTransaction, mMockFinishTransaction,
+                mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
+                mRotation, false /* isPipInDesktopMode */);
+        mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
+        mPipExpandAnimator.setAnimationEndCallback(mMockEndCallback);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            // animator is not started intentionally to avoid double invocation
+            clearInvocations(mMockTransaction);
+            mPipExpandAnimator.setCurrentFraction(0f);
+        });
+
+        verify(mMockTransaction).setCrop(mTestLeash, pseudoSourceRectHint);
+    }
+
+    @Test
     public void onAnimationUpdate_expand_setRoundCornersWithoutShadow() {
         mRotation = Surface.ROTATION_0;
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
