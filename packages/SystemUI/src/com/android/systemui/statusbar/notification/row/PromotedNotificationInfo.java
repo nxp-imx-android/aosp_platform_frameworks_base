@@ -76,7 +76,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
                 onUserInteractionCallback, channelEditorDialogController,
-                 packageDemotionInteractor,pkg, ranking, sbn,
+                packageDemotionInteractor, pkg, ranking, sbn,
                 entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
                 uiEventLogger, isDeviceProvisioned, isNonblockable, isDismissable,
                 wasShownHighPriority, assistantFeedbackController, metricsLogger, onCloseClick);
@@ -86,6 +86,10 @@ public class PromotedNotificationInfo extends NotificationInfo {
         mPackageDemotionInteractor = packageDemotionInteractor;
 
         bindDemote(sbn, pkg);
+
+        // Override the visibility of elements we don't want for the promoted notification
+        findViewById(R.id.interruptiveness_settings).setVisibility(GONE);
+        findViewById(R.id.turn_off_notifications).setVisibility(GONE);
     }
 
     protected void bindDemote(StatusBarNotification sbn, String packageName) {
