@@ -27,11 +27,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.awaitCancellation
 
-class BundleHeaderViewModel(val interactor: BundleInteractor) {
+class BundleHeaderViewModel @AssistedInject constructor(private val interactor: BundleInteractor) :
+    ExclusiveActivatable() {
+
     val titleText
         get() = interactor.titleText
 
@@ -75,5 +82,16 @@ class BundleHeaderViewModel(val interactor: BundleInteractor) {
         state.setTargetScene(targetScene, scope)
 
         onExpandClickListener?.onClick(null)
+    }
+
+    override suspend fun onActivated(): Nothing {
+        // TODO(b/415055105): hydrate previewIcons state
+        awaitCancellation()
+    }
+
+    @AssistedFactory
+    @BundleRowScope
+    interface Factory {
+        fun create(): BundleHeaderViewModel
     }
 }

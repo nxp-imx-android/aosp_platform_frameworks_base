@@ -19,7 +19,9 @@ package com.android.systemui.statusbar.notification.collection.render
 import android.content.Context
 import android.view.ViewGroup
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.lifecycle.WindowLifecycleState
+import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.NotificationPresenter
@@ -30,16 +32,13 @@ import com.android.systemui.statusbar.notification.collection.coordinator.Bundle
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.RowInflaterTask
 import com.android.systemui.statusbar.notification.row.RowInflaterTaskLogger
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowComponent
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent
-import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Provider
-import kotlinx.coroutines.CoroutineDispatcher
 
 /** Class that handles inflating BundleEntry view and controller, for use by NodeSpecBuilder. */
 @SysUISingleton
@@ -47,6 +46,7 @@ class BundleBarn
 @Inject
 constructor(
     private val rowComponent: ExpandableNotificationRowComponent.Builder,
+    private val bundleRowComponentBuilder: BundleRowComponent.Builder,
     private val rowInflaterTaskProvider: Provider<RowInflaterTask>,
     private val listContainer: NotificationListContainer,
     @ShadeDisplayAware val context: Context,
@@ -54,8 +54,6 @@ constructor(
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
     private val presenterLazy: Lazy<NotificationPresenter?>? = null,
-    private val appIconProvider: AppIconProvider,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : PipelineDumpable {
 
     /**
@@ -66,16 +64,16 @@ constructor(
 
     /** Build view and controller for BundleEntry. */
     fun inflateBundleEntry(bundleEntry: BundleEntry) {
-        debugBundleLog(TAG, { "inflateBundleEntry: ${bundleEntry.key}" })
+        debugBundleLog(TAG) { "inflateBundleEntry: ${bundleEntry.key}" }
         if (keyToControllerMap.containsKey(bundleEntry.key)) {
             // Skip if bundle is inflating or inflated.
-            debugBundleLog(TAG, { "already in map: ${bundleEntry.key}" })
+            debugBundleLog(TAG) { "already in map: ${bundleEntry.key}" }
             return
         }
         val parent: ViewGroup = listContainer.getViewParentForNotification()
         val inflationFinishedListener: (ExpandableNotificationRow) -> Unit = { row ->
             // A subset of NotificationRowBinderImpl.inflateViews
-            debugBundleLog(TAG, { "finished inflating: ${bundleEntry.key}" })
+            debugBundleLog(TAG) { "finished inflating: ${bundleEntry.key}" }
             bundleEntry.row = row
             val component =
                 rowComponent
@@ -87,17 +85,20 @@ constructor(
             controller.init(bundleEntry)
             keyToControllerMap[bundleEntry.key] = controller
 
-            // TODO(389839492): Construct BundleHeaderViewModel (or even ENRViewModel) by dagger
-            val bundleInteractor =
-                BundleInteractor(
-                    repository = bundleEntry.bundleRepository,
-                    appIconProvider = appIconProvider,
-                    context = context,
-                    backgroundDispatcher = backgroundDispatcher,
-                )
-            row.initBundleHeader(BundleHeaderViewModel(bundleInteractor))
+            val bundleRowComponent =
+                bundleRowComponentBuilder.bindBundleRepository(bundleEntry.bundleRepository).build()
+
+            row.repeatWhenAttached {
+                row.viewModel(
+                    traceName = "BundleHeaderViewModel",
+                    minWindowLifecycleState = WindowLifecycleState.ATTACHED,
+                    factory = bundleRowComponent.bundleViewModelFactory()::create,
+                ) { viewModel ->
+                    row.initBundleHeader(viewModel)
+                }
+            }
         }
-        debugBundleLog(TAG, { "calling inflate: ${bundleEntry.key}" })
+        debugBundleLog(TAG) { "calling inflate: ${bundleEntry.key}" }
         keyToControllerMap[bundleEntry.key] = null
         rowInflaterTaskProvider
             .get()
