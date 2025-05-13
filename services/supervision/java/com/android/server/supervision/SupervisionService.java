@@ -365,7 +365,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 }
             }
             DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
-            if (Flags.enableRemovePoliciesOnSupervisionDisable() &&
+            if (Flags.enableRemovePoliciesOnSupervisionDisable() && !enabled &&
                     dpmi != null && supervisionAppPackage != null) {
                 dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
             }
