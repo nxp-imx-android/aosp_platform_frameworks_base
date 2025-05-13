@@ -359,7 +359,7 @@
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
-                app:layout_constraintEnd_toStartOf="@id/done"
+                app:layout_constraintStart_toEndOf="@id/inline_dismiss"
                 style="@style/TextAppearance.NotificationInfo.Button"
                 />
             <TextView

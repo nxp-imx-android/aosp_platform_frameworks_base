@@ -380,7 +380,7 @@ asked for it -->
                 android:text="@string/inline_turn_off_notifications"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/done"
+                android:layout_toEndOf="@id/inline_dismiss"
                 android:gravity="start|center_vertical"
                 android:minWidth="@dimen/notification_importance_toggle_size"
                 android:minHeight="@dimen/notification_importance_toggle_size"
