@@ -331,7 +331,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
         final long token = Binder.clearCallingIdentity();
         try {
-            updateWebContentFilters(userId);
+            updateWebContentFilters(userId, enabled);
 
             if (Flags.enableSupervisionAppService()) {
                 List<AppServiceConnection> connections =
@@ -374,17 +374,26 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
     }
 
-    /** Updates Web Content Filters when supervision status is updated. */
-    private void updateWebContentFilters(@UserIdInt int userId) {
+    /**
+     * Updates Web Content Filters when supervision status is updated.
+     *
+     * <p>Only change the content filter value if it is not in sync with the supervision state.
+     * Disable the filter when disabling supervision and re-set to original value when re-enabling
+     * supervision. (If the filter is already enabled when enabling supervision, do not disable it).
+     */
+    private void updateWebContentFilters(@UserIdInt int userId, boolean enabled) {
         try {
             int browserValue =
                     Settings.Secure.getIntForUser(
                             mContext.getContentResolver(), BROWSER_CONTENT_FILTERS_ENABLED, userId);
-            Settings.Secure.putIntForUser(
-                    mContext.getContentResolver(),
-                    BROWSER_CONTENT_FILTERS_ENABLED,
-                    browserValue * -1,
-                    userId);
+
+            if (!enabled || browserValue != 1) {
+                Settings.Secure.putIntForUser(
+                        mContext.getContentResolver(),
+                        BROWSER_CONTENT_FILTERS_ENABLED,
+                        browserValue * -1,
+                        userId);
+            }
         } catch (Settings.SettingNotFoundException ignored) {
             // Ignore the exception and do not change the value as no value has been set.
         }
@@ -392,11 +401,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
             int searchValue =
                     Settings.Secure.getIntForUser(
                             mContext.getContentResolver(), SEARCH_CONTENT_FILTERS_ENABLED, userId);
-            Settings.Secure.putIntForUser(
-                    mContext.getContentResolver(),
-                    SEARCH_CONTENT_FILTERS_ENABLED,
-                    searchValue * -1,
-                    userId);
+
+            if (!enabled || searchValue != 1) {
+                Settings.Secure.putIntForUser(
+                        mContext.getContentResolver(),
+                        SEARCH_CONTENT_FILTERS_ENABLED,
+                        searchValue * -1,
+                        userId);
+            }
         } catch (Settings.SettingNotFoundException ignored) {
             // Ignore the exception and do not change the value as no value has been set.
         }
