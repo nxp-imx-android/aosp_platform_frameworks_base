@@ -18,12 +18,11 @@
 
 package com.android.systemui.bouncer.ui.composable
 
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
+import androidx.compose.material3.SecureTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +44,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,10 +55,7 @@ import com.android.systemui.res.R
 
 /** UI for the input part of a password-requiring version of the bouncer. */
 @Composable
-internal fun PasswordBouncer(
-    viewModel: PasswordBouncerViewModel,
-    modifier: Modifier = Modifier,
-) {
+internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modifier = Modifier) {
     val focusRequester = remember { FocusRequester() }
     val isTextFieldFocusRequested by
         viewModel.isTextFieldFocusRequested.collectAsStateWithLifecycle()
@@ -70,7 +65,6 @@ internal fun PasswordBouncer(
         }
     }
 
-    val password: String by viewModel.password.collectAsStateWithLifecycle()
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
     val isImeSwitcherButtonVisible by
@@ -90,22 +84,17 @@ internal fun PasswordBouncer(
     val lineWidthPx = with(LocalDensity.current) { 2.dp.toPx() }
 
     SelectedUserAwareInputConnection(selectedUserId) {
-        TextField(
-            value = password,
-            onValueChange = viewModel::onPasswordInputChanged,
+        SecureTextField(
+            state = viewModel.textFieldState,
             enabled = isInputEnabled,
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
             keyboardOptions =
                 KeyboardOptions(
+                    autoCorrectEnabled = false,
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done,
                 ),
-            keyboardActions =
-                KeyboardActions(
-                    onDone = { viewModel.onAuthenticateKeyPressed() },
-                ),
+            onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
             modifier =
                 modifier
                     .sysuiResTag("bouncer_text_entry")
@@ -132,17 +121,14 @@ internal fun PasswordBouncer(
                     { ImeSwitcherButton(viewModel, color) }
                 } else {
                     null
-                }
+                },
         )
     }
 }
 
 /** Button for changing the password input method (IME). */
 @Composable
-private fun ImeSwitcherButton(
-    viewModel: PasswordBouncerViewModel,
-    color: Color,
-) {
+private fun ImeSwitcherButton(viewModel: PasswordBouncerViewModel, color: Color) {
     val context = LocalContext.current
     PlatformIconButton(
         onClick = { viewModel.onImeSwitcherButtonClicked(context.displayId) },
@@ -152,6 +138,6 @@ private fun ImeSwitcherButton(
             IconButtonDefaults.filledIconButtonColors(
                 contentColor = color,
                 containerColor = Color.Transparent,
-            )
+            ),
     )
 }
