@@ -651,6 +651,8 @@ public class NotificationManagerService extends SystemService {
 
     // Minium number of sparse groups for a package before autogrouping them
     private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 6;
+    // Minimum number notifications in a bundle section before autogrouping them
+    private static final int AUTOGROUP_BUNDLE_SECTIONS_AT_COUNT = 1;
 
     private static final Duration ZEN_BROADCAST_DELAY = Duration.ofMillis(250);
 
@@ -3199,7 +3201,8 @@ public class NotificationManagerService extends SystemService {
         mAutoGroupAtCount =
                 getContext().getResources().getInteger(R.integer.config_autoGroupAtCount);
         return new GroupHelper(getContext(), getContext().getPackageManager(),
-                mAutoGroupAtCount, AUTOGROUP_SPARSE_GROUPS_AT_COUNT, new GroupHelper.Callback() {
+                mAutoGroupAtCount, AUTOGROUP_BUNDLE_SECTIONS_AT_COUNT,
+                AUTOGROUP_SPARSE_GROUPS_AT_COUNT, new GroupHelper.Callback() {
             @Override
             public void addAutoGroup(String key, String groupName, boolean requestSort) {
                 synchronized (mNotificationLock) {
