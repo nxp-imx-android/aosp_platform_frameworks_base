@@ -69,7 +69,7 @@ public class PipDisplayTransferHandler implements
     @VisibleForTesting boolean mWaitingForDisplayTransfer;
     @VisibleForTesting
     ArrayMap<Integer, SurfaceControl> mOnDragMirrorPerDisplayId = new ArrayMap<>();
-    private int mTargetDisplayId;
+    @VisibleForTesting int mTargetDisplayId;
     private PipResizeAnimatorSupplier mPipResizeAnimatorSupplier;
 
     public PipDisplayTransferHandler(Context context, PipTransitionState pipTransitionState,
@@ -145,7 +145,12 @@ public class PipDisplayTransferHandler implements
                         PIP_DESTINATION_BOUNDS, Rect.class);
 
                 Rect finalBounds = new Rect(pipBounds);
-                mPipBoundsAlgorithm.snapToMovementBoundsEdge(finalBounds);
+                final DisplayLayout targetDisplayLayout = mDisplayController.getDisplayLayout(
+                        mTargetDisplayId);
+                // Snap to movement bounds edge of the target display ID on drag release.
+                // The target display layout needs to be supplied since this happens before the PiP
+                // is released and the display ID and layout are updated.
+                mPipBoundsAlgorithm.snapToMovementBoundsEdge(finalBounds, targetDisplayLayout);
 
                 mPipSurfaceTransactionHelper.round(startTx, pipLeash, true).shadow(startTx,
                         pipLeash, true /* applyShadowRadius */);
@@ -156,8 +161,7 @@ public class PipDisplayTransferHandler implements
                 mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
 
                 mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
-                mPipDisplayLayoutState.setDisplayLayout(mDisplayController.getDisplayLayout(
-                        mTargetDisplayId));
+                mPipDisplayLayoutState.setDisplayLayout(targetDisplayLayout);
                 mPipTransitionState.setPinnedTaskLeash(pipLeash);
                 mPipTransitionState.setPipTaskInfo(taskInfo);
 

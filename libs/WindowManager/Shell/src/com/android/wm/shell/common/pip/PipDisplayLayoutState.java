@@ -89,14 +89,21 @@ public class PipDisplayLayoutState {
      * Returns the inset bounds the PIP window can be visible in.
      */
     public Rect getInsetBounds() {
+        return getInsetBounds(getDisplayLayout());
+    }
+
+    /**
+     * Returns the inset bounds the PIP window can be visible on a given {@param displayLayout}
+     */
+    public Rect getInsetBounds(DisplayLayout displayLayout) {
         final Rect insetBounds = new Rect();
-        final Rect stableInsets = getDisplayLayout().stableInsets();
+        final Rect stableInsets = displayLayout.stableInsets();
         final Point screenEdgeInsets = getScreenEdgeInsets();
         final int left = max(stableInsets.left, mNavigationBarsInsets.left) + screenEdgeInsets.x;
         final int top = max(stableInsets.top, mNavigationBarsInsets.top) + screenEdgeInsets.y;
-        final int right = getDisplayLayout().width()
+        final int right = displayLayout.width()
                 - max(stableInsets.right, mNavigationBarsInsets.right) - screenEdgeInsets.x;
-        final int bottom = getDisplayLayout().height()
+        final int bottom = displayLayout.height()
                 - max(stableInsets.bottom, mNavigationBarsInsets.bottom) - screenEdgeInsets.y;
         insetBounds.set(left, top, right, bottom);
         return insetBounds;
