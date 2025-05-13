@@ -407,13 +407,13 @@
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Iniciar"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Detener"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Informe de errores"</string>
-    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"¿Qué parte de tu experiencia se ha visto afectada?"</string>
+    <string name="qs_record_issue_dropdown_header" msgid="5995983175678658329">"¿Qué problema has detectado?"</string>
     <string name="qs_record_issue_dropdown_prompt" msgid="2526949919167046219">"Selecciona el tipo de problema"</string>
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"Grabar pantalla"</string>
     <string name="performance" msgid="6552785217174378320">"Rendimiento"</string>
     <string name="user_interface" msgid="3712869377953950887">"Interfaz de usuario"</string>
     <string name="thermal" msgid="6758074791325414831">"Temperatura"</string>
-    <string name="custom" msgid="3337456985275158299">"Config. personalizada"</string>
+    <string name="custom" msgid="3337456985275158299">"Otro"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Ajustes de traza personalizados"</string>
     <string name="restore_default" msgid="5259420807486239755">"Restaurar ajustes predeterminados"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Modo Una mano"</string>
@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Desbloqueado por TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Dispositivo bloqueado; demasiados intentos de autenticación"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Dispositivo bloqueado\nError de autenticación"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Bloqueado por tu reloj"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Ajustes de sonido"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Subtitular automáticamente"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Volverá a mostrarse en <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hora}=2{# horas}many{# horas}other{# horas}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minuto}many{# minutos}other{# minutos}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Ahorro de batería"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Botón <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Inicio"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necesitas al menos <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> recuadros"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar recuadros"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Cambiar el tamaño de los recuadros de ajustes rápidos"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos y segundos"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Salir del modo Edición"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Arrastra la esquina para cambiar el tamaño"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Permitir ir en diagonal"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"Cambiar tamaño"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Cambiar tipo de ampliación"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Finalizar cambio de tamaño"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altavoces conectados"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altavoces y pantallas"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Dispositivos sugeridos"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Salida"</string>

@@ -604,7 +604,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ஓர் ஆப்ஸை அலைபரப்பு"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"முழுத்திரையையும் அலைபரப்பு"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g>ஐ அலைபரப்புதல்"</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"உங்கள் முழுத்திரையையும் அலைபரப்பும்போது திரையில் உள்ள அனைத்தையும் பார்க்க முடியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"உங்கள் முழுத்திரையையும் அலைபரப்பும்போது திரையில் உள்ள அனைத்தையும் பார்க்க முடியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்து கவனத்துடன் இருங்கள்."</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ஓர் ஆப்ஸை அலைபரப்பும்போது அதில் காட்டப்படுகின்ற அல்லது அதில் பிளே செய்யப்படுகின்ற அனைத்தையும் பார்க்க முடியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"திரையை அலைபரப்பு"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"அலைபரப்ப ஆப்ஸைத் தேர்வுசெய்தல்"</string>
@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent இதைத் திறந்தே வைத்துள்ளது"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"அளவுக்கதிகமான அங்கீகரிப்பு முயற்சிகளால் சாதனம் பூட்டப்பட்டது"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"சாதனம் பூட்டப்பட்டது\nஅங்கீகரிக்க முடியவில்லை"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"உங்கள் வாட்ச்சால் பூட்டப்பட்டது"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ஒலி அமைப்புகள்"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"வசன உரைகளைத் தானாக எழுதும்"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"உறக்கநிலையில் வைத்திருந்த நேரம்: <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# மணிநேரம்}=2{# மணிநேரம்}other{# மணிநேரம்}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# நிமிடம்}other{# நிமிடங்கள்}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"பேட்டரி சேமிப்பு"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> பட்டன்"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ஹோம்"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"குறைந்தது <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> கட்டங்கள் தேவை"</string>
     <string name="qs_edit" msgid="5583565172803472437">"மாற்று"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"கட்டங்களைத் திருத்துதல்"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"விரைவு அமைப்புகள் கட்டத்தின் அளவை மாற்றும்"</string>
     <string name="tuner_time" msgid="2450785840990529997">"நேரம்"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"மணிநேரம், நிமிடங்கள், வினாடிகளைக் காட்டு"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"திருத்துதல் பயன்முறையிலிருந்து வெளியேறு"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"அளவை மாற்ற மூலையை இழுக்கவும்"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"குறுக்கே ஸ்க்ரோல் செய்வதை அனுமதி"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"அளவை மாற்று"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"பெரிதாக்கல் வகையை மாற்று"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"அளவை மாற்றுவதை நிறுத்து"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"இணைக்கப்பட்டுள்ள ஸ்பீக்கர்கள்"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ஸ்பீக்கர்கள் &amp; டிஸ்ப்ளேக்கள்"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"பரிந்துரைக்கப்படும் சாதனங்கள்"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"உள்ளீடு"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"வெளியீடு"</string>

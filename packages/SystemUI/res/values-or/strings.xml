@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ଦ୍ୱାରା ଅନ୍‌ଲକ୍ ରହିଛି"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ଡିଭାଇସ ଲକ କରାଯାଇଛି, ଅନେକଗୁଡ଼ିଏ ପ୍ରମାଣୀକରଣ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ଡିଭାଇସ ଲକ ହୋଇଛି\nପ୍ରମାଣୀକରଣ ବିଫଳ ହୋଇଛି"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ଆପଣଙ୍କ ୱାଚ ଦ୍ୱାରା ଲକ କରାଯାଇଛି"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ସାଉଣ୍ଡ ସେଟିଂସ୍"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ସ୍ବଚାଳିତ କ୍ୟାପ୍ସନ୍ ମିଡିଆ"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ପାଇଁ ସ୍ନୁଜ୍‍ କରାଗଲା"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ଘଣ୍ଟା}=2{# ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ମିନିଟ}other{# ମିନିଟ}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ବେଟେରୀ ସେଭର"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ବଟନ୍‍ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ହୋମ"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ଆପଣଙ୍କର ଅତିକମ୍‌ରେ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>ଟି ଟାଇଲ୍ ଆବଶ୍ୟକ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ଟାଇଲଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"କ୍ୱିକ ସେଟିଂସ ଟାଇଲଗୁଡ଼ିକୁ ରିସାଇଜ କରନ୍ତୁ"</string>
     <string name="tuner_time" msgid="2450785840990529997">"ସମୟ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ଘଣ୍ଟା, ମିନିଟ୍‍ ଏବଂ ସେକେଣ୍ଡ ଦେଖାନ୍ତୁ"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ଏଡିଟ ମୋଡରୁ ବାହାରି ଯାଆନ୍ତୁ"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"ରିସାଇଜ କରିବା ପାଇଁ କୋଣକୁ ଡ୍ରାଗ କରନ୍ତୁ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ଡାଏଗୋନାଲ ସ୍କ୍ରୋଲିଂକୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"ରିସାଇଜ କରନ୍ତୁ"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ମ୍ୟାଗ୍ନିଫିକେସନ ପ୍ରକାରକୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"ରିସାଇଜ କରିବାକୁ ସମାପ୍ତ କରନ୍ତୁ"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"କନେକ୍ଟେଡ ସ୍ପିକର"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ସ୍ପିକର ଏବଂ ଡିସପ୍ଲେ"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ପ୍ରସ୍ତାବିତ ଡିଭାଇସଗୁଡ଼ିକ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ଇନପୁଟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ଆଉଟପୁଟ"</string>

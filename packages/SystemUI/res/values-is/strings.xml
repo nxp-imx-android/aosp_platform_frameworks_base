@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Haldið opnu af TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Tæki var læst, of margar auðkenningartilraunir"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Tæki læst\nAuðkenning mistókst"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Læst með úrinu þínu"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Hljóðstillingar"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Sjálfvirkir skjátextar"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Þaggað í <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# klukkustund}=2{# klukkustundir}one{# klukkustund}other{# klukkustundir}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# mínúta}one{# mínúta}other{# mínútur}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Rafhlöðusparnaður"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Hnappur <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Flísarnar mega ekki vera færri en <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Breyta"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Breyta flísum"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Breyta stærð flýtistillingareita"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Tími"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Sýna klukkustundir, mínútur og sekúndur"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Loka breytingastillingu"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Dragðu horn til að breyta stærð"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Leyfa skáflettingu"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"Breyta stærð"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Breyta gerð stækkunar"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Hætta að breyta stærð"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Tengdir hátalarar"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Hátalarar og skjáir"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Tillögur að tækjum"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Inntak"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Úttak"</string>

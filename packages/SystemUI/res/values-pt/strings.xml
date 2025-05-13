@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Permitir"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Depuração por Wi-Fi não permitida"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"O usuário conectado a este dispositivo não pode ativar a depuração por Wi-Fi. Para usar esse recurso, entre em uma conta de usuário administrador."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Você pode mudar essa configuração depois do login"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"Porta USB desativada"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Para proteger seu dispositivo de líquidos e detritos, a porta USB está desativada e não detectará nenhum acessório.\n\nVocê receberá uma notificação quando for seguro usar a porta USB novamente."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Porta USB ativada para detectar carregadores e acessórios"</string>
@@ -226,17 +225,17 @@
     <string name="biometric_re_enroll_dialog_confirm" msgid="3049858021857801836">"Configurar"</string>
     <string name="biometric_re_enroll_dialog_cancel" msgid="93760939407091417">"Agora não"</string>
     <string name="biometric_re_enroll_notification_content" msgid="8685925877186288180">"Ação necessária para melhorar a segurança e o desempenho"</string>
-    <string name="fingerprint_re_enroll_notification_title" msgid="4539432429683916604">"Configurar o Desbloqueio por impressão digital de novo"</string>
+    <string name="fingerprint_re_enroll_notification_title" msgid="4539432429683916604">"Configurar o desbloqueio por impressão digital de novo"</string>
     <string name="fingerprint_re_enroll_notification_name" msgid="630798657797645704">"Desbloqueio por impressão digital"</string>
-    <string name="fingerprint_re_enroll_dialog_title" msgid="3526033128113925780">"Configurar o Desbloqueio por impressão digital"</string>
-    <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Os modelos e as imagens atuais serão excluídos para reconfigurar o Desbloqueio por impressão digital.\n\nDepois disso, você vai precisar configurar esse recurso de novo para desbloquear o smartphone com o dedo ou confirmar sua identidade."</string>
-    <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"O modelo e as imagens atuais serão excluídos para reconfigurar o Desbloqueio por impressão digital.\n\nDepois disso, você vai precisar configurar esse recurso de novo para desbloquear o smartphone com o dedo ou confirmar sua identidade."</string>
-    <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Não foi possível configurar o Desbloqueio por impressão digital. Acesse as Configurações e tente de novo."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Configurar o Desbloqueio facial de novo"</string>
+    <string name="fingerprint_re_enroll_dialog_title" msgid="3526033128113925780">"Configurar o desbloqueio por impressão digital"</string>
+    <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Os modelos e as imagens atuais serão excluídos para reconfigurar o desbloqueio por impressão digital.\n\nDepois disso, você vai precisar configurar esse recurso de novo para desbloquear o smartphone com o dedo ou confirmar sua identidade."</string>
+    <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"O modelo e as imagens atuais serão excluídos para reconfigurar o desbloqueio por impressão digital.\n\nDepois disso, você vai precisar configurar esse recurso de novo para desbloquear o smartphone com o dedo ou confirmar sua identidade."</string>
+    <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Não foi possível configurar o desbloqueio por impressão digital. Acesse as Configurações e tente de novo."</string>
+    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Configure o desbloqueio facial de novo"</string>
     <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Desbloqueio facial"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Configurar o Desbloqueio facial"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"O modelo de rosto atual será excluído para reconfigurar o Desbloqueio facial.\n\nVocê vai precisar configurar esse recurso de novo para desbloquear o smartphone com o rosto."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Não foi possível configurar o Desbloqueio facial. Acesse as Configurações e tente de novo."</string>
+    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Configurar o desbloqueio facial"</string>
+    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"O modelo de rosto atual será excluído para reconfigurar o desbloqueio facial.\n\nVocê vai precisar configurar esse recurso de novo para desbloquear o smartphone com o rosto."</string>
+    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Não foi possível configurar o desbloqueio facial. Acesse as Configurações e tente de novo."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Toque no sensor de impressão digital"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Pressione o ícone de desbloqueio para continuar"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Rosto não reconhecido. Use a impressão digital."</string>
@@ -244,7 +243,7 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Rosto não reconhecido"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Use a impressão digital"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"O Desbloqueio facial não está disponível"</string>
+    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"O desbloqueio facial não está disponível"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth conectado."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ícone de dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Clique para configurar os detalhes do dispositivo"</string>
@@ -503,7 +502,7 @@
     <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Desbloqueado pelo rosto"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Rosto reconhecido"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Deslize para cima para tentar novamente"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Deslize para cima para usar o Desbloqueio facial e novo"</string>
+    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Deslize para cima para usar o desbloqueio facial de novo"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Desbloqueie para usar a NFC"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Este dispositivo pertence à sua organização"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Este dispositivo pertence à organização <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -612,7 +611,7 @@
     <string name="media_projection_entry_generic_permission_dialog_warning_entire_screen" msgid="5407906851409410209">"Quando você compartilha, grava ou transmite a tela, o Android tem acesso a todas as informações visíveis nela ou reproduzidas no dispositivo. Portanto, tenha cuidado com senhas, detalhes de pagamento, mensagens, fotos, áudios e vídeos."</string>
     <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Quando você compartilha, grava ou transmite um app, o Android tem acesso a todas as informações visíveis ou reproduzidas nele. Tenha cuidado com senhas, detalhes de pagamento, mensagens, fotos, áudios e vídeos."</string>
     <string name="media_projection_entry_generic_permission_dialog_continue" msgid="8640381403048097116">"Início"</string>
-    <string name="media_projection_entry_generic_permission_dialog_continue_single_app" msgid="5920814988611877051">"Próxima"</string>
+    <string name="media_projection_entry_generic_permission_dialog_continue_single_app" msgid="5920814988611877051">"Avançar"</string>
     <string name="media_projection_task_switcher_text" msgid="590885489897412359">"O compartilhamento é pausado na troca de apps"</string>
     <string name="media_projection_task_switcher_action_switch" msgid="8682258717291921123">"Compartilhar este app"</string>
     <string name="media_projection_task_switcher_action_back" msgid="5324164224147845282">"Voltar"</string>
@@ -684,8 +683,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Desbloqueado pelo TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"O dispositivo foi bloqueado devido a muitas tentativas de autenticação"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Dispositivo bloqueado\nA autenticação falhou"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Bloqueado pelo relógio"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Configurações de som"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Transcrição automática"</string>
@@ -871,6 +869,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Adiada para <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hora}=2{# horas}one{# hora}many{# de horas}other{# horas}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minuto}one{# minuto}many{# de minutos}other{# minuto}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Economia de bateria"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Botão <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1009,8 +1009,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"É preciso haver pelo menos <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> blocos"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar blocos"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Redimensionar blocos \"Configurações rápidas\""</string>
     <string name="tuner_time" msgid="2450785840990529997">"Horas"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos e segundos"</item>
@@ -1156,6 +1155,9 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Sair do modo de edição"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Arraste o canto para redimensionar"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Permitir rolagem diagonal"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Ampliar teclado"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Redimensionar"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Mudar tipo de ampliação"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Encerrar redimensionamento"</string>
@@ -1282,6 +1284,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Alto-falantes conectados"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Alto-falantes e telas"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Opções de dispositivos"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Saída"</string>

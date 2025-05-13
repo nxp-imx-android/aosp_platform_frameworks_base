@@ -33,7 +33,7 @@
     <string name="battery_saver_dismiss_action" msgid="7199342621040014738">"မလိုပါ"</string>
     <string name="standard_battery_saver_text" msgid="6855876746552374119">"ပုံမှန်"</string>
     <string name="extreme_battery_saver_text" msgid="8455810156739865335">"လွန်ကဲ"</string>
-    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"ဖန်သားပြင် အလိုအလျောက်လှည့်ရန်"</string>
+    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"ဖန်သားပြင် အော်တိုလှည့်ရန်"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> အား ဝင်သုံးရန် <xliff:g id="APPLICATION">%1$s</xliff:g> ကို ခွင့်ပြုပါသလား။"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g> အား <xliff:g id="USB_DEVICE">%2$s</xliff:g> ကို သုံးခွင့်ပြုမလား။\nဤအက်ပ်ကို အသံဖမ်းခွင့် ပေးမထားသော်လည်း ၎င်းသည် ဤ USB စက်ပစ္စည်းမှတစ်ဆင့် အသံများကို ဖမ်းယူနိုင်ပါသည်။"</string>
     <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="APPLICATION">%1$s</xliff:g> ကို <xliff:g id="USB_DEVICE">%2$s</xliff:g> ဝင်သုံးခွင့်ပြုမလား။"</string>
@@ -338,8 +338,8 @@
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"နားကြားကိရိယာ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ဖွင့်နေသည်…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"အပေါ်အက်ပ်မှ ထိန်းချုပ်ထားသောကြောင့် တောက်ပမှုကို ချိန်ညှိ၍ မရပါ"</string>
-    <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"အော်တို-လည်"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"မျက်နှာပြင်အား အလိုအလျောက်လှည့်ရန်"</string>
+    <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"အော်တိုလှည့်"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ဖန်သားပြင် အော်တိုလှည့်ရန်"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"တည်နေရာ"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"စခရင်နားချိန်ပုံ"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"ကင်မရာသုံးခွင့်"</string>
@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ဖြင့် ဆက်ဖွင့်ထားရန်"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"လော့ခ်ကျနေသည်၊ အထောက်အထားစိစစ်ရန် ကြိုးပမ်းကြိမ် များလွန်းသည်"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"စက်လော့ခ်ကျနေသည်\nအထောက်အထားစိစစ်၍ မရပါ"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"သင့်နာရီဖြင့် လော့ခ်ချထားသည်"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>။ <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"အသံဆက်တင်များ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"အလိုအလျောက် စာတန်းထိုးရန်"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ဆိုင်းငံ့ရန်"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# နာရီ}=2{# နာရီ}other{# နာရီ}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# မိနစ်}other{# မိနစ်}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ဘက်ထရီ အားထိန်း"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ခလုတ် <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ပင်မ"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
     <string name="qs_edit" msgid="5583565172803472437">"တည်းဖြတ်ရန်"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"အကွက်ငယ်များ တည်းဖြတ်ခြင်း"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"‘အမြန်ဆက်တင်များ အကွက်ငယ်’ ကို အရွယ်ပြင်ရန်"</string>
     <string name="tuner_time" msgid="2450785840990529997">"အချိန်"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"နာရီ၊ မိနစ်နှင့် စက္ကန့်ကိုပြပါ"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ပြင်ဆင်မုဒ်မှ ထွက်ရန်"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"အရွယ်အစားပြန်ပြုပြင်ရန် ထောင့်စွန်းကို ဖိဆွဲပါ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ထောင့်ဖြတ် လှိမ့်ခွင့်ပြုရန်"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"အရွယ်အစားပြန်ပြုပြင်ရန်"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ချဲ့သည့်ပုံစံ ပြောင်းရန်"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"အရွယ်အစားပြန်ပြုပြင်မှု အဆုံးသတ်ရန်"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ချိတ်ဆက်ထားသော စပီကာများ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"စပီကာနှင့် ဖန်သားပြင်များ"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"အကြံပြုထားသော စက်ပစ္စည်းများ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ထည့်သွင်းချက်"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ထုတ်လုပ်ချက်"</string>
