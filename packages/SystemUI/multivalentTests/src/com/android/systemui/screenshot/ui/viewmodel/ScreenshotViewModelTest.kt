@@ -27,7 +27,7 @@ import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenshotViewModelTest {
+class ScreenshotViewModelTest : SysuiTestCase() {
     private val accessibilityManager: AccessibilityManager = mock(AccessibilityManager::class.java)
     private val appearance = ActionButtonAppearance(null, "Label", "Description")
     private val onclick = {}
