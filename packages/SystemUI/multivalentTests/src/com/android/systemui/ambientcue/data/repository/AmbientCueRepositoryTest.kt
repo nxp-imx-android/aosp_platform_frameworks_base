@@ -28,10 +28,13 @@ import android.content.Intent
 import android.content.testableContext
 import android.os.Binder
 import android.os.Bundle
+import android.view.WindowManagerPolicyConstants
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.LauncherProxyService
+import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
@@ -45,6 +48,8 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.navigationbar.NavigationModeController
+import com.android.systemui.navigationbar.NavigationModeController.ModeChangedListener
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmos
@@ -65,17 +70,23 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     private val smartSpaceSession = mock<SmartspaceSession>()
     private val autofillManager = mock<AutofillManager>()
     private val activityStarter = mock<ActivityStarter>()
+    private val launcherProxyService = mock<LauncherProxyService>()
+    private val navigationModeController = mock<NavigationModeController>()
     private val smartSpaceManager =
         mock<SmartspaceManager>() {
             on { createSmartspaceSession(any()) } doReturn smartSpaceSession
         }
     val onTargetsAvailableListenerCaptor = argumentCaptor<OnTargetsAvailableListener>()
+    val navigationModeChangeListenerCaptor = argumentCaptor<ModeChangedListener>()
+    val launcherProxyListenerCaptor = argumentCaptor<LauncherProxyListener>()
     private val underTest =
         AmbientCueRepositoryImpl(
             backgroundScope = kosmos.backgroundScope,
             smartSpaceManager = smartSpaceManager,
             autofillManager = autofillManager,
             activityStarter = activityStarter,
+            launcherProxyService = launcherProxyService,
+            navigationModeController = navigationModeController,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
             focusdDisplayRepository = kosmos.fakeFocusedDisplayRepository,
@@ -249,6 +260,44 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
 
             runCurrent()
             assertThat(targetTaskId).isEqualTo(TASK_ID)
+        }
+
+    fun isGestureNav_propagatesFromNavigationModeController() =
+        kosmos.runTest {
+            val isGestureNav by collectLastValue(underTest.isGestureNav)
+            runCurrent()
+            verify(navigationModeController)
+                .addListener(navigationModeChangeListenerCaptor.capture())
+
+            navigationModeChangeListenerCaptor.firstValue.onNavigationModeChanged(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL
+            )
+            assertThat(isGestureNav).isTrue()
+
+            navigationModeChangeListenerCaptor.firstValue.onNavigationModeChanged(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON
+            )
+            assertThat(isGestureNav).isFalse()
+        }
+
+    @Test
+    fun isTaskBarVisible_propagatesFromLauncherProxyService() =
+        kosmos.runTest {
+            val isTaskBarVisible by collectLastValue(underTest.isTaskBarVisible)
+            runCurrent()
+            verify(launcherProxyService).addCallback(launcherProxyListenerCaptor.capture())
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(false, false)
+            runCurrent()
+            assertThat(isTaskBarVisible).isFalse()
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(true, false)
+            runCurrent()
+            assertThat(isTaskBarVisible).isTrue()
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(true, true)
+            runCurrent()
+            assertThat(isTaskBarVisible).isFalse()
         }
 
     companion object {
