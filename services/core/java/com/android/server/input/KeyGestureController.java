@@ -957,7 +957,6 @@ final class KeyGestureController {
                 DEFAULT_DISPLAY, /* focusedToken = */null, /* flags = */0, appLaunchData);
     }
 
-    @VisibleForTesting
     void handleKeyGesture(int deviceId, int[] keycodes, int modifierState,
             @KeyGestureEvent.KeyGestureType int gestureType, int action, int displayId,
             @Nullable IBinder focusedToken, int flags, @Nullable AppLaunchData appLaunchData) {
@@ -1013,14 +1012,6 @@ final class KeyGestureController {
         mHandler.obtainMessage(MSG_NOTIFY_KEY_GESTURE_EVENT, event).sendToTarget();
     }
 
-    public void handleKeyGesture(int deviceId, int[] keycodes, int modifierState,
-            @KeyGestureEvent.KeyGestureType int gestureType) {
-        AidlKeyGestureEvent event = createKeyGestureEvent(deviceId, keycodes, modifierState,
-                gestureType, KeyGestureEvent.ACTION_GESTURE_COMPLETE, DEFAULT_DISPLAY,
-                /* flags = */0, /* appLaunchData = */null);
-        handleKeyGesture(event, null /*focusedToken*/);
-    }
-
     public void handleTouchpadGesture(int touchpadGestureType) {
         // Handle custom shortcuts
         InputGestureData customGesture;
@@ -1060,20 +1051,22 @@ final class KeyGestureController {
 
     @MainThread
     private void notifyKeyGestureEvent(AidlKeyGestureEvent event) {
-        InputDevice device = getInputDevice(event.deviceId);
-        if (device == null) {
-            return;
-        }
-        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
-        if (event.action == KeyGestureEvent.ACTION_GESTURE_COMPLETE) {
-            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
-                    event.modifierState, keyGestureEvent.getLogEvent());
-        }
         notifyAllListeners(event);
+        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
         while (mLastHandledEvents.size() >= MAX_TRACKED_EVENTS) {
             mLastHandledEvents.removeFirst();
         }
         mLastHandledEvents.addLast(keyGestureEvent);
+        boolean complete = keyGestureEvent.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
+                && !keyGestureEvent.isCancelled();
+        if (complete) {
+            InputDevice device = getInputDevice(event.deviceId);
+            if (device == null) {
+                return;
+            }
+            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
+                    event.modifierState, keyGestureEvent.getLogEvent());
+        }
     }
 
     @MainThread

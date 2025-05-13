@@ -82,6 +82,12 @@ import static android.view.contentprotection.flags.Flags.createAccessibilityOver
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.hidBluetoothWakeup;
+import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
+import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
+import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
+import static com.android.server.policy.SingleKeyGestureEvent.SINGLE_KEY_GESTURE_TYPE_LONG_PRESS;
+import static com.android.server.policy.SingleKeyGestureEvent.SINGLE_KEY_GESTURE_TYPE_PRESS;
+import static com.android.server.policy.SingleKeyGestureEvent.SINGLE_KEY_GESTURE_TYPE_VERY_LONG_PRESS;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVERED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_COVER_ABSENT;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.CAMERA_LENS_UNCOVERED;
@@ -105,6 +111,7 @@ import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticE
 import static com.android.window.flags.Flags.delegateBackGestureToShell;
 
 import android.accessibilityservice.AccessibilityService;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -1438,21 +1445,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final int behavior = getResolvedLongPressOnPowerBehavior();
         Slog.d(TAG, "powerLongPress: eventTime=" + eventTime
                 + " mLongPressOnPowerBehavior=" + mLongPressOnPowerBehavior);
-
-        // Sending a synthetic KeyEvent to StatusBar service with flag FLAG_LONG_PRESS set, when
-        // power button is long pressed
-        if (enableLppAssistInvocationEffect()) {
-            // Long press is detected in a callback, so there's no explicit hardware KeyEvent
-            // available here. Instead, we create a synthetic power key event that has properties
-            // similar to the original one.
-            final KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KEYCODE_POWER);
-            event.setFlags(KeyEvent.FLAG_LONG_PRESS);
-            // setting both downTime and eventTime as same as downTime is sent as eventTime for long
-            // press event in SingleKeyGestureDetector's handler
-            event.setTime(eventTime, eventTime);
-            sendSystemKeyToStatusBarAsync(event);
-        }
-
         switch (behavior) {
             case LONG_PRESS_POWER_NOTHING:
                 break;
@@ -1643,10 +1635,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case DOUBLE_PRESS_PRIMARY_LAUNCH_DEFAULT_FITNESS_APP:
-                final int stemPrimaryKeyDeviceId = INVALID_INPUT_DEVICE_ID;
-                handleKeyGestureInKeyGestureController(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_DEFAULT_FITNESS,
-                        stemPrimaryKeyDeviceId, KEYCODE_STEM_PRIMARY, /* metaState= */ 0);
+                mInputManagerInternal.handleKeyGestureInKeyGestureController(
+                        new KeyGestureEvent.Builder()
+                                .setKeyGestureType(
+                                        KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_DEFAULT_FITNESS)
+                                .setDeviceId(INVALID_INPUT_DEVICE_ID)
+                                .setKeycodes(new int[]{KEYCODE_STEM_PRIMARY})
+                                .setModifierState(/* metaState= */0)
+                                .build());
                 break;
         }
     }
@@ -2496,7 +2492,35 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onPress(long downTime, int displayId) {
+        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+            final long startTime = event.getStartTime();
+            final int displayId = event.getDisplayId();
+            final int pressCount = event.getPressCount();
+            final int action = event.getAction();
+            switch (event.getType()) {
+                case SINGLE_KEY_GESTURE_TYPE_PRESS:
+                    if (action != ACTION_COMPLETE) {
+                        return;
+                    }
+                    if (event.getPressCount() > 1) {
+                        onMultiPress(startTime, pressCount, displayId);
+                    } else {
+                        onPress(startTime, displayId);
+                    }
+                    break;
+                case SINGLE_KEY_GESTURE_TYPE_LONG_PRESS:
+                    onLongPress(event);
+                    break;
+                case SINGLE_KEY_GESTURE_TYPE_VERY_LONG_PRESS:
+                    if (action != ACTION_COMPLETE) {
+                        return;
+                    }
+                    onVeryLongPress();
+                    break;
+            }
+        }
+
+        private void onPress(long downTime, int displayId) {
             if (mShouldEarlyShortPressOnPower) {
                 return;
             }
@@ -2512,32 +2536,54 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
         }
 
-        @Override
-        void onLongPress(long eventTime) {
+        private void onLongPress(@NonNull SingleKeyGestureEvent event) {
             if (mSingleKeyGestureDetector.beganFromNonInteractive()
                     && !mSupportLongPressPowerWhenNonInteractive) {
                 Slog.v(TAG, "Not support long press power when device is not interactive.");
                 return;
             }
-
-            powerLongPress(eventTime);
+            // If Assistant mapped to long press, we send start, complete and cancel gesture
+            // This is done to allow Assistant launch animation in SysUI. Will extend
+            // this to all single key gestures after moving Single key gestures to
+            // KeyGestureController.
+            if (enableLppAssistInvocationEffect()) {
+                // TODO(b/358569822): Remove this synthetic key event and directly listen to key
+                //  gesture event in SysUI
+                if (event.getAction() == ACTION_COMPLETE) {
+                    // Long press is detected in a callback, so there's no explicit hardware
+                    // KeyEvent available here. Instead, we create a synthetic power key event that
+                    // has properties similar to the original one.
+                    final KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, KEYCODE_POWER);
+                    keyEvent.setFlags(KeyEvent.FLAG_LONG_PRESS);
+                    // setting both downTime and eventTime as same as downTime is sent as eventTime
+                    // for long press event in SingleKeyGestureDetector's handler
+                    keyEvent.setTime(event.getStartTime(), event.getEventTime());
+                    sendSystemKeyToStatusBarAsync(keyEvent);
+                }
+                if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
+                    handleSingleKeyGestureInKeyGestureController(
+                            KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
+                    return;
+                }
+            }
+            if (event.getAction() == ACTION_COMPLETE) {
+                powerLongPress(event.getStartTime());
+            }
         }
 
-        @Override
-        void onVeryLongPress(long eventTime) {
+        private void onVeryLongPress() {
             mActivityManagerInternal.prepareForPossibleShutdown();
             powerVeryLongPress();
         }
 
-        @Override
-        void onMultiPress(long downTime, int count, int displayId) {
+        private void onMultiPress(long downTime, int count, int displayId) {
             powerPress(downTime, count, displayId);
         }
 
         @Override
-        void onKeyUp(long eventTime, int count, int displayId, int deviceId, int metaState) {
+        void onKeyUp(int count, KeyEvent event) {
             if (mShouldEarlyShortPressOnPower && count == 1) {
-                powerPress(eventTime, 1 /*pressCount*/, displayId);
+                powerPress(event.getDownTime(), 1 /*pressCount*/, event.getDisplayId());
             }
         }
     }
@@ -2556,18 +2602,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        int getMaxMultiPressCount() {
-            return 1;
-        }
-
-        @Override
-        void onPress(long downTime, int unusedDisplayId) {
-            mBackKeyHandled |= backKeyPress();
-        }
-
-        @Override
-        void onLongPress(long downTime) {
-            backLongPress();
+        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+            if (event.getAction() != ACTION_COMPLETE) {
+                return;
+            }
+            switch (event.getType()) {
+                case SINGLE_KEY_GESTURE_TYPE_PRESS:
+                    if (event.getPressCount() == 1) {
+                        mBackKeyHandled |= backKeyPress();
+                    }
+                    break;
+                case SINGLE_KEY_GESTURE_TYPE_LONG_PRESS:
+                    backLongPress();
+                    break;
+            }
         }
     }
 
@@ -2590,7 +2638,27 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onPress(long downTime, int unusedDisplayId) {
+        void onKeyGesture(@NonNull SingleKeyGestureEvent event) {
+            final long startTime = event.getStartTime();
+            final int pressCount = event.getPressCount();
+            if (event.getAction() != ACTION_COMPLETE) {
+                return;
+            }
+            switch (event.getType()) {
+                case SINGLE_KEY_GESTURE_TYPE_PRESS:
+                    if (event.getPressCount() > 1) {
+                        onMultiPress(startTime, pressCount);
+                    } else {
+                        onPress(startTime);
+                    }
+                    break;
+                case SINGLE_KEY_GESTURE_TYPE_LONG_PRESS:
+                    onLongPress(startTime);
+                    break;
+            }
+        }
+
+        private void onPress(long downTime) {
             if (shouldHandleStemPrimaryEarlyShortPress()) {
                 return;
             }
@@ -2599,22 +2667,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     KeyEvent.KEYCODE_STEM_PRIMARY, downTime, () -> stemPrimaryPress(1 /*count*/));
         }
 
-        @Override
-        void onLongPress(long eventTime) {
+        private void onLongPress(long downTime) {
             if (mLongPressOnStemPrimaryBehavior == LONG_PRESS_PRIMARY_LAUNCH_VOICE_ASSISTANT) {
                 // Long-press to assistant gesture is not overridable by apps.
-                stemPrimaryLongPress(eventTime);
+                stemPrimaryLongPress(downTime);
             } else {
                 // Other long-press actions should be triggered only if app doesn't handle it.
                 mDeferredKeyActionExecutor.queueKeyAction(
                         KeyEvent.KEYCODE_STEM_PRIMARY,
-                        eventTime,
-                        () -> stemPrimaryLongPress(eventTime));
+                        downTime,
+                        () -> stemPrimaryLongPress(downTime));
             }
         }
 
-        @Override
-        void onMultiPress(long downTime, int count, int unusedDisplayId) {
+        private void onMultiPress(long downTime, int count) {
             // Triple-press stem to toggle accessibility gesture should always be triggered
             // regardless of if app handles it.
             if (count == 3
@@ -2655,7 +2721,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onKeyUp(long eventTime, int count, int displayId, int deviceId, int metaState) {
+        void onKeyUp(int count, KeyEvent event) {
             if (count == 1) {
                 // Save info about the most recent task on the first press of the stem key. This
                 // may be used later to switch to the most recent app using double press gesture.
@@ -2672,7 +2738,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     // Key-up gesture should be triggered only if app doesn't handle it.
                     mDeferredKeyActionExecutor.queueKeyAction(
                             KeyEvent.KEYCODE_STEM_PRIMARY,
-                            eventTime,
+                            event.getDownTime(),
                             () -> {
                                 Slog.d(TAG, "StemPrimaryKeyRule: executing deferred onKeyUp");
                                 // Save the info of the focused task on screen. This may be used
@@ -2720,19 +2786,47 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         @Override
-        void onPress(long downTime, int displayId) {
-
-        }
-
-        @Override
-        void onKeyUp(long eventTime, int pressCount, int displayId, int deviceId, int metaState) {
+        void onKeyUp(int pressCount, KeyEvent event) {
             if (pressCount != 1) {
                 return;
             }
             // Single press on tail button triggers the open notes gesture.
-            handleKeyGestureInKeyGestureController(KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES,
-                    deviceId, KEYCODE_STYLUS_BUTTON_TAIL, metaState);
+            mInputManagerInternal.handleKeyGestureInKeyGestureController(
+                    new KeyGestureEvent.Builder()
+                            .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES)
+                            .setDeviceId(event.getDeviceId())
+                            .setKeycodes(new int[]{KEYCODE_STYLUS_BUTTON_TAIL})
+                            .setModifierState(event.getMetaState())
+                            .build());
         }
+    }
+
+    // TODO(b/358569822): This is temporarily added to allow single key gestures to be processed
+    //  through key gesture infra but keep the detection logic in PWM.
+    private void handleSingleKeyGestureInKeyGestureController(
+            @KeyGestureEvent.KeyGestureType int keyGestureType,
+            @NonNull SingleKeyGestureEvent event) {
+        int flags = 0;
+        if (event.getType() == SINGLE_KEY_GESTURE_TYPE_LONG_PRESS) {
+            flags |= KeyGestureEvent.FLAG_LONG_PRESS;
+        } else {
+            // Currently not supporting non-long press gestures
+            return;
+        }
+        if (event.getAction() == ACTION_CANCEL) {
+            flags |= KeyGestureEvent.FLAG_CANCELLED;
+        }
+        mInputManagerInternal.handleKeyGestureInKeyGestureController(
+                new KeyGestureEvent.Builder()
+                        .setKeycodes(new int[]{event.getKeyCode()})
+                        .setDeviceId(event.getDeviceId())
+                        .setKeyGestureType(keyGestureType)
+                        .setFlags(flags)
+                        .setAction(event.getAction() == ACTION_START
+                                ? KeyGestureEvent.ACTION_GESTURE_START
+                                : KeyGestureEvent.ACTION_GESTURE_COMPLETE)
+                        .setDisplayId(event.getDisplayId())
+                        .build());
     }
 
     private void initSingleKeyGestureRules(Looper looper) {
@@ -3223,16 +3317,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 new int[]{event.getKeyCode()}, event.getMetaState(), gestureType);
     }
 
-    private void handleKeyGestureInKeyGestureController(
-            @KeyGestureEvent.KeyGestureType int gestureType, int deviceId, int keyCode,
-            int metaState) {
-        if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_UNSPECIFIED) {
-            return;
-        }
-        mInputManagerInternal.handleKeyGestureInKeyGestureController(deviceId, new int[]{keyCode},
-                metaState, gestureType);
-    }
-
     @Override
     public KeyboardShortcutGroup getApplicationLaunchKeyboardShortcuts(int deviceId) {
         return mModifierShortcutManager.getApplicationLaunchKeyboardShortcuts(deviceId,
@@ -3393,8 +3477,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         int modifierState = event.getModifierState();
         boolean keyguardOn = keyguardOn();
         boolean canLaunchApp = isUserSetupComplete() && !keyguardOn;
-        if (!event.isCancelled() && Arrays.stream(event.getKeycodes()).anyMatch(
-                (keycode) -> keycode == KeyEvent.KEYCODE_POWER)) {
+        boolean isPowerKeyPressed = Arrays.stream(event.getKeycodes()).anyMatch(
+                (keycode) -> keycode == KeyEvent.KEYCODE_POWER);
+        if (complete && isPowerKeyPressed) {
             mPowerKeyHandled = true;
         }
         switch (gestureType) {
@@ -3414,10 +3499,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT:
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT:
-                if (complete && canLaunchApp) {
-                    launchAssistAction(Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
+                boolean isPowerLongPress = event.isLongPress() && isPowerKeyPressed;
+                boolean shouldLaunchAssist = complete && (canLaunchApp || isPowerLongPress);
+                if (shouldLaunchAssist) {
+                    launchAssistAction(
+                            isPowerLongPress ? null : Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
                             deviceId, SystemClock.uptimeMillis(),
-                            AssistUtils.INVOCATION_TYPE_UNKNOWN);
+                            isPowerLongPress
+                                    ? AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS
+                                    : AssistUtils.INVOCATION_TYPE_UNKNOWN);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_HOME:
