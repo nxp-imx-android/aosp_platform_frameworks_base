@@ -27,9 +27,14 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Tests related to the main thread.
+ *
+ * Some tests require $RAVENWOOD_RUN_SLOW_TESTS to set to "1".
+ */
 public class RavenwoodMainThreadTest {
-    private static final boolean RUN_UNSAFE_TESTS =
-            "1".equals(System.getenv("RAVENWOOD_RUN_UNSAFE_TESTS"));
+    private static final boolean RUN_SLOW_TESTS =
+            "1".equals(System.getenv("RAVENWOOD_RUN_SLOW_TESTS"));
 
     @Test
     public void testRunOnMainThread() {
@@ -44,18 +49,18 @@ public class RavenwoodMainThreadTest {
 
     /**
      * Sleep a long time on the main thread. This test would then "pass", but Ravenwood
-     * should show the stack traces.
+     * should show the "SLOW TEST DETECTED" stack traces.
      *
-     * This is "unsafe" because this test is slow.
+     * This test requires `RAVENWOOD_RUN_SLOW_TESTS=1`.
      */
     @Test
-    public void testUnsafeMainThreadHang() {
-        assumeTrue(RUN_UNSAFE_TESTS);
+    @androidx.test.filters.LargeTest
+    public void testMainThreadSlow() {
+        assumeTrue(RUN_SLOW_TESTS);
 
-        // The test should time out.
         RavenwoodUtils.runOnMainThreadSync(() -> {
             try {
-                Thread.sleep(30_000);
+                Thread.sleep(12_000);
             } catch (InterruptedException e) {
                 fail("Interrupted");
             }
@@ -63,19 +68,18 @@ public class RavenwoodMainThreadTest {
     }
 
     /**
-     * AssertionError on the main thread would be swallowed and reported "normally".
-     * (Other kinds of exceptions would be caught by the unhandled exception handler, and kills
-     * the process)
+     * runOnMainThreadSync() should report back the inner exception, if any.
      *
-     * This is "unsafe" only because this feature can be disabled via the env var.
+     * Note this test does _not_ involves "recoverable exception" check in
+     * RavenwoodRuntimeEnvironmentController because the exception is caught in side the
+     * Runnable that's executed on the main handler. This purely tests runOnMainThreadSync()'s
+     * exception propagation.
      */
     @Test
-    public void testUnsafeAssertFailureOnMainThread() {
-        assumeTrue(RUN_UNSAFE_TESTS);
-
+    public void testRunOnMainThreadSync() {
         assertThrows(AssertionError.class, () -> {
             RavenwoodUtils.runOnMainThreadSync(() -> {
-                fail();
+                fail("Assertion failure on main thread!");
             });
         });
     }

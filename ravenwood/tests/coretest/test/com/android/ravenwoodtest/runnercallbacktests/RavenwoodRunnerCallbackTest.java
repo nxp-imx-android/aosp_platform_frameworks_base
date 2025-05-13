@@ -15,13 +15,20 @@
  */
 package com.android.ravenwoodtest.runnercallbacktests;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner;
+import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -38,6 +45,7 @@ import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
@@ -453,6 +461,37 @@ public class RavenwoodRunnerCallbackTest extends RavenwoodRunnerTestBase {
 
         @Test
         public void test2() {
+        }
+    }
+
+    /**
+     */
+    @RunWith(AndroidJUnit4.class)
+    // CHECKSTYLE:OFF
+    @Expected("""
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$MainThreadAssertionFailureTest
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$MainThreadAssertionFailureTest)
+    testFailure: Exception detected on thread Ravenwood:Main:  *** Continuing the test because it's recoverable ***
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$MainThreadAssertionFailureTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerCallbackTest$MainThreadAssertionFailureTest
+    testSuiteFinished: classes
+    testRunFinished: 1,1,0,0
+    """)
+    // CHECKSTYLE:ON
+    public static class MainThreadAssertionFailureTest {
+        @Test
+        public void test1() {
+            var h = new Handler(Looper.getMainLooper());
+            h.post(() -> fail("If testMainThreadAssertionFailure() fails with this, that's expected."));
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+            // The looper should still be alive, so this should work. (if the looper has finished,
+            // this would hang.)
+            var value = new AtomicInteger(0);
+            RavenwoodUtils.runOnMainThreadSync(() -> value.set(1) );
+            assertThat(value.get()).isEqualTo(1);
         }
     }
 }

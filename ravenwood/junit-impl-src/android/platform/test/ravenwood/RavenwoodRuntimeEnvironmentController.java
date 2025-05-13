@@ -52,6 +52,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Looper_ravenwood;
 import android.os.Message;
 import android.os.Process_ravenwood;
 import android.os.ServiceManager;
@@ -132,6 +133,9 @@ public class RavenwoodRuntimeEnvironmentController {
 
     private static final boolean TOLERATE_LOOPER_ASSERTS =
             !"0".equals(System.getenv("RAVENWOOD_TOLERATE_LOOPER_ASSERTS"));
+
+    private static final boolean TOLERATE_LOOPER_EXCEPTIONS =
+            "1".equals(System.getenv("RAVENWOOD_TOLERATE_LOOPER_EXCEPTIONS"));
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
@@ -360,6 +364,7 @@ public class RavenwoodRuntimeEnvironmentController {
         final var main = new HandlerThread(MAIN_THREAD_NAME);
         sMainThread = main;
         main.start();
+        Looper_ravenwood.sDispatcher = RavenwoodRuntimeEnvironmentController::dispatchMessage;
         Looper.setMainLooperForTest(main.getLooper());
 
         final boolean isSelfInstrumenting =
@@ -606,15 +611,15 @@ public class RavenwoodRuntimeEnvironmentController {
         return outer;
     }
 
-    // TODO: use it to tolerate assert failures on the main thread
-    static void dispatchMessage(Message msg) {
+    private static void dispatchMessage(Message msg) {
         try {
             msg.getTarget().dispatchMessage(msg);
         } catch (Throwable th) {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sStdErr.println(desc);
-            if (TOLERATE_LOOPER_ASSERTS && isThrowableRecoverable(th)) {
+            if (TOLERATE_LOOPER_EXCEPTIONS
+                    || (TOLERATE_LOOPER_ASSERTS && isThrowableRecoverable(th))) {
                 sPendingRecoverableUncaughtException.compareAndSet(null,
                         makeRecoverableExceptionInstance(th));
                 return;
