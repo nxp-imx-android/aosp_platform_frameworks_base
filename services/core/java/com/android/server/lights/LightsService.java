@@ -213,6 +213,7 @@ public class LightsService extends SystemService {
                 if (session != null) {
                     mSessions.remove(session);
                     invalidateLightStatesLocked();
+                    token.unlinkToDeath(LightsManagerBinderService.this, 0);
                 }
             }
         }
