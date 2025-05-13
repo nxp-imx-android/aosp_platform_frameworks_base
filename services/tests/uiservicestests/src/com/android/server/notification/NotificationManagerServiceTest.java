@@ -19395,8 +19395,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         final Notification ntf = createBigPictureNotification(true, true, false);
         final long timePostedMs = System.currentTimeMillis();
 
-        StatusBarNotification sbn = new StatusBarNotification(PKG_O, "pkg", 1481, "tag",
-                UID_O, 0, ntf, UserHandle.getUserHandleForUid(UID_O), null, timePostedMs);
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf, UserHandle.getUserHandleForUid(mUid), null, timePostedMs);
 
         assertNull(ntf.extras.get(EXTRA_PICTURE));
         assertNotNull(ntf.extras.get(EXTRA_PICTURE_ICON));
@@ -19428,8 +19428,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         final Notification ntf = createBigPictureNotification(true, true, true);
         final long timePostedMs = System.currentTimeMillis();
 
-        StatusBarNotification sbn = new StatusBarNotification(PKG_O, "pkg", 1481, "tag",
-                UID_O, 0, ntf, UserHandle.getUserHandleForUid(UID_O), null, timePostedMs);
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf, UserHandle.getUserHandleForUid(mUid), null, timePostedMs);
 
         assertNotNull(ntf.extras.get(EXTRA_PICTURE));
         assertNull(ntf.extras.get(EXTRA_PICTURE_ICON));
