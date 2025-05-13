@@ -19,6 +19,7 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
+import android.graphics.Point
 import android.tools.Rotation
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
@@ -31,6 +32,7 @@ import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -126,6 +128,29 @@ fun expandBubbleViaTapOnBubbleStack(
     waitAndAssertBubbleInExpandedState(testApp, wmHelper)
 }
 
+fun dismissBubbleViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerStateHelper) {
+    // Checks bubble is showing.
+    wmHelper
+        .StateSyncBuilder()
+        .add(ConditionsFactory.isWMStateComplete())
+        .withAppTransitionIdle()
+        .withBubbleShown()
+        .waitForAndVerify()
+
+    // Drag the bubble to the position of dismiss view to dismiss bubble.
+    uiDevice.bubble?.run {
+        drag(Point(uiDevice.displayWidth / 2, uiDevice.displayHeight), 1000)
+    }
+
+    // Wait for bubble gone.
+    wmHelper
+        .StateSyncBuilder()
+        .add(ConditionsFactory.isWMStateComplete())
+        .withAppTransitionIdle()
+        .withBubbleGone()
+        .waitForAndVerify()
+}
+
 private fun waitAndAssertBubbleInExpandedState(
     testApp: StandardAppHelper,
     wmHelper: WindowManagerStateHelper,
@@ -150,10 +175,10 @@ private fun waitAndAssertBubbleInCollapseState(wmHelper: WindowManagerStateHelpe
 }
 
 private val UiDevice.bubble: UiObject2?
-    get() = wait(
-        Until.findObject(By.pkg(SYSUI_PACKAGE).res(SYSUI_PACKAGE, RES_ID_BUBBLE_VIEW)),
-        FIND_OBJECT_TIMEOUT
-    )
+    get() = wait(Until.findObject(sysUiSelector(RES_ID_BUBBLE_VIEW)), FIND_OBJECT_TIMEOUT)
+
+private fun sysUiSelector(resourcesId: String): BySelector =
+    By.pkg(SYSUI_PACKAGE).res(SYSUI_PACKAGE, resourcesId)
 
 private const val FIND_OBJECT_TIMEOUT = 4000L
 private const val SYSUI_PACKAGE = "com.android.systemui"

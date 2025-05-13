@@ -4,10 +4,13 @@
       "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleViewTes"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest"

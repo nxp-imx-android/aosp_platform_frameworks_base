@@ -29,14 +29,15 @@ import org.junit.runners.model.Statement
  *
  * @sample com.android.wm.shell.flicker.bubbles.samples.RecordTraceWithTransitionRuleSample
  *
- * @property setUpBeforeTransition the function to initialize the environment before transition
+ * @property setUpBeforeTransition the operation to initialize the environment before transition
+ *                                   if specified
  * @property transition the transition to execute
- * @property tearDownAfterTransition the function to clean up after transition
+ * @property tearDownAfterTransition the operation to clean up after transition if specified
  */
 class RecordTraceWithTransitionRule(
-    private val setUpBeforeTransition: () -> Unit,
+    private val setUpBeforeTransition: () -> Unit = {},
     private val transition: () -> Unit,
-    private val tearDownAfterTransition: () -> Unit,
+    private val tearDownAfterTransition: () -> Unit = {},
 ) : TestRule {
 
     /**
