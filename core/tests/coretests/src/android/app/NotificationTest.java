@@ -493,155 +493,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_bigText_bigTitle() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_bigText_normalTitle() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle())
-                .setContentTitle("TITLE")
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_notOngoing() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_wrongStyle() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.InboxStyle())
-                .setContentTitle("TITLE")
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_notColorized() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
-                .setColor(Color.WHITE)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_noTitle() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle())
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_noStyle_onlyBigTitle() {
-        Bundle extras = new Bundle();
-        extras.putString(Notification.EXTRA_TITLE_BIG, "BIG");
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .addExtras(extras)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_ongoingCallStyle_notColorized() {
-        PendingIntent intent = PendingIntent.getActivity(
-                mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
-        Person person = new Person.Builder().setName("Caller").build();
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(Notification.CallStyle.forOngoingCall(person, intent))
-                .setColor(Color.WHITE)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_incomingCallStyle_notColorized() {
-        PendingIntent intent = PendingIntent.getActivity(
-                mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
-        Person person = new Person.Builder().setName("Caller").build();
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(Notification.CallStyle.forIncomingCall(person, intent, intent))
-                .setColor(Color.WHITE)
-                .setOngoing(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    @DisableFlags(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public void testHasPromotableCharacteristics_groupSummary() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
-                .setColor(Color.WHITE)
-                .setColorized(true)
-                .setOngoing(true)
-                .setGroup("someGroup")
-                .setGroupSummary(true)
-                .build();
-        assertThat(n.hasPromotableCharacteristics()).isFalse();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_bigText_bigTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -654,7 +506,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_bigText_normalTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -668,7 +520,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_notOngoing() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -680,7 +532,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noRequestPromoted() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -692,7 +544,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_wrongStyle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -706,7 +558,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_colorized() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -720,7 +572,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noTitle() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -733,7 +585,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_noStyle_onlyBigTitle() {
         Bundle extras = new Bundle();
         extras.putString(Notification.EXTRA_TITLE_BIG, "BIG");
@@ -748,7 +600,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_ongoingCallStyle_colorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -765,7 +617,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_ongoingCallStyle_notColorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -781,7 +633,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_incomingCallStyle_colorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -798,7 +650,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_incomingCallStyle_notColorized() {
         PendingIntent intent = PendingIntent.getActivity(
                 mContext, 0, new Intent("test1"), PendingIntent.FLAG_IMMUTABLE);
@@ -814,7 +666,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_OPT_IN_RICH_ONGOING})
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING})
     public void testHasPromotableCharacteristics_optIn_groupSummary() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
