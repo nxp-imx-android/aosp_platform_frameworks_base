@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在代表 <xliff:g id="DEVICE_NAME">%2$s</xliff:g> 要求必要權限，以便從<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>串流傳輸應用程式和系統功能"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"允許「<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;存取手機中的這項資訊"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在代表你的 <xliff:g id="DEVICE_NAME">%2$s</xliff:g> 要求必要權限，以便存取<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>上的相片、媒體和通知"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"要允許「<xliff:g id="APP_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;將<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>的應用程式串流傳輸到 &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; 嗎？"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"「<xliff:g id="APP_NAME_0">%1$s</xliff:g>」將可存取 <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> 顯示或播放的所有內容，包括音訊、相片、付款資訊、密碼和訊息。&lt;br/&gt;&lt;br/&gt;「<xliff:g id="APP_NAME_2">%1$s</xliff:g>」可將應用程式串流傳輸到 <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>，直到你移除這個權限為止。"</string>

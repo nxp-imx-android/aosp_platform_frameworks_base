@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"Rakendus <xliff:g id="APP_NAME">%1$s</xliff:g> taotleb teie seadme <xliff:g id="DEVICE_NAME">%2$s</xliff:g> nimel luba rakenduste ja süsteemifunktsioonide voogesitamiseks teie seadmest <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"Lubage rakendusel &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; teie telefonis sellele teabele juurde pääseda"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"Rakendus <xliff:g id="APP_NAME">%1$s</xliff:g> taotleb teie seadme <xliff:g id="DEVICE_NAME">%2$s</xliff:g> nimel luba pääseda juurde fotodele, meediale ja märguannetele, mille asukoht on teie <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Kas lubada rakendusel &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; teie seadme &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; rakendusi seadmesse <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> voogesitada?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> saab juurdepääsu kõigele, mida teie seadmes <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> saab kuvada või esitada, sh helile, fotodele, makseteabele, paroolidele ja sõnumitele.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> saab rakendusi seadmesse <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> voogesitada seni, kuni juurdepääsu sellele loale eemaldate."</string>
