@@ -1648,14 +1648,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case DOUBLE_PRESS_PRIMARY_LAUNCH_DEFAULT_FITNESS_APP:
-                mInputManagerInternal.handleKeyGestureInKeyGestureController(
-                        new KeyGestureEvent.Builder()
-                                .setKeyGestureType(
-                                        KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_DEFAULT_FITNESS)
-                                .setDeviceId(INVALID_INPUT_DEVICE_ID)
-                                .setKeycodes(new int[]{KEYCODE_STEM_PRIMARY})
-                                .setModifierState(/* metaState= */0)
-                                .build());
+                final int stemPrimaryKeyDeviceId = INVALID_INPUT_DEVICE_ID;
+                handleKeyGestureInKeyGestureController(
+                        KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_DEFAULT_FITNESS,
+                        stemPrimaryKeyDeviceId, KEYCODE_STEM_PRIMARY, /* metaState= */ 0);
                 break;
         }
     }
@@ -2775,13 +2771,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 return;
             }
             // Single press on tail button triggers the open notes gesture.
-            mInputManagerInternal.handleKeyGestureInKeyGestureController(
-                    new KeyGestureEvent.Builder()
-                            .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES)
-                            .setDeviceId(event.getDeviceId())
-                            .setKeycodes(new int[]{KEYCODE_STYLUS_BUTTON_TAIL})
-                            .setModifierState(event.getMetaState())
-                            .build());
+            handleKeyGestureInKeyGestureController(KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES,
+                    event.getDeviceId(), KEYCODE_STYLUS_BUTTON_TAIL, event.getMetaState());
         }
     }
 
@@ -3271,6 +3262,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         mInputManagerInternal.notifyKeyGestureCompleted(event.getDeviceId(),
                 new int[]{event.getKeyCode()}, event.getMetaState(), gestureType);
+    }
+
+    private void handleKeyGestureInKeyGestureController(
+            @KeyGestureEvent.KeyGestureType int gestureType, int deviceId, int keyCode,
+            int metaState) {
+        if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_UNSPECIFIED) {
+            return;
+        }
+        mInputManagerInternal.handleKeyGestureInKeyGestureController(deviceId, new int[]{keyCode},
+                metaState, gestureType);
     }
 
     @Override

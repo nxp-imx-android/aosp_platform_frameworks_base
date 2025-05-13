@@ -44,7 +44,6 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_NOTH
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -178,6 +177,7 @@ class TestPhoneWindowManager {
     @Mock private MetricsLogger mMetricsLogger;
     @Mock private UiEventLogger mUiEventLogger;
     @Mock private GlobalActions mGlobalActions;
+    @Mock private AccessibilityShortcutController mAccessibilityShortcutController;
 
     @Mock private StatusBarManagerInternal mStatusBarManagerInternal;
 
@@ -193,6 +193,9 @@ class TestPhoneWindowManager {
     private StaticMockitoSession mMockitoSession;
     private OffsettableClock mClock = new OffsettableClock();
     private TestLooper mTestLooper = new TestLooper(() -> mClock.now());
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+
     private boolean mIsTalkBackEnabled;
     private boolean mIsTalkBackShortcutGestureEnabled;
 
@@ -226,6 +229,11 @@ class TestPhoneWindowManager {
         @Override
         Looper getLooper() {
             return mTestLooper.getLooper();
+        }
+
+        AccessibilityShortcutController getAccessibilityShortcutController(
+                Context context, Handler handler, int initialUserId) {
+            return mAccessibilityShortcutController;
         }
 
         Supplier<GlobalActions> getGlobalActionsFactory() {
@@ -262,6 +270,7 @@ class TestPhoneWindowManager {
      */
     TestPhoneWindowManager(Context context, boolean supportSettingsUpdate) {
         MockitoAnnotations.initMocks(this);
+        mHandler = new Handler(mTestLooper.getLooper());
         mContext = mockingDetails(context).isSpy() ? context : spy(context);
         mGestureLauncherService = spy(new GestureLauncherService(mContext, mMetricsLogger,
                 mQuickAccessWalletClient, mUiEventLogger));
@@ -324,11 +333,6 @@ class TestPhoneWindowManager {
         doReturn(mInputManager).when(mContext).getSystemService(eq(InputManager.class));
         doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
         doNothing().when(mInputManager).unregisterKeyGestureEventHandler(any());
-        doAnswer(inv -> {
-            mPhoneWindowManager.handleKeyGestureEvent(inv.getArgument(0), /* focusedToken= */null);
-            return null;
-        }).when(mInputManagerInternal).handleKeyGestureInKeyGestureController(
-                any(KeyGestureEvent.class));
         doReturn(mPackageManager).when(mContext).getPackageManager();
         doReturn(mSensorPrivacyManager).when(mContext).getSystemService(
                 eq(SensorPrivacyManager.class));
@@ -390,6 +394,7 @@ class TestPhoneWindowManager {
         mPhoneWindowManager.systemReady();
         mPhoneWindowManager.systemBooted();
 
+        overrideLaunchAccessibility();
         doReturn(false).when(mPhoneWindowManager).keyguardOn();
         doNothing().when(mContext).startActivityAsUser(any(), any());
         doNothing().when(mContext).startActivityAsUser(any(), any(), any());
@@ -423,6 +428,13 @@ class TestPhoneWindowManager {
 
     void dispatchAllPendingEvents() {
         mTestLooper.dispatchAll();
+    }
+
+    // Override accessibility setting and perform function.
+    private void overrideLaunchAccessibility() {
+        doReturn(true).when(mAccessibilityShortcutController)
+                .isAccessibilityShortcutAvailable(anyBoolean());
+        doNothing().when(mAccessibilityShortcutController).performAccessibilityShortcut();
     }
 
     int interceptKeyBeforeQueueing(KeyEvent event) {
@@ -692,6 +704,11 @@ class TestPhoneWindowManager {
         verify(mAudioManagerInternal, never()).silenceRingerModeInternal(any());
     }
 
+    void assertAccessibilityKeychordCalled() {
+        mTestLooper.dispatchAll();
+        verify(mAccessibilityShortcutController).performAccessibilityShortcut();
+    }
+
     void assertCloseAllDialogs() {
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mContext).sendBroadcastAsUser(intentCaptor.capture(), any(), any(), any());
@@ -737,6 +754,34 @@ class TestPhoneWindowManager {
                 .toList();
 
         assertTrue(capturedValues.contains(true));
+    }
+
+    void assertNoDoublePowerLaunch() {
+        ArgumentCaptor<MutableBoolean> valueCaptor = ArgumentCaptor.forClass(MutableBoolean.class);
+
+        mTestLooper.dispatchAll();
+        verify(mGestureLauncherService, atLeast(0))
+                .interceptPowerKeyDown(any(), anyBoolean(), valueCaptor.capture());
+
+        List<Boolean> capturedValues = valueCaptor.getAllValues().stream()
+                .map(mutableBoolean -> mutableBoolean.value)
+                .toList();
+
+        assertTrue(capturedValues.stream().noneMatch(value -> value));
+    }
+
+    void assertEmergencyLaunch() {
+        ArgumentCaptor<MutableBoolean> valueCaptor = ArgumentCaptor.forClass(MutableBoolean.class);
+
+        mTestLooper.dispatchAll();
+        verify(mGestureLauncherService, atLeast(1))
+                .interceptPowerKeyDown(any(), anyBoolean(), valueCaptor.capture());
+
+        List<Boolean> capturedValues = valueCaptor.getAllValues().stream()
+                .map(mutableBoolean -> mutableBoolean.value)
+                .toList();
+
+        assertTrue(capturedValues.getLast());
     }
 
     void assertSearchManagerLaunchAssist() {
@@ -945,11 +990,8 @@ class TestPhoneWindowManager {
     }
 
     void assertKeyGestureEventSentToKeyGestureController(int gestureType) {
-        ArgumentCaptor<KeyGestureEvent> gestureCaptor = ArgumentCaptor.forClass(
-                KeyGestureEvent.class);
-        verify(mInputManagerInternal).handleKeyGestureInKeyGestureController(
-                gestureCaptor.capture());
-        assertEquals(gestureType, gestureCaptor.getValue().getKeyGestureType());
+        verify(mInputManagerInternal)
+                .handleKeyGestureInKeyGestureController(anyInt(), any(), anyInt(), eq(gestureType));
     }
 
     void assertNoActivityLaunched() {
