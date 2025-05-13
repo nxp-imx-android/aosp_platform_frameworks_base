@@ -1320,7 +1320,9 @@ public class BubbleTransitions {
 
             mBubble.setPreparingTransition(this);
             final WindowContainerToken token = mTaskInfo.getToken();
-            final WindowContainerTransaction wct = getExitBubbleTransaction(token);
+            final Binder captionInsetsOwner = mBubble.getTaskView().getCaptionInsetsOwner();
+            final WindowContainerTransaction wct =
+                    getExitBubbleTransaction(token, captionInsetsOwner);
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
@@ -1479,7 +1481,9 @@ public class BubbleTransitions {
             mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
             final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
-            final WindowContainerTransaction wct = getExitBubbleTransaction(token);
+            final Binder captionInsetsOwner = bubble.getTaskView().getCaptionInsetsOwner();
+            final WindowContainerTransaction wct =
+                    getExitBubbleTransaction(token, captionInsetsOwner);
             wct.reorder(token, /* onTop= */ true);
             if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
                 wct.setHidden(token, false);

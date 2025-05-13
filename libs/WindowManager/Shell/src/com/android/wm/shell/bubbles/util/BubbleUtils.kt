@@ -17,6 +17,8 @@
 package com.android.wm.shell.bubbles.util
 
 import android.app.WindowConfiguration
+import android.os.Binder
+import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.window.flags.Flags
@@ -31,6 +33,7 @@ private fun getBubbleTransaction(
     toBubble: Boolean,
     isAppBubble: Boolean,
     reparentToTda: Boolean,
+    captionInsetsOwner: Binder?,
 ): WindowContainerTransaction {
     val wct = WindowContainerTransaction()
     if (reparentToTda) {
@@ -63,6 +66,13 @@ private fun getBubbleTransaction(
     if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
         wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
     }
+    if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
+        if (!toBubble && captionInsetsOwner != null) {
+            wct.removeInsetsSource(
+                token, captionInsetsOwner, 0 /* index */, WindowInsets.Type.captionBar()
+            )
+        }
+    }
     return wct
 }
 
@@ -84,6 +94,7 @@ fun getEnterBubbleTransaction(
         toBubble = true,
         isAppBubble,
         reparentToTda,
+        captionInsetsOwner = null,
     )
 }
 
@@ -92,6 +103,7 @@ fun getEnterBubbleTransaction(
  */
 fun getExitBubbleTransaction(
     token: WindowContainerToken,
+    captionInsetsOwner: Binder?,
 ): WindowContainerTransaction {
     return getBubbleTransaction(
         token,
@@ -99,6 +111,7 @@ fun getExitBubbleTransaction(
         // Everything will be reset, so doesn't matter for exit.
         isAppBubble = true,
         reparentToTda = false,
+        captionInsetsOwner,
     )
 }
 

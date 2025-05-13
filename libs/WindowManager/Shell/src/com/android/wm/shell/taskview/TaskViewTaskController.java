@@ -417,6 +417,10 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         applyCaptionInsetsIfNeeded();
     }
 
+    @Nullable Binder getCaptionInsetsOwner() {
+        return mCaptionInsetsOwner;
+    }
+
     void applyCaptionInsetsIfNeeded() {
         if (mTaskToken == null) return;
         WindowContainerTransaction wct = new WindowContainerTransaction();

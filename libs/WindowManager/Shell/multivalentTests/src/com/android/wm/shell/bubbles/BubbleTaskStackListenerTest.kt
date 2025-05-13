@@ -18,6 +18,7 @@ package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.os.Binder
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -30,11 +31,12 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
-import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -44,6 +46,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /**
  * Unit tests for [BubbleTaskStackListener].
@@ -111,8 +114,11 @@ class BubbleTaskStackListenerTest {
         FLAG_ENABLE_BUBBLE_ANYTHING,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
         FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+        FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     )
     fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
+        val captionInsetsOwner = Binder()
+        whenever(bubble.taskView.captionInsetsOwner).thenReturn(captionInsetsOwner)
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         bubbleData.stub {
             on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
@@ -131,7 +137,7 @@ class BubbleTaskStackListenerTest {
             verify(taskOrganizer).applyTransaction(wctCaptor.capture())
             wctCaptor.lastValue
         }
-        verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder())
+        verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder(), captionInsetsOwner)
         verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
     }

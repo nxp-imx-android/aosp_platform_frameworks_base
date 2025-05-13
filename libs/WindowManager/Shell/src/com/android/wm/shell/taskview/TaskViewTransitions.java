@@ -457,7 +457,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (taskToken == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.moveTaskViewToFullscreen(): taskView=%d",
                 taskView.hashCode());
-        final WindowContainerTransaction wct = getExitBubbleTransaction(taskToken);
+        final WindowContainerTransaction wct =
+                getExitBubbleTransaction(taskToken, taskView.getCaptionInsetsOwner());
         mShellExecutor.execute(() -> {
             mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false /* intercept */);
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
