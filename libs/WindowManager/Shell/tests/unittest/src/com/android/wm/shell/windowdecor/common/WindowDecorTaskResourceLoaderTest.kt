@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Drawable
 import android.os.LocaleList
 import android.os.UserHandle
@@ -50,6 +51,7 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
@@ -209,6 +211,28 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
         val task = createTaskInfo(context.userId)
 
         assertThrows(Exception::class.java) { loader.getName(task) }
+    }
+
+    @Test
+    fun testGet_nonexistentPackage_returnsDefaultAndDontCache() {
+        val componentName = ComponentName("com.foo", "BarActivity")
+        val appIconDrawable = mock<Drawable>()
+        val task = TestRunningTaskInfoBuilder()
+            .setUserId(context.userId)
+            .setBaseIntent(Intent().apply { component = componentName })
+            .build()
+        loader.onWindowDecorCreated(task)
+        doReturn(appIconDrawable).whenever(mockPackageManager).getDefaultActivityIcon()
+        whenever(mockHeaderIconFactory.createIconBitmap(appIconDrawable, 1f))
+            .thenReturn(mock())
+        whenever(mockVeilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT))
+            .thenReturn(mock())
+        doThrow(NameNotFoundException()).whenever(mockPackageManager).getActivityInfo(eq(componentName), anyInt())
+
+        loader.getVeilIcon(task)
+
+        verify(mockVeilIconFactory).createScaledBitmap(appIconDrawable, MODE_DEFAULT)
+        assertThat(loader.taskToResourceCache[task.taskId]).isNull()
     }
 
     private fun createTaskInfo(userId: Int): ActivityManager.RunningTaskInfo {

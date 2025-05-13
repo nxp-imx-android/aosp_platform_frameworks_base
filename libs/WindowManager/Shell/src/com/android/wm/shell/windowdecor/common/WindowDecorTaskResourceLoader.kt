@@ -20,9 +20,11 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Bitmap
 import android.os.LocaleList
 import android.os.UserHandle
+import android.util.Slog
 import androidx.tracing.Trace
 import com.android.internal.annotations.VisibleForTesting
 import com.android.launcher3.icons.BaseIconFactory
@@ -113,7 +115,6 @@ class WindowDecorTaskResourceLoader(
             return cachedResources.appName
         }
         val resources = loadAppResources(taskInfo)
-        taskToResourceCache[taskInfo.taskId] = resources
         localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.appName
     }
@@ -127,7 +128,6 @@ class WindowDecorTaskResourceLoader(
             return cachedResources.appIcon
         }
         val resources = loadAppResources(taskInfo)
-        taskToResourceCache[taskInfo.taskId] = resources
         localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.appIcon
     }
@@ -141,7 +141,6 @@ class WindowDecorTaskResourceLoader(
             return cachedResources.veilIcon
         }
         val resources = loadAppResources(taskInfo)
-        taskToResourceCache[taskInfo.taskId] = resources
         localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.veilIcon
     }
@@ -178,7 +177,21 @@ class WindowDecorTaskResourceLoader(
             val badgedAppIconDrawable = pm.getUserBadgedIcon(appIconDrawable, taskInfo.userHandle())
             val appIcon = headerIconFactory.createIconBitmap(badgedAppIconDrawable, /* scale= */ 1f)
             val veilIcon = veilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT)
-            return AppResources(appName = appName, appIcon = appIcon, veilIcon = veilIcon)
+            val appResources =
+                AppResources(appName = appName, appIcon = appIcon, veilIcon = veilIcon)
+            taskToResourceCache[taskInfo.taskId] = appResources
+            return appResources
+        } catch (e: NameNotFoundException) {
+            Slog.e(TAG, "Failed to get app resources")
+            val pm =
+                userProfilesContexts
+                .getOrCreate(taskInfo.userId)
+                .packageManager
+            val defaultIconDrawable = pm.getDefaultActivityIcon()
+            val appIcon = headerIconFactory.createIconBitmap(defaultIconDrawable, /* scale= */ 1f)
+            val veilIcon = veilIconFactory.createScaledBitmap(defaultIconDrawable, MODE_DEFAULT)
+            // Do not cache the result when loading failed.
+            return AppResources(appName = "", appIcon = appIcon, veilIcon = veilIcon)
         } finally {
             Trace.endSection()
         }
