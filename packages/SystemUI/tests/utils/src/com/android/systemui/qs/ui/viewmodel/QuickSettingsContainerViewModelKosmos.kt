@@ -26,6 +26,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.detailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.tileGridViewModelFactory
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.toolbarViewModelFactory
+import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
@@ -53,6 +54,7 @@ val Kosmos.quickSettingsContainerViewModelFactory by
                     mediaCarouselController = mediaCarouselController,
                     mediaHost = mock<MediaHost>(),
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+                    shadeDisplaysInteractor = { shadeDisplaysInteractor },
                 )
             }
         }

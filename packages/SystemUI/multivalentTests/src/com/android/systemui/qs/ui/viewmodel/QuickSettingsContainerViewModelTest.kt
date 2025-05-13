@@ -19,9 +19,11 @@ package com.android.systemui.qs.ui.viewmodel
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
+import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
@@ -31,6 +33,7 @@ import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
@@ -113,5 +116,28 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
 
             assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
+
+    @Test
+    fun isBrightnessSliderVisible_defaultDisplay_isVisible() =
+        with(kosmos) {
+            testScope.runTest {
+                fakeShadeDisplaysRepository.setPendingDisplayId(Display.DEFAULT_DISPLAY)
+
+                assertThat(underTest.isBrightnessSliderVisible).isTrue()
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun isBrightnessSliderVisible_externalDisplay_isInvisible() =
+        with(kosmos) {
+            testScope.runTest {
+                fakeShadeDisplaysRepository.setPendingDisplayId(
+                    Display.DEFAULT_DISPLAY + 1
+                ) // Not default.
+
+                assertThat(underTest.isBrightnessSliderVisible).isFalse()
+            }
         }
 }
