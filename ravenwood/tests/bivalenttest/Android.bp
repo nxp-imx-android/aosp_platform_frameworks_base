@@ -36,7 +36,7 @@ cc_library_shared {
 }
 
 java_defaults {
-    name: "ravenwood-bivalent-light-defaults",
+    name: "ravenwood-bivalent-defaults",
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
@@ -44,6 +44,7 @@ java_defaults {
 
         "junit-params",
         "platform-compat-test-rules",
+        "platform-parametric-runner-lib-no-robo",
 
         // To make sure it won't cause VerifyError (b/324063814)
         "platformprotosnano",
@@ -59,34 +60,9 @@ java_defaults {
     ],
 }
 
-java_defaults {
-    name: "ravenwood-bivalent-defaults",
-    defaults: [
-        "ravenwood-bivalent-light-defaults",
-    ],
-    static_libs: [
-        // This has a robolectric dependency, which would slow down builds.
-        "platform-parametric-runner-lib",
-    ],
-}
-
 android_ravenwood_test {
     name: "RavenwoodBivalentTest",
     defaults: ["ravenwood-bivalent-defaults"],
-    target_sdk_version: "34",
-    package_name: "com.android.ravenwoodtest.bivalenttest",
-    auto_gen_config: true,
-}
-
-// Same as RavenwoodBivalentTest, minus ravenizer/*, to remove
-// the "platform-parametric-runner-lib" dependency, for faster rebuilds
-android_ravenwood_test {
-    name: "RavenwoodBivalentTest-light",
-    defaults: ["ravenwood-bivalent-light-defaults"],
-    exclude_srcs: [
-        "test/**/ravenizer/*.java",
-        "test/**/ravenizer/*.kt",
-    ],
     target_sdk_version: "34",
     package_name: "com.android.ravenwoodtest.bivalenttest",
     auto_gen_config: true,
