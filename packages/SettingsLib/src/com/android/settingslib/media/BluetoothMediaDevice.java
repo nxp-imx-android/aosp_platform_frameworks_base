@@ -43,7 +43,7 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     private final CachedBluetoothDevice mCachedDevice;
     private final AudioManager mAudioManager;
-    private final Boolean mIsMutingExpectedDevice;
+    private final boolean mIsMutingExpectedDevice;
 
     BluetoothMediaDevice(
             @NonNull Context context,
@@ -61,7 +61,7 @@ public class BluetoothMediaDevice extends MediaDevice {
             @Nullable MediaRoute2Info info,
             @Nullable DynamicRouteAttributes dynamicRouteAttributes,
             @Nullable RouteListingPreference.Item item,
-            Boolean isMutingExpectedDevice) {
+            boolean isMutingExpectedDevice) {
         super(context, info, dynamicRouteAttributes, item);
         mCachedDevice = device;
         mIsMutingExpectedDevice = isMutingExpectedDevice;
