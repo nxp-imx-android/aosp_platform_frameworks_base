@@ -677,18 +677,6 @@ public final class NotificationEntry extends ListEntry {
         return row != null && row.isDismissed();
     }
 
-    public boolean isRowRemoved() {
-        return row != null && row.isRemoved();
-    }
-
-    /**
-     * @return {@code true} if the row is null or removed
-     */
-    public boolean isRemoved() {
-        //TODO: recycling invalidates this
-        return row == null || row.isRemoved();
-    }
-
     public boolean isRowPinned() {
         return getPinnedStatus().isPinned();
     }
