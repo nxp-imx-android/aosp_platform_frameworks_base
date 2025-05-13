@@ -22,19 +22,22 @@ import android.graphics.Rect
 import android.graphics.Region
 import android.os.Binder
 import android.view.Display
+import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowManager
+import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams.OccludingCaptionElement.Alignment
+import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
-import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isRtl
+import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 
 
@@ -45,29 +48,52 @@ import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
  * @param <T> The type of the caption's root view
  */
 abstract class CaptionController<T>(
+    protected var taskInfo: RunningTaskInfo,
     private val windowDecorViewHostSupplier:
     WindowDecorViewHostSupplier<WindowDecorViewHost>,
+    private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder =
+        { SurfaceControl.Builder() },
+    private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
+        object : SurfaceControlViewHostFactory {},
 ) where T : View, T : TaskFocusStateConsumer {
 
-    private lateinit var taskInfo: RunningTaskInfo
     private var captionInsets: WindowDecorationInsets? = null
     private val insetsOwner = Binder()
     private var captionViewHost: WindowDecorViewHost? = null
     private var windowDecorationViewHolder: WindowDecorationViewHolder<*>? = null
+    protected lateinit var captionLayoutResult: CaptionRelayoutResult
+    private lateinit var decorWindowContext: Context
+    private var windowDecorationInsets: WindowDecorationInsets? = null
 
-    private var isCaptionVisible = false
+    protected var isCaptionVisible = false
+    var isRecentsTransitionRunning = false
+    var hasGlobalFocus = false
+    var isDragging = false
+
 
     /** Inflates the correct caption view and returns the view's view holder. */
-    abstract fun createCaptionView(): WindowDecorationViewHolder<*>
+    protected abstract fun createCaptionView(): WindowDecorationViewHolder<*>
 
     /** Type of caption.*/
     abstract val captionType: CaptionType
 
+    /** Called when [WindowDecoration2] is closing. */
+    abstract fun close()
+
     /**
-     * Returns the caption height given the additional padding that will be added to the top of the
+     * Returns the caption height including any additional padding that will be added to the
      * caption.
      */
-    abstract fun getCaptionHeight(captionPadding: Int): Int
+    abstract fun getCaptionHeight(): Int
+
+    /** Returns the width of the caption. */
+    protected abstract fun getCaptionWidth(): Int
+
+    /** Returns the valid drag area for a task or null if task cannot be dragged. */
+    open fun calculateValidDragArea(): Rect? = null
+
+    /** Called when a task is animating after being repositioned or resized. */
+    open fun onAnimatingTaskRepositioningOrResize(animatingTaskResizeOrReposition: Boolean) {}
 
     /**
      * Called by [WindowDecoration2] to trigger a new relayout to update the caption and its views.
@@ -81,19 +107,19 @@ abstract class CaptionController<T>(
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
     ): CaptionRelayoutResult = traceSection("CaptionController#relayout") {
+        taskInfo = params.runningTaskInfo
+        hasGlobalFocus = params.hasGlobalFocus
+        this.decorWindowContext = decorWindowContext
+
         val viewHolder = getOrCreateViewHolder()
-        isCaptionVisible = params.isCaptionVisible
+        isCaptionVisible = taskInfo.isVisible && params.isCaptionVisible
         val viewHost = getOrCreateViewHost(decorWindowContext, display)
-        val resources = decorWindowContext.resources
         val taskBounds = taskInfo.getConfiguration().windowConfiguration.bounds
-        val captionHeight = getCaptionHeight(params.captionTopPadding)
-        val captionWidth = resources.getDimensionPixelSize(
-            params.captionWidthId,
-            taskBounds.width()
-        )
+        val captionTopPadding = getCaptionTopPadding()
+        val captionHeight = getCaptionHeight()
+        val captionWidth = getCaptionWidth()
         val captionX = (taskBounds.width() - captionWidth) / 2
         val captionY = 0
-        val captionTopPadding = params.captionTopPadding
 
         updateCaptionContainerSurface(
             parentContainer,
@@ -106,7 +132,7 @@ abstract class CaptionController<T>(
             updateCaptionInsets(params, decorWindowContext, wct, captionHeight, taskBounds)
 
         traceSection("CaptionController#relayout-updateViewHost") {
-            viewHolder.setTopPadding(params.captionTopPadding)
+            viewHolder.setTopPadding(captionTopPadding)
             viewHolder.setTaskFocusState(params.hasGlobalFocus)
             val localCaptionBounds = Rect(
                 captionX,
@@ -114,13 +140,11 @@ abstract class CaptionController<T>(
                 captionX + captionWidth,
                 captionY + captionHeight
             )
-            val touchableRegion = if (params.limitTouchRegionToSystemAreas) {
-                calculateLimitedTouchableRegion(
-                    params,
-                    decorWindowContext,
-                    localCaptionBounds
-                )
-            } else null
+            val touchableRegion = calculateLimitedTouchableRegion(
+                params,
+                decorWindowContext,
+                localCaptionBounds
+            )
             updateViewHierarchy(
                 params,
                 viewHost,
@@ -132,7 +156,7 @@ abstract class CaptionController<T>(
             )
         }
 
-        return CaptionRelayoutResult(
+        captionLayoutResult = CaptionRelayoutResult(
             captionHeight = captionHeight,
             captionWidth = captionWidth,
             captionX = captionX,
@@ -140,8 +164,12 @@ abstract class CaptionController<T>(
             captionTopPadding = captionTopPadding,
             customizableCaptionRegion = customizableCaptionRegion,
         )
+        return captionLayoutResult
     }
 
+    protected open fun getCaptionTopPadding(): Int = 0
+
+    /** Updates the caption's view hierarchy. */
     private fun updateViewHierarchy(
         params: RelayoutParams,
         viewHost: WindowDecorViewHost,
@@ -183,15 +211,29 @@ abstract class CaptionController<T>(
         }
     }
 
+    /**
+     * Calculates the touchable region of the caption to only the areas where input should be
+     * handled by  the system (i.e. non custom-excluded areas). The region will be calculated based
+     * on occluding caption elements and exclusion areas reported by the app.
+     *
+     * If app is not requesting to customize caption bar, returns [null] signifying that the
+     * touchable region is not limited.
+     */
     private fun calculateLimitedTouchableRegion(
         params: RelayoutParams,
         decorWindowContext: Context,
         localCaptionBounds: Rect,
-    ): Region {
-        // Make caption bounds relative to display to align with exclusion region.
-        val positionInParent = params.runningTaskInfo.positionInParent
+    ): Region? {
+        // If app is not requesting custom caption, touchable region is not limited so return null
+        if (!taskInfo.isTransparentCaptionBarAppearance ||
+            !DesktopModeFlags.ENABLE_ACCESSIBLE_CUSTOM_HEADERS.isTrue
+        ) {
+            return null
+        }
+
+        val taskPositionInParent = taskInfo.positionInParent
         val captionBoundsInDisplay = Rect(localCaptionBounds).apply {
-            offsetTo(positionInParent.x, positionInParent.y)
+            offsetTo(taskPositionInParent.x, taskPositionInParent.y)
         }
 
         val boundingRects = calculateBoundingRectsRegion(
@@ -210,7 +252,7 @@ abstract class CaptionController<T>(
             set(captionBoundsInDisplay)
             op(customizedRegion, Region.Op.DIFFERENCE)
             // Return resulting region back to window coordinates.
-            translate(-positionInParent.x, -positionInParent.y)
+            translate(-taskPositionInParent.x, -taskPositionInParent.y)
         }
 
         boundingRects.recycle()
@@ -247,40 +289,6 @@ abstract class CaptionController<T>(
         return region
     }
 
-    private fun calculateBoundingRectLocal(
-        element: RelayoutParams.OccludingCaptionElement,
-        elementWidthPx: Int,
-        captionRect: Rect,
-        decorWindowContext: Context,
-    ): Rect {
-        val isRtl = decorWindowContext.isRtl
-        return when (element.alignment) {
-            Alignment.START -> {
-                if (isRtl) {
-                    Rect(
-                        captionRect.width() - elementWidthPx,
-                        0,
-                        captionRect.width(),
-                        captionRect.height()
-                    )
-                } else {
-                    Rect(0, 0, elementWidthPx, captionRect.height())
-                }
-            }
-
-            Alignment.END -> {
-                if (isRtl) {
-                    Rect(0, 0, elementWidthPx, captionRect.height())
-                } else {
-                    Rect(
-                        captionRect.width() - elementWidthPx, 0,
-                        captionRect.width(), captionRect.height()
-                    )
-                }
-            }
-        }
-    }
-
     private fun updateCaptionContainerSurface(
         parentContainer: SurfaceControl,
         startT: SurfaceControl.Transaction,
@@ -294,6 +302,31 @@ abstract class CaptionController<T>(
             .setPosition(captionSurface, captionX.toFloat(), /* y= */ 0f)
             .setLayer(captionSurface, CAPTION_LAYER_Z_ORDER)
             .show(captionSurface)
+    }
+
+    /**
+     * Adds caption inset source to a WCT
+     */
+    fun addCaptionInset(wct: WindowContainerTransaction) {
+        val captionHeight = getCaptionHeight()
+        if (captionHeight == 0 || !isCaptionVisible) {
+            return
+        }
+
+        val captionInsets = Rect(0, 0, 0, captionHeight)
+        val newInsets = WindowDecorationInsets(
+            token = taskInfo.token,
+            owner = insetsOwner,
+            frame = captionInsets,
+            taskFrame = null,
+            boundingRects = null,
+            flags = 0,
+            shouldAddCaptionInset = true,
+            excludedFromAppBounds = false
+        )
+        if (newInsets != windowDecorationInsets) {
+            windowDecorationInsets = newInsets.apply { update(wct) }
+        }
     }
 
     private fun updateCaptionInsets(
@@ -312,14 +345,14 @@ abstract class CaptionController<T>(
         // positioned at the top of the task bounds, also in absolute coordinates.
         // So just reuse the task bounds and adjust the bottom coordinate.
         val captionInsetsRect = Rect(taskBounds)
-        captionInsetsRect.bottom = captionInsetsRect.top + captionHeight
+        captionInsetsRect.bottom = captionHeight
 
         // Caption bounding rectangles: these are optional, and are used to present finer
         // insets than traditional |Insets| to apps about where their content is occluded.
         // These are also in absolute coordinates.
-        val boundingRects: Array<Rect>?
         val numOfElements = params.occludingCaptionElements.size
         val customizableCaptionRegion = Region.obtain()
+        val boundingRects: Array<Rect>?
         if (numOfElements == 0) {
             boundingRects = null
         } else {
@@ -371,6 +404,51 @@ abstract class CaptionController<T>(
         return customizableCaptionRegion
     }
 
+    private fun calculateBoundingRectLocal(
+        element: RelayoutParams.OccludingCaptionElement,
+        elementWidthPx: Int,
+        captionRect: Rect,
+        decorWindowContext: Context,
+    ): Rect {
+        val isRtl = decorWindowContext.isRtl
+        return when (element.alignment) {
+            Alignment.START -> {
+                if (isRtl) {
+                    Rect(
+                        captionRect.width() - elementWidthPx,
+                        0,
+                        captionRect.width(),
+                        captionRect.height()
+                    )
+                } else {
+                    Rect(0, 0, elementWidthPx, captionRect.height())
+                }
+            }
+
+            Alignment.END -> {
+                if (isRtl) {
+                    Rect(0, 0, elementWidthPx, captionRect.height())
+                } else {
+                    Rect(
+                        captionRect.width() - elementWidthPx,
+                        0,
+                        captionRect.width(),
+                        captionRect.height()
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether the touch event falls inside the customizable caption region.
+     */
+    private fun checkTouchEventInCustomizableRegion(ev: MotionEvent): Boolean =
+        captionLayoutResult.customizableCaptionRegion.contains(
+            ev.rawX.toInt(),
+            ev.rawY.toInt()
+        )
+
     /**
      * Returns caption's view holder if not null. Otherwise, inflates caption view and returns new
      * view holder.
@@ -382,7 +460,7 @@ abstract class CaptionController<T>(
     }
 
     /** Releases all caption views. Returns true if caption view host is released. */
-    fun releaseViews(
+    open fun releaseViews(
         wct: WindowContainerTransaction,
         t: SurfaceControl.Transaction
     ): Boolean {
@@ -390,7 +468,7 @@ abstract class CaptionController<T>(
         captionInsets = null
 
         val viewHost = captionViewHost ?: return false
-        viewHost.release(t)
+        windowDecorViewHostSupplier.release(viewHost, t)
         captionViewHost = null
         return true
     }
@@ -399,7 +477,9 @@ abstract class CaptionController<T>(
         context: Context,
         display: Display
     ): WindowDecorViewHost = traceSection("CaptionController#getOrCreateViewHost") {
-        return captionViewHost ?: windowDecorViewHostSupplier.acquire(context, display)
+        val viewHost = captionViewHost ?: windowDecorViewHostSupplier.acquire(context, display)
+        captionViewHost = viewHost
+        return viewHost
     }
 
     /** Caption data calculated during [relayout]. */
@@ -415,7 +495,7 @@ abstract class CaptionController<T>(
 
     /** The type of caption added by this controller. */
     enum class CaptionType {
-        APP_HANDLE, APP_HEADER
+        APP_HANDLE, APP_HEADER, NO_CAPTION
     }
 
     companion object {

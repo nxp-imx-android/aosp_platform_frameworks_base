@@ -302,6 +302,16 @@ class AppHandleViewHolder(
             } ?: false
     }
 
+    /** Sets whether the caption's handle is currently being hovered over. */
+    fun setHandleHovered(hovered: Boolean) {
+        captionHandle.isHovered = hovered
+    }
+
+    /** Sets whether the caption's handle is currently being pressed. */
+    fun setHandlePressed(pressed: Boolean) {
+        captionHandle.isPressed = pressed
+    }
+
     override fun setTaskFocusState(taskFocusState: Boolean) {
         (rootView as WindowDecorLinearLayout).setTaskFocusState(taskFocusState)
     }

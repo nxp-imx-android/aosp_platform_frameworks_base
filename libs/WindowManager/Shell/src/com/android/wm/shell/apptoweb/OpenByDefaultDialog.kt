@@ -207,10 +207,10 @@ internal class OpenByDefaultDialog(
      */
     interface DialogLifecycleListener {
         /** Called when open by default dialog view has been created. */
-        fun onDialogCreated()
+        fun onDialogCreated() {}
 
         /** Called when open by default dialog view has been released. */
-        fun onDialogDismissed()
+        fun onDialogDismissed() {}
     }
 
     companion object {
