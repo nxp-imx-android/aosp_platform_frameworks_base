@@ -217,6 +217,7 @@ void NativeInputEventReceiver::setFdEvents(int events) {
     if (events == mFdEvents) {
         return;
     }
+    mFdEvents = events;
     const int fd = mInputConsumer->getChannel()->getFd();
     if (events) {
         mMessageQueue->getLooper()->addFd(fd, 0, events, this, nullptr);
