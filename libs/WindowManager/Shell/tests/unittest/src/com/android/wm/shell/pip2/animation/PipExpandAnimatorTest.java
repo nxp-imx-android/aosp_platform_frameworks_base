@@ -174,6 +174,31 @@ public class PipExpandAnimatorTest {
     }
 
     @Test
+    public void onAnimationUpdate_expand_setRoundCornersWithoutShadow() {
+        mRotation = Surface.ROTATION_0;
+        mBaseBounds = new Rect(0, 0, 1_000, 2_000);
+        mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
+        mEndBounds = new Rect(mBaseBounds);
+        mPipExpandAnimator = new PipExpandAnimator(mMockContext,
+                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mMockStartTransaction, mMockFinishTransaction,
+                mBaseBounds, mStartBounds, mEndBounds, mSourceRectHint,
+                mRotation, false /* isPipInDesktopMode */);
+        mPipExpandAnimator.setSurfaceControlTransactionFactory(mMockFactory);
+
+        mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
+        mPipExpandAnimator.setAnimationEndCallback(mMockEndCallback);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mPipExpandAnimator.start();
+            clearInvocations(mMockTransaction);
+            mPipExpandAnimator.setCurrentFraction(0.5f);
+        });
+
+        verify(mMockTransaction).setCornerRadius(mTestLeash, CORNER_RADIUS);
+        verify(mMockTransaction).setShadowRadius(mTestLeash, 0f);
+    }
+
+    @Test
     public void onAnimationEnd_expand_leashIsFullscreen() {
         mRotation = Surface.ROTATION_0;
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
@@ -191,16 +216,18 @@ public class PipExpandAnimatorTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             mPipExpandAnimator.start();
             clearInvocations(mMockTransaction);
+            clearInvocations(mMockFinishTransaction);
             mPipExpandAnimator.end();
         });
 
         verify(mMockTransaction).setCrop(mTestLeash, mEndBounds);
-        verify(mMockTransaction).setCornerRadius(mTestLeash, 0f);
+        verify(mMockTransaction).setCornerRadius(mTestLeash, CORNER_RADIUS);
         verify(mMockTransaction).setShadowRadius(mTestLeash, 0f);
+        verify(mMockFinishTransaction).setCornerRadius(mTestLeash, 0f);
     }
 
     @Test
-    public void onAnimationEnd_expand_isInDesktopMode_setRoundedCorners() {
+    public void onAnimationEnd_expandInDesktopMode_setRoundedCorners() {
         mRotation = Surface.ROTATION_0;
         mBaseBounds = new Rect(0, 0, 1_000, 2_000);
         mStartBounds = new Rect(500, 1_000, 1_000, 2_000);
@@ -217,11 +244,13 @@ public class PipExpandAnimatorTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             mPipExpandAnimator.start();
             clearInvocations(mMockTransaction);
+            clearInvocations(mMockFinishTransaction);
             mPipExpandAnimator.end();
         });
 
         verify(mMockTransaction).setCrop(mTestLeash, mEndBounds);
         verify(mMockTransaction).setCornerRadius(mTestLeash, CORNER_RADIUS);
         verify(mMockTransaction).setShadowRadius(mTestLeash, 0f);
+        verify(mMockFinishTransaction).setCornerRadius(mTestLeash, CORNER_RADIUS);
     }
 }
