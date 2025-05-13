@@ -429,7 +429,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
             boolean isDismissAll) {
         if (magneticNotificationSwipes()) {
             int direction = mCallback.getMagneticDetachDirection(animView);
-            velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
+            if (direction != 0) {
+                // If detached, modify the velocity to agree with the detaching direction
+                velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
+            }
         }
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
         float newPos;
