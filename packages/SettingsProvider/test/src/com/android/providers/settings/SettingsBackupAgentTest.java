@@ -65,8 +65,6 @@ import android.test.mock.MockContentResolver;
 
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.window.flags.Flags;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -301,7 +299,6 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CONFIGURABLE_FONT_SCALE_DEFAULT)
     public void testFindClosestAllowedFontScale() {
         final String[] availableFontScales = new String[]{"0.5", "0.9", "1.0", "1.1", "1.5"};
         final Function<String, String> testedMethod =

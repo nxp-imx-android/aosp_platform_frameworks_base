@@ -4843,9 +4843,8 @@ public final class Settings {
         }
 
         private static float getDefaultFontScale(ContentResolver cr, int userHandle) {
-            return com.android.window.flags.Flags.configurableFontScaleDefault()
-                    ? Settings.System.getFloatForUser(cr, DEFAULT_DEVICE_FONT_SCALE,
-                    DEFAULT_FONT_SCALE, userHandle) : DEFAULT_FONT_SCALE;
+            return Settings.System.getFloatForUser(cr, DEFAULT_DEVICE_FONT_SCALE,
+                    DEFAULT_FONT_SCALE, userHandle);
         }
 
         /**
