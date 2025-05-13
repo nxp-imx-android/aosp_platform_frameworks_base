@@ -1701,10 +1701,6 @@ public final class PermissionManager {
 
     private static int checkPermissionUncached(@Nullable String permission, int pid, int uid,
             int deviceId) {
-        final int appId = UserHandle.getAppId(uid);
-        if (appId == Process.ROOT_UID || appId == Process.SYSTEM_UID) {
-            return PackageManager.PERMISSION_GRANTED;
-        }
         final IActivityManager am = ActivityManager.getService();
         if (am == null) {
             // We don't have an active ActivityManager instance and the calling UID is not root or
@@ -1884,6 +1880,12 @@ public final class PermissionManager {
 
     /** @hide */
     public static int checkPermission(@Nullable String permission, int pid, int uid, int deviceId) {
+        // Short-circuit the cache for unconditionally granted permissions. This was previously
+        // behind the cache, but placing here avoids marginal cache query overhead in system server.
+        final int appId = UserHandle.getAppId(uid);
+        if (appId == Process.SYSTEM_UID || appId == Process.ROOT_UID) {
+            return PackageManager.PERMISSION_GRANTED;
+        }
         return sPermissionCache.query(new PermissionQuery(permission, pid, uid, deviceId));
     }
 
