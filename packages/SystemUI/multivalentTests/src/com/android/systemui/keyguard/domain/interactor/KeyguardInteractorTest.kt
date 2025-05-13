@@ -167,7 +167,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testGoneStateResetsCameraActive() =
         testScope.runTest {
             val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
@@ -180,6 +180,33 @@ class KeyguardInteractorTest : SysuiTestCase() {
             assertThat(secureCameraActive()).isTrue()
 
             keyguardTransitionRepository.sendTransitionSteps(from = OCCLUDED, to = GONE, testScope)
+            assertThat(secureCameraActive()).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun testScenesGoneStateResetsCameraActive() =
+        testScope.runTest {
+            val secureCameraActive = collectLastValue(underTest.isSecureCameraActive)
+            runCurrent()
+
+            underTest.onCameraLaunchDetected(
+                StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+                isSecureCamera = true,
+            )
+            assertThat(secureCameraActive()).isTrue()
+
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Gone,
+                    currentScene = flowOf(Scenes.Gone),
+                    progress = flowOf(1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
             assertThat(secureCameraActive()).isFalse()
         }
 
