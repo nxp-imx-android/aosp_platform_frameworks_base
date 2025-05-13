@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.call.domain.interactor
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,7 +26,6 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
@@ -66,8 +66,8 @@ class CallChipInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallState_inCall_noRequestedPromotion_promotedNotifFlagOff_isInCall() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_noRequestedPromotion_optInFlagOff_isInCall() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 
@@ -77,8 +77,8 @@ class CallChipInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallState_inCall_noRequestedPromotion_promotedNotifFlagOn_isInCall() =
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_noRequestedPromotion_optInFlagOn_isInCall() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 
@@ -88,8 +88,8 @@ class CallChipInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallState_inCall_requestedPromotion_promotedNotifFlagOff_isInCall() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_requestedPromotion_optInFlagOff_isInCall() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 
@@ -99,8 +99,8 @@ class CallChipInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallState_inCall_requestedPromotion_promotedNotifFlagOn_isNoCall() =
+    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallState_inCall_requestedPromotion_optInFlagOn_isNoCall() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 

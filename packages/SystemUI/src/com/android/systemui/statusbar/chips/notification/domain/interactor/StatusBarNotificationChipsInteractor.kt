@@ -96,9 +96,26 @@ constructor(
 
     /**
      * The notifications that are promoted and ongoing.
+     *
+     * Explicitly does *not* include any ongoing call notifications, even if the call notifications
+     * meet the promotion criteria.
      */
     private val promotedOngoingNotifications =
-        activeNotificationsInteractor.promotedOngoingNotifications
+        activeNotificationsInteractor.promotedOngoingNotifications.map { notifs ->
+            // TODO(b/415070395): Remove this map once we inline the behavior of optInRichOngoing.
+            if (Flags.optInRichOngoing()) {
+                // With the opt-in flow: If a call notification also decided to opt into promotion,
+                // handle it as a promoted notification chip instead of a call chip and keep it
+                // in this promoted notifs list. See b/414830065.
+                notifs
+            } else {
+                // Without the opt-in flow, we were automatically marking call notifications as
+                // promoted notifications.But, those call notifications will be handled by
+                // [com.android.systemui.statusbar.chips.call.domain.CallChipInteractor] instead, so
+                // we need to filter them out here. See b/388521980.
+                notifs.filterNot { it.isOngoingCallNotification() }
+            }
+        }
 
     override fun start() {
         if (!PromotedNotificationUi.isEnabled) {
