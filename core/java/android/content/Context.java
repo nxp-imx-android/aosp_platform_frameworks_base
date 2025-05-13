@@ -54,6 +54,7 @@ import android.app.BroadcastOptions;
 import android.app.GameManager;
 import android.app.GrammaticalInflectionManager;
 import android.app.IApplicationThread;
+import android.app.IBinderSession;
 import android.app.IServiceConnection;
 import android.app.VrManager;
 import android.app.ambientcontext.AmbientContextManager;
@@ -748,10 +749,27 @@ public abstract class Context {
 
     /**
      * Flag for {@link #bindService} that allows the bound app to be frozen if it is eligible.
+     * When used, this provides the caller an {@link android.app.IBinderSession} via
+     * {@link ServiceConnection#onServiceConnected(ComponentName, IBinder, IBinderSession)}. This
+     * object can be used to unfreeze the remote process to allow it to process any binder calls
+     * made on the bound service.
+     *
+     * <p> Currently, this is only meant for outgoing bindings from the system process.
      *
      * @hide
      */
     public static final long BIND_ALLOW_FREEZE = 0x4_0000_0000L;
+
+    /**
+     * Flag for {@link #bindService} that enables receiving an {@link android.app.IBinderSession}
+     * via {@link ServiceConnection#onServiceConnected(ComponentName, IBinder, IBinderSession)}.
+     *
+     * This acts as a dry run of {@link #BIND_ALLOW_FREEZE}, where the system will not actually
+     * freeze the remote process even if it is not processing any binder call on the bound service.
+     *
+     * @hide
+     */
+    public static final long BIND_SIMULATE_ALLOW_FREEZE = 0x8_0000_0000L;
 
     /**
      * These bind flags reduce the strength of the binding such that we shouldn't

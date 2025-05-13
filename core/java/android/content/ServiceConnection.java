@@ -50,19 +50,20 @@ public interface ServiceConnection {
     /**
      * Same as {@link #onServiceConnected(ComponentName, IBinder)} but provides a
      * {@link IBinderSession} to account for binder calls to a frozen remote process whenever the
-     * {@link Context#BIND_ALLOW_FREEZE} was used with the bindService call.
+     * {@link Context#BIND_ALLOW_FREEZE} or {@link Context#BIND_SIMULATE_ALLOW_FREEZE} was used with
+     * the bindService call. Other clients can continue overriding and using
+     * {@link #onServiceConnected(ComponentName, IBinder)} normally.
      *
-     * <p>Clients who do not use the {@link Context#BIND_ALLOW_FREEZE} flag can continue using
-     * {@link #onServiceConnected(ComponentName, IBinder)} normally. Note that clients that use
-     * {@link Context#BIND_ALLOW_FREEZE} but do not override this will have to deal with the remote
-     * process's frozen state on their own.
+     * <p> Note that clients that use {@link Context#BIND_ALLOW_FREEZE} but do not override this
+     * will have to deal with the remote process's frozen state on their own.
      *
      * @param name The concrete component name of the service that has been connected.
      * @param service The IBinder of the Service's communication channel, which you can now make
      *                calls on.
      * @param binderSession An IBinderSession used to keep the remote service unfrozen to process
-     *                      any binder calls. Will be {@code null} when
-     *                      {@link Context#BIND_ALLOW_FREEZE} was not used.
+     *                      any binder calls. Will be {@code null} when neither
+     *                      {@link Context#BIND_ALLOW_FREEZE} nor
+     *                      {@link Context#BIND_SIMULATE_ALLOW_FREEZE} was used.
      * @hide
      */
     default void onServiceConnected(ComponentName name, IBinder service,
