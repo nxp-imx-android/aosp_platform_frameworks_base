@@ -375,7 +375,7 @@
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Postavke HDCP provjere"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Otklanjanje pogrešaka"</string>
     <string name="debug_app" msgid="8903350241392391766">"Aplikacija za otklanjanje pogrešaka"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"Nema aplikacije za otklanjanje pogrešaka"</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"Nije odabrana aplikacija za otklanjanje pogrešaka"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"Aplikacija za otklanjanje pogrešaka: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"Odaberite aplikaciju"</string>
     <string name="no_application" msgid="9038334538870247690">"Ništa"</string>
@@ -423,8 +423,8 @@
     <string name="track_frame_time" msgid="522674651937771106">"Profil HWUI generiranja"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Omogući slojeve za otklanjanje pogrešaka GPU-a"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Omogućuje učitavanje slojeva za otklanjanje pogrešaka GPU-a za aplikacije za otklanjanje pogrešaka"</string>
-    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Omogući opširni zapisnik"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Uključite dodatne zapisnike dobavljača pojedinog uređaja u izvješća o programskim pogreškama koja mogu sadržavati privatne podatke, trošiti više baterije i/ili zauzeti više prostora za pohranu"</string>
+    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Omogući slanje opširnog zapisnika dobavljača"</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Uključite dodatne zapisnike dobavljača pojedinog uređaja u izvješća o programskim pogreškama koja mogu sadržavati privatne podatke, trošiti više baterije i/ili zauzeti više prostora za pohranu."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Onemogući nakon jednog dana"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Opširno bilježenje dobavljača je završilo"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Omogućeno na jedan dan"</string>

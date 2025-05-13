@@ -250,7 +250,7 @@
     <string name="category_work" msgid="4014193632325996115">"ୱାର୍କ"</string>
     <string name="category_private" msgid="4244892185452788977">"ପ୍ରାଇଭେଟ"</string>
     <string name="category_clone" msgid="1554511758987195974">"କ୍ଲୋନ"</string>
-    <string name="development_settings_title" msgid="140296922921597393">"ଡେଭଲପରଙ୍କ ପାଇଁ ବିକଳ୍ପଗୁଡ଼ିକ"</string>
+    <string name="development_settings_title" msgid="140296922921597393">"ଡେଭଲପରଙ୍କ ପାଇଁ ବିକଳ୍ପ"</string>
     <string name="development_settings_enable" msgid="4285094651288242183">"ଡେଭଲପର୍‌ ବିକଳ୍ପଗୁଡ଼ିକ ସକ୍ଷମ କରନ୍ତୁ"</string>
     <string name="development_settings_summary" msgid="8718917813868735095">"ଆପ୍‌ର ବିକାଶ ପାଇଁ ବିକଳ୍ପମାନ ସେଟ୍‌ କରନ୍ତୁ"</string>
     <string name="development_settings_not_available" msgid="355070198089140951">"ଏହି ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ପାଇଁ ଡେଭଲପରଙ୍କ ବିକଳ୍ପସମୂହ ଉପଲବ୍ଧ ନୁହେଁ"</string>
@@ -340,7 +340,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"ଯେତେବେଳେ ଏହି ମୋଡକୁ ସକ୍ଷମ କରାଯାଏ, ପ୍ରତ୍ୟେକ ଥର MAC ରେଣ୍ଡମାଇଜେସନ ସକ୍ଷମ ଥିବା କୌଣସି ନେଟୱାର୍କ ସହ ଏହି ଡିଭାଇସ ସଂଯୋଗ ହେଲେ ଏହାର MAC ଠିକଣା ବଦଳିପାରେ।"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"ମପାଯାଉଥିବା"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"ମପାଯାଉନଥିବା"</string>
-    <string name="select_logd_size_title" msgid="1604578195914595173">"ଲଗର୍‌ ବଫର୍‌ ସାଇଜ୍"</string>
+    <string name="select_logd_size_title" msgid="1604578195914595173">"ଲଗର ବଫର ସାଇଜ"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"ଲଗ୍‌ ବଫର୍‌ ପିଛା ଲଗର୍‌ ଆକାରଗୁଡିକର ଚୟନ କରନ୍ତୁ"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"ଲଗର୍‌ ରୋଧି ଷ୍ଟୋରେଜ୍‌ ଖାଲି କରିବେ?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"ଯଦି ଆମେ ଦୃଢ ଲଗର୍‌ ସହିତ ଆଉ ତଦାରଖ କରୁନଥିବୁ, ତେବେ ଆମକୁ ଆପଣଙ୍କ ଡିଭାଇସ୍‌ରେ ଥିବା ଲଗର୍‌ ଡାଟାକୁ ଲିଭାଇବାକୁ ପଡ଼ିବ।"</string>
@@ -360,8 +360,8 @@
     <string name="adb_keys_warning_message" msgid="2968555274488101220">"ଅଧିକୃତ ସମସ୍ତ କମ୍ପ୍ୟୁଟରରୁ USB ଡିବଗ୍‌ କରିବା ଆକ୍ସେସ୍‌ ପ୍ରତ୍ୟାହାର କରିବେ କି?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"ଡେଭଲପମେଣ୍ଟ ସେଟିଂସକୁ ଅନୁମତି ଦେବେ?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"ଏହି ସେଟିଂସ କେବଳ ବିକାଶର ବ୍ୟବହାର ପାଇଁ ଉଦ୍ଦିଷ୍ଟ। ସେଗୁଡ଼ିକ କାରଣରୁ ଆପଣଙ୍କ ଡିଭାଇସ ଓ ଆପ୍ଲିକେସନଗୁଡ଼ିକ ଖରାପ ହୋଇଯାଇପାରେ କିମ୍ବା ଠିକ୍‌ ଭାବେ କାମ ନକରିପାରେ।"</string>
-    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ଜରିଆରେ ଆପ୍‌ଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରନ୍ତୁ"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"ADB/ADT ମାଧ୍ୟମରେ ଇନଷ୍ଟଲ ହୋଇଥିବା ଆପ୍‌ଗୁଡ଼ିକ କ୍ଷତିକାରକ କି ନୁହେଁ ଯାଞ୍ଚ କରନ୍ତୁ।"</string>
+    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"USB ମାଧ୍ୟମରେ ଆପ୍ସ ଯାଞ୍ଚ କରନ୍ତୁ"</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"ADB/ADT ମାଧ୍ୟମରେ ଇନଷ୍ଟଲ ହୋଇଥିବା ଆପ୍ସ କ୍ଷତିକାରକ କି ନୁହେଁ ଯାଞ୍ଚ କରନ୍ତୁ।"</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"ନାମ ବିନା (କେବଳ MAC ଠିକଣା ଥାଇ) ବ୍ଲୁଟୁଥ ଡିଭାଇସଗୁଡ଼ିକ ଡିସପ୍ଲେ ହେବ"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"ରିମୋଟ ଡିଭାଇସଗୁଡ଼ିକରେ ଯଦି ଅଗ୍ରହଣୀୟ ଉଚ୍ଚ ଭଲ୍ୟୁମ କିମ୍ବା ନିୟନ୍ତ୍ରଣର ଅଭାବ ପରି ଭଲ୍ୟୁମ ସମସ୍ୟା ଥାଏ, ତେବେ ବ୍ଲୁଟୁଥ ପୂର୍ଣ୍ଣ ଭଲ୍ୟୁମ ଫିଚର ଅକ୍ଷମ କରିଥାଏ।"</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"ବ୍ଲୁଟୁଥ୍ ଗାବେଲଡୋର୍ସ ଫିଚର୍ ଷ୍ଟକ୍ ସକ୍ଷମ କରେ।"</string>
@@ -374,8 +374,8 @@
     <string name="hdcp_checking_title" msgid="3155692785074095986">"HDCP ଯାଞ୍ଚ"</string>
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"HDCPର ଯାଞ୍ଚ ଗତିବିଧି ସେଟ୍‍ କରନ୍ତୁ"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"ଡିବଗ୍‌ କରୁଛି"</string>
-    <string name="debug_app" msgid="8903350241392391766">"ଡିବଗ୍‌ ଆପ୍‌ ବାଛନ୍ତୁ"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"କୌଣସି ଡିବଗ୍‌ ଆପ୍ଲିକେସନ୍‌ ସେଟ୍‌ ହୋଇନାହିଁ"</string>
+    <string name="debug_app" msgid="8903350241392391766">"ଡିବଗ କରିବା ପାଇଁ ଆପ ବାଛନ୍ତୁ"</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"ଡିବଗ କରିବା ପାଇଁ କୌଣସି ଆପ୍ଲିକେସନ ସେଟ ହୋଇନାହିଁ"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"ଆପ୍ଲିକେଶନ୍‌ ଡିବଗ୍‌ କରୁଛି: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"ଆପ୍ଲିକେଶନ୍‌ ବାଛନ୍ତୁ"</string>
     <string name="no_application" msgid="9038334538870247690">"କିଛି ନୁହେଁ"</string>

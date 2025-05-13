@@ -375,7 +375,7 @@
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Ttpkn tngkh laku smk HDCP"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Menyahpepijat"</string>
     <string name="debug_app" msgid="8903350241392391766">"Pilih apl penyahpepijat"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"Tiada aplikasi penyahpepijat ditentukan"</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"Tiada aplikasi penyahpepijat yang ditetapkan"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"Menyahpepijat aplikasi: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"Pilih aplikasi"</string>
     <string name="no_application" msgid="9038334538870247690">"Tiada apa-apa"</string>

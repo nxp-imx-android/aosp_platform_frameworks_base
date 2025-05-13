@@ -299,7 +299,7 @@
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"¿Permitir desbloqueo de OEM?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"ADVERTENCIA: Las funciones de protección de dispositivos no funcionarán en este dispositivo mientras esta configuración esté activada."</string>
     <string name="mock_location_app" msgid="6269380172542248304">"Seleccionar app de ubicación ficticia"</string>
-    <string name="mock_location_app_not_set" msgid="6972032787262831155">"No se configuró aplicación de ubicación ficticia"</string>
+    <string name="mock_location_app_not_set" msgid="6972032787262831155">"No se configuró ninguna app de ubicación ficticia"</string>
     <string name="mock_location_app_set" msgid="4706722469342913843">"Aplicación de ubicación de prueba: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"Redes"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"Certificación de pantalla inalámbrica"</string>
@@ -361,7 +361,7 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"¿Permitir configuración de desarrollo?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Estos parámetros de configuración están destinados únicamente a los programadores. Pueden hacer que el dispositivo o sus aplicaciones no funcionen correctamente."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Verificar aplicaciones por USB"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Comprueba que las apps instaladas mediante ADB/ADT no ocasionen daños"</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Comprueba que las apps instaladas mediante ADB/ADT no ocasionen daños."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Se mostrarán los dispositivos Bluetooth sin nombre (solo direcciones MAC)"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Inhabilita la función de volumen absoluto de Bluetooth si se producen problemas de volumen con dispositivos remotos (por ejemplo, volumen demasiado alto o falta de control)."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Habilita la pila de funciones de Bluetooth Gabeldorsche"</string>
@@ -375,7 +375,7 @@
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Configurar comportamiento de la comprobación HDCP"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Depuración"</string>
     <string name="debug_app" msgid="8903350241392391766">"Seleccionar la aplicación para depurar"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"No se especificó ninguna aplicación para depurar."</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"No se especificó ninguna aplicación para depurar"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"Aplicación para depurar: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"Seleccionar una aplicación"</string>
     <string name="no_application" msgid="9038334538870247690">"Ninguna"</string>
@@ -423,7 +423,7 @@
     <string name="track_frame_time" msgid="522674651937771106">"Perfil procesamiento HWUI"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Habilitar depuración GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Permite cargar capas de depuración de GPU para apps de depuración"</string>
-    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Habilitar registro detallado"</string>
+    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Habilitar registro de proveedor detallado"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluye otros registros de proveedor específicos del dispositivo en los informes de errores, que podrían contener información privada, consumir más batería o usar más espacio de almacenamiento."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Inhabilitar luego de un día"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Finalizó el registro de verbosidad del proveedor"</string>
