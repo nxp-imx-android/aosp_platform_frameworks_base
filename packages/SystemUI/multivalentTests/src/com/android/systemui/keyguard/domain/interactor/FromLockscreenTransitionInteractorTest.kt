@@ -70,6 +70,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun testSurfaceBehindVisibility() =
         testScope.runTest {
             val values by collectValues(underTest.surfaceBehindVisibility)
@@ -126,6 +127,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun draggingToPrimaryBouncerUpdateIsSent() =
         testScope.runTest {
             underTest.start()
@@ -199,6 +201,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testDoesNotTransitionToGone_whenDismissFlingWhileDismissable_flagDisabled() =
         testScope.runTest {
             underTest.start()
@@ -216,6 +219,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun testDoesNotTransitionToGone_whenDismissFling_emitsNull() =
         testScope.runTest {
             underTest.start()
@@ -272,6 +276,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun testTransitionsBackToOccluded_ifOccluded_andCanceledSwipe() =
         testScope.runTest {
             underTest.start()
@@ -316,6 +321,7 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
      * ID to get stuck in this scenario, preventing subsequent transitions to PRIMARY_BOUNCER.
      */
     @Test
+    @DisableSceneContainer
     fun testExternalTransitionAwayFromBouncer_transitionIdNotStuck() =
         testScope.runTest {
             underTest.start()
