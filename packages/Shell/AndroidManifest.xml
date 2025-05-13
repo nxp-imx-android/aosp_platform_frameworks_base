@@ -1027,6 +1027,9 @@
     <!-- Permission required for trade-in mode testing -->
     <uses-permission android:name="android.permission.ENTER_TRADE_IN_MODE" />
 
+    <!-- Permission required to test mouse movement on display -->
+    <uses-permission android:name="android.permission.SET_POINTER_SPEED" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"
