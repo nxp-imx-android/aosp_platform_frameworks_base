@@ -34,6 +34,6 @@ interface ISupervisionManager {
     oneway void setSupervisionRecoveryInfo(in SupervisionRecoveryInfo recoveryInfo);
     SupervisionRecoveryInfo getSupervisionRecoveryInfo();
     boolean hasSupervisionCredentials();
-    oneway void registerSupervisionListener(in ISupervisionListener listener);
+    oneway void registerSupervisionListener(int userId, in ISupervisionListener listener);
     oneway void unregisterSupervisionListener(in ISupervisionListener listener);
 }

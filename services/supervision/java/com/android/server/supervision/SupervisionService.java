@@ -40,6 +40,7 @@ import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -47,14 +48,14 @@ import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.text.TextUtils;
-import android.util.Slog;
+import android.util.ArrayMap;
 import android.util.SparseArray;
 
 import com.android.internal.R;
@@ -69,6 +70,7 @@ import com.android.server.appbinding.AppBindingService;
 import com.android.server.appbinding.AppServiceConnection;
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.utils.Slogf;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -95,19 +97,23 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @GuardedBy("getLockObject()")
     private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
 
-    private final Context mContext;
     private final Injector mInjector;
-    @VisibleForTesting final ArrayList<ISupervisionListener> mSupervisionListeners;
     final SupervisionManagerInternal mInternal = new SupervisionManagerInternalImpl();
+
+    @GuardedBy("getLockObject()")
+    final ArrayMap<IBinder, SupervisionListenerRecord> mSupervisionListeners = new ArrayMap<>();
 
     @GuardedBy("getLockObject()")
     final SupervisionSettings mSupervisionSettings = SupervisionSettings.getInstance();
 
     public SupervisionService(Context context) {
-        mContext = context.createAttributionContext(SupervisionLog.TAG);
-        mInjector = new Injector(context);
+        this(new Injector(context.createAttributionContext(SupervisionLog.TAG)));
+    }
+
+    @VisibleForTesting
+    SupervisionService(Injector injector) {
+        mInjector = injector;
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
-        mSupervisionListeners = new ArrayList<>();
     }
 
     /**
@@ -193,7 +199,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (Flags.persistentSupervisionSettings()) {
             mSupervisionSettings.saveRecoveryInfo(recoveryInfo);
         } else {
-            SupervisionRecoveryInfoStorage.getInstance(mContext).saveRecoveryInfo(recoveryInfo);
+            SupervisionRecoveryInfoStorage.getInstance(mInjector.context)
+                    .saveRecoveryInfo(recoveryInfo);
         }
     }
 
@@ -203,7 +210,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (Flags.persistentSupervisionSettings()) {
             return mSupervisionSettings.getRecoveryInfo();
         }
-        return SupervisionRecoveryInfoStorage.getInstance(mContext).loadRecoveryInfo();
+        return SupervisionRecoveryInfoStorage.getInstance(mInjector.context).loadRecoveryInfo();
     }
 
     @Override
@@ -250,18 +257,38 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @Override
-    public void registerSupervisionListener(@NonNull ISupervisionListener listener) {
+    public void registerSupervisionListener(
+            @UserIdInt int userId, @Nullable ISupervisionListener listener) {
+        if (listener == null) {
+            return;
+        }
+        if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
+            enforcePermission(INTERACT_ACROSS_USERS);
+        }
+
         synchronized (getLockObject()) {
-            if (!mSupervisionListeners.contains(listener)) {
-                mSupervisionListeners.add(listener);
+            SupervisionListenerRecord record = mSupervisionListeners.get(listener.asBinder());
+            if (record == null) {
+                try {
+                    mSupervisionListeners.put(listener.asBinder(),
+                            new SupervisionListenerRecord(listener, userId));
+                } catch (RemoteException e) {
+                    // Binder died, ignore
+                }
             }
         }
     }
 
     @Override
-    public void unregisterSupervisionListener(@NonNull ISupervisionListener listener) {
+    public void unregisterSupervisionListener(@Nullable ISupervisionListener listener) {
+        if (listener == null) {
+            return;
+        }
         synchronized (getLockObject()) {
-            mSupervisionListeners.remove(listener);
+            SupervisionListenerRecord record = mSupervisionListeners.remove(listener.asBinder());
+            if (record != null) {
+                record.unlinkToDeath();
+            }
         }
     }
 
@@ -300,7 +327,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @Override
     protected void dump(
             @NonNull FileDescriptor fd, @NonNull PrintWriter printWriter, @Nullable String[] args) {
-        if (!DumpUtils.checkDumpPermission(mContext, SupervisionLog.TAG, printWriter)) return;
+        if (!DumpUtils.checkDumpPermission(mInjector.context, SupervisionLog.TAG, printWriter)) {
+            return;
+        }
 
         try (var pw = new IndentingPrintWriter(printWriter, "  ")) {
             pw.println("SupervisionService state:");
@@ -350,45 +379,63 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
-        final long token = Binder.clearCallingIdentity();
-        try {
+        Binder.withCleanCallingIdentity(() -> {
             updateWebContentFilters(userId, enabled);
+            dispatchSupervisionEvent(userId,
+                    listener -> listener.onSetSupervisionEnabled(userId, enabled));
+            if (!enabled) {
+                clearDevicePolicies(userId, supervisionAppPackage);
+            }
+        });
+    }
 
-            if (Flags.enableSupervisionAppService()) {
-                List<AppServiceConnection> connections =
-                        getSupervisionAppServiceConnections(userId);
-                for (AppServiceConnection conn : connections) {
-                    String targetPackage = conn.getFinder().getTargetPackage(userId);
-                    ISupervisionListener binder = (ISupervisionListener) conn.getServiceBinder();
-                    if (binder == null) {
-                        Slog.d(
-                                SupervisionLog.TAG,
-                                TextUtils.formatSimple(
-                                        "Unable to toggle supervision for package %s. Binder is"
-                                                + " null.",
-                                        targetPackage));
-                        continue;
-                    }
-                    try {
-                        binder.onSetSupervisionEnabled(userId, enabled);
-                    } catch (RemoteException e) {
-                        Slog.d(
-                                SupervisionLog.TAG,
-                                TextUtils.formatSimple(
-                                        "Unable to toggle supervision for package %s. e = %s",
-                                        targetPackage, e));
-                    }
+    @NonNull
+    private List<ISupervisionListener> getSupervisionAppServiceListeners(@UserIdInt int userId) {
+        ArrayList<ISupervisionListener> listeners = new ArrayList<>();
+        if (!Flags.enableSupervisionAppService()) {
+            return listeners;
+        }
+
+        List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
+        for (AppServiceConnection conn : connections) {
+            String targetPackage = conn.getFinder().getTargetPackage(userId);
+            ISupervisionListener binder = (ISupervisionListener) conn.getServiceBinder();
+            if (binder == null) {
+                Slogf.w(SupervisionLog.TAG,
+                        "Failed to bind to SupervisionAppService for %s", targetPackage);
+                continue;
+            }
+
+            listeners.add(binder);
+        }
+
+        return listeners;
+    }
+
+    private void dispatchSupervisionEvent(@UserIdInt int userId,
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
+        ArrayList<ISupervisionListener> listeners = new ArrayList<>();
+
+        // Add SupervisionAppServices listeners before the platform listeners.
+        listeners.addAll(getSupervisionAppServiceListeners(userId));
+
+        synchronized (getLockObject()) {
+            mSupervisionListeners.forEach((binder, record) -> {
+                if (record.userId == userId || record.userId == UserHandle.USER_ALL) {
+                    listeners.add(record.listener);
                 }
-                dispatchSupervisionListenerEvent(
-                        listener -> listener.onSetSupervisionEnabled(userId, enabled));
-            }
-            DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
-            if (Flags.enableRemovePoliciesOnSupervisionDisable() && !enabled &&
-                    dpmi != null && supervisionAppPackage != null) {
-                dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
-            }
-        } finally {
-            Binder.restoreCallingIdentity(token);
+            });
+        }
+
+        listeners.forEach(listener -> action.accept(listener));
+    }
+
+    private void clearDevicePolicies(
+            @UserIdInt int userId, @Nullable String supervisionAppPackage) {
+        DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
+        if (Flags.enableRemovePoliciesOnSupervisionDisable()
+                && dpmi != null && supervisionAppPackage != null) {
+            dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
         }
     }
 
@@ -400,31 +447,19 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * supervision. (If the filter is already enabled when enabling supervision, do not disable it).
      */
     private void updateWebContentFilters(@UserIdInt int userId, boolean enabled) {
-        try {
-            int browserValue =
-                    Settings.Secure.getIntForUser(
-                            mContext.getContentResolver(), BROWSER_CONTENT_FILTERS_ENABLED, userId);
+        updateContentFilterSetting(userId, enabled, BROWSER_CONTENT_FILTERS_ENABLED);
+        updateContentFilterSetting(userId, enabled, SEARCH_CONTENT_FILTERS_ENABLED);
+    }
 
-            if (!enabled || browserValue != 1) {
-                Settings.Secure.putIntForUser(
-                        mContext.getContentResolver(),
-                        BROWSER_CONTENT_FILTERS_ENABLED,
-                        browserValue * -1,
-                        userId);
-            }
-        } catch (Settings.SettingNotFoundException ignored) {
-            // Ignore the exception and do not change the value as no value has been set.
-        }
+    private void updateContentFilterSetting(@UserIdInt int userId, boolean enabled, String key) {
         try {
-            int searchValue =
-                    Settings.Secure.getIntForUser(
-                            mContext.getContentResolver(), SEARCH_CONTENT_FILTERS_ENABLED, userId);
-
-            if (!enabled || searchValue != 1) {
+            final ContentResolver contentResolver = mInjector.context.getContentResolver();
+            final int value = Settings.Secure.getIntForUser(contentResolver, key, userId);
+            if (!enabled || value != 1) {
                 Settings.Secure.putIntForUser(
-                        mContext.getContentResolver(),
-                        SEARCH_CONTENT_FILTERS_ENABLED,
-                        searchValue * -1,
+                        contentResolver,
+                        key,
+                        value * -1,
                         userId);
             }
         } catch (Settings.SettingNotFoundException ignored) {
@@ -461,46 +496,36 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     private ComponentName getSupervisionProfileOwnerComponent() {
         return ComponentName.unflattenFromString(
-                mContext.getResources()
+                mInjector.context.getResources()
                         .getString(R.string.config_defaultSupervisionProfileOwnerComponent));
     }
 
     /** Returns the package assigned to the {@code SYSTEM_SUPERVISION} role. */
     private String getSystemSupervisionPackage() {
-        return mContext.getResources().getString(R.string.config_systemSupervision);
+        return mInjector.context.getResources().getString(R.string.config_systemSupervision);
     }
 
     /** Enforces that the caller has the given permission. */
     private void enforcePermission(String permission) {
         checkCallAuthorization(
-                mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
+                mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
     }
 
     /** Enforces that the caller has at least one of the given permission. */
     private void enforceAnyPermission(String... permissions) {
         boolean authorized = false;
         for (String permission : permissions) {
-            if (mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
+            if (mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
                 authorized = true;
             }
         }
         checkCallAuthorization(authorized);
     }
 
-    private void dispatchSupervisionListenerEvent(
-            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        List<ISupervisionListener> immutableListener;
-        synchronized (getLockObject()) {
-            immutableListener = List.copyOf(mSupervisionListeners);
-        }
-        for (ISupervisionListener listener : immutableListener) {
-            Binder.withCleanCallingIdentity(() -> action.accept(listener));
-        }
-    }
-
     /** Provides local services in a lazy manner. */
     static class Injector {
-        private final Context mContext;
+        public Context context;
+
         private DevicePolicyManagerInternal mDpmInternal;
         private AppBindingService mAppBindingService;
         private KeyguardManager mKeyguardManager;
@@ -508,7 +533,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         private UserManagerInternal mUserManagerInternal;
 
         Injector(Context context) {
-            mContext = context;
+            this.context = context;
         }
 
         @Nullable
@@ -529,14 +554,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         KeyguardManager getKeyguardManager() {
             if (mKeyguardManager == null) {
-                mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
+                mKeyguardManager = context.getSystemService(KeyguardManager.class);
             }
             return mKeyguardManager;
         }
 
         PackageManager getPackageManager() {
             if (mPackageManager == null) {
-                mPackageManager = mContext.getPackageManager();
+                mPackageManager = context.getPackageManager();
             }
             return mPackageManager;
         }
@@ -665,6 +690,27 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     mUserData.remove(user.id);
                 }
             }
+        }
+    }
+
+    private final class SupervisionListenerRecord implements DeathRecipient {
+        public final ISupervisionListener listener;
+        public final int userId;
+
+        SupervisionListenerRecord(@NonNull ISupervisionListener listener, @UserIdInt int userId)
+                throws RemoteException {
+            this.listener = listener;
+            this.userId = userId;
+            listener.asBinder().linkToDeath(this, 0);
+        }
+
+        public void unlinkToDeath() {
+            listener.asBinder().unlinkToDeath(this, 0);
+        }
+
+        @Override
+        public void binderDied() {
+            unregisterSupervisionListener(listener);
         }
     }
 }
