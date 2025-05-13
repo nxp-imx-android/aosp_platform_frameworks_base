@@ -18,6 +18,7 @@ package com.android.systemui.notifications.ui.composable.row
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -51,6 +53,8 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.initOnBackPressedDispatcherOwner
@@ -86,16 +90,43 @@ fun createComposeView(viewModel: BundleHeaderViewModel, context: Context): Compo
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier) {
+    val state =
+        rememberMutableSceneTransitionLayoutState(
+            initialScene = BundleHeader.Scenes.Collapsed,
+            transitions =
+                transitions {
+                    from(BundleHeader.Scenes.Collapsed, to = BundleHeader.Scenes.Expanded) {
+                        spec = tween(500)
+                        translate(BundleHeader.Elements.PreviewIcon3, x = 32.dp)
+                        translate(BundleHeader.Elements.PreviewIcon2, x = 16.dp)
+                        fade(BundleHeader.Elements.PreviewIcon1)
+                        fade(BundleHeader.Elements.PreviewIcon2)
+                        fade(BundleHeader.Elements.PreviewIcon3)
+                    }
+                },
+        )
+
+    DisposableEffect(viewModel, state) {
+        viewModel.state = state
+        onDispose { viewModel.state = null }
+    }
+
+    val scope = rememberCoroutineScope()
+    DisposableEffect(viewModel, state) {
+        viewModel.composeScope = scope
+        onDispose { viewModel.composeScope = null }
+    }
+
     Box(modifier) {
         Background(background = viewModel.backgroundDrawable, modifier = Modifier.matchParentSize())
-        val scope = rememberCoroutineScope()
         SceneTransitionLayout(
-            state = viewModel.state,
+            state = state,
             modifier =
                 Modifier.clickable(
-                    onClick = { viewModel.onHeaderClicked(scope) },
+                    onClick = { viewModel.onHeaderClicked() },
                     interactionSource = null,
                     indication = null,
                 ),

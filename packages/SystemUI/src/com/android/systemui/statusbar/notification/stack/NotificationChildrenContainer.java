@@ -1250,6 +1250,9 @@ public class NotificationChildrenContainer extends ViewGroup
         if (mGroupHeaderWrapper != null) {
             mGroupHeaderWrapper.setExpanded(childrenExpanded);
         }
+        if (mBundleHeaderViewModel != null) {
+            mBundleHeaderViewModel.setExpansionState(childrenExpanded);
+        }
         final int count = mAttachedChildren.size();
         for (int childIdx = 0; childIdx < count; childIdx++) {
             ExpandableNotificationRow child = mAttachedChildren.get(childIdx);

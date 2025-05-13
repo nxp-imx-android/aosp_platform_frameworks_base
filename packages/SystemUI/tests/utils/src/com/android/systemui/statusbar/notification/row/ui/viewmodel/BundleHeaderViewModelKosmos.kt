@@ -19,4 +19,12 @@ package com.android.systemui.statusbar.notification.row.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.notification.row.domain.bundleInteractor
 
-val Kosmos.bundleHeaderViewModel by Kosmos.Fixture { BundleHeaderViewModel(bundleInteractor) }
+private val Kosmos.bundleHeaderViewModel: BundleHeaderViewModel by
+    Kosmos.Fixture { BundleHeaderViewModel(bundleInteractor) }
+
+val Kosmos.bundleHeaderViewModelFactory: BundleHeaderViewModel.Factory by
+    Kosmos.Fixture {
+        object : BundleHeaderViewModel.Factory {
+            override fun create(): BundleHeaderViewModel = bundleHeaderViewModel
+        }
+    }
