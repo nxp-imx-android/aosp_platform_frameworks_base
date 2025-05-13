@@ -25,13 +25,19 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +50,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformSliderDefaults
@@ -71,6 +78,7 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExc
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayActionsViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayContentViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.OverlayShade
@@ -291,19 +299,44 @@ fun ContentScope.QuickSettingsLayout(
                         enabled = { layoutState.transitionState is TransitionState.Idle }
                     )
                 ) {
-                    VolumeSlider(
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        showLabel = false,
-                        state = volumeSliderState,
-                        onValueChange = { newValue: Float ->
-                            volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
-                        },
-                        onValueChangeFinished = { volumeSliderViewModel.onValueChangeFinished() },
-                        onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
-                        sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
-                        hapticsViewModelFactory =
-                            volumeSliderViewModel.getSliderHapticsViewModelFactory(),
-                    )
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        VolumeSlider(
+                            modifier = Modifier.weight(1f),
+                            showLabel = false,
+                            state = volumeSliderState,
+                            onValueChange = { newValue: Float ->
+                                volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
+                            },
+                            onValueChangeFinished = {
+                                volumeSliderViewModel.onValueChangeFinished()
+                            },
+                            onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
+                            sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
+                            hapticsViewModelFactory =
+                                volumeSliderViewModel.getSliderHapticsViewModelFactory(),
+                        )
+                        IconButton(
+                            colors =
+                                IconButtonDefaults.iconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
+                            onClick = {
+                                viewModel.detailsViewModel.onVolumeSettingsButtonClicked(
+                                    viewModel.audioDetailsViewModelFactory.create()
+                                )
+                            },
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.horizontal_ellipsis),
+                                // TODO(b/378513663): Update the placeholder content description
+                                contentDescription = "Volume settings",
+                            )
+                        }
+                    }
                 }
             }
 

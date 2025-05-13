@@ -34,6 +34,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
+import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
@@ -60,6 +61,7 @@ constructor(
     @ShadeDisplayAware shadeContext: Context,
     brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory,
     audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
+    val audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
     shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     tileGridViewModelFactory: TileGridViewModel.Factory,
     @Assisted private val supportsBrightnessMirroring: Boolean,
