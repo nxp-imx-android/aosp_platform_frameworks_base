@@ -137,13 +137,13 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
             listOf(
                 GSFAxes.WEIGHT.toClockAxis(
                     type = AxisType.Float,
-                    currentValue = 400f,
+                    currentValue = 500f,
                     name = "Weight",
                     description = "Glyph Weight",
                 ),
                 GSFAxes.WIDTH.toClockAxis(
                     type = AxisType.Float,
-                    currentValue = 80f,
+                    currentValue = 100f,
                     name = "Width",
                     description = "Glyph Width",
                 ),
@@ -168,31 +168,42 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
             put(GSFAxes.SLANT, 0f)
         }
 
-        private val PRESET_COUNT = 8
-        private val PRESET_WIDTH_INIT = 30f
-        private val PRESET_WIDTH_STEP = 12.5f
-        private val PRESET_WEIGHT_INIT = 800f
-        private val PRESET_WEIGHT_STEP = -100f
-        private val BASE_PRESETS: List<ClockAxisStyle> = run {
-            val presets = mutableListOf<ClockAxisStyle>()
-            var weight = PRESET_WEIGHT_INIT
-            var width = PRESET_WIDTH_INIT
-            for (i in 1..PRESET_COUNT) {
-                presets.add(
+        val BASE_PRESETS: List<ClockAxisStyle> =
+            listOf(
                     ClockAxisStyle {
-                        put(GSFAxes.WEIGHT, weight)
-                        put(GSFAxes.WIDTH, width)
-                        put(GSFAxes.ROUND, 0f)
-                        put(GSFAxes.SLANT, 0f)
-                    }
+                        put(GSFAxes.WEIGHT, 800f)
+                        put(GSFAxes.WIDTH, 30f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 700f)
+                        put(GSFAxes.WIDTH, 55f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 600f)
+                        put(GSFAxes.WIDTH, 80f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 500f)
+                        put(GSFAxes.WIDTH, 100f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 400f)
+                        put(GSFAxes.WIDTH, 108f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 300f)
+                        put(GSFAxes.WIDTH, 116f)
+                    },
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, 200f)
+                        put(GSFAxes.WIDTH, 120f)
+                    },
                 )
-
-                weight += PRESET_WEIGHT_STEP
-                width += PRESET_WIDTH_STEP
-            }
-
-            return@run presets
-        }
+                .map {
+                    it.put(GSFAxes.SLANT, 0f)
+                    it.put(GSFAxes.ROUND, 0f)
+                    it
+                }
 
         fun buildPresetGroup(resources: Resources, isRound: Boolean): AxisPresetConfig.Group {
             val round = if (isRound) GSFAxes.ROUND.maxValue else GSFAxes.ROUND.minValue
