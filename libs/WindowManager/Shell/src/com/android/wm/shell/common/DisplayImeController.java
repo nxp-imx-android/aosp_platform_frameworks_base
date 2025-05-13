@@ -317,11 +317,18 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             boolean pendingImeStartAnimation = false;
             boolean positionChanged = false;
             if (hasImeLeash) {
+                final Point lastSurfacePosition = hadImeSourceControl
+                        ? mImeSourceControl.getSurfacePosition() : null;
+                positionChanged = !imeSourceControl.getSurfacePosition().equals(
+                        lastSurfacePosition);
                 if (mAnimation != null) {
-                    final Point lastSurfacePosition = hadImeSourceControl
-                            ? mImeSourceControl.getSurfacePosition() : null;
-                    positionChanged = !imeSourceControl.getSurfacePosition().equals(
-                            lastSurfacePosition);
+                    if (positionChanged) {
+                        // For showing the IME, the leash has to be available first. Hiding
+                        // the IME happens directly via {@link #hideInsets} (triggered by
+                        // setImeInputTargetRequestedVisibility) while the leash is not gone
+                        // yet.
+                        pendingImeStartAnimation = true;
+                    }
                 } else {
                     if (!haveSameLeash(mImeSourceControl, imeSourceControl)) {
                         pendingImeStartAnimation = true;
@@ -346,16 +353,17 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             }
             mImeSourceControl = imeSourceControl;
 
-            if (positionChanged) {
-                // For showing the IME, the leash has to be available first. Hiding
-                // the IME happens directly via {@link #hideInsets} (triggered by
-                // setImeInputTargetRequestedVisibility) while the leash is not gone
-                // yet.
-                pendingImeStartAnimation = true;
-            }
-
             if (pendingImeStartAnimation) {
                 startAnimation(mImeRequestedVisible, true /* forceRestart */);
+            } else if (positionChanged) {
+                // If the leash is the same, but it has changed its position while no
+                // animation is ongoing, just update the position without starting a new
+                // animation.
+                SurfaceControl.Transaction t = mTransactionPool.acquire();
+                final var position = mImeSourceControl.getSurfacePosition();
+                t.setPosition(mImeSourceControl.getLeash(), position.x, position.y);
+                t.apply();
+                mTransactionPool.release(t);
             }
         }
 
@@ -565,7 +573,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             final InsetsSourceControl animatingControl = new InsetsSourceControl(mImeSourceControl);
             final SurfaceControl animatingLeash = animatingControl.getLeash();
             final float defaultY = animatingControl.getSurfacePosition().y;
-            final float x = animatingControl.getSurfacePosition().x;
+            final float initialX = animatingControl.getSurfacePosition().x;
             final float hiddenY = defaultY + mImeFrame.height();
             final float shownY = defaultY;
             final float startY = show ? hiddenY : shownY;
@@ -577,7 +585,9 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             }
             mAnimationDirection = show ? DIRECTION_SHOW : DIRECTION_HIDE;
             updateImeVisibility(show);
-            mAnimation = ValueAnimator.ofFloat(startY, endY);
+            mAnimation = show
+                    ? ValueAnimator.ofFloat(0f, 1f)
+                    : ValueAnimator.ofFloat(1f, 0f);
             mAnimation.setDuration(
                     show ? ANIMATION_DURATION_SHOW_MS : ANIMATION_DURATION_HIDE_MS);
             if (seek) {
@@ -590,8 +600,11 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
 
             mAnimation.addUpdateListener(animation -> {
                 SurfaceControl.Transaction t = mTransactionPool.acquire();
-                float value = (float) animation.getAnimatedValue();
-                t.setPosition(animatingLeash, x, value);
+                final float value = (float) animation.getAnimatedValue();
+                final int x = mImeSourceControl.getSurfacePosition().x;
+                final int y = (int) (mImeSourceControl.getSurfacePosition().y
+                        + (1f - value) * mImeFrame.height());
+                t.setPosition(animatingLeash, x, y);
                 final float alpha = (mAnimateAlpha || isFloating)
                         ? (value - hiddenY) / (shownY - hiddenY) : 1f;
                 t.setAlpha(animatingLeash, alpha);
@@ -609,9 +622,9 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                 @Override
                 public void onAnimationStart(Animator animation) {
                     ValueAnimator valueAnimator = (ValueAnimator) animation;
-                    float value = (float) valueAnimator.getAnimatedValue();
+                    final float value = (float) valueAnimator.getAnimatedValue();
                     SurfaceControl.Transaction t = mTransactionPool.acquire();
-                    t.setPosition(animatingLeash, x, value);
+                    t.setPosition(animatingLeash, initialX, startY);
 
                     ProtoLog.d(WM_SHELL_IME_CONTROLLER,
                             "Ime animation start, d=%d top=%d->%d showing=%b",
@@ -666,7 +679,10 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                             mCancelled);
                     SurfaceControl.Transaction t = mTransactionPool.acquire();
                     if (!mCancelled) {
-                        t.setPosition(animatingLeash, x, endY);
+                        final int x = mImeSourceControl.getSurfacePosition().x;
+                        final int y = mImeSourceControl.getSurfacePosition().y
+                                + (show ? 0 : mImeFrame.height());
+                        t.setPosition(animatingLeash, x, y);
                         t.setAlpha(animatingLeash, 1.f);
                     }
                     if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
