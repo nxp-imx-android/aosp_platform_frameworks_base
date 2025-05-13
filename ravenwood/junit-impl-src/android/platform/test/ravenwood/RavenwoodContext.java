@@ -288,6 +288,13 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     }
 
     @Override
+    public void setTheme(int resid) {
+        synchronized (mLock) {
+            getTheme().applyStyle(resid, true);
+        }
+    }
+
+    @Override
     public String getPackageResourcePath() {
         return new File(RAVENWOOD_RESOURCE_APK).getAbsolutePath();
     }
