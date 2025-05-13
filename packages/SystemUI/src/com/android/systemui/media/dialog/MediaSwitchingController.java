@@ -531,15 +531,6 @@ public class MediaSwitchingController
         return mIsGroupListCollapsed;
     }
 
-    boolean isActiveItem(MediaDevice device) {
-        boolean isConnected = mLocalMediaManager.getCurrentConnectedDevice().getId().equals(
-                device.getId());
-        boolean isSelectedDeviceInGroup = getSelectedMediaDevice().size() > 1
-                && getSelectedMediaDevice().contains(device);
-        return (!hasAdjustVolumeUserRestriction() && isConnected && !isAnyDeviceTransferring())
-                || isSelectedDeviceInGroup;
-    }
-
     IconCompat getNotificationSmallIcon() {
         if (TextUtils.isEmpty(mPackageName)) {
             return null;
