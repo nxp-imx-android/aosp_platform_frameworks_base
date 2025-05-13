@@ -1898,7 +1898,6 @@ public class TelecomManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_VOIP_CALL_MONITOR_REFACTOR)
     @TestApi
     public boolean hasForegroundServiceDelegation(@Nullable PhoneAccountHandle handle) {
         ITelecomService service = getTelecomService();
