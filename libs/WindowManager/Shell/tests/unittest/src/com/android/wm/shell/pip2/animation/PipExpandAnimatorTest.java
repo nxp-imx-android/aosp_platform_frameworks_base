@@ -189,8 +189,7 @@ public class PipExpandAnimatorTest {
         mPipExpandAnimator.setAnimationStartCallback(mMockStartCallback);
         mPipExpandAnimator.setAnimationEndCallback(mMockEndCallback);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            mPipExpandAnimator.start();
-            clearInvocations(mMockTransaction);
+            // animator is not started intentionally to avoid double invocation
             mPipExpandAnimator.setCurrentFraction(0.5f);
         });
 
