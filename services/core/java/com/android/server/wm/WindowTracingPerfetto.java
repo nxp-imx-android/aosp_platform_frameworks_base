@@ -19,19 +19,17 @@ package com.android.server.wm;
 import android.annotation.Nullable;
 import android.internal.perfetto.protos.TracePacketOuterClass.TracePacket;
 import android.internal.perfetto.protos.WinscopeExtensionsImplOuterClass.WinscopeExtensionsImpl;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ShellCommand;
 import android.os.SystemClock;
-import android.os.Trace;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.Choreographer;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import android.os.Trace;
+
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowTracingPerfetto extends WindowTracing {
@@ -41,7 +39,6 @@ class WindowTracingPerfetto extends WindowTracing {
     private final AtomicInteger mCountSessionsOnFrame = new AtomicInteger();
     private final AtomicInteger mCountSessionsOnTransaction = new AtomicInteger();
     private final WindowTracingDataSource mDataSource;
-    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     WindowTracingPerfetto(WindowManagerService service, Choreographer choreographer) {
         this(service, choreographer, service.mGlobalLock, PRODUCTION_DATA_SOURCE_NAME);
@@ -115,8 +112,6 @@ class WindowTracingPerfetto extends WindowTracing {
             boolean isStartLogEvent = where == WHERE_START_TRACING;
             boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
 
-            ArrayList<Runnable> pendingStopDones = new ArrayList<Runnable>();
-
             mDataSource.trace((context) -> {
                 WindowTracingDataSource.Config dataSourceConfig =
                         context.getCustomTlsState().mConfig;
@@ -149,19 +144,7 @@ class WindowTracingPerfetto extends WindowTracing {
                 dumpToProto(os, dataSourceConfig.mLogLevel, where, timestamp);
                 os.end(tokenExtensionsField);
                 os.end(tokenWinscopeExtensions);
-
-                if (dataSourceConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
-                    // Postpone the stopDone() call to when DataSource#trace() has returned.
-                    // At this point the tracing data has not been written to Perfetto yet,
-                    // hence we can't already call stopDone().
-                    pendingStopDones.add(context::stopDone);
-                }
             });
-
-            for (int i = 0; i < pendingStopDones.size(); ++i) {
-                pendingStopDones.get(i).run();
-                Log.i(TAG, "Stopped session (frequency=SINGLE_DUMP) (postponed stop)");
-            }
         } catch (Exception e) {
             Log.wtf(TAG, "Exception while tracing state", e);
         } finally {
@@ -187,27 +170,22 @@ class WindowTracingPerfetto extends WindowTracing {
             Log.i(TAG, "Started session (frequency=TRANSACTION, log level="
                     + config.mLogFrequency + ")");
             mCountSessionsOnTransaction.incrementAndGet();
-        } else if (config.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
-            Log.i(TAG, "Started session (frequency=SINGLE_DUMP, log level="
-                    + config.mLogFrequency + ")");
-            return; // onStop() will trigger the start log event of SINGLE_DUMP tracing sessions
         }
 
-        mMainHandler.post(() -> log(WHERE_START_TRACING));
+        Log.i(TAG, getStatus());
+
+        log(WHERE_START_TRACING);
     }
 
-    void onStop(WindowTracingDataSource.Instance instance) {
-        if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.FRAME) {
-            instance.stopDone();
+    void onStop(WindowTracingDataSource.Config config) {
+        if (config.mLogFrequency == WindowTracingLogFrequency.FRAME) {
             Log.i(TAG, "Stopped session (frequency=FRAME)");
             mCountSessionsOnFrame.decrementAndGet();
-        } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.TRANSACTION) {
-            instance.stopDone();
-            mCountSessionsOnTransaction.decrementAndGet();
             Log.i(TAG, "Stopped session (frequency=TRANSACTION)");
-        } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
-            Log.i(TAG, "Triggering log event on stop (frequency=SINGLE_DUMP)");
-            mMainHandler.post(() -> log(WHERE_START_TRACING));
+        } else if (config.mLogFrequency == WindowTracingLogFrequency.TRANSACTION) {
+            mCountSessionsOnTransaction.decrementAndGet();
         }
+
+        Log.i(TAG, getStatus());
     }
 }
