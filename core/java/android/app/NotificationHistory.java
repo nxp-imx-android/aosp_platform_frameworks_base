@@ -315,9 +315,7 @@ public final class NotificationHistory implements Parcelable {
         for (int i = 0; i < mNotificationsToWrite.size(); i++) {
             final HistoricalNotification notification = mNotificationsToWrite.get(i);
             mStringsToWrite.add(notification.getPackage());
-            if (!TextUtils.isEmpty(notification.getChannelName())) {
-                mStringsToWrite.add(notification.getChannelName());
-            }
+            mStringsToWrite.add(notification.getChannelName());
             mStringsToWrite.add(notification.getChannelId());
             if (!TextUtils.isEmpty(notification.getConversationId())) {
                 mStringsToWrite.add(notification.getConversationId());
