@@ -2826,13 +2826,18 @@ class ActivityStarter {
             mTargetRootTask = Task.fromWindowContainerToken(mOptions.getLaunchRootTask());
 
             if (inTaskFragment == null) {
-                inTaskFragment = TaskFragment.fromTaskFragmentToken(
-                        mOptions.getLaunchTaskFragmentToken(), mService);
-                if (inTaskFragment != null && inTaskFragment.isEmbeddedTaskFragmentInPip()) {
-                    // Do not start activity in TaskFragment in a PIP Task.
-                    Slog.w(TAG, "Can not start activity in TaskFragment in PIP: "
-                            + inTaskFragment);
-                    inTaskFragment = null;
+                final IBinder launchTfToken = mOptions.getLaunchTaskFragmentToken();
+                if (launchTfToken != null) {
+                    inTaskFragment = TaskFragment.fromTaskFragmentToken(launchTfToken, mService);
+                    if (inTaskFragment == null) {
+                        Slog.e(TAG, "Can not find requested launch TaskFragment: "
+                                + launchTfToken);
+                    } else if (inTaskFragment.isEmbeddedTaskFragmentInPip()) {
+                        // Do not start activity in TaskFragment in a PIP Task.
+                        Slog.w(TAG, "Can not start activity in TaskFragment in PIP: "
+                                + inTaskFragment);
+                        inTaskFragment = null;
+                    }
                 }
             }
         }
