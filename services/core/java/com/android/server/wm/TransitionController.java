@@ -21,6 +21,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_NONE;
+import static android.window.DesktopExperienceFlags.ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS;
 
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 
@@ -1236,7 +1237,7 @@ class TransitionController {
      * `collecting` transition. It may still ultimately block in sync-engine or become dependent
      * in {@link #getIsIndependent} later.
      */
-    boolean getCanBeIndependent(Transition collecting, @Nullable Transition queued) {
+    static boolean getCanBeIndependent(Transition collecting, @Nullable Transition queued) {
         // For tests
         if (queued != null && queued.mParallelCollectType == Transition.PARALLEL_TYPE_MUTUAL
                 && collecting.mParallelCollectType == Transition.PARALLEL_TYPE_MUTUAL) {
@@ -1248,12 +1249,19 @@ class TransitionController {
                 // Must serialize with itself.
                 return false;
             }
-            // allow this if `collecting` only has activities
             for (int i = 0; i < collecting.mParticipants.size(); ++i) {
                 final WindowContainer wc = collecting.mParticipants.valueAt(i);
+                final boolean isOnDifferentDisplay = !queued.isOnDisplay(wc.mDisplayContent);
+                if (isOnDifferentDisplay
+                        && ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS.isTrue()) {
+                    // Running in a different display, could be independent.
+                    continue;
+                }
                 final ActivityRecord ar = wc.asActivityRecord();
-                if (ar == null && wc.asWindowState() == null && wc.asWindowToken() == null) {
-                    // Is task or above, so can't be independent
+                final boolean isTaskOrAbove = ar == null && wc.asWindowState() == null
+                        && wc.asWindowToken() == null;
+                if (isTaskOrAbove) {
+                    // Is task or above, so can't be independent.
                     return false;
                 }
                 if (ar != null && ar.isActivityTypeHomeOrRecents()) {
@@ -1306,9 +1314,17 @@ class TransitionController {
         // actually animating.
         for (int i = 0; i < other.mTargets.size(); ++i) {
             final WindowContainer wc = other.mTargets.get(i).mContainer;
+            final boolean isOnDifferentDisplay = !recents.isOnDisplay(wc.mDisplayContent);
+            if (isOnDifferentDisplay
+                    && ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS.isTrue()) {
+                // Running in a different display, could be independent.
+                continue;
+            }
             final ActivityRecord ar = wc.asActivityRecord();
-            if (ar == null && wc.asWindowState() == null && wc.asWindowToken() == null) {
-                // Is task or above, so for now don't let them be independent.
+            final boolean isTaskOrAbove = ar == null && wc.asWindowState() == null
+                    && wc.asWindowToken() == null;
+            if (isTaskOrAbove) {
+                // Is task or above, so for now don't let them be independent
                 return false;
             }
             if (ar != null && recents.isTransientLaunch(ar)) {

@@ -2614,6 +2614,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         sb.append(" id=" + mSyncId);
         sb.append(" type=" + transitTypeToString(mType));
         sb.append(" flags=0x" + Integer.toHexString(mFlags));
+        sb.append(" parallelCollectType=" + parallelCollectTypeToString(mParallelCollectType));
+        sb.append(" recentsDisplayId=" + mRecentsDisplayId);
         if (mOverrideOptions != null) {
             sb.append(" overrideAnimOptions=" + mOverrideOptions);
         }
@@ -3915,6 +3917,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mState < STATE_STARTED && this == mController.getCollectingTransition()) {
             applyDisplayChangeIfNeeded(new ArraySet<>());
         }
+    }
+
+    @NonNull
+    private static String parallelCollectTypeToString(@ParallelType int parallelCollectType) {
+        return switch (parallelCollectType) {
+            case PARALLEL_TYPE_NONE -> "NONE";
+            case PARALLEL_TYPE_MUTUAL -> "MUTUAL";
+            case PARALLEL_TYPE_RECENTS -> "RECENTS";
+            default -> "UNKNOWN(" + parallelCollectType + ")";
+        };
     }
 
     /**
