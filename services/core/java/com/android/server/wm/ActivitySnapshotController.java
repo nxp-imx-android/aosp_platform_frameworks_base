@@ -18,7 +18,7 @@ package com.android.server.wm;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 
-import static com.android.server.wm.SnapshotPersistQueue.MAX_STORE_QUEUE_DEPTH;
+import static com.android.server.wm.SnapshotPersistQueue.MAX_HW_STORE_QUEUE_DEPTH;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -34,6 +34,7 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
+import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -57,7 +58,7 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
     private static final boolean DEBUG = false;
     private static final String TAG = AbsAppSnapshotController.TAG;
     // Maximum persisted snapshot count on disk.
-    private static final int MAX_PERSIST_SNAPSHOT_COUNT = 20;
+    static final int MAX_PERSIST_SNAPSHOT_COUNT = 20;
 
     static final String SNAPSHOTS_DIRNAME = "activity_snapshots";
 
@@ -353,8 +354,11 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
         if (DEBUG) {
             Slog.d(TAG, "ActivitySnapshotController#recordSnapshot " + activity);
         }
-        if (mPersister.mSnapshotPersistQueue.peekWriteQueueSize() >= MAX_STORE_QUEUE_DEPTH
-                || mPersister.mSnapshotPersistQueue.peekQueueSize() > MAX_PERSIST_SNAPSHOT_COUNT) {
+        final int maxStoreQueue = Flags.extendingPersistenceSnapshotQueueDepth()
+                ? mSnapshotPersistQueue.mMaxTotalStoreQueue
+                : MAX_HW_STORE_QUEUE_DEPTH;
+        if (mSnapshotPersistQueue.peekWriteQueueSize() >= maxStoreQueue
+                || mSnapshotPersistQueue.peekQueueSize() > MAX_PERSIST_SNAPSHOT_COUNT) {
             Slog.w(TAG, "Skipping recording activity snapshot, too many requests!");
             return;
         }

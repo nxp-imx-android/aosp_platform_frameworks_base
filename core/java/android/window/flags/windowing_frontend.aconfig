@@ -512,6 +512,17 @@ flag {
 }
 
 flag {
+    name: "extending_persistence_snapshot_queue_depth"
+    namespace: "windowing_frontend"
+    description: "Use ImageReader to persist snapshot into disk, and extending the persistence snapshot queue depth."
+    bug: "416144425"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "intercept_motion_from_move_to_cancel"
     namespace: "windowing_frontend"
     description: "Ensure that the client receives ACTION_CANCEL when the back gesture is intercepted."
