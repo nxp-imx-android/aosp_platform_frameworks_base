@@ -862,6 +862,7 @@ private fun BoxScope.CommunalHubLazyGrid(
 ) {
     var gridModifier =
         Modifier.align(Alignment.TopStart).onGloballyPositioned { setGridCoordinates(it) }
+    var gridItemSize: SizeInfo? by remember { mutableStateOf(null) }
     var list = communalContent
     var dragDropState: GridDragDropState? = null
     var arrangementSpacing = Dimensions.ItemSpacing
@@ -888,6 +889,7 @@ private fun BoxScope.CommunalHubLazyGrid(
         val dragAndDropTargetState =
             rememberDragAndDropTargetState(
                 gridState = gridState,
+                gridItemSize = gridItemSize,
                 contentListState = contentListState,
                 contentOffset = contentOffset,
             )
@@ -914,6 +916,8 @@ private fun BoxScope.CommunalHubLazyGrid(
         minVerticalArrangement = arrangementSpacing,
         setContentOffset = setContentOffset,
     ) { sizeInfo ->
+        gridItemSize = sizeInfo
+
         /** Override spans based on the responsive grid size */
         val finalizedList =
             if (sizeInfo != null) {
