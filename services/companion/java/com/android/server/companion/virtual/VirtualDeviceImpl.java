@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual;
 
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
+import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_ENABLED;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
@@ -1380,7 +1381,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
     @Override
     public boolean canCreateMirrorDisplays() {
-        return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
+        if (!android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
+            return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
+        }
+        return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     private boolean hasCustomAudioInputSupportInternal() {

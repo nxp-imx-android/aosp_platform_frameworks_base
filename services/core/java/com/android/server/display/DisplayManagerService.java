@@ -17,7 +17,6 @@
 package com.android.server.display;
 
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
-import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.CAPTURE_SECURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
@@ -1827,9 +1826,6 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private boolean canCreateMirrorDisplays(IVirtualDevice virtualDevice) {
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            return checkCallingPermission(ADD_MIRROR_DISPLAY, "canCreateMirrorDisplays");
-        }
         try {
             return virtualDevice != null && virtualDevice.canCreateMirrorDisplays();
         } catch (RemoteException e) {
