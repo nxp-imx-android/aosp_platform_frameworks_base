@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.windowdecor
 
-import android.annotation.LayoutRes
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.res.Configuration
@@ -85,9 +84,9 @@ abstract class WindowDecoration2<T>(
 
     private lateinit var captionController: CaptionController<T>
     private var display: Display? = null
-    private lateinit var windowDecorConfig: Configuration
+    protected lateinit var windowDecorConfig: Configuration
     private lateinit var taskInfo: RunningTaskInfo
-    private lateinit var decorWindowContext: Context
+    protected lateinit var decorWindowContext: Context
     private var hasGlobalFocus = false
     private val exclusionRegion = Region.obtain()
     private val onDisplaysChangedListener: OnDisplaysChangedListener =
@@ -115,8 +114,10 @@ abstract class WindowDecoration2<T>(
      */
     abstract fun calculateValidDragArea(): Rect
 
-    /** Creates the correct caption controller for the given task based on its current state. */
-    abstract fun createCaptionController(): CaptionController<T>
+    /** Creates the correct caption controller for the [CaptionType]. */
+    abstract fun createCaptionController(
+        captionType: CaptionController.CaptionType
+    ): CaptionController<T>
 
     /** Updates the window decorations when limited information is available. */
     abstract fun relayout(
@@ -209,7 +210,7 @@ abstract class WindowDecoration2<T>(
             )
         }
 
-        val captionResult = getOrCreateCaptionController(params.layoutResId).relayout(
+        val captionResult = getOrCreateCaptionController(params.captionType).relayout(
             params = params,
             parentContainer = checkNotNull(decorationContainerSurface) {
                 "expected non-null decoration container surface control"
@@ -232,13 +233,15 @@ abstract class WindowDecoration2<T>(
         )
     }
 
-    private fun getOrCreateCaptionController(@LayoutRes layoutResId: Int): CaptionController<T> {
+    private fun getOrCreateCaptionController(
+        captionType: CaptionController.CaptionType
+    ): CaptionController<T> {
         if (!this::captionController.isInitialized) {
-            return createCaptionController()
+            return createCaptionController(captionType)
         }
-        if (captionController.captionResId != layoutResId) {
+        if (captionController.captionType != captionType) {
             releaseCaptionController()
-            return createCaptionController()
+            return createCaptionController(captionType)
         }
         return captionController
     }
@@ -526,7 +529,7 @@ abstract class WindowDecoration2<T>(
     /**  Holds the data required to update the window decorations. */
     data class RelayoutParams(
         val runningTaskInfo: RunningTaskInfo,
-        val layoutResId: Int = Resources.ID_NULL,
+        val captionType: CaptionController.CaptionType,
         val captionWidthId: Int = Resources.ID_NULL,
         val occludingCaptionElements: MutableList<OccludingCaptionElement> = ArrayList(),
         val limitTouchRegionToSystemAreas: Boolean = false,
@@ -572,7 +575,7 @@ abstract class WindowDecoration2<T>(
 
     /** Data calculated and retrieved during a [relayout] call. */
     data class RelayoutResult<T>(
-        val captionResult: CaptionController.CaptionRelayoutResult?,
+        val captionResult: CaptionController.CaptionRelayoutResult,
         val taskWidth: Int,
         val taskHeight: Int,
         val cornerRadius: Int = INVALID_CORNER_RADIUS,

@@ -970,6 +970,10 @@ class AppHeaderViewHolder(
                 Configuration.UI_MODE_NIGHT_YES
     }
 
+    override fun setTaskFocusState(taskFocusState: Boolean) {
+        (rootView as WindowDecorLinearLayout).setTaskFocusState(taskFocusState)
+    }
+
     override fun close() {
         // Should not fire long press events after closing the window decoration.
         maximizeWindowButton.cancelLongPress()
