@@ -129,6 +129,7 @@ import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.app.TaskInfo.SelfMovable;
 import android.app.WindowConfiguration;
+import android.app.admin.DevicePolicyCache;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -3055,6 +3056,7 @@ class Task extends TaskFragment {
     void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
         b.setEffectLayer().setMetadata(METADATA_TASK_ID, mTaskId);
         super.setInitialSurfaceControlProperties(b);
+        getPendingTransaction().setSecure(mSurfaceControl, isSecure());
     }
 
     /** Checking if self or its child tasks are animated by recents animation. */
@@ -6933,6 +6935,18 @@ class Task extends TaskFragment {
             return;
         }
         t.show(mDecorSurfaceContainer.mDecorSurface);
+    }
+
+    void setSecure(boolean secure) {
+        getPendingTransaction().setSecure(mSurfaceControl, secure);
+        scheduleAnimation();
+    }
+
+    boolean isSecure() {
+        if (mWmService.getDisableSecureWindows()) {
+            return false;
+        }
+        return !DevicePolicyCache.getInstance().isScreenCaptureAllowed(mUserId);
     }
 
     /**
