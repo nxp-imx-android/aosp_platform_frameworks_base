@@ -39,6 +39,7 @@ import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.util.Slog;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -130,6 +131,14 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
+        boolean requestFullscreen = options != null
+                && options.getLaunchWindowingMode() == WINDOWING_MODE_FULLSCREEN;
+        if (DesktopExperienceFlags.RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS
+                .isTrue() && requestFullscreen) {
+            appendLog("respecting fullscreen activity option, skipping");
+            return RESULT_SKIP;
+        }
+
         final Task organizerTask = task.getCreatedByOrganizerTask();
         // If task is already launched, check if organizer task matches the target display.
         final boolean inDesktopFirstContainer = ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue() && (
@@ -152,8 +161,6 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         // Copy over any values
         outParams.set(currentParams);
 
-        boolean requestFullscreen = options != null
-                && options.getLaunchWindowingMode() == WINDOWING_MODE_FULLSCREEN;
         boolean isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
         if (source != null && source.getTask() != null) {
             final Task sourceTask = source.getTask();
