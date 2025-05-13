@@ -50,6 +50,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.Pair;
 import android.util.SparseIntArray;
 
 import com.android.internal.R;
@@ -724,8 +725,9 @@ public class SoundDoseHelper {
                 int device = mAudioService.getDeviceForStream(AudioSystem.STREAM_MUSIC);
                 if (safeDevicesContains(device) && isStreamActive) {
                     scheduleMusicActiveCheck();
-                    int index = mAudioService.getVolumeForDeviceIgnoreMute(AudioSystem.STREAM_MUSIC,
-                            device);
+                    final Pair<Integer, Boolean> volumePair = mAudioService.getVolumeForDevice(
+                            AudioSystem.STREAM_MUSIC, device);
+                    final int index = volumePair.second ? 0 : volumePair.first;
                     if (index > safeMediaVolumeIndex(device)) {
                         // Approximate cumulative active music time
                         long curTimeMs = SystemClock.elapsedRealtime();
