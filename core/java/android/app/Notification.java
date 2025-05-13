@@ -3235,7 +3235,7 @@ public class Notification implements Parcelable
                 ApplicationInfo info = getApplicationInfo(context);
                 if (info != null) {
                     final PackageManager pm = context.getPackageManager();
-                    name = pm.getApplicationLabel(getApplicationInfo(context));
+                    name = pm.getApplicationLabel(info);
                 }
             }
             // If there's still nothing, ¯\_(ツ)_/¯
