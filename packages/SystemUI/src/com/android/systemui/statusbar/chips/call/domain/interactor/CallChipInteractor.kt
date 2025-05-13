@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.chips.call.domain.interactor
 import android.app.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.OngoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
@@ -48,7 +47,8 @@ constructor(
             })
             .map { state ->
                 if (
-                    PromotedNotificationUi.isEnabled &&
+                    // TODO(b/415070395): Change to the ui_rich_ongoing flag instead.
+                    Flags.optInRichOngoing() &&
                         state is OngoingCallModel.InCall &&
                         state.requestedPromotion
                 ) {

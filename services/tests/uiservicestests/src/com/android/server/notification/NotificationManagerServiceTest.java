@@ -26,6 +26,7 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
+import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -17801,12 +17802,21 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING,
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING,
             android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testApplyAdjustment_promotedOngoingNotification_doesNotApply() throws Exception {
         // promoted ongoing notification which should not have the adjustment applied
-        Notification n = createPromotableNotification(/* addFlagManually= */ true);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .setFlag(FLAG_PROMOTED_ONGOING, true) // add manually since we're skipping post
+                .setFlag(FLAG_CAN_COLORIZE, true) // add manually since we're skipping post
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -17846,34 +17856,54 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     @DisableFlags({FLAG_UI_RICH_ONGOING})
     public void testSetCanBePromoted_granted_noui() throws Exception {
         testSetCanBePromoted_granted();
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
     public void testSetCanBePromoted_granted_ui() throws Exception {
         testSetCanBePromoted_granted();
     }
 
     private void testSetCanBePromoted_granted() throws Exception {
         // qualifying posted notification
-        Notification n = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
         NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
 
         // qualifying enqueued notification
-        Notification n1 = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n1 = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
         StatusBarNotification sbn1 = new StatusBarNotification(mPkg, mPkg, 7, null, mUid, 0,
                 n1, UserHandle.getUserHandleForUid(mUid), null, 0);
         NotificationRecord r1 = new NotificationRecord(mContext, sbn1, mTestNotificationChannel);
 
         // another package but otherwise would qualify
-        Notification n2 = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n2 = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
         StatusBarNotification sbn2 = new StatusBarNotification(PKG_O, PKG_O, 7, null, UID_O, 0,
                 n2, UserHandle.getUserHandleForUid(UID_O), null, 0);
         NotificationRecord r2 = new NotificationRecord(mContext, sbn2, mTestNotificationChannel);
@@ -17918,21 +17948,30 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     @DisableFlags({FLAG_UI_RICH_ONGOING})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_noui() throws Exception {
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
 
     private void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         // qualifying posted notification
-        Notification n = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .setFlag(FLAG_CAN_COLORIZE, true) // add manually since we're skipping post
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -17956,20 +17995,35 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     public void testSetCanBePromoted_revoked() throws Exception {
         // start from true state
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
 
         // qualifying posted notification
-        Notification n = createPromotableNotification(/* addFlagManually= */ true);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .setFlag(FLAG_PROMOTED_ONGOING, true) // add manually since we're skipping post
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
         NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
 
         // qualifying enqueued notification
-        Notification n1 = createPromotableNotification(/* addFlagManually= */ true);
+        Notification n1 = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .setFlag(FLAG_PROMOTED_ONGOING, true) // add manually since we're skipping post
+                .build();
         StatusBarNotification sbn1 = new StatusBarNotification(mPkg, mPkg, 7, null, mUid, 0,
                 n1, UserHandle.getUserHandleForUid(mUid), null, 0);
         NotificationRecord r1 = new NotificationRecord(mContext, sbn1, mTestNotificationChannel);
@@ -18005,13 +18059,21 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     public void testSetCanBePromoted_revoked_onlyNotifiesOnce() throws Exception {
         // start from true state
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
 
         // qualifying posted notification
-        Notification n = createPromotableNotification(/* addFlagManually= */ true);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .setFlag(FLAG_PROMOTED_ONGOING, true) // add manually since we're skipping post
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -18031,12 +18093,19 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     public void testPostPromotableNotification() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
         assertThat(mBinderService.appCanBePromoted(mPkg, mUid)).isTrue();
 
-        Notification n = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
 
@@ -18054,12 +18123,19 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     public void testPostPromotableNotification_noPermission() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, false, true);
         assertThat(mBinderService.appCanBePromoted(mPkg, mUid)).isFalse();
 
-        Notification n = createPromotableNotification(/* addFlagManually= */ false);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -18078,10 +18154,17 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING})
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
     public void testPostPromotableNotification_unimportantNotification() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, true, true);
-        Notification n = createPromotableNotification(/* addFlagManually= */ false, mMinChannel);
+        Notification n = new Notification.Builder(mContext, mMinChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setColor(Color.WHITE)
+                .setRequestPromotedOngoing(true)
+                .setOngoing(true)
+                .build();
 
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 9, null, mUid, 0,
                 n, UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -18097,28 +18180,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         assertThat(mService.hasFlag(captor.getValue().getNotification().flags,
                 FLAG_PROMOTED_ONGOING)).isFalse();
-    }
-
-    private Notification createPromotableNotification(boolean addFlagManually) {
-        return createPromotableNotification(addFlagManually, mTestNotificationChannel);
-    }
-
-    private Notification createPromotableNotification(
-            boolean addFlagManually, NotificationChannel channel) {
-        boolean newEligibilityCriteria = android.app.Flags.uiRichOngoing();
-        // create a qualifying notification
-        Notification n = new Notification.Builder(mContext, channel.getId())
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
-                .setColor(Color.WHITE)
-                .setRequestPromotedOngoing(newEligibilityCriteria)
-                .setOngoing(true)
-                .setColorized(!newEligibilityCriteria)
-                .setFlag(FLAG_PROMOTED_ONGOING, addFlagManually) // used if we're skipping post
-                .build();
-        // validate that the test notification does qualify for promotion
-        assertThat(n.hasPromotableCharacteristics()).isTrue();
-        return n;
     }
 
     @Test

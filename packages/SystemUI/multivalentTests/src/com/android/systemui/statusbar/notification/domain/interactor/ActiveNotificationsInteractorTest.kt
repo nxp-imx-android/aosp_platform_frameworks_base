@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.domain.interactor
 
+import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -120,8 +121,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_hasPromotedContent_hasNotif() =
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOff_hasPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -141,8 +142,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOff_noPromotedContent_hasNotif() =
+    @DisableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOff_noPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -163,7 +164,8 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_hasPromotedContent_hasNotif() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagOn_butOptInOff_hasPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -184,7 +186,50 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun ongoingCallNotification_promotedFlagOn_noPromotedContent_hasNotif() =
+    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagOn_butOptInOff_noPromotedContent_noNotif() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.ongoingCallNotification)
+
+            val ongoingNotif =
+                activeNotificationModel(
+                    key = "ongoingNotif",
+                    callType = CallType.Ongoing,
+                    promotedContent = null,
+                )
+
+            activeNotificationListRepository.activeNotifications.value =
+                ActiveNotificationsStore.Builder()
+                    .apply { addIndividualNotif(ongoingNotif) }
+                    .build()
+
+            assertThat(latest).isNull()
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOn_hasPromotedContent_hasNotif() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.ongoingCallNotification)
+
+            val ongoingNotif =
+                activeNotificationModel(
+                    key = "ongoingNotif",
+                    callType = CallType.Ongoing,
+                    promotedContent = callPromotedContentBuilder("ongoingNotif").build(),
+                )
+
+            activeNotificationListRepository.activeNotifications.value =
+                ActiveNotificationsStore.Builder()
+                    .apply { addIndividualNotif(ongoingNotif) }
+                    .build()
+
+            assertThat(latest).isEqualTo(ongoingNotif)
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
+    fun ongoingCallNotification_promotedFlagsBothOn_noPromotedContent_hasNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
 
@@ -204,7 +249,7 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
     fun ongoingCallNotification_multiple_usesEarlierNotif() =
         testScope.runTest {
             val latest by collectLastValue(underTest.ongoingCallNotification)
