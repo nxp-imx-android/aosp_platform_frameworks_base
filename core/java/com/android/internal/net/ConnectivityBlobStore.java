@@ -140,6 +140,26 @@ public class ConnectivityBlobStore {
     }
 
     /**
+     * Remove all blobs that are stored in the database.
+     *
+     * @return True if the operation was successful, false otherwise.
+     * @hide
+     */
+    public boolean removeAll() {
+        final int ownerUid = Binder.getCallingUid();
+        try {
+            final int numRowsRemoved = mDb.delete(TABLENAME, "owner=?" /* whereClause */,
+                    new String[] {Integer.toString(ownerUid)} /* whereArgs */);
+            Log.i(TAG, "Removed " + numRowsRemoved + " rows during the removeAll operation "
+                    + "for uid " + ownerUid);
+            return true;
+        } catch (SQLException e) {
+            Log.e(TAG, "Error while removing all blobs: " + e);
+            return false;
+        }
+    }
+
+    /**
      * Lists the name suffixes stored in the database matching the given prefix, sorted in
      * ascending order.
      *
