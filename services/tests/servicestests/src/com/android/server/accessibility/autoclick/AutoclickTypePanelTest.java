@@ -40,6 +40,7 @@ import android.testing.TestableContext;
 import android.testing.TestableLooper;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -536,6 +537,52 @@ public class AutoclickTypePanelTest {
         mHovered = true;
         mContext.onHoverChanged(false);
         assertThat(mHovered).isFalse();
+    }
+
+    @Test
+    public void cursorIcon_fullDragCycle() {
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
+        int[] panelLocation = new int[2];
+        contentView.getLocationOnScreen(panelLocation);
+
+        // Set up drag coordinates.
+        float startX = panelLocation[0] + 10;
+        float startY = panelLocation[1] + 10;
+        float moveX = startX + 50;
+        float moveY = startY + 20;
+
+        // 1. Initial state.
+        PointerIcon initialCursor = mAutoclickTypePanel.getCurrentCursorForTesting();
+
+        // 2. DOWN event - Touch starts.
+        MotionEvent downEvent = MotionEvent.obtain(
+                0, 0, MotionEvent.ACTION_DOWN, startX, startY, 0);
+        contentView.dispatchTouchEvent(downEvent);
+        PointerIcon touchStartCursor = mAutoclickTypePanel.getCurrentCursorForTesting();
+
+        // 3. MOVE event - Dragging starts.
+        MotionEvent moveEvent = MotionEvent.obtain(
+                0, 0, MotionEvent.ACTION_MOVE, moveX, moveY, 0);
+        contentView.dispatchTouchEvent(moveEvent);
+        PointerIcon draggingCursor = mAutoclickTypePanel.getCurrentCursorForTesting();
+
+        // 4. UP event - Drag ends.
+        MotionEvent upEvent = MotionEvent.obtain(
+                0, 0, MotionEvent.ACTION_UP, moveX, moveY, 0);
+        contentView.dispatchTouchEvent(upEvent);
+        PointerIcon afterDragCursor = mAutoclickTypePanel.getCurrentCursorForTesting();
+
+        // Initial state should be default cursor.
+        assertThat(initialCursor.getType()).isEqualTo(PointerIcon.TYPE_ARROW);
+
+        // After touch down - cursor should change to grabbing.
+        assertThat(touchStartCursor.getType()).isEqualTo(PointerIcon.TYPE_GRABBING);
+
+        // During drag - should be in dragging state with grabbing cursor.
+        assertThat(draggingCursor.getType()).isEqualTo(PointerIcon.TYPE_GRABBING);
+
+        // After drag ends - should not be dragging and cursor should be grab.
+        assertThat(afterDragCursor.getType()).isEqualTo(PointerIcon.TYPE_GRAB);
     }
 
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
