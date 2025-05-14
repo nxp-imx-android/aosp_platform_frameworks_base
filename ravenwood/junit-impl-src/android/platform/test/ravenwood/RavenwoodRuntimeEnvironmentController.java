@@ -131,11 +131,13 @@ public class RavenwoodRuntimeEnvironmentController {
     private static final boolean ENABLE_TIMEOUT_STACKS =
             !"0".equals(System.getenv("RAVENWOOD_ENABLE_TIMEOUT_STACKS"));
 
-    private static final boolean TOLERATE_LOOPER_ASSERTS =
-            !"0".equals(System.getenv("RAVENWOOD_TOLERATE_LOOPER_ASSERTS"));
+    /** RavenwoodCoreTest modifies it, so not final. */
+    public static volatile boolean TOLERATE_UNHANDLED_ASSERTS =
+            !"0".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_ASSERTS"));
 
-    private static final boolean TOLERATE_LOOPER_EXCEPTIONS =
-            "1".equals(System.getenv("RAVENWOOD_TOLERATE_LOOPER_EXCEPTIONS"));
+    /** RavenwoodCoreTest modifies it, so not final. */
+    public static volatile boolean TOLERATE_UNHANDLED_EXCEPTIONS =
+            "1".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS"));
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
@@ -596,16 +598,22 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     /**
-     * Return if an exception is benign and okay to continue running the main looper even
-     * if we detect it.
+     * Return if an exception is benign and okay to continue running the remaining tests.
      */
     private static boolean isThrowableRecoverable(Throwable th) {
-        return th instanceof AssertionError || th instanceof AssumptionViolatedException;
+        if (TOLERATE_UNHANDLED_EXCEPTIONS) {
+            return true;
+        }
+        if (TOLERATE_UNHANDLED_ASSERTS
+                && (th instanceof AssertionError || th instanceof AssumptionViolatedException)) {
+            return true;
+        }
+        return false;
     }
 
     private static Exception makeRecoverableExceptionInstance(Throwable inner) {
         var outer = new Exception(String.format("Exception detected on thread %s: "
-                + " *** Continuing the test because it's recoverable ***",
+                + " *** Continuing running the remaining tests ***",
                 Thread.currentThread().getName()), inner);
         Log.e(TAG, outer.getMessage(), outer);
         return outer;
@@ -618,8 +626,7 @@ public class RavenwoodRuntimeEnvironmentController {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sStdErr.println(desc);
-            if (TOLERATE_LOOPER_EXCEPTIONS
-                    || (TOLERATE_LOOPER_ASSERTS && isThrowableRecoverable(th))) {
+            if (isThrowableRecoverable(th)) {
                 sPendingRecoverableUncaughtException.compareAndSet(null,
                         makeRecoverableExceptionInstance(th));
                 return;
@@ -767,7 +774,6 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void onUncaughtException(Thread thread, Throwable inner) {
-
         if (isThrowableRecoverable(inner)) {
             sPendingRecoverableUncaughtException.compareAndSet(null,
                     makeRecoverableExceptionInstance(inner));
@@ -775,7 +781,9 @@ public class RavenwoodRuntimeEnvironmentController {
         }
         var msg = String.format(
                 "Uncaught exception detected on thread %s, test=%s:"
-                + " %s; Failing all subsequent tests",
+                + " %s; Failing all subsequent tests."
+                + " (Run with `RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS=1 atest...` to "
+                + "force run the subsequent tests)",
                 thread, sCurrentDescription, RavenwoodCommonUtils.getStackTraceString(inner));
 
         var outer = new Exception(msg, inner);
