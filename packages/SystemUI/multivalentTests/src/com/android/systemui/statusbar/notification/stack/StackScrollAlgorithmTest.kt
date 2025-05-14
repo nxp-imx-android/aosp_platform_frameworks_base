@@ -4,6 +4,7 @@ import android.annotation.DimenRes
 import android.content.pm.PackageManager
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress
@@ -36,6 +37,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
+import com.android.systemui.surfaceeffects.utils.MathUtils
 import com.android.systemui.testKosmos
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
@@ -79,11 +81,12 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             layout(/* l= */ 0, /* t= */ 0, /* r= */ 100, /* b= */ 100)
         }
     private val footerView = FooterView(context, /* attrs= */ null)
+
     private val ambientState =
         AmbientState(
             context,
             dumpManager,
-            /* sectionProvider */ { _, _ -> false },
+            kosmos.stackScrollAlgorithmSectionProvider,
             /* bypassController */ { false },
             mStatusBarKeyguardViewManager,
             largeScreenShadeInterpolator,
@@ -102,6 +105,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         testableResources.resources.getDimensionPixelSize(id).toFloat()
 
     private val notifSectionDividerGap = px(R.dimen.notification_section_divider_height)
+    private val bundleGap = px(R.dimen.bundle_divider_height)
     private val scrimPadding = px(R.dimen.notification_side_paddings)
     private val baseZ by lazy { ambientState.baseZHeight }
     private val headsUpZ = px(R.dimen.heads_up_pinned_elevation)
@@ -151,6 +155,274 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private fun isTv(): Boolean {
         return context.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGapHeightForChild_returnsBundleGapHeight_whenChildIsBundle() {
+        // Assemble
+        val child = mock<ExpandableNotificationRow>()
+        val previousChild = mock<View>()
+        whenever(child.isBundle()).thenReturn(true)
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0.5f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(bundleGap)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsBundleGapHeight_whenPreviousChildIsBundle() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<ExpandableNotificationRow>()
+        whenever(previousChild.isBundle()).thenReturn(true) // Previous child is a bundle
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0.5f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(bundleGap)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsBigGap_whenChildNeedsGapHeightAndNotOnKeyguard() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<View>()
+
+        // Trigger childNeedsGapHeight
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(bigGap)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsSmallGap_whenChildNeedsGapHeightAndOnKeyguard() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<View>()
+
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                true,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(smallGap)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsLerpedGap_whenChildNeedsGapHeightAndFractionToShade() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<View>()
+
+        // Trigger childNeedsGapHeight
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+        val fractionToShade = 0.75f
+        val expectedGap = MathUtils.lerp(smallGap, bigGap, fractionToShade)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1, // visibleIndex > 0
+                child,
+                previousChild,
+                fractionToShade,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(expectedGap)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenNoGapConditionMet() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<View>()
+        // Ensure no section gap
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f)
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenPreviousChildIsSectionHeaderViewForBundle() {
+        // Assemble
+        val child = mock<ExpandableNotificationRow>()
+        val previousChild = mock<SectionHeaderView>()
+        whenever(child.isBundle()).thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f) // childNeedsBundleGap should return false
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenChildIsFooterViewForBundle() {
+        // Assemble
+        val child = mock<FooterView>() // Specific type
+        val previousChild = mock<ExpandableNotificationRow>()
+        whenever(previousChild.isBundle()).thenReturn(true) // previousChild is a bundle
+        // Set child to FooterView to trigger isNotFirstOrLastView returning false
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false) // ensure no section gap
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f) // childNeedsBundleGap should return false
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenPreviousChildIsSectionHeaderViewForSectionGap() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<SectionHeaderView>() // Specific type
+        // Set section provider to return true, but isNotFirstOrLastView will make it false
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f) // childNeedsGapHeight should return false
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenChildIsFooterViewForSectionGap() {
+        // Assemble
+        val child = mock<FooterView>() // Specific type
+        val previousChild = mock<View>()
+        // Set section provider to return true, but isNotFirstOrLastView will make it false
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f) // childNeedsGapHeight should return false
+    }
+
+    @Test
+    fun getGapHeightForChild_returnsZero_whenVisibleIndexIsZeroForSectionGap() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<View>()
+        // Set section provider to return true, but visibleIndex = 0 will make it false
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(child, previousChild))
+            .thenReturn(true)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                0, // visibleIndex = 0
+                child,
+                previousChild,
+                0f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(0f) // childNeedsGapHeight should return false
     }
 
     @Test
