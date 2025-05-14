@@ -35,6 +35,8 @@ import com.android.systemui.communal.domain.interactor.communalSettingsInteracto
 import com.android.systemui.communal.domain.interactor.setCommunalEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.fakeGlanceableHubMultiUserHelper
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -44,6 +46,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -149,6 +152,7 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
 
     @Test
     @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @DisableSceneContainer
     fun communalShowingStartsAppWidgetHost() =
         kosmos.runTest {
             setCommunalAvailable(true)
@@ -177,6 +181,7 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
     // Verifies that the widget host starts listening as soon as the hub transition starts.
     @Test
     @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @DisableSceneContainer
     fun communalVisibleStartsAppWidgetHost() =
         kosmos.runTest {
             setCommunalAvailable(true)
@@ -239,6 +244,69 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
         }
 
     @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @EnableSceneContainer
+    fun communalVisibleStartsAppWidgetHost_Flexi() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+            communalInteractor.setEditModeOpen(false)
+
+            verify(appWidgetHost, never()).startListening()
+
+            underTest.start()
+            runCurrent()
+
+            val transitionState =
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+                )
+            communalSceneInteractor.setTransitionState(transitionState)
+            runCurrent()
+
+            // Listening has not started or stopped yet.
+            verify(appWidgetHost, never()).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            // Start transitioning to communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Communal,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
+            // Listening starts.
+            verify(appWidgetHost).startListening()
+            verify(appWidgetHost, never()).stopListening()
+
+            // Start transitioning away from communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Communal,
+                    toScene = Scenes.Lockscreen,
+                    currentScene = flowOf(Scenes.Communal),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
+            // Listening continues
+            verify(appWidgetHost, never()).stopListening()
+
+            // Finish transitioning away from communal.
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+            runCurrent()
+
+            // Listening stops.
+            verify(appWidgetHost).stopListening()
+        }
+
+    @Test
     fun communalAndEditModeNotShowingNeverStartListening() =
         kosmos.runTest {
             setCommunalAvailable(false)
@@ -252,6 +320,7 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
         }
 
     @Test
+    @DisableSceneContainer
     fun observeHostWhenCommunalIsAvailable() =
         kosmos.runTest {
             setCommunalAvailable(true)
@@ -274,6 +343,69 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
             }
             runCurrent()
 
+            verify(communalWidgetHost).stopObservingHost()
+        }
+
+    @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @EnableSceneContainer
+    fun observeHostWhenCommunalIsVisible_Flexi() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+            communalInteractor.setEditModeOpen(false)
+
+            verify(communalWidgetHost, never()).startObservingHost()
+
+            underTest.start()
+            runCurrent()
+
+            val transitionState =
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+                )
+            communalSceneInteractor.setTransitionState(transitionState)
+            runCurrent()
+
+            // Observing has not started or stopped yet.
+            verify(communalWidgetHost, never()).startObservingHost()
+            verify(communalWidgetHost, never()).stopObservingHost()
+
+            // Start transitioning to communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Communal,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
+            // Observing starts.
+            verify(communalWidgetHost).startObservingHost()
+            verify(communalWidgetHost, never()).stopObservingHost()
+
+            // Start transitioning away from communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Communal,
+                    toScene = Scenes.Lockscreen,
+                    currentScene = flowOf(Scenes.Communal),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
+            // Observing continues
+            verify(communalWidgetHost, never()).stopObservingHost()
+
+            // Finish transitioning away from communal.
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+            runCurrent()
+
+            // Observing stops.
             verify(communalWidgetHost).stopObservingHost()
         }
 
@@ -310,6 +442,7 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
         }
 
     @Test
+    @DisableSceneContainer
     fun removeWidgetsForDeletedProfile_whenCommunalIsAvailable() =
         kosmos.runTest {
             // Communal is available and work profile is configured.
@@ -362,6 +495,75 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
         }
 
     @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @EnableSceneContainer
+    fun removeWidgetsForDeletedProfile_whenCommunalIsAvailable_Flexi() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+
+            underTest.start()
+            runCurrent()
+
+            val transitionState =
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+                )
+            communalSceneInteractor.setTransitionState(transitionState)
+            runCurrent()
+
+            kosmos.fakeUserTracker.set(
+                userInfos = listOf(MAIN_USER_INFO, USER_INFO_WORK),
+                selectedUserIndex = 0,
+            )
+            // One work widget, one pending work widget, and one personal widget.
+            fakeCommunalWidgetRepository.addWidget(appWidgetId = 1, userId = USER_INFO_WORK.id)
+            fakeCommunalWidgetRepository.addPendingWidget(
+                appWidgetId = 2,
+                userId = USER_INFO_WORK.id,
+            )
+            fakeCommunalWidgetRepository.addWidget(appWidgetId = 3, userId = MAIN_USER_INFO.id)
+
+            val communalWidgets by collectLastValue(fakeCommunalWidgetRepository.communalWidgets)
+            assertThat(communalWidgets).hasSize(3)
+
+            val widget1 = communalWidgets!![0]
+            val widget2 = communalWidgets!![1]
+            val widget3 = communalWidgets!![2]
+            assertThat(widget1.appWidgetId).isEqualTo(1)
+            assertThat(widget2.appWidgetId).isEqualTo(2)
+            assertThat(widget3.appWidgetId).isEqualTo(3)
+
+            // Unlock the device and remove work profile.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Communal,
+                    toScene = Scenes.Lockscreen,
+                    currentScene = flowOf(Scenes.Communal),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            kosmos.fakeUserTracker.set(userInfos = listOf(MAIN_USER_INFO), selectedUserIndex = 0)
+            runCurrent()
+
+            // Start transitioning to communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Communal,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            runCurrent()
+
+            // Both work widgets are removed.
+            assertThat(communalWidgets).containsExactly(widget3)
+        }
+
+    @Test
+    @DisableSceneContainer
     fun removeNotLockscreenWidgets_whenCommunalIsAvailable() =
         kosmos.runTest {
             // Communal is available
@@ -383,6 +585,56 @@ class CommunalAppWidgetHostStartableTest(flags: FlagsParameterization) : SysuiTe
             )
 
             underTest.start()
+            runCurrent()
+
+            val communalWidgets by collectLastValue(fakeCommunalWidgetRepository.communalWidgets)
+            assertThat(communalWidgets).hasSize(1)
+            assertThat(communalWidgets!![0].appWidgetId).isEqualTo(2)
+
+            verify(communalInteractorSpy).deleteWidget(1)
+            verify(communalInteractorSpy).deleteWidget(3)
+        }
+
+    @Test
+    @EnableFlags(FLAG_RESTRICT_COMMUNAL_APP_WIDGET_HOST_LISTENING)
+    @EnableSceneContainer
+    fun removeNotLockscreenWidgets_whenCommunalIsAvailable_Flexi() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+
+            underTest.start()
+            runCurrent()
+
+            val transitionState =
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+                )
+            communalSceneInteractor.setTransitionState(transitionState)
+            runCurrent()
+
+            kosmos.fakeUserTracker.set(userInfos = listOf(MAIN_USER_INFO), selectedUserIndex = 0)
+            fakeCommunalWidgetRepository.addWidget(
+                appWidgetId = 1,
+                userId = MAIN_USER_INFO.id,
+                category = AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD,
+            )
+            fakeCommunalWidgetRepository.addWidget(appWidgetId = 2, userId = MAIN_USER_INFO.id)
+            fakeCommunalWidgetRepository.addWidget(
+                appWidgetId = 3,
+                userId = MAIN_USER_INFO.id,
+                category = AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD,
+            )
+
+            // Start transitioning to communal.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Communal,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
             runCurrent()
 
             val communalWidgets by collectLastValue(fakeCommunalWidgetRepository.communalWidgets)
