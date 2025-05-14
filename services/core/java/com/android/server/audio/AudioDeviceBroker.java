@@ -122,7 +122,7 @@ public class AudioDeviceBroker {
     /*package*/ static final int BT_HEADSET_CNCT_TIMEOUT_MS = 3000;
 
     // Delay before checking it music should be unmuted after processing an A2DP message
-    private static final int BTA2DP_MUTE_CHECK_DELAY_MS = 100;
+    private static final int BTA2DP_MUTE_CHECK_DELAY_MS = 200;
 
     private final @NonNull AudioService mAudioService;
     private final @NonNull Context mContext;
@@ -2121,7 +2121,9 @@ public class AudioDeviceBroker {
                     }
                 } break;
                 case MSG_CHECK_MUTE_MUSIC:
-                    checkMessagesMuteMusic(0);
+                    synchronized (mDeviceStateLock) {
+                        checkMessagesMuteMusic(0);
+                    }
                     break;
                 case MSG_L_NOTIFY_PREFERRED_AUDIOPROFILE_APPLIED: {
                     final BluetoothDevice btDevice = (BluetoothDevice) msg.obj;
@@ -2368,6 +2370,7 @@ public class AudioDeviceBroker {
     private static final Set<Integer> MESSAGES_MUTE_MUSIC;
     static {
         MESSAGES_MUTE_MUSIC = new HashSet<>();
+        MESSAGES_MUTE_MUSIC.add(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT);
         MESSAGES_MUTE_MUSIC.add(MSG_L_SET_BT_ACTIVE_DEVICE);
         MESSAGES_MUTE_MUSIC.add(MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE);
         MESSAGES_MUTE_MUSIC.add(MSG_L_A2DP_DEVICE_CONNECTION_CHANGE_EXT);
