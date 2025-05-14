@@ -55,8 +55,8 @@ constructor(
         Log.d(TAG, "start!")
         mainScope.launch { ambientCueInteractor.actions.collect() }
         mainScope.launch {
-            ambientCueInteractor.isVisible.collect { isVisible ->
-                if (isVisible) {
+            ambientCueInteractor.isRootViewAttached.collect { isAttached ->
+                if (isAttached) {
                     createAmbientCueView()
                 } else {
                     destroyAmbientCueView()
@@ -66,7 +66,7 @@ constructor(
 
         ambientCueWindowRootView.setOnApplyWindowInsetsListener { _, insets ->
             val imeVisible = insets.isVisible(ime())
-            ambientCueInteractor.setIsImeVisible(imeVisible)
+            ambientCueInteractor.setImeVisible(imeVisible)
             insets
         }
     }

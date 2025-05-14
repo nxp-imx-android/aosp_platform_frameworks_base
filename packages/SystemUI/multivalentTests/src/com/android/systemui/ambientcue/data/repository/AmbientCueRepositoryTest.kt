@@ -78,29 +78,29 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         )
 
     @Test
-    fun isVisible_whenHasActions_true() =
+    fun isRootViewAttached_whenHasActions_true() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(allTargets)
             advanceUntilIdle()
-            assertThat(isVisible).isTrue()
+            assertThat(isRootViewAttached).isTrue()
         }
 
     @Test
-    fun isVisible_whenNoActions_false() =
+    fun isRootViewAttached_whenNoActions_false() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(invalidTarget1))
             advanceUntilIdle()
-            assertThat(isVisible).isFalse()
+            assertThat(isRootViewAttached).isFalse()
         }
 
     @Test

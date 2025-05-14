@@ -50,7 +50,8 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_timesOut() =
         kosmos.runTest {
-            ambientCueInteractor.setIsVisible(true)
+            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueInteractor.setImeVisible(false)
             runCurrent()
             assertThat(viewModel.isVisible).isTrue()
 
@@ -63,7 +64,8 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_whenExpanded_doesntTimeOut() =
         kosmos.runTest {
-            ambientCueInteractor.setIsVisible(true)
+            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueInteractor.setImeVisible(false)
             runCurrent()
             assertThat(viewModel.isVisible).isTrue()
 
@@ -72,6 +74,30 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
             runCurrent()
             assertThat(viewModel.isVisible).isTrue()
+        }
+
+    @Test
+    fun isVisible_imeNotVisible_true() =
+        kosmos.runTest {
+            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueInteractor.setImeVisible(false)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isTrue()
+        }
+
+    @Test
+    fun isVisible_imeVisible_false() =
+        kosmos.runTest {
+            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueInteractor.setImeVisible(false)
+            runCurrent()
+            assertThat(viewModel.isVisible).isTrue()
+
+            ambientCueInteractor.setImeVisible(true)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isFalse()
         }
 
     @Test
@@ -91,7 +117,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
                     )
                 )
             ambientCueRepository.fake.setActions(testActions)
-            ambientCueInteractor.setIsVisible(true)
+            ambientCueInteractor.setRootViewAttached(true)
             viewModel.expand()
             runCurrent()
 

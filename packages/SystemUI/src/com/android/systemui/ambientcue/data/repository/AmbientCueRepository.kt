@@ -51,8 +51,8 @@ interface AmbientCueRepository {
     /** Chips that should be visible on the UI. */
     val actions: StateFlow<List<ActionModel>>
 
-    /** If hint (or chips list) should be visible. */
-    val isVisible: MutableStateFlow<Boolean>
+    /** If the root view is attached to the WindowManager. */
+    val isRootViewAttached: MutableStateFlow<Boolean>
 
     /** If IME is visible or not. */
     val isImeVisible: MutableStateFlow<Boolean>
@@ -145,14 +145,14 @@ constructor(
                     Log.i(TAG, "SmartSpace session closed")
                 }
             }
-            .onEach { actions -> isVisible.update { actions.isNotEmpty() } }
+            .onEach { actions -> isRootViewAttached.update { actions.isNotEmpty() } }
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
             )
 
-    override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isRootViewAttached: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

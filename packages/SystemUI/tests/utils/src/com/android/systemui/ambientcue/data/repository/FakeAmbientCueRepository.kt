@@ -29,7 +29,7 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _actions = MutableStateFlow(emptyList<ActionModel>())
     override val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
 
-    override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isRootViewAttached: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
