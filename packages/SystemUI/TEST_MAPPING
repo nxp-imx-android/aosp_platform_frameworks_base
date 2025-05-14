@@ -36,6 +36,12 @@
     {
       // Permission indicators
       "name": "CtsVoiceRecognitionTestCases"
+    },
+    {
+      "name": "CtsInputTestCases"
+    },
+    {
+      "name": "InputTests"
     }
   ],
 
