@@ -42,7 +42,6 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.media.flags.Flags;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -129,18 +128,9 @@ import java.util.Objects;
     }
 
     @Override
-    public int getAudioDeviceType() {
-        // Not supported for checking audio device type
-        return 0;
-    }
-
-    @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getSelectedRoutes() {
-        // Since legacy controller only support one device at a time.
-        List<MediaRoute2Info> selectedRoutes = new ArrayList<>();
-        selectedRoutes.add(mDeviceRoute);
-        return selectedRoutes;
+    public synchronized MediaRoute2Info getSelectedRoute() {
+        return mDeviceRoute;
     }
 
     @Override
@@ -154,16 +144,6 @@ import java.util.Objects;
     public synchronized void transferTo(@Nullable String routeId) {
         // Unsupported. This implementation doesn't support transferable routes (always exposes a
         // single non-bluetooth route).
-    }
-
-    @Override
-    public synchronized void selectRoute(String routeId) {
-        // Unsupported. For Le Audio sharing only.
-    }
-
-    @Override
-    public synchronized void deselectRoute() {
-        // Unsupported. For Le Audio sharing only.
     }
 
     @Override
