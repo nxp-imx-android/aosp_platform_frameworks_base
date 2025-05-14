@@ -1250,7 +1250,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         hide(types, false /* fromIme */, null /* statsToken */);
     }
 
-    @VisibleForTesting
+    @VisibleForTesting(visibility = PACKAGE)
     public void hide(@InsetsType int types, boolean fromIme,
             @Nullable ImeTracker.Token statsToken) {
         if ((types & ime()) != 0) {
