@@ -20,7 +20,6 @@ import static android.content.Intent.ACTION_CLOSE_SYSTEM_DIALOGS;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CLIPBOARD_OVERLAY_SHOW_ACTIONS;
 import static com.android.systemui.Flags.clipboardAnnounceLiveRegion;
-import static com.android.systemui.Flags.clipboardSharedTransitions;
 import static com.android.systemui.Flags.showClipboardIndication;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_TAPPED;
@@ -116,60 +115,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     private boolean mShowingUi;
     private boolean mIsMinimized;
     private ClipboardModel mClipboardModel;
-
-    private final ClipboardOverlayView.ClipboardOverlayCallbacks mClipboardCallbacks =
-            new ClipboardOverlayView.ClipboardOverlayCallbacks() {
-                @Override
-                public void onInteraction() {
-                    if (mOnUiUpdate != null) {
-                        mOnUiUpdate.run();
-                    }
-                }
-
-                @Override
-                public void onSwipeDismissInitiated(Animator animator) {
-                    mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_SWIPE_DISMISSED);
-                    mExitAnimator = animator;
-                }
-
-                @Override
-                public void onDismissComplete() {
-                    hideImmediate();
-                }
-
-                @Override
-                public void onPreviewTapped() {
-                    if (mOnPreviewTapped != null) {
-                        mOnPreviewTapped.run();
-                    }
-                }
-
-                @Override
-                public void onShareButtonTapped() {
-                    if (mOnShareTapped != null) {
-                        mOnShareTapped.run();
-                    }
-                }
-
-                @Override
-                public void onRemoteCopyButtonTapped() {
-                    if (mOnRemoteCopyTapped != null) {
-                        mOnRemoteCopyTapped.run();
-                    }
-                }
-
-                @Override
-                public void onDismissButtonTapped() {
-                    mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
-                    animateOut();
-                }
-
-                @Override
-                public void onMinimizedViewTapped() {
-                    animateFromMinimized();
-                }
-            };
-
     private ClipboardIndicationCallback mIndicationCallback = new ClipboardIndicationCallback() {
         @Override
         public void onIndicationTextChanged(@NonNull CharSequence text) {
@@ -215,11 +160,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         mClipboardUtils = clipboardUtils;
         mBgExecutor = bgExecutor;
 
-        if (clipboardSharedTransitions()) {
-            mView.setCallbacks(this);
-        } else {
-            mView.setCallbacks(mClipboardCallbacks);
-        }
+        mView.setCallbacks(this);
 
         mWindow.withWindowAttached(() -> {
             mWindow.setContentView(mView);
@@ -227,25 +168,13 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                     mContext.getResources().getConfiguration().orientation);
         });
 
-        mTimeoutHandler.setOnTimeoutRunnable(() -> {
-            if (clipboardSharedTransitions()) {
-                finish(CLIPBOARD_OVERLAY_TIMED_OUT);
-            } else {
-                mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_TIMED_OUT);
-                animateOut();
-            }
-        });
+        mTimeoutHandler.setOnTimeoutRunnable(() -> finish(CLIPBOARD_OVERLAY_TIMED_OUT));
 
         mCloseDialogsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (ACTION_CLOSE_SYSTEM_DIALOGS.equals(intent.getAction())) {
-                    if (clipboardSharedTransitions()) {
-                        finish(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
-                    } else {
-                        mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
-                        animateOut();
-                    }
+                    finish(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
                 }
             }
         };
@@ -256,12 +185,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (SCREENSHOT_ACTION.equals(intent.getAction())) {
-                    if (clipboardSharedTransitions()) {
-                        finish(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
-                    } else {
-                        mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
-                        animateOut();
-                    }
+                    finish(CLIPBOARD_OVERLAY_DISMISSED_OTHER);
                 }
             }
         };
@@ -430,14 +354,9 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             if (model.equals(mClipboardModel)) {
                 remoteAction.ifPresent(action -> {
                     mClipboardLogger.logUnguarded(CLIPBOARD_OVERLAY_ACTION_SHOWN);
-                    mView.post(() -> mView.setActionChip(action, () -> {
-                        if (clipboardSharedTransitions()) {
-                            finish(CLIPBOARD_OVERLAY_ACTION_TAPPED);
-                        } else {
-                            mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_ACTION_TAPPED);
-                            animateOut();
-                        }
-                    }));
+                    mView.post(
+                            () -> mView.setActionChip(action,
+                                    () -> finish(CLIPBOARD_OVERLAY_ACTION_TAPPED)));
                 });
             }
         });
@@ -472,12 +391,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                 if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     if (!mView.isInTouchRegion(
                             (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
-                        if (clipboardSharedTransitions()) {
-                            finish(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
-                        } else {
-                            mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
-                            animateOut();
-                        }
+                        finish(CLIPBOARD_OVERLAY_TAP_OUTSIDE);
                     }
                 }
             }
@@ -644,54 +558,46 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
 
     @Override
     public void onDismissButtonTapped() {
-        if (clipboardSharedTransitions()) {
-            finish(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
-        }
+        finish(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
     }
 
     @Override
     public void onRemoteCopyButtonTapped() {
-        if (clipboardSharedTransitions()) {
-            finish(CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED,
-                    mIntentCreator.getRemoteCopyIntent(mClipboardModel.getClipData(), mContext));
-        }
+        finish(CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED,
+                mIntentCreator.getRemoteCopyIntent(mClipboardModel.getClipData(), mContext));
     }
 
     @Override
     public void onShareButtonTapped() {
-        if (clipboardSharedTransitions()) {
-            Intent shareIntent =
-                    mIntentCreator.getShareIntent(mClipboardModel.getClipData(), mContext);
-            switch (mClipboardModel.getType()) {
-                case TEXT:
-                case URI:
-                    finish(CLIPBOARD_OVERLAY_SHARE_TAPPED, shareIntent);
-                    break;
-                case IMAGE:
-                    finishWithSharedTransition(CLIPBOARD_OVERLAY_SHARE_TAPPED, shareIntent);
-                    break;
-            }
+        Intent shareIntent =
+                mIntentCreator.getShareIntent(mClipboardModel.getClipData(), mContext);
+        switch (mClipboardModel.getType()) {
+            case TEXT:
+            case URI:
+                finish(CLIPBOARD_OVERLAY_SHARE_TAPPED, shareIntent);
+                break;
+            case IMAGE:
+                finishWithSharedTransition(CLIPBOARD_OVERLAY_SHARE_TAPPED, shareIntent);
+                break;
         }
     }
 
     @Override
     public void onPreviewTapped() {
-        if (clipboardSharedTransitions()) {
-            switch (mClipboardModel.getType()) {
-                case TEXT:
-                    finish(CLIPBOARD_OVERLAY_EDIT_TAPPED,
-                            mIntentCreator.getTextEditorIntent(mContext));
-                    break;
-                case IMAGE:
-                    mIntentCreator.getImageEditIntentAsync(mClipboardModel.getUri(), mContext,
-                            intent -> {
-                                finishWithSharedTransition(CLIPBOARD_OVERLAY_EDIT_TAPPED, intent);
-                            });
-                    break;
-                default:
-                    Log.w(TAG, "Got preview tapped callback for non-editable type "
-                            + mClipboardModel.getType());
-            }
+        switch (mClipboardModel.getType()) {
+            case TEXT:
+                finish(CLIPBOARD_OVERLAY_EDIT_TAPPED,
+                        mIntentCreator.getTextEditorIntent(mContext));
+                break;
+            case IMAGE:
+                mIntentCreator.getImageEditIntentAsync(mClipboardModel.getUri(), mContext,
+                        intent -> {
+                            finishWithSharedTransition(CLIPBOARD_OVERLAY_EDIT_TAPPED, intent);
+                        });
+                break;
+            default:
+                Log.w(TAG, "Got preview tapped callback for non-editable type "
+                        + mClipboardModel.getType());
         }
     }
 
