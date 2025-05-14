@@ -179,6 +179,26 @@ public final class MediaQualityUtils {
             SoundQuality.PARAMETER_SOUND_STYLE
     ));
 
+    private static final Set<String> VALID_STREAM_STATUS = new HashSet<>(Arrays.asList(
+            PictureProfile.STATUS_SDR,
+            PictureProfile.STATUS_HDR10,
+            PictureProfile.STATUS_TCH,
+            PictureProfile.STATUS_DOLBY_VISION,
+            PictureProfile.STATUS_HLG,
+            PictureProfile.STATUS_HDR10_PLUS,
+            PictureProfile.STATUS_HDR_VIVID,
+            PictureProfile.STATUS_IMAX_SDR,
+            PictureProfile.STATUS_IMAX_HDR10,
+            PictureProfile.STATUS_IMAX_HDR10_PLUS,
+            PictureProfile.STATUS_FMM_SDR,
+            PictureProfile.STATUS_FMM_HDR10,
+            PictureProfile.STATUS_FMM_HDR10_PLUS,
+            PictureProfile.STATUS_FMM_HLG,
+            PictureProfile.STATUS_FMM_DOLBY,
+            PictureProfile.STATUS_FMM_TCH,
+            PictureProfile.STATUS_FMM_HDR_VIVID
+    ));
+
     /**
      * Convert PictureParameter List to PersistableBundle.
      */
@@ -2175,6 +2195,18 @@ public final class MediaQualityUtils {
                 yield QualityLevel.OFF;
             }
         };
+    }
+
+    /**
+     * Check if the provided stream status is valid.
+     * @param streamStatus
+     * @return true is valid and false otherwise.
+     */
+    public static boolean isValidStreamStatus(String streamStatus) {
+        if (streamStatus == null) {
+            return false;
+        }
+        return VALID_STREAM_STATUS.contains(streamStatus);
     }
 
     private MediaQualityUtils() {

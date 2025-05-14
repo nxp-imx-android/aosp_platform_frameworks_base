@@ -2446,8 +2446,16 @@ public class MediaQualityService extends SystemService {
     }
 
     private boolean isPackageDefaultPictureProfile(PictureProfile pp) {
-        return pp != null && pp.getProfileType() == PictureProfile.TYPE_SYSTEM &&
-               pp.getName().equals(PictureProfile.NAME_DEFAULT);
+        if (pp == null || pp.getProfileType() != PictureProfile.TYPE_SYSTEM) {
+            return false;
+        }
+        String pictureProfileName = pp.getName();
+        String[] arr = mPictureProfileAdjListener.splitNameAndStatus(pictureProfileName);
+        String profileName = arr[0];
+        String profileStatus = arr[1];
+        return profileName.equals(PictureProfile.NAME_DEFAULT)
+                && (MediaQualityUtils.isValidStreamStatus(profileStatus)
+                || profileStatus.isEmpty());
     }
 
     private boolean hasGlobalPictureQualityServicePermission(int uid, int pid) {
