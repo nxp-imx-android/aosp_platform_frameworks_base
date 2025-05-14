@@ -1805,8 +1805,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo para uma mão"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Mais escuro"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Dispositivos auditivos"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Clique automático (tempo de permanência)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas do rato"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desligado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Ligado"</string>
@@ -1832,6 +1831,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"A terminar a sessão de <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Proprietário"</string>
     <string name="guest_name" msgid="8502103277839834324">"Convidado"</string>
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Utilizador do sistema"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Erro"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"O gestor não permite esta alteração"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Não foram encontradas aplicações para executar esta ação"</string>
@@ -2192,8 +2192,8 @@
     <string name="harmful_app_warning_title" msgid="8794823880881113856">"Aplicação prejudicial detetada"</string>
     <string name="slices_permission_request" msgid="3677129866636153406">"A app <xliff:g id="APP_0">%1$s</xliff:g> quer mostrar partes da app <xliff:g id="APP_2">%2$s</xliff:g>."</string>
     <string name="screenshot_edit" msgid="7408934887203689207">"Editar"</string>
-    <string name="volume_dialog_ringer_guidance_vibrate" msgid="2055927873175228519">"As chamadas e as notificações vibram."</string>
-    <string name="volume_dialog_ringer_guidance_silent" msgid="1011246774949993783">"É desativado o som das chamadas e das notificações."</string>
+    <string name="volume_dialog_ringer_guidance_vibrate" msgid="2055927873175228519">"As chamadas e as notificações vibram"</string>
+    <string name="volume_dialog_ringer_guidance_silent" msgid="1011246774949993783">"É desativado o som das chamadas e das notificações"</string>
     <string name="notification_channel_system_changes" msgid="2462010596920209678">"Alterações ao sistema"</string>
     <string name="review_notification_settings_title" msgid="5102557424459810820">"Analise as definições de notificação"</string>
     <string name="review_notification_settings_text" msgid="5916244866751849279">"A partir do Android 13, as apps que instalar precisam da sua autorização para enviar notificações. Toque para alterar esta autorização para as apps existentes."</string>
@@ -2269,32 +2269,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Teclado direcional: para a esquerda"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Teclado direcional: para a direita"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Teclado direcional: centrar"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Menu de opções de clique automático"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Clicar com o botão esquerdo do rato"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Clicar com o botão direito do rato"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Clicar duas vezes"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastar"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Deslocar"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"Tocar sem soltar"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Retomar"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"Alterar posição do menu"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"Deslocar para cima"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"Deslocar para baixo"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"Deslocar para a esquerda"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"Deslocar para a direita"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"Sair do modo de deslocamento"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Deslocar painel"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> foi colocado no contentor RESTRITO."</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

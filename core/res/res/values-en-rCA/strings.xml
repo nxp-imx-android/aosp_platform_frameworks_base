@@ -1830,6 +1830,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Logging out <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Owner"</string>
     <string name="guest_name" msgid="8502103277839834324">"Guest"</string>
+    <string name="headless_system_user_name" msgid="1849150903255530049">"System User"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Error"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"This change isn\'t allowed by your admin"</string>
     <string name="app_not_found" msgid="3429506115332341800">"No application found to handle this action"</string>

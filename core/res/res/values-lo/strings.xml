@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ໂໝດມືດຽວ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ຫຼຸດແສງເປັນພິເສດ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ອຸປະກອນຊ່ວຍຟັງ"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ການຄລິກອັດຕະໂນມັດ (ເວລາທີ່ບໍ່ມີການເຄື່ອນເມົ້າ)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"ປຸ່ມເມົ້າ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ຕັດການເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ເຊື່ອມຕໍ່ແລ້ວ"</string>
@@ -1831,6 +1830,8 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"ກຳລັງອອກຈາກລະບົບ <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ເຈົ້າຂອງ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ແຂກ"</string>
+    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"ຜິດພາດ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານບໍ່ອະນຸຍາດໃຫ້ປ່ຽນແປງສິ່ງນີ້"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ບໍ່ພົບແອັບພລິເຄຊັນເພື່ອຈັດການເຮັດວຽກນີ້."</string>
@@ -2268,32 +2269,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ຊ້າຍ"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad ຂວາ"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad ກາງ"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"ເມນູຕົວເລືືອກການຄລິກອັດຕະໂນມັດ"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"ຄລິກຊ້າຍ"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"ຄລິກຂວາ"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"ຄລິກສອງເທື່ອ"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ລາກ"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ເລື່ອນ"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"ແຕະຄ້າງໄວ້"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ຢຸດຊົ່ວຄາວ"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"ສືບຕໍ່"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"ປ່ຽນຕຳແໜ່ງເມນູ"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"ເລື່ອນຂຶ້ນ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"ເລື່ອນລົງ"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"ເລື່ອນໄປທາງຊ້າຍ"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"ເລື່ອນໄປທາງຂວາ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"ອອກຈາກໂໝດເລື່ອນ"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ເລື່ອນແຜງ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ຖືກວາງໄວ້ໃນກະຕ່າ \"ຈຳກັດ\" ແລ້ວ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
