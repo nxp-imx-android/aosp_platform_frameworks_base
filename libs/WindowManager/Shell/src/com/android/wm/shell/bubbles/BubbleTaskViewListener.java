@@ -70,6 +70,9 @@ public class BubbleTaskViewListener implements TaskView.Listener {
 
         /** Called when task removal has started. */
         void onTaskRemovalStarted();
+
+        /** Called when the task's info has changed. */
+        void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo);
     }
 
     private final Context mContext;
@@ -261,6 +264,13 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             mTaskView = null;
         }
         mCallback.onTaskRemovalStarted();
+    }
+
+    @Override
+    public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            mCallback.onTaskInfoChanged(taskInfo);
+        }
     }
 
     @Override

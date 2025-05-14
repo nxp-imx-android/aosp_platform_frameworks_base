@@ -316,6 +316,13 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         mTaskViewBase.onTaskInfoChanged(taskInfo);
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (mListener != null) {
+                mListenerExecutor.execute(() -> {
+                    mListener.onTaskInfoChanged(taskInfo);
+                });
+            }
+        }
     }
 
     @Override

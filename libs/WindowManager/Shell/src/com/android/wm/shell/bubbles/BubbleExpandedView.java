@@ -32,6 +32,7 @@ import static com.android.wm.shell.shared.TypefaceUtils.setTypeface;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -515,6 +516,11 @@ public class BubbleExpandedView extends LinearLayout {
 
                             @Override
                             public void onTaskRemovalStarted() {
+                                // nothing to do / handled in listener.
+                            }
+
+                            @Override
+                            public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
                                 // nothing to do / handled in listener.
                             }
                         });

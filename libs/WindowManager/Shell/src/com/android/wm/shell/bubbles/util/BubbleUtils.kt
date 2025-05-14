@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.util
 
+import android.app.ActivityManager
 import android.app.WindowConfiguration
 import android.os.Binder
 import android.view.WindowInsets
@@ -113,5 +114,10 @@ fun getExitBubbleTransaction(
         reparentToTda = false,
         captionInsetsOwner,
     )
+}
+
+/** Returns true if the task is valid for Bubble. */
+fun isValidToBubble(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
+    return taskInfo != null && taskInfo.supportsMultiWindow
 }
 
