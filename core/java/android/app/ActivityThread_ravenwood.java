@@ -22,7 +22,6 @@ import java.util.Objects;
 /**
  * Inject Ravenwood methods to {@link ActivityThread}.
  */
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class ActivityThread_ravenwood {
     private ActivityThread_ravenwood() {
     }
