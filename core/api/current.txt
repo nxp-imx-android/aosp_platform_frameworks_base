@@ -7126,6 +7126,7 @@ package android.app {
     method public int getLightColor();
     method public int getLockscreenVisibility();
     method public CharSequence getName();
+    method @FlaggedApi("android.service.notification.notification_get_original_importance") public int getOriginalImportance();
     method @Nullable public String getParentChannelId();
     method public android.net.Uri getSound();
     method @FlaggedApi("android.app.notification_channel_vibration_effect_api") @Nullable public android.os.VibrationEffect getVibrationEffect();

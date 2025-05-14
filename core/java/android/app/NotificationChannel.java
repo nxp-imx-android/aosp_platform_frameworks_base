@@ -20,6 +20,7 @@ import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_GET_ORIGINAL_IMPORTANCE;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -1147,9 +1148,14 @@ public final class NotificationChannel implements Parcelable {
     }
 
     /**
-     * @hide
+     * Returns the app-defined importance for this channel, prior to any user modifications. This
+     * may differ from {@link #getImportance()} if the user has changed the setting. Typically
+     * reflects the channel's initial importance set upon creation.
+     *
+     * @return The original importance as set by the app.
+     * @see #getImportance()
      */
-    @TestApi
+    @FlaggedApi(FLAG_NOTIFICATION_GET_ORIGINAL_IMPORTANCE)
     public int getOriginalImportance() {
         return mOriginalImportance;
     }
