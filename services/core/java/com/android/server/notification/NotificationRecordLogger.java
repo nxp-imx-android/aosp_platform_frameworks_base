@@ -16,6 +16,8 @@
 
 package com.android.server.notification;
 
+import static android.app.Flags.nmSummarization;
+import static android.app.Flags.nmSummarizationUi;
 import static android.service.notification.NotificationListenerService.REASON_ASSISTANT_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CLEAR_DATA;
@@ -31,6 +33,7 @@ import android.os.Bundle;
 import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationStats;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.internal.logging.InstanceId;
@@ -531,6 +534,7 @@ interface NotificationRecordLogger {
         final int age_in_minutes;
         final boolean is_promoted_ongoing;
         final boolean has_promotable_characteristics;
+        final boolean has_summary;
         @DurationMillisLong long post_duration_millis; // Not final; calculated at the end.
 
         NotificationReported(NotificationRecordPair p,
@@ -572,6 +576,8 @@ interface NotificationRecordLogger {
                     p.r.getSbn().getPostTime(), notification.getWhen());
             this.is_promoted_ongoing = notification.isPromotedOngoing();
             this.has_promotable_characteristics = notification.hasPromotableCharacteristics();
+            this.has_summary = (nmSummarization() || nmSummarizationUi())
+                    ? !TextUtils.isEmpty(p.r.getSummarization()) : false;
         }
     }
 
