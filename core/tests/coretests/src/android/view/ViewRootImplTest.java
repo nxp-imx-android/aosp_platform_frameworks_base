@@ -67,6 +67,7 @@ import android.graphics.ForceDarkType;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
+import android.os.VibrationAttributes;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -497,7 +498,7 @@ public class ViewRootImplTest {
         ViewRootImpl viewRootImpl = new ViewRootImpl(sContext, display);
 
         boolean result = viewRootImpl.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK,
-                FLAG_IGNORE_GLOBAL_SETTING, 0 /* privFlags */);
+                VibrationAttributes.USAGE_UNKNOWN, FLAG_IGNORE_GLOBAL_SETTING, 0 /* privFlags */);
 
         assertThat(result).isFalse();
     }

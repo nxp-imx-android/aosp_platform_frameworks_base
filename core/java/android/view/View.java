@@ -17,6 +17,9 @@
 package android.view;
 
 import static android.content.res.Resources.ID_NULL;
+import static android.os.VibrationAttributes.USAGE_UNKNOWN;
+import static android.os.VibrationAttributes.USAGE_CLASS_FEEDBACK;
+import static android.os.VibrationAttributes.USAGE_CLASS_MASK;
 import static android.os.Trace.TRACE_TAG_APP;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.service.autofill.Flags.FLAG_AUTOFILL_CREDMAN_DEV_INTEGRATION;
@@ -150,6 +153,8 @@ import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.VibrationAttributes;
+import android.os.vibrator.HapticFeedbackRequest;
 import android.service.credentials.CredentialProviderService;
 import android.sysprop.DisplayProperties;
 import android.sysprop.ViewProperties;
@@ -29089,7 +29094,61 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         int privFlags = computeHapticFeedbackPrivateFlags();
-        return mAttachInfo.mRootCallbacks.performHapticFeedback(feedbackConstant, flags, privFlags);
+        return mAttachInfo.mRootCallbacks.performHapticFeedback(
+                feedbackConstant, USAGE_UNKNOWN, flags, privFlags);
+    }
+
+    /**
+     * <p>Like {@link #performHapticFeedback(int, int)}, but takes a {@link HapticFeedbackRequest}.
+     *
+     * <p>Using a {@link HapticFeedbackRequest} allows you to make more elaborate haptic feedback
+     * requests, including setting the usage type for the requested feedback.
+     *
+     * <p>Specifying the usage type for your feedback allows the system to understand the context of
+     * the feedback better, and tune the haptic accordingly. When not specifying the usage type for
+     * the feedback request, or when using the other performHapticFeedback APIs, the system will do
+     * a best guess of the vibration usage based on the constant.
+     *
+     * <p>See {@link VibrationAttributes} to learn more about vibration usages. The usage provided
+     * for this API must be of {@link VibrationAttributes#USAGE_CLASS_FEEDBACK}, or
+     * {@link VibrationAttributes#USAGE_UNKNOWN}. Otherwise, the haptic feedback will not be played.
+     * If {@link VibrationAttributes#USAGE_UNKNOWN} is used, the system will do a best guess of the
+     * vibration usage based on the constant.
+     *
+     * <p>Note that, if you will be calling this API repeatedly and your
+     * {@link HapticFeedbackRequest} does not change across these repeated calls, it is recommended
+     * that you create, cache, and reuse the request object to avoid the costs of repeated object
+     * creation and garbage collection.
+     *
+     * @param request the {@link HapticFeedbackRequest} encapsulating the request for haptic.
+     * @return {@code false} if {@link #isHapticFeedbackEnabled()} is {@code false}, or this View is
+     *      not attached to a visible window, or the vibration usage in the provided request is not
+     *      valid (i.e. neither has {@link VibrationAttributes#USAGE_CLASS_FEEDBACK} nor is
+     *      {@link VibrationAttributes#USAGE_UNKNOWN}); otherwise, {@code true}, indicating
+     *      that the haptic feedback request has been sent to the system. Note that {@code true}
+     *      could be returned but no vibration may be produced if the service decides that the
+     *      device's states do not allow for this haptic feedback (for example, the user disabled
+     *      vibrations for this usage).
+     *
+     * @see VibrationAttributes#getUsage()
+     * @see VibrationAttributes#getUsageClass()
+     */
+    @FlaggedApi(android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE)
+    public boolean performHapticFeedback(@NonNull HapticFeedbackRequest request) {
+        final int feedbackConstant = request.getFeedbackConstant();
+        final int usage = request.getUsage();
+        final int flags = request.getFlags();
+        if (usage != USAGE_UNKNOWN && (usage & USAGE_CLASS_MASK) != USAGE_CLASS_FEEDBACK) {
+            return false;
+        }
+
+        if (isPerformHapticFeedbackSuppressed(feedbackConstant, flags)) {
+            return false;
+        }
+
+        int privFlags = computeHapticFeedbackPrivateFlags();
+        return mAttachInfo.mRootCallbacks.performHapticFeedback(
+                feedbackConstant, usage, flags, privFlags);
     }
 
     /**
@@ -32170,6 +32229,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             void playSoundEffect(int effectId);
 
             boolean performHapticFeedback(int effectId,
+                    @VibrationAttributes.Usage int usage,
                     @HapticFeedbackConstants.Flags int flags,
                     @HapticFeedbackConstants.PrivateFlags int privFlags);
 
