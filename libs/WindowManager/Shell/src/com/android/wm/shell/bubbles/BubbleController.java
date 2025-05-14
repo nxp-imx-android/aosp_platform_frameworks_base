@@ -3163,22 +3163,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void showDropTarget(boolean show, BubbleBarLocation location) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showDropTarget: show=%b loc=%s",
-                    show, location);
-            executeRemoteCallWithTaskPermission(
-                    mController,
-                    "showDropTarget",
-                    (controller) -> {
-                        if (show) {
-                            showBubbleBarExpandedViewDropTarget(location);
-                        } else {
-                            hideBubbleBarExpandedViewDropTarget();
-                        }
-                    });
-        }
-
-        @Override
         public void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.moveDraggedBubbleToFullscreen: key=%s "
                             + "loc=%s", key, dropLocation);
