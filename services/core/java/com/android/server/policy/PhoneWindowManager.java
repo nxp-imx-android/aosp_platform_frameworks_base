@@ -1478,8 +1478,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case LONG_PRESS_POWER_ASSISTANT:
                 mPowerKeyHandled = true;
-                if (!enableLppAssistInvocationHapticEffect()
-                        && !enableLppAssistInvocationEffect()) {
+                if (!enableLppAssistInvocationEffect()) {
                     performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
                             "Power - Long Press - Go To Assistant");
                 }
@@ -2563,6 +2562,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
                     handleSingleKeyGestureInKeyGestureController(
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
+                    if (!enableLppAssistInvocationHapticEffect()
+                            && event.getAction() == ACTION_COMPLETE) {
+                        // The invocation effect will not play haptics so we must play the
+                        // assistant effect here
+                        performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
+                                "Power - Long Press - Go To Assistant");
+                    }
                     return;
                 }
             }
