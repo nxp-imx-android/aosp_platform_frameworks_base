@@ -4148,51 +4148,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     @Nullable
     WindowState computeImeLayeringTarget(boolean update) {
+        final WindowState target;
         if (mInputMethodWindow == null) {
             // There isn't an IME so there shouldn't be a target...That was easy!
-            if (update) {
-                if (DEBUG_INPUT_METHOD) {
-                    Slog.w(TAG_WM, "Moving IME layering target from " + mImeLayeringTarget
-                            + " to null since mInputMethodWindow is null");
-                }
-                setImeLayeringTargetInner(null /* target */);
-            }
-            return null;
-        }
-
-        final WindowState curTarget = mImeLayeringTarget;
-        // TODO(multidisplay): Needs some serious rethought when the target and IME are not on the
-        // same display. Or even when the current IME/target are not on the same screen as the next
-        // IME/target. For now only look for input windows on the main screen.
-        mUpdateImeLayeringTarget = update;
-        final WindowState target = getWindow(mComputeImeLayeringTargetPredicate);
-
-        if (DEBUG_INPUT_METHOD && update) {
-            Slog.v(TAG_WM, "Proposed new IME target: " + target + " for display: "
-                    + getDisplayId());
+            target = null;
+        } else {
+            mUpdateImeLayeringTarget = update;
+            target = getWindow(mComputeImeLayeringTargetPredicate);
         }
 
         if (DEBUG_INPUT_METHOD) {
-            Slog.v(TAG_WM, "Desired IME layering target=" + target + " update=" + update);
-        }
-
-        if (target == null) {
-            if (update) {
-                if (DEBUG_INPUT_METHOD) {
-                    Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to null."
-                            + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
-                }
-                setImeLayeringTargetInner(null /* target */);
-            }
-
-            return null;
+            Slog.v(TAG_WM, "computeImeLayeringTarget found: " + target + ", update: " + update
+                    + ", was: " + mImeLayeringTarget + ", IME window: " + mInputMethodWindow
+                    + ", displayId: " + getDisplayId()
+                    + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
         }
 
         if (update) {
-            if (DEBUG_INPUT_METHOD) {
-                Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to "
-                        + target + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
-            }
             setImeLayeringTargetInner(target);
         }
 
