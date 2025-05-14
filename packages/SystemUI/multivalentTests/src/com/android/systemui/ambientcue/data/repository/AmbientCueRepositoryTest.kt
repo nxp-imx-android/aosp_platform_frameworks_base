@@ -17,6 +17,7 @@
 package com.android.systemui.ambientcue.data.repository
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.PendingIntent
 import android.app.assist.ActivityId
 import android.app.smartspace.SmartspaceAction
 import android.app.smartspace.SmartspaceManager
@@ -220,6 +221,23 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun action_performPendingIntent() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(pendingIntentTarget)
+            )
+
+            val action: ActionModel = actions!!.first()
+            action.onPerformAction()
+            runCurrent()
+            verify(pendingIntent).send()
+        }
+
+    @Test
     fun targetTaskId_updatedWithAction() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -283,6 +301,19 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                         SmartspaceAction.Builder("action1-id", "title 1")
                             .setSubtitle("subtitle 1")
                             .setIntent(launchIntent)
+                            .build()
+                    )
+            }
+
+        private val pendingIntent = mock<PendingIntent>()
+        private val pendingIntentTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setPendingIntent(pendingIntent)
                             .build()
                     )
             }
