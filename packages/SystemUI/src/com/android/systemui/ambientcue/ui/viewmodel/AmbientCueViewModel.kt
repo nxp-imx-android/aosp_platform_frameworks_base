@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 class AmbientCueViewModel
 @AssistedInject
 constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
-    private val hydrator = Hydrator("OverlayViewModel.hydrator")
+    private val hydrator = Hydrator("AmbientCueViewModel.hydrator")
 
     private val isRootViewAttached: Boolean by
         hydrator.hydratedStateOf(
@@ -79,7 +79,6 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
         )
 
     fun show() {
-        ambientCueInteractor.setRootViewAttached(true)
         isExpanded = false
     }
 
@@ -92,7 +91,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
     }
 
     fun hide() {
-        ambientCueInteractor.setRootViewAttached(false)
+        ambientCueInteractor.setDeactivated(true)
         isExpanded = false
     }
 
@@ -105,7 +104,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
                     if (!isAttached) return@collectLatest
                     delay(AMBIENT_CUE_TIMEOUT_SEC)
                     if (!isExpanded) {
-                        ambientCueInteractor.setRootViewAttached(false)
+                        ambientCueInteractor.setDeactivated(true)
                     }
                 }
             }

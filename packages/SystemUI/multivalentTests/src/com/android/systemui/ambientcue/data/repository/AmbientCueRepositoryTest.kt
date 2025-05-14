@@ -33,10 +33,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTIVITY_ID
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_AUTOFILL_ID
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
@@ -46,6 +48,7 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.update
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -78,15 +81,19 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         )
 
     @Test
-    fun isRootViewAttached_whenHasActions_true() =
+    fun isRootViewAttached_whenHasActionsAndNotDeactivatedAndTaskIdMatch_true() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
-            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(allTargets)
+
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
             advanceUntilIdle()
+
             assertThat(isRootViewAttached).isTrue()
         }
 
@@ -98,8 +105,51 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(invalidTarget1))
             advanceUntilIdle()
+
+            assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_deactivated_false() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+
+            runCurrent()
+            underTest.isDeactivated.update { true }
+            runCurrent()
+
+            assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_taskIdNotMatch_false() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+
+            fakeFocusedDisplayRepository.setGlobalTask(
+                RunningTaskInfo().apply { taskId = TASK_ID_2 }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+
             assertThat(isRootViewAttached).isFalse()
         }
 
@@ -131,9 +181,9 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     fun globallyFocusedTaskId_whenFocusedTaskChange_taskIdUpdated() =
         kosmos.runTest {
             val globallyFocusedTaskId by collectLastValue(underTest.globallyFocusedTaskId)
-            runCurrent()
 
             fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
 
             assertThat(globallyFocusedTaskId).isEqualTo(TASK_ID)
         }
@@ -169,12 +219,28 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             verify(activityStarter).startActivity(launchIntent, false)
         }
 
+    @Test
+    fun targetTaskId_updatedWithAction() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val targetTaskId by collectLastValue(underTest.targetTaskId)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+
+            runCurrent()
+            assertThat(targetTaskId).isEqualTo(TASK_ID)
+        }
+
     companion object {
 
         private const val TITLE_1 = "title 1"
         private const val TITLE_2 = "title 2"
         private const val SUBTITLE_1 = "subtitle 1"
         private const val SUBTITLE_2 = "subtitle 2"
+        private const val TASK_ID = 1
+        private const val TASK_ID_2 = 2
         private val validTarget =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
@@ -190,7 +256,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val autofillId = AutofillId(2)
-        private val activityId = ActivityId(1, Binder())
+        private val activityId = ActivityId(TASK_ID, Binder())
         private val autofillTarget =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
@@ -229,7 +295,5 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val allTargets = listOf(validTarget, invalidTarget1)
-
-        private const val TASK_ID = 1
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.ui.viewmodel
 
+import android.content.Context
 import android.content.applicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -24,6 +25,7 @@ import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
 import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
@@ -50,37 +52,42 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_timesOut() =
         kosmos.runTest {
-            ambientCueInteractor.setRootViewAttached(true)
-            ambientCueInteractor.setImeVisible(false)
-            runCurrent()
+            initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
             // Times out when there's no interaction
             advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
             runCurrent()
+            ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+
             assertThat(viewModel.isVisible).isFalse()
         }
 
     @Test
     fun isVisible_whenExpanded_doesntTimeOut() =
         kosmos.runTest {
-            ambientCueInteractor.setRootViewAttached(true)
-            ambientCueInteractor.setImeVisible(false)
-            runCurrent()
+            initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
             // Doesn't time out when expanded
             viewModel.expand()
             advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
             runCurrent()
+            ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+
             assertThat(viewModel.isVisible).isTrue()
         }
 
     @Test
     fun isVisible_imeNotVisible_true() =
         kosmos.runTest {
-            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueRepository.fake.setActions(testActions(applicationContext))
+            ambientCueInteractor.setDeactivated(false)
+
             ambientCueInteractor.setImeVisible(false)
+            ambientCueRepository.fake.updateRootViewAttached()
             runCurrent()
 
             assertThat(viewModel.isVisible).isTrue()
@@ -89,12 +96,11 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_imeVisible_false() =
         kosmos.runTest {
-            ambientCueInteractor.setRootViewAttached(true)
-            ambientCueInteractor.setImeVisible(false)
-            runCurrent()
+            initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
             ambientCueInteractor.setImeVisible(true)
+            ambientCueRepository.fake.updateRootViewAttached()
             runCurrent()
 
             assertThat(viewModel.isVisible).isFalse()
@@ -103,21 +109,8 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun onClick_collapses() =
         kosmos.runTest {
-            val testActions =
-                listOf(
-                    ActionModel(
-                        icon =
-                            applicationContext.resources.getDrawable(
-                                R.drawable.ic_content_paste_spark,
-                                applicationContext.theme,
-                            ),
-                        label = "Sunday Morning",
-                        attribution = null,
-                        onPerformAction = {},
-                    )
-                )
-            ambientCueRepository.fake.setActions(testActions)
-            ambientCueInteractor.setRootViewAttached(true)
+            ambientCueRepository.fake.setActions(testActions(applicationContext))
+            ambientCueInteractor.setDeactivated(false)
             viewModel.expand()
             runCurrent()
 
@@ -128,4 +121,26 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             action.onClick()
             assertThat(viewModel.isExpanded).isFalse()
         }
+
+    private fun testActions(applicationContext: Context) =
+        listOf(
+            ActionModel(
+                icon =
+                    applicationContext.resources.getDrawable(
+                        R.drawable.ic_content_paste_spark,
+                        applicationContext.theme,
+                    ),
+                label = "Sunday Morning",
+                attribution = null,
+                onPerformAction = {},
+            )
+        )
+
+    private fun Kosmos.initializeIsVisible() {
+        ambientCueRepository.fake.setActions(testActions(applicationContext))
+        ambientCueInteractor.setDeactivated(false)
+        ambientCueInteractor.setImeVisible(false)
+        ambientCueRepository.fake.updateRootViewAttached()
+        runCurrent()
+    }
 }
