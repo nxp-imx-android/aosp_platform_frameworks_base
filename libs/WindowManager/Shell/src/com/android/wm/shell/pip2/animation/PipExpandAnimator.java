@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.R;
+import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.shared.animation.Interpolators;
 
@@ -55,7 +56,7 @@ public class PipExpandAnimator extends ValueAnimator {
     private final Rect mStartBounds = new Rect();
     private final Rect mEndBounds = new Rect();
 
-    @Nullable private final Rect mSourceRectHint;
+    private final Rect mSourceRectHint = new Rect();
     private final Rect mSourceRectHintInsets = new Rect();
     private final Rect mZeroInsets = new Rect(0, 0, 0, 0);
 
@@ -134,15 +135,22 @@ public class PipExpandAnimator extends ValueAnimator {
         mRotation = rotation;
         mIsPipInDesktopMode = isPipInDesktopMode;
 
-        mSourceRectHint = sourceRectHint != null ? new Rect(sourceRectHint) : null;
-        if (mSourceRectHint != null) {
-            mSourceRectHintInsets.set(
-                    mSourceRectHint.left - mBaseBounds.left,
-                    mSourceRectHint.top - mBaseBounds.top,
-                    mBaseBounds.right - mSourceRectHint.right,
-                    mBaseBounds.bottom - mSourceRectHint.bottom
-            );
+        if (sourceRectHint == null || sourceRectHint.isEmpty()) {
+            // Similar to enter animation, use a pseudo source rect hint on exit if app does not
+            // provide one to get a unified exit animation experience.
+            final float aspectRatio = mStartBounds.width() / (float) mStartBounds.height();
+            mSourceRectHint.set(
+                    PipUtils.getPseudoSourceRectHint(mBaseBounds, aspectRatio));
+            mSourceRectHint.offsetTo(mBaseBounds.left, mBaseBounds.top);
+        } else {
+            mSourceRectHint.set(sourceRectHint);
         }
+        mSourceRectHintInsets.set(
+                mSourceRectHint.left - mBaseBounds.left,
+                mSourceRectHint.top - mBaseBounds.top,
+                mBaseBounds.right - mSourceRectHint.right,
+                mBaseBounds.bottom - mSourceRectHint.bottom
+        );
 
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
