@@ -164,7 +164,7 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDismissClicked,
+                        onClick = { viewModel.onDismissClicked() },
                         indication = null,
                         interactionSource = null,
                     ),

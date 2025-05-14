@@ -27,15 +27,28 @@ class BundleHeaderGutsViewModel(
     @StringRes val titleText: Int,
     @StringRes val summaryText: Int,
     @DrawableRes val bundleIcon: Int,
+
+    /** Opens the settings page for this bundle. */
     val onSettingsClicked: () -> Unit = {},
-    val onDismissClicked: () -> Unit = {},
-    private val closeGuts: () -> Unit = {},
+
+    /** Disables this bundle type in settings. */
     private val disableBundle: () -> Unit = {},
+
+    /** Dismisses all bundle children which makes the bundle disappear. */
+    private val onDismissClicked: () -> Unit = {},
+
+    /** Closes the guts. This makes the bundle show in its normal state. */
+    private val closeGuts: () -> Unit = {},
 ) {
     var switchState by mutableStateOf(true)
 
     fun getDoneOrApplyButtonText() =
         if (switchState) string.inline_done_button else string.inline_ok_button
+
+    fun onDismissClicked() {
+        closeGuts.invoke()
+        onDismissClicked.invoke()
+    }
 
     fun onDoneOrApplyClicked() {
         if (switchState) {
