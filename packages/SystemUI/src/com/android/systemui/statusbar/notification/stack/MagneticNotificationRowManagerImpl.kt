@@ -366,7 +366,12 @@ constructor(
         detachDirectionEstimator.reset()
         if (row.isSwipedTarget()) {
             when (currentState) {
-                State.TARGETS_SET -> currentState = State.IDLE
+                State.TARGETS_SET -> {
+                    if (dismissing) {
+                        playThresholdHaptics()
+                    }
+                    currentState = State.IDLE
+                }
                 State.PULLING -> {
                     if (dismissing) {
                         playThresholdHaptics()
