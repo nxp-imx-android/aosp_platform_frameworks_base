@@ -614,6 +614,14 @@ public class MediaQualityService extends SystemService {
                 Long value = null;
                 if (packageName != null) {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
+
+                    if (value == null) {
+                        Log.v(TAG,
+                                "Package default for " + packageName
+                                        + " fallback to global default.");
+                        value = getDefaultPictureProfile().getHandle().getId();
+                    }
+
                     if (value != null) {
                         mPictureProfileForHal.add(value);
                         mHalNotifier.notifyHalOnPictureProfileChange(value, null);
