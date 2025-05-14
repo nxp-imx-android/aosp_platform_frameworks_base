@@ -226,14 +226,14 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void systemReady(@NonNull ContentResolver resolver) {
         setHistoricalRegistryMode(resolver);
         setHistoryParameters(DeviceConfig.getProperties(DeviceConfig.NAMESPACE_PRIVACY));
-        mShortIntervalHistoryHelper.systemReady(mShortIntervalQuantizationMillis,
-                mHistoryRetentionMillis);
-        mLongIntervalHistoryHelper.systemReady(mLongIntervalQuantizationMillis,
-                mHistoryRetentionMillis);
         if (mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
             Slog.w(TAG, "App op access events are not recorded, the config isn't active.");
             return;
         }
+        mShortIntervalHistoryHelper.systemReady(mShortIntervalQuantizationMillis,
+                mHistoryRetentionMillis);
+        mLongIntervalHistoryHelper.systemReady(mLongIntervalQuantizationMillis,
+                mHistoryRetentionMillis);
         // migrate discrete ops from xml or sqlite to unified-schema sqlite database.
         if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
             DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
@@ -270,17 +270,17 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             final String[] parts = parameter.split("=");
             if (parts.length == 2) {
                 final String key = parts[0].trim();
-                switch (key) {
-                    case Settings.Global.APPOP_HISTORY_MODE -> {
-                        modeValue = parts[1].trim();
-                    }
-                    default -> {
-                        Slog.w(TAG, "Unknown or Deprecated parameter: " + parameter);
-                    }
+                if (key.equals(Settings.Global.APPOP_HISTORY_MODE)) {
+                    modeValue = parts[1].trim();
+                } else {
+                    Slog.w(TAG, "Unknown or Deprecated parameter: " + parameter);
                 }
             }
         }
 
+        if (DEBUG) {
+            Slog.d(TAG, "Historical registry mode " + modeValue);
+        }
         if (modeValue != null) {
             int oldMode = mMode;
             mMode = AppOpsManager.parseHistoricalMode(modeValue);
@@ -310,6 +310,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                         mLongIntervalQuantizationMillis);
             }
         }
+        if (DEBUG) {
+            Slog.d(TAG, "Long interval quantization millis: " + mLongIntervalQuantizationMillis);
+        }
 
         // read app op flags to be captured in short interval app ops db.
         if (p.getKeyset().contains(PROPERTY_DISCRETE_FLAGS)) {
@@ -319,6 +322,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
         if (p.getKeyset().contains(PROPERTY_SHORT_INTERVAL_APP_OPS_LIST)) {
             String opsListConfig = p.getString(PROPERTY_SHORT_INTERVAL_APP_OPS_LIST, null);
+            if (DEBUG) {
+                Slog.d(TAG, "Short interval ops list : " + opsListConfig);
+            }
             mShortIntervalAppOpsArray = opsListConfig == null
                     ? getShortIntervalAppOpsList() : parseOpsList(opsListConfig);
         } else {
@@ -659,6 +665,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                 quantizationMillis = max(DEFAULT_SHORT_INTERVAL_QUANTIZATION, quantizationMillis);
             }
         }
+        if (DEBUG) {
+            Slog.d(TAG, "Short interval quantization millis: " + quantizationMillis);
+        }
         return quantizationMillis;
     }
 
@@ -676,6 +685,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                 historyRetentionMillis = min(historyRetentionMillis,
                         MAXIMUM_HISTORY_RETENTION_MILLIS);
             }
+        }
+        if (DEBUG) {
+            Slog.d(TAG, "History retention millis: " + historyRetentionMillis);
         }
         return historyRetentionMillis;
     }

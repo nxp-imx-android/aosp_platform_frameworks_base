@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 
@@ -98,7 +99,7 @@ public class AppOpHistoryHelperTest {
     }
 
     @Test
-    public void incrementOpAccessedCount() {
+    public void incrementOpAccessRejectCount() {
         AppOpHistoryHelper appOpHistoryHelper = mShortIntervalHelper;
         long accessTime = System.currentTimeMillis();
         for (int i = 0; i < 5; i++) {
@@ -111,17 +112,6 @@ public class AppOpHistoryHelperTest {
                     1,
                     false);
         }
-        List<AggregatedAppOpAccessEvent> aggregatedAccessEvents =
-                appOpHistoryHelper.getAppOpHistory();
-        assertThat(aggregatedAccessEvents).isNotEmpty();
-        assertThat(aggregatedAccessEvents.size()).isEqualTo(1);
-        assertThat(aggregatedAccessEvents.get(0).totalAccessCount()).isEqualTo(5);
-    }
-
-    @Test
-    public void incrementOpRejectedCount() {
-        AppOpHistoryHelper appOpHistoryHelper = mShortIntervalHelper;
-        long accessTime = System.currentTimeMillis();
         for (int i = 0; i < 5; i++) {
             appOpHistoryHelper.incrementOpRejectedCount(AppOpsManager.OP_FINE_LOCATION,
                     Process.myUid(),
@@ -135,8 +125,74 @@ public class AppOpHistoryHelperTest {
                 appOpHistoryHelper.getAppOpHistory();
         assertThat(aggregatedAccessEvents).isNotEmpty();
         assertThat(aggregatedAccessEvents.size()).isEqualTo(1);
-        assertThat(aggregatedAccessEvents.get(0).totalRejectCount()).isEqualTo(5);
+        AggregatedAppOpAccessEvent appOpAccessEvent = aggregatedAccessEvents.getFirst();
+        assertThat(appOpAccessEvent.totalAccessCount()).isEqualTo(5);
+        assertThat(appOpAccessEvent.totalRejectCount()).isEqualTo(5);
     }
+
+    @Test
+    public void aggregationKeyConsiderAllParameters() {
+        AppOpHistoryHelper appOpHistoryHelper = mShortIntervalHelper;
+        long accessTime = System.currentTimeMillis();
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        // different tag
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, "tag1",
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        // different uid state
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_CACHED, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        // different op flag
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_TRUSTED_PROXY, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        // different attribution flag
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAG_ACCESSOR, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        // different attribution flag
+        appOpHistoryHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, 123456,
+                1,
+                false);
+        List<AggregatedAppOpAccessEvent> aggregatedAccessEvents =
+                appOpHistoryHelper.getAppOpHistory();
+        assertThat(aggregatedAccessEvents).isNotEmpty();
+        assertThat(aggregatedAccessEvents.size()).isEqualTo(6);
+    }
+
 
     @Test
     public void recordOpAccessDurationWithSameDiscretizedDuration() {
@@ -201,7 +257,7 @@ public class AppOpHistoryHelperTest {
     }
 
     @Test
-    public void readAppOpsWithUidPackageNameFilter() {
+    public void filterAppOpsWithUidPackageNameFilter() {
         long accessTime = System.currentTimeMillis();
         mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
                 Process.myUid(),
@@ -228,7 +284,7 @@ public class AppOpHistoryHelperTest {
                 mContext.getPackageName(), null, null, 0);
         assertThat(events).isNotEmpty();
         assertThat(events.size()).isEqualTo(2);
-        for (AggregatedAppOpAccessEvent event: events) {
+        for (AggregatedAppOpAccessEvent event : events) {
             assertThat(event.opCode()).isAnyOf(AppOpsManager.OP_COARSE_LOCATION,
                     AppOpsManager.OP_FINE_LOCATION);
             assertThat(event.totalAccessCount()).isEqualTo(1);
@@ -237,5 +293,119 @@ public class AppOpHistoryHelperTest {
             assertThat(event.totalRejectCount()).isEqualTo(0);
         }
     }
-    // TODO add tests for different filter criteria
+
+    @Test
+    public void filterAppOpsWithAttributionTagFilter() {
+        long accessTime = System.currentTimeMillis();
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, "tag1",
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_COARSE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, "tag2",
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        int filterFlag = AppOpsManager.FILTER_BY_UID | AppOpsManager.FILTER_BY_ATTRIBUTION_TAG;
+        long beginTimeMillis = accessTime;
+        long endTimeMillis = System.currentTimeMillis();
+        // assert total records in database
+        assertThat(mShortIntervalHelper.getAppOpHistory().size()).isEqualTo(2);
+        List<AggregatedAppOpAccessEvent> events = mShortIntervalHelper.getAppOpHistory(
+                beginTimeMillis, endTimeMillis, filterFlag, Process.myUid(),
+                mContext.getPackageName(), null, "tag1", 0);
+        assertThat(events).isNotEmpty();
+        assertThat(events.size()).isEqualTo(1);
+        assertThat(events.getFirst().opCode()).isEqualTo(AppOpsManager.OP_FINE_LOCATION);
+    }
+
+    @Test
+    public void filterAppOpsWithOpCodeFilter() {
+        long accessTime = System.currentTimeMillis();
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_FINE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        mShortIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_COARSE_LOCATION,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                false);
+        int filterFlag = AppOpsManager.FILTER_BY_UID | AppOpsManager.FILTER_BY_OP_NAMES;
+        long beginTimeMillis = accessTime;
+        long endTimeMillis = System.currentTimeMillis();
+        // assert total records in database
+        assertThat(mShortIntervalHelper.getAppOpHistory().size()).isEqualTo(2);
+        List<AggregatedAppOpAccessEvent> events = mShortIntervalHelper.getAppOpHistory(
+                beginTimeMillis, endTimeMillis, filterFlag, Process.myUid(),
+                mContext.getPackageName(), new String[]{AppOpsManager.OPSTR_FINE_LOCATION},
+                null, AppOpsManager.OP_FLAG_SELF);
+        assertThat(events).isNotEmpty();
+        assertThat(events.size()).isEqualTo(1);
+        assertThat(events.getFirst().opCode()).isEqualTo(AppOpsManager.OP_FINE_LOCATION);
+
+        // Use incorrect op flag
+        events = mShortIntervalHelper.getAppOpHistory(
+                beginTimeMillis, endTimeMillis, filterFlag, Process.myUid(),
+                mContext.getPackageName(), new String[]{AppOpsManager.OPSTR_FINE_LOCATION},
+                null, AppOpsManager.OP_FLAG_TRUSTED_PROXIED);
+        assertThat(events).isEmpty();
+    }
+
+    @Test
+    public void filterAppOpsWithBeginTime() {
+        long accessTime = getAccessTimeMillis(8, 10, 15);
+        // start op
+        mLongIntervalHelper.incrementOpAccessedCount(AppOpsManager.OP_CAMERA,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                1,
+                true);
+        // finish op
+        mLongIntervalHelper.recordOpAccessDuration(AppOpsManager.OP_CAMERA,
+                Process.myUid(),
+                mContext.getPackageName(),
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, null,
+                AppOpsManager.UID_STATE_FOREGROUND, AppOpsManager.OP_FLAG_SELF, accessTime,
+                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE,
+                Duration.ofMinutes(10).toMillis());
+
+        long beginTimeMillis = getAccessTimeMillis(8, 16, 15);
+        long endTimeMillis = beginTimeMillis + Duration.ofMinutes(60).toMillis();
+        List<AggregatedAppOpAccessEvent> events = mLongIntervalHelper.getAppOpHistory(
+                beginTimeMillis, endTimeMillis, 0, Process.myUid(),
+                mContext.getPackageName(), null, null, 0);
+        assertThat(events).isNotEmpty();
+        assertThat(events.size()).isEqualTo(1);
+        AggregatedAppOpAccessEvent appOpAccessEvent = events.getFirst();
+        assertThat(appOpAccessEvent.durationMillis()).isEqualTo(Duration.ofMinutes(10).toMillis());
+        assertThat(appOpAccessEvent.accessTimeMillis()).isEqualTo(accessTime);
+        assertThat(appOpAccessEvent.totalDurationMillis()).isEqualTo(
+                Duration.ofMinutes(10).toMillis());
+    }
+
+    private long getAccessTimeMillis(int hours, int minutes, int seconds) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        calendar.set(Calendar.MINUTE, minutes);
+        calendar.set(Calendar.SECOND, seconds);
+        return calendar.getTimeInMillis();
+    }
 }

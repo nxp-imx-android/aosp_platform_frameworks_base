@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -65,19 +66,21 @@ import java.util.Set;
  */
 public class AppOpHistoryHelper {
     private static final String TAG = "AppOpHistoryHelper";
+    private static final long PERIODIC_JOB_MAX_VARIATION_MILLIS = Duration.ofMinutes(1).toMillis();
     private static final long DB_WRITE_INTERVAL_PERIODIC_MILLIS =
             Duration.ofMinutes(10).toMillis();
     private static final long EXPIRED_ENTRY_DELETION_INTERVAL_MILLIS =
             Duration.ofHours(6).toMillis();
     // Event type handled by SqliteWriteHandler
     private static final int WRITE_DATABASE_PERIODIC = 1;
-    private static final int DELETE_EXPIRED_ENTRIES = 2;
+    private static final int DELETE_EXPIRED_ENTRIES_PERIODIC = 2;
     private static final int WRITE_DATABASE_CACHE_FULL = 3;
-
+    // Used in adding variation to periodic job interval
+    private final Random mRandom = new Random();
     // time window interval for aggregation
     private long mQuantizationMillis;
     private long mHistoryRetentionMillis;
-    private final File mDatabaseFileName;
+    private final File mDatabaseFile;
     private final Context mContext;
     private final AppOpHistoryDbHelper mDbHelper;
     private final SqliteWriteHandler mSqliteWriteHandler;
@@ -86,7 +89,7 @@ public class AppOpHistoryHelper {
     AppOpHistoryHelper(@NonNull Context context, File databaseFile,
             AggregationTimeWindow aggregationTimeWindow, int databaseVersion) {
         mContext = context;
-        mDatabaseFileName = databaseFile;
+        mDatabaseFile = databaseFile;
         mDbHelper = new AppOpHistoryDbHelper(
                 context, databaseFile, aggregationTimeWindow, databaseVersion);
         ServiceThread thread =
@@ -99,10 +102,8 @@ public class AppOpHistoryHelper {
     void systemReady(long quantizationMillis, long historyRetentionMillis) {
         mQuantizationMillis = quantizationMillis;
         mHistoryRetentionMillis = historyRetentionMillis;
-        mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_PERIODIC,
-                DB_WRITE_INTERVAL_PERIODIC_MILLIS);
-        mSqliteWriteHandler.sendEmptyMessageDelayed(DELETE_EXPIRED_ENTRIES,
-                EXPIRED_ENTRY_DELETION_INTERVAL_MILLIS);
+
+        ensurePeriodicJobsAreScheduled();
     }
 
     void incrementOpAccessedCount(int op, int uid, @NonNull String packageName,
@@ -225,9 +226,9 @@ public class AppOpHistoryHelper {
                 attributionTagFilter, opCodes, opFlagsFilter, -1, null, false);
     }
 
-    void deleteDatabase() {
+    boolean deleteDatabase() {
         mDbHelper.close();
-        mContext.deleteDatabase(mDatabaseFileName.getAbsolutePath());
+        return mContext.deleteDatabase(mDatabaseFile.getAbsolutePath());
     }
 
     long getLargestAttributionChainId() {
@@ -356,25 +357,33 @@ public class AppOpHistoryHelper {
         pw.println();
     }
 
+    private void ensurePeriodicJobsAreScheduled() {
+        if (!mSqliteWriteHandler.hasMessages(WRITE_DATABASE_PERIODIC)) {
+            mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_PERIODIC,
+                    DB_WRITE_INTERVAL_PERIODIC_MILLIS + mRandom.nextLong(0,
+                            PERIODIC_JOB_MAX_VARIATION_MILLIS));
+        }
+        if (!mSqliteWriteHandler.hasMessages(DELETE_EXPIRED_ENTRIES_PERIODIC)) {
+            mSqliteWriteHandler.sendEmptyMessageDelayed(
+                    DELETE_EXPIRED_ENTRIES_PERIODIC,
+                    EXPIRED_ENTRY_DELETION_INTERVAL_MILLIS + mRandom.nextLong(0,
+                            PERIODIC_JOB_MAX_VARIATION_MILLIS));
+        }
+    }
+
     private class SqliteWriteHandler extends Handler {
         SqliteWriteHandler(Looper looper) {
             super(looper);
         }
 
         @Override
-        public void handleMessage(@androidx.annotation.NonNull Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
                 case WRITE_DATABASE_PERIODIC -> {
                     try {
                         mDbHelper.insertAppOpHistory(mCache.evict());
                     } finally {
-                        mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_PERIODIC,
-                                DB_WRITE_INTERVAL_PERIODIC_MILLIS);
-                        // Schedule a cleanup to truncate older (before cutoff time) entries.
-                        if (!mSqliteWriteHandler.hasMessages(DELETE_EXPIRED_ENTRIES)) {
-                            mSqliteWriteHandler.sendEmptyMessageDelayed(DELETE_EXPIRED_ENTRIES,
-                                    EXPIRED_ENTRY_DELETION_INTERVAL_MILLIS);
-                        }
+                        ensurePeriodicJobsAreScheduled();
                     }
                 }
                 case WRITE_DATABASE_CACHE_FULL -> {
@@ -390,37 +399,38 @@ public class AppOpHistoryHelper {
                         }
                         mDbHelper.insertAppOpHistory(evictedEvents);
                     } finally {
-                        // Just in case initial message is not scheduled.
-                        if (!mSqliteWriteHandler.hasMessages(WRITE_DATABASE_PERIODIC)) {
-                            mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_PERIODIC,
-                                    DB_WRITE_INTERVAL_PERIODIC_MILLIS);
-                        }
+                        ensurePeriodicJobsAreScheduled();
                     }
                 }
-                case DELETE_EXPIRED_ENTRIES -> {
-                    long cutOffTimeStamp = System.currentTimeMillis() - mHistoryRetentionMillis;
-                    mDbHelper.execSQL(
+                case DELETE_EXPIRED_ENTRIES_PERIODIC -> {
+                    try {
+                        long cutOffTimeStamp = System.currentTimeMillis() - mHistoryRetentionMillis;
+                        mDbHelper.execSQL(
                             AppOpHistoryTable.DELETE_TABLE_DATA_BEFORE_ACCESS_TIME,
                             new Object[]{cutOffTimeStamp});
+                    } finally {
+                        ensurePeriodicJobsAreScheduled();
+                    }
                 }
             }
         }
 
         void removeAllPendingMessages() {
             removeMessages(WRITE_DATABASE_PERIODIC);
-            removeMessages(DELETE_EXPIRED_ENTRIES);
+            removeMessages(DELETE_EXPIRED_ENTRIES_PERIODIC);
             removeMessages(WRITE_DATABASE_CACHE_FULL);
         }
     }
 
     /**
-     * A cache for aggregating app op access counts for a time window. Individual app op events
-     * aren't stored on the disk, instead an aggregated event is persisted on the disk.
+     * A cache for aggregating app op accesses in a time window. Individual app op events
+     * aren't stored on the disk, instead an aggregated events are persisted on the disk.
+     *
      * <p>
      * These events are persisted into sqlite database
      * 1) Periodic interval.
      * 2) When the cache become full.
-     * 3) During read call, flush the whole cache to disk.
+     * 3) During read call, flush the cache to disk to make read simpler.
      * 4) During shutdown.
      */
     class AppOpHistoryCache {
@@ -436,12 +446,12 @@ public class AppOpHistoryHelper {
         /**
          * Records an app op access event, aggregating access, reject count and duration.
          *
-         * @param accessKey Key to group/aggregate app op events in a time window.
+         * @param accessKey   Key to group/aggregate app op events in a time window.
          * @param accessCount Access counts to be aggregated for an event.
          * @param rejectCount Reject counts to be aggregated for an event.
-         * @param duration Access duration to be aggregated for an event.
+         * @param duration    Access duration to be aggregated for an event.
          */
-        public void insertOrUpdate(AppOpAccessEvent accessKey, int accessCount,
+        private void insertOrUpdate(AppOpAccessEvent accessKey, int accessCount,
                 int rejectCount, long duration) {
             synchronized (this) {
                 AggregatedAppOpValues appOpAccessValue = mCache.get(accessKey);
@@ -500,7 +510,7 @@ public class AppOpHistoryHelper {
         /**
          * Evict specified app ops from cache, and return the list of evicted ops.
          */
-        public List<AggregatedAppOpAccessEvent> evict(IntArray ops) {
+        private List<AggregatedAppOpAccessEvent> evict(IntArray ops) {
             synchronized (this) {
                 List<AggregatedAppOpAccessEvent> cachedOps = new ArrayList<>();
                 List<AppOpAccessEvent> keysToBeRemoved = new ArrayList<>();
@@ -528,7 +538,7 @@ public class AppOpHistoryHelper {
          *
          * @return return all removed entries.
          */
-        public List<AggregatedAppOpAccessEvent> evictAll() {
+        private List<AggregatedAppOpAccessEvent> evictAll() {
             synchronized (this) {
                 List<AggregatedAppOpAccessEvent> cachedOps = snapshot();
                 mCache.clear();
@@ -539,13 +549,13 @@ public class AppOpHistoryHelper {
         /**
          * Remove all entries from the cache.
          */
-        public void clear() {
+        private void clear() {
             synchronized (this) {
                 mCache.clear();
             }
         }
 
-        public List<AggregatedAppOpAccessEvent> snapshot() {
+        private List<AggregatedAppOpAccessEvent> snapshot() {
             List<AggregatedAppOpAccessEvent> events = new ArrayList<>();
             synchronized (this) {
                 for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
@@ -557,7 +567,7 @@ public class AppOpHistoryHelper {
         }
 
         /** Remove cached events for given UID and package. */
-        public void clear(int uid, String packageName) {
+        private void clear(int uid, String packageName) {
             synchronized (this) {
                 List<AppOpAccessEvent> keysToBeDeleted = new ArrayList<>();
                 for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
@@ -567,7 +577,7 @@ public class AppOpHistoryHelper {
                         keysToBeDeleted.add(event.getKey());
                     }
                 }
-                for (AppOpAccessEvent key: keysToBeDeleted) {
+                for (AppOpAccessEvent key : keysToBeDeleted) {
                     mCache.remove(key);
                 }
             }
