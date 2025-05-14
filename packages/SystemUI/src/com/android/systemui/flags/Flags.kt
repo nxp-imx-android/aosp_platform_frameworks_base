@@ -263,11 +263,6 @@ object Flags {
     @JvmField
     val ENABLE_DARK_VIGNETTE_WHEN_FOLDING = unreleasedFlag("enable_dark_vignette_when_folding")
 
-    // TODO(b/265764985): Tracking Bug
-    @Keep
-    @JvmField
-    val ENABLE_UNFOLD_STATUS_BAR_ANIMATIONS = unreleasedFlag("enable_unfold_status_bar_animations")
-
     // TODO(b/316157842): Tracking Bug
     // Adds extra delay to notifications measure
     @Keep

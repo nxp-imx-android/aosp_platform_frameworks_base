@@ -32,7 +32,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
-import android.view.ViewTreeObserver.OnPreDrawListener
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -41,8 +40,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.flags.Flags
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.fakeDarkIconDispatcher
@@ -70,8 +67,6 @@ import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.testKosmos
-import com.android.systemui.unfold.SysUIUnfoldComponent
-import com.android.systemui.unfold.config.UnfoldTransitionConfig
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel
 import com.android.systemui.util.mockito.argumentCaptor
@@ -105,9 +100,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     private val fakeDarkIconDispatcher = kosmos.fakeDarkIconDispatcher
     @Mock private lateinit var shadeViewController: ShadeViewController
     @Mock private lateinit var panelExpansionInteractor: PanelExpansionInteractor
-    @Mock private lateinit var featureFlags: FeatureFlags
-    @Mock private lateinit var moveFromCenterAnimation: StatusBarMoveFromCenterAnimationController
-    @Mock private lateinit var sysuiUnfoldComponent: SysUIUnfoldComponent
     @Mock private lateinit var progressProvider: ScopedUnfoldTransitionProgressProvider
     @Mock private lateinit var mStatusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory
     @Mock private lateinit var mStatusOverlayHoverListener: StatusOverlayHoverListener
@@ -137,8 +129,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     private val batteryView: BatteryMeterView
         get() = view.requireViewById(R.id.battery)
 
-    private val unfoldConfig = UnfoldConfig()
-
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
@@ -149,8 +139,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         whenever(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
-        whenever(sysuiUnfoldComponent.getStatusBarMoveFromCenterAnimationController())
-            .thenReturn(moveFromCenterAnimation)
         whenever(mStatusOverlayHoverListenerFactory.createDarkAwareListener(any()))
             .thenReturn(mStatusOverlayHoverListener)
 
@@ -248,37 +236,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
         }
 
         verify(viewForSecondaryDisplay).setInteractionGate(any())
-    }
-
-    @Test
-    fun onViewAttachedAndDrawn_moveFromCenterAnimationEnabled_moveFromCenterAnimationInitialized() {
-        whenever(featureFlags.isEnabled(Flags.ENABLE_UNFOLD_STATUS_BAR_ANIMATIONS)).thenReturn(true)
-        val view = createViewMock(view)
-        val argumentCaptor = ArgumentCaptor.forClass(OnPreDrawListener::class.java)
-        unfoldConfig.isEnabled = true
-        // create the controller on main thread as it requires main looper
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            controller = createAndInitController(view)
-        }
-
-        verify(view.viewTreeObserver).addOnPreDrawListener(argumentCaptor.capture())
-        argumentCaptor.value.onPreDraw()
-
-        verify(moveFromCenterAnimation).onViewsReady(any())
-    }
-
-    @Test
-    fun onViewAttachedAndDrawn_statusBarAnimationDisabled_animationNotInitialized() {
-        whenever(featureFlags.isEnabled(Flags.ENABLE_UNFOLD_STATUS_BAR_ANIMATIONS))
-            .thenReturn(false)
-        val view = createViewMock(view)
-        unfoldConfig.isEnabled = true
-        // create the controller on main thread as it requires main looper
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            controller = createAndInitController(view)
-        }
-
-        verify(moveFromCenterAnimation, never()).onViewsReady(any())
     }
 
     @Test
@@ -723,9 +680,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     private fun createAndInitController(view: PhoneStatusBarView): PhoneStatusBarViewController {
         return PhoneStatusBarViewController.Factory(
-                Optional.of(sysuiUnfoldComponent),
                 Optional.of(progressProvider),
-                featureFlags,
                 userChipViewModel,
                 centralSurfacesImpl,
                 statusBarWindowStateController,
@@ -747,13 +702,6 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
             )
             .create(view)
             .also { it.init() }
-    }
-
-    private class UnfoldConfig : UnfoldTransitionConfig {
-        override var isEnabled: Boolean = false
-        override var isHingeAngleEnabled: Boolean = false
-        override val isHapticsEnabled: Boolean = false
-        override val halfFoldedTimeoutMillis: Int = 0
     }
 
     private companion object {

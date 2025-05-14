@@ -218,7 +218,6 @@ filegroup {
         "tests/src/**/systemui/statusbar/phone/PhoneStatusBarViewControllerTest.kt",
         "tests/src/**/systemui/statusbar/phone/PhoneStatusBarViewTest.kt",
         "tests/src/**/systemui/statusbar/phone/StatusBarBoundsProviderTest.kt",
-        "tests/src/**/systemui/statusbar/phone/StatusBarMoveFromCenterAnimationControllerTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/airplane/ui/viewmodel/AirplaneModeViewModelImplTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/mobile/data/repository/prod/MobileConnectionsRepositoryKairosAdapterTest.kt",
         "tests/src/**/systemui/statusbar/pipeline/mobile/data/repository/prod/MobileConnectionsRepositoryTest.kt",
