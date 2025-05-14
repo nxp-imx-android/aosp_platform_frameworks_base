@@ -752,7 +752,7 @@ status_t JMediaCodec::getImage(
     }
 
     jobject cropRect = NULL;
-    int32_t left, top, right, bottom;
+    int32_t left = 0, top = 0, right = 0, bottom = 0;
     if (buffer->meta()->findRect("crop-rect", &left, &top, &right, &bottom)) {
         ScopedLocalRef<jclass> rectClazz(
                 env, env->FindClass("android/graphics/Rect"));
@@ -776,7 +776,7 @@ status_t JMediaCodec::getImage(
             byteBuffer, infoBuffer,
             (jboolean)!input /* readOnly */,
             (jlong)timestamp,
-            (jint)0 /* xOffset */, (jint)0 /* yOffset */, cropRect);
+            left /* xOffset */, top /* yOffset */, cropRect);
 
     // if MediaImage creation fails, return null
     if (env->ExceptionCheck()) {
