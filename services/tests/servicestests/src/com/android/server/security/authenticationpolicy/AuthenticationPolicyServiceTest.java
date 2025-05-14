@@ -40,6 +40,7 @@ import android.hardware.biometrics.events.AuthenticationFailedInfo;
 import android.hardware.biometrics.events.AuthenticationSucceededInfo;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -159,6 +160,7 @@ public class AuthenticationPolicyServiceTest {
         if (android.security.Flags.secureLockdown()) {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
         }
+        toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, false /* disable */);
     }
 
     @Test
@@ -334,6 +336,23 @@ public class AuthenticationPolicyServiceTest {
                 false /* enabled */);
     }
 
+    @Test
+    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
+    @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
+    public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUserAndProfile_deviceLockDisabled()
+            throws RemoteException {
+        // The failed auth lock toggle for the primary user is set to disable
+        toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, true /* disabled */);
+        // The failed auth lock toggle for the managed profile is set to enable
+        toggleAdaptiveAuthSettingsOverride(MANAGED_PROFILE_USER_ID, false /* disabled */);
+
+        // Device lock should be disabled for both the primary user and its profile
+        testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUser(
+                false /* enabled */);
+        testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profileOfPrimaryUser(
+                false /* enabled */);
+    }
+
     private void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUser(
             boolean enabled) throws RemoteException {
         // Three failed primary auth attempts
@@ -355,8 +374,20 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profileOfPrimaryUser()
+    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
+    @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
+    public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profile_deviceLockEnabled()
             throws RemoteException {
+        // The failed auth lock toggle for the primary user is set to enable in test setup, so the
+        // toggle for the managed profile is implicitly set to enable
+
+        // Device lock should be enabled for the managed profile
+        testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profileOfPrimaryUser(
+                true /* enabled */);
+    }
+
+    private void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profileOfPrimaryUser(
+            boolean enabled) throws RemoteException {
         // Three failed primary auth attempts
         for (int i = 0; i < 3; i++) {
             mLockSettingsStateListenerCaptor.getValue()
@@ -369,7 +400,11 @@ public class AuthenticationPolicyServiceTest {
         }
         waitForAuthCompletion();
 
-        verifyLockDevice(MANAGED_PROFILE_USER_ID);
+        if (enabled) {
+            verifyLockDevice(MANAGED_PROFILE_USER_ID);
+        } else {
+            verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS, MANAGED_PROFILE_USER_ID);
+        }
     }
 
     private void verifyNotLockDevice(int expectedCntFailedAttempts, int userId) {
