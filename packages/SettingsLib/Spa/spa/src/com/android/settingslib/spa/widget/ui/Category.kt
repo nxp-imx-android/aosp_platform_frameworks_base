@@ -166,8 +166,14 @@ fun LazyCategory(
                 title?.invoke(it)?.let { title -> CategoryTitle(title) }
                 when (it) {
                     0 -> {
-                        Column(modifier = Modifier.clip(SettingsShape.TopCornerMedium2)) {
-                            CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                        if (list.size == 1) {
+                            Column(modifier = Modifier.clip(SettingsShape.CornerMedium2)) {
+                                CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                            }
+                        } else {
+                            Column(modifier = Modifier.clip(SettingsShape.TopCornerMedium2)) {
+                                CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                            }
                         }
                     }
 
