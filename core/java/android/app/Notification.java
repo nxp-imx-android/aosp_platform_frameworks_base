@@ -3308,7 +3308,7 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        if (Flags.optInRichOngoing()) {
+        if (Flags.uiRichOngoing()) {
             return hasRequestedPromotedOngoing()
                     && isOngoingEvent()
                     && hasTitle()
@@ -7190,10 +7190,6 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
-            if (mN.isPromotedOngoing() && !Flags.optInRichOngoing()) {
-                publicExtras.putBoolean(EXTRA_COLORIZED,
-                        savedBundle.getBoolean(EXTRA_COLORIZED));
-            }
             String appName = savedBundle.getString(EXTRA_SUBSTITUTE_APP_NAME);
             if (appName != null) {
                 publicExtras.putString(EXTRA_SUBSTITUTE_APP_NAME, appName);

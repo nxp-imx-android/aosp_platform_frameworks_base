@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.content.DialogInterface
 import android.content.packageManager
 import android.graphics.Bitmap
@@ -1085,7 +1084,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun chips_callNotifDidNotRequestPromotion_showsCallChip() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1103,7 +1101,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun chipsLegacy_callNotifDidNotRequestPromotion_showsCallChip() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chipsLegacy)
@@ -1133,7 +1130,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun chips_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1155,7 +1151,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_OPT_IN_RICH_ONGOING)
     fun chipsLegacy_callNotifRequestedPromotionAndIsPromoted_showsNotifChip() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chipsLegacy)
@@ -1187,7 +1182,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun chips_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1207,7 +1201,6 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableChipsModernization
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun chipsLegacy_callNotifRequestedPromotionButNotPromoted_noChipsShown() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chipsLegacy)
