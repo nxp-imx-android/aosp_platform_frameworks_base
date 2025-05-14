@@ -58,7 +58,7 @@ import com.android.internal.protolog.WmProtoLogGroups;
  * changes to the camera and display orientation signals to match those expected on a portrait
  * device in that orientation (for example, on a standard phone).
  */
-final class CameraCompatFreeformPolicy implements CameraStateMonitorImpl.CameraCompatStateListener,
+final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompatStateListener,
         ActivityRefresher.Evaluator {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "CameraCompatFreeformPolicy" : TAG_WM;
 
@@ -67,9 +67,9 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitorImpl.CameraC
     @NonNull
     private final ActivityRefresher mActivityRefresher;
     @NonNull
-    private final CameraStateMonitorImpl mCameraStateMonitor;
+    private final CameraStateMonitor mCameraStateMonitor;
 
-    // TODO(b/380840084): Consider moving this to the CameraStateMonitorImpl, and keeping track of
+    // TODO(b/380840084): Consider moving this to the CameraStateMonitor, and keeping track of
     // all current camera activities, especially when the camera access is switching from one app to
     // another.
     @Nullable
@@ -81,7 +81,7 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitorImpl.CameraC
     private boolean mIsRunning;
 
     CameraCompatFreeformPolicy(@NonNull DisplayContent displayContent,
-            @NonNull CameraStateMonitorImpl cameraStateMonitor,
+            @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull ActivityRefresher activityRefresher) {
         mDisplayContent = displayContent;
         mCameraStateMonitor = cameraStateMonitor;
