@@ -57,6 +57,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.keyguard.shared.model.AcquiredFingerprintAuthenticationStatus
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.kotlin.combine
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.InteractionProperties
@@ -89,7 +90,8 @@ constructor(
     private val activityTaskManager: ActivityTaskManager,
     private val accessibilityInteractor: AccessibilityInteractor,
     accessibilityManager: AccessibilityManager,
-    private val promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
+    promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
+    shadeInteractor: ShadeInteractor,
 ) {
     /** Viewmodel for the fallback view */
     val promptFallbackViewModel = promptFallbackViewModelFactory.create()
@@ -108,6 +110,9 @@ constructor(
         promptSelectorInteractor.prompt
             .map { it?.modalities ?: BiometricModalities() }
             .distinctUntilChanged()
+
+    /** Whether the shade is expanded */
+    val isShadeExpanded = shadeInteractor.isShadeAnyExpanded
 
     val udfpsAccessibilityOverlayViewModel =
         BiometricPromptUdfpsAccessibilityOverlayViewModel(

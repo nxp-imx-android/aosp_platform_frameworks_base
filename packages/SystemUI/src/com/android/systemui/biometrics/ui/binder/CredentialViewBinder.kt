@@ -145,6 +145,14 @@ object CredentialViewBinder {
                         }
                 }
 
+                launch {
+                    viewModel.isShadeExpanded.collect { isShadeExpanded ->
+                        if (isShadeExpanded) {
+                            host.onCredentialAborted()
+                        }
+                    }
+                }
+
                 try {
                     awaitCancellation()
                 } catch (_: Throwable) {
