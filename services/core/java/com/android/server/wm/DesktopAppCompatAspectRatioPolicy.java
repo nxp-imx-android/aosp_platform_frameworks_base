@@ -191,7 +191,7 @@ public class DesktopAppCompatAspectRatioPolicy {
         final DisplayContent dc = task.mDisplayContent;
         final int windowingMode = task.getDisplayArea().getWindowingMode();
         return WindowConfiguration.inMultiWindowMode(windowingMode)
-                && !dc.getIgnoreOrientationRequest();
+                && dc != null && !dc.getIgnoreOrientationRequest();
     }
 
     /**
@@ -299,6 +299,7 @@ public class DesktopAppCompatAspectRatioPolicy {
         return mAppCompatOverrides.getAspectRatioOverrides()
                     .getAllowUserAspectRatioOverridePropertyValue()
                 && mAppCompatConfiguration.isUserAppAspectRatioSettingsEnabled()
+                && task.mDisplayContent != null
                 && task.mDisplayContent.getIgnoreOrientationRequest();
     }
 
