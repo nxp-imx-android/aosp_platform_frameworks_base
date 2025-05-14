@@ -135,9 +135,9 @@ public class DisplayDensityUtilsTest {
     public void createDisplayDensityUtil_forExternalDisplay() throws RemoteException {
         // Configure resources
         when(mResources.getFraction(R.fraction.external_display_density_max_scale,
-                1, 1)).thenReturn(MAX_SCALE_EXTERNAL);
+                1, 1)).thenReturn(MAX_SCALE_EXTERNAL_EXTENDED);
         when(mResources.getFraction(R.fraction.external_display_density_min_scale,
-                1, 1)).thenReturn(MIN_SCALE_EXTERNAL);
+                1, 1)).thenReturn(MIN_SCALE_EXTERNAL_EXTENDED);
         // Default display
         var defaultDisplayInfo = createDisplayInfoForDisplay(
                 Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, 2000, 2000,
@@ -162,16 +162,17 @@ public class DisplayDensityUtilsTest {
         mDisplayDensityUtils = new DisplayDensityUtils(mContext,
                 (info) -> info.displayId == externalDisplayInfo.displayId);
 
-        assertThat(mDisplayDensityUtils.getValues()).isEqualTo(new int[]{68, 85, 98, 112, 126});
+        assertThat(mDisplayDensityUtils.getValues())
+                .isEqualTo(new int[]{42, 56, 70, 85, 102, 118, 136, 152, 170});
     }
 
     @Test
     public void createDisplayDensityUtil_forExternalDisplay_displaySizeMissing()
             throws RemoteException {
         // Configure resources
-        when(mResources.getFraction(R.fraction.external_display_density_max_scale_extended,
+        when(mResources.getFraction(R.fraction.external_display_density_max_scale,
                 1, 1)).thenReturn(MAX_SCALE_EXTERNAL_EXTENDED);
-        when(mResources.getFraction(R.fraction.external_display_density_min_scale_extended,
+        when(mResources.getFraction(R.fraction.external_display_density_min_scale,
                 1, 1)).thenReturn(MIN_SCALE_EXTERNAL_EXTENDED);
         // Default display
         var defaultDisplayInfo = createDisplayInfoForDisplay(
@@ -206,9 +207,9 @@ public class DisplayDensityUtilsTest {
     public void createDisplayDensityUtil_forExternalDisplay_lowerMaxScale()
             throws RemoteException {
         // Configure resources
-        when(mResources.getFraction(R.fraction.external_display_density_max_scale_extended,
+        when(mResources.getFraction(R.fraction.external_display_density_max_scale,
                 1, 1)).thenReturn(MAX_SCALE_EXTERNAL_EXTENDED);
-        when(mResources.getFraction(R.fraction.external_display_density_min_scale_extended,
+        when(mResources.getFraction(R.fraction.external_display_density_min_scale,
                 1, 1)).thenReturn(MIN_SCALE_EXTERNAL_EXTENDED);
         // Default display
         var defaultDisplayInfo = createDisplayInfoForDisplay(
