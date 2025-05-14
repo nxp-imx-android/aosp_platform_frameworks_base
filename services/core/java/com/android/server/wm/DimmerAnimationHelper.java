@@ -16,11 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Animationadapter.AlphaAnimationSpecProto.DURATION_MS;
+import static android.internal.perfetto.protos.Animationadapter.AlphaAnimationSpecProto.FROM;
+import static android.internal.perfetto.protos.Animationadapter.AlphaAnimationSpecProto.TO;
+import static android.internal.perfetto.protos.Animationadapter.AnimationSpecProto.ALPHA;
+
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_DIMMER;
-import static com.android.server.wm.AlphaAnimationSpecProto.DURATION_MS;
-import static com.android.server.wm.AlphaAnimationSpecProto.FROM;
-import static com.android.server.wm.AlphaAnimationSpecProto.TO;
-import static com.android.server.wm.AnimationSpecProto.ALPHA;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_DIMMER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;

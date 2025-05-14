@@ -17,11 +17,11 @@
 package android.app;
 
 import static android.app.ActivityThread.isSystem;
-import static android.app.WindowConfigurationProto.ACTIVITY_TYPE;
-import static android.app.WindowConfigurationProto.APP_BOUNDS;
-import static android.app.WindowConfigurationProto.BOUNDS;
-import static android.app.WindowConfigurationProto.MAX_BOUNDS;
-import static android.app.WindowConfigurationProto.WINDOWING_MODE;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.ACTIVITY_TYPE;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.APP_BOUNDS;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.BOUNDS;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.MAX_BOUNDS;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.WINDOWING_MODE;
 import static android.view.Surface.rotationToString;
 
 import android.annotation.IntDef;
@@ -715,7 +715,8 @@ public class WindowConfiguration implements Parcelable, Comparable<WindowConfigu
 
     /**
      * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.app.WindowConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto}
      *
      * @param protoOutputStream Stream to write the WindowConfiguration object to.
      * @param fieldId           Field Id of the WindowConfiguration as defined in the parent message
@@ -735,7 +736,8 @@ public class WindowConfiguration implements Parcelable, Comparable<WindowConfigu
 
     /**
      * Read from a protocol buffer input stream.
-     * Protocol buffer message definition at {@link android.app.WindowConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto}
      *
      * @param proto   Stream to read the WindowConfiguration object from.
      * @param fieldId Field Id of the WindowConfiguration as defined in the parent message

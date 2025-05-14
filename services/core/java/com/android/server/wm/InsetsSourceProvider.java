@@ -16,23 +16,23 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.CAPTURED_LEASH;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.CLIENT_VISIBLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.CONTROL;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.CONTROLLABLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.CONTROL_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.FAKE_CONTROL;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.FAKE_CONTROL_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.FRAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.IS_LEASH_READY_FOR_DISPATCHING;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.PENDING_CONTROL_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.SEAMLESS_ROTATING;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.SERVER_VISIBLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.SOURCE;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsSourceProviderProto.SOURCE_WINDOW_STATE_IDENTIFIER;
 import static android.view.InsetsSource.FLAG_INVALID;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_INSETS;
-import static com.android.server.wm.InsetsSourceProviderProto.CAPTURED_LEASH;
-import static com.android.server.wm.InsetsSourceProviderProto.CLIENT_VISIBLE;
-import static com.android.server.wm.InsetsSourceProviderProto.CONTROL;
-import static com.android.server.wm.InsetsSourceProviderProto.CONTROLLABLE;
-import static com.android.server.wm.InsetsSourceProviderProto.CONTROL_TARGET_IDENTIFIER;
-import static com.android.server.wm.InsetsSourceProviderProto.FAKE_CONTROL;
-import static com.android.server.wm.InsetsSourceProviderProto.FAKE_CONTROL_TARGET_IDENTIFIER;
-import static com.android.server.wm.InsetsSourceProviderProto.FRAME;
-import static com.android.server.wm.InsetsSourceProviderProto.IS_LEASH_READY_FOR_DISPATCHING;
-import static com.android.server.wm.InsetsSourceProviderProto.PENDING_CONTROL_TARGET_IDENTIFIER;
-import static com.android.server.wm.InsetsSourceProviderProto.SEAMLESS_ROTATING;
-import static com.android.server.wm.InsetsSourceProviderProto.SERVER_VISIBLE;
-import static com.android.server.wm.InsetsSourceProviderProto.SOURCE;
-import static com.android.server.wm.InsetsSourceProviderProto.SOURCE_WINDOW_STATE_IDENTIFIER;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_INSETS_CONTROL;
 
 import android.annotation.NonNull;

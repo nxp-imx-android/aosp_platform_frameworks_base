@@ -16,12 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.InsetsSource.ID_IME;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
-import static com.android.server.wm.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
-import static com.android.server.wm.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_STACKS;
 
 import android.annotation.NonNull;

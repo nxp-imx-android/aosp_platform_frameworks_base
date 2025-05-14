@@ -1,10 +1,10 @@
 package com.android.server.policy.keyguard;
 
-import static com.android.server.wm.KeyguardServiceDelegateProto.INTERACTIVE_STATE;
-import static com.android.server.wm.KeyguardServiceDelegateProto.OCCLUDED;
-import static com.android.server.wm.KeyguardServiceDelegateProto.SCREEN_STATE;
-import static com.android.server.wm.KeyguardServiceDelegateProto.SECURE;
-import static com.android.server.wm.KeyguardServiceDelegateProto.SHOWING;
+import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.INTERACTIVE_STATE;
+import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.OCCLUDED;
+import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SCREEN_STATE;
+import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SECURE;
+import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SHOWING;
 
 import android.app.ActivityTaskManager;
 import android.content.ComponentName;

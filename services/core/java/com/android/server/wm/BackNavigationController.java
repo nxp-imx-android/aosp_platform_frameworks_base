@@ -17,6 +17,11 @@
 package com.android.server.wm;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.BackNavigationProto.ANIMATION_IN_PROGRESS;
+import static android.internal.perfetto.protos.Windowmanagerservice.BackNavigationProto.ANIMATION_RUNNING;
+import static android.internal.perfetto.protos.Windowmanagerservice.BackNavigationProto.LAST_BACK_TYPE;
+import static android.internal.perfetto.protos.Windowmanagerservice.BackNavigationProto.MAIN_OPEN_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.BackNavigationProto.SHOW_WALLPAPER;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.RemoteAnimationTarget.MODE_CLOSING;
@@ -31,11 +36,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_FINISH
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
-import static com.android.server.wm.BackNavigationProto.ANIMATION_IN_PROGRESS;
-import static com.android.server.wm.BackNavigationProto.ANIMATION_RUNNING;
-import static com.android.server.wm.BackNavigationProto.LAST_BACK_TYPE;
-import static com.android.server.wm.BackNavigationProto.MAIN_OPEN_ACTIVITY;
-import static com.android.server.wm.BackNavigationProto.SHOW_WALLPAPER;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_NONE;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;

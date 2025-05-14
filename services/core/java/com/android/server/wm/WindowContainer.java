@@ -27,6 +27,16 @@ import static android.content.pm.ActivityInfo.reverseOrientation;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.WINDOW_CONTAINER;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.CONFIGURATION_CONTAINER;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.ORIENTATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.SURFACE_ANIMATOR;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.SURFACE_CONTROL;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto.VISIBLE;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
@@ -36,19 +46,9 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SYNC_ENGINE;
-import static com.android.server.wm.IdentifierProto.HASH_CODE;
-import static com.android.server.wm.IdentifierProto.TITLE;
-import static com.android.server.wm.IdentifierProto.USER_ID;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainerChildProto.WINDOW_CONTAINER;
-import static com.android.server.wm.WindowContainerProto.CONFIGURATION_CONTAINER;
-import static com.android.server.wm.WindowContainerProto.IDENTIFIER;
-import static com.android.server.wm.WindowContainerProto.ORIENTATION;
-import static com.android.server.wm.WindowContainerProto.SURFACE_ANIMATOR;
-import static com.android.server.wm.WindowContainerProto.SURFACE_CONTROL;
-import static com.android.server.wm.WindowContainerProto.VISIBLE;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -62,6 +62,7 @@ import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto;
 import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -2764,7 +2765,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
     /**
      * Write to a protocol buffer output stream. Protocol buffer message definition is at
-     * {@link com.android.server.wm.WindowContainerProto}.
+     * {@link android.internal.perfetto.protos.Windowmanagerservice.WindowContainerProto}.
      *
      * @param proto     Stream to write the WindowContainer object to.
      * @param fieldId   Field Id of the WindowContainer as defined in the parent message.

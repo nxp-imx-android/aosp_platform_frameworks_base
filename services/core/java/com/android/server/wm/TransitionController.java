@@ -32,6 +32,7 @@ import android.app.IApplicationThread;
 import android.app.WindowConfiguration;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.internal.perfetto.protos.Windowmanagerservice.AppTransitionProto;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IRemoteCallback;

@@ -16,9 +16,10 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Animationadapter.AnimationSpecProto.WINDOW;
+import static android.internal.perfetto.protos.Animationadapter.WindowAnimationSpecProto.ANIMATION;
+
 import static com.android.server.wm.AnimationAdapter.STATUS_BAR_TRANSITION_DURATION;
-import static com.android.server.wm.AnimationSpecProto.WINDOW;
-import static com.android.server.wm.WindowAnimationSpecProto.ANIMATION;
 import static com.android.server.wm.WindowStateAnimator.ROOT_TASK_CLIP_NONE;
 
 import android.graphics.Insets;
