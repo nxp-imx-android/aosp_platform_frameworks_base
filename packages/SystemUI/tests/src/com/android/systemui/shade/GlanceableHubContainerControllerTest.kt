@@ -48,6 +48,7 @@ import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
 import com.android.systemui.communal.util.userTouchActivityNotifier
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -90,6 +91,7 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 @EnableFlags(FLAG_COMMUNAL_HUB)
+@DisableSceneContainer
 class GlanceableHubContainerControllerTest : SysuiTestCase() {
     private val kosmos: Kosmos = testKosmos().useUnconfinedTestDispatcher()
 
