@@ -64,11 +64,8 @@ class DesktopPipTransitionController(
         }
 
         val defaultFreeformBounds =
-            if (parentTask.lastNonFullscreenBounds.isEmpty) {
-                calculateDefaultDesktopTaskBounds(pipDesktopState.getCurrentDisplayLayout())
-            } else {
-                parentTask.lastNonFullscreenBounds
-            }
+            parentTask.lastNonFullscreenBounds?.takeUnless { it.isEmpty }
+                ?: calculateDefaultDesktopTaskBounds(pipDesktopState.getCurrentDisplayLayout())
 
         val newResolvedWinMode =
             if (pipDesktopState.isPipInDesktopMode()) WINDOWING_MODE_FREEFORM

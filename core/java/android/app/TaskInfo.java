@@ -323,6 +323,7 @@ public class TaskInfo {
      * The last non-fullscreen bounds the task was launched in or resized to.
      * @hide
      */
+    @Nullable
     public Rect lastNonFullscreenBounds;
 
     /**
