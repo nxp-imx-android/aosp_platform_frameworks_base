@@ -280,6 +280,10 @@ abstract public class ManagedServices {
         }
     }
 
+    UserProfiles getUserProfiles() {
+        return mUserProfiles;
+    }
+
     /**
      * When resetting a package, we need to enable default components that belong to that packages
      * we also need to disable components that are not default to return the managed service state
@@ -2337,6 +2341,30 @@ abstract public class ManagedServices {
                     return user.isProfile() && hasParent(user, context);
                 }
                 return user.isManagedProfile() || user.isCloneProfile();
+            }
+        }
+
+        boolean isManagedProfileUser(int userId) {
+            synchronized (mCurrentProfiles) {
+                UserInfo user = mCurrentProfiles.get(userId);
+                if (user == null) {
+                    return false;
+                }
+                return user.isManagedProfile();
+            }
+        }
+
+        int getProfileParentId(int userId, Context context) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                UserManager um = context.getSystemService(UserManager.class);
+                UserInfo parent = um.getProfileParent(userId);
+                if (parent != null) {
+                    return parent.id;
+                }
+                return userId;  // if no parent, return itself
+            } finally {
+                Binder.restoreCallingIdentity(identity);
             }
         }
 
