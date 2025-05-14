@@ -3305,6 +3305,10 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
+        if (getOptions() != null && getOptions().isLaunchIntoPip()) {
+            return true;
+        }
+
         boolean isCurrentAppLocked =
                 mAtmService.getLockTaskModeState() != LOCK_TASK_MODE_NONE;
         final TaskDisplayArea taskDisplayArea = getDisplayArea();

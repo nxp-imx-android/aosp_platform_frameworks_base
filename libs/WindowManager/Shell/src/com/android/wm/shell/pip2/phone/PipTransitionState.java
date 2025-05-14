@@ -429,6 +429,12 @@ public class PipTransitionState {
     @VisibleForTesting
     boolean shouldTransitionToState(@TransitionState int newState) {
         switch (newState) {
+            case SCHEDULED_ENTER_PIP:
+                // This state only makes sense when we are not initially in PiP or not entering PiP.
+                // PiP can also be replaced upon direct enter, but scheduling like this can happen
+                // while an animation is running if PiP is not idle, so we should not
+                // disrupt the state machine while an animation is in between its state updates.
+                return (!isInPip() && mState != ENTERING_PIP) || isPipStateIdle();
             case SCHEDULED_BOUNDS_CHANGE:
                 // Allow scheduling bounds change only when both of these are true:
                 // - while in PiP, except for if another bounds change was scheduled but hasn't
