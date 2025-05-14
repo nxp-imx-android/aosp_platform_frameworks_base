@@ -37,7 +37,6 @@ import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.Indica
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer.MANAGE_WINDOWS_MINIMUM_INSTANCES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
@@ -1838,12 +1837,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT) {
-        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: createWindowDecoration taskId=%d surface=%s",
-                TAG, taskInfo.taskId, taskSurface);
         final DesktopModeWindowDecoration oldDecoration = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (oldDecoration != null) {
             // close the old decoration if it exists to avoid two window decorations being added
-            ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: closing old decoration", TAG);
             oldDecoration.close();
         }
         final DesktopModeWindowDecoration windowDecoration =
@@ -1928,17 +1924,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private void dump(PrintWriter pw, String prefix) {
         final String innerPrefix = prefix + "  ";
         pw.println(prefix + "DesktopModeWindowDecorViewModel");
-        pw.println(innerPrefix + "DesktopModeStatus=" + mDesktopState.canEnterDesktopMode());
+        pw.println(innerPrefix + "DesktopModeStatus="
+                + mDesktopState.canEnterDesktopMode());
         pw.println(innerPrefix + "mTransitionDragActive=" + mTransitionDragActive);
         pw.println(innerPrefix + "mEventReceiversByDisplay=" + mEventReceiversByDisplay);
         pw.println(innerPrefix + "mGestureExclusionTracker="
                 + mGestureExclusionTracker);
-        for (int i = 0; i < mWindowDecorByTaskId.size(); i++) {
-            final DesktopModeWindowDecoration decor = mWindowDecorByTaskId.valueAt(i);
-            if (decor != null) {
-                decor.dump(pw, innerPrefix);
-            }
-        }
     }
 
     private class DesktopModeOnTaskRepositionAnimationListener
