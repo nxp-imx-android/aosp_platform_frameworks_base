@@ -324,6 +324,24 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testMigrateCookieToTaskOnInfoChanged() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        TrackingTaskListener mwListener = new TrackingTaskListener();
+        mOrganizer.addListenerForType(mwListener, TASK_LISTENER_TYPE_MULTI_WINDOW);
+
+        TrackingTaskListener cookieListener = new TrackingTaskListener();
+        IBinder cookie = new Binder();
+        task1.addLaunchCookie(cookie);
+        mOrganizer.setPendingLaunchCookieListener(cookie, cookieListener);
+
+        mOrganizer.onTaskInfoChanged(task1);
+
+        assertTrue(mOrganizer.hasTaskListener(task1.taskId));
+    }
+
+    @Test
     public void testGetTaskListener() {
         RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
 

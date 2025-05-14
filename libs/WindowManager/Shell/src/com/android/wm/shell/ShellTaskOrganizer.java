@@ -624,7 +624,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
             final TaskAppearedInfo data = mTasks.get(taskInfo.taskId);
             final TaskListener oldListener = getTaskListener(data.getTaskInfo());
-            final TaskListener newListener = getTaskListener(taskInfo);
+            final TaskListener newListener = getTaskListener(taskInfo,
+                    true /* removeLaunchCookieIfNeeded */);
             mTasks.put(taskInfo.taskId, new TaskAppearedInfo(taskInfo, data.getLeash()));
             final boolean updated = updateTaskListenerIfNeeded(
                     taskInfo, data.getLeash(), oldListener, newListener);
@@ -767,6 +768,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private boolean updateTaskListenerIfNeeded(RunningTaskInfo taskInfo, SurfaceControl leash,
             TaskListener oldListener, TaskListener newListener) {
         if (oldListener == newListener) return false;
+        ProtoLog.v(WM_SHELL_TASK_ORG, "  Migrating from listener %s to %s",
+                oldListener, newListener);
         // TODO: We currently send vanished/appeared as the task moves between types, but
         //       we should consider adding a different mode-changed callback
         if (oldListener != null) {
@@ -908,6 +911,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             if (listener == null) continue;
 
             if (removeLaunchCookieIfNeeded) {
+                ProtoLog.v(WM_SHELL_TASK_ORG, "Migrating cookie listener to task: taskId=%d",
+                        runningTaskInfo.taskId);
                 // Remove the cookie and add the listener.
                 mLaunchCookieToListener.remove(cookie);
                 mTaskListeners.put(taskId, listener);
@@ -928,6 +933,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         // Next we try type specific listeners.
         final int taskListenerType = taskInfoToTaskListenerType(runningTaskInfo);
         return mTaskListeners.get(taskListenerType);
+    }
+
+    @VisibleForTesting
+    boolean hasTaskListener(int taskId) {
+        return mTaskListeners.contains(taskId);
     }
 
     @VisibleForTesting
