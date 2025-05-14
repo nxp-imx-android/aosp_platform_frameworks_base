@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="DEVICE_TYPE">%3$s</xliff:g> gailutik aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eskatzen ari da <xliff:g id="APP_NAME">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> gailuaren izenean"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"Eman informazioa telefonotik hartzeko baimena &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; gailuari"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="DEVICE_TYPE">%3$s</xliff:g> gailuko argazkiak, multimedia-edukia eta jakinarazpenak atzitzeko baimena eskatzen ari da <xliff:g id="APP_NAME">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> gailuaren izenean"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; aplikazioari zure <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> gailuko aplikazioak <xliff:g id="DEVICE_NAME">%3$s</xliff:g> gailura zuzenean igortzeko baimena eman nahi diozu?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> aplikazioak <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> gailuan ikusgai dagoen edo erreproduzitzen den eduki guztia atzitu ahal izango du, audioa, argazkiak, ordainketa-informazioa, pasahitzak eta mezuak barne.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> gailura aplikazioak zuzenean igortzeko gai izango da, baimen hori kentzen diozun arte."</string>

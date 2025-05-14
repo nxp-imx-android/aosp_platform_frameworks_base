@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g>에서 <xliff:g id="DEVICE_NAME">%2$s</xliff:g> 대신 <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>의 앱 및 시스템 기능을 스트리밍할 권한을 요청하고 있습니다."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; 앱이 휴대전화에서 이 정보에 액세스하도록 허용합니다."</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g>에서 <xliff:g id="DEVICE_NAME">%2$s</xliff:g> 대신 <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>의 사진, 미디어, 알림에 액세스할 수 있는 권한을 요청하고 있습니다."</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;에서 <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>의 앱을 &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; 기기로 스트리밍하도록 허용하시겠습니까?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>에 표시되거나 해당 기기에서 재생되는 모든 항목에 액세스할 수 있습니다.&lt;br/&gt;&lt;br/&gt;이 권한에 대한 액세스를 삭제할 때까지 <xliff:g id="APP_NAME_2">%1$s</xliff:g>에서 <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> 기기로 앱을 스트리밍할 수 있습니다."</string>

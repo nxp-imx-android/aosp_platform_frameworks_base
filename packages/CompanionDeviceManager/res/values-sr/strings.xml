@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> тражи дозволу у име уређаја <xliff:g id="DEVICE_NAME">%2$s</xliff:g> да стримује апликације и системске функције са уређаја <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"Дозволите да &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; приступа овим информацијама са телефона"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> тражи дозволу у име уређаја <xliff:g id="DEVICE_NAME">%2$s</xliff:g> да приступа сликама, медијском садржају и обавештењима са уређаја <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Желите да дозволите да &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; стримује апликације уређаја <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> на &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ће имати приступ свему што се види или пушта на уређају <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, укључујући звук, слике, информације о плаћању, лозинке и поруке.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> ће моћи да стримује апликације на <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> док не уклоните приступ овој дозволи."</string>

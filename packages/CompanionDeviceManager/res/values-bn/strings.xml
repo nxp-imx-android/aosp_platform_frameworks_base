@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"আপনার <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> থেকে অ্যাপ ও সিস্টেমের ফিচার স্ট্রিম করার জন্য <xliff:g id="DEVICE_NAME">%2$s</xliff:g>-এর হয়ে <xliff:g id="APP_NAME">%1$s</xliff:g> অনুমতি চাইছে"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"আপনার ফোন থেকে &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt;-কে এই তথ্য অ্যাক্সেস করার অনুমতি দিন"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"আপনার <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>-এর ফটো, মিডিয়া ও বিজ্ঞপ্তি অ্যাক্সেস করার জন্য, আপনার <xliff:g id="DEVICE_NAME">%2$s</xliff:g>-এর হয়ে <xliff:g id="APP_NAME">%1$s</xliff:g> অনুমতি চাইছে"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"আপনার <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-এর অ্যাপ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?-এ স্ট্রিম করার জন্য &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;-কে অনুমতি দেবেন?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"অডিও, ফটো, পাসওয়ার্ড ও মেসেজ সহ <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>-এ দেখা ও চালানো যায় এমন সব কিছু <xliff:g id="APP_NAME_0">%1$s</xliff:g> অ্যাক্সেস করতে পারবে।&lt;br/&gt;&lt;br/&gt;আপনি এই অনুমতি না সরানো পর্যন্ত <xliff:g id="APP_NAME_2">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>-এ অ্যাপ স্ট্রিম করতে পারবে।"</string>

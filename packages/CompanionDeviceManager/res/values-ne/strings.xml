@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%2$s</xliff:g> को तर्फबाट तपाईंको <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> बाट एप र सिस्टमका अन्य सुविधाहरू स्ट्रिम गर्ने अनुमति माग्दै छ"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt; लाई तपाईंको फोनमा भएको यो जानकारी हेर्ने तथा प्रयोग गर्ने अनुमति दिनुहोस्"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> तपाईंको डिभाइस <xliff:g id="DEVICE_NAME">%2$s</xliff:g> को तर्फबाट तपाईंको <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> मा भएका फोटो, मिडिया र सूचनाहरू एक्सेस गर्ने अनुमति माग्दै छ"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; लाई तपाईंको <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> मा भएका एपहरू &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; मा स्ट्रिम गर्न दिने हो?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ले <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> मा देखिने वा प्ले गरिने अडियो, फोटो, भुक्तानीसम्बन्धी जानकारी, पासवर्ड र म्यासेजलगायतका सबै कुरा एक्सेस गर्न सक्ने छ।&lt;br/&gt;&lt;br/&gt;तपाईंले यो अनुमति रद्द नगरेसम्म <xliff:g id="APP_NAME_2">%1$s</xliff:g> ले एपहरू <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> मा स्ट्रिम गर्न पाइराख्ने छ।"</string>

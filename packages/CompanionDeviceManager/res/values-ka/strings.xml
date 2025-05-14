@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> ითხოვს ნებართვას <xliff:g id="DEVICE_NAME">%2$s</xliff:g>-ის სახელით აპებისა და სისტემური ფუნქციების სტრიმინგისთვის თქვენი <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>-იდან"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt;-ის წვდომის დაშვება თქვენს ტელეფონში არსებულ ამ ინფორმაციაზე"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> ითხოვს ნებართვას თქვენი (<xliff:g id="DEVICE_NAME">%2$s</xliff:g>) სახელით, რათა მოიპოვოს წვდომა თქვენი <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>-ის ფოტოებზე, მედიასა და შეტყობინებებზე"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"გსურთ, &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;-ს მისცეთ თქვენი <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-ის აპების სტრიმინგის საშუალება &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;-ზე?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> მიიღებს წვდომას ყველაფერზე, რაც ჩანს ან უკრავს <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>-ზე, მათ შორის, აუდიოზე, ფოტოებზე, პაროლებსა და შეტყობინებებზე.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> შეძლებს აპების სტრიმინგს <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>-ზე მანამ, სანამ თქვენ არ გააუქმებთ წვდომას ამ ნებართვაზე."</string>
