@@ -113,6 +113,11 @@ constructor(
                                     attribution = chip.subtitle.toString(),
                                     onPerformAction = {
                                         val intent = chip.intent
+                                        val pendingIntent = chip.pendingIntent
+                                        val activityId =
+                                            chip.extras?.getParcelable<ActivityId>(
+                                                EXTRA_ACTIVITY_ID
+                                            )
                                         val autofillId =
                                             chip.extras?.getParcelable<AutofillId>(
                                                 EXTRA_AUTOFILL_ID
@@ -120,7 +125,8 @@ constructor(
                                         val token = activityId?.token
                                         Log.v(
                                             TAG,
-                                            "Performing action: $activityId, $autofillId, $intent",
+                                            "Performing action: $activityId, $autofillId, " +
+                                                "$pendingIntent, $intent",
                                         )
                                         if (token != null && autofillId != null) {
                                             autofillManager?.autofillRemoteApp(
@@ -129,6 +135,8 @@ constructor(
                                                 token,
                                                 activityId.taskId,
                                             )
+                                        } else if (pendingIntent != null) {
+                                            pendingIntent.send()
                                         } else if (intent != null) {
                                             activityStarter.startActivity(intent, false)
                                         }
