@@ -289,7 +289,7 @@
     <string name="adb_wireless_no_network_msg" msgid="2365795244718494658">"Conecte-se a uma rede Wi-Fi"</string>
     <string name="keywords_adb_wireless" msgid="6507505581882171240">"adb, debug, dev"</string>
     <string name="bugreport_in_power" msgid="8664089072534638709">"Atalho para relatório de bugs"</string>
-    <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Mostra um botão para gerar relatórios de bugs no menu do botão liga/desliga"</string>
+    <string name="bugreport_in_power_summary" msgid="1885529649381831775">"Mostra um botão para gerar relatório de bugs no menu liga/desliga"</string>
     <string name="keep_screen_on" msgid="1187161672348797558">"Permanecer ativo"</string>
     <string name="keep_screen_on_summary" msgid="1510731514101925829">"A tela nunca entra em suspensão enquanto está carregando"</string>
     <string name="bt_hci_snoop_log" msgid="7291287955649081448">"Ativar registro de rastreamento de HCI Bluetooth"</string>
@@ -375,7 +375,7 @@
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Config. a verificação HDCP"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Depuração"</string>
     <string name="debug_app" msgid="8903350241392391766">"Selecionar app de depuração"</string>
-    <string name="debug_app_not_set" msgid="1934083001283807188">"Nenhum conjunto de apps de depuração"</string>
+    <string name="debug_app_not_set" msgid="1934083001283807188">"Nenhum app de depuração selecionado"</string>
     <string name="debug_app_set" msgid="6599535090477753651">"App de depuração: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="select_application" msgid="2543228890535466325">"Selecionar app"</string>
     <string name="no_application" msgid="9038334538870247690">"Nada"</string>
@@ -424,7 +424,7 @@
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ativar camadas de depuração de GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Permitir carregamento de camadas de depuração de GPU p/ apps de depuração"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Ativar registro detalhado de fornecedor"</string>
-    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Incluir mais registros de fornecedores específicos do dispositivo em relatórios de bugs. Isso pode aumentar o uso da bateria e/ou do armazenamento, e os relatórios podem conter informações particulares"</string>
+    <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Inclui mais registros de fornecedores específicos do dispositivo em relatórios de bugs. Isso pode aumentar o uso da bateria e/ou do armazenamento, e os relatórios podem conter informações particulares"</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Desativar depois de 1 dia"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"O registro detalhado de fornecedor foi encerrado"</string>
     <string name="verbose_vendor_logging_notification_summary" msgid="5226524769774370942">"Ativado por 1 dia"</string>
@@ -563,7 +563,7 @@
     <string name="screen_zoom_summary_custom" msgid="3468154096832912210">"Personalizada (<xliff:g id="DENSITYDPI">%d</xliff:g>)"</string>
     <string name="content_description_menu_button" msgid="6254844309171779931">"Menu"</string>
     <string name="retail_demo_reset_message" msgid="5392824901108195463">"Digite a senha para redef. p/ configuração original em modo demo"</string>
-    <string name="retail_demo_reset_next" msgid="3688129033843885362">"Próxima"</string>
+    <string name="retail_demo_reset_next" msgid="3688129033843885362">"Avançar"</string>
     <string name="retail_demo_reset_title" msgid="1866911701095959800">"Senha necessária"</string>
     <string name="active_input_method_subtypes" msgid="4232680535471633046">"Métodos ativos de entrada"</string>
     <string name="use_system_language_to_select_input_method_subtypes" msgid="4865195835541387040">"Usa idiomas do sistema"</string>
