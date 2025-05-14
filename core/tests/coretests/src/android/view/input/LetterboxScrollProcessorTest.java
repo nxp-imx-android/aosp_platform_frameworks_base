@@ -31,6 +31,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.view.InputEvent;
 import android.view.MotionEvent;
@@ -244,11 +245,12 @@ public class LetterboxScrollProcessorTest {
     private List<MotionEvent> createTapGestureEventsWithCoordinateSystem(float startX, float startY,
             @NonNull Rect referenceWindowBounds) {
         // Events for tap-like gesture (non-scroll)
-        List<MotionEvent> motionEvents = new ArrayList<>();
-        motionEvents.add(createBasicMotionEventWithCoordinateSystem(0, ACTION_DOWN,
+        final long downTime = SystemClock.uptimeMillis();
+        final List<MotionEvent> motionEvents = new ArrayList<>();
+        motionEvents.add(createBasicMotionEventWithCoordinateSystem(downTime, downTime, ACTION_DOWN,
                 startX, startY, referenceWindowBounds));
-        motionEvents.add(createBasicMotionEventWithCoordinateSystem(10, ACTION_UP,
-                startX , startY, referenceWindowBounds));
+        motionEvents.add(createBasicMotionEventWithCoordinateSystem(downTime, downTime + 10,
+                ACTION_UP, startX, startY, referenceWindowBounds));
         return motionEvents;
     }
 
@@ -256,17 +258,18 @@ public class LetterboxScrollProcessorTest {
     private List<MotionEvent> createScrollGestureEvents(float startX, float startY) {
         final float touchSlop = (float) ViewConfiguration.get(mContext).getScaledTouchSlop();
 
+        final long downTime = SystemClock.uptimeMillis();
         // Events for scroll gesture (starts at (startX, startY) then moves down-right.
         final List<MotionEvent> motionEvents = new ArrayList<>();
-        motionEvents.add(createBasicMotionEvent(/* downTime= */ 0, ACTION_DOWN, startX, startY));
-        motionEvents.add(createBasicMotionEvent(/* downTime= */ 10, ACTION_MOVE,
+        motionEvents.add(createBasicMotionEvent(downTime, downTime, ACTION_DOWN, startX, startY));
+        motionEvents.add(createBasicMotionEvent(downTime, downTime + 10, ACTION_MOVE,
                 startX + touchSlop / 2, startY + touchSlop / 2));
         // Below event is first event in the scroll gesture where distance > touchSlop.
-        motionEvents.add(createBasicMotionEvent(/* downTime= */ 20, ACTION_MOVE,
+        motionEvents.add(createBasicMotionEvent(downTime, downTime + 20, ACTION_MOVE,
                 startX + touchSlop * 2, startY + touchSlop * 2));
-        motionEvents.add(createBasicMotionEvent(/* downTime= */ 30, ACTION_MOVE,
+        motionEvents.add(createBasicMotionEvent(downTime, downTime + 30, ACTION_MOVE,
                 startX + touchSlop * 3, startY + touchSlop * 3));
-        motionEvents.add(createBasicMotionEvent(/* downTime= */ 40, ACTION_UP,
+        motionEvents.add(createBasicMotionEvent(downTime, downTime + 40, ACTION_UP,
                 startX + touchSlop * 3, startY + touchSlop * 3));
         return motionEvents;
     }
@@ -276,22 +279,24 @@ public class LetterboxScrollProcessorTest {
      * x=0, y=0).
      */
     @NonNull
-    private MotionEvent createBasicMotionEvent(int eventTime, int action, float x, float y) {
-        return createBasicMotionEventWithCoordinateSystem(eventTime, action, x, y, APP_BOUNDS);
+    private MotionEvent createBasicMotionEvent(long downTime, long eventTime, int action, float x,
+            float y) {
+        return createBasicMotionEventWithCoordinateSystem(downTime, eventTime, action, x, y,
+                APP_BOUNDS);
     }
 
     /**
      * @param referenceWindowBounds the amount the event will be translated by.
      */
     @NonNull
-    private MotionEvent createBasicMotionEventWithCoordinateSystem(int eventTime, int action,
-            float x, float y, @NonNull Rect referenceWindowBounds) {
+    private MotionEvent createBasicMotionEventWithCoordinateSystem(long downTime, long eventTime,
+            int action, float x, float y, @NonNull Rect referenceWindowBounds) {
         final float rawX = referenceWindowBounds.left + x;
         final float rawY = referenceWindowBounds.top + y;
         // RawX and RawY cannot be changed once the event is created. Therefore, pass rawX and rawY
         // according to the app's bounds on the display, and then offset to make X and Y relative to
         // the app's bounds.
-        final MotionEvent event = MotionEvent.obtain(0, eventTime, action, rawX, rawY, 0);
+        final MotionEvent event = MotionEvent.obtain(downTime, eventTime, action, rawX, rawY, 0);
         event.offsetLocation(-referenceWindowBounds.left, -referenceWindowBounds.top);
         return event;
     }
