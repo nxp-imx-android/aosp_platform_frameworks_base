@@ -675,10 +675,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private InsetsControlTarget mImeControlTarget;
 
     /**
-     * The last {@link #mImeInputTarget} processed from {@link #setImeLayeringTargetInner}. This
-     * enables updating the {@link #mImeControlTarget} when the {@link #mImeLayeringTarget} remains
-     * the same, and only the {@link #mImeInputTarget} changes. For example, this can happen when
-     * the IME is moving to a SurfaceControlViewHost backed EmbeddedWindow.
+     * The last {@link #mImeInputTarget} processed from {@link #setImeLayeringTarget}. This enables
+     * updating the {@link #mImeControlTarget} when the {@link #mImeLayeringTarget} remains the
+     * same, and only the {@link #mImeInputTarget} changes. For example, this can happen when the
+     * IME is moving to a SurfaceControlViewHost backed EmbeddedWindow.
      */
     @Nullable
     private InputTarget mLastImeInputTarget;
@@ -4165,7 +4165,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         if (update) {
-            setImeLayeringTargetInner(target);
+            setImeLayeringTarget(target);
         }
 
         return target;
@@ -4306,11 +4306,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
-    @VisibleForTesting
-    void setImeLayeringTarget(@Nullable WindowState target) {
-        mImeLayeringTarget = target;
-    }
-
     /**
      * Sets the IME layering target, and updates the IME control target. Also updates the IME parent
      * if necessary.
@@ -4318,7 +4313,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @param target the window to place the IME on top of. If {@code null}, the IME will be placed
      *               on top of its parent's surface.
      */
-    private void setImeLayeringTargetInner(@Nullable WindowState target) {
+    @VisibleForTesting
+    void setImeLayeringTarget(@Nullable WindowState target) {
         // This function is also responsible for updating the IME control target and so in the case
         // where the IME layering target does not change but the IME input target does (for example,
         // IME moving to a SurfaceControlViewHost) we have to continue executing this function,
@@ -4342,7 +4338,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
 
-        ProtoLog.i(WM_DEBUG_IME, "setImeLayeringTargetInner %s", target);
+        ProtoLog.i(WM_DEBUG_IME, "setImeLayeringTarget %s", target);
         boolean forceUpdateImeParent = target != mImeLayeringTarget;
         mImeLayeringTarget = target;
 

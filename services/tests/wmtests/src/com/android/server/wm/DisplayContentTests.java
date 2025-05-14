@@ -644,8 +644,8 @@ public class DisplayContentTests extends WindowTestsBase {
         final DisplayContent dc = mDisplayContent;
         final WindowState ws = newWindowBuilder("app window", TYPE_APPLICATION).setDisplay(
                 dc).build();
-        dc.setImeLayeringTarget(ws);
         dc.setImeInputTarget(ws);
+        dc.setImeLayeringTarget(ws);
 
         // Adjust bounds so that matchesRootDisplayAreaBounds() returns false.
         final Rect bounds = new Rect(dc.getBounds());
@@ -1230,8 +1230,9 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_app() {
         final DisplayContent dc = createNewDisplay();
-        dc.setImeLayeringTarget(newWindowBuilder("app", TYPE_BASE_APPLICATION).build());
-        dc.setImeInputTarget(dc.getImeLayeringTarget());
+        final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc).build();
+        dc.setImeInputTarget(appWin);
+        dc.setImeLayeringTarget(appWin);
         assertEquals(dc.getImeLayeringTarget().mActivityRecord.getSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
@@ -1239,9 +1240,10 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_app_notFullscreen() {
         final DisplayContent dc = createNewDisplay();
-        dc.setImeLayeringTarget(newWindowBuilder("app", TYPE_STATUS_BAR).build());
-        dc.getImeLayeringTarget().setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
-        dc.setImeInputTarget(dc.getImeLayeringTarget());
+        final var appWin = newWindowBuilder("appWin", TYPE_STATUS_BAR).setDisplay(dc)
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW).build();
+        dc.setImeInputTarget(appWin);
+        dc.setImeLayeringTarget(appWin);
         assertEquals(dc.getImeContainer().getParentSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
@@ -1260,8 +1262,9 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_noApp() {
         final DisplayContent dc = createNewDisplay();
-        dc.setImeLayeringTarget(newWindowBuilder("statusBar", TYPE_STATUS_BAR).build());
-        dc.setImeInputTarget(dc.getImeLayeringTarget());
+        final var statusBar = newWindowBuilder("statusBar", TYPE_STATUS_BAR).setDisplay(dc).build();
+        dc.setImeInputTarget(statusBar);
+        dc.setImeLayeringTarget(statusBar);
         assertEquals(dc.getImeContainer().getParentSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
@@ -1272,8 +1275,8 @@ public class DisplayContentTests extends WindowTestsBase {
         WindowState app1 = newWindowBuilder("app1", TYPE_BASE_APPLICATION).build();
         WindowState app2 = newWindowBuilder("app2", TYPE_BASE_APPLICATION).build();
         doReturn(true).when(mDisplayContent).shouldImeAttachedToApp();
-        mDisplayContent.setImeLayeringTarget(app1);
         mDisplayContent.setImeInputTarget(app1);
+        mDisplayContent.setImeLayeringTarget(app1);
         assertEquals(app1.mActivityRecord.getSurfaceControl(),
                 mDisplayContent.computeImeParent().getSurfaceControl());
         mDisplayContent.setImeLayeringTarget(app2);
@@ -1289,8 +1292,8 @@ public class DisplayContentTests extends WindowTestsBase {
         overlay.setBounds(100, 100, 200, 200);
         overlay.mAttrs.flags = FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
         WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).build();
-        mDisplayContent.setImeLayeringTarget(overlay);
         mDisplayContent.setImeInputTarget(app);
+        mDisplayContent.setImeLayeringTarget(overlay);
         assertFalse(mDisplayContent.shouldImeAttachedToApp());
         assertEquals(mDisplayContent.getImeContainer().getParentSurfaceControl(),
                 mDisplayContent.computeImeParent().getSurfaceControl());
@@ -1302,9 +1305,9 @@ public class DisplayContentTests extends WindowTestsBase {
         WindowState app1 = newWindowBuilder("app1", TYPE_BASE_APPLICATION).build();
         WindowState app2 = newWindowBuilder("app2", TYPE_BASE_APPLICATION).build();
 
-        dc.setImeLayeringTarget(app1);
-        dc.setImeInputTarget(app2);
         dc.setRemoteInsetsController(createDisplayWindowInsetsController());
+        dc.setImeInputTarget(app2);
+        dc.setImeLayeringTarget(app1);
         dc.getImeLayeringTarget().setWindowingMode(
                 WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
         dc.getImeInputTarget().getWindowState().setWindowingMode(
@@ -1357,11 +1360,11 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeControlTarget_splitscreen() {
         final DisplayContent dc = createNewDisplay();
-        dc.setImeInputTarget(newWindowBuilder("app", TYPE_BASE_APPLICATION).build());
-        dc.getImeInputTarget().getWindowState().setWindowingMode(
-                WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
-        dc.setImeLayeringTarget(dc.getImeInputTarget().getWindowState());
         dc.setRemoteInsetsController(createDisplayWindowInsetsController());
+        final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc)
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW).build();
+        dc.setImeInputTarget(appWin);
+        dc.setImeLayeringTarget(appWin);
         assertNotEquals(dc.getImeInputTarget().getWindowState(), dc.computeImeControlTarget());
     }
 
@@ -1384,9 +1387,9 @@ public class DisplayContentTests extends WindowTestsBase {
     public void testComputeImeControlTarget_notMatchParentBounds() {
         spyOn(mAppWindow.mActivityRecord);
         doReturn(false).when(mAppWindow.mActivityRecord).matchParentBounds();
-        mDisplayContent.setImeInputTarget(mAppWindow);
-        mDisplayContent.setImeLayeringTarget(mDisplayContent.getImeInputTarget().getWindowState());
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
+        mDisplayContent.setImeInputTarget(mAppWindow);
+        mDisplayContent.setImeLayeringTarget(mAppWindow);
         assertEquals(mAppWindow, mDisplayContent.computeImeControlTarget());
     }
 
@@ -1400,9 +1403,9 @@ public class DisplayContentTests extends WindowTestsBase {
         spyOn(mAppWindow.mActivityRecord);
         doReturn(imeTargetBounds).when(mAppWindow).getBounds();
         doReturn(true).when(mAppWindow.mActivityRecord).matchParentBounds();
-        mDisplayContent.setImeInputTarget(mAppWindow);
-        mDisplayContent.setImeLayeringTarget(mDisplayContent.getImeInputTarget().getWindowState());
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
+        mDisplayContent.setImeInputTarget(mAppWindow);
+        mDisplayContent.setImeLayeringTarget(mAppWindow);
         final DisplayArea.Tokens imeContainer = mDisplayContent.getImeContainer();
         spyOn(imeContainer);
         doReturn(imeContainerBounds).when(imeContainer).getBounds();
@@ -2244,6 +2247,7 @@ public class DisplayContentTests extends WindowTestsBase {
         spyOn(child1);
         doReturn(false).when(mDisplayContent).shouldImeAttachedToApp();
         mDisplayContent.setImeLayeringTarget(child1);
+        verify(child1).needsRelativeLayeringToIme();
 
         spyOn(nextImeTargetApp);
         spyOn(mAppWindow);
@@ -2255,7 +2259,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
         verify(mDisplayContent).computeImeLayeringTarget(true /* update */);
         assertNull(mDisplayContent.getImeInputTarget());
-        verify(child1, never()).needsRelativeLayeringToIme();
+        // Still only one call, earlier when child1 was set as IME layering target.
+        verify(child1).needsRelativeLayeringToIme();
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
@@ -2321,9 +2326,8 @@ public class DisplayContentTests extends WindowTestsBase {
         final WindowState win = newWindowBuilder("win", TYPE_BASE_APPLICATION).setWindowToken(
                 activity).build();
 
-        mDisplayContent.setImeLayeringTarget(win);
         mDisplayContent.setImeInputTarget(win);
-        spyOn(mDisplayContent);
+        mDisplayContent.setImeLayeringTarget(win);
         spyOn(mDisplayContent.mInputMethodWindow);
         doReturn(true).when(mDisplayContent.mInputMethodWindow).isVisible();
         mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
@@ -2349,8 +2353,8 @@ public class DisplayContentTests extends WindowTestsBase {
                 activity).build();
         makeWindowVisible(mDisplayContent.mInputMethodWindow);
 
-        mDisplayContent.setImeLayeringTarget(win);
         mDisplayContent.setImeInputTarget(win);
+        mDisplayContent.setImeLayeringTarget(win);
         mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
         mDisplayContent.showImeScreenshot();
         assertNotNull(mDisplayContent.mImeScreenshot);
