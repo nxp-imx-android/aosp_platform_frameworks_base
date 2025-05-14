@@ -150,7 +150,7 @@ class SplitScreenTransitions {
 
             final int rootIdx = TransitionUtil.rootIndexFor(change, info);
             if (mode == TRANSIT_CHANGE) {
-                if (change.getParent() != null) {
+                if (change.getParent() != null && change.getTaskInfo() != null) {
                     // This is probably reparented, so we want the parent to be immediately visible
                     final TransitionInfo.Change parentChange = info.getChange(change.getParent());
                     t.show(parentChange.getLeash());
