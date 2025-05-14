@@ -173,7 +173,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             PhonePipMenuController menuController, PipSnapAlgorithm snapAlgorithm,
             FloatingContentCoordinator floatingContentCoordinator, PipScheduler pipScheduler,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
-            PipTransitionState pipTransitionState, PipUiEventLogger pipUiEventLogger,
+            PipTransitionState pipTransitionState,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipUiEventLogger pipUiEventLogger,
             PipDisplayLayoutState pipDisplayLayoutState) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
@@ -191,7 +193,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipUiEventLogger = pipUiEventLogger;
-        mSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDisplayLayoutState = pipDisplayLayoutState;
     }
 

@@ -24,32 +24,51 @@ import android.gui.BoxShadowSettings;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 
+import androidx.annotation.NonNull;
+
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.BoxShadowHelper;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipUtils;
+import com.android.wm.shell.sysui.ShellInit;
 
 /**
  * Abstracts the common operations on {@link SurfaceControl.Transaction} for PiP transition.
  */
-public class PipSurfaceTransactionHelper {
+public class PipSurfaceTransactionHelper implements PipDisplayLayoutState.DisplayIdListener {
     private final Matrix mTmpTransform = new Matrix();
     private final float[] mTmpFloat9 = new float[9];
     private final Rect mTmpDestinationRect = new Rect();
 
-    private final int mCornerRadius;
-    private final int mShadowRadius;
-    private final float mMirrorOpacity;
+    private int mCornerRadius;
+    private int mShadowRadius;
+    private float mMirrorOpacity;
 
     private BoxShadowSettings mBoxShadowSettings;
     private BorderSettings mBorderSettings;
+    private Context mContext;
+    private PipDisplayLayoutState mPipDisplayLayoutState;
 
-    public PipSurfaceTransactionHelper(Context context) {
-        mCornerRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
-        mShadowRadius = context.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
-        mMirrorOpacity = context.getResources().getFloat(
+    public PipSurfaceTransactionHelper(Context context, @NonNull ShellInit shellInit,
+            PipDisplayLayoutState pipDisplayLayoutState) {
+        mContext = context;
+        mPipDisplayLayoutState = pipDisplayLayoutState;
+        shellInit.addInitCallback(this::onInit, this);
+    }
+
+    /** Called when Shell is done initializing. */
+    public void onInit() {
+        mPipDisplayLayoutState.addDisplayIdListener(this);
+        onThemeChanged(mContext);
+        reloadResources();
+    }
+
+    private void reloadResources() {
+        mCornerRadius = mContext.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius);
+        mShadowRadius = mContext.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius);
+        mMirrorOpacity = mContext.getResources().getFloat(
                 R.dimen.config_pipDraggingAcrossDisplaysOpacity);
-        onThemeChanged(context);
     }
 
     /**
@@ -76,7 +95,11 @@ public class PipSurfaceTransactionHelper {
         }
     }
 
-
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
+        reloadResources();
+    }
 
     /**
      * Gets corner radius which is loaded from resources.

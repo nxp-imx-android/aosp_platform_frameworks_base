@@ -169,7 +169,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             PipDisplayTransferHandler(
                 mContext, mockPipTransitionState, mockPipScheduler,
                 mockRootTaskDisplayAreaOrganizer, mockPipBoundsState, mockDisplayController,
-                mockPipDisplayLayoutState, mockPipBoundsAlgorithm
+                mockPipDisplayLayoutState, mockPipBoundsAlgorithm, mockSurfaceTransactionHelper
             )
         pipDisplayTransferHandler.setSurfaceControlTransactionFactory(mockFactory)
         pipDisplayTransferHandler.setSurfaceTransactionHelper(mockSurfaceTransactionHelper)

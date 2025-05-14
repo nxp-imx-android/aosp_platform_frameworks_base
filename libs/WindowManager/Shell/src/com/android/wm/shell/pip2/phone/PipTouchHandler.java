@@ -225,7 +225,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipDisplayTransferHandler = pipDisplayTransferHandler;
         mPipScheduler.setUpdateMovementBoundsRunnable(this::updateMovementBounds);
         mPipDismissTargetHandler = new PipDismissTargetHandler(context, pipUiEventLogger,
-                mMotionHelper, mPipDisplayLayoutState, mDisplayController, mainExecutor);
+                mMotionHelper, mPipDisplayLayoutState, mainExecutor);
         mTouchState = new PipTouchState(ViewConfiguration.get(context),
                 () -> {
                     mMenuController.showMenuWithPossibleDelay(MENU_STATE_FULL,
