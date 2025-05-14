@@ -149,6 +149,8 @@ import android.view.ViewRootImpl;
 import android.view.ViewRootImpl.ActivityConfigCallback;
 import android.view.Window;
 import android.view.Window.WindowControllerCallback;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityEvent;
@@ -10210,6 +10212,12 @@ public class Activity extends ContextThemeWrapper
                     if (view != null) {
                         // TODO: b/410146465 support virtual views
                         view.autofill(autofillValue);
+                        view.requestFocus();
+                        WindowInsetsController windowInsetsController =
+                                view.getWindowInsetsController();
+                        if (windowInsetsController != null) {
+                            windowInsetsController.show(WindowInsets.Type.ime());
+                        }
                     }
                 });
     }
