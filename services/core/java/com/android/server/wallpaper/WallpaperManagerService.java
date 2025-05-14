@@ -2686,10 +2686,12 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             if (hasPermission(READ_WALLPAPER_INTERNAL)
                     || (canQueryPackage && !requireReadWallpaper)) {
                 // TODO(b/380245309) Remove this when crops are part of the description.
-                WallpaperDescription description =
+                WallpaperDescription.Builder builder =
                         wallpaper.getDescription().toBuilder().setCropHints(
-                                wallpaper.mCropHints).build();
-                return new WallpaperInstance(info, description);
+                                wallpaper.mCropHints);
+                // By convention we return null component for static wallpapers
+                if (info == null) builder.setComponent(null);
+                return new WallpaperInstance(info, builder.build());
             } else {
                 return null;
             }
