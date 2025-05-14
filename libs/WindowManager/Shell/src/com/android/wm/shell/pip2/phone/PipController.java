@@ -614,6 +614,9 @@ public class PipController implements ConfigurationChangeListener,
                     mPipUiEventLogger.log(
                             PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_AUTO_ENTER);
                     mPipTransitionState.resetSwipePipToHomeState();
+                } else if (taskInfo != null && taskInfo.launchIntoPipHostTaskId != -1) {
+                    mPipUiEventLogger.log(
+                            PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_ENTER_CONTENT_PIP);
                 } else {
                     mPipUiEventLogger.log(PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_ENTER);
                 }

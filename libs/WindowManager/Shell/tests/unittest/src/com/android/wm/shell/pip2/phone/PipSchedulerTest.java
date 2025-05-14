@@ -210,6 +210,8 @@ public class PipSchedulerTest {
     @Test
     public void removePipAfterAnimation() {
         setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
 
         mPipScheduler.scheduleRemovePip(true /* withFadeout */);
 
@@ -217,8 +219,8 @@ public class PipSchedulerTest {
         assertNotNull(mRunnableArgumentCaptor.getValue());
         mRunnableArgumentCaptor.getValue().run();
 
-        verify(mMockPipTransitionController, times(1))
-                .startRemoveTransition(true /* withFadeout */);
+        verify(mMockPipTransitionController, times(1)).startRemoveTransition(
+                any(WindowContainerTransaction.class), eq(true) /* withFadeout */);
     }
 
     @Test
@@ -408,6 +410,8 @@ public class PipSchedulerTest {
     private ActivityManager.RunningTaskInfo getTaskInfoWithLastParentBeforePip(int lastParentId) {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
         taskInfo.lastParentTaskIdBeforePip = lastParentId;
+        // pick an invalid host task id by default
+        taskInfo.launchIntoPipHostTaskId = -1;
         return taskInfo;
     }
 }

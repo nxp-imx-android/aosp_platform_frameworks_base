@@ -78,6 +78,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_USER_
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.ActivityTaskManagerService.ANIMATE;
+import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
 import static com.android.server.wm.ActivityTaskSupervisor.DEFER_RESUME;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_DEFAULT;
@@ -2169,8 +2170,12 @@ class ActivityStarter {
         if (mOptions != null && mOptions.isLaunchIntoPip()
                 && sourceRecord != null && sourceRecord.getTask() == mStartActivity.getTask()
                 && balVerdict.allows()) {
-            mRootWindowContainer.moveActivityToPinnedRootTask(mStartActivity,
-                    sourceRecord, "launch-into-pip", null /* bounds */);
+            if (isPip2ExperimentEnabled()) {
+                mService.setPipCandidateIfNeeded(mStartActivity);
+            } else {
+                mRootWindowContainer.moveActivityToPinnedRootTask(mStartActivity,
+                        sourceRecord, "launch-into-pip", null /* bounds */);
+            }
         }
 
         mSupervisor.getBackgroundActivityLaunchController()
