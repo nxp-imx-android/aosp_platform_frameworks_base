@@ -42,6 +42,12 @@ interface DeviceEntryFaceAuthInteractor : CoreStartable {
     /** Whether bypass is enabled. If enabled, face unlock dismisses the lock screen. */
     val isBypassEnabled: Flow<Boolean>
 
+    /**
+     * Whether the privacy setting for camera sensors is enabled and interfering with face
+     * authentication usage.
+     */
+    val isCameraPrivacyInterfering: StateFlow<Boolean>
+
     /** Can face auth be run right now */
     fun canFaceAuthRun(): Boolean
 

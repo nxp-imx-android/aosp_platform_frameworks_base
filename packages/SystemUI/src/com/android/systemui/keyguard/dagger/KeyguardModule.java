@@ -39,6 +39,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.bouncer.dagger.BouncerLoggerModule;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.camera.CameraSensorPrivacyModule;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.classifier.FalsingModule;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
@@ -125,6 +126,7 @@ import java.util.concurrent.Executor;
             StartKeyguardTransitionModule.class,
             ResourceTrimmerModule.class,
             BouncerLoggerModule.class,
+            CameraSensorPrivacyModule.class,
             KeyguardConnectedDisplaysModule.class,
         })
 public interface KeyguardModule {

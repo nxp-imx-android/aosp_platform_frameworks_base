@@ -40,6 +40,7 @@ class NoopDeviceEntryFaceAuthInteractor @Inject constructor() : DeviceEntryFaceA
     override val isLockedOut: StateFlow<Boolean> = MutableStateFlow(false)
     override val isAuthenticated: StateFlow<Boolean> = MutableStateFlow(false)
     override val isBypassEnabled: Flow<Boolean> = flowOf(false)
+    override val isCameraPrivacyInterfering: StateFlow<Boolean> = MutableStateFlow(false)
 
     override fun canFaceAuthRun(): Boolean = false
 

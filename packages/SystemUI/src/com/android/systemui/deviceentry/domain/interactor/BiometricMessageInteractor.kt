@@ -145,18 +145,14 @@ constructor(
         }
 
     val fingerprintMessage: Flow<FingerprintMessage> =
-        merge(
-            fingerprintErrorMessage,
-            fingerprintFailMessage,
-            fingerprintHelpMessage,
-        )
+        merge(fingerprintErrorMessage, fingerprintFailMessage, fingerprintHelpMessage)
 
     private val filterConditionForFaceHelpMessages:
         Flow<(HelpFaceAuthenticationStatus) -> Boolean> =
         combine(
                 biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled,
                 biometricSettingsInteractor.faceAuthCurrentlyAllowed,
-                ::Pair
+                ::Pair,
             )
             .flatMapLatest { (fingerprintEnrolled, faceAuthCurrentlyAllowed) ->
                 if (fingerprintEnrolled && faceAuthCurrentlyAllowed) {
@@ -208,14 +204,14 @@ constructor(
                         }
                     }
                     status.isLockoutError() -> FaceLockoutMessage(status.msg)
+                    status.isHardwareError() &&
+                        faceAuthInteractor.isCameraPrivacyInterfering.value -> {
+                        FaceMessage(resources.getString(R.string.kg_face_sensor_privacy_enabled))
+                    }
                     else -> FaceMessage(status.msg)
                 }
             }
 
     val faceMessage: Flow<FaceMessage> =
-        merge(
-            faceHelpMessage,
-            faceFailureMessage,
-            faceErrorMessage,
-        )
+        merge(faceHelpMessage, faceFailureMessage, faceErrorMessage)
 }

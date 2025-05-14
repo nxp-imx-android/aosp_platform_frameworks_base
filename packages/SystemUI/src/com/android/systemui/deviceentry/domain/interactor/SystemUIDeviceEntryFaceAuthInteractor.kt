@@ -27,6 +27,7 @@ import com.android.systemui.biometrics.shared.model.LockoutMode
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
+import com.android.systemui.camera.domain.interactor.CameraSensorPrivacyInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
@@ -66,16 +67,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.yield
 
 /**
@@ -104,6 +109,7 @@ constructor(
     private val trustManager: TrustManager,
     private val sceneInteractor: Lazy<SceneInteractor>,
     deviceEntryFaceAuthStatusInteractor: DeviceEntryFaceAuthStatusInteractor,
+    cameraSensorPrivacyInteractor: CameraSensorPrivacyInteractor,
 ) : DeviceEntryFaceAuthInteractor {
 
     private val listeners: MutableList<FaceAuthenticationListener> = mutableListOf()
@@ -361,6 +367,20 @@ constructor(
     override val detectionStatus = repository.detectionStatus
     override val isLockedOut: StateFlow<Boolean> = repository.isLockedOut
     override val isAuthenticated: StateFlow<Boolean> = repository.isAuthenticated
+    override val isCameraPrivacyInterfering: StateFlow<Boolean> =
+        biometricSettingsRepository.isFaceAuthEnrolledAndEnabled
+            .flatMapLatest {
+                if (it) {
+                    cameraSensorPrivacyInteractor.isEnabled
+                } else {
+                    flowOf(false)
+                }
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
     override val isBypassEnabled: StateFlow<Boolean> = repository.isBypassEnabled
 
     private fun runFaceAuth(uiEvent: FaceAuthUiEvent, fallbackToDetect: Boolean) {
@@ -421,6 +441,8 @@ constructor(
             }
             .flowOn(mainDispatcher)
             .launchIn(applicationScope)
+
+        isCameraPrivacyInterfering.launchIn(applicationScope)
     }
 
     override suspend fun hydrateTableLogBuffer(tableLogBuffer: TableLogBuffer) {
