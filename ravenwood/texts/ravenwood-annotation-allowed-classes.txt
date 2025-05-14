@@ -10,9 +10,6 @@ com.android.internal.pm.pkg.parsing.ParsingPackageUtils
 com.android.internal.pm.pkg.component.AconfigFlags
 
 # android.app.ActivityThread is partially allowlited.
-android.app.ActivityThread_ravenwood
-
-android.os.Looper_ravenwood
 
 com.android.server.FgThread
 com.android.server.ServiceThread
@@ -27,9 +24,7 @@ com.android.internal.os.BatteryStatsHistory
 com.android.internal.os.BatteryStatsHistoryIterator
 com.android.internal.os.Clock
 com.android.internal.os.LongArrayMultiStateCounter
-com.android.internal.os.LongArrayMultiStateCounter_ravenwood
 com.android.internal.os.LongMultiStateCounter
-com.android.internal.os.LongMultiStateCounter_ravenwood
 com.android.internal.os.MonotonicClock
 com.android.internal.os.PowerProfile
 com.android.internal.os.PowerStats
@@ -165,7 +160,6 @@ android.os.LocaleList
 android.os.Looper
 android.os.Message
 android.os.MessageQueue
-android.os.MessageQueue_ravenwood
 android.os.PerfettoTrace
 android.os.PerfettoTrace$Category
 android.os.PerfettoTrackEventExtra
@@ -263,7 +257,6 @@ android.database.Cursor
 android.database.CursorIndexOutOfBoundsException
 android.database.CursorJoiner
 android.database.CursorWindow
-android.database.CursorWindow_ravenwood
 android.database.CursorWrapper
 android.database.DataSetObservable
 android.database.DataSetObserver
@@ -636,5 +629,3 @@ android.text.util.Rfc822Token
 android.text.util.Rfc822Tokenizer
 android.graphics.drawable.Drawable$ConstantState
 android.graphics.drawable.BitmapDrawable$BitmapState
-
-android.app.ActivityThread_ravenwood

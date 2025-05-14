@@ -138,6 +138,7 @@ java_library {
     srcs: [
         "runtime-helper-src/framework/**/*.java",
         ":framework-graphics-srcs",
+        ":framework-ravenwood-sources",
     ],
     static_libs: [
         "ravenwood-runtime-common",

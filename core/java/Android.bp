@@ -39,7 +39,7 @@ filegroup {
     srcs: [
         "**/*_ravenwood.java",
     ],
-    visibility: ["//frameworks/base"],
+    visibility: ["//frameworks/base/ravenwood"],
 }
 
 //Mock to allow service registry for ranging stack.

@@ -17,7 +17,6 @@ package android.os;
 
 import java.util.function.Consumer;
 
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class Looper_ravenwood {
     public static volatile Consumer<Message> sDispatcher = (msg) -> {
         // Default implementation
