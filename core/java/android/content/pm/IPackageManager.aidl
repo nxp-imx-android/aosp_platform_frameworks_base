@@ -696,10 +696,10 @@ interface IPackageManager {
 
     /**
      * Sets whether or not an update is available. Ostensibly for instant apps
-     * to force exteranl resolution.
+     * to force external resolution.
      */
     @EnforcePermission("INSTALL_PACKAGES")
-    void setUpdateAvailable(String packageName, boolean updateAvaialble);
+    void setUpdateAvailable(String packageName, boolean updateAvailable);
 
     @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
     String getServicesSystemSharedLibraryPackageName();
