@@ -62,7 +62,7 @@ constructor(@ShadeDisplayAware private val resources: Resources, val theme: Reso
     private fun getLabel(data: ModesTileModel, resources: Resources): String {
         return if (data.activeModes.size >= 2)
             resources.getString(R.string.zen_modes_multiple_on_title, data.activeModes.size)
-        else if (data.activeModes.size == 1) data.activeModes.first()
+        else if (data.activeModes.size == 1) data.activeModes.first().name
         else resources.getString(R.string.quick_settings_modes_label)
     }
 
@@ -79,7 +79,7 @@ constructor(@ShadeDisplayAware private val resources: Resources, val theme: Reso
         val args: MutableMap<String, Any> = HashMap()
         args["count"] = count
         if (count >= 1) {
-            args["mode"] = data.activeModes[0]
+            args["mode"] = data.activeModes[0].name
         }
         return msgFormat.format(args)
     }

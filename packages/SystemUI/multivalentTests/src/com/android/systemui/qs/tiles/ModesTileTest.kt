@@ -29,6 +29,7 @@ import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.common.shared.model.asIcon
+import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -45,8 +46,10 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesTileDataInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
+import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel.ActiveMode
 import com.android.systemui.qs.tiles.impl.modes.ui.mapper.ModesTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.statusbar.policy.ui.dialog.ModesDialogDelegate
@@ -95,7 +98,14 @@ class ModesTileTest : SysuiTestCase() {
     private val inputHandler = FakeQSTileIntentUserInputHandler()
     private val zenModeRepository = kosmos.zenModeRepository
     private val tileDataInteractor =
-        ModesTileDataInteractor(context, kosmos.zenModeInteractor, testDispatcher)
+        ModesTileDataInteractor(
+            context,
+            kosmos.zenModeInteractor,
+            kosmos.shadeInteractor,
+            kosmos.keyguardRepository,
+            testDispatcher,
+            testScope,
+        )
     private val mapper = ModesTileMapper(context.resources, context.theme)
 
     private lateinit var userActionInteractor: ModesTileUserActionInteractor
@@ -130,6 +140,7 @@ class ModesTileTest : SysuiTestCase() {
                 inputHandler,
                 dialogDelegate,
                 kosmos.zenModeInteractor,
+                tileDataInteractor,
                 kosmos.modesDialogEventLogger,
             )
 
@@ -186,7 +197,7 @@ class ModesTileTest : SysuiTestCase() {
             val model =
                 ModesTileModel(
                     isActivated = true,
-                    activeModes = listOf("One", "Two"),
+                    activeModes = listOf(ActiveMode("1", "One"), ActiveMode("2", "Two")),
                     icon = TestStubDrawable().asIcon(),
                     quickMode = TestModeBuilder.MANUAL_DND,
                 )

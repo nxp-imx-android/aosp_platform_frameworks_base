@@ -21,7 +21,7 @@ import com.android.systemui.common.shared.model.Icon
 
 data class ModesTileModel(
     val isActivated: Boolean,
-    val activeModes: List<String>,
+    val activeModes: List<ActiveMode>,
 
     /**
      * Icon to be shown in the tile. Will be the icon of the highest-priority active mode, if any
@@ -40,4 +40,8 @@ data class ModesTileModel(
     // TODO: b/405988332 - When inlining modes_ui_tile_reactivates_last, this should be made
     //  non-nullable; right now it's nullable so that the unflagged path isn't forced to set it.
     val quickMode: ZenMode?,
-)
+) {
+    // TODO: b/405988332 - When inlining modes_ui_tile_reactivates_last, `id` should be made
+    //  non-nullable; right now it's nullable so that the unflagged path isn't forced to set it.
+    data class ActiveMode(val id: String?, val name: String)
+}

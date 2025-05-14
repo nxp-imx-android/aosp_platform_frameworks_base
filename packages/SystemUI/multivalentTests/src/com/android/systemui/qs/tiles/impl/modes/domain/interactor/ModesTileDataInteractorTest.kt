@@ -31,10 +31,14 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
+import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.testKosmos
@@ -57,9 +61,18 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val dispatcher = kosmos.testDispatcher
     private val zenModeRepository = kosmos.fakeZenModeRepository
+    private val keyguardRepository = kosmos.fakeKeyguardRepository
+    private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
 
     private val underTest by lazy {
-        ModesTileDataInteractor(context, kosmos.zenModeInteractor, dispatcher)
+        ModesTileDataInteractor(
+            context,
+            kosmos.zenModeInteractor,
+            kosmos.shadeInteractor,
+            keyguardRepository,
+            dispatcher,
+            testScope,
+        )
     }
 
     @Before
@@ -99,19 +112,21 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             zenModeRepository.addMode(id = "One", active = true)
             runCurrent()
             assertThat(dataList.map { it.isActivated }).containsExactly(false, true).inOrder()
-            assertThat(dataList.map { it.activeModes }.last()).containsExactly("Mode One")
+            assertThat(dataList.map { it.activeModes }.last().map { it.name })
+                .containsExactly("Mode One")
 
             // Add an inactive mode: state hasn't changed, so this shouldn't cause another emission
             zenModeRepository.addMode(id = "Two", active = false)
             runCurrent()
             assertThat(dataList.map { it.isActivated }).containsExactly(false, true).inOrder()
-            assertThat(dataList.map { it.activeModes }.last()).containsExactly("Mode One")
+            assertThat(dataList.map { it.activeModes }.last().map { it.name })
+                .containsExactly("Mode One")
 
             // Add another active mode
             zenModeRepository.addMode(id = "Three", active = true)
             runCurrent()
             assertThat(dataList.map { it.isActivated }).containsExactly(false, true, true).inOrder()
-            assertThat(dataList.map { it.activeModes }.last())
+            assertThat(dataList.map { it.activeModes }.last().map { it.name })
                 .containsExactly("Mode One", "Mode Three")
                 .inOrder()
 
@@ -244,6 +259,53 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
         }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST,
+        com.android.systemui.Flags.FLAG_QS_UI_REFACTOR_COMPOSE_FRAGMENT,
+    )
+    fun tileData_withRecentManualDeactivation_quickModeIsLastDeactivatedMode() =
+        testScope.runTest {
+            val tileData by
+                collectLastValue(
+                    underTest.tileData(TEST_USER, flowOf(DataUpdateTrigger.InitialRequest))
+                )
+            zenModeRepository.addMode(
+                TestModeBuilder()
+                    .setId("mode1")
+                    .setManualInvocationAllowed(true)
+                    .setPackage("android")
+                    .setIconResId(BEDTIME_DRAWABLE_ID)
+                    .build()
+            )
+
+            // Starts with DND as quick mode and icon.
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo(TestModeBuilder.MANUAL_DND.id)
+            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
+
+            // Active mode -> shows mode icon
+            zenModeRepository.activateMode("mode1")
+            runCurrent()
+            assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
+
+            // Open shade, deactivate mode and use it as override -> quick mode is deactivated mode
+            keyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            // TODO: b/381869885 - Here and below, replace by setShadeExpansion.
+            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(true)
+            zenModeRepository.deactivateMode("mode1")
+            underTest.setQuickModeOverride(listOf("mode1"))
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo("mode1")
+            assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
+
+            // Shade closes -> Tile reverts to DND as quick mode
+            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(false)
+            runCurrent()
+            assertThat(tileData?.quickMode?.id).isEqualTo(TestModeBuilder.MANUAL_DND.id)
+            assertThat(tileData?.icon).isEqualTo(MODES_ICON)
+        }
+
     @EnableFlags(Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
     fun tileData_withPastManualActivation_mruManualModeAsQuickMode() =
         testScope.runTest {
@@ -299,19 +361,21 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
         zenModeRepository.addMode(id = "One", active = true)
         tileData = underTest.getCurrentTileModel()
         assertThat(tileData.isActivated).isTrue()
-        assertThat(tileData.activeModes).containsExactly("Mode One")
+        assertThat(tileData.activeModes.map { it.name }).containsExactly("Mode One")
 
         // Add an inactive mode: state hasn't changed
         zenModeRepository.addMode(id = "Two", active = false)
         tileData = underTest.getCurrentTileModel()
         assertThat(tileData.isActivated).isTrue()
-        assertThat(tileData.activeModes).containsExactly("Mode One")
+        assertThat(tileData.activeModes.map { it.name }).containsExactly("Mode One")
 
         // Add another active mode
         zenModeRepository.addMode(id = "Three", active = true)
         tileData = underTest.getCurrentTileModel()
         assertThat(tileData.isActivated).isTrue()
-        assertThat(tileData.activeModes).containsExactly("Mode One", "Mode Three").inOrder()
+        assertThat(tileData.activeModes.map { it.name })
+            .containsExactly("Mode One", "Mode Three")
+            .inOrder()
 
         // Remove a mode and deactivate the other
         zenModeRepository.removeMode("One")
