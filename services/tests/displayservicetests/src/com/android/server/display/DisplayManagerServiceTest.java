@@ -17,7 +17,6 @@
 package com.android.server.display;
 
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
-import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
@@ -1487,7 +1486,7 @@ public class DisplayManagerServiceTest {
 
     /**
      * Tests that it is not allowed to create an auto-mirror virtual display for a virtual device
-     * without ADD_MIRROR_DISPLAY permission / without the mirror display capability.
+     * without mirror display creation capability.
      */
     @Test
     public void createAutoMirrorDisplay_withoutPermission_throwsException() throws Exception {
@@ -1497,12 +1496,7 @@ public class DisplayManagerServiceTest {
         when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
         IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
         when(virtualDevice.getDeviceId()).thenReturn(1);
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            when(mContext.checkCallingPermission(ADD_MIRROR_DISPLAY))
-                    .thenReturn(PackageManager.PERMISSION_DENIED);
-        } else {
-            when(virtualDevice.canCreateMirrorDisplays()).thenReturn(false);
-        }
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(false);
         when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
         when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT)).thenReturn(
                 PackageManager.PERMISSION_DENIED);
@@ -1533,12 +1527,7 @@ public class DisplayManagerServiceTest {
         when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
         IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
         when(virtualDevice.getDeviceId()).thenReturn(1);
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            when(mContext.checkCallingPermission(ADD_MIRROR_DISPLAY))
-                    .thenReturn(PackageManager.PERMISSION_GRANTED);
-        } else {
-            when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
-        }
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
         when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
 
         // Create an auto-mirror virtual display using a virtual device.
@@ -1571,12 +1560,7 @@ public class DisplayManagerServiceTest {
         when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
         IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
         when(virtualDevice.getDeviceId()).thenReturn(1);
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            when(mContext.checkCallingPermission(ADD_MIRROR_DISPLAY))
-                    .thenReturn(PackageManager.PERMISSION_GRANTED);
-        } else {
-            when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
-        }
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
         when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
 
         // Create an auto-mirror virtual display using a virtual device.
@@ -1643,12 +1627,7 @@ public class DisplayManagerServiceTest {
         when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
         IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
         when(virtualDevice.getDeviceId()).thenReturn(1);
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            when(mContext.checkCallingPermission(ADD_MIRROR_DISPLAY))
-                    .thenReturn(PackageManager.PERMISSION_GRANTED);
-        } else {
-            when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
-        }
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
         when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
         when(mContext.checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
@@ -1684,12 +1663,7 @@ public class DisplayManagerServiceTest {
         when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
         IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
         when(virtualDevice.getDeviceId()).thenReturn(1);
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            when(mContext.checkCallingPermission(ADD_MIRROR_DISPLAY))
-                    .thenReturn(PackageManager.PERMISSION_GRANTED);
-        } else {
-            when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
-        }
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
         when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
 
         // Create an auto-mirror virtual display using a virtual device.
