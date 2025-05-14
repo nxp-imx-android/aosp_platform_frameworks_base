@@ -17,10 +17,10 @@
 package com.android.systemui.communal.ui.viewmodel
 
 import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.compose.runTestWithSnapshots
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
@@ -229,46 +229,50 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun testTwoSpanGrid_expandElementFromBottom() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
+    fun testTwoSpanGrid_expandElementFromBottom() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
 
-        val adjustedGridLayout = singleSpanGrid.copy(resizeMultiple = 1, totalSpans = 2)
+            val adjustedGridLayout = singleSpanGrid.copy(resizeMultiple = 1, totalSpans = 2)
 
-        updateGridLayout(adjustedGridLayout)
+            updateGridLayout(adjustedGridLayout)
 
-        underTest.bottomDragState.anchoredDrag { dragTo(45f) }
+            underTest.bottomDragState.anchoredDrag { dragTo(45f) }
 
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
-    }
-
-    @Test
-    fun testThreeSpanGrid_expandMiddleElementUpwards() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
-        updateGridLayout(singleSpanGrid.copy(currentRow = 1, totalSpans = 3))
-
-        underTest.topDragState.anchoredDrag { dragTo(-30f) }
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
-    }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
+        }
 
     @Test
-    fun testThreeSpanGrid_expandTopElementDownBy2Spans() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
-        updateGridLayout(singleSpanGrid.copy(totalSpans = 3))
+    fun testThreeSpanGrid_expandMiddleElementUpwards() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
+            updateGridLayout(singleSpanGrid.copy(currentRow = 1, totalSpans = 3))
 
-        assertThat(resizeInfo).isNull()
-        underTest.bottomDragState.anchoredDrag { dragTo(60f) }
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(2, DragHandle.BOTTOM))
-    }
+            underTest.topDragState.anchoredDrag { dragTo(-30f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
+        }
 
     @Test
-    fun testTwoSpanGrid_shrinkElementFromBottom() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
-        updateGridLayout(singleSpanGrid.copy(totalSpans = 2, currentSpan = 2))
+    fun testThreeSpanGrid_expandTopElementDownBy2Spans() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
+            updateGridLayout(singleSpanGrid.copy(totalSpans = 3))
 
-        assertThat(resizeInfo).isNull()
-        underTest.bottomDragState.anchoredDrag { dragTo(-45f) }
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
-    }
+            assertThat(resizeInfo).isNull()
+            underTest.bottomDragState.anchoredDrag { dragTo(60f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(2, DragHandle.BOTTOM))
+        }
+
+    @Test
+    fun testTwoSpanGrid_shrinkElementFromBottom() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
+            updateGridLayout(singleSpanGrid.copy(totalSpans = 2, currentSpan = 2))
+
+            assertThat(resizeInfo).isNull()
+            underTest.bottomDragState.anchoredDrag { dragTo(-45f) }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
+        }
 
     @Test
     fun testRowInfoBecomesNull_revertsBackToDefault() =
@@ -434,68 +438,74 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun testCanShrink_atFullSize_checksBottomDragState() = runTestWithSnapshots {
-        val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 2, currentRow = 0)
-        updateGridLayout(twoSpanGrid)
+    fun testCanShrink_atFullSize_checksBottomDragState() =
+        testScope.runTestWithSnapshots {
+            val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 2, currentRow = 0)
+            updateGridLayout(twoSpanGrid)
 
-        assertThat(underTest.canShrink()).isTrue()
-        assertThat(underTest.bottomDragState.anchors.toList()).containsAtLeast(0 to 0f, -1 to -45f)
-    }
-
-    @Test
-    fun testResizeByAccessibility_expandFromBottom_usesTopDragState() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
-
-        val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 1)
-        updateGridLayout(twoSpanGrid)
-
-        underTest.expandToNextAnchor()
-
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
-    }
+            assertThat(underTest.canShrink()).isTrue()
+            assertThat(underTest.bottomDragState.anchors.toList())
+                .containsAtLeast(0 to 0f, -1 to -45f)
+        }
 
     @Test
-    fun testResizeByAccessibility_expandFromTop_usesBottomDragState() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
+    fun testResizeByAccessibility_expandFromBottom_usesTopDragState() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
 
-        val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 0)
-        updateGridLayout(twoSpanGrid)
+            val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 1)
+            updateGridLayout(twoSpanGrid)
 
-        underTest.expandToNextAnchor()
+            underTest.expandToNextAnchor()
 
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
-    }
-
-    @Test
-    fun testResizeByAccessibility_shrinkFromFull_usesBottomDragState() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
-
-        val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 2, currentRow = 0)
-        updateGridLayout(twoSpanGrid)
-
-        underTest.shrinkToNextAnchor()
-
-        assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
-    }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.TOP))
+        }
 
     @Test
-    fun testResizeByAccessibility_cannotResizeAtMinSize() = runTestWithSnapshots {
-        val resizeInfo by collectLastValue(underTest.resizeInfo)
+    fun testResizeByAccessibility_expandFromTop_usesBottomDragState() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
 
-        // Set up grid at minimum size
-        val minSizeGrid =
-            singleSpanGrid.copy(
-                totalSpans = 2,
-                currentSpan = 1,
-                minHeightPx = singleSpanGrid.minHeightPx,
-                currentRow = 0,
-            )
-        updateGridLayout(minSizeGrid)
+            val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 0)
+            updateGridLayout(twoSpanGrid)
 
-        underTest.shrinkToNextAnchor()
+            underTest.expandToNextAnchor()
 
-        assertThat(resizeInfo).isNull()
-    }
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(1, DragHandle.BOTTOM))
+        }
+
+    @Test
+    fun testResizeByAccessibility_shrinkFromFull_usesBottomDragState() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
+
+            val twoSpanGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 2, currentRow = 0)
+            updateGridLayout(twoSpanGrid)
+
+            underTest.shrinkToNextAnchor()
+
+            assertThat(resizeInfo).isEqualTo(ResizeInfo(-1, DragHandle.BOTTOM))
+        }
+
+    @Test
+    fun testResizeByAccessibility_cannotResizeAtMinSize() =
+        testScope.runTestWithSnapshots {
+            val resizeInfo by collectLastValue(underTest.resizeInfo)
+
+            // Set up grid at minimum size
+            val minSizeGrid =
+                singleSpanGrid.copy(
+                    totalSpans = 2,
+                    currentSpan = 1,
+                    minHeightPx = singleSpanGrid.minHeightPx,
+                    currentRow = 0,
+                )
+            updateGridLayout(minSizeGrid)
+
+            underTest.shrinkToNextAnchor()
+
+            assertThat(resizeInfo).isNull()
+        }
 
     @Test(expected = IllegalArgumentException::class)
     fun testIllegalState_maxHeightLessThanMinHeight() =
@@ -512,22 +522,23 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         testScope.runTest { updateGridLayout(singleSpanGrid.copy(resizeMultiple = 0)) }
 
     @Test
-    fun testZeroHeights_cannotResize() = runTestWithSnapshots {
-        val zeroHeightGrid =
-            singleSpanGrid.copy(
-                totalSpans = 2,
-                currentSpan = 1,
-                currentRow = 0,
-                minHeightPx = 0,
-                maxHeightPx = 0,
-            )
-        updateGridLayout(zeroHeightGrid)
+    fun testZeroHeights_cannotResize() =
+        testScope.runTestWithSnapshots {
+            val zeroHeightGrid =
+                singleSpanGrid.copy(
+                    totalSpans = 2,
+                    currentSpan = 1,
+                    currentRow = 0,
+                    minHeightPx = 0,
+                    maxHeightPx = 0,
+                )
+            updateGridLayout(zeroHeightGrid)
 
-        val topState = underTest.topDragState
-        val bottomState = underTest.bottomDragState
-        assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
-        assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
-    }
+            val topState = underTest.topDragState
+            val bottomState = underTest.bottomDragState
+            assertThat(topState.anchors.toList()).containsExactly(0 to 0f)
+            assertThat(bottomState.anchors.toList()).containsExactly(0 to 0f)
+        }
 
     private fun TestScope.updateGridLayout(gridLayout: GridLayout) {
         underTest.setGridLayoutInfo(
@@ -547,20 +558,6 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     private fun DraggableAnchors<Int>.toList() = buildList {
         for (index in 0 until this@toList.size) {
             add(anchorAt(index) to positionAt(index))
-        }
-    }
-
-    private fun runTestWithSnapshots(testBody: suspend TestScope.() -> Unit) {
-        val globalWriteObserverHandle =
-            Snapshot.registerGlobalWriteObserver {
-                // This is normally done by the compose runtime.
-                Snapshot.sendApplyNotifications()
-            }
-
-        try {
-            testScope.runTest(testBody = testBody)
-        } finally {
-            globalWriteObserverHandle.dispose()
         }
     }
 
