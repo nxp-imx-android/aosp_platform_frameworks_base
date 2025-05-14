@@ -303,6 +303,7 @@ android.app.ComponentOptions
 android.app.Instrumentation
 android.app.LocaleConfig
 android.app.ResourcesManager
+android.app.UiAutomation
 android.app.WindowConfiguration
 
 android.metrics.LogMaker
