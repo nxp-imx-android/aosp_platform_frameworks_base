@@ -1387,10 +1387,15 @@ public class PowerManagerServiceTest {
 
         advanceTime(10000);
 
+        int expectedNonDefaultGroupWakefullness =
+                android.companion.virtualdevice.flags.Flags.virtualPowerGroupSleepNoDoze()
+                        ? WAKEFULNESS_ASLEEP
+                        : WAKEFULNESS_DOZING;
+
         assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
                 .isEqualTo(WAKEFULNESS_ASLEEP);
         assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
-                .isEqualTo(WAKEFULNESS_DOZING);
+                .isEqualTo(expectedNonDefaultGroupWakefullness);
     }
 
     @EnableFlags({
