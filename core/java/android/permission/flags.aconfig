@@ -552,6 +552,14 @@ flag {
 }
 
 flag {
+    name: "purpose_declaration_enabled"
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "This flag is used to enable the enforcement of purpose guarded permissions"
+    bug: "418113890"
+}
+
+flag {
     name: "app_function_access_ui_enabled"
     is_exported: true
     namespace: "permissions"
