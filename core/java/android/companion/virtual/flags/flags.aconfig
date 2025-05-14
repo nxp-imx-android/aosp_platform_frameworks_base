@@ -215,3 +215,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_vdm_opt_out_on_mirror_displays"
+    namespace: "virtual_devices"
+    description: "Do not show content from opted out activities on mirror displays"
+    bug: "394573488"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
