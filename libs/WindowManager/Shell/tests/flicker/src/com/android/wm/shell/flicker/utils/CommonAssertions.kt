@@ -349,6 +349,17 @@ fun LegacyFlickerTest.appWindowIsInvisibleAtEnd(component: IComponentMatcher) {
     assertWmEnd { this.isAppWindowInvisible(component) }
 }
 
+fun LegacyFlickerTest.appWindowOnTopAtEnd(component: IComponentMatcher) {
+    assertWmEnd { this.isAppWindowOnTop(component) }
+}
+
+fun LegacyFlickerTest.appWindowInsideDisplayBoundsAtEnd(component: IComponentMatcher) {
+    assertWmEnd {
+        val displayBounds = WindowUtils.getDisplayBounds(scenario.endRotation)
+        visibleRegion(component).coversAtMost(displayBounds)
+    }
+}
+
 fun LegacyFlickerTest.appWindowIsNotContainAtStart(component: IComponentMatcher) {
     assertWmStart { this.notContains(component) }
 }
