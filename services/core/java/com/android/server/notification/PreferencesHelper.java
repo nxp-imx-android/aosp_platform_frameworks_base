@@ -470,6 +470,10 @@ public class PreferencesHelper implements RankingConfig {
             int channelImportance = parser.getAttributeInt(
                     null, ATT_IMPORTANCE, DEFAULT_IMPORTANCE);
             if (!TextUtils.isEmpty(id) && !TextUtils.isEmpty(channelName)) {
+                // Force IMPORTANCE_LOW for reserved channels
+                if (notificationClassification() && SYSTEM_RESERVED_IDS.contains(id)) {
+                    channelImportance = IMPORTANCE_LOW;
+                }
                 NotificationChannel channel = new NotificationChannel(
                         id, channelName, channelImportance);
                 if (forRestore) {

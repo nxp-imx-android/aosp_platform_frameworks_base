@@ -650,8 +650,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel updateNews = null;
         if (notificationClassification()) {
             mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
-            // change one of the reserved bundle channels to ensure changes are persisted across
-            // boot
+            // change one of the reserved bundle channels to ensure changes are not persisted
+            // across boot
             updateNews = mHelper.getNotificationChannel(
                     PKG_N_MR1, UID_N_MR1, NEWS_ID, false).copy();
             updateNews.setImportance(IMPORTANCE_NONE);
@@ -666,7 +666,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, false,
                 UserHandle.USER_ALL, channel1.getId(), channel2.getId(),
-                NotificationChannel.DEFAULT_CHANNEL_ID);
+                NotificationChannel.DEFAULT_CHANNEL_ID, updateNews.getId());
         mHelper.onPackagesChanged(true, UserHandle.myUserId(), new String[]{PKG_N_MR1}, new int[]{
                 UID_N_MR1});
 
@@ -683,10 +683,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         compareChannels(channel2,
                 mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2.getId(), false));
         if (notificationClassification()) {
+            updateNews.setImportance(IMPORTANCE_LOW);
             assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
                     false)).isNotNull();
             assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
-                            false)).isEqualTo(updateNews);
+                    false)).isEqualTo(updateNews);
+            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                    false).getImportance()).isEqualTo(IMPORTANCE_LOW);
         }
 
         List<NotificationChannelGroup> actualGroups = mXmlHelper.getNotificationChannelGroups(
