@@ -341,8 +341,6 @@ public abstract class Context {
             BIND_EXTERNAL_SERVICE_LONG,
             // Make sure no flag uses the sign bit (most significant bit) of the long integer,
             // to avoid future confusion.
-            BIND_BYPASS_USER_NETWORK_RESTRICTIONS,
-            BIND_MATCH_QUARANTINED_COMPONENTS,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BindServiceFlagsLongBits {}
