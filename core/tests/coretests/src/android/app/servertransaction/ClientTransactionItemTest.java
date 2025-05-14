@@ -43,7 +43,6 @@ import android.util.MergedConfiguration;
 import android.view.IWindow;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
-import android.view.WindowRelayoutResult;
 import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 import android.window.WindowContextInfo;
@@ -55,7 +54,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -203,20 +201,15 @@ public class ClientTransactionItemTest {
         final ClientWindowFrames frames = new ClientWindowFrames();
         final WindowStateResizeItem item = new WindowStateResizeItem(mWindow, frames,
                 true /* reportDraw */, mergedConfiguration, mInsetsState, true /* forceLayout */,
-                123 /* displayId */, 321 /* syncSeqId */, true /* dragResizing */,
-                activityWindowInfo);
+                true /* alwaysConsumeSystemBars */, 123 /* displayId */, 321 /* syncSeqId */,
+                true /* dragResizing */, activityWindowInfo);
 
         item.execute(mHandler, mPendingActions);
 
-        final ArgumentCaptor<WindowRelayoutResult> layout =
-                ArgumentCaptor.forClass(WindowRelayoutResult.class);
-        verify(mWindow).resized(layout.capture(), eq(true) /* reportDraw */,
-                eq(true) /* forceLayout */, eq(123) /* displayId */, eq(true) /* dragResizing */);
-        assertEquals(frames, layout.getValue().frames);
-        assertEquals(mergedConfiguration, layout.getValue().mergedConfiguration);
-        assertEquals(mInsetsState, layout.getValue().insetsState);
-        assertEquals(321, layout.getValue().syncSeqId);
-        assertEquals(activityWindowInfo, layout.getValue().activityWindowInfo);
+        verify(mWindow).resized(frames,
+                true /* reportDraw */, mergedConfiguration, mInsetsState, true /* forceLayout */,
+                true /* alwaysConsumeSystemBars */, 123 /* displayId */, 321 /* syncSeqId */,
+                true /* dragResizing */, activityWindowInfo);
     }
 
     @Test

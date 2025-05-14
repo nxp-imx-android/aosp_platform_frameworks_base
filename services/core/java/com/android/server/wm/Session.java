@@ -70,6 +70,7 @@ import android.view.IWindowSession;
 import android.view.IWindowSessionCallback;
 import android.view.InputChannel;
 import android.view.InsetsSourceControl;
+import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.View.FocusDirection;
@@ -235,25 +236,33 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     @Override
     public int addToDisplay(IWindow window, WindowManager.LayoutParams attrs,
             int viewVisibility, int displayId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, WindowRelayoutResult result) {
+            InputChannel outInputChannel, InsetsState outInsetsState,
+            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         return mService.addWindow(this, window, attrs, viewVisibility, displayId,
-                UserHandle.getUserId(mUid), requestedVisibleTypes, outInputChannel, result);
+                UserHandle.getUserId(mUid), requestedVisibleTypes, outInputChannel, outInsetsState,
+                outActiveControls, outAttachedFrame, outSizeCompatScale);
     }
 
     @Override
     public int addToDisplayAsUser(IWindow window, WindowManager.LayoutParams attrs,
             int viewVisibility, int displayId, int userId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, WindowRelayoutResult result) {
+            InputChannel outInputChannel, InsetsState outInsetsState,
+            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         return mService.addWindow(this, window, attrs, viewVisibility, displayId, userId,
-                requestedVisibleTypes, outInputChannel, result);
+                requestedVisibleTypes, outInputChannel, outInsetsState, outActiveControls,
+                outAttachedFrame, outSizeCompatScale);
     }
 
     @Override
     public int addToDisplayWithoutInputChannel(IWindow window, WindowManager.LayoutParams attrs,
-            int viewVisibility, int displayId, WindowRelayoutResult result) {
+            int viewVisibility, int displayId, InsetsState outInsetsState, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         return mService.addWindow(this, window, attrs, viewVisibility, displayId,
                 UserHandle.getUserId(mUid), WindowInsets.Type.defaultVisible(),
-                null /* outInputChannel */, result);
+                null /* outInputChannel */, outInsetsState, mDummyControls, outAttachedFrame,
+                outSizeCompatScale);
     }
 
     @Override
@@ -269,11 +278,10 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     @Override
     public int relayout(IWindow window, WindowManager.LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult, SurfaceControl outSurface) {
+            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, mRelayoutTag);
         int res = mService.relayoutWindow(this, window, attrs, requestedWidth,
-                requestedHeight, viewFlags, flags, seq, lastSyncSeqId, outRelayoutResult,
-                outSurface);
+                requestedHeight, viewFlags, flags, seq, lastSyncSeqId, outRelayoutResult);
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         return res;
     }
@@ -283,7 +291,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
             int lastSyncSeqId) {
         relayout(window, attrs, requestedWidth, requestedHeight, viewFlags, flags, seq,
-                lastSyncSeqId, null /* outRelayoutResult */, null /* outSurface */);
+                lastSyncSeqId, null /* outRelayoutResult */);
     }
 
     @Override

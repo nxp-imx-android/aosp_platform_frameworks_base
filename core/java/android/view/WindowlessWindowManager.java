@@ -198,7 +198,9 @@ public class WindowlessWindowManager implements IWindowSession {
     @Override
     public int addToDisplay(IWindow window, WindowManager.LayoutParams attrs,
             int viewVisibility, int displayId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, WindowRelayoutResult result) {
+            InputChannel outInputChannel, InsetsState outInsetsState,
+            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         final SurfaceControl leash = new SurfaceControl.Builder()
                 .setName(attrs.getTitle().toString() + "Leash")
                 .setCallsite("WindowlessWindowManager.addToDisplay")
@@ -233,11 +235,11 @@ public class WindowlessWindowManager implements IWindowSession {
         }
 
         if (state.mAttachedFrame == null) {
-            result.frames.attachedFrame = null;
+            outAttachedFrame.set(0, 0, -1, -1);
         } else {
-            result.frames.attachedFrame = new Rect(state.mAttachedFrame);
+            outAttachedFrame.set(state.mAttachedFrame);
         }
-        result.frames.compatScale = 1f;
+        outSizeCompatScale[0] = 1f;
 
         if (((attrs.inputFeatures &
                 WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL) == 0)) {
@@ -276,15 +278,19 @@ public class WindowlessWindowManager implements IWindowSession {
     @Override
     public int addToDisplayAsUser(IWindow window, WindowManager.LayoutParams attrs,
             int viewVisibility, int displayId, int userId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, WindowRelayoutResult result) {
+            InputChannel outInputChannel, InsetsState outInsetsState,
+            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         return addToDisplay(window, attrs, viewVisibility, displayId, requestedVisibleTypes,
-                outInputChannel, result);
+                outInputChannel, outInsetsState, outActiveControls, outAttachedFrame,
+                outSizeCompatScale);
     }
 
     @Override
     public int addToDisplayWithoutInputChannel(android.view.IWindow window,
             android.view.WindowManager.LayoutParams attrs, int viewVisibility, int layerStackId,
-            WindowRelayoutResult result) {
+            android.view.InsetsState insetsState, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
         return 0;
     }
 
@@ -362,20 +368,22 @@ public class WindowlessWindowManager implements IWindowSession {
     @Override
     public int relayout(IWindow window, WindowManager.LayoutParams inAttrs,
             int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult, SurfaceControl outSurface) {
+            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult) {
         final ClientWindowFrames outFrames;
         final MergedConfiguration outMergedConfiguration;
-        final SurfaceControl outSurfaceControl = outSurface;
+        final SurfaceControl outSurfaceControl;
         final InsetsState outInsetsState;
         final InsetsSourceControl.Array outActiveControls;
         if (outRelayoutResult != null) {
             outFrames = outRelayoutResult.frames;
             outMergedConfiguration = outRelayoutResult.mergedConfiguration;
+            outSurfaceControl = outRelayoutResult.surfaceControl;
             outInsetsState = outRelayoutResult.insetsState;
             outActiveControls = outRelayoutResult.activeControls;
         } else {
             outFrames = null;
             outMergedConfiguration = null;
+            outSurfaceControl = null;
             outInsetsState = null;
             outActiveControls = null;
         }
@@ -671,11 +679,9 @@ public class WindowlessWindowManager implements IWindowSession {
                 mTmpFrames.frame.set(0, 0, s.mParams.width, s.mParams.height);
                 mTmpFrames.displayFrame.set(mTmpFrames.frame);
                 mTmpConfig.setConfiguration(mConfiguration, mConfiguration);
-                final WindowRelayoutResult layout = new WindowRelayoutResult(mTmpFrames, mTmpConfig,
-                        state, null);
-                layout.syncSeqId = Integer.MAX_VALUE;
-                s.mClient.resized(layout, false /* reportDraw */, false /* forceLayout */,
-                        s.mDisplayId, false /* dragResizing */);
+                s.mClient.resized(mTmpFrames, false /* reportDraw */, mTmpConfig, state,
+                        false /* forceLayout */, false /* alwaysConsumeSystemBars */, s.mDisplayId,
+                        Integer.MAX_VALUE, false /* dragResizing */, null /* activityWindowInfo */);
             } catch (RemoteException e) {
                 // Too bad
             }
