@@ -19,10 +19,13 @@ package com.android.systemui.topwindoweffects.ui.viewmodel
 import android.os.VibrationEffect
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.VibratorHelper
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
+import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -31,6 +34,7 @@ class SqueezeEffectHapticPlayer
 constructor(
     private val vibratorHelper: VibratorHelper,
     @Background private val bgScope: CoroutineScope,
+    private val squeezeEffectInteractor: SqueezeEffectInteractor,
 ) {
 
     private val primitiveDurations =
@@ -39,12 +43,21 @@ constructor(
             VibrationEffect.Composition.PRIMITIVE_QUICK_RISE,
             VibrationEffect.Composition.PRIMITIVE_TICK,
         )
-    private val invocationHaptics =
+
+    private suspend fun buildInvocationHaptics() =
         SqueezeEffectHapticsBuilder.createInvocationHaptics(
             lowTickDuration = primitiveDurations[0],
             quickRiseDuration = primitiveDurations[1],
             tickDuration = primitiveDurations[2],
+            totalEffectDuration = calculateHapticsEffectTotalDuration(),
         )
+
+    private suspend fun calculateHapticsEffectTotalDuration(): Int {
+        return bgScope
+            .async { squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs() }
+            .await()
+            .toInt() + DEFAULT_OUTWARD_EFFECT_DURATION
+    }
 
     private var vibrationJob: Job? = null
 
@@ -52,6 +65,7 @@ constructor(
         cancel()
         vibrationJob =
             bgScope.launch {
+                val invocationHaptics = buildInvocationHaptics()
                 delay(invocationHaptics.initialDelay.toLong())
                 vibratorHelper.vibrate(
                     invocationHaptics.vibration,

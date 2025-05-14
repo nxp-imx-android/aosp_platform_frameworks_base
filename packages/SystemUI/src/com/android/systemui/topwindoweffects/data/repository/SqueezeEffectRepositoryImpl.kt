@@ -202,11 +202,19 @@ constructor(
 
     override suspend fun getInvocationEffectInitialDelayMs(): Long {
         val duration = getLongPressPowerDurationFromSettings()
-        // TODO(b/408363187): adjust this difference for values lower than 500ms
         return if (duration > DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS) {
             DEFAULT_INITIAL_DELAY_MILLIS + (duration - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS)
         } else {
             DEFAULT_INITIAL_DELAY_MILLIS
+        }
+    }
+
+    override suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long {
+        val duration = getLongPressPowerDurationFromSettings()
+        return if (duration < DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS) {
+            DEFAULT_INWARD_EFFECT_DURATION - (DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS - duration)
+        } else {
+            DEFAULT_INWARD_EFFECT_DURATION.toLong()
         }
     }
 
@@ -301,6 +309,8 @@ constructor(
          */
         @VisibleForTesting const val DEFAULT_INITIAL_DELAY_MILLIS = 150L
         @VisibleForTesting const val DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS = 500L
+        @VisibleForTesting const val DEFAULT_INWARD_EFFECT_DURATION = 800 // in milliseconds
+        const val DEFAULT_OUTWARD_EFFECT_DURATION = 333 // in milliseconds
 
         @VisibleForTesting
         const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"

@@ -26,4 +26,6 @@ interface SqueezeEffectRepository {
     val isPowerButtonDownInKeyCombination: Flow<Boolean>
 
     suspend fun getInvocationEffectInitialDelayMs(): Long
+
+    suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long
 }

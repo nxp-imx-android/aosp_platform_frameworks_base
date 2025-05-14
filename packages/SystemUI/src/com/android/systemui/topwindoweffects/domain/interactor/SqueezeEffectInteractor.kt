@@ -51,4 +51,7 @@ constructor(
 
     suspend fun getInvocationEffectInitialDelayMs() =
         squeezeEffectRepository.getInvocationEffectInitialDelayMs()
+
+    suspend fun getInvocationEffectInwardsAnimationDurationMs() =
+        squeezeEffectRepository.getInvocationEffectInwardsAnimationDurationMs()
 }
