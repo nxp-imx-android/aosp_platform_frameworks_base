@@ -1585,8 +1585,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public int addWindow(Session session, IWindow client, LayoutParams attrs, int viewVisibility,
             int displayId, int requestUserId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, WindowRelayoutResult result) {
-        result.activeControls.set(null, false /* copyControls */);
+            InputChannel outInputChannel, InsetsState outInsetsState,
+            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
+            float[] outSizeCompatScale) {
+        outActiveControls.set(null, false /* copyControls */);
         int[] appOp = new int[1];
         final boolean isRoundedCornerOverlay = (attrs.privateFlags
                 & PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0;
@@ -1902,8 +1904,9 @@ public class WindowManagerService extends IWindowManager.Stub
                     newlyCreatedTransition = chain.getTransition();
                 }
                 chain.collect(win.mToken);
-                res |= addWindowInner(win, displayPolicy, activity, displayContent, client, attrs,
-                        callingUid, result);
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
+                        callingUid);
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
@@ -1918,8 +1921,9 @@ public class WindowManagerService extends IWindowManager.Stub
                             null /* remoteTransition */, null /* displayChange */);
                 }
             } else {
-                res |= addWindowInner(win, displayPolicy, activity, displayContent, client, attrs,
-                        callingUid, result);
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
+                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
+                        callingUid);
             }
         }
 
@@ -1930,8 +1934,9 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private int addWindowInner(@NonNull WindowState win, @NonNull DisplayPolicy displayPolicy,
             @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
-            @NonNull IWindow client, @NonNull LayoutParams attrs, int uid,
-            @NonNull WindowRelayoutResult result) {
+            @NonNull InsetsState outInsetsState, @NonNull Rect outAttachedFrame,
+            @NonNull InsetsSourceControl.Array outActiveControls, @NonNull IWindow client,
+            @NonNull float[] outSizeCompatScale, @NonNull LayoutParams attrs, int uid) {
         int res = 0;
         final int type = attrs.type;
         boolean imMayMove = true;
@@ -2033,18 +2038,19 @@ public class WindowManagerService extends IWindowManager.Stub
         displayContent.getInsetsStateController().updateAboveInsetsState(
                 false /* notifyInsetsChanged */);
 
-        win.fillInsetsState(result.insetsState, true /* copySources */);
-        getInsetsSourceControls(win, result.activeControls);
+        win.fillInsetsState(outInsetsState, true /* copySources */);
+        getInsetsSourceControls(win, outActiveControls);
 
         if (win.mLayoutAttached) {
-            result.frames.attachedFrame = new Rect(win.getParentWindow().getFrame());
+            outAttachedFrame.set(win.getParentWindow().getFrame());
             if (win.mInvGlobalScale != 1f) {
-                result.frames.attachedFrame.scale(win.mInvGlobalScale);
+                outAttachedFrame.scale(win.mInvGlobalScale);
             }
         } else {
-            result.frames.attachedFrame = null;
+            // Make this invalid which indicates a null attached frame.
+            outAttachedFrame.set(0, 0, -1, -1);
         }
-        result.frames.compatScale = win.getCompatScaleForClient();
+        outSizeCompatScale[0] = win.getCompatScaleForClient();
 
         if (res >= ADD_OKAY && win.isPresentation()) {
             mPresentationController.onPresentationAdded(win, uid);
@@ -2397,20 +2403,22 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Relayouts window. */
     public int relayoutWindow(Session session, IWindow client, LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult,
-            SurfaceControl outSurfaceControl) {
+            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult) {
         final ClientWindowFrames outFrames;
         final MergedConfiguration outMergedConfiguration;
+        final SurfaceControl outSurfaceControl;
         final InsetsState outInsetsState;
         final InsetsSourceControl.Array outActiveControls;
         if (outRelayoutResult != null) {
             outFrames = outRelayoutResult.frames;
             outMergedConfiguration = outRelayoutResult.mergedConfiguration;
+            outSurfaceControl = outRelayoutResult.surfaceControl;
             outInsetsState = outRelayoutResult.insetsState;
             outActiveControls = outRelayoutResult.activeControls;
         } else {
             outFrames = null;
             outMergedConfiguration = null;
+            outSurfaceControl = null;
             outInsetsState = null;
             outActiveControls = null;
         }

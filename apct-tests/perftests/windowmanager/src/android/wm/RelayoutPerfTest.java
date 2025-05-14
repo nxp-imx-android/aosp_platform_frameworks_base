@@ -149,7 +149,7 @@ public class RelayoutPerfTest extends WindowManagerPerfTestBase
             mOutSurfaceControl = mView.getViewRootImpl().getSurfaceControl();
             mViewVisibility = visibilitySupplier;
             mOutRelayoutResult = new WindowRelayoutResult(mOutFrames, mOutMergedConfiguration,
-                    mOutInsetsState, mOutControls);
+                            mOutSurfaceControl, mOutInsetsState, mOutControls);
         }
 
         void runBenchmark(BenchmarkState state) throws RemoteException {
@@ -157,8 +157,7 @@ public class RelayoutPerfTest extends WindowManagerPerfTestBase
             while (state.keepRunning()) {
                 mRelayoutSeq++;
                 session.relayout(mWindow, mParams, mWidth, mHeight, mViewVisibility.getAsInt(),
-                        mFlags, mRelayoutSeq, 0 /* lastSyncSeqId */, mOutRelayoutResult,
-                        mOutSurfaceControl);
+                        mFlags, mRelayoutSeq, 0 /* lastSyncSeqId */, mOutRelayoutResult);
             }
         }
     }

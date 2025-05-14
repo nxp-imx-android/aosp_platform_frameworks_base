@@ -21,6 +21,7 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.MergedConfiguration;
 import android.view.DragEvent;
 import android.view.IScrollCaptureResponseListener;
 import android.view.IWindow;
@@ -29,8 +30,9 @@ import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.ScrollCaptureResponse;
 import android.view.WindowInsets.Type.InsetsType;
-import android.view.WindowRelayoutResult;
 import android.view.inputmethod.ImeTracker;
+import android.window.ActivityWindowInfo;
+import android.window.ClientWindowFrames;
 
 import com.android.internal.os.IResultReceiver;
 
@@ -48,11 +50,13 @@ public class BaseIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
-            int displayId, boolean dragResizing) {
+    public void resized(ClientWindowFrames frames, boolean reportDraw,
+            MergedConfiguration mergedConfiguration, InsetsState insetsState, boolean forceLayout,
+            boolean alwaysConsumeSystemBars, int displayId, int seqId, boolean dragResizing,
+            @Nullable ActivityWindowInfo activityWindowInfo) {
         if (reportDraw) {
             try {
-                mSession.finishDrawing(this, null /* postDrawTransaction */, layout.syncSeqId);
+                mSession.finishDrawing(this, null /* postDrawTransaction */, seqId);
             } catch (RemoteException e) {
             }
         }

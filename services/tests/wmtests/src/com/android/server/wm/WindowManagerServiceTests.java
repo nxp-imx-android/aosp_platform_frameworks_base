@@ -300,9 +300,9 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final InsetsState outInsetsState = new InsetsState();
         final InsetsSourceControl.Array outControls = new InsetsSourceControl.Array();
         final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(outFrames,
-                outConfig, outInsetsState, outControls);
+                outConfig, outSurfaceControl, outInsetsState, outControls);
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.GONE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
         // The window is in transition, so its destruction is deferred.
         assertTrue(win.mAnimatingExit);
         assertFalse(win.mDestroying);
@@ -313,7 +313,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         win.mActivityRecord.setVisibleRequested(false);
         win.mActivityRecord.setVisible(false);
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.GONE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
         // Because the window is already invisible, it doesn't need to apply exiting animation
         // and WMS#tryStartExitingAnimation() will destroy the surface directly.
         assertFalse(win.mAnimatingExit);
@@ -322,7 +322,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
         // Invisible requested activity should not get the last config even if its view is visible.
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
         assertEquals(0, outConfig.getMergedConfiguration().densityDpi);
         // Non activity window can still get the last config.
         win.mActivityRecord = null;
@@ -432,7 +432,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
             seq = 2;
         }
         mWm.relayoutWindow(win.mSession, win.mClient, newParams, 100, 200, View.VISIBLE, 0, seq,
-                0, new WindowRelayoutResult(), new SurfaceControl());
+                0, new WindowRelayoutResult());
 
         ArgumentCaptor<Integer> changedFlags = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<Integer> changedPrivateFlags = ArgumentCaptor.forClass(Integer.class);
@@ -565,8 +565,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         doReturn(true).when(mWm.mUmInternal).isUserVisible(anyInt(), anyInt());
 
         mWm.addWindow(session, new TestIWindow(), params, View.VISIBLE, DEFAULT_DISPLAY,
-                UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
-                new WindowRelayoutResult());
+                UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
+                new InsetsSourceControl.Array(), new Rect(), new float[1]);
 
         verify(mWm.mWindowContextListenerController, never()).registerWindowContainerListener(any(),
                 any(), any(), anyInt(), anyBoolean(), any(), anyBoolean());
@@ -575,8 +575,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         // able to map the corresponding display.
         final int result = mWm.addWindow(
                 session, new TestIWindow(), params, View.VISIBLE, INVALID_DISPLAY,
-                UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
-                new WindowRelayoutResult());
+                UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
+                new InsetsSourceControl.Array(), new Rect(), new float[1]);
         assertThat(result).isAtLeast(WindowManagerGlobal.ADD_OKAY);
 
         assertTrue(parentWin.hasChild());
@@ -1344,7 +1344,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final InsetsState outInsetsState = new InsetsState();
         final InsetsSourceControl.Array outControls = new InsetsSourceControl.Array();
         final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(outFrames,
-                outConfig, outInsetsState, outControls);
+                outConfig, outSurfaceControl, outInsetsState, outControls);
 
         final ActivityRecord activity = win.mActivityRecord;
         final ActivityWindowInfo expectedInfo = new ActivityWindowInfo();
@@ -1354,7 +1354,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         activity.setVisible(false);
 
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
 
         // No latest reported value, so return empty when activity is invisible
         final ActivityWindowInfo activityWindowInfo = outRelayoutResult.activityWindowInfo;
@@ -1364,7 +1364,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         activity.setVisible(true);
 
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
 
         // Report the latest when activity is visible.
         final ActivityWindowInfo activityWindowInfo2 = outRelayoutResult.activityWindowInfo;
@@ -1375,7 +1375,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         activity.setVisible(false);
 
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult, outSurfaceControl);
+                outRelayoutResult);
 
         // Report the last reported value when activity is invisible.
         final ActivityWindowInfo activityWindowInfo3 = outRelayoutResult.activityWindowInfo;
@@ -1395,7 +1395,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 LayoutParams.TYPE_APPLICATION_OVERLAY);
 
         int result = mWm.addWindow(session, new TestIWindow(), params, View.VISIBLE, displayId,
-                userId, WindowInsets.Type.defaultVisible(), null, new WindowRelayoutResult());
+                userId, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
+                new InsetsSourceControl.Array(), new Rect(), new float[1]);
 
         assertThat(result).isEqualTo(WindowManagerGlobal.ADD_INVALID_DISPLAY);
     }
