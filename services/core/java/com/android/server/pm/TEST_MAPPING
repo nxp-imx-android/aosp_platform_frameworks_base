@@ -706,7 +706,7 @@
     {
       "name": "CtsMultiUserTestCases",
       "file_patterns": [
-        "User[^/]*\\.java"
+        "(/|^)User[^/]*\\.java"
       ]
     }
   ]
