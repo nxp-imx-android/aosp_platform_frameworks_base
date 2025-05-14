@@ -64,6 +64,7 @@ import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -101,10 +102,9 @@ class SupervisionServiceTest {
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
 
-
         // Creating a temporary folder to enable access to SupervisionSettings.
-        SupervisionSettings.getInstance().changeDirForTesting(
-            Files.createTempDirectory("tempSupervisionFolder").toFile())
+        SupervisionSettings.getInstance()
+            .changeDirForTesting(Files.createTempDirectory("tempSupervisionFolder").toFile())
     }
 
     @Test
@@ -265,13 +265,14 @@ class SupervisionServiceTest {
     fun setSupervisionEnabledForUser_removesPoliciesWhenDisabling() {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         service.setSupervisionEnabledForUser(USER_ID, true)
+
+        verify(mockDpmInternal, never()).removePoliciesForAdmins(any(), any())
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
 
         service.setSupervisionEnabledForUser(USER_ID, false)
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        verify(mockDpmInternal)
-            .removePoliciesForAdmins(eq(systemSupervisionPackage), eq(USER_ID))
+        verify(mockDpmInternal).removePoliciesForAdmins(eq(systemSupervisionPackage), eq(USER_ID))
     }
 
     @Test
