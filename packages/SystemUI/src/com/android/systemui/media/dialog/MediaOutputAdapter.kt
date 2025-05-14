@@ -263,6 +263,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             updateDeviceStatusIcon(deviceStatusIcon, colorTheme)
             updateContentBackground(fixedVolumeConnected, colorTheme)
             updateContentClickListener(clickListener)
+            updateContentStateDescription(connectionState)
         }
 
         override fun renderDeviceGroupItem() {
@@ -270,7 +271,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             val colorTheme = ColorTheme()
             updateItemBackground()
             updateTitle(
-                title = mController.sessionName ?: "",
+                title =
+                    mController.sessionName
+                        ?: mContext.getString(R.string.media_output_dialog_group),
                 connectionState = CONNECTED,
                 colorTheme = colorTheme,
             )
@@ -600,6 +603,14 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             if (listener == null) {
                 mMainContent.isClickable = false // clickable is not removed automatically.
             }
+        }
+
+        private fun updateContentStateDescription(connectionState: ConnectionState) {
+            mMainContent.stateDescription =
+                when (connectionState) {
+                    CONNECTED -> mContext.getString(R.string.media_output_item_connected_state)
+                    else -> null
+                }
         }
 
         override fun disableSeekBar() {
