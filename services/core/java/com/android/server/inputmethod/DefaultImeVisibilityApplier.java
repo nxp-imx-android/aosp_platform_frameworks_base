@@ -32,11 +32,8 @@ import android.annotation.UserIdInt;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.EventLog;
-import android.view.MotionEvent;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethod;
-import android.view.inputmethod.InputMethodManager;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -93,7 +90,7 @@ final class DefaultImeVisibilityApplier {
                     showInputToken, showFlags, resultReceiver,
                     InputMethodDebug.softInputDisplayReasonToString(reason));
             // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curMethod.showSoftInput(showInputToken, statsToken, showFlags, resultReceiver)) {
+            if (curMethod.showSoftInput(statsToken, showFlags, resultReceiver)) {
                 if (DEBUG_IME_VISIBILITY) {
                     EventLog.writeEvent(IMF_SHOW_IME,
                             statsToken != null ? statsToken.getTag() : ImeTracker.TOKEN_NONE,
@@ -102,6 +99,7 @@ final class DefaultImeVisibilityApplier {
                             InputMethodDebug.softInputModeToString(
                                     userData.mImeBindingState.mFocusedWindowSoftInputMode));
                 }
+                // TODO(b/419459695): Check if we still need to pass the input token
                 mService.onShowHideSoftInputRequested(true /* show */, showInputToken, reason,
                         statsToken, userId);
             }
@@ -134,7 +132,7 @@ final class DefaultImeVisibilityApplier {
                     "Calling %s.hideSoftInput(0, %s, %s) for reason: %s", curMethod, hideInputToken,
                     resultReceiver, InputMethodDebug.softInputDisplayReasonToString(reason));
             // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curMethod.hideSoftInput(hideInputToken, statsToken, 0, resultReceiver)) {
+            if (curMethod.hideSoftInput(statsToken, 0, resultReceiver)) {
                 if (DEBUG_IME_VISIBILITY) {
                     EventLog.writeEvent(IMF_HIDE_IME,
                             statsToken != null ? statsToken.getTag() : ImeTracker.TOKEN_NONE,
@@ -143,6 +141,7 @@ final class DefaultImeVisibilityApplier {
                             InputMethodDebug.softInputModeToString(
                                     userData.mImeBindingState.mFocusedWindowSoftInputMode));
                 }
+                // TODO(b/419459695): Check if we still need to pass the input token
                 mService.onShowHideSoftInputRequested(false /* show */, hideInputToken, reason,
                         statsToken, userId);
             }
@@ -153,72 +152,28 @@ final class DefaultImeVisibilityApplier {
      * Applies the IME visibility from {@link android.inputmethodservice.InputMethodService} with
      * according to the given visibility state.
      *
-     * @param windowToken the token of a window for applying the IME visibility
-     * @param statsToken  the token tracking the current IME request
-     * @param state       the new IME visibility state for the applier to handle
-     * @param reason      one of {@link SoftInputShowHideReason}
-     * @param userId      the target user when applying the IME visibility state
+     * @param statsToken the token tracking the current IME request
+     * @param state      the new IME visibility state for the applier to handle
+     * @param userId     the target user when applying the IME visibility state
      */
     @GuardedBy("ImfLock.class")
-    void applyImeVisibility(IBinder windowToken, @NonNull ImeTracker.Token statsToken,
+    void applyImeVisibility(@NonNull ImeTracker.Token statsToken,
             @ImeVisibilityStateComputer.VisibilityState int state,
-            @SoftInputShowHideReason int reason, @UserIdInt int userId) {
+            @UserIdInt int userId) {
         final var userData = mService.getUserData(userId);
-        final var bindingController = userData.mBindingController;
-        final int displayIdToShowIme = bindingController.getDisplayIdToShowIme();
         switch (state) {
             case STATE_SHOW_IME:
-                if (!Flags.refactorInsetsController()) {
-                    ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_SERVER_APPLY_IME_VISIBILITY);
-                    // Send to window manager to show IME after IME layout finishes.
-                    mWindowManagerInternal.showImePostLayout(windowToken, statsToken);
-                }
-                break;
             case STATE_HIDE_IME:
-                if (!Flags.refactorInsetsController()) {
-                    if (userData.mCurClient != null) {
-                        ImeTracker.forLogging().onProgress(statsToken,
-                                ImeTracker.PHASE_SERVER_APPLY_IME_VISIBILITY);
-                        // IMMS only knows of focused window, not the actual IME target.
-                        // e.g. it isn't aware of any window that has both
-                        // NOT_FOCUSABLE, ALT_FOCUSABLE_IM flags set and can the IME target.
-                        // Send it to window manager to hide IME from the actual IME control target
-                        // of the target display.
-                        mWindowManagerInternal.hideIme(windowToken, displayIdToShowIme, statsToken);
-                    } else {
-                        ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_SERVER_APPLY_IME_VISIBILITY);
-                    }
-                }
+                // no-op
                 break;
             case STATE_HIDE_IME_EXPLICIT:
-                if (Flags.refactorInsetsController()) {
-                    mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
-                } else {
-                    mService.hideCurrentInputLocked(windowToken, statsToken,
-                            0 /* flags */, null /* resultReceiver */, reason, userId);
-                }
-                break;
             case STATE_HIDE_IME_NOT_ALWAYS:
-                if (Flags.refactorInsetsController()) {
-                    mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
-                } else {
-                    mService.hideCurrentInputLocked(windowToken, statsToken,
-                            InputMethodManager.HIDE_NOT_ALWAYS, null /* resultReceiver */, reason,
-                            userId);
-                }
+                mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
                 break;
             case STATE_SHOW_IME_IMPLICIT:
-                if (Flags.refactorInsetsController()) {
-                    // This can be triggered by IMMS#startInputOrWindowGainedFocus. We need to
-                    // set the requestedVisibleTypes in InsetsController first, before applying it.
-                    mService.setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
-                } else {
-                    mService.showCurrentInputLocked(windowToken, statsToken,
-                            InputMethodManager.SHOW_IMPLICIT, MotionEvent.TOOL_TYPE_UNKNOWN,
-                            null /* resultReceiver */, reason, userId);
-                }
+                // This can be triggered by IMMS#startInputOrWindowGainedFocus. We need to
+                // set the requestedVisibleTypes in InsetsController first, before applying it.
+                mService.setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid IME visibility state: " + state);

@@ -115,7 +115,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STARTING_WINDOW;
@@ -8234,24 +8233,22 @@ public class WindowManagerService extends IWindowManager.Stub
                     imeInputTarget.getDisplayContent()
                             .updateImeInputAndControlTarget(imeInputTarget);
 
-                    if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                        // In case of a virtual display that may not show the IME, reset the
-                        // inputTarget of all other displays
-                        WindowState imeInputTargetWindow = imeInputTarget.getWindowState();
-                        if (imeInputTargetWindow != null) {
-                            final InsetsControlTarget fallback = imeInputTarget.getDisplayContent()
-                                    .getImeHostOrFallback(imeInputTargetWindow);
-                            if (imeInputTargetWindow != fallback) {
-                                // fallback should be the RemoteInsetsControlTarget of the
-                                // default display
-                                final int currentDisplayId = imeInputTarget.getDisplayContent()
-                                        .getDisplayId();
-                                mRoot.forAllDisplays(display -> {
-                                    if (display.getDisplayId() != currentDisplayId) {
-                                        display.setImeInputTarget(null /* target */);
-                                    }
-                                });
-                            }
+                    // In case of a virtual display that may not show the IME, reset the
+                    // inputTarget of all other displays
+                    WindowState imeInputTargetWindow = imeInputTarget.getWindowState();
+                    if (imeInputTargetWindow != null) {
+                        final InsetsControlTarget fallback = imeInputTarget.getDisplayContent()
+                                .getImeHost(imeInputTargetWindow);
+                        if (imeInputTargetWindow != fallback) {
+                            // fallback should be the RemoteInsetsControlTarget of the
+                            // default display
+                            final int currentDisplayId = imeInputTarget.getDisplayContent()
+                                    .getDisplayId();
+                            mRoot.forAllDisplays(display -> {
+                                if (display.getDisplayId() != currentDisplayId) {
+                                    display.setImeInputTarget(null /* target */);
+                                }
+                            });
                         }
                     }
                 }
@@ -8402,68 +8399,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             return ImeClientFocusResult.NOT_IME_TARGET_WINDOW;
-        }
-
-        @Override
-        public void showImePostLayout(IBinder imeTargetWindowToken,
-                @NonNull ImeTracker.Token statsToken) {
-            synchronized (mGlobalLock) {
-                final InputTarget imeInputTarget =
-                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
-                if (imeInputTarget == null) {
-                    ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                    return;
-                }
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-
-                final InsetsControlTarget imeControlTarget = imeInputTarget.getImeControlTarget();
-                final WindowState imeControlTargetWindow = imeControlTarget.getWindow();
-                // If imeControlTarget doesn't have a window, it's using remoteControlTarget
-                // which is controlled by default display
-                final DisplayContent dc = imeControlTargetWindow != null
-                        ? imeControlTargetWindow.getDisplayContent()
-                        : getDefaultDisplayContentLocked();
-                dc.getInsetsStateController().getImeSourceProvider()
-                        .scheduleShowImePostLayout(imeControlTarget, statsToken);
-            }
-        }
-
-        @Override
-        public void hideIme(IBinder imeTargetWindowToken, int displayId,
-                @NonNull ImeTracker.Token statsToken) {
-            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "WMS.hideIme");
-            synchronized (mGlobalLock) {
-                WindowState imeTarget = mWindowMap.get(imeTargetWindowToken);
-                ProtoLog.d(WM_DEBUG_IME, "hideIme target: %s", imeTarget);
-                DisplayContent dc = mRoot.getDisplayContent(displayId);
-                if (imeTarget != null) {
-                    final WindowState imeControlTargetWindow = imeTarget.getImeControlTarget()
-                            .getWindow();
-                    if (imeControlTargetWindow != null) {
-                        dc = imeControlTargetWindow.getDisplayContent();
-                    }
-                    // If there was a pending IME show(), reset it as IME has been
-                    // requested to be hidden.
-                    dc.getInsetsStateController().getImeSourceProvider().abortShowImePostLayout();
-                }
-                if (dc != null && dc.getImeControlTarget() != null) {
-                    ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                    ProtoLog.d(WM_DEBUG_IME, "hideIme imeControlTarget: %s",
-                            dc.getImeControlTarget());
-                    dc.getImeControlTarget().hideInsets(WindowInsets.Type.ime(),
-                            true /* fromIme */, statsToken);
-                } else {
-                    ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                }
-                if (dc != null) {
-                    dc.getInsetsStateController().getImeSourceProvider().setImeShowing(false);
-                }
-            }
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
 
         @Override

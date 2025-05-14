@@ -173,10 +173,7 @@ public interface ImeTracker {
             PHASE_IME_SHOW_SOFT_INPUT,
             PHASE_IME_HIDE_SOFT_INPUT,
             PHASE_IME_ON_SHOW_SOFT_INPUT_TRUE,
-            PHASE_SERVER_APPLY_IME_VISIBILITY,
-            PHASE_WM_SHOW_IME_RUNNER,
             PHASE_WM_SHOW_IME_READY,
-            PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET,
             PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS,
             PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS,
             PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS,
@@ -190,14 +187,9 @@ public interface ImeTracker {
             PHASE_CLIENT_HANDLE_HIDE_INSETS,
             PHASE_CLIENT_APPLY_ANIMATION,
             PHASE_CLIENT_CONTROL_ANIMATION,
-            PHASE_CLIENT_COLLECT_SOURCE_CONTROLS,
-            PHASE_CLIENT_INSETS_CONSUMER_REQUEST_SHOW,
-            PHASE_CLIENT_REQUEST_IME_SHOW,
-            PHASE_CLIENT_INSETS_CONSUMER_NOTIFY_HIDDEN,
             PHASE_CLIENT_ANIMATION_RUNNING,
             PHASE_CLIENT_ANIMATION_CANCEL,
             PHASE_CLIENT_ANIMATION_FINISHED_SHOW,
-            PHASE_CLIENT_ANIMATION_FINISHED_HIDE,
             PHASE_WM_ABORT_SHOW_IME_POST_LAYOUT,
             PHASE_IME_SHOW_WINDOW,
             PHASE_IME_HIDE_WINDOW,
@@ -286,18 +278,8 @@ public interface ImeTracker {
     /** The server decided the IME should be shown. */
     int PHASE_IME_ON_SHOW_SOFT_INPUT_TRUE = ImeProtoEnums.PHASE_IME_ON_SHOW_SOFT_INPUT_TRUE;
 
-    /** Applied the IME visibility. */
-    int PHASE_SERVER_APPLY_IME_VISIBILITY = ImeProtoEnums.PHASE_SERVER_APPLY_IME_VISIBILITY;
-
-    /** Started the show IME runner. */
-    int PHASE_WM_SHOW_IME_RUNNER = ImeProtoEnums.PHASE_WM_SHOW_IME_RUNNER;
-
     /** Ready to show IME. */
     int PHASE_WM_SHOW_IME_READY = ImeProtoEnums.PHASE_WM_SHOW_IME_READY;
-
-    /** The Window Manager has a connection to the IME insets control target. */
-    int PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET =
-            ImeProtoEnums.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET;
 
     /** Reached the window insets control target's show insets method. */
     int PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS =
@@ -342,20 +324,6 @@ public interface ImeTracker {
     /** Started the IME window insets show animation. */
     int PHASE_CLIENT_CONTROL_ANIMATION = ImeProtoEnums.PHASE_CLIENT_CONTROL_ANIMATION;
 
-    /** Collecting insets source controls. */
-    int PHASE_CLIENT_COLLECT_SOURCE_CONTROLS = ImeProtoEnums.PHASE_CLIENT_COLLECT_SOURCE_CONTROLS;
-
-    /** Reached the insets source consumer's show request method. */
-    int PHASE_CLIENT_INSETS_CONSUMER_REQUEST_SHOW =
-            ImeProtoEnums.PHASE_CLIENT_INSETS_CONSUMER_REQUEST_SHOW;
-
-    /** Reached input method manager's request IME show method. */
-    int PHASE_CLIENT_REQUEST_IME_SHOW = ImeProtoEnums.PHASE_CLIENT_REQUEST_IME_SHOW;
-
-    /** Reached the insets source consumer's notify hidden method. */
-    int PHASE_CLIENT_INSETS_CONSUMER_NOTIFY_HIDDEN =
-            ImeProtoEnums.PHASE_CLIENT_INSETS_CONSUMER_NOTIFY_HIDDEN;
-
     /** Queued the IME window insets show animation. */
     int PHASE_CLIENT_ANIMATION_RUNNING = ImeProtoEnums.PHASE_CLIENT_ANIMATION_RUNNING;
 
@@ -364,9 +332,6 @@ public interface ImeTracker {
 
     /** Finished the IME window insets show animation. */
     int PHASE_CLIENT_ANIMATION_FINISHED_SHOW = ImeProtoEnums.PHASE_CLIENT_ANIMATION_FINISHED_SHOW;
-
-    /** Finished the IME window insets hide animation. */
-    int PHASE_CLIENT_ANIMATION_FINISHED_HIDE = ImeProtoEnums.PHASE_CLIENT_ANIMATION_FINISHED_HIDE;
 
     /** Aborted the request to show the IME post layout. */
     int PHASE_WM_ABORT_SHOW_IME_POST_LAYOUT =

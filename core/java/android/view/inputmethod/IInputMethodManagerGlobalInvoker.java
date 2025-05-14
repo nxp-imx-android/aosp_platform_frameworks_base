@@ -27,7 +27,6 @@ import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.util.ExceptionUtils;
 import android.view.WindowManager;
@@ -314,40 +313,6 @@ final class IInputMethodManagerGlobalInvoker {
         }
         try {
             return service.getLastInputMethodSubtype(userId);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    @AnyThread
-    static boolean showSoftInput(@NonNull IInputMethodClient client, @Nullable IBinder windowToken,
-            @NonNull ImeTracker.Token statsToken, @InputMethodManager.ShowFlags int flags,
-            int lastClickToolType, @Nullable ResultReceiver resultReceiver,
-            @SoftInputShowHideReason int reason, boolean async) {
-        final IInputMethodManager service = getService();
-        if (service == null) {
-            return false;
-        }
-        try {
-            return service.showSoftInput(client, windowToken, statsToken, flags, lastClickToolType,
-                    resultReceiver, reason, async);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    @AnyThread
-    static boolean hideSoftInput(@NonNull IInputMethodClient client, @Nullable IBinder windowToken,
-            @NonNull ImeTracker.Token statsToken, @InputMethodManager.HideFlags int flags,
-            @Nullable ResultReceiver resultReceiver, @SoftInputShowHideReason int reason,
-            boolean async) {
-        final IInputMethodManager service = getService();
-        if (service == null) {
-            return false;
-        }
-        try {
-            return service.hideSoftInput(client, windowToken, statsToken, flags, resultReceiver,
-                    reason, async);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

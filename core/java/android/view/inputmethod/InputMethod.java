@@ -30,7 +30,6 @@ import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.InputChannel;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
 import com.android.internal.inputmethod.IInlineSuggestionsRequestCallback;
@@ -311,15 +310,13 @@ public interface InputMethod {
      * {@link InputMethodManager#RESULT_UNCHANGED_HIDDEN InputMethodManager.RESULT_UNCHANGED_HIDDEN},
      * {@link InputMethodManager#RESULT_SHOWN InputMethodManager.RESULT_SHOWN}, or
      * {@link InputMethodManager#RESULT_HIDDEN InputMethodManager.RESULT_HIDDEN}.
-     * @param showInputToken an opaque {@link android.os.Binder} token to identify which API call
-     *        of {@link InputMethodManager#showSoftInput(View, int)} is associated with
-     *        this callback.
      * @param statsToken the token tracking the current IME request.
+
      * @hide
      */
     @MainThread
     public default void showSoftInputWithToken(@ShowFlags int flags, ResultReceiver resultReceiver,
-            IBinder showInputToken, @NonNull ImeTracker.Token statsToken) {
+            @NonNull ImeTracker.Token statsToken) {
         showSoftInput(flags, resultReceiver);
     }
 
@@ -349,15 +346,13 @@ public interface InputMethod {
      * {@link InputMethodManager#RESULT_UNCHANGED_HIDDEN InputMethodManager.RESULT_UNCHANGED_HIDDEN},
      * {@link InputMethodManager#RESULT_SHOWN InputMethodManager.RESULT_SHOWN}, or
      * {@link InputMethodManager#RESULT_HIDDEN InputMethodManager.RESULT_HIDDEN}.
-     * @param hideInputToken an opaque {@link android.os.Binder} token to identify which API call
-     *         of {@link InputMethodManager#hideSoftInputFromWindow(IBinder, int)}} is associated
-     *         with this callback.
      * @param statsToken the token tracking the current IME request.
+
      * @hide
      */
     @MainThread
     public default void hideSoftInputWithToken(int flags, ResultReceiver resultReceiver,
-            IBinder hideInputToken, @NonNull ImeTracker.Token statsToken) {
+            @NonNull ImeTracker.Token statsToken) {
         hideSoftInput(flags, resultReceiver);
     }
 

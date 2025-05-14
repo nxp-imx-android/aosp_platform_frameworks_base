@@ -204,11 +204,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         getController().onImeControlTargetChanged(base);
         final @InsetsType int changedTypes = base.setRequestedVisibleTypes(ime(), ime());
         getController().onRequestedVisibleTypesChanged(base, changedTypes, null /* statsToken */);
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            // to set the serverVisibility, the IME needs to be drawn and onPostLayout be called.
-            mImeWindow.mWinAnimator.mDrawState = HAS_DRAWN;
-            getController().onPostLayout();
-        }
+        // to set the serverVisibility, the IME needs to be drawn and onPostLayout be called.
+        mImeWindow.mWinAnimator.mDrawState = HAS_DRAWN;
+        getController().onPostLayout();
 
         // Send our spy window (app) into the system so that we can detect the invocation.
         final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).build();
@@ -569,11 +567,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         getController().onRequestedVisibleTypesChanged(app, changedTypes, null /* statsToken */);
         assertTrue(ime.getControllableInsetProvider().getSource().isVisible());
 
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            // The IME is only set to shown, after onPostLayout is called and all preconditions
-            // (serverVisible, no givenInsetsPending, etc.) are fulfilled
-            getController().getImeSourceProvider().onPostLayout();
-        }
+        // The IME is only set to shown, after onPostLayout is called and all preconditions
+        // (serverVisible, no givenInsetsPending, etc.) are fulfilled
+        getController().getImeSourceProvider().onPostLayout();
 
         getController().updateAboveInsetsState(true /* notifyInsetsChange */);
         assertNotNull(app.getInsetsState().peekSource(ID_IME));

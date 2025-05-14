@@ -4232,25 +4232,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @param target current IME target.
      * @return {@link InsetsControlTarget} that can host IME.
      */
-    InsetsControlTarget getImeHostOrFallback(@Nullable WindowState target) {
+    InsetsControlTarget getImeHost(@Nullable WindowState target) {
         if (target != null
                 && target.getDisplayContent().getImePolicy() == DISPLAY_IME_POLICY_LOCAL) {
             return target;
         }
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            final DisplayContent defaultDc = getUserMainDisplayContent();
-            return defaultDc.mRemoteInsetsControlTarget;
-        } else {
-            return getImeFallback();
-        }
-    }
-
-    InsetsControlTarget getImeFallback() {
-        // host is in non-default display that doesn't support system decor, default to
-        // default display's StatusBar to control IME (when available), else let system control it.
         final DisplayContent defaultDc = getUserMainDisplayContent();
-        final WindowState statusBar = defaultDc.getDisplayPolicy().getStatusBar();
-        return statusBar != null ? statusBar : defaultDc.mRemoteInsetsControlTarget;
+        return defaultDc.mRemoteInsetsControlTarget;
     }
 
     private DisplayContent getUserMainDisplayContent() {
@@ -4714,9 +4702,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                                 mImeWindowsContainer.getParent().mSurfaceControl));
             updateImeControlTarget(forceUpdateImeParent);
 
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
-            }
+            mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
         }
     }
 
@@ -4806,19 +4792,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // in case seeing unexpected IME surface visibility change when delivering the IME leash
             // to the remote insets target during the IME restarting, but the focus window is not in
             // multi-windowing mode, return null target until the next input target updated.
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // The control target could be the RemoteInsetsControlTarget if the focussed
-                // view is on a virtual display that can not show the IME (and therefore it will
-                // be shown on the default display)
-                if (android.view.inputmethod.Flags
-                        .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-                    if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
-                        return mRemoteInsetsControlTarget;
-                    }
-                } else {
-                    if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
-                        return mRemoteInsetsControlTarget;
-                    }
+            // The control target could be the RemoteInsetsControlTarget if the focussed
+            // view is on a virtual display that can not show the IME (and therefore it will
+            // be shown on the default display)
+            if (android.view.inputmethod.Flags
+                    .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
+                if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
+                    return mRemoteInsetsControlTarget;
+                }
+            } else {
+                if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
+                    return mRemoteInsetsControlTarget;
                 }
             }
             return null;
@@ -4826,7 +4810,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         final WindowState imeInputTargetWindow = mImeInputTarget.getWindowState();
         if (!isImeControlledByApp() && mRemoteInsetsControlTarget != null
-                || getImeHostOrFallback(imeInputTargetWindow) == mRemoteInsetsControlTarget) {
+                || getImeHost(imeInputTargetWindow) == mRemoteInsetsControlTarget) {
             return mRemoteInsetsControlTarget;
         } else {
             return imeInputTargetWindow;
@@ -5063,12 +5047,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             forAllWindows(mApplySurfaceChangesTransaction, true /* traverseTopToBottom */);
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-        }
-
-        if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-            // This should be called after the insets have been dispatched to clients and we have
-            // committed finish drawing windows.
-            mInsetsStateController.getImeSourceProvider().checkAndStartShowImePostLayout();
         }
 
         mLastHasContent = mTmpApplySurfaceChangesTransactionState.displayHasContent;
@@ -7077,13 +7055,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         @Override
         public boolean isRequestedVisible(@InsetsType int types) {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                return (mRequestedVisibleTypes & types) != 0;
-            } else {
-                return ((types & ime()) != 0
-                        && getInsetsStateController().getImeSourceProvider().isImeShowing())
-                        || (mRequestedVisibleTypes & types) != 0;
-            }
+            return (mRequestedVisibleTypes & types) != 0;
         }
 
         @Override
@@ -7094,15 +7066,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         @Override
         public void setImeInputTargetRequestedVisibility(boolean visible,
                 @NonNull ImeTracker.Token statsToken) {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // TODO(b/353463205) we won't have the statsToken in all cases, but should still log
-                try {
-                    mRemoteInsetsController.setImeInputTargetRequestedVisibility(visible,
-                            statsToken);
-                } catch (RemoteException e) {
-                    // TODO(b/353463205) fail statsToken
-                    Slog.w(TAG, "Failed to deliver setImeInputTargetRequestedVisibility", e);
-                }
+            // TODO(b/353463205) we won't have the statsToken in all cases, but should still log
+            try {
+                mRemoteInsetsController.setImeInputTargetRequestedVisibility(visible,
+                        statsToken);
+            } catch (RemoteException e) {
+                // TODO(b/353463205) fail statsToken
+                Slog.w(TAG, "Failed to deliver setImeInputTargetRequestedVisibility", e);
             }
         }
 

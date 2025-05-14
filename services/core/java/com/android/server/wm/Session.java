@@ -710,10 +710,8 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             final WindowState win = mService.windowForClientLocked(this, window,
                     false /* throwOnError */);
             if (win != null) {
-                if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                    ImeTracker.forLogging().onProgress(imeStatsToken,
-                            ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
-                }
+                ImeTracker.forLogging().onProgress(imeStatsToken,
+                        ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
                 final @InsetsType int changedTypes =
                         win.setRequestedVisibleTypes(requestedVisibleTypes);
                 win.getDisplayContent().getInsetsPolicy().onRequestedVisibleTypesChanged(win,
@@ -723,11 +721,8 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                     task.dispatchTaskInfoChangedIfNeeded(/* forced= */ true);
                 }
             } else {
-                EmbeddedWindowController.EmbeddedWindow embeddedWindow = null;
-                if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                    embeddedWindow = mService.mEmbeddedWindowController.getByWindowToken(
-                            window.asBinder());
-                }
+                EmbeddedWindowController.EmbeddedWindow embeddedWindow =
+                        mService.mEmbeddedWindowController.getByWindowToken(window.asBinder());
                 if (embeddedWindow != null) {
                     // If there is no WindowState for the IWindow, it could be still an
                     // EmbeddedWindow. Therefore, check the EmbeddedWindowController as well

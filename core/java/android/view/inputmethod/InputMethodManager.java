@@ -23,7 +23,6 @@ import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_IMMEDIATE;
 import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_MONITOR;
 import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.DISPLAY_ID;
 import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.EDITOR_INFO;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.IME_INSETS_SOURCE_CONSUMER;
 import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION;
 import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION_CALL;
 import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_METHOD_MANAGER;
@@ -93,7 +92,6 @@ import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 import android.view.ImeFocusController;
-import android.view.ImeInsetsSourceConsumer;
 import android.view.InputChannel;
 import android.view.InputEvent;
 import android.view.InputEventSender;
@@ -743,12 +741,6 @@ public final class InputMethodManager {
     @GuardedBy("mH")
     private int mRequestUpdateCursorAnchorInfoMonitorMode = REQUEST_UPDATE_CURSOR_ANCHOR_INFO_NONE;
 
-    /**
-     * Applies the IME visibility and listens for other state changes.
-     */
-    @GuardedBy("mH")
-    private ImeInsetsSourceConsumer mImeInsetsConsumer;
-
     @GuardedBy("mH")
     private final Pool<PendingEvent> mPendingEventPool = new SimplePool<>(20);
     @GuardedBy("mH")
@@ -772,7 +764,6 @@ public final class InputMethodManager {
     private static final int MSG_UNBIND_ACCESSIBILITY_SERVICE = 12;
     private static final int MSG_SET_INTERACTIVE = 13;
     private static final int MSG_SET_VISIBILITY = 14;
-    private static final int MSG_ON_SHOW_REQUESTED = 31;
     private static final int MSG_START_INPUT_RESULT = 40;
 
     /**
@@ -882,7 +873,7 @@ public final class InputMethodManager {
     private static boolean hasViewImeRequestedVisible(View view) {
         // before the refactor, the requestedVisibleTypes for the IME were not in sync with
         // the state that was actually requested.
-        if (Flags.refactorInsetsController() && view != null) {
+        if (view != null) {
             final var controller = view.getWindowInsetsController();
             if (controller != null) {
                 return (view.getWindowInsetsController()
@@ -1037,7 +1028,7 @@ public final class InputMethodManager {
         @GuardedBy("mH")
         private void setCurrentRootViewLocked(ViewRootImpl rootView) {
             final boolean wasEmpty = mCurRootView == null;
-            if (Flags.refactorInsetsController() && !wasEmpty && mCurRootView != rootView) {
+            if (!wasEmpty && mCurRootView != rootView) {
                 onImeFocusLost(mCurRootView);
             }
 
@@ -1494,14 +1485,6 @@ public final class InputMethodManager {
                     }
                     if (ic != null) {
                         ic.dispatchReportFullscreenMode(fullscreen);
-                    }
-                    return;
-                }
-                case MSG_ON_SHOW_REQUESTED: {
-                    synchronized (mH) {
-                        if (mImeInsetsConsumer != null) {
-                            mImeInsetsConsumer.onShowRequested();
-                        }
                     }
                     return;
                 }
@@ -2459,60 +2442,43 @@ public final class InputMethodManager {
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-            if (Flags.refactorInsetsController()) {
-                final var viewRootImpl = view.getViewRootImpl();
-                // In case of a running show IME animation, it should not be requested visible,
-                // otherwise the animation would jump and not be controlled by the user anymore.
-                // If predictive back is in progress, and a editText is focussed, we should
-                // show the IME.
-                if (viewRootImpl != null && (
-                        (viewRootImpl.getInsetsController().computeUserAnimatingTypes()
-                                & WindowInsets.Type.ime()) == 0
-                        || viewRootImpl.getInsetsController()
-                                .isPredictiveBackImeHideAnimInProgress())) {
-                    Handler vh = view.getHandler();
-                    ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
-                    if (resultReceiver != null) {
-                        final boolean imeReqVisible = hasViewImeRequestedVisible(
-                                viewRootImpl.getView());
-                        resultReceiver.send(
-                                imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
-                                        : InputMethodManager.RESULT_SHOWN, null);
-                    }
-                    // TODO(b/322992891) handle case of SHOW_IMPLICIT
-                    if (vh.getLooper() != Looper.myLooper()) {
-                        // The view is running on a different thread than our own, so
-                        // we need to reschedule our work for over there.
-                        if (DEBUG) Log.v(TAG, "Show soft input: reschedule to view thread");
-                        final var finalStatsToken = statsToken;
-                        vh.post(() -> viewRootImpl.getInsetsController().show(
-                                WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
-                    } else {
-                        viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
-                                false /* fromIme */, statsToken);
-                    }
-                    return true;
-                }
-                ImeTracker.forLogging().onCancelled(statsToken,
+            final var viewRootImpl = view.getViewRootImpl();
+            // In case of a running show IME animation, it should not be requested visible,
+            // otherwise the animation would jump and not be controlled by the user anymore.
+            // If predictive back is in progress, and a editText is focussed, we should
+            // show the IME.
+            if (viewRootImpl != null && (
+                    (viewRootImpl.getInsetsController().computeUserAnimatingTypes()
+                            & WindowInsets.Type.ime()) == 0
+                    || viewRootImpl.getInsetsController()
+                            .isPredictiveBackImeHideAnimInProgress())) {
+                Handler vh = view.getHandler();
+                ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
-                return false;
-            } else {
-                // Makes sure to call ImeInsetsSourceConsumer#onShowRequested on the UI thread.
-                // TODO(b/229426865): call WindowInsetsController#show instead.
-                mH.executeOrSendMessage(Message.obtain(mH, MSG_ON_SHOW_REQUESTED));
-                Log.d(TAG, "showSoftInput() view=" + view + " flags=" + flags + " reason="
-                        + InputMethodDebug.softInputDisplayReasonToString(reason));
-                return IInputMethodManagerGlobalInvoker.showSoftInput(
-                        mClient,
-                        view.getWindowToken(),
-                        statsToken,
-                        flags,
-                        mCurRootView.getLastClickToolType(),
-                        resultReceiver,
-                        reason,
-                        mAsyncShowHideMethodEnabled);
+                if (resultReceiver != null) {
+                    final boolean imeReqVisible = hasViewImeRequestedVisible(
+                            viewRootImpl.getView());
+                    resultReceiver.send(
+                            imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
+                                    : InputMethodManager.RESULT_SHOWN, null);
+                }
+                // TODO(b/322992891) handle case of SHOW_IMPLICIT
+                if (vh.getLooper() != Looper.myLooper()) {
+                    // The view is running on a different thread than our own, so
+                    // we need to reschedule our work for over there.
+                    if (DEBUG) Log.v(TAG, "Show soft input: reschedule to view thread");
+                    final var finalStatsToken = statsToken;
+                    vh.post(() -> viewRootImpl.getInsetsController().show(
+                            WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
+                } else {
+                    viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
+                            false /* fromIme */, statsToken);
+                }
+                return true;
             }
+            ImeTracker.forLogging().onCancelled(statsToken,
+                    ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
+            return false;
         }
     }
 
@@ -2542,25 +2508,7 @@ public final class InputMethodManager {
                 return;
             }
 
-            if (Flags.refactorInsetsController()) {
-                showSoftInput(rootView, statsToken, flags, resultReceiver, reason);
-                return;
-            }
-
-            ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
-
-            // Makes sure to call ImeInsetsSourceConsumer#onShowRequested on the UI thread.
-            // TODO(b/229426865): call WindowInsetsController#show instead.
-            mH.executeOrSendMessage(Message.obtain(mH, MSG_ON_SHOW_REQUESTED));
-            IInputMethodManagerGlobalInvoker.showSoftInput(
-                    mClient,
-                    rootView.getWindowToken(),
-                    statsToken,
-                    flags,
-                    mCurRootView.getLastClickToolType(),
-                    resultReceiver,
-                    reason,
-                    mAsyncShowHideMethodEnabled);
+            showSoftInput(rootView, statsToken, flags, resultReceiver, reason);
         }
     }
 
@@ -2673,62 +2621,57 @@ public final class InputMethodManager {
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
                 // with the flag enabled and targeting Android Baklava onwards, the return value
                 // should be always true (was false before).
-                return Flags.refactorInsetsController() && CompatChanges.isChangeEnabled(
+                return CompatChanges.isChangeEnabled(
                         ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
             }
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-            if (Flags.refactorInsetsController()) {
-                // TODO(b/322992891) handle case of HIDE_IMPLICIT_ONLY
-                final var viewRootImpl = servedView.getViewRootImpl();
-                if (viewRootImpl != null) {
-                    Handler vh = servedView.getHandler();
-                    if (vh == null) {
-                        // If the view doesn't have a handler, something has changed out from
-                        // under us. The current input has been closed before (from checkFocus).
-                        ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-                        // with the flag enabled and targeting Android Baklava onwards, the
-                        // return value should be always true (was false before).
-                        return Flags.refactorInsetsController() && CompatChanges.isChangeEnabled(
-                                ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
-                    }
-                    ImeTracker.forLogging().onProgress(statsToken,
+            // TODO(b/322992891) handle case of HIDE_IMPLICIT_ONLY
+            final var viewRootImpl = servedView.getViewRootImpl();
+            if (viewRootImpl != null) {
+                Handler vh = servedView.getHandler();
+                if (vh == null) {
+                    // If the view doesn't have a handler, something has changed out from
+                    // under us. The current input has been closed before (from checkFocus).
+                    ImeTracker.forLogging().onFailed(statsToken,
                             ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-
-                    final boolean imeReqVisible = hasViewImeRequestedVisible(
-                            viewRootImpl.getView());
-                    if (resultReceiver != null) {
-                        resultReceiver.send(
-                                !imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_HIDDEN
-                                        : InputMethodManager.RESULT_HIDDEN, null);
-                    }
-                    if (vh.getLooper() != Looper.myLooper()) {
-                        // The view is running on a different thread than our own, so
-                        // we need to reschedule our work for over there.
-                        if (DEBUG) Log.v(TAG, "Hiding soft input: reschedule to view thread");
-                        final var finalStatsToken = statsToken;
-                        vh.post(() -> viewRootImpl.getInsetsController().hide(
-                                WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
-                    } else {
-                        viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
-                                false /* fromIme */, statsToken);
-                    }
-                    if (!CompatChanges.isChangeEnabled(
-                            ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW)) {
-                        // if the IME was not visible before, the additional hide won't change
-                        // anything.
-                        return imeReqVisible;
-                    }
+                    // with the flag enabled and targeting Android Baklava onwards, the
+                    // return value should be always true (was false before).
+                    return CompatChanges.isChangeEnabled(
+                            ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
                 }
-                // Targeting Android Baklava onwards, this method will always return true.
-                return CompatChanges.isChangeEnabled(
-                        ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
-            } else {
-                return IInputMethodManagerGlobalInvoker.hideSoftInput(mClient, windowToken,
-                        statsToken, flags, resultReceiver, reason, mAsyncShowHideMethodEnabled);
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+
+                final boolean imeReqVisible = hasViewImeRequestedVisible(
+                        viewRootImpl.getView());
+                if (resultReceiver != null) {
+                    resultReceiver.send(
+                            !imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_HIDDEN
+                                    : InputMethodManager.RESULT_HIDDEN, null);
+                }
+                if (vh.getLooper() != Looper.myLooper()) {
+                    // The view is running on a different thread than our own, so
+                    // we need to reschedule our work for over there.
+                    if (DEBUG) Log.v(TAG, "Hiding soft input: reschedule to view thread");
+                    final var finalStatsToken = statsToken;
+                    vh.post(() -> viewRootImpl.getInsetsController().hide(
+                            WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
+                } else {
+                    viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
+                            false /* fromIme */, statsToken);
+                }
+                if (!CompatChanges.isChangeEnabled(
+                        ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW)) {
+                    // if the IME was not visible before, the additional hide won't change
+                    // anything.
+                    return imeReqVisible;
+                }
             }
+            // Targeting Android Baklava onwards, this method will always return true.
+            return CompatChanges.isChangeEnabled(
+                    ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
         }
     }
 
@@ -2769,14 +2712,8 @@ public final class InputMethodManager {
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-            if (Flags.refactorInsetsController()) {
-                return hideSoftInputFromWindow(view.getWindowToken(), flags,
-                        null /* resultReceiver */, reason, statsToken);
-            } else {
-                return IInputMethodManagerGlobalInvoker.hideSoftInput(mClient,
-                        view.getWindowToken(), statsToken, flags, null, reason,
-                        mAsyncShowHideMethodEnabled);
-            }
+            return hideSoftInputFromWindow(view.getWindowToken(), flags,
+                    null /* resultReceiver */, reason, statsToken);
         }
     }
 
@@ -3873,135 +3810,32 @@ public final class InputMethodManager {
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-            if (Flags.refactorInsetsController()) {
-                synchronized (mH) {
-                    Handler vh = rootView.getHandler();
-                    if (vh == null) {
-                        // If the view doesn't have a handler, something has changed out from
-                        // under us.
-                        ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-                        return;
-                    }
-                    ImeTracker.forLogging().onProgress(statsToken,
+            synchronized (mH) {
+                Handler vh = rootView.getHandler();
+                if (vh == null) {
+                    // If the view doesn't have a handler, something has changed out from
+                    // under us.
+                    ImeTracker.forLogging().onFailed(statsToken,
+                            ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+                    return;
+                }
+                ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
 
-                    if (vh.getLooper() != Looper.myLooper()) {
-                        // The view is running on a different thread than our own, so
-                        // we need to reschedule our work for over there.
-                        if (DEBUG) {
-                            Log.v(TAG, "Close current input: reschedule hide to view thread");
-                        }
-                        final var viewRootImpl = mCurRootView;
-                        vh.post(() -> viewRootImpl.getInsetsController().hide(
-                                WindowInsets.Type.ime(), false /* fromIme */, statsToken));
-                    } else {
-                        mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(),
-                                false /* fromIme */, statsToken);
+                if (vh.getLooper() != Looper.myLooper()) {
+                    // The view is running on a different thread than our own, so
+                    // we need to reschedule our work for over there.
+                    if (DEBUG) {
+                        Log.v(TAG, "Close current input: reschedule hide to view thread");
                     }
+                    final var viewRootImpl = mCurRootView;
+                    vh.post(() -> viewRootImpl.getInsetsController().hide(
+                            WindowInsets.Type.ime(), false /* fromIme */, statsToken));
+                } else {
+                    mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(),
+                            false /* fromIme */, statsToken);
                 }
-            } else {
-                IInputMethodManagerGlobalInvoker.hideSoftInput(
-                        mClient,
-                        rootView.getWindowToken(),
-                        statsToken,
-                        HIDE_NOT_ALWAYS,
-                        null,
-                        reason,
-                        true /*async */);
             }
-        }
-    }
-
-    /**
-     * Register for IME state callbacks and applying visibility in
-     * {@link android.view.ImeInsetsSourceConsumer}.
-     * @hide
-     */
-    public void registerImeConsumer(@NonNull ImeInsetsSourceConsumer imeInsetsConsumer) {
-        if (imeInsetsConsumer == null) {
-            throw new IllegalStateException("ImeInsetsSourceConsumer cannot be null.");
-        }
-
-        synchronized (mH) {
-            mImeInsetsConsumer = imeInsetsConsumer;
-        }
-    }
-
-    /**
-     * Unregister for IME state callbacks and applying visibility in
-     * {@link android.view.ImeInsetsSourceConsumer}.
-     * @hide
-     */
-    public void unregisterImeConsumer(@NonNull ImeInsetsSourceConsumer imeInsetsConsumer) {
-        if (imeInsetsConsumer == null) {
-            throw new IllegalStateException("ImeInsetsSourceConsumer cannot be null.");
-        }
-
-        synchronized (mH) {
-            if (mImeInsetsConsumer == imeInsetsConsumer) {
-                mImeInsetsConsumer = null;
-            }
-        }
-    }
-
-    /**
-     * Call showSoftInput with currently focused view.
-     *
-     * @param windowToken the window from which this request originates. If this doesn't match the
-     *                    currently served view, the request is ignored and returns {@code false}.
-     * @param statsToken the token tracking the current IME request.
-     *
-     * @return {@code true} if IME can (eventually) be shown, {@code false} otherwise.
-     * @hide
-     */
-    public boolean requestImeShow(IBinder windowToken, @NonNull ImeTracker.Token statsToken) {
-        checkFocus();
-        synchronized (mH) {
-            final View servedView = getServedViewLocked();
-            if (servedView == null || servedView.getWindowToken() != windowToken) {
-                ImeTracker.forLogging().onFailed(statsToken,
-                        ImeTracker.PHASE_CLIENT_REQUEST_IME_SHOW);
-                return false;
-            }
-
-            ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_CLIENT_REQUEST_IME_SHOW);
-
-            showSoftInput(servedView, statsToken, 0 /* flags */, null /* resultReceiver */,
-                    SoftInputShowHideReason.SHOW_SOFT_INPUT_BY_INSETS_API);
-            return true;
-        }
-    }
-
-    /**
-     * Notify IMMS that IME insets are no longer visible.
-     *
-     * @param windowToken the window from which this request originates. If this doesn't match the
-     *                    currently served view, the request is ignored.
-     * @param statsToken the token tracking the current IME request.
-     * @hide
-     */
-    public void notifyImeHidden(IBinder windowToken, @NonNull ImeTracker.Token statsToken) {
-        ImeTracker.forLatency().onRequestHide(statsToken, ImeTracker.ORIGIN_CLIENT,
-                SoftInputShowHideReason.HIDE_SOFT_INPUT_BY_INSETS_API,
-                ActivityThread::currentApplication);
-        ImeTracing.getInstance().triggerClientDump("InputMethodManager#notifyImeHidden", this,
-                null /* icProto */);
-        synchronized (mH) {
-            if (!isImeSessionAvailableLocked() || mCurRootView == null
-                    || mCurRootView.getWindowToken() != windowToken) {
-                ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
-                ImeTracker.forLatency().onHideFailed(statsToken,
-                        ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
-                return;
-            }
-
-            ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
-
-            IInputMethodManagerGlobalInvoker.hideSoftInput(mClient, windowToken, statsToken,
-                    0 /* flags */, null /* resultReceiver */,
-                    SoftInputShowHideReason.HIDE_SOFT_INPUT_BY_INSETS_API, true /* async */);
         }
     }
 
@@ -5296,9 +5130,6 @@ public final class InputMethodManager {
             }
             if (mCurrentEditorInfo != null) {
                 mCurrentEditorInfo.dumpDebug(proto, EDITOR_INFO);
-            }
-            if (mImeInsetsConsumer != null) {
-                mImeInsetsConsumer.dumpDebug(proto, IME_INSETS_SOURCE_CONSUMER);
             }
             if (mServedInputConnection != null) {
                 mServedInputConnection.dumpDebug(proto, INPUT_CONNECTION);
