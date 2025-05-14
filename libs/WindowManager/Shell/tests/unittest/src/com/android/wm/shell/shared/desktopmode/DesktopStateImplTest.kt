@@ -30,6 +30,7 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.R
+import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.google.common.truth.Truth.assertThat
@@ -37,9 +38,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -51,10 +52,10 @@ import org.mockito.quality.Strictness
 class DesktopStateImplTest : ShellTestCase() {
 
     private lateinit var mockitoSession: StaticMockitoSession
-    @Mock private lateinit var displayManager: DisplayManager
-    @Mock private lateinit var windowManager: WindowManager
-    @Mock private lateinit var defaultDisplay: Display
-    @Mock private lateinit var extendedDisplay: Display
+    private val displayManager: DisplayManager = mock()
+    private val windowManager: WindowManager = mock()
+    private val defaultDisplay: Display = mock()
+    private val extendedDisplay: Display = mock()
 
     @Before
     fun setUp() {
@@ -359,7 +360,7 @@ class DesktopStateImplTest : ShellTestCase() {
         assertThat(desktopState.isProjectedMode()).isFalse()
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE, Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE, Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     @Test
     fun isProjectedMode_twoDisplay_onlyExternalSupportDesktopMode_returnsTrue() {
         whenever(displayManager.displays)
@@ -403,6 +404,17 @@ class DesktopStateImplTest : ShellTestCase() {
         val desktopState = DesktopStateImpl(context)
 
         assertThat(desktopState.canShowDesktopExperienceDevOption).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_SHOW_DESKTOP_EXPERIENCE_DEV_OPTION)
+    @Test
+    fun canShowDesktopExperienceDevOption_flagEnabled_deviceNotEligible_forceDevOpt_returnsTrue() {
+        mContext
+            .getOrCreateTestableResources()
+            .addOverride(R.bool.config_isDesktopModeDevOptionSupported, true)
+        val desktopState = DesktopStateImpl(context)
+
+        assertThat(desktopState.canShowDesktopExperienceDevOption).isTrue()
     }
 
     @EnableFlags(

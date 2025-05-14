@@ -73,8 +73,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
         desktopModeEnabled || isDesktopModeEnabledByDevOption
     }
 
+    private val isDeviceEligibleForDesktopExperienceDevOption =
+        !enforceDeviceRestrictions || isDesktopModeSupported || isDesktopModeDevOptionSupported
+
     override val canShowDesktopExperienceDevOption: Boolean =
-        Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopMode
+        Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopExperienceDevOption
 
     override val enterDesktopByDefaultOnFreeformDisplay: Boolean =
         DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue ||
