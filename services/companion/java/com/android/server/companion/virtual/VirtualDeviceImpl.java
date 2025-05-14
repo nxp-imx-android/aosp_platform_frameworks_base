@@ -49,6 +49,7 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.IVirtualDeviceIntentInterceptor;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
+import android.companion.virtual.ViewConfigurationParams;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
@@ -490,10 +491,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         }
         mVirtualCameraController = virtualCameraController;
         mViewConfigurationController = viewConfigurationController;
-        if (mViewConfigurationController != null) {
-            mViewConfigurationController.applyViewConfigurationParams(deviceId,
-                    params.getViewConfigurationParams());
-        }
         try {
             token.linkToDeath(this, 0);
         } catch (RemoteException e) {
@@ -529,6 +526,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                             "android.server.companion.virtual:LOCKDOWN_ENDED");
                 }
             }
+        }
+    }
+
+    void applyViewConfigurationParams(@Nullable ViewConfigurationParams viewConfigurationParams) {
+        if (mViewConfigurationController != null) {
+            mViewConfigurationController.applyViewConfigurationParams(mDeviceId,
+                    viewConfigurationParams);
         }
     }
 

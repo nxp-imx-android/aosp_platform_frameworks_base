@@ -41,6 +41,7 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.sensor.VirtualSensor;
+import android.companion.virtualdevice.flags.Flags;
 import android.companion.virtualnative.IVirtualDeviceManagerNative;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -492,6 +493,10 @@ public class VirtualDeviceManagerService extends SystemService {
 
             synchronized (mVirtualDeviceManagerLock) {
                 mVirtualDevices.put(deviceId, virtualDevice);
+            }
+
+            if (Flags.viewconfigurationApis()) {
+                virtualDevice.applyViewConfigurationParams(params.getViewConfigurationParams());
             }
 
             mVirtualDeviceListeners.broadcast(listener -> {

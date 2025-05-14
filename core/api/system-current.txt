@@ -3440,8 +3440,10 @@ package android.companion.virtual {
     method public int describeContents();
     method @NonNull public java.time.Duration getDoubleTapMinTimeDuration();
     method @NonNull public java.time.Duration getDoubleTapTimeoutDuration();
+    method @NonNull public java.time.Duration getLongPressTimeoutDuration();
     method @FloatRange(from=0) public float getMaximumFlingVelocityDpPerSecond();
     method @FloatRange(from=0) public float getMinimumFlingVelocityDpPerSecond();
+    method @NonNull public java.time.Duration getMultiPressTimeoutDuration();
     method @FloatRange(from=0) public float getScrollFriction();
     method @NonNull public java.time.Duration getTapTimeoutDuration();
     method @FloatRange(from=0) public float getTouchSlopDp();
@@ -3454,8 +3456,10 @@ package android.companion.virtual {
     method @NonNull public android.companion.virtual.ViewConfigurationParams build();
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapMinTimeDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapTimeoutDuration(@NonNull java.time.Duration);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setLongPressTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMaximumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMinimumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMultiPressTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setScrollFriction(@FloatRange(from=0) float);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTapTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTouchSlopDp(@FloatRange(from=0) float);
