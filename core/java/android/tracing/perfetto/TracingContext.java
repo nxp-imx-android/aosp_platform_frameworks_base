@@ -59,6 +59,15 @@ public class TracingContext<DataSourceInstanceType extends DataSourceInstance, T
     }
 
     /**
+     * Gets the index of the data source instance this tracing context is associated with.
+     *
+     * @return The index of the data source instance.
+     */
+    public int getInstanceIndex() {
+        return mInstanceIndex;
+    }
+
+    /**
      * Can optionally be used to store custom per-sequence
      * session data, which is not reset when incremental state is cleared
      * (e.g. configuration options).

@@ -118,6 +118,25 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @NonNull
     private final ReadWriteLock mConfigUpdaterLock = new ReentrantReadWriteLock();
 
+    /**
+     * This set tracks active tracing instances from the perspective of the {@code
+     * mBackgroundLoggingService}. It contains instance indexes, added when a tracing session starts
+     * and removed when it stops. This ensures that queued messages are traced only to the expected
+     * tracing session.
+     *
+     * <p>Specifically, it prevents:
+     * <ul>
+     *   <li>Tracing messages logged before a session starts but still in the queue.</li>
+     *   <li>Tracing messages logged after a session stops but still in the queue.</li>
+     * </ul>
+     *
+     * <p>The set is modified on the single-threaded {@code mBackgroundLoggingService}, ensuring
+     * that the add/remove operations happen only after all messages in the queue at that point are
+     * processed.
+     */
+    @NonNull
+    private final Set<Integer> mActiveTracingInstances = new ArraySet<>();
+
     @NonNull
     private final HandlerThread mBackgroundThread;
 
@@ -557,6 +576,12 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             @NonNull Message message, @Nullable Object[] args, long tsNanos,
             @Nullable String stacktrace) {
         mDataSource.trace(ctx -> {
+            // Ensures the message we are logging here was added to the execution queue after this
+            // tracing instance was started and before it was stopped.
+            if (!mActiveTracingInstances.contains(ctx.getInstanceIndex())) {
+                return;
+            }
+
             final ProtoLogDataSource.TlsState tlsState = ctx.getCustomTlsState();
             final LogLevel logFrom = tlsState.getLogFromLevel(logGroup.name());
 
@@ -849,7 +874,20 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             writeLock.unlock();
         }
 
+        // It is crucial to add the instanceIdx to mActiveTracingInstances via the
+        // mBackgroundLoggingService. This ensures that this operation is enqueued
+        // and executed *after* any log messages that were submitted *before* this
+        // tracing instance started. The check for mActiveTracingInstances.contains(instanceIdx)
+        // happens within the logToProto method (which also runs on mBackgroundLoggingService).
+        // If we added instanceIdx directly, log messages already in the queue could be
+        // incorrectly attributed to this new tracing session.
+        queueTracingInstanceAddition(instanceIdx);
+
         Log.d(LOG_TAG, "Finished onTracingInstanceStart");
+    }
+
+    private void queueTracingInstanceAddition(int instanceIdx) {
+        mBackgroundHandler.post(() -> mActiveTracingInstances.add(instanceIdx));
     }
 
     private void onTracingInstanceStartLocked(@NonNull ProtoLogDataSource.ProtoLogConfig config) {
@@ -885,6 +923,14 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             int instanceIdx, @NonNull ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStop");
 
+        // Similar to onTracingInstanceStart, it's crucial to remove the instanceIdx
+        // via the mBackgroundLoggingService. This ensures that the removal happens
+        // *after* all log messages enqueued *before* this tracing instance was stopped
+        // have been processed and had a chance to be included in this trace.
+        // If we removed instanceIdx directly, log messages still in the queue that
+        // belong to this session might be dropped.
+        queueTracingInstanceRemoval(instanceIdx);
+
         var writeLock = mConfigUpdaterLock.writeLock();
         writeLock.lock();
         try {
@@ -894,6 +940,10 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
 
         Log.d(LOG_TAG, "Finished onTracingInstanceStop");
+    }
+
+    private void queueTracingInstanceRemoval(int instanceIdx) {
+        mBackgroundHandler.post(() -> mActiveTracingInstances.remove(instanceIdx));
     }
 
     private void onTracingInstanceStopLocked(@NonNull ProtoLogDataSource.ProtoLogConfig config) {
