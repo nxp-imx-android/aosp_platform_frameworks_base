@@ -400,6 +400,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     muteDrawable = muteDrawable,
                     isMuted = currentVolume == 0,
                 )
+                mSlider.stateDescription = getSliderStateDescription()
             }
         }
 
@@ -433,6 +434,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 return
             }
 
+            mSlider.isClickable = false
             mSlider.isEnabled = isVolumeControlAllowed
             mSlider.valueFrom = 0f
             mSlider.valueTo = maxVolume.toFloat()
@@ -452,6 +454,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
 
             mSlider.clearOnChangeListeners() // Prevent adding multiple listeners
             mSlider.addOnChangeListener { _: Slider, value: Float, fromUser: Boolean ->
+                mSlider.stateDescription = getSliderStateDescription()
                 if (fromUser) {
                     val seekBarVolume = value.toInt()
                     updateSliderIconsVisibility(
@@ -479,6 +482,11 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     }
                 }
             )
+        }
+
+        private fun getSliderStateDescription(): String {
+            val percentage = (mSlider.value * 100 / mSlider.valueTo).toInt()
+            return mContext.getString(R.string.media_output_dialog_volume_percentage, percentage)
         }
 
         private fun getMuteDrawable(isInputDevice: Boolean): Drawable? {
