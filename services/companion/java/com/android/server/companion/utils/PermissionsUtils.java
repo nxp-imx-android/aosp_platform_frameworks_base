@@ -16,12 +16,16 @@
 
 package com.android.server.companion.utils;
 
+import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
+import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
+import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.ADD_VOICEMAIL;
 import static android.Manifest.permission.ANSWER_PHONE_CALLS;
 import static android.Manifest.permission.BLUETOOTH_ADVERTISE;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.BLUETOOTH_SCAN;
 import static android.Manifest.permission.CALL_PHONE;
+import static android.Manifest.permission.CREATE_VIRTUAL_DEVICE;
 import static android.Manifest.permission.GET_ACCOUNTS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_COMPANION_DEVICES;
@@ -62,13 +66,17 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
+import static android.companion.CompanionResources.PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CONTACTS;
+import static android.companion.CompanionResources.PERMISSION_CREATE_VIRTUAL_DEVICE;
 import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
 import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
-import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_PHONE;
+import static android.companion.CompanionResources.PERMISSION_POST_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_SMS;
 import static android.companion.CompanionResources.PERMISSION_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -97,7 +105,6 @@ import android.util.ArraySet;
 
 import com.android.internal.app.IAppOpsService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,22 +117,35 @@ import java.util.Set;
  */
 public final class PermissionsUtils {
 
-    public static final Map<Integer, List<String>> PERM_SET_TO_PERMS = Map.of(
-            PERMISSION_CALENDAR, Arrays.asList(READ_CALENDAR, WRITE_CALENDAR),
-            PERMISSION_CALL_LOGS, Arrays.asList(READ_CALL_LOG, WRITE_CALL_LOG),
-            PERMISSION_CONTACTS, Arrays.asList(READ_CONTACTS, WRITE_CONTACTS, GET_ACCOUNTS),
-            PERMISSION_MICROPHONE, Arrays.asList(RECORD_AUDIO),
-            PERMISSION_NEARBY_DEVICES, Arrays.asList(BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT,
-                    BLUETOOTH_SCAN, NEARBY_WIFI_DEVICES),
-            PERMISSION_NOTIFICATIONS, Arrays.asList(POST_NOTIFICATIONS),
-            PERMISSION_PHONE, Arrays.asList(READ_PHONE_STATE, CALL_PHONE, ADD_VOICEMAIL,
-                    READ_VOICEMAIL, WRITE_VOICEMAIL, USE_SIP, PROCESS_OUTGOING_CALLS,
-                    ANSWER_PHONE_CALLS),
-            PERMISSION_SMS, Arrays.asList(SEND_SMS, RECEIVE_SMS, READ_SMS, RECEIVE_WAP_PUSH,
-                    RECEIVE_MMS, READ_CELL_BROADCASTS),
-            PERMISSION_STORAGE, Arrays.asList(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,
-                    READ_MEDIA_AUDIO, READ_MEDIA_VIDEO, READ_MEDIA_IMAGES,
-                    READ_MEDIA_VISUAL_USER_SELECTED));
+    public static final Map<Integer, List<String>> PERM_SET_TO_PERMS = new ArrayMap<>();
+    static {
+        PERM_SET_TO_PERMS.put(PERMISSION_CALENDAR, List.of(READ_CALENDAR, WRITE_CALENDAR));
+        PERM_SET_TO_PERMS.put(PERMISSION_CALL_LOGS, List.of(READ_CALL_LOG, WRITE_CALL_LOG));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_CONTACTS, List.of(READ_CONTACTS, WRITE_CONTACTS, GET_ACCOUNTS));
+        PERM_SET_TO_PERMS.put(PERMISSION_MICROPHONE, List.of(RECORD_AUDIO));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_NEARBY_DEVICES, List.of(BLUETOOTH_ADVERTISE, BLUETOOTH_CONNECT,
+                        BLUETOOTH_SCAN, NEARBY_WIFI_DEVICES));
+        PERM_SET_TO_PERMS.put(PERMISSION_POST_NOTIFICATIONS, List.of(POST_NOTIFICATIONS));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_PHONE, List.of(READ_PHONE_STATE, CALL_PHONE, ADD_VOICEMAIL,
+                        READ_VOICEMAIL, WRITE_VOICEMAIL, USE_SIP, PROCESS_OUTGOING_CALLS,
+                        ANSWER_PHONE_CALLS));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_SMS, List.of(SEND_SMS, RECEIVE_SMS, READ_SMS, RECEIVE_WAP_PUSH,
+                        RECEIVE_MMS, READ_CELL_BROADCASTS));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_STORAGE, List.of(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE,
+                        READ_MEDIA_AUDIO, READ_MEDIA_VIDEO, READ_MEDIA_IMAGES,
+                        READ_MEDIA_VISUAL_USER_SELECTED));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_CREATE_VIRTUAL_DEVICE, List.of(CREATE_VIRTUAL_DEVICE));
+        PERM_SET_TO_PERMS.put(PERMISSION_ADD_MIRROR_DISPLAY, List.of(ADD_MIRROR_DISPLAY));
+        PERM_SET_TO_PERMS.put(PERMISSION_ADD_TRUSTED_DISPLAY, List.of(ADD_TRUSTED_DISPLAY));
+        PERM_SET_TO_PERMS.put(
+                PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY, List.of(ADD_ALWAYS_UNLOCKED_DISPLAY));
+    }
 
     private static final Set<String> SYSTEM_ONLY_DEVICE_PROFILES;
     static {
