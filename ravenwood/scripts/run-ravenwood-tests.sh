@@ -37,6 +37,7 @@ smoke_exclude_re=""
 dry_run=""
 exclude_large_tests=0
 atest_opts=""
+build_only=0
 while getopts "sx:f:dtbLa:" opt; do
 case "$opt" in
     s)
@@ -62,6 +63,7 @@ case "$opt" in
         ;;
     b)
         # Build only
+        build_only=1
         ATEST=m
         ;;
     a)
@@ -156,7 +158,7 @@ run() {
 }
 
 extra_args=()
-if (( $exclude_large_tests )) ; then
+if (( $exclude_large_tests && ! $build_only )) ; then
     extra_args+=("--")
 
     # Need to add the following two options for each module.

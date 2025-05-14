@@ -11,20 +11,8 @@ rename android/.*/nano/   devicenano/
 # StatsD auto-generated
 class com.android.internal.util.FrameworkStatsLog keepclass  # no-pta
 
-# Exported to Mainline modules; cannot use annotations
+# Included in module-utils; cannot use annotations
 class com.android.internal.util.FastXmlSerializer keepclass  # no-pta
-class com.android.internal.util.FileRotator keepclass  # no-pta
-class com.android.internal.util.HexDump keepclass  # no-pta
-class com.android.internal.util.IndentingPrintWriter keepclass  # no-pta
-class com.android.internal.util.LocalLog keepclass  # no-pta
-class com.android.internal.util.MessageUtils keepclass  # no-pta
-class com.android.internal.util.TokenBucket keepclass  # no-pta
-class android.os.HandlerExecutor keepclass  # no-pta
-class android.util.BackupUtils keepclass  # no-pta
-class android.util.IndentingPrintWriter keepclass  # no-pta
-class android.util.LocalLog keepclass  # no-pta
-class android.util.Pair keepclass  # no-pta
-class android.util.Rational keepclass  # no-pta
 
 # From modules-utils; cannot use annotations
 class com.android.internal.util.Preconditions keepclass  # no-pta
