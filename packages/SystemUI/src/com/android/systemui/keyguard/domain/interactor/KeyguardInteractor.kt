@@ -305,7 +305,7 @@ constructor(
                     .filter { it }
                     .map { SecureCameraRelatedEventType.PrimaryBouncerBecameVisible },
                 keyguardTransitionInteractor
-                    .transitionValue(GONE)
+                    .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                     .filter { it == 1f }
                     .map { SecureCameraRelatedEventType.InGoneState },
             )
