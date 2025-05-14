@@ -32,6 +32,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -328,9 +329,16 @@ class AppCompatActivityRobot {
     }
 
     void setTopActivityResumed() {
-        mActivityStack.top().setVisible(true);
-        mActivityStack.top().setVisibleRequested(true);
-        mActivityStack.top().setState(RESUMED, "setTopActivityResumed");
+        doReturn(RESUMED).when(mActivityStack.top()).getState();
+        doReturn(true).when(mActivityStack.top()).isVisibleRequested();
+        doReturn(true).when(mActivityStack.top()).isVisible();
+        mActivityStack.top().mAppCompatController.getSizeCompatModePolicy()
+                .updateAppCompatDisplayInsets();
+        mActivityStack.top().ensureActivityConfiguration();
+    }
+
+    void clearInvocationsForActivity() {
+        clearInvocations(mActivityStack.top());
     }
 
     void setTopActivityConfigChanges(int supportedConfigChanges) {
@@ -382,6 +390,10 @@ class AppCompatActivityRobot {
         doReturn(devices).when(mSecondaryDisplayContent.mWmService.mInputManager).getInputDevices();
         mAtm.mWindowManager.mIsTouchDevice = true;
         mAtm.mWindowManager.displayReady();
+
+        // Make sure the display doesn't get into sleep when created;
+        doReturn(false).when(mSecondaryDisplayContent).shouldSleep();
+        mAtm.updateSleepIfNeededLocked();
 
         onPostDisplayContentCreation(mSecondaryDisplayContent);
     }

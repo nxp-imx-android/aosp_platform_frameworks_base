@@ -60,13 +60,15 @@ class AppCompatDisplayCompatModePolicy {
 
     /**
      * Returns whether the restart menu is enabled for display move. Currently it only gets shown
-     * when an app is in display compat mode.
+     * when an app is in display or size compat mode.
      *
      * @return {@code true} if the restart menu should be enabled for display move.
      */
     boolean isRestartMenuEnabledForDisplayMove() {
-        // Restart menu is only available to apps in display compat mode.
-        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue() && isInDisplayCompatMode();
+        // Restart menu is only available to apps in display/size compat mode.
+        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()
+                && (isInDisplayCompatMode()
+                || (mActivityRecord.inSizeCompatMode() && mDisplayChangedWithoutRestart));
     }
 
     /**

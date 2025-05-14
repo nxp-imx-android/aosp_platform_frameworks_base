@@ -21,6 +21,7 @@ import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
@@ -32,6 +33,7 @@ import android.platform.test.annotations.Presubmit;
 import androidx.annotation.NonNull;
 import androidx.test.filters.MediumTest;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +53,12 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     private static final int CONFIG_MASK_FOR_DISPLAY_MOVE =
             ~(CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE | CONFIG_RESOURCES_UNUSED);
 
+    @Before
+    public void setUp() {
+        doReturn(false).when(mDisplayContent).shouldSleep();
+        mAtm.updateSleepIfNeededLocked();
+    }
+
     @EnableFlags({FLAG_ENABLE_DISPLAY_COMPAT_MODE, FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS})
     @Test
     public void testDisplayCompatMode_gameDoesNotRestartWithDisplayMove() {
@@ -61,6 +69,7 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.activity().setTopActivityResumed();
             robot.activity().setTopActivityConfigChanges(CONFIG_MASK_FOR_DISPLAY_MOVE);
             robot.checkRestartMenuVisibility(false);
+            robot.activity().clearInvocationsForActivity();
 
             robot.activity().moveTaskToSecondaryDisplay();
             robot.activity().checkTopActivityRelaunched(false);
@@ -79,9 +88,31 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             robot.activity().setTopActivityResumed();
             robot.activity().setTopActivityConfigChanges(CONFIG_MASK_FOR_DISPLAY_MOVE);
             robot.checkRestartMenuVisibility(false);
+            robot.activity().clearInvocationsForActivity();
 
             robot.activity().moveTaskToSecondaryDisplay();
             robot.activity().checkTopActivityRelaunched(true);
+            robot.checkRestartMenuVisibility(false);
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testSizeCompatMode_sizeCompatModeAppHasRestartMenuWithDisplayMove() {
+        runTestScenario((robot) -> {
+            robot.activity().createSecondaryDisplay();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityInSizeCompatMode(true);
+            robot.activity().setShouldCreateCompatDisplayInsets(true);
+            robot.activity().setTopActivityResumed();
+            robot.checkRestartMenuVisibility(false);
+            robot.activity().clearInvocationsForActivity();
+
+            robot.activity().moveTaskToSecondaryDisplay();
+            robot.activity().checkTopActivityRelaunched(false);
+            robot.checkRestartMenuVisibility(true);
+
+            robot.activity().applyToTopActivity(ActivityRecord::restartProcessIfVisible);
             robot.checkRestartMenuVisibility(false);
         });
     }
