@@ -29,6 +29,8 @@ import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
+import static com.android.internal.util.Preconditions.checkArgument;
+
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.ColorInt;
@@ -127,11 +129,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.function.Consumer;
 
 /**
@@ -1801,6 +1806,15 @@ public class Notification implements Parcelable
      */
     public static final String EXTRA_SUMMARIZED_CONTENT = "android.summarization";
 
+    /**
+     * {@link #extras} key: an arraylist of {@link android.app.Notification.Metric}
+     * bundles provided by a {@link android.app.Notification.MetricStyle} notification (as supplied
+     * to {@link MetricStyle#addMetric} and related methods.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    static final String EXTRA_METRICS = "android.metrics";
 
     @UnsupportedAppUsage
     private Icon mSmallIcon;
@@ -11461,11 +11475,73 @@ public class Notification implements Parcelable
     }
 
     /**
-     * A notification style which shows up to 3 metrics when expanded.
+     * A notification style which shows up to 3 metrics when expanded. Metrics usually represent
+     * quantities that change over time, such as fitness information collected by a tracker, timers,
+     * weather information, etc.
+     *
+     * <p>To use this style with your Notification, feed it to
+     * {@link Notification.Builder#setStyle(android.app.Notification.Style)} like so:
+     * <pre class="prettyprint">
+     * new Notification.Builder(context)
+     *   .setStyle(new MetricStyle()
+     *       .addMetric(new Metric(new Metric.FixedInt(1979), "Steps", MEANING_HEALTH_STEPS))
+     *       .addMetric(new Metric(
+     *           Metric.TimeDifference.forStopwatch(startTime, FORMAT_CHRONOMETER_AUTOMATIC),
+     *           "Time elapsed", MEANING_CHRONOMETER_STOPWATCH)))
+     * </pre>
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
-    public static class MetricStyle extends Notification.Style {
-        // TODO(b/415828647): Implement this class
+    public static class MetricStyle extends Style {
+
+        private static final int MAX_METRICS = 3;
+
+        private final List<Metric> mMetrics = new ArrayList<>();
+
+        public MetricStyle() {
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof MetricStyle that)) return false;
+            if (this == that) return true;
+            return Objects.equals(this.mMetrics, that.mMetrics);
+        }
+
+        @Override
+        public int hashCode() {
+            return mMetrics.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "MetricStyle{" + mMetrics + "}";
+        }
+
+        /** Adds a {@link Metric} to this {@link MetricStyle}. */
+        @NonNull
+        public MetricStyle addMetric(@NonNull Metric metric) {
+            mMetrics.add(requireNonNull(metric));
+            return this;
+        }
+
+        /**
+         * Sets the list of {@link Metric} instances for this {@link MetricStyle}, replacing
+         * whatever was added before.
+         */
+        @NonNull
+        public MetricStyle setMetrics(@NonNull List<Metric> metrics) {
+            mMetrics.clear();
+            for (Metric metric : metrics) {
+                mMetrics.add(requireNonNull(metric));
+            }
+            return this;
+        }
+
+        /** Returns the list of {@link Metric} instances in this {@link MetricStyle}. */
+        @NonNull
+        public List<Metric> getMetrics() {
+            return mMetrics;
+        }
 
         /** @hide */
         @Override
@@ -11473,36 +11549,52 @@ public class Notification implements Parcelable
             if (other == null || getClass() != other.getClass()) {
                 return true;
             }
-            // TODO(b/415828647): Implement for MetricStyle
+
+            // Check whether the VISIBLE metrics (max 3) are the same.
+            MetricStyle otherStyle = (MetricStyle) other;
+            if (Math.min(this.getMetrics().size(), MAX_METRICS)
+                    != Math.min(otherStyle.getMetrics().size(), MAX_METRICS)) {
+                return true;
+            }
+            for (int i = 0; i < MAX_METRICS && i < this.getMetrics().size()
+                    && i < otherStyle.getMetrics().size(); i++) {
+                if (!Objects.equals(this.getMetrics().get(i), otherStyle.getMetrics().get(i))) {
+                    return true;
+                }
+            }
+
             return false;
-        }
-
-        /** @hide */
-        @Override
-        public void purgeResources() {
-            super.purgeResources();
-            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
-        }
-
-        /** @hide */
-        @Override
-        public void reduceImageSizes(Context context) {
-            super.reduceImageSizes(context);
-            // TODO(b/415828647): Implement for MetricStyle (or delete if no image APIs)
         }
 
         /** @hide */
         @Override
         public void addExtras(Bundle extras) {
             super.addExtras(extras);
-            // TODO(b/415828647): Implement for MetricStyle
+
+            final ArrayList<Bundle> bundles = new ArrayList<>();
+            for (Metric metric : mMetrics) {
+                bundles.add(Metric.toBundle(metric));
+            }
+            extras.putParcelableArrayList(EXTRA_METRICS, bundles);
         }
 
         /** @hide */
         @Override
-        protected void restoreFromExtras(Bundle extras) {
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PROTECTED)
+        public void restoreFromExtras(Bundle extras) {
             super.restoreFromExtras(extras);
-            // TODO(b/415828647): Implement for MetricStyle
+
+            mMetrics.clear();
+            ArrayList<Bundle> bundles = extras.getParcelableArrayList(EXTRA_METRICS,
+                    Bundle.class);
+            if (bundles != null) {
+                for (Bundle bundle : bundles) {
+                    Metric metric = Metric.fromBundle(bundle);
+                    if (metric != null) {
+                        addMetric(metric);
+                    }
+                }
+            }
         }
 
         /** @hide */
@@ -11536,6 +11628,1096 @@ public class Notification implements Parcelable
             return null;
             // TODO(b/415828647): Implement for MetricStyle
             // Remember: Add new layout resources to isStandardLayout()
+        }
+    }
+
+    /**
+     * A metric, used with {@link MetricStyle}, and which has a value, a meaning, and a label.
+     *
+     * <p>The meaning can be used by the platform and notification listeners to make inferences of
+     * relative importance, freshness, necessary precision, etc. It may also be used to optimize the
+     * experience for the user across different form factors. If unspecified, the system may pick a
+     * default meaning based on the provided {@link MetricValue}.
+     */
+    @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+    public static class Metric {
+
+        /**
+         * The default meaning. As this provides no semantic information to the system, it makes
+         * the metric lower priority, and may affect synchronization and data freshness in
+         * power-sensitive modes or platforms.
+         */
+        public static final int MEANING_UNKNOWN = 0;
+
+        // Movement meanings.
+
+        /**
+         * General movement-related metric in varied contexts (such as fitness or transportation).
+         * Use when none of the specific {@code MEANING_MOVEMENT_} options are a good fit.
+         */
+        public static final int MEANING_MOVEMENT = 1 << 16;
+
+        /** Distance traveled (e.g. flight, car ride, run). */
+        public static final int MEANING_MOVEMENT_DISTANCE_TRAVELED = MEANING_MOVEMENT + 1;
+
+        /** Distance remaining (e.g. flight, car ride, run).  */
+        public static final int MEANING_MOVEMENT_DISTANCE_REMAINING = MEANING_MOVEMENT + 2;
+
+        /** Speed (e.g. car ride, run).  */
+        public static final int MEANING_MOVEMENT_SPEED = MEANING_MOVEMENT + 3;
+
+        // Chronometer meanings.
+
+        /**
+         * Time-measurement-related metric. Generally associated with {@link TimeDifference}
+         * values. Use when none of the specific {@code MEANING_CHRONOMETER_} options are a good
+         * fit.
+         */
+        public static final int MEANING_CHRONOMETER = 2 << 16;
+
+        /**
+         * Used with {@link TimeDifference#forTimer} to indicate a timer that is counting
+         * down to a precise moment. This expects that the {@code zeroTime} will only change
+         * in response to user interaction.
+         *
+         * <p>Examples: a literal timer
+         */
+        public static final int MEANING_CHRONOMETER_TIMER = MEANING_CHRONOMETER + 1;
+
+        /**
+         * Used with {@link TimeDifference#forTimer} to indicate a timer that is counting
+         * down to an estimated moment. This expects that the {@code zeroTime} may change
+         * regularly based on external factors.
+         *
+         * <p>Examples: expected arrival of food
+         */
+        public static final int MEANING_CHRONOMETER_EVENT_COUNTDOWN = MEANING_CHRONOMETER + 2;
+
+        /**
+         * Used with {@link TimeDifference#forStopwatch} to indicate a time that counts up.
+         *
+         * <p>Examples: a literal stopwatch; elapsed travel time.
+         */
+        public static final int MEANING_CHRONOMETER_STOPWATCH = MEANING_CHRONOMETER + 3;
+
+        /**
+         * Used with {@link TimeDifference#forStopwatch} to indicate a time that counts up,
+         * and represents the elapsed time for an event.
+         *
+         * <p>Examples: a soccer game clock.
+         */
+        public static final int MEANING_CHRONOMETER_ELAPSED_DURATION = MEANING_CHRONOMETER + 4;
+
+        // Fixed-time-related meanings.
+
+        /**
+         * Point-in-time-related metric. Generally associated with {@link FixedInstant}
+         * values. Use when none of the specific {@code MEANING_EVENT_} options are a good fit.
+         */
+        public static final int MEANING_EVENT = 3 << 16;
+
+        /**
+         * The time until an event in days, e.g. "tomorrow".
+         */
+        public static final int MEANING_EVENT_DATE_COUNTDOWN = MEANING_EVENT + 1;
+
+        /** A static future date, such as the date of a sports events. */
+        public static final int MEANING_EVENT_DATE = MEANING_EVENT + 2;
+
+        /** A static future time, such as takeoff of a flight, an upcoming alarm, etc. */
+        public static final int MEANING_EVENT_TIME = MEANING_EVENT + 3;
+
+        // Health/fitness-related meanings.
+
+        /**
+         * Health- and fitness-related metric, for example data coming from fitness trackers. Use
+         * when none of the specific {@code MEANING_HEALTH_} options are a good fit.
+         */
+        public static final int MEANING_HEALTH = 4 << 16;
+
+        /** Current heart rate (BPM). */
+        public static final int MEANING_HEALTH_HEART_RATE_CURRENT = MEANING_HEALTH + 1;
+
+        /** Resting heart rate (BPM). */
+        public static final int MEANING_HEALTH_HEART_RATE_RESTING = MEANING_HEALTH + 2;
+
+        /** Variability in heart rate. */
+        public static final int MEANING_HEALTH_HEART_RATE_VARIABILITY = MEANING_HEALTH + 3;
+
+        /** Blood pressure. */
+        public static final int MEANING_HEALTH_BLOOD_PRESSURE = MEANING_HEALTH + 4;
+
+        /** Number of steps, for example as measured by a fitness tracker. */
+        public static final int MEANING_HEALTH_STEPS = MEANING_HEALTH + 5;
+
+        /** Goal for the number of steps (e.g. per day). */
+        public static final int MEANING_HEALTH_STEP_GOAL = MEANING_HEALTH + 6;
+
+        /** Number of calories. */
+        public static final int MEANING_HEALTH_CALORIES = MEANING_HEALTH + 7;
+
+        /** Fitness readiness of the body, such as for exercise. */
+        public static final int MEANING_HEALTH_READINESS = MEANING_HEALTH + 8;
+
+        /** Active time. */
+        public static final int MEANING_HEALTH_ACTIVE_TIME = MEANING_HEALTH + 9;
+
+        /** Water consumption. */
+        public static final int MEANING_HEALTH_WATER_CONSUMPTION = MEANING_HEALTH + 10;
+
+        /** Goal for water consumption (e.g. liters per day). */
+        public static final int MEANING_HEALTH_WATER_GOAL = MEANING_HEALTH + 11;
+
+        /** A measurement of sleep quality. */
+        public static final int MEANING_HEALTH_SLEEP_SCORE = MEANING_HEALTH + 12;
+
+        /** Sleep stage. */
+        public static final int MEANING_HEALTH_SLEEP_STAGE = MEANING_HEALTH + 13;
+
+        /** Sleep duration, e.g. as measured overnight by a sleep tracker. */
+        public static final int MEANING_HEALTH_SLEEP_DURATION = MEANING_HEALTH + 14;
+
+        /** Oxygen saturation, e.g. SpO2 as measured by a pulse oximeter. */
+        public static final int MEANING_HEALTH_BLOOD_OXYGEN_SATURATION = MEANING_HEALTH + 15;
+
+        /** Skin temperature. */
+        public static final int MEANING_HEALTH_SKIN_TEMPERATURE = MEANING_HEALTH + 16;
+
+        /** Breathing rate. */
+        public static final int MEANING_HEALTH_BREATHING_RATE = MEANING_HEALTH + 17;
+
+        // Weather-related meanings.
+
+        /**
+         * Weather and atmospheric conditions metrics. Use when none of the specific
+         * {@code MEANING_WEATHER_} options are a good fit.
+         */
+        public static final int MEANING_WEATHER = 5 << 16;
+
+        /** A weather forecast. */
+        public static final int MEANING_WEATHER_FORECAST = MEANING_WEATHER + 1;
+
+        /** Strength of UV radiation. */
+        public static final int MEANING_WEATHER_UV_INDEX = MEANING_WEATHER + 2;
+
+        /** Air Quality. */
+        public static final int MEANING_WEATHER_AIR_QUALITY_INDEX = MEANING_WEATHER + 3;
+
+        /** Air pollutants, such as VOCs, PM2.5, or PM10. */
+        public static final int MEANING_WEATHER_POLLUTANT = MEANING_WEATHER + 4;
+
+        /** Ambient temperature, as measured outdoors. */
+        public static final int MEANING_WEATHER_TEMPERATURE_OUTDOOR = MEANING_WEATHER + 5;
+
+        /** Ambient temperature, as measured indoors. */
+        public static final int MEANING_WEATHER_TEMPERATURE_INDOOR = MEANING_WEATHER + 6;
+
+        /** Relative humidity (percentage) */
+        public static final int MEANING_WEATHER_RELATIVE_HUMIDITY = MEANING_WEATHER + 7;
+
+        /** Precipitation amount, (e.g. mm or inches). */
+        public static final int MEANING_WEATHER_PRECIPITATION = MEANING_WEATHER + 8;
+
+        /** Atmospheric pressure. */
+        public static final int MEANING_WEATHER_ATMOSPHERIC_PRESSURE = MEANING_WEATHER + 9;
+
+        // Celestial meanings.
+
+        /**
+         * Astronomical and celestial data metrics. Use when none of the specific
+         * {@code MEANING_CELESTIAL_} options are a good fit.
+         */
+        public static final int MEANING_CELESTIAL = 6 << 16;
+
+        /** Phase of the moon. */
+        public static final int MEANING_CELESTIAL_MOON_PHASE = MEANING_CELESTIAL + 1;
+
+        /** Information about tides, e.g. height at a particular location. */
+        public static final int MEANING_CELESTIAL_TIDE = MEANING_CELESTIAL + 2;
+
+        /** The time at which sunrise occurs. */
+        public static final int MEANING_CELESTIAL_SUNRISE = MEANING_CELESTIAL + 3;
+
+        /** The time at which sunset occurs. */
+        public static final int MEANING_CELESTIAL_SUNSET = MEANING_CELESTIAL + 4;
+
+        /**
+         * Travel-related metrics. Use when none of the specific {@code MEANING_TRAVEL_} options
+         * are a good fit.
+         */
+        public static final int MEANING_TRAVEL = 7 << 16;
+
+        /** Travel port, such as airport, train station, or harbor. */
+        public static final int MEANING_TRAVEL_PORT = MEANING_TRAVEL + 1;
+
+        /** Terminal within the port, e.g. aiport terminal, wharf. */
+        public static final int MEANING_TRAVEL_TERMINAL = MEANING_TRAVEL + 2;
+
+        /** Boarding location within a port of terminal, e.g. gate, track, or dock. */
+        public static final int MEANING_TRAVEL_BOARDING_LOCATION = MEANING_TRAVEL + 3;
+
+        /** @hide */
+        @IntDef(prefix = { "MEANING_" }, value = {
+                // Generic
+                MEANING_UNKNOWN,
+                // Movement:
+                MEANING_MOVEMENT,
+                MEANING_MOVEMENT_DISTANCE_TRAVELED, MEANING_MOVEMENT_DISTANCE_REMAINING,
+                MEANING_MOVEMENT_SPEED,
+                // Chronometer:
+                MEANING_CHRONOMETER,
+                MEANING_CHRONOMETER_STOPWATCH, MEANING_CHRONOMETER_TIMER,
+                MEANING_CHRONOMETER_EVENT_COUNTDOWN, MEANING_CHRONOMETER_ELAPSED_DURATION,
+                // Time:
+                MEANING_EVENT,
+                MEANING_EVENT_DATE_COUNTDOWN, MEANING_EVENT_DATE, MEANING_EVENT_TIME,
+                // Health & fitness:
+                MEANING_HEALTH,
+                MEANING_HEALTH_HEART_RATE_CURRENT, MEANING_HEALTH_HEART_RATE_RESTING,
+                MEANING_HEALTH_HEART_RATE_VARIABILITY, MEANING_HEALTH_BLOOD_PRESSURE,
+                MEANING_HEALTH_STEPS, MEANING_HEALTH_STEP_GOAL, MEANING_HEALTH_CALORIES,
+                MEANING_HEALTH_READINESS, MEANING_HEALTH_ACTIVE_TIME,
+                MEANING_HEALTH_WATER_CONSUMPTION, MEANING_HEALTH_WATER_GOAL,
+                MEANING_HEALTH_SLEEP_SCORE, MEANING_HEALTH_SLEEP_STAGE,
+                MEANING_HEALTH_SLEEP_DURATION, MEANING_HEALTH_BLOOD_OXYGEN_SATURATION,
+                MEANING_HEALTH_SKIN_TEMPERATURE, MEANING_HEALTH_BREATHING_RATE,
+                // Weather & atmospheric:
+                MEANING_WEATHER,
+                MEANING_WEATHER_FORECAST, MEANING_WEATHER_UV_INDEX,
+                MEANING_WEATHER_AIR_QUALITY_INDEX, MEANING_WEATHER_POLLUTANT,
+                MEANING_WEATHER_TEMPERATURE_OUTDOOR, MEANING_WEATHER_TEMPERATURE_INDOOR,
+                MEANING_WEATHER_RELATIVE_HUMIDITY, MEANING_WEATHER_PRECIPITATION,
+                MEANING_WEATHER_ATMOSPHERIC_PRESSURE,
+                // Astronomical & celestial:
+                MEANING_CELESTIAL,
+                MEANING_CELESTIAL_MOON_PHASE, MEANING_CELESTIAL_TIDE, MEANING_CELESTIAL_SUNRISE,
+                MEANING_CELESTIAL_SUNSET,
+                // Travel:
+                MEANING_TRAVEL,
+                MEANING_TRAVEL_PORT, MEANING_TRAVEL_TERMINAL, MEANING_TRAVEL_BOARDING_LOCATION
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface Meaning {}
+
+        private static final int CATEGORY_MEANING_MASK = 0xffff0000;
+
+        private static final Set<Integer> CATEGORY_MEANINGS = Set.of(
+                MEANING_UNKNOWN, MEANING_MOVEMENT, MEANING_CHRONOMETER, MEANING_EVENT,
+                MEANING_HEALTH, MEANING_WEATHER, MEANING_CELESTIAL, MEANING_TRAVEL);
+
+        private static final String KEY_VALUE = "value";
+        private static final String KEY_MEANING = "meaning";
+        private static final String KEY_LABEL = "label";
+
+        private final MetricValue mValue;
+        private final String mLabel;
+        @Meaning private final int mMeaning;
+
+        /**
+         * Creates a Metric with the specified value, meaning, and label.
+         *
+         * @param value   one of the subclasses of {@link MetricValue}, such as {@link FixedInstant}
+         * @param label   metric label -- should be 10 characters or fewer
+         * @param meaning recommended so that Notification Listeners can judge the importance
+         *                (and required freshness) of the metric
+         */
+        public Metric(@NonNull MetricValue value, @NonNull String label, @Meaning int meaning) {
+            mValue = requireNonNull(value);
+            mLabel = safeString(requireNonNull(label));
+            mMeaning = maybeAdjustMeaningFromValue(value, meaning);
+            checkArgument(!mLabel.isBlank(), "Metric label is required");
+        }
+
+        @Meaning
+        private static int maybeAdjustMeaningFromValue(@NonNull MetricValue value,
+                @Meaning int originalMeaning) {
+            if (originalMeaning != MEANING_UNKNOWN) {
+                // Respect what the calling package supplied.
+                return originalMeaning;
+            }
+            if (value instanceof TimeDifference td) {
+                if (td.isTimer()) {
+                    return MEANING_CHRONOMETER_TIMER;
+                } else if (td.isStopwatch()) {
+                    return MEANING_CHRONOMETER_STOPWATCH;
+                }
+            }
+            return originalMeaning;
+        }
+
+        /** @hide */
+        @Meaning
+        public static int getMeaningCategory(@Meaning int meaning) {
+            int category = meaning & CATEGORY_MEANING_MASK;
+            if (!CATEGORY_MEANINGS.contains(category)) {
+                category = MEANING_UNKNOWN;
+            }
+            return category;
+        }
+
+        @Nullable
+        private static Metric fromBundle(Bundle bundle) {
+            Bundle valueBundle = bundle.getBundle(KEY_VALUE);
+            if (valueBundle == null) {
+                return null;
+            }
+            MetricValue value = MetricValue.fromBundle(valueBundle);
+            if (value == null) {
+                return null;
+            }
+            String label = bundle.getString(KEY_LABEL);
+            int meaning = bundle.getInt(KEY_MEANING, MEANING_UNKNOWN);
+            return new Metric(value, label, meaning);
+        }
+
+        @NonNull
+        private static Bundle toBundle(Metric metric) {
+            Bundle bundle = new Bundle();
+            bundle.putBundle(KEY_VALUE, MetricValue.toBundle(metric.mValue));
+            bundle.putString(KEY_LABEL, metric.mLabel);
+            bundle.putInt(KEY_MEANING, metric.mMeaning);
+            return bundle;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Metric that)) return false;
+            if (this == that) return true;
+            return Objects.equals(this.mValue, that.mValue)
+                    && Objects.equals(this.mLabel, that.mLabel)
+                    && this.mMeaning == that.mMeaning;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mValue, mLabel, mMeaning);
+        }
+
+        @Override
+        public String toString() {
+            return "Metric{"
+                    + "mValue=" + mValue
+                    + ", mLabel=" + mLabel
+                    + ", mMeaning=" + mMeaning
+                    + "}";
+        }
+
+        /** A value for the metric. */
+        @NonNull
+        public MetricValue getValue() {
+            return mValue;
+        }
+
+        /**
+         * A semantic meaning. This can be used by the platform and notification listeners to
+         * make inferences of relative importance, freshness, necessary precision, etc. It may
+         * also be used to optimize the experience for the user across different form factors.
+         *
+         * <p>NOTE: If unspecified, the system may pick a default meaning based on the
+         * provided {@link MetricValue}.
+         */
+        public @Meaning int getMeaning() {
+            return mMeaning;
+        }
+
+        /**
+         * A label for the metric.
+         *
+         * <p>The space allocated to this will depend on the number of metrics on the
+         * notification, but it's recommended to keep this to 10 characters or fewer.
+         */
+        @NonNull
+        public String getLabel() {
+            return mLabel;
+        }
+
+        /** A superclass for the various value types used by the {@link Metric} class. */
+        public abstract static class MetricValue {
+
+            private static final String KEY_TYPE = "_type";
+            private static final int TYPE_TIME_DIFFERENCE = 1;
+            private static final int TYPE_FIXED_INSTANT = 2;
+            private static final int TYPE_FIXED_INT = 3;
+            private static final int TYPE_FIXED_FLOAT = 4;
+            private static final int TYPE_FIXED_STRING = 5;
+
+            // Restrict inheritance to inner classes of Notification.
+            private MetricValue() { }
+
+            @Nullable
+            private static MetricValue fromBundle(Bundle bundle) {
+                int type = bundle.getInt(KEY_TYPE);
+                return switch (type) {
+                    case TYPE_TIME_DIFFERENCE -> TimeDifference.fromBundle(bundle);
+                    case TYPE_FIXED_INSTANT -> FixedInstant.fromBundle(bundle);
+                    case TYPE_FIXED_INT -> FixedInt.fromBundle(bundle);
+                    case TYPE_FIXED_FLOAT -> FixedFloat.fromBundle(bundle);
+                    case TYPE_FIXED_STRING -> FixedString.fromBundle(bundle);
+                    default -> null;
+                };
+            }
+
+            @NonNull
+            private static Bundle toBundle(MetricValue value) {
+                Bundle bundle = new Bundle();
+                if (value instanceof TimeDifference) {
+                    bundle.putInt(KEY_TYPE, TYPE_TIME_DIFFERENCE);
+                } else if (value instanceof FixedInstant) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_INSTANT);
+                } else if (value instanceof FixedInt) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_INT);
+                } else if (value instanceof FixedFloat) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_FLOAT);
+                } else if (value instanceof FixedString) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_STRING);
+                } else {
+                    throw new AssertionError("Impossible MetricValue subclass: " + value);
+                }
+                value.toBundle(bundle);
+                return bundle;
+            }
+
+            /** @hide */
+            protected abstract void toBundle(Bundle bundle);
+        }
+
+        /**
+         * This represents a timer, a stopwatch, or a countdown to an event.
+         *
+         * <p>When representing a <em>running</em> timer (or stopwatch, etc), this value specifies
+         * a reference instant for when that timer will hit zero, called the "zero time".
+         * In this case the time displayed is defined as the difference between the
+         * "zero time" instant, and {@link Instant#now()}, meaning it will show a live-updated
+         * timer.
+         *
+         * <p>When representing a <em>paused</em> timer (or stopwatch, etc), this value specifies
+         * the duration as a fixed value.
+         *
+         * <p>This value can also specify its formatting, whether as a "chronometer" (e.g. 43:21)
+         * or an adaptive time (e.g. 43m).
+         */
+        public static final class TimeDifference extends MetricValue {
+
+            /**
+             * Formatting option: chronometer-style (e.g. 1:05:00; 15:00; 1:00, 0:00), with
+             * precision chosen by the system.
+             */
+            public static final int FORMAT_CHRONOMETER_AUTOMATIC = 0;
+
+            /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m; now). */
+            public static final int FORMAT_ADAPTIVE = 1;
+
+            /**
+             * Formatting option: chronometer-style, showing minutes but not including seconds
+             * (i.e. two hours = "2:00").
+             */
+            public static final int FORMAT_CHRONOMETER_MINUTES = 2;
+
+            /**
+             * Formatting option: chronometer-style, including seconds (i.e. two hours = "2:00").
+             */
+            public static final int FORMAT_CHRONOMETER_SECONDS = 3;
+
+            /** @hide */
+            @IntDef(prefix = { "FORMAT_" }, value = {
+                    FORMAT_CHRONOMETER_AUTOMATIC,
+                    FORMAT_ADAPTIVE,
+                    FORMAT_CHRONOMETER_MINUTES,
+                    FORMAT_CHRONOMETER_SECONDS
+            })
+            @Retention(RetentionPolicy.SOURCE)
+            public @interface Format {}
+
+            private static final String KEY_ZERO_TIME = "zeroTime";
+            private static final String KEY_PAUSED_DURATION = "pausedDuration";
+            private static final String KEY_COUNT_DOWN = "countDown";
+            private static final String KEY_FORMAT = "format";
+
+            // One of these two will be present.
+            @Nullable private final Instant mZeroTime;
+            @Nullable private final Duration mPausedDuration;
+            private final boolean mCountDown;
+            private final @Format int mFormat;
+
+            /**
+             * Creates a "running timer" metric, which will show a countdown to {@code endTime}.
+             *
+             * @param endTime instant at which the timer reaches zero
+             */
+            @NonNull
+            public static TimeDifference forTimer(@NonNull Instant endTime, @Format int format) {
+                return new TimeDifference(requireNonNull(endTime), /* pausedDuration= */ null,
+                        /* countDown= */ true, format);
+            }
+
+            /**
+             * Creates a "running stopwatch" metric, which will show the time elapsed since
+             * {@code startTime}.
+             *
+             * @param startTime instant at which the stopwatch started
+             */
+            @NonNull
+            public static TimeDifference forStopwatch(@NonNull Instant startTime,
+                    @Format int format) {
+                return new TimeDifference(requireNonNull(startTime), /* pausedDuration= */ null,
+                        /* countDown= */ false, format);
+            }
+
+            /**
+             * Creates a "paused timer" metric, showing the {@code remainingTime}.
+             */
+            @NonNull
+            public static TimeDifference forPausedTimer(@NonNull Duration remainingTime,
+                    @Format int format) {
+                return new TimeDifference(/* zeroTime= */ null, requireNonNull(remainingTime),
+                        /* countDown= */ true, format);
+            }
+
+            /**
+             * Creates a "paused timer" metric, showing the {@code elapsedTime}.
+             */
+            @NonNull
+            public static TimeDifference forPausedStopwatch(@NonNull Duration elapsedTime,
+                    @Format int format) {
+                return new TimeDifference(/* zeroTime= */ null, requireNonNull(elapsedTime),
+                        /* countDown= */ false, format);
+            }
+
+            private TimeDifference(@Nullable Instant zeroTime, @Nullable Duration pausedDuration,
+                    boolean countDown, @Format int format) {
+                checkArgument((zeroTime != null) ^ (pausedDuration != null),
+                        "Either zeroTime or pausedDuration must be present, and not both. "
+                                + "Received %s,%s",
+                        zeroTime, pausedDuration);
+                checkArgument(format >= FORMAT_CHRONOMETER_AUTOMATIC
+                        && format <= FORMAT_CHRONOMETER_SECONDS, "Invalid format: %s", format);
+                mZeroTime = zeroTime;
+                mPausedDuration = pausedDuration;
+                mCountDown = countDown;
+                mFormat = format;
+            }
+
+            @Nullable
+            private static TimeDifference fromBundle(Bundle bundle) {
+                Instant zeroTime = bundle.containsKey(KEY_ZERO_TIME)
+                        ? Instant.ofEpochMilli(bundle.getLong(KEY_ZERO_TIME)) : null;
+                Duration pausedDuration = bundle.containsKey(KEY_PAUSED_DURATION)
+                        ? Duration.ofMillis(bundle.getLong(KEY_PAUSED_DURATION)) : null;
+                if (zeroTime != null || pausedDuration != null) {
+                    return new TimeDifference(zeroTime, pausedDuration,
+                            bundle.getBoolean(KEY_COUNT_DOWN),
+                            bundle.getInt(KEY_FORMAT, FORMAT_CHRONOMETER_AUTOMATIC));
+                } else {
+                    return null;
+                }
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                if (mZeroTime != null) {
+                    bundle.putLong(KEY_ZERO_TIME, mZeroTime.toEpochMilli());
+                } else if (mPausedDuration != null) {
+                    bundle.putLong(KEY_PAUSED_DURATION, mPausedDuration.toMillis());
+                }
+                bundle.putBoolean(KEY_COUNT_DOWN, mCountDown);
+                bundle.putInt(KEY_FORMAT, mFormat);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof TimeDifference that)) return false;
+                if (this == that) return true;
+                return Objects.equals(this.mZeroTime, that.mZeroTime)
+                        && Objects.equals(this.mPausedDuration, that.mPausedDuration)
+                        && this.mCountDown == that.mCountDown
+                        && this.mFormat == that.mFormat;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mZeroTime, mPausedDuration, mCountDown, mFormat);
+            }
+
+            @Override
+            public String toString() {
+                return "TimeDifference{"
+                        + "mZeroTime=" + mZeroTime
+                        + ", mPausedDuration=" + mPausedDuration
+                        + ", mCountDown=" + mCountDown
+                        + ", mFormat=" + mFormat
+                        + "}";
+            }
+
+            /**
+             * The instant at which the time difference is zero.
+             * <ul>
+             *     <li>For a running timer this is the {@code endTime} supplied to
+             *     {@link #forTimer}.
+             *     <li>For a running stopwatch this is the {@code startTime} supplied to
+             *     {@link #forStopwatch}.
+             *     <li>This is {@code null} for paused timers or stopwatches.
+             * </ul>
+             */
+            @Nullable public Instant getZeroTime() {
+                return mZeroTime;
+            }
+
+            /**
+             * The fixed time difference, for a paused timer or stopwatch.
+             * <ul>
+             *     <li>For a paused timer this is the {@code remainingTime} supplied to
+             *     {@link #forPausedTimer}.
+             *     <li>For a paused stopwatch this is the {@code elapsedTime} supplied to
+             *     {@link #forPausedStopwatch}.
+             *     <li>This is {@code null} for running timers or stopwatches.
+             * </ul>
+             */
+            @Nullable public Duration getPausedDuration() {
+                return mPausedDuration;
+            }
+
+            /**
+             * Whether this {@link TimeDifference} value represents a stopwatch -- when running,
+             * it counts up from {@link #getZeroTime()}.
+             */
+            public boolean isStopwatch() {
+                return !mCountDown;
+            }
+
+            /**
+             * Whether this {@link TimeDifference} value represents a timer -- when running,
+             * it counts down to {@link #getZeroTime()}.
+             */
+            public boolean isTimer() {
+                return mCountDown;
+            }
+
+            /** Formatting option for the timer/stopwatch. */
+            @Format
+            public int getFormat() {
+                return mFormat;
+            }
+        }
+
+        /** A metric value for showing a clock time. */
+        public static final class FixedInstant extends MetricValue {
+
+            /**
+             * Formatting option. The system will decide how to format the date and time, and
+             * whether to omit any pieces, depending on available space, the relationship between
+             * the {@link Instant} and the current date and time of day, etc.
+             */
+            public static final int FORMAT_AUTOMATIC = 0;
+
+            /** Formatting option. Only the date will be shown, in long format. */
+            public static final int FORMAT_LONG_DATE = 1;
+
+            /** Formatting option. Only the date will be shown, in short format. */
+            public static final int FORMAT_SHORT_DATE = 2;
+
+            /**
+             * Formatting option. Both the date (in long format) and the time of day will be
+             * shown.
+             */
+            public static final int FORMAT_LONG_DATE_TIME = 3;
+
+            /**
+             * Formatting option. Both the date (in short format) and the time of day will be
+             * shown.
+             */
+            public static final int FORMAT_SHORT_DATE_TIME = 4;
+
+            /** Formatting option. Only the time of day will be shown. */
+            public static final int FORMAT_TIME = 5;
+
+            /** @hide */
+            @IntDef(prefix = { "FORMAT_" }, value = {
+                    FORMAT_AUTOMATIC,
+                    FORMAT_LONG_DATE,
+                    FORMAT_SHORT_DATE,
+                    FORMAT_LONG_DATE_TIME,
+                    FORMAT_SHORT_DATE_TIME,
+                    FORMAT_TIME
+            })
+            @Retention(RetentionPolicy.SOURCE)
+            public @interface Format {}
+
+            private static final String KEY_VALUE = "value";
+            private static final String KEY_FORMAT = "format";
+            private static final String KEY_TIMEZONE = "timezone";
+
+            private final Instant mValue;
+            private final @Format int mFormat;
+            private final TimeZone mTimeZone;
+
+            /**
+             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed with
+             * {@link #FORMAT_AUTOMATIC} and in the device's {@link TimeZone}.
+             */
+            public FixedInstant(@NonNull Instant value) {
+                this(value, FORMAT_AUTOMATIC);
+            }
+
+            /**
+             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed in the
+             * device's {@link TimeZone}.
+             */
+            public FixedInstant(@NonNull Instant value, @Format int format) {
+                this(value, format, /* timeZone= */ null);
+            }
+
+            /**
+             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed in the
+             * specified {@link TimeZone}.
+             *
+             * @param timeZone this should be used <em>only</em> for situations where the user
+             *                 would understand that the explicit timezone differs from the
+             *                 device's, e.g. the estimated arrival time of a plane in a different
+             *                 timezone
+             */
+            public FixedInstant(@NonNull Instant value, @Format int format,
+                    @Nullable TimeZone timeZone) {
+                mValue = requireNonNull(value);
+                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_TIME,
+                        "Invalid format: %s", format);
+                mFormat = format;
+                mTimeZone = timeZone;
+            }
+
+            @Nullable
+            private static FixedInstant fromBundle(Bundle bundle) {
+                Instant value = bundle.containsKey(KEY_VALUE)
+                        ? Instant.ofEpochMilli(bundle.getLong(KEY_VALUE)) : null;
+                if (value != null) {
+                    int format = bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC);
+                    TimeZone timeZone = bundle.containsKey(KEY_TIMEZONE)
+                            ? TimeZone.getTimeZone(bundle.getString(KEY_TIMEZONE)) : null;
+                    return new FixedInstant(value, format, timeZone);
+                } else {
+                    return null;
+                }
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                bundle.putLong(KEY_VALUE, mValue.toEpochMilli());
+                bundle.putInt(KEY_FORMAT, mFormat);
+                if (mTimeZone != null) {
+                    bundle.putString(KEY_TIMEZONE, mTimeZone.getID());
+                }
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof FixedInstant that)) return false;
+                if (this == that) return true;
+                return Objects.equals(this.mValue, that.mValue)
+                        && this.mFormat == that.mFormat
+                        && Objects.equals(this.mTimeZone, that.mTimeZone);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mValue, mFormat, mTimeZone);
+            }
+
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() + "{"
+                        + "mValue=" + mValue
+                        + ", mFormat=" + mFormat
+                        + ", mTimeZone=" + mTimeZone
+                        + "}";
+            }
+
+            /** The {@link Instant} value. */
+            public @NonNull Instant getValue() {
+                return mValue;
+            }
+
+            /** The formatting option for the {@link Instant} value. */
+            public @Format int getFormat() {
+                return mFormat;
+            }
+
+            /**
+             * (Optional) The time zone to use. Defaults to the device’s local timezone.
+             * This may not be shown to the user.
+             *
+             * <p>This should be used <em>only</em> for situations where the user would understand
+             * that the explicit timezone differs from the current one, e.g. estimated
+             * arrival time of a plane in a different timezone.
+             */
+            @Nullable public TimeZone getTimeZone() {
+                return mTimeZone;
+            }
+        }
+
+        /** Metric corresponding to an integer value. */
+        public static final class FixedInt extends MetricValue {
+
+            private static final String KEY_VALUE = "value";
+            private static final String KEY_UNIT = "unit";
+
+            private final int mValue;
+            private final String mUnit;
+
+            /**
+             * Creates a {@link FixedInt} instance with the specified integer value, and no unit
+             * text.
+             */
+            public FixedInt(int value) {
+                this(value, /* unit= */ null);
+            }
+
+            /**
+             * Creates a {@link FixedInt} instance with the specified integer value.
+             *
+             * @param unit optional unit for the value. Limit this to a few characters.
+             */
+            public FixedInt(int value, @Nullable String unit) {
+                mValue = value;
+                mUnit = safeString(unit);
+            }
+
+            @NonNull
+            private static FixedInt fromBundle(Bundle bundle) {
+                return new FixedInt(bundle.getInt(KEY_VALUE), bundle.getString(KEY_UNIT));
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                bundle.putInt(KEY_VALUE, mValue);
+                bundle.putString(KEY_UNIT, mUnit);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof FixedInt that)) return false;
+                if (this == that) return true;
+                return this.mValue == that.mValue
+                        && Objects.equals(this.mUnit, that.mUnit);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mValue, mUnit);
+            }
+
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() + "{"
+                        + "mValue=" + mValue
+                        + ", mUnit=" + mUnit
+                        + "}";
+            }
+
+            /** The integer value. */
+            public int getValue() {
+                return mValue;
+            }
+
+            /**
+             * A unit for the value.
+             *
+             * <p>This may not be shown to the user in all views.
+             *
+             * <p>The space allocated to this will be limited. It's recommended to limit
+             * this to just a few characters.
+             */
+            @Nullable
+            public String getUnit() {
+                return mUnit;
+            }
+        }
+
+        /** Metric corresponding to a floating point value. */
+        public static final class FixedFloat extends MetricValue {
+
+            private static final int LOWER_BOUND_FRACTION_DIGITS = 0;
+            private static final int UPPER_BOUND_FRACTION_DIGITS = 6;
+            /** @hide */ @TestApi public static final int DEFAULT_MIN_FRACTION_DIGITS = 0;
+            /** @hide */ @TestApi public static final int DEFAULT_MAX_FRACTION_DIGITS = 3;
+
+            private static final String KEY_VALUE = "value";
+            private static final String KEY_UNIT = "unit";
+            private static final String KEY_MIN_FRACTION_DIGITS = "minDigits";
+            private static final String KEY_MAX_FRACTION_DIGITS = "maxDigits";
+
+            private final float mValue;
+            private final String mUnit;
+            private final int mMinFractionDigits;
+            private final int mMaxFractionDigits;
+
+            /**
+             * Creates a {@link FixedFloat} instance with no unit and 0 minimum and 3 maximum
+             * fractional digits.
+             */
+            public FixedFloat(float value) {
+                this(value, /* unit= */ null);
+            }
+
+            /**
+             * Creates a {@link FixedFloat} instance with 0 minimum and 3 maximum fractional digits.
+             * @param unit optional unit for the value. Limit this to a few characters.
+             */
+            public FixedFloat(float value, @Nullable String unit) {
+                this(value, unit, DEFAULT_MIN_FRACTION_DIGITS, DEFAULT_MAX_FRACTION_DIGITS);
+            }
+
+            /**
+             * Creates a {@link FixedFloat} instance.
+             * @param unit optional unit for the value. Limit this to a few characters.
+             * @param minFractionDigits minimum number of factional digits to display (0-6)
+             * @param maxFractionDigits maximum number of factional digits to display (0-6 and
+             *                          &gt;= {@code minFractionDigits})
+             * @throws IllegalArgumentException if {@code minFractionDigits} or {@code
+             *     maxFractionDigits} do not respect the specified constraints
+             */
+            public FixedFloat(float value, @Nullable String unit,
+                    @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to =
+                            UPPER_BOUND_FRACTION_DIGITS) int minFractionDigits,
+                    @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to =
+                            UPPER_BOUND_FRACTION_DIGITS) int maxFractionDigits) {
+                mValue = value;
+                mUnit = safeString(unit);
+
+                checkArgument(minFractionDigits >= LOWER_BOUND_FRACTION_DIGITS
+                                && minFractionDigits <= UPPER_BOUND_FRACTION_DIGITS,
+                        "Invalid minFractionDigits: %s", minFractionDigits);
+                checkArgument(maxFractionDigits >= LOWER_BOUND_FRACTION_DIGITS
+                                && maxFractionDigits <= UPPER_BOUND_FRACTION_DIGITS,
+                        "Invalid maxFractionDigits: %s", maxFractionDigits);
+                checkArgument(minFractionDigits <= maxFractionDigits,
+                        "Invalid minFractionDigits/maxFractionDigits: %s/%s",
+                        minFractionDigits, maxFractionDigits);
+                mMinFractionDigits = minFractionDigits;
+                mMaxFractionDigits = maxFractionDigits;
+            }
+
+            @NonNull
+            private static FixedFloat fromBundle(Bundle bundle) {
+                return new FixedFloat(
+                        bundle.getFloat(KEY_VALUE),
+                        bundle.getString(KEY_UNIT),
+                        bundle.getInt(KEY_MIN_FRACTION_DIGITS, DEFAULT_MIN_FRACTION_DIGITS),
+                        bundle.getInt(KEY_MAX_FRACTION_DIGITS, DEFAULT_MAX_FRACTION_DIGITS));
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                bundle.putFloat(KEY_VALUE, mValue);
+                bundle.putString(KEY_UNIT, mUnit);
+                bundle.putInt(KEY_MIN_FRACTION_DIGITS, mMinFractionDigits);
+                bundle.putInt(KEY_MAX_FRACTION_DIGITS, mMaxFractionDigits);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof FixedFloat that)) return false;
+                if (this == that) return true;
+                return this.mValue == that.mValue
+                        && Objects.equals(this.mUnit, that.mUnit)
+                        && this.mMinFractionDigits == that.mMinFractionDigits
+                        && this.mMaxFractionDigits == that.mMaxFractionDigits;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mValue, mUnit, mMinFractionDigits, mMaxFractionDigits);
+            }
+
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() + "{"
+                        + "mValue=" + mValue
+                        + ", mUnit=" + mUnit
+                        + ", mMinFractionDigits=" + mMinFractionDigits
+                        + ", mMaxFractionDigits=" + mMaxFractionDigits
+                        + "}";
+            }
+
+            /** The fractional value. */
+            public float getValue() {
+                return mValue;
+            }
+
+            /**
+             * The unit of measurement for the value, if required.
+             *
+             * <p>This may not be shown to the user in all views.
+             *
+             * <p>The space allocated to this will be limited. It's recommended to limit this to
+             * just a few characters.
+             */
+            @Nullable
+            public String getUnit() {
+                return mUnit;
+            }
+
+            /** Minimum number of fractional digits to display. */
+            @IntRange(from = 0, to = 6)
+            public int getMinFractionDigits() {
+                return mMinFractionDigits;
+            }
+
+            /** Maximum number of fractional digits to display. */
+            @IntRange(from = 0, to = 6)
+            public int getMaxFractionDigits() {
+                return mMaxFractionDigits;
+            }
+        }
+
+        /** Metric corresponding to a string value. */
+        public static final class FixedString extends MetricValue {
+
+            private static final String KEY_VALUE = "value";
+
+            private final String mValue;
+
+            /**
+             * Creates a {@link FixedString} instance with the specified String.
+             */
+            public FixedString(@NonNull String value) {
+                mValue = safeString(requireNonNull(value));
+            }
+
+            @NonNull
+            private static FixedString fromBundle(Bundle bundle) {
+                return new FixedString(bundle.getString(KEY_VALUE, ""));
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                bundle.putString(KEY_VALUE, mValue);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof FixedString that)) return false;
+                if (this == that) return true;
+                return Objects.equals(this.mValue, that.mValue);
+            }
+
+            @Override
+            public int hashCode() {
+                return mValue.hashCode();
+            }
+
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() + "{" + mValue + "}";
+            }
+
+            /** The string value. */
+            @NonNull public String getValue() {
+                return mValue;
+            }
         }
     }
 
