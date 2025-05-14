@@ -23,15 +23,12 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Rect
-import android.graphics.Shader
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
-import android.view.ViewTreeObserver
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -82,7 +79,6 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.NOT_FOCUSED
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.OPENING
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.UNKNOWN
-import kotlin.math.roundToInt
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts
@@ -125,12 +121,6 @@ class AppHeaderViewHolder(
      **/
     private val appNameMaxWidth = context.resources
         .getDimensionPixelSize(R.dimen.desktop_mode_header_app_name_max_width)
-
-    /**
-     * The width of the fadeout effect applied to a long app name shown on the app header.
-     **/
-    private val appNameFadeoutWidth = context.resources
-        .getDimensionPixelSize(R.dimen.desktop_mode_header_app_name_fadeout_width)
 
     /**
      * The width of the expand menu error image on the app header.
@@ -426,7 +416,6 @@ class AppHeaderViewHolder(
         if (a11yState == OPENING) setA11yStateTo(FOCUSED)
 
         updateMaximizeButtonContentDescription()
-        updateAppNameLayoutAndEffect()
     }
 
     /** Populates string variables from string templates which rely on app name */
@@ -444,59 +433,6 @@ class AppHeaderViewHolder(
             context.getString(R.string.desktop_mode_talkback_state_focused, name)
         a11yAnnounceTextNotFocused =
             context.getString(R.string.desktop_mode_talkback_state_not_focused, name)
-    }
-
-    private fun updateAppNameLayoutAndEffect() {
-        if (!DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()) return
-        appNameTextView.viewTreeObserver.addOnPreDrawListener(
-            object : ViewTreeObserver.OnPreDrawListener {
-                override fun onPreDraw(): Boolean {
-                    appNameTextView.viewTreeObserver.removeOnPreDrawListener(this)
-                    val errorIconWidth =
-                        expandMenuErrorImageWidth + expandMenuErrorImageMargin
-                    val textWidth =
-                        appNameTextView.paint.measureText(appNameTextView.text.toString())
-                            .roundToInt()
-                    val isRestartMenuShown =
-                        currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
-
-                    // Adjust the right padding of the app text so the error icon will be placed
-                    // properly. In case the text is short enough, the padding will be
-                    // |errorIconWidth| so the error icon will look like being placed to the right
-                    // of the text. Otherwise, the error icon will overlap with the text.
-                    val errorIconPadding = if (isRestartMenuShown && textWidth <= appNameMaxWidth) {
-                        minOf(appNameMaxWidth - textWidth, errorIconWidth)
-                    } else {
-                        0
-                    }
-                    appNameTextView.setPaddingRelative(0, 0, errorIconPadding, 0)
-
-                    // In case the app text (and the error icon) is too long to fit in the app
-                    // header, fade out the text by applying the custom shader.
-                    val availableWidth = if (isRestartMenuShown) {
-                        appNameMaxWidth - errorIconWidth
-                    } else {
-                        appNameMaxWidth
-                    }
-                    if (textWidth > availableWidth) {
-                        val textColor = appNameTextView.currentTextColor
-                        val transparentColor = Color.argb(
-                            0, Color.red(textColor),
-                            Color.green(textColor), Color.blue(textColor)
-                        )
-                        appNameTextView.paint.shader = LinearGradient(
-                            (availableWidth - appNameFadeoutWidth).toFloat(),
-                            0f,
-                            availableWidth.toFloat(),
-                            0f,
-                            textColor,
-                            transparentColor,
-                            Shader.TileMode.CLAMP
-                        )
-                    }
-                    return true
-                }
-        })
     }
 
     private fun updateMaximizeButtonContentDescription() {
@@ -636,6 +572,8 @@ class AppHeaderViewHolder(
             appNameTextView.apply {
                 isVisible = header.type == Header.Type.DEFAULT
                 setTextColor(colorStateList)
+                maxWidth = if (currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove)
+                    appNameMaxWidth - expandMenuErrorImageWidth - expandMenuErrorImageMargin else appNameMaxWidth
             }
             appIconImageView.imageAlpha = foregroundAlpha
             defaultFocusHighlightEnabled = false
@@ -690,7 +628,6 @@ class AppHeaderViewHolder(
                 }
             }
             updateMaximizeButtonContentDescription()
-            updateAppNameLayoutAndEffect()
         }
         // Close button.
         closeWindowButton.apply {
