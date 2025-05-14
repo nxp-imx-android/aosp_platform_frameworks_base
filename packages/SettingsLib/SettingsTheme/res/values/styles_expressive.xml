@@ -300,4 +300,15 @@
         <item name="trackStopIndicatorPadding">@dimen/settingslib_expressive_radius_extrasmall2</item>
         <item name="indicatorTrackGapSize">@dimen/settingslib_expressive_radius_extrasmall1</item>
     </style>
+
+    <style name="SettingsLibStatusBannerCardStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_extrasmall4</item>
+        <item name="android:layout_marginBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
+        <item name="cardBackgroundColor">@color/settingslib_materialColorSurfaceBright</item>
+        <item name="cardCornerRadius">@dimen/settingslib_expressive_radius_extralarge1</item>
+        <item name="cardElevation">0dp</item>
+        <item name="rippleColor">?android:attr/colorControlHighlight</item>
+    </style>
 </resources>
