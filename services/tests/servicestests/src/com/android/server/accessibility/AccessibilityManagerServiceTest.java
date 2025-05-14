@@ -321,8 +321,7 @@ public class AccessibilityManagerServiceTest {
                 mProxyManager,
                 mFakePermissionEnforcer,
                 mMockHearingDevicePhoneCallNotificationController);
-        mA11yms.switchUser(mTestableContext.getUserId());
-        mTestableLooper.processAllMessages();
+        switchUser(mTestableContext.getUserId());
 
         FieldSetter.setField(mA11yms,
                 AccessibilityManagerService.class.getDeclaredField("mHasInputFilter"), true);
@@ -1064,6 +1063,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void testSwitchUserScanPackages_scansWithoutHoldingLock() {
         setupAccessibilityServiceConnection(0);
         final AtomicReference<Set<Boolean>> lockState = collectLockStateWhilePackageScanning();
@@ -1071,8 +1071,7 @@ public class AccessibilityManagerServiceTest {
                 .thenReturn(List.of(mMockResolveInfo));
         when(mMockSecurityPolicy.canRegisterService(any())).thenReturn(true);
 
-        mA11yms.switchUser(mA11yms.getCurrentUserIdLocked() + 1);
-        mTestableLooper.processAllMessages();
+        switchUser(mA11yms.getCurrentUserIdLocked() + 1);
 
         assertThat(lockState.get()).containsExactly(false);
     }
@@ -1997,11 +1996,9 @@ public class AccessibilityManagerServiceTest {
     @Test
     public void switchUser_callsUserInitializationCompleteCallback() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
-        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
-        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
 
-        mA11yms.switchUser(newUserId);
-        mTestableLooper.processAllMessages();
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        switchUser(newUserId);
 
         verify(mUserInitializationCompleteCallback).onUserInitializationComplete(newUserId);
     }
@@ -2027,12 +2024,9 @@ public class AccessibilityManagerServiceTest {
     @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void switchUser_sameParent_noChange() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
-        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
-        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(
-                mA11yms.getCurrentUserIdLocked());
 
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
         mA11yms.switchUser(newUserId);
-        mTestableLooper.processAllMessages();
 
         verify(mUserInitializationCompleteCallback, never())
                 .onUserInitializationComplete(newUserId);
@@ -2615,6 +2609,13 @@ public class AccessibilityManagerServiceTest {
             when(userState.isShortcutTargetInstalledLocked(target)).thenReturn(true);
         }
         mA11yms.mUserStates.put(userId, userState);
+    }
+
+    // Performs the additional setup required to successfully switch users in the test environment.
+    private void switchUser(int newUserId) {
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
+        mA11yms.switchUser(newUserId);
+        mTestableLooper.processAllMessages();
     }
 
     private static class TestDisplayManagerWrapper extends
