@@ -277,6 +277,16 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private boolean mCommunalShowing;
 
     private final Consumer<Boolean> mCommunalConsumer = this::updateCommunalShowing;
+    private final KeyguardStateController.Callback mKeyguardStateControllerCallback =
+            new KeyguardStateController.Callback() {
+                @Override
+                public void onKeyguardFadingAwayChanged() {
+                    if (!mKeyguardStateController.isKeyguardFadingAway()) {
+                        mFirstBypassAttempt = false;
+                        mDelayShowingKeyguardStatusBar = false;
+                    }
+                }
+            };
 
     @VisibleForTesting
     void updateCommunalShowing(boolean communalShowing) {
@@ -407,17 +417,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mKeyguardInteractor = keyguardInteractor;
 
         mFirstBypassAttempt = mKeyguardBypassController.getBypassEnabled();
-        mKeyguardStateController.addCallback(
-                new KeyguardStateController.Callback() {
-                    @Override
-                    public void onKeyguardFadingAwayChanged() {
-                        if (!mKeyguardStateController.isKeyguardFadingAway()) {
-                            mFirstBypassAttempt = false;
-                            mDelayShowingKeyguardStatusBar = false;
-                        }
-                    }
-                }
-        );
+        if (!SceneContainerFlag.isEnabled()) {
+            mKeyguardStateController.addCallback(mKeyguardStateControllerCallback);
+        }
 
         Resources r = getResources();
         updateBlockedIcons();
@@ -454,6 +456,10 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
     @Override
     protected void onViewAttached() {
+        if (SceneContainerFlag.isEnabled()) {
+            mKeyguardStateControllerCallback.onKeyguardFadingAwayChanged();
+            mKeyguardStateController.addCallback(mKeyguardStateControllerCallback);
+        }
         mView.init(mStatusBarUserChipViewModel);
         mConfigurationController.addCallback(mConfigurationListener);
         mAnimationScheduler.addCallback(mAnimationCallback);
@@ -546,6 +552,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mSecureSettings.unregisterContentObserverSync(mVolumeSettingObserver);
         if (mTintedIconManager != null) {
             mStatusBarIconController.removeIconGroup(mTintedIconManager);
+        }
+        if (SceneContainerFlag.isEnabled()) {
+            mKeyguardStateController.removeCallback(mKeyguardStateControllerCallback);
         }
     }
 
