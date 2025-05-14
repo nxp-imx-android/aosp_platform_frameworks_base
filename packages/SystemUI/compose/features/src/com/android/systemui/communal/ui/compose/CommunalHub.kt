@@ -95,7 +95,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
@@ -765,24 +764,62 @@ fun calculateWidgetSize(
     }
 }
 
+/**
+ * Calculates the padding needed to center widgets within the window. It dynamically adjusts for
+ * orientation and window insets.
+ */
 @Composable
-private fun horizontalPaddingWithInsets(padding: Dp): Dp {
+private fun responsiveGridPaddingsWithInsets(
+    horizontalPadding: Dp = 0.dp,
+    verticalPadding: Dp = 0.dp,
+    isEditMode: Boolean = false,
+): PaddingValues {
     val orientation = LocalConfiguration.current.orientation
     val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
-    val horizontalDisplayCutoutPadding =
-        remember(orientation, displayCutoutPaddings) {
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                maxOf(
-                    // Top in portrait becomes startPadding (or endPadding) in landscape
-                    displayCutoutPaddings.calculateTopPadding(),
-                    // Bottom in portrait becomes endPadding (or startPadding) in landscape
-                    displayCutoutPaddings.calculateBottomPadding(),
-                )
-            } else {
-                0.dp
-            }
+    val layoutDirection = LocalLayoutDirection.current
+
+    return remember(
+        orientation,
+        displayCutoutPaddings,
+        isEditMode,
+        horizontalPadding,
+        verticalPadding,
+    ) {
+        if (isEditMode) {
+            PaddingValues(
+                horizontal =
+                    horizontalPadding +
+                        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                            // In edit mode activity, display cutout location changes with
+                            // orientation.
+                            maxOf(
+                                displayCutoutPaddings.calculateLeftPadding(layoutDirection),
+                                displayCutoutPaddings.calculateRightPadding(layoutDirection),
+                            )
+                        } else {
+                            0.dp
+                        },
+                vertical = verticalPadding,
+            )
+        } else {
+            PaddingValues(
+                horizontal =
+                    horizontalPadding +
+                        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                            maxOf(
+                                // Top in portrait becomes startPadding (or endPadding) in landscape
+                                displayCutoutPaddings.calculateTopPadding(),
+                                // Bottom in portrait becomes endPadding (or startPadding) in
+                                // landscape
+                                displayCutoutPaddings.calculateBottomPadding(),
+                            )
+                        } else {
+                            0.dp
+                        },
+                vertical = verticalPadding,
+            )
         }
-    return padding + horizontalDisplayCutoutPadding
+    }
 }
 
 @Composable
@@ -865,6 +902,7 @@ private fun BoxScope.CommunalHubLazyGrid(
     var list = communalContent
     var dragDropState: GridDragDropState? = null
     var arrangementSpacing = Dimensions.ItemSpacing
+    val windowSize = WindowSizeUtils.getWindowSizeCategory(LocalContext.current)
     if (viewModel.isEditMode && viewModel is CommunalEditModeViewModel) {
         list = contentListState.list
         // for drag & drop operations within the communal hub grid
@@ -938,7 +976,10 @@ private fun BoxScope.CommunalHubLazyGrid(
             val size = SizeF(dpSize.width.value, dpSize.height.value)
             val selected = item.key == selectedKey.value
             val isResizable =
-                if (item is CommunalContentModel.WidgetContent.Widget) {
+                if (
+                    item is CommunalContentModel.WidgetContent.Widget &&
+                        windowSize != WindowSizeUtils.WindowSizeCategory.MOBILE_LANDSCAPE
+                ) {
                     item.providerInfo.resizeMode and AppWidgetProviderInfo.RESIZE_VERTICAL != 0
                 } else {
                     false
@@ -950,6 +991,16 @@ private fun BoxScope.CommunalHubLazyGrid(
                     traceName = "ResizeableItemFrame.viewModel.$index",
                 ) {
                     ResizeableItemFrameViewModel()
+                }
+            val itemAlpha =
+                if (communalResponsiveGrid()) {
+                    val percentVisible by
+                        remember(gridState, index) {
+                            derivedStateOf { calculatePercentVisible(gridState, index) }
+                        }
+                    animateFloatAsState(percentVisible)
+                } else {
+                    null
                 }
             if (viewModel.isEditMode && dragDropState != null) {
                 val isItemDragging = dragDropState.draggingItemKey == item.key
@@ -1001,7 +1052,13 @@ private fun BoxScope.CommunalHubLazyGrid(
                         key = item.key,
                     ) { isDragging ->
                         CommunalContent(
-                            modifier = Modifier.requiredSize(dpSize),
+                            modifier =
+                                Modifier.requiredSize(dpSize).thenIf(
+                                    item !is CommunalContentModel.WidgetPlaceholder &&
+                                        !isItemDragging
+                                ) {
+                                    Modifier.graphicsLayer { alpha = itemAlpha?.value ?: 1f }
+                                },
                             model = item,
                             viewModel = viewModel,
                             size = size,
@@ -1016,17 +1073,6 @@ private fun BoxScope.CommunalHubLazyGrid(
                     }
                 }
             } else {
-                val itemAlpha =
-                    if (communalResponsiveGrid()) {
-                        val percentVisible by
-                            remember(gridState, index) {
-                                derivedStateOf { calculatePercentVisible(gridState, index) }
-                            }
-                        animateFloatAsState(percentVisible)
-                    } else {
-                        null
-                    }
-
                 CommunalContent(
                     model = item,
                     viewModel = viewModel,
@@ -1122,7 +1168,6 @@ private fun EmptyStateCta(contentPadding: PaddingValues, viewModel: BaseCommunal
  * 2) remove a widget from the grid and
  * 3) exit the edit mode.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun Toolbar(
     removeEnabled: Boolean,
@@ -1141,12 +1186,25 @@ private fun Toolbar(
             targetValue = if (removeEnabled) 1f else 0.5f,
             label = "RemoveButtonAlphaAnimation",
         )
+    val orientation = LocalConfiguration.current.orientation
+    val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
+
+    val toolbarPaddingTop =
+        if (communalResponsiveGrid()) {
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                displayCutoutPaddings.calculateTopPadding()
+            } else {
+                Dimensions.ToolbarPaddingVertical
+            }
+        } else {
+            Dimensions.ToolbarPaddingTop
+        }
 
     Box(
         modifier =
             Modifier.fillMaxWidth()
                 .padding(
-                    top = Dimensions.ToolbarPaddingTop,
+                    top = toolbarPaddingTop,
                     start = Dimensions.ToolbarPaddingHorizontal,
                     end = Dimensions.ToolbarPaddingHorizontal,
                 )
@@ -1346,7 +1404,7 @@ fun HighlightedItem(modifier: Modifier = Modifier, alpha: Float = 1.0f) {
             // resize grid items to account for the border.
             modifier.drawBehind {
                 // 8dp of padding between the widget and the highlight on every side.
-                val padding = 8.adjustedDp.toPx()
+                val padding = Dimensions.WidgetOutlinePadding.toPx()
                 drawRoundRect(
                     brush,
                     alpha = alpha,
@@ -1887,13 +1945,11 @@ private fun nonScalableTextSize(sizeInDp: Dp) = with(LocalDensity.current) { siz
 private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): PaddingValues {
     if (!isEditMode || toolbarSize == null) {
         return if (communalResponsiveGrid()) {
-            val horizontalPaddings: Dp =
-                if (isCompactWindow()) {
-                    horizontalPaddingWithInsets(Dimensions.ItemSpacingCompact)
-                } else {
-                    Dimensions.ItemSpacing
-                }
-            PaddingValues(start = horizontalPaddings, end = horizontalPaddings)
+            if (isCompactWindow()) {
+                responsiveGridPaddingsWithInsets(Dimensions.ItemSpacingCompact)
+            } else {
+                PaddingValues(horizontal = Dimensions.ItemSpacing)
+            }
         } else {
             PaddingValues(
                 start = Dimensions.ItemSpacing,
@@ -1906,16 +1962,25 @@ private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): Padd
     val density = LocalDensity.current
     val windowMetrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(context)
     val screenHeight = with(density) { windowMetrics.bounds.height().toDp() }
-    val toolbarHeight = with(density) { Dimensions.ToolbarPaddingTop + toolbarSize.height.toDp() }
+    val toolbarHeight = with(density) { toolbarSize.height.toDp() }
     return if (communalResponsiveGrid()) {
-        PaddingValues(
-            start = Dimensions.ToolbarPaddingHorizontal,
-            end = Dimensions.ToolbarPaddingHorizontal,
-            top = hubDimensions.GridTopSpacing,
+        // Add extra padding to render the widget outline which draws behind the selected widget.
+        val extraTopPadding =
+            toolbarHeight + Dimensions.ToolbarPaddingVertical * 2 + Dimensions.WidgetOutlinePadding
+        responsiveGridPaddingsWithInsets(
+            horizontalPadding =
+                if (isCompactWindow()) {
+                    Dimensions.ItemSpacingCompact + Dimensions.WidgetOutlinePadding
+                } else {
+                    Dimensions.ItemSpacing
+                },
+            verticalPadding = extraTopPadding,
+            isEditMode = true,
         )
     } else {
+        val toolbarHeightWithTopPadding = toolbarHeight + Dimensions.ToolbarPaddingTop
         val verticalPadding =
-            ((screenHeight - toolbarHeight - hubDimensions.GridHeight +
+            ((screenHeight - toolbarHeightWithTopPadding - hubDimensions.GridHeight +
                     hubDimensions.GridTopSpacing) / 2)
                 .coerceAtLeast(Dimensions.Spacing)
         PaddingValues(
@@ -1993,8 +2058,8 @@ class Dimensions(val context: Context, val config: Configuration) {
         val CardWidth
             get() = 360.adjustedDp
 
-        val CardOutlineWidth
-            get() = 3.adjustedDp
+        val WidgetOutlinePadding
+            get() = 8.adjustedDp
 
         val Spacing
             get() = ItemSpacing / 2
@@ -2005,6 +2070,9 @@ class Dimensions(val context: Context, val config: Configuration) {
 
         val ToolbarPaddingHorizontal
             get() = ItemSpacing
+
+        val ToolbarPaddingVertical
+            get() = 6.adjustedDp
 
         val ToolbarButtonPaddingHorizontal
             get() = 24.adjustedDp
