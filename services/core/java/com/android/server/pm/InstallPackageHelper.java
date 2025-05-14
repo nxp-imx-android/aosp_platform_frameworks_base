@@ -236,6 +236,10 @@ final class InstallPackageHelper {
     @GuardedBy("mInternalLock")
     private PowerManager.WakeLock mInstallingWakeLock;
 
+    // List of packages being installed
+    private final Set<String> mInstallingPackages;
+
+
     // TODO(b/198166813): remove PMS dependency
     InstallPackageHelper(PackageManagerService pm,
                          AppDataHelper appDataHelper,
@@ -255,6 +259,7 @@ final class InstallPackageHelper {
         mPackageAbiHelper = pm.mInjector.getAbiHelper();
         mSharedLibraries = pm.mInjector.getSharedLibrariesImpl();
         mUpdateOwnershipHelper = pm.mInjector.getUpdateOwnershipHelper();
+        mInstallingPackages = new ArraySet<>();
     }
 
     /**
@@ -1317,6 +1322,19 @@ final class InstallPackageHelper {
                                     + " in multi-package install request.");
                     return false;
                 }
+                synchronized (mInstallingPackages) {
+                    if (!mInstallingPackages.add(packageName)) {
+                        request.setError("Scanning Failed.",
+                                new PackageManagerException(
+                                        PackageManager.INSTALL_FAILED_DUPLICATE_PACKAGE,
+                                        "Duplicate package "
+                                                + packageName
+                                                + " in pending install requests.",
+                                        PackageManagerException
+                                                .INTERNAL_ERROR_DUPLICATE_INSTALLING_PACKAGE));
+                        return false;
+                    }
+                }
                 if (!checkNoAppStorageIsConsistent(
                         request.getScanRequestOldPackage(), packageToScan)) {
                     // TODO: INSTALL_FAILED_UPDATE_INCOMPATIBLE is about incomptabible
@@ -1410,6 +1428,20 @@ final class InstallPackageHelper {
 
     private void completeInstallProcess(List<InstallRequest> requests,
             Map<String, Boolean> createdAppId, boolean success) {
+        synchronized (mInstallingPackages) {
+            for (InstallRequest request : requests) {
+                if (request.getInternalErrorCode()
+                        == PackageManagerException.INTERNAL_ERROR_DUPLICATE_INSTALLING_PACKAGE) {
+                    continue;
+                }
+                ParsedPackage parsedPkg = request.getParsedPackage();
+                if (parsedPkg == null) {
+                    // It will be null if the installation fails before parsing.
+                    continue;
+                }
+                mInstallingPackages.remove(parsedPkg.getPackageName());
+            }
+        }
         if (success) {
             for (InstallRequest request : requests) {
                 mInjector.getAppOpsManagerInternal().onPackageAdded(
