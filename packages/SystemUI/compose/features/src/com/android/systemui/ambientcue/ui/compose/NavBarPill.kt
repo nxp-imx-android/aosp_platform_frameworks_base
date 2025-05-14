@@ -128,26 +128,28 @@ fun NavBarPill(
                         .onGloballyPositioned { expandedSize = it.size },
             ) {
                 // Should have at most 1 expanded chip
-                var expandedChip by remember { mutableStateOf(false) }
+                var expandedChip = false
                 actions.fastForEach { action ->
-                    Row(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Image(
-                            painter = rememberDrawablePainter(action.icon),
-                            colorFilter =
-                                if (action.attribution != null) {
-                                    ColorFilter.tint(outlineColor)
-                                } else {
-                                    null
-                                },
-                            contentDescription = action.label,
-                            modifier = Modifier.size(16.dp).clip(CircleShape),
-                        )
-                        if ((actions.size == 1 || action.attribution != null) && !expandedChip) {
-                            expandedChip = true
+                    if ((actions.size == 1 || action.attribution != null) && !expandedChip) {
+                        expandedChip = true
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Image(
+                                painter = rememberDrawablePainter(action.icon),
+                                colorFilter =
+                                    if (action.attribution != null) {
+                                        ColorFilter.tint(outlineColor)
+                                    } else {
+                                        null
+                                    },
+                                contentDescription = action.label,
+                                modifier = Modifier.size(16.dp).clip(CircleShape),
+                            )
+
                             Text(
                                 text = action.label,
                                 style = MaterialTheme.typography.labelSmall,
@@ -169,6 +171,25 @@ fun NavBarPill(
                                             .weight(0.37f, false),
                                 )
                             }
+                        }
+                    } else {
+                        // collapsed chip
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Image(
+                                painter = rememberDrawablePainter(action.icon),
+                                colorFilter =
+                                    if (action.attribution != null) {
+                                        ColorFilter.tint(outlineColor)
+                                    } else {
+                                        null
+                                    },
+                                contentDescription = action.label,
+                                modifier = Modifier.size(16.dp).clip(CircleShape),
+                            )
                         }
                     }
                 }
