@@ -199,14 +199,14 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
      * {@link PackageInstaller.SessionParams#setPermissionState(String, int)}.
      */
     public static final Set<String> INSTALLER_CHANGEABLE_APP_OP_PERMISSIONS = Set.of(
-            Manifest.permission.USE_FULL_SCREEN_INTENT
+            Manifest.permission.USE_FULL_SCREEN_INTENT,
+            Manifest.permission.POST_PROMOTED_NOTIFICATIONS
     );
 
     private static final String ROLE_SYSTEM_APP_PROTECTION_SERVICE =
             "android.app.role.SYSTEM_APP_PROTECTION_SERVICE";
 
     final PackageArchiver mPackageArchiver;
-
     private final Context mContext;
     private final PackageManagerService mPm;
     private final ApexManager mApexManager;

@@ -25,6 +25,7 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING;
+import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
@@ -14821,6 +14822,54 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING,
+            android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION})
+    public void testPromotion_permissionDenied() throws Exception {
+        when(mPermissionManager.checkPermissionForDataDelivery(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
+                .thenReturn(PermissionManager.PERMISSION_SOFT_DENIED);
+
+        Notification n = makePromotableNotification();
+        NotificationChannel channel = new NotificationChannel(
+                "ChannelId", "TestChannel", NotificationManager.IMPORTANCE_HIGH);
+
+        mService.fixNotificationWithChannel(n, channel, mUid, mPkg);
+
+        final int promotedOngoing = n.flags & FLAG_PROMOTED_ONGOING;
+        assertEquals(0, promotedOngoing);
+    }
+
+    @Test
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING,
+            android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION})
+    public void testPromotion_permissionAllowed() throws Exception {
+        when(mPermissionManager.checkPermissionForDataDelivery(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
+                .thenReturn(PermissionManager.PERMISSION_GRANTED);
+
+        Notification n = makePromotableNotification();
+        NotificationChannel channel = new NotificationChannel(
+                "ChannelId", "TestChannel", NotificationManager.IMPORTANCE_HIGH);
+
+        mService.fixNotificationWithChannel(n, channel, mUid, mPkg);
+
+        final int promotedOngoing = n.flags & FLAG_PROMOTED_ONGOING;
+        assertNotEquals(0, promotedOngoing);
+    }
+
+    private Notification makePromotableNotification() {
+        Bundle promotedExtras = new Bundle();
+        promotedExtras.putBoolean("android.requestPromotedOngoing", true);
+        Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
+                .setOngoing(true)
+                .addExtras(promotedExtras)
+                .build();
+        return n;
+    }
+
+    @Test
     public void checkCallStyleNotification_withoutAnyValidUseCase_throws() throws Exception {
         Person person = new Person.Builder().setName("caller").build();
         Notification n = new Notification.Builder(mContext, "test")
@@ -17860,6 +17909,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING,
             android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
+    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testApplyAdjustment_promotedOngoingNotification_doesNotApply() throws Exception {
         // promoted ongoing notification which should not have the adjustment applied
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
@@ -17912,7 +17962,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
-    @DisableFlags({FLAG_UI_RICH_ONGOING})
+    @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_noui() throws Exception {
         testSetCanBePromoted_granted();
     }
@@ -17920,6 +17970,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_ui() throws Exception {
         testSetCanBePromoted_granted();
     }
@@ -18004,7 +18055,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
-    @DisableFlags({FLAG_UI_RICH_ONGOING})
+    @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_noui() throws Exception {
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
@@ -18012,6 +18063,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
+    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
@@ -18179,10 +18231,29 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING})
+    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testPostPromotableNotification_noPermission() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, false, true);
-        assertThat(mBinderService.appCanBePromoted(mPkg, mUid)).isFalse();
+        postAndVerifyPromotableNotification(false);
+    }
 
+
+    @Test
+    // TODO(b/415070395): remove FLAG_OPT_IN_RICH_ONGOING from EnableFlags when behavior inlined
+    @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_OPT_IN_RICH_ONGOING,
+            FLAG_API_RICH_ONGOING_PERMISSION})
+    public void testPostPromotableNotification_noPermission_appOps() throws Exception {
+        when(mPermissionManager.checkPermissionForPreflight(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any()))
+                .thenReturn(PermissionManager.PERMISSION_SOFT_DENIED);
+        when(mPermissionManager.checkPermissionForDataDelivery(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
+                .thenReturn(PermissionManager.PERMISSION_SOFT_DENIED);
+        assertThat(mBinderService.appCanBePromoted(mPkg, mUid)).isFalse();
+        postAndVerifyPromotableNotification(false);
+    }
+
+    private void postAndVerifyPromotableNotification(boolean allowed) throws Exception {
         Notification n = new Notification.Builder(mContext, mTestNotificationChannel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
@@ -18203,8 +18274,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mListeners, times(1)).prepareNotifyPostedLocked(
                 captor.capture(), any(), anyBoolean());
 
-        assertThat(mService.hasFlag(captor.getValue().getNotification().flags,
-                FLAG_PROMOTED_ONGOING)).isFalse();
+        assertEquals(allowed, mService.hasFlag(captor.getValue().getNotification().flags,
+                FLAG_PROMOTED_ONGOING));
     }
 
     @Test
