@@ -344,7 +344,7 @@ constructor(
                 SpringForce().setStiffness(ATTACH_STIFFNESS).setDampingRatio(ATTACH_DAMPING_RATIO)
             val velocity =
                 if (i == currentMagneticListeners.size / 2) {
-                    detachDirection * abs(swipeVelocity)
+                    -detachDirection * abs(swipeVelocity)
                 } else {
                     0f
                 }
