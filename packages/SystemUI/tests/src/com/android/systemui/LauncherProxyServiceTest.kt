@@ -27,6 +27,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.Display
 import android.view.MotionEvent
+import android.view.ViewGroup
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.app.AssistUtils
@@ -332,7 +333,39 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         Flags.FLAG_SCENE_CONTAINER,
         Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR,
     )
-    fun onStatusBarTouchEvent_withSceneFlag_callsOnLauncherDrag() =
+    fun onStatusBarTrackpadEvent_callsOnStatusBarOrLauncherTouched() =
+        kosmos.testScope.runTest {
+            val shadeDisplayId = 1
+            whenever(statusBarShadeDisplayPolicy.displayId)
+                .thenReturn(MutableStateFlow(shadeDisplayId))
+
+            val event =
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_MOVE, 500f, 500f, 0).apply {
+                    displayId = 0
+                }
+
+            whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
+            whenever(shadeViewController
+                .handleExternalTouch(argThat<MotionEvent> { displayId == event.displayId }))
+                .thenReturn(true)
+
+
+
+            subject.mSysUiProxy.onStatusBarTrackpadEvent(event)
+            verify(statusBarShadeDisplayPolicy)
+                .onStatusBarOrLauncherTouched(
+                    argThat<MotionEvent> { displayId == event.displayId },
+                    anyInt(),
+                )
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_SHADE_WINDOW_GOES_AROUND,
+        Flags.FLAG_SCENE_CONTAINER,
+        Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR,
+    )
+    fun onStatusBarTouchEvent_withSceneFlag_callsOnStatusBarOrLauncherTouched() =
         kosmos.testScope.runTest {
             val shadeDisplayId = 1
             whenever(statusBarShadeDisplayPolicy.displayId)
