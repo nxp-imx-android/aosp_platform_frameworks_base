@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"اجازه دادن"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"اشکال‌زدایی بی‌سیم مجاز نیست"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"کاربری که درحال‌حاضر به سیستم این دستگاه وارد شده است نمی‌تواند اشکال‌زدایی بی‌سیم را روشن کند. برای استفاده از این ویژگی، به کاربر سرپرست تغییر وضعیت دهید."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"این تنظیم بعداز ورود به سیستم قبل‌تغییر است"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"‏درگاه USB غیرفعال شده است"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"‏برای محافظت از دستگاهتان دربرابر مایعات یا خاکروبه، درگاه USB غیرفعال شده است و هیچ‌کدام از لوازم جانبی را شناسایی نخواهد کرد.\n\nهرزمان که استفاده از درگاه USB امکان‌پذیر باشد، به شما اطلاع داده می‌شود."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"‏درگاه USB برای تشخیص شارژرها و لوازم جانبی فعال شد"</string>
@@ -684,8 +683,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"‏با TrustAgent قفل را باز نگه‌دارید"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"به‌دلیل تلاش‌های بیش‌از حد برای اصالت‌سنجی، دستگاه قفل شد"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"دستگاه قفل شد\nاصالت‌سنجی ناموفق بود"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ازطریق ساعتتان قفل شد"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. ‏<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"تنظیمات صدا"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"رسانه زیرنویس خودکار"</string>
@@ -813,7 +811,7 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"برای مرتبط کردن صفحه‌کلید با رایانه لوحی، ابتدا باید بلوتوث را روشن کنید."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"روشن کردن"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"روشن - براساس چهره"</string>
-    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"بی‌صدا و بسته‌بندی کردن"</string>
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"بی‌صدا و بسته‌ای"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"حراج‌ها، ویژگی‌های جدید، و…"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"برترین داستان‌ها، سرمقاله‌ها، و…"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"پسندیدن‌ها، پست‌ها، و…"</string>
@@ -871,6 +869,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> به تعویق افتاد"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ساعت}=2{# ساعت}one{# ساعت}other{# ساعت}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# دقیقه}one{# دقیقه}other{# دقیقه}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"بهینه‌سازی باتری"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"دکمه <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ابتدا"</string>
@@ -1009,8 +1009,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"حداقل به <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> کاشی نیاز دارید"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ویرایش"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ویرایش کردن کاشی‌ها"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"تغییر اندازه کاشی‌های «تنظیمات فوری»"</string>
     <string name="tuner_time" msgid="2450785840990529997">"زمان"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ساعت، دقیقه و ثانیه نشان داده شود"</item>
@@ -1156,6 +1155,9 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"خروج از حالت ویرایش"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"برای تغییر اندازه، گوشه را بکشید"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"اجازه دادن برای پیمایش قطری"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"درشت‌نمایی صفحه‌کلید"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"تغییر اندازه"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"تغییر نوع درشت‌نمایی"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"پایان تغییر اندازه"</string>
@@ -1282,6 +1284,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"دستگاه‌های پیشنهادی"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ورودی"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"برونداد"</string>
@@ -1367,7 +1371,7 @@
     <string name="tap_a_network_to_connect" msgid="1565073330852369558">"برای اتصال به شبکه روی آن تک‌ضرب بزنید"</string>
     <string name="unlock_to_view_networks" msgid="5072880496312015676">"برای مشاهده شبکه‌ها، قفل صفحه را باز کنید"</string>
     <string name="wifi_empty_list_wifi_on" msgid="3864376632067585377">"درحال جستجوی شبکه…"</string>
-    <string name="wifi_failed_connect_message" msgid="4161863112079000071">"اتصال به شبکه برقرار نشد"</string>
+    <string name="wifi_failed_connect_message" msgid="4161863112079000071">"به شبکه متصل نشد"</string>
     <string name="wifi_wont_autoconnect_for_now" msgid="5782282612749867762">"‏فعلاً Wi-Fi به‌طور خودکار متصل نمی‌شود"</string>
     <string name="see_all_networks" msgid="3773666844913168122">"دیدن همه"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"برای تغییر شبکه، اترنت را قطع کنید"</string>

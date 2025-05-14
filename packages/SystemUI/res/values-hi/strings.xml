@@ -605,7 +605,7 @@
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"पूरी स्क्रीन को कास्ट करें"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"<xliff:g id="DISPLAY_NAME">%s</xliff:g> को कास्ट करें"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"पूरी स्क्रीन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट दूसरी स्क्रीन पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
-    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"किसी ऐप्लिकेशन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट या चल रहा मीडिया दूसरी स्क्रीन पर दिखता है. इसलिए पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
+    <string name="media_projection_entry_cast_permission_dialog_warning_single_app" msgid="7487834861348460736">"ऐप्लिकेशन को कास्ट करने पर, उस पर दिख रहा कॉन्टेंट या चल रहा मीडिया भी दूसरी स्क्रीन पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
     <string name="media_projection_entry_cast_permission_dialog_continue_entire_screen" msgid="3261124185304676483">"स्क्रीन कास्ट करें"</string>
     <string name="media_projection_entry_cast_app_selector_title" msgid="6323062146661922387">"कास्ट करने के लिए ऐप्लिकेशन चुनें"</string>
     <string name="media_projection_entry_generic_permission_dialog_title" msgid="4519802931547483628">"क्या मीडिया शेयर करना है?"</string>
@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent की वजह से अनलॉक रखा गया है"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"तय सीमा से ज़्यादा बार पुष्टि करने की कोशिशों से, डिवाइस लॉक हो गया है"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिवाइस लॉक हो गया है\nपुष्टि नहीं की जा सकी"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"आपकी स्मार्टवॉच से लॉक किया गया"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"साउंड सेटिंग"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ऑडियो-वीडियो से अपने-आप कैप्शन बनना"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> के लिए याद दिलाया गया"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# घंटा}=2{# घंटे}one{# घंटा}other{# घंटे}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# मिनट}one{# मिनट}other{# मिनट}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"बैटरी सेवर"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"बटन <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,6 +1157,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"बदलाव मोड से बाहर निकलें"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"साइज़ बदलने के लिए, कोने को खींचें और छोड़ें"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"तिरछी दिशा में स्क्रोल करने की अनुमति दें"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"साइज़ बदलें"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ज़ूम करने की सुविधा का टाइप बदलें"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"साइज़ बदलना रोकें"</string>
@@ -1282,6 +1287,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट किए गए स्पीकर"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पीकर और डिसप्ले"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"सुझाए गए डिवाइस"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"आउटपुट"</string>
