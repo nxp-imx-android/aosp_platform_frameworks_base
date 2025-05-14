@@ -16,6 +16,7 @@
 package com.android.wm.shell.appzoomout
 
 import android.content.Context
+import android.os.Handler
 import android.util.ArrayMap
 import android.view.Choreographer
 import android.view.Display
@@ -23,6 +24,8 @@ import android.view.SurfaceControl
 import android.window.DisplayAreaInfo
 import android.window.DisplayAreaOrganizer
 import android.window.WindowContainerToken
+import com.android.internal.jank.Cuj.CUJ_LPP_ASSIST_INVOCATION_EFFECT
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.wm.shell.common.DisplayLayout
 import java.util.concurrent.Executor
@@ -38,13 +41,16 @@ private const val SqueezeEffectOverlapShortEdgeThicknessDp = 4
 class TopLevelZoomOutDisplayAreaOrganizer(
     displayLayout: DisplayLayout,
     private val context: Context,
-    mainExecutor: Executor
+    mainExecutor: Executor,
+    private val mainHandler: Handler,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : DisplayAreaOrganizer(mainExecutor) {
 
     private val mDisplayAreaTokenMap: MutableMap<WindowContainerToken, SurfaceControl> = ArrayMap()
     private val mDisplayLayout = DisplayLayout()
     private var cornerRadius = 1f
     private var mProgress = 1f
+    private var isCujOnSuccessPath = false
 
     init {
         setDisplayLayout(displayLayout)
@@ -85,6 +91,7 @@ class TopLevelZoomOutDisplayAreaOrganizer(
             return
         }
 
+        updateCuj(lastProgress = mProgress, progress = progress)
         mProgress = progress
         apply()
     }
@@ -162,6 +169,42 @@ class TopLevelZoomOutDisplayAreaOrganizer(
             .setScale(leash, zoomOutScale, zoomOutScale)
             .setPosition(leash, positionXOffset, positionYOffset)
             .setFrameTimelineVsync(Choreographer.getInstance().vsyncId)
+    }
+
+    private fun updateCuj(lastProgress: Float, progress: Float) {
+        // TODO(b/418136893): Send clearer start/cancel/end signals from SysUI instead
+        if (progress == 1f) {
+            // If the animation reaches a progress of 1f, it means that assistant is being launched
+            // for sure and the animation could not have been cancelled (and can no longer be
+            // cancelled).
+            isCujOnSuccessPath = true
+        }
+        if (lastProgress == 0f && progress > 0f) {
+            // A new squeeze effect animation starts (progress starts moving away from 0f). Start
+            // the CUJ
+            mDisplayAreaTokenMap.values.firstOrNull()?.let {
+                interactionJankMonitor.begin(
+                    it,
+                    context,
+                    mainHandler,
+                    CUJ_LPP_ASSIST_INVOCATION_EFFECT
+                )
+            }
+        }
+        if (lastProgress > 0f && progress == 0f) {
+            // The progress is back at 0f, which marks the end of the animation.
+            if (isCujOnSuccessPath) {
+                // In case the isCujOnSuccessPath flag is set, assistant must have been launched
+                // and we can mark the end of the CUJ
+                interactionJankMonitor.end(CUJ_LPP_ASSIST_INVOCATION_EFFECT)
+            } else {
+                // If the isCujOnSuccessPath flag is not set, it means that the animation must have
+                // been cancelled. Mark the CUJ as cancelled.
+                interactionJankMonitor.cancel(CUJ_LPP_ASSIST_INVOCATION_EFFECT)
+            }
+            // Reset the isCujOnSuccessPath flag
+            isCujOnSuccessPath = false
+        }
     }
 
     fun setDisplayLayout(displayLayout: DisplayLayout) {
