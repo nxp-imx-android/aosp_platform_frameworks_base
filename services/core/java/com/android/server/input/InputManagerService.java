@@ -54,6 +54,7 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.AidlInputGestureData;
+import android.hardware.input.AppLaunchData;
 import android.hardware.input.HostUsiVersion;
 import android.hardware.input.IInputDeviceBatteryListener;
 import android.hardware.input.IInputDeviceBatteryState;
@@ -3810,9 +3811,11 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void handleKeyGestureInKeyGestureController(int deviceId, int[] keycodes,
-                int modifierState, @KeyGestureEvent.KeyGestureType int gestureType) {
-            mKeyGestureController.handleKeyGesture(deviceId, keycodes, modifierState, gestureType);
+        public void handleKeyGestureInKeyGestureController(@NonNull KeyGestureEvent event) {
+            mKeyGestureController.handleKeyGesture(event.getDeviceId(), event.getKeycodes(),
+                    event.getModifierState(), event.getKeyGestureType(), event.getAction(),
+                    event.getDisplayId(), /* focusedToken = */null, event.getFlags(),
+                    event.getAppLaunchData());
         }
 
         @Override
