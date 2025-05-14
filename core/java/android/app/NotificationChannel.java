@@ -928,7 +928,7 @@ public final class NotificationChannel implements Parcelable {
      * See {@link NotificationChannelGroup#isBlocked()} and
      * {@link NotificationManager#areNotificationsEnabled()}.
      */
-    public int getImportance() {
+    public @Importance int getImportance() {
         return mImportance;
     }
 
@@ -1156,7 +1156,7 @@ public final class NotificationChannel implements Parcelable {
      * @see #getImportance()
      */
     @FlaggedApi(FLAG_NOTIFICATION_GET_ORIGINAL_IMPORTANCE)
-    public int getOriginalImportance() {
+    public @Importance int getOriginalImportance() {
         return mOriginalImportance;
     }
 
@@ -1164,7 +1164,7 @@ public final class NotificationChannel implements Parcelable {
      * @hide
      */
     @TestApi
-    public void setOriginalImportance(int importance) {
+    public void setOriginalImportance(@Importance int importance) {
         mOriginalImportance = importance;
     }
 
