@@ -146,6 +146,7 @@ public final class MediaSession {
     private CallbackMessageHandler mCallback;
     private VolumeProvider mVolumeProvider;
     private PlaybackState mPlaybackState;
+    private boolean mIsReleased;
 
     private boolean mActive = false;
 
@@ -451,11 +452,26 @@ public final class MediaSession {
      * but it must be released if your activity or service is being destroyed.
      */
     public void release() {
+        if (mIsReleased) {
+            return;
+        }
         setCallback(null);
         try {
             mBinder.destroySession();
         } catch (RemoteException e) {
             Log.wtf(TAG, "Error releasing session: ", e);
+        } finally {
+            mIsReleased = true;
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            // Fallback if release() hasn't been called already.
+            release();
+        } finally {
+            super.finalize();
         }
     }
 
