@@ -97,9 +97,11 @@ constructor(
     private suspend fun startSqueeze() {
         delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
         setRequestTopUi(true)
+        val inwardsAnimationDuration =
+            squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs()
         animateSqueezeProgressTo(
             targetProgress = 1f,
-            duration = squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs(),
+            duration = inwardsAnimationDuration,
             interpolator = InterpolatorsAndroidX.LEGACY,
         ) {
             animateSqueezeProgressTo(
@@ -110,7 +112,7 @@ constructor(
                 finishAnimation()
             }
         }
-        hapticPlayer?.start()
+        hapticPlayer?.start(inwardsAnimationDuration.toInt() + DEFAULT_OUTWARD_EFFECT_DURATION)
         keyEventInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
             if (isLongPressed) {
                 isAnimationInterruptible = false
