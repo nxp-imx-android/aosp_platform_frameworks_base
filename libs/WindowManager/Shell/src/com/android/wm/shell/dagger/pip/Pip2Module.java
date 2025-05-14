@@ -183,12 +183,15 @@ public abstract class Pip2Module {
             PipUiEventLogger pipUiEventLogger,
             PipTaskListener pipTaskListener,
             @NonNull PipTransitionState pipTransitionState,
+            @NonNull DisplayController displayController,
+            @NonNull DisplayInsetsController displayInsetsController,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler) {
         return new PhonePipMenuController(context, pipBoundsState, pipMediaController,
                 systemWindows, pipUiEventLogger, pipTaskListener, pipTransitionState,
-                pipDisplayLayoutState, mainExecutor, mainHandler);
+                displayController, displayInsetsController, pipDisplayLayoutState,
+                mainExecutor, mainHandler);
     }
 
 
