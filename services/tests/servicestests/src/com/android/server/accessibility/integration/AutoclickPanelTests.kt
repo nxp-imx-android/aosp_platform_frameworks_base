@@ -18,6 +18,7 @@ package com.android.server.accessibility.integration
 import android.app.Instrumentation
 import android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
 import android.content.Context
+import android.graphics.Point
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -35,7 +36,9 @@ import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.internal.R
 import com.android.server.accessibility.Flags
 import kotlin.time.Duration.Companion.seconds
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
@@ -110,6 +113,10 @@ class AutoclickPanelTests {
         clickClickTypeButton(R.id.accessibility_autoclick_long_press_layout)
     }
 
+    private fun clickPositionButton() {
+        clickClickTypeButton(R.id.accessibility_autoclick_position_layout)
+    }
+
     // The panel is considered open when every click type button is showing.
     private fun isAutoclickPanelOpen(): Boolean {
         val PANEL_OPEN_CLICK_TYPE_COUNT = 6
@@ -120,6 +127,15 @@ class AutoclickPanelTests {
             )
         )
         return clickTypeButtonGroupContainer.childCount == PANEL_OPEN_CLICK_TYPE_COUNT
+    }
+
+    private fun getAutoclickPanelPosition(): Point {
+        return findObject(
+            By.res(
+                context.getResources()
+                    .getResourceName(R.id.accessibility_autoclick_type_panel)
+            )
+        ).visibleCenter
     }
 
     @Test
@@ -173,6 +189,26 @@ class AutoclickPanelTests {
             )
         )
         assertFalse(isAutoclickPanelOpen())
+    }
+
+    @Test
+    fun clickPositionButton_autoclickPanelMovesAroundTheScreen() {
+        // Capture position of the panel after each click.
+        val startingPosition = getAutoclickPanelPosition()
+        clickPositionButton()
+        val secondPosition = getAutoclickPanelPosition()
+        clickPositionButton()
+        val thirdPosition = getAutoclickPanelPosition()
+        clickPositionButton()
+        val fourthPosition = getAutoclickPanelPosition()
+        clickPositionButton()
+        val fifthPosition = getAutoclickPanelPosition()
+
+        // Confirm the panel moved around the screen and finished in the starting location.
+        assertNotEquals(startingPosition, secondPosition)
+        assertNotEquals(secondPosition, thirdPosition)
+        assertNotEquals(thirdPosition, fourthPosition)
+        assertEquals(startingPosition, fifthPosition)
     }
 
     private companion object {
