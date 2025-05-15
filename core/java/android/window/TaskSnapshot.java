@@ -77,6 +77,7 @@ public class TaskSnapshot implements Parcelable {
     // Must be one of the named color spaces, otherwise, always use SRGB color space.
     private final ColorSpace mColorSpace;
     private int mInternalReferences;
+    private int mWriteToParcelCount;
     private Consumer<HardwareBuffer> mSafeSnapshotReleaser;
 
     /** Keep in cache, doesn't need reference. */
@@ -320,7 +321,10 @@ public class TaskSnapshot implements Parcelable {
         dest.writeInt(mUiMode);
         synchronized (this) {
             if ((mInternalReferences & REFERENCE_WRITE_TO_PARCEL) != 0) {
-                removeReference(REFERENCE_WRITE_TO_PARCEL);
+                mWriteToParcelCount--;
+                if (mWriteToParcelCount == 0) {
+                    removeReference(REFERENCE_WRITE_TO_PARCEL);
+                }
             }
         }
     }
@@ -354,6 +358,7 @@ public class TaskSnapshot implements Parcelable {
                 + " mIsTranslucent=" + mIsTranslucent
                 + " mHasImeSurface=" + mHasImeSurface
                 + " mInternalReferences=" + mInternalReferences
+                + " mWriteToParcelCount=" + mWriteToParcelCount
                 + " mUiMode=" + Integer.toHexString(mUiMode);
     }
 
@@ -362,6 +367,9 @@ public class TaskSnapshot implements Parcelable {
      * Only used in core.
      */
     public synchronized void addReference(@ReferenceFlags int usage) {
+        if (usage == REFERENCE_WRITE_TO_PARCEL) {
+            mWriteToParcelCount++;
+        }
         mInternalReferences |= usage;
     }
 
