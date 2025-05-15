@@ -80,6 +80,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.LogBufferEulogizer;
 import com.android.systemui.statusbar.RankingBuilder;
+import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NoManSimulator.NotifEvent;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
@@ -131,6 +132,7 @@ public class NotifCollectionTest extends SysuiTestCase {
     @Spy private RecordingCollectionListener mCollectionListener;
     @Mock private CollectionReadyForBuildListener mBuildListener;
     @Mock private NotificationDismissibilityProvider mDismissibilityProvider;
+    @Mock private BundleInteractionLogger mBundleLogger;
 
     @Spy private RecordingLifetimeExtender mExtender1 = new RecordingLifetimeExtender("Extender1");
     @Spy private RecordingLifetimeExtender mExtender2 = new RecordingLifetimeExtender("Extender2");
@@ -175,7 +177,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 mBgExecutor,
                 mEulogizer,
                 mock(DumpManager.class),
-                mDismissibilityProvider);
+                mDismissibilityProvider,
+                mBundleLogger);
         mCollection.attach(mGroupCoalescer);
         mCollection.addCollectionListener(mCollectionListener);
         mCollection.setBuildListener(mBuildListener);
