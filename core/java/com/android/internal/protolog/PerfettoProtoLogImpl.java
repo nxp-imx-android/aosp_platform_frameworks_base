@@ -183,7 +183,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
                 mConfigurationService.registerClient(this, args);
             } catch (RemoteException e) {
-                throw new RuntimeException("Failed to register ProtoLog client");
+                throw new RuntimeException("Failed to register ProtoLog client", e);
             }
         });
     }
