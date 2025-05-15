@@ -17,37 +17,19 @@
 package com.android.systemui.topwindoweffects.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
-import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @SysUISingleton
 class SqueezeEffectInteractor
 @Inject
-constructor(
-    private val squeezeEffectRepository: SqueezeEffectRepository,
-    keyEventInteractor: KeyEventInteractor,
-    @Background private val coroutineContext: CoroutineContext,
-) {
-    val isSqueezeEffectEnabled = squeezeEffectRepository.isSqueezeEffectEnabled
+constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
     val isSqueezeEffectHapticEnabled = squeezeEffectRepository.isSqueezeEffectHapticEnabled
 
-    val isPowerButtonDownAsSingleKeyGesture: Flow<Boolean> =
-        combine(
-                keyEventInteractor.isPowerButtonDown,
-                squeezeEffectRepository.isPowerButtonDownInKeyCombination,
-                ::Pair,
-            )
-            .mapLatestConflated { (down, isInCombination) -> down && !isInCombination }
-            .flowOn(coroutineContext)
-            .distinctUntilChanged()
+    val isEffectEnabledAndPowerButtonPressedAsSingleGesture =
+        squeezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture
+
+    val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
 
     suspend fun getInvocationEffectInitialDelayMs() =
         squeezeEffectRepository.getInvocationEffectInitialDelayMs()
