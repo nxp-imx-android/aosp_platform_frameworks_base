@@ -225,6 +225,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             // TODO: Investigate whether we can migrate this clause to the
             //  |canApplyBoundsFromActivityOptions| case above.
             outParams.mBounds.set(options.getLaunchBounds());
+            outParams.mBoundsSet = true;
             hasInitialBounds = true;
             if (DEBUG) appendLog("multiwindow-activity-options-bounds=" + outParams.mBounds);
         }
