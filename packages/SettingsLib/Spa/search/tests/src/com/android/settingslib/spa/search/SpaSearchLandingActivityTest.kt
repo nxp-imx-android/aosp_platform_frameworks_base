@@ -46,7 +46,11 @@ class SpaSearchLandingActivityTest {
     fun tryLaunch_spaPage() {
         val key =
             SpaSearchLandingKey.newBuilder()
-                .setSpaPage(SpaSearchLandingSpaPage.newBuilder().setDestination(DESTINATION))
+                .setSpaPage(
+                    SpaSearchLandingSpaPage.newBuilder()
+                        .setDestination(DESTINATION)
+                        .setHighlightItemKey(HIGHLIGHT_ITEM_KEY)
+                )
                 .build()
 
         ActivityScenario.launch<TestSpaSearchLandingActivity>(
@@ -57,6 +61,8 @@ class SpaSearchLandingActivityTest {
 
         assertThat(TestSpaSearchLandingActivity.startSpaPageCalledDestination)
             .isEqualTo(DESTINATION)
+        assertThat(TestSpaSearchLandingActivity.startSpaPageCalledHighlightItemKey)
+            .isEqualTo(HIGHLIGHT_ITEM_KEY)
     }
 
     @Test
@@ -89,6 +95,7 @@ class SpaSearchLandingActivityTest {
 
     private companion object {
         const val DESTINATION = "Destination"
+        const val HIGHLIGHT_ITEM_KEY = "highlight_item_key"
         const val PREFERENCE_KEY = "preference_key"
         const val ARGUMENT_KEY = "argument_key"
         const val ARGUMENT_VALUE = 123

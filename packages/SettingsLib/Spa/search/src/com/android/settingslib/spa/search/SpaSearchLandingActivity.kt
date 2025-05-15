@@ -37,7 +37,7 @@ abstract class SpaSearchLandingActivity : Activity() {
             val destination = key.spaPage.destination
             if (destination.isNotEmpty()) {
                 Log.d(TAG, "Launch SPA search result: ${key.spaPage}")
-                startSpaPage(destination)
+                startSpaPage(destination, key.spaPage.highlightItemKey)
             }
         }
         if (key.hasFragment()) {
@@ -55,7 +55,13 @@ abstract class SpaSearchLandingActivity : Activity() {
 
     abstract fun isValidCall(): Boolean
 
-    open fun startSpaPage(destination: String) {
+    /**
+     * Starts the Spa page.
+     *
+     * @param destination The destination of SPA page.
+     * @param highlightItemKey The key to highlight the item.
+     */
+    open fun startSpaPage(destination: String, highlightItemKey: String) {
         throw UnsupportedOperationException()
     }
 

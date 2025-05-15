@@ -17,9 +17,21 @@
 package com.android.settingslib.spa.search
 
 import android.content.Context
+import com.android.settingslib.spa.framework.compose.HighlightBox
 
 interface SearchablePage {
-    data class SearchItem(val itemTitle: String, val keywords: String? = null)
+    data class SearchItem(
+        /**
+         * The key to highlight the item in the page.
+         *
+         * The corresponding item in the page should be wrapped with [HighlightBox] and pass this
+         * key to [HighlightBox]'s `highlightItemKey` parameter. When search result item is clicked,
+         * the item with this key will be highlighted.
+         */
+        val highlightItemKey: String,
+        val itemTitle: String,
+        val keywords: String? = null,
+    )
 
     /** Gets the title of the page. */
     fun getPageTitleForSearch(context: Context): String

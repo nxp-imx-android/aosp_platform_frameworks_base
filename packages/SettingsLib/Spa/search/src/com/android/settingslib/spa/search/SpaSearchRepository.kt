@@ -46,22 +46,26 @@ class SpaSearchRepository() {
         private fun SettingsPageProvider.createSpaSearchIndexablePage(
             getPageTitleForSearch: (context: Context) -> String,
             getSearchItems: (context: Context) -> List<SearchItem>,
-        ): SpaSearchIndexablePage {
-            val searchLandingKey =
-                SpaSearchLandingKey.newBuilder()
-                    .setSpaPage(SpaSearchLandingSpaPage.newBuilder().setDestination(name))
-                    .build()
-            return SpaSearchIndexablePage(targetClass = this::class.java) { context ->
+        ) =
+            SpaSearchIndexablePage(targetClass = this::class.java) { context ->
                 val pageTitle = getPageTitleForSearch(context)
                 getSearchItems(context).map { searchItem ->
                     SpaSearchIndexableItem(
-                        searchLandingKey = searchLandingKey,
+                        searchLandingKey = spaPageLandingKey(name, searchItem.highlightItemKey),
                         pageTitle = pageTitle,
                         itemTitle = searchItem.itemTitle,
                         keywords = searchItem.keywords,
                     )
                 }
             }
-        }
+
+        private fun spaPageLandingKey(name: String, highlightItemKey: String) =
+            SpaSearchLandingKey.newBuilder()
+                .setSpaPage(
+                    SpaSearchLandingSpaPage.newBuilder()
+                        .setDestination(name)
+                        .setHighlightItemKey(highlightItemKey)
+                )
+                .build()
     }
 }
