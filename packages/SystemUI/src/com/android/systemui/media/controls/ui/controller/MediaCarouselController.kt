@@ -400,7 +400,6 @@ constructor(
         keyguardUpdateMonitor.registerCallback(keyguardUpdateMonitorCallback)
         mediaCarousel.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                listenForAnyStateToGoneKeyguardTransition(this)
                 listenForAnyStateToLockscreenTransition(this)
                 listenForAnyStateToDozingTransition(this)
 
@@ -408,6 +407,7 @@ constructor(
                 listenForMediaItemsChanges(this)
             }
         }
+        listenForAnyStateToGoneKeyguardTransition(applicationScope)
         listenForLockscreenSettingChanges(applicationScope)
 
         // Notifies all active players about animation scale changes.
