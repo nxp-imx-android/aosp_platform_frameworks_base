@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server;
+package com.android.server.pm;
 
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -28,9 +28,8 @@ import android.os.UserManager;
 import android.provider.Settings;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.am.ActivityManagerService;
-import com.android.server.pm.PackageManagerService;
-import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
@@ -40,7 +39,7 @@ import java.util.Arrays;
  * Class responsible for booting the device in the proper user on headless system user mode.
  *
  */
-final class HsumBootUserInitializer {
+public final class HsumBootUserInitializer {
 
     private static final String TAG = HsumBootUserInitializer.class.getSimpleName();
 
