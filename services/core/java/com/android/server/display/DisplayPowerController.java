@@ -1028,7 +1028,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
 
         BrightnessSetting.BrightnessSettingListener brightnessSettingListener = brightnessValue -> {
-            Message msg = mHandler.obtainMessage(MSG_UPDATE_BRIGHTNESS, brightnessValue);
+            Message msg = mHandler.obtainMessage(MSG_UPDATE_BRIGHTNESS);
             mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
         };
         mDisplayBrightnessController
