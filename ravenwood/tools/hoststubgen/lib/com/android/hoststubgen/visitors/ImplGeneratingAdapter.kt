@@ -37,6 +37,7 @@ import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
+import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
 import com.android.hoststubgen.hosthelper.HostTestUtils
 import com.android.hoststubgen.log
 import org.objectweb.asm.ClassVisitor
@@ -375,11 +376,16 @@ class ImplGeneratingAdapter(
             when (policy.policy) {
                 FilterPolicy.Throw -> {
                     log.v("Making method throw...")
+                    val annot = if (policy.statsLabel.isSupported) {
+                        HostStubGenProcessedAsThrowButSupported.CLASS_DESCRIPTOR
+                    } else {
+                        HostStubGenProcessedAsThrow.CLASS_DESCRIPTOR
+                    }
                     return ThrowingMethodAdapter(
                         options.throwExceptionType.toJvmClassName(),
                         forceCreateBody,
                         innerVisitor
-                    ).withAnnotation(HostStubGenProcessedAsThrow.CLASS_DESCRIPTOR)
+                    ).withAnnotation(annot)
                 }
                 FilterPolicy.Ignore -> {
                     log.v("Making method ignored...")

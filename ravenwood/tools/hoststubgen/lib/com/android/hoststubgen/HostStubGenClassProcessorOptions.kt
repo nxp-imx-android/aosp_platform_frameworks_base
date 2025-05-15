@@ -38,6 +38,7 @@ open class HostStubGenClassProcessorOptions(
     val throwAnnotations: MutableSet<String> = mutableSetOf(),
     val removeAnnotations: MutableSet<String> = mutableSetOf(),
     val ignoreAnnotations: MutableSet<String> = mutableSetOf(),
+    val throwButSupportedAnnotations: MutableSet<String> = mutableSetOf(),
     val keepClassAnnotations: MutableSet<String> = mutableSetOf(),
     val partiallyAllowedAnnotations: MutableSet<String> = mutableSetOf(),
     val redirectAnnotations: MutableSet<String> = mutableSetOf(),
@@ -103,6 +104,9 @@ open class HostStubGenClassProcessorOptions(
             "--throw-annotation" ->
                 throwAnnotations.addUniqueAnnotationArg()
 
+            "--throw-but-supported-annotation" ->
+                throwButSupportedAnnotations.addUniqueAnnotationArg()
+
             "--remove-annotation" ->
                 removeAnnotations.addUniqueAnnotationArg()
 
@@ -164,6 +168,7 @@ open class HostStubGenClassProcessorOptions(
             throwAnnotations=$throwAnnotations,
             removeAnnotations=$removeAnnotations,
             ignoreAnnotations=$ignoreAnnotations,
+            throwButSupportedAnnotations=$throwButSupportedAnnotations,
             keepClassAnnotations=$keepClassAnnotations,
             partiallyAllowedAnnotations=$partiallyAllowedAnnotations,
             substituteAnnotations=$substituteAnnotations,
