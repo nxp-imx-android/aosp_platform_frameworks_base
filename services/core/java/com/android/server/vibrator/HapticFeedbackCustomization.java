@@ -119,14 +119,6 @@ final class HapticFeedbackCustomization {
     private final SparseArray<VibrationEffect> mHapticCustomizationsForSourceTouchScreen;
 
     HapticFeedbackCustomization(Resources res, VibratorInfo vibratorInfo) {
-        if (!Flags.hapticFeedbackVibrationOemCustomizationEnabled()) {
-            Slog.d(TAG, "Haptic feedback customization feature is not enabled.");
-            mHapticCustomizations = new SparseArray<>();
-            mHapticCustomizationsForSourceRotary = new SparseArray<>();
-            mHapticCustomizationsForSourceTouchScreen = new SparseArray<>();
-            return;
-        }
-
         // Load base customizations.
         SparseArray<VibrationEffect> hapticCustomizations;
         hapticCustomizations = loadCustomizedFeedbackVibrationFromFile(res, vibratorInfo);

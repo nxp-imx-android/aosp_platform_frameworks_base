@@ -20,7 +20,6 @@ import static android.os.VibrationEffect.Composition.PRIMITIVE_TICK;
 import static android.os.VibrationEffect.EFFECT_CLICK;
 import static android.os.VibrationEffect.EFFECT_TICK;
 import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_INPUT_SOURCE_CUSTOMIZATION_ENABLED;
-import static android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_VIBRATION_OEM_CUSTOMIZATION_ENABLED;
 import static android.os.vibrator.Flags.FLAG_LOAD_HAPTIC_FEEDBACK_VIBRATION_CUSTOMIZATION_FROM_RESOURCES;
 
 import static com.android.internal.R.xml.haptic_feedback_customization;
@@ -105,24 +104,6 @@ public class HapticFeedbackCustomizationTest {
     public void setUp() {
         clearFileAndResourceSetup();
         when(mVibratorInfoMock.areVibrationFeaturesSupported(any())).thenReturn(true);
-        mSetFlagsRule.enableFlags(FLAG_HAPTIC_FEEDBACK_VIBRATION_OEM_CUSTOMIZATION_ENABLED);
-    }
-
-    @Test
-    public void testParseCustomizations_featureFlagDisabled_customizationNotLoaded(
-            @TestParameter CustomizationSource customizationSource) throws Exception {
-        mSetFlagsRule.disableFlags(FLAG_HAPTIC_FEEDBACK_VIBRATION_OEM_CUSTOMIZATION_ENABLED);
-        // Valid customization XML.
-        String xml = "<haptic-feedback-constants>"
-                + "<constant id=\"10\">"
-                + COMPOSITION_VIBRATION_XML
-                + "</constant>"
-                + "</haptic-feedback-constants>";
-        HapticFeedbackCustomization customization = createCustomizationForSource(xml,
-                customizationSource);
-
-        assertThat(getEffectForSource(/* effectId= */ 10, customizationSource, customization))
-                .isNull();
     }
 
     @Test
