@@ -29,17 +29,21 @@ import android.view.IDisplayWindowListener
 import android.view.mockIWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.DisplayDecorationListener
 import com.android.app.displaylib.DisplayRepository.PendingDisplay
+import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.kotlinArgumentCaptor
+import com.android.systemui.util.mockito.mock
 import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.TestScope
@@ -73,6 +77,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
 
     private val testHandler = kosmos.fakeHandler
     private val testScope = kosmos.testScope
+    private val testDispacher = kosmos.testDispatcher
     private val defaultDisplay =
         display(type = TYPE_INTERNAL, id = DEFAULT_DISPLAY, state = Display.STATE_ON)
 
@@ -85,6 +90,10 @@ class DisplayRepositoryTest : SysuiTestCase() {
             // It needs to be called, just once, for the initial value.
             verify(displayManager).getDisplays()
         }
+    }
+
+    private val displayRepositoryCompat: DisplaysWithDecorationsRepositoryCompat by lazy {
+        kosmos.displaysWithDecorationsRepositoryCompat
     }
 
     @Before
@@ -732,6 +741,67 @@ class DisplayRepositoryTest : SysuiTestCase() {
             sendOnDisplayRemoved(2)
 
             assertThat(lastDisplayIdsWithSystemDecorations).containsExactly(1)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    fun displaysWithSystemDecorationsCompat_registerListener_notifyAddSystemDecor() =
+        testScope.runTest {
+            val listener = mock<DisplayDecorationListener>()
+            displayRepositoryCompat.registerDisplayDecorationListener(listener, testDispacher)
+            captureWmListener()
+
+            wmListener.onDisplayAddSystemDecorations(1)
+
+            verify(listener).onDisplayAddSystemDecorations(1)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    fun displaysWithSystemDecorationsCompat_registerListener_notifyInitialDisplaysWithSysDecor() =
+        testScope.runTest {
+            setDisplays(0)
+            whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            val listener = mock<DisplayDecorationListener>()
+
+            displayRepositoryCompat.registerDisplayDecorationListener(listener, testDispacher)
+            captureWmListener()
+
+            verify(listener).onDisplayAddSystemDecorations(0)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    fun displaysWithSystemDecorationsCompat_registerListener_notifyRemoveSystemDecor() =
+        testScope.runTest {
+            setDisplays(0)
+            whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            val listener = mock<DisplayDecorationListener>()
+
+            displayRepositoryCompat.registerDisplayDecorationListener(listener, testDispacher)
+            captureWmListener()
+            wmListener.onDisplayRemoveSystemDecorations(0)
+
+            verify(listener).onDisplayAddSystemDecorations(0)
+            verify(listener).onDisplayRemoveSystemDecorations(0)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    fun displaysWithSystemDecorationsCompat_registerListener_notifyAllDisplaysWithSysDecor() =
+        testScope.runTest {
+            setDisplays(0, 2)
+            whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
+            val listener = mock<DisplayDecorationListener>()
+
+            displayRepositoryCompat.registerDisplayDecorationListener(listener, testDispacher)
+            captureWmListener()
+            wmListener.onDisplayAddSystemDecorations(3)
+
+            verify(listener).onDisplayAddSystemDecorations(0)
+            verify(listener).onDisplayAddSystemDecorations(2)
+            verify(listener).onDisplayAddSystemDecorations(3)
         }
 
     @Test

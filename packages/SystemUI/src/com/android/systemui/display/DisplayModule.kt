@@ -23,6 +23,7 @@ import android.view.IWindowManager
 import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
+import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
@@ -158,5 +159,13 @@ object DisplayLibModule {
         displayLibComponent: DisplayLibComponent
     ): DisplaysWithDecorationsRepository {
         return displayLibComponent.displaysWithDecorationsRepository
+    }
+
+    @Provides
+    @SysUISingleton
+    fun providesDisplaysWithDecorationsRepositoryCompatFromLib(
+        displayLibComponent: DisplayLibComponent
+    ): DisplaysWithDecorationsRepositoryCompat {
+        return displayLibComponent.displaysWithDecorationsRepositoryCompat
     }
 }

@@ -46,6 +46,7 @@ import android.util.SparseArray;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat;
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.systemui.LauncherProxyService;
 import com.android.systemui.SysuiTestCase;
@@ -65,6 +66,8 @@ import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.pip.Pip;
+
+import kotlinx.coroutines.CoroutineDispatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -126,7 +129,9 @@ public class NavigationBarControllerImplTest extends SysuiTestCase {
                         Optional.of(mock(BackAnimation.class)),
                         mock(SecureSettings.class),
                         mDisplayTracker,
-                        mDeviceStateManager));
+                        mDeviceStateManager,
+                        mock(DisplaysWithDecorationsRepositoryCompat.class),
+                        mock(CoroutineDispatcher.class)));
         initializeNavigationBars();
         mMockitoSession = mockitoSession().mockStatic(Utilities.class).startMocking();
     }
