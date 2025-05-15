@@ -595,5 +595,6 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
             setMaxHeight(context.getResources().getDimensionPixelSize(
                     R.dimen.settingslib_illustration_height_tablet));
         }
+        setPersistent(false);
     }
 }

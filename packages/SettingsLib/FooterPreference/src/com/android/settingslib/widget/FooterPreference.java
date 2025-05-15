@@ -218,6 +218,7 @@ public class FooterPreference extends Preference
             setKey(KEY_FOOTER);
         }
         setSelectable(false);
+        setPersistent(false);
     }
 
     /** The builder is convenient to creat a dynamic FooterPreference. */
