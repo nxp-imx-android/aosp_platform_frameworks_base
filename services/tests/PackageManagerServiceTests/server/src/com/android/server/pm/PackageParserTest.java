@@ -879,6 +879,10 @@ public class PackageParserTest {
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM3");
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM4");
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM5");
+
+            var activities = pkg.getActivities().stream().map(ParsedActivity::getName).toList();
+            assertThat(activities).contains(PACKAGE_NAME + ".TestActivity");
+            assertThat(activities).doesNotContain(PACKAGE_NAME + ".TestActivity2");
         } finally {
             testFile.delete();
         }
@@ -913,6 +917,10 @@ public class PackageParserTest {
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM3");
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM4");
             assertThat(permissionNames).doesNotContain(PACKAGE_NAME + ".PERM5");
+
+            var activities = pkg.getActivities().stream().map(ParsedActivity::getName).toList();
+            assertThat(activities).contains(PACKAGE_NAME + ".TestActivity");
+            assertThat(activities).doesNotContain(PACKAGE_NAME + ".TestActivity2");
         } finally {
             testFile.delete();
         }

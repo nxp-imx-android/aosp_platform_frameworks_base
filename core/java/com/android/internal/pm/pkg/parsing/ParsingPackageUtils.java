@@ -779,6 +779,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
@@ -858,6 +859,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
@@ -1004,6 +1006,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
@@ -1626,6 +1629,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
@@ -1869,6 +1873,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
             if (parser.getName().equals("intent")) {
@@ -2245,6 +2250,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
@@ -2846,6 +2852,7 @@ public class ParsingPackageUtils {
                 continue;
             }
             if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
