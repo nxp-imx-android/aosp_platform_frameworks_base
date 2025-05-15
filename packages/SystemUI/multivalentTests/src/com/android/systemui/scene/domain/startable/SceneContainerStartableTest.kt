@@ -24,6 +24,7 @@ import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -61,6 +62,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteract
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
 import com.android.systemui.haptics.vibratorHelper
@@ -88,6 +90,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.model.fakeSysUIStatePerDisplayRepository
 import com.android.systemui.model.sysUiState
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.data.repository.powerRepository
@@ -103,6 +106,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -128,6 +132,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -162,7 +167,6 @@ class SceneContainerStartableTest : SysuiTestCase() {
     private val bouncerInteractor by lazy { kosmos.bouncerInteractor }
     private val faceAuthRepository by lazy { kosmos.fakeDeviceEntryFaceAuthRepository }
     private val bouncerRepository by lazy { kosmos.fakeKeyguardBouncerRepository }
-    private val sysUiState = kosmos.sysUiState
     private val falsingCollector = mock<FalsingCollector>().also { kosmos.falsingCollector = it }
     private val vibratorHelper = mock<VibratorHelper>().also { kosmos.vibratorHelper = it }
     private val fakeSceneDataSource = kosmos.fakeSceneDataSource
@@ -174,6 +178,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
     private val msdlPlayer = kosmos.fakeMSDLPlayer
     private val authInteractionProperties = AuthInteractionProperties()
     private val mockActivityTransitionAnimator = mock<ActivityTransitionAnimator>()
+    private val sysuiStateRepository = kosmos.fakeSysUIStatePerDisplayRepository
+    private val sysUiState = sysuiStateRepository[Display.DEFAULT_DISPLAY]!!
+    private val secondaryDisplaySysUIState = sysuiStateRepository[SECONDARY_DISPLAY]!!
 
     private lateinit var underTest: SceneContainerStartable
 
@@ -183,7 +190,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         whenever(kosmos.keyguardUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean()))
             .thenReturn(true)
         kosmos.activityTransitionAnimator = mockActivityTransitionAnimator
-
+        runBlocking { kosmos.displayRepository.addDisplay(Display.DEFAULT_DISPLAY) }
         underTest = kosmos.sceneContainerStartable
     }
 
@@ -1163,14 +1170,48 @@ class SceneContainerStartableTest : SysuiTestCase() {
                     sceneInteractor.changeScene(sceneKey, "reason")
                     runCurrent()
                     verify(sysUiState, times(index)).commitUpdate()
+                    verify(secondaryDisplaySysUIState, never()).commitUpdate()
 
                     fakeSceneDataSource.unpause(expectedScene = sceneKey)
                     runCurrent()
                     verify(sysUiState, times(index)).commitUpdate()
+                    verify(secondaryDisplaySysUIState, never()).commitUpdate()
 
                     transitionStateFlow.value = ObservableTransitionState.Idle(sceneKey)
                     runCurrent()
                     verify(sysUiState, times(index + 1)).commitUpdate()
+                    verify(secondaryDisplaySysUIState, never()).commitUpdate()
+                }
+        }
+
+    @Test
+    fun hydrateSystemUiState_onSecondaryDisplay() =
+        testScope.runTest {
+            val transitionStateFlow = prepareState()
+            kosmos.displayRepository.addDisplay(SECONDARY_DISPLAY)
+            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(SECONDARY_DISPLAY)
+            underTest.start()
+            runCurrent()
+            clearInvocations(secondaryDisplaySysUIState)
+
+            listOf(Scenes.Gone, Scenes.Lockscreen, Scenes.Gone, Scenes.Shade, Scenes.QuickSettings)
+                .forEachIndexed { index, sceneKey ->
+                    if (sceneKey == Scenes.Gone) {
+                        updateFingerprintAuthStatus(isSuccess = true)
+                        runCurrent()
+                    }
+                    fakeSceneDataSource.pause()
+                    sceneInteractor.changeScene(sceneKey, "reason")
+                    runCurrent()
+                    verify(secondaryDisplaySysUIState, times(index)).commitUpdate()
+
+                    fakeSceneDataSource.unpause(expectedScene = sceneKey)
+                    runCurrent()
+                    verify(secondaryDisplaySysUIState, times(index)).commitUpdate()
+
+                    transitionStateFlow.value = ObservableTransitionState.Idle(sceneKey)
+                    runCurrent()
+                    verify(secondaryDisplaySysUIState, times(index + 1)).commitUpdate()
                 }
         }
 
@@ -3027,5 +3068,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 }
             )
         }
+    }
+
+    private companion object {
+        const val SECONDARY_DISPLAY = Display.DEFAULT_DISPLAY + 1
     }
 }
