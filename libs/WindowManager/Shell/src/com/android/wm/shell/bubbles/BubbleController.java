@@ -103,6 +103,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.shortcut.BubbleShortcutHelper;
@@ -222,6 +223,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleExpandedViewManager mExpandedViewManager;
     private final ResizabilityChecker mResizabilityChecker;
     private final HomeIntentProvider mHomeIntentProvider;
+    private final BubbleAppInfoProvider mAppInfoProvider;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -350,7 +352,8 @@ public class BubbleController implements ConfigurationChangeListener,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
-            HomeIntentProvider homeIntentProvider) {
+            HomeIntentProvider homeIntentProvider,
+            BubbleAppInfoProvider appInfoProvider) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -404,6 +407,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
         mResizabilityChecker = resizabilityChecker;
         mHomeIntentProvider = homeIntentProvider;
+        mAppInfoProvider = appInfoProvider;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -1334,6 +1338,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
         for (Bubble b : mBubbleData.getOverflowBubbles()) {
@@ -1345,6 +1350,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
     }
@@ -1951,6 +1957,7 @@ public class BubbleController implements ConfigurationChangeListener,
                         mStackView,
                         mLayerView,
                         mBubbleIconFactory,
+                        mAppInfoProvider,
                         true /* skipInflation */);
             });
             return null;
@@ -2014,6 +2021,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
     }
@@ -2106,6 +2114,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 mStackView,
                 mLayerView,
                 mBubbleIconFactory,
+                mAppInfoProvider,
                 false /* skipInflation */);
     }
 
@@ -2883,7 +2892,8 @@ public class BubbleController implements ConfigurationChangeListener,
                 entry.getKey());
     }
 
-    static PackageManager getPackageManagerForUser(Context context, int userId) {
+    /** Gets the {@link PackageManager} for the user's context. */
+    public static PackageManager getPackageManagerForUser(Context context, int userId) {
         Context contextForUser = context;
         // UserHandle defines special userId as negative values, e.g. USER_ALL
         if (userId >= 0) {

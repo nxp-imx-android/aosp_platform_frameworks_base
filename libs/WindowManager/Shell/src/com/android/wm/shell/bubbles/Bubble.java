@@ -54,6 +54,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.ComponentUtils;
@@ -754,6 +755,7 @@ public class Bubble implements BubbleViewProvider {
             @Nullable BubbleStackView stackView,
             @Nullable BubbleBarLayerView layerView,
             BubbleIconFactory iconFactory,
+            BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation) {
         ProtoLog.v(WM_SHELL_BUBBLES, "Inflate bubble key=%s", getKey());
         if (Flags.bubbleViewInfoExecutors()) {
@@ -768,6 +770,7 @@ public class Bubble implements BubbleViewProvider {
                     stackView,
                     layerView,
                     iconFactory,
+                    appInfoProvider,
                     skipInflation,
                     callback,
                     mMainExecutor,

@@ -482,6 +482,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<IWindowManager>(),
                 resizeChecker,
                 HomeIntentProvider(context),
+                FakeBubbleAppInfoProvider(),
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
