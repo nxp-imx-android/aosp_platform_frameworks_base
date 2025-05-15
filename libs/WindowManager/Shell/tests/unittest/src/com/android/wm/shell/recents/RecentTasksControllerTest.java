@@ -513,6 +513,16 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    public void testGetRecentTasks_lastNonFullscreenBoundsNull_doesNotThrow() {
+        RecentTaskInfo t1 = makeTaskInfo(1);
+        t1.lastNonFullscreenBounds = null;
+        setRawList(t1);
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(1)).thenReturn(true);
+
+        mRecentTasksController.getRecentTasks(MAX_VALUE, RECENT_IGNORE_UNAVAILABLE, 0);
+    }
+    @Test
     public void testRemovedTaskRemovesSplit() {
         RecentTaskInfo t1 = makeTaskInfo(1);
         RecentTaskInfo t2 = makeTaskInfo(2);
