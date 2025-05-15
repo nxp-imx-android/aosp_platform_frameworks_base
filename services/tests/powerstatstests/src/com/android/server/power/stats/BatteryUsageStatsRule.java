@@ -120,9 +120,8 @@ public class BatteryUsageStatsRule implements TestRule {
         mBatteryStats = new MockBatteryStatsImpl(getBatteryStatsConfig(), mMockClock,
                 mMonotonicClock, mHistoryDir, mHandler, mPowerProfile, new PowerStatsUidResolver());
         mBatteryStats.setCpuScalingPolicies(new CpuScalingPolicies(mCpusByPolicy, mFreqsByPolicy));
-        synchronized (mBatteryStats) {
-            mBatteryStats.noteCustomEnergyConsumerNamesLocked(mCustomPowerComponentNames);
-        }
+        mBatteryStats.noteCustomEnergyConsumerNamesAsync(mCustomPowerComponentNames);
+        mBatteryStats.awaitCompletion();
         mBatteryStats.informThatAllExternalStatsAreFlushed();
 
         if (mDisplayCount != -1) {
@@ -292,10 +291,9 @@ public class BatteryUsageStatsRule implements TestRule {
             @NonNull String[] customPowerComponentNames) {
         mCustomPowerComponentNames = customPowerComponentNames;
         if (mBatteryStats != null) {
-            synchronized (mBatteryStats) {
-                mBatteryStats.noteCustomEnergyConsumerNamesLocked(mCustomPowerComponentNames);
-                mBatteryStats.informThatAllExternalStatsAreFlushed();
-            }
+            mBatteryStats.noteCustomEnergyConsumerNamesAsync(mCustomPowerComponentNames);
+            mBatteryStats.awaitCompletion();
+            mBatteryStats.informThatAllExternalStatsAreFlushed();
         }
         return this;
     }

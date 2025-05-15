@@ -519,7 +519,8 @@ public class BatteryStatsNoteTest {
     public void testNoteScreenStateLocked() throws Exception {
         final MockClock clocks = new MockClock(); // holds realtime and uptime in ms
         MockBatteryStatsImpl bi = new MockBatteryStatsImpl(clocks);
-        bi.noteCustomEnergyConsumerNamesLocked(new String[]{"FOO", "BAR"});
+        bi.noteCustomEnergyConsumerNamesAsync(new String[]{"FOO", "BAR"});
+        bi.awaitCompletion();
 
         bi.updateTimeBasesLocked(true, Display.STATE_ON, 0, 0);
         bi.noteScreenStateLocked(0, Display.STATE_ON);
@@ -567,7 +568,8 @@ public class BatteryStatsNoteTest {
         final MockClock clocks = new MockClock(); // holds realtime and uptime in ms
         MockBatteryStatsImpl bi = new MockBatteryStatsImpl(clocks);
         bi.setDisplayCountLocked(2);
-        bi.noteCustomEnergyConsumerNamesLocked(new String[]{"FOO", "BAR"});
+        bi.noteCustomEnergyConsumerNamesAsync(new String[]{"FOO", "BAR"});
+        bi.awaitCompletion();
 
         bi.updateTimeBasesLocked(true, Display.STATE_OFF, 0, 0);
         bi.noteScreenStateLocked(0, Display.STATE_OFF);
