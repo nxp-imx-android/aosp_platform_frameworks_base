@@ -138,8 +138,7 @@ const val UNLOCK_ANIMATION_SURFACE_BEHIND_START_DELAY_MS = 75L
 class KeyguardUnlockAnimationController @Inject constructor(
     private val context: Context,
     private val keyguardStateController: KeyguardStateController,
-    private val
-    keyguardViewMediator: Lazy<KeyguardViewMediator>,
+    private val keyguardViewMediator: Lazy<KeyguardViewMediator>,
     private val keyguardViewController: KeyguardViewController,
     private val featureFlags: FeatureFlags,
     private val biometricUnlockControllerLazy: Lazy<BiometricUnlockController>,
@@ -197,6 +196,12 @@ class KeyguardUnlockAnimationController @Inject constructor(
      * being driven by ValueAnimators started in [playCannedUnlockAnimation].
      */
     var playingCannedUnlockAnimation = false
+
+    /**
+     * Whether we reached the swipe gesture threshold to dismiss keyguard, or restore it, once and
+     * should ignore any future changes to the dismiss amount before the animation finishes.
+     */
+    var dismissAmountThresholdsReached = false
 
     /**
      * Remote callback provided by Launcher that allows us to control the Launcher's unlock
@@ -326,7 +331,7 @@ class KeyguardUnlockAnimationController @Inject constructor(
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     playingCannedUnlockAnimation = false
-                    keyguardViewMediator.get().onKeyguardExitRemoteAnimationFinished(
+                    keyguardViewMediator.get().exitKeyguardAndFinishSurfaceBehindRemoteAnimation(
                         false /* cancelled */
                     )
                 }
@@ -516,7 +521,7 @@ class KeyguardUnlockAnimationController @Inject constructor(
             // around behind that.
             biometricUnlockControllerLazy.get().isWakeAndUnlock -> {
                 setSurfaceBehindAppearAmount(1f)
-                keyguardViewMediator.get().onKeyguardExitRemoteAnimationFinished(
+                keyguardViewMediator.get().exitKeyguardAndFinishSurfaceBehindRemoteAnimation(
                     false /* cancelled */)
             }
 
@@ -553,7 +558,7 @@ class KeyguardUnlockAnimationController @Inject constructor(
                 return@postDelayed
             }
 
-            keyguardViewMediator.get().onKeyguardExitRemoteAnimationFinished(
+            keyguardViewMediator.get().exitKeyguardAndFinishSurfaceBehindRemoteAnimation(
                 false /* cancelled */)
         }, CANNED_UNLOCK_START_DELAY)
     }
@@ -625,6 +630,10 @@ class KeyguardUnlockAnimationController @Inject constructor(
             return
         }
 
+        if (dismissAmountThresholdsReached) {
+            return
+        }
+
         if (!keyguardStateController.isShowing) {
             return
         }
@@ -657,6 +666,11 @@ class KeyguardUnlockAnimationController @Inject constructor(
             return
         }
 
+        // no-op if we alreaddy reached a threshold.
+        if (dismissAmountThresholdsReached) {
+            return
+        }
+
         // no-op if animation is not requested yet.
         if (!keyguardViewMediator.get().requestedShowSurfaceBehindKeyguard() ||
                 !keyguardViewMediator.get().isAnimatingBetweenKeyguardAndSurfaceBehindOrWillBe) {
@@ -671,7 +685,9 @@ class KeyguardUnlockAnimationController @Inject constructor(
                         !keyguardStateController.isFlingingToDismissKeyguardDuringSwipeGesture &&
                         dismissAmount >= DISMISS_AMOUNT_EXIT_KEYGUARD_THRESHOLD)) {
             setSurfaceBehindAppearAmount(1f)
-            keyguardViewMediator.get().onKeyguardExitRemoteAnimationFinished(false /* cancelled */)
+            dismissAmountThresholdsReached = true
+            keyguardViewMediator.get().exitKeyguardAndFinishSurfaceBehindRemoteAnimation(
+                    false /* cancelled */)
         }
     }
 
@@ -726,28 +742,43 @@ class KeyguardUnlockAnimationController @Inject constructor(
      * This is generally triggered by us, calling
      * [KeyguardViewMediator.finishSurfaceBehindRemoteAnimation].
      */
-    fun notifyFinishedKeyguardExitAnimation(cancelled: Boolean) {
+    fun notifyFinishedKeyguardExitAnimation(showKeyguard: Boolean) {
         // Cancel any pending actions.
         handler.removeCallbacksAndMessages(null)
 
-        // Make sure we made the surface behind fully visible, just in case. It should already be
-        // fully visible. If the launcher is doing its own animation, let it continue without
-        // forcing it to 1f.
-        setSurfaceBehindAppearAmount(1f)
-        launcherUnlockController?.setUnlockAmount(1f, false /* forceIfAnimating */)
+        // The lockscreen surface is gone, so it is now safe to re-show the smartspace.
+        if (lockscreenSmartspace?.visibility == View.INVISIBLE) {
+            lockscreenSmartspace?.visibility = View.VISIBLE
+        }
+
+        if (!showKeyguard) {
+            // Make sure we made the surface behind fully visible, just in case. It should already
+            // be fully visible. The exit animation is finished, and we should not hold the leash
+            // anymore, so forcing it to 1f.
+            surfaceBehindAlpha = 1f
+            setSurfaceBehindAppearAmount(1f)
+
+            try {
+                launcherUnlockController?.setUnlockAmount(1f, false /* forceIfAnimating */)
+            } catch (e: RemoteException) {
+                Log.e(TAG, "Remote exception in notifyFinishedKeyguardExitAnimation", e)
+            }
+        }
+
+        listeners.forEach { it.onUnlockAnimationFinished() }
+
+        // Reset all state
+        surfaceBehindAlphaAnimator.cancel()
+        surfaceBehindEntryAnimator.cancel()
 
         // That target is no longer valid since the animation finished, null it out.
         surfaceBehindRemoteAnimationTarget = null
         surfaceBehindParams = null
 
         playingCannedUnlockAnimation = false
+        dismissAmountThresholdsReached = false
         willUnlockWithInWindowLauncherAnimations = false
         willUnlockWithSmartspaceTransition = false
-
-        // The lockscreen surface is gone, so it is now safe to re-show the smartspace.
-        lockscreenSmartspace?.visibility = View.VISIBLE
-
-        listeners.forEach { it.onUnlockAnimationFinished() }
     }
 
     /**
