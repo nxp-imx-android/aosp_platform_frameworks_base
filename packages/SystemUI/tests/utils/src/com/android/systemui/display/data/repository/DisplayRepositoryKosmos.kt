@@ -26,6 +26,8 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
+import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.util.mockito.mock
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +39,8 @@ fun Kosmos.createFakeDisplaySubcomponent(
     coroutineScope: CoroutineScope = testScope.backgroundScope,
     displayStateRepository: DisplayStateRepository = mock<DisplayStateRepository>(),
     displayStateInteractor: DisplayStateInteractor = mock<DisplayStateInteractor>(),
+    statusbarIconRefreshInteractorFromConstructor: StatusBarIconRefreshInteractor =
+        this.statusBarIconRefreshInteractor,
 ): SystemUIDisplaySubcomponent {
     return object : SystemUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -47,6 +51,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val displayStateInteractor: DisplayStateInteractor
             get() = displayStateInteractor
+
+        override val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor =
+            statusbarIconRefreshInteractorFromConstructor
     }
 }
 

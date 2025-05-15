@@ -83,5 +83,7 @@ interface PerDisplayCommonModule {
                 backgroundDispatcher + newTracingContext("DisplayScope(id=$displayId)")
             )
         }
+
+        @Provides @DisplayAware fun provideDisplayId(@DisplayId displayId: Int): Int = displayId
     }
 }

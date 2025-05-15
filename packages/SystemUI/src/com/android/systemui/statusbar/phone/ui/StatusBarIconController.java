@@ -46,6 +46,9 @@ public interface StatusBarIconController {
     /** Refresh the state of an IconManager by recreating the views */
     void refreshIconGroup(IconManager iconManager);
 
+    /** Refreshes icon groups for a specific display. */
+    void refreshIconGroups(int displayId);
+
     /**
      * Adds or updates an icon that comes from an active tile service.
      *
