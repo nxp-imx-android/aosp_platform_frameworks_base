@@ -73,9 +73,6 @@ abstract class WindowTracing {
             logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
             return;
         }
-        if (!android.tracing.Flags.perfettoProtologTracing()) {
-            ((LegacyProtoLogImpl) ProtoLog.getSingleInstance()).startProtoLog(pw);
-        }
         startTraceInternal(pw);
     }
 
@@ -83,9 +80,6 @@ abstract class WindowTracing {
         if (IS_USER) {
             logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
             return;
-        }
-        if (!android.tracing.Flags.perfettoProtologTracing()) {
-            ((LegacyProtoLogImpl) ProtoLog.getSingleInstance()).stopProtoLog(pw, true);
         }
         stopTraceInternal(pw);
     }

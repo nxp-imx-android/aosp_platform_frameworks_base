@@ -35,11 +35,6 @@ import perfetto.protos.ProtologCommon;
 import perfetto.protos.ProtologConfig;
 
 public class ProtologDataSourceTest {
-    @Before
-    public void before() {
-        assumeTrue(android.tracing.Flags.perfettoProtologTracing());
-    }
-
     @Test
     public void noConfig() {
         final ProtoLogDataSource.TlsState tlsState = createTlsState(
