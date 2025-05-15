@@ -167,7 +167,7 @@ final class HapticFeedbackCustomization {
     }
 
     @Nullable
-    VibrationEffect getEffect(int effectId, int inputSource) {
+    VibrationEffect getEffectForInputDevice(int effectId, int inputSource) {
         VibrationEffect resultVibration = null;
         if ((InputDevice.SOURCE_ROTARY_ENCODER & inputSource) != 0) {
             resultVibration = mHapticCustomizationsForSourceRotary.get(effectId);

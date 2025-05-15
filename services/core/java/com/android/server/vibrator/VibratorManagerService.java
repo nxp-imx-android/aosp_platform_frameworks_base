@@ -568,7 +568,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             return null;
         }
         return performHapticFeedbackWithEffect(uid, deviceId, opPkg, constant, reason, token,
-                hapticVibrationProvider.getVibration(constant, inputSource),
+                hapticVibrationProvider.getVibrationForInputDevice(constant, inputSource),
                 hapticVibrationProvider.getVibrationAttributesForInputDevice(constant, inputSource,
                         flags, privFlags));
     }

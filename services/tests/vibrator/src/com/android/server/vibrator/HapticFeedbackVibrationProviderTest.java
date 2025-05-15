@@ -121,10 +121,10 @@ public class HapticFeedbackVibrationProviderTest {
         // No customization for `CLOCK_TICK`, so the default vibration is used.
         assertThat(provider.getVibration(CLOCK_TICK)).isEqualTo(
                 VibrationEffect.get(EFFECT_TEXTURE_TICK));
-        assertThat(provider.getVibration(CLOCK_TICK,
+        assertThat(provider.getVibrationForInputDevice(CLOCK_TICK,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(
                 VibrationEffect.get(EFFECT_TEXTURE_TICK));
-        assertThat(provider.getVibration(CLOCK_TICK, InputDevice.SOURCE_TOUCHSCREEN))
+        assertThat(provider.getVibrationForInputDevice(CLOCK_TICK, InputDevice.SOURCE_TOUCHSCREEN))
                 .isEqualTo(VibrationEffect.get(EFFECT_TEXTURE_TICK));
     }
 
@@ -146,14 +146,14 @@ public class HapticFeedbackVibrationProviderTest {
         // The customization for `CONTEXT_CLICK`.
         assertThat(provider.getVibration(CONTEXT_CLICK))
                 .isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(CONTEXT_CLICK,
+        assertThat(provider.getVibrationForInputDevice(CONTEXT_CLICK,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_TICK_EFFECT);
-        assertThat(provider.getVibration(CONTEXT_CLICK,
+        assertThat(provider.getVibrationForInputDevice(CONTEXT_CLICK,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_THUD_EFFECT);
         // The customization for `DRAG_START`.
-        assertThat(provider.getVibration(DRAG_START,
+        assertThat(provider.getVibrationForInputDevice(DRAG_START,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
-        assertThat(provider.getVibration(DRAG_START,
+        assertThat(provider.getVibrationForInputDevice(DRAG_START,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_CLICK_EFFECT);
     }
 
@@ -189,19 +189,21 @@ public class HapticFeedbackVibrationProviderTest {
 
         // Test with a customization available for `TEXT_HANDLE_MOVE`.
         assertThat(provider.getVibration(TEXT_HANDLE_MOVE)).isNull();
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE,
+        assertThat(provider.getVibrationForInputDevice(TEXT_HANDLE_MOVE,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
         assertThat(
-                provider.getVibration(TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN)).isNull();
+                provider.getVibrationForInputDevice(
+                        TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN)).isNull();
 
         // Test with no customization available for `TEXT_HANDLE_MOVE`.
         provider = createProviderWithoutCustomizations();
 
         assertThat(provider.getVibration(TEXT_HANDLE_MOVE)).isNull();
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE,
+        assertThat(provider.getVibrationForInputDevice(TEXT_HANDLE_MOVE,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
         assertThat(
-                provider.getVibration(TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN)).isNull();
+                provider.getVibrationForInputDevice(
+                        TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN)).isNull();
     }
 
     @Test
@@ -219,21 +221,23 @@ public class HapticFeedbackVibrationProviderTest {
                 customizationsByRotary, customizationsByTouchScreen);
 
         assertThat(provider.getVibration(TEXT_HANDLE_MOVE)).isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE,
+        assertThat(provider.getVibrationForInputDevice(TEXT_HANDLE_MOVE,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_TICK_EFFECT);
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(PRIMITIVE_THUD_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(TEXT_HANDLE_MOVE,
+                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_THUD_EFFECT);
 
         // Test with no customization available for `TEXT_HANDLE_MOVE`.
         provider = createProviderWithoutCustomizations();
 
         assertThat(provider.getVibration(TEXT_HANDLE_MOVE)).isEqualTo(
                 VibrationEffect.get(EFFECT_TEXTURE_TICK));
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE,
+        assertThat(provider.getVibrationForInputDevice(TEXT_HANDLE_MOVE,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(
                 VibrationEffect.get(EFFECT_TEXTURE_TICK));
-        assertThat(provider.getVibration(TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(VibrationEffect.get(EFFECT_TEXTURE_TICK));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        TEXT_HANDLE_MOVE, InputDevice.SOURCE_TOUCHSCREEN))
+                                .isEqualTo(VibrationEffect.get(EFFECT_TEXTURE_TICK));
     }
 
     @Test
@@ -250,8 +254,10 @@ public class HapticFeedbackVibrationProviderTest {
 
         // Whatever customization set to NO_HAPTICS, no vibration happens.
         assertThat(provider.getVibration(NO_HAPTICS)).isNull();
-        assertThat(provider.getVibration(NO_HAPTICS, InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
-        assertThat(provider.getVibration(NO_HAPTICS, InputDevice.SOURCE_TOUCHSCREEN)).isNull();
+        assertThat(provider.getVibrationForInputDevice(NO_HAPTICS,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
+        assertThat(provider.getVibrationForInputDevice(NO_HAPTICS,
+                InputDevice.SOURCE_TOUCHSCREEN)).isNull();
     }
 
     @Test
@@ -269,10 +275,10 @@ public class HapticFeedbackVibrationProviderTest {
                         safeModeCustomizationsByTouchScreen);
 
         assertThat(provider.getVibration(SAFE_MODE_ENABLED)).isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(PRIMITIVE_THUD_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(PRIMITIVE_TICK_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_THUD_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_TICK_EFFECT);
 
         // Resource changed
         mockSafeModeEnabledVibration(null);
@@ -281,10 +287,10 @@ public class HapticFeedbackVibrationProviderTest {
                         safeModeCustomizationsByTouchScreen);
 
         assertThat(provider.getVibration(SAFE_MODE_ENABLED)).isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(PRIMITIVE_THUD_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(PRIMITIVE_TICK_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_THUD_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_TICK_EFFECT);
     }
 
     @Test
@@ -294,10 +300,16 @@ public class HapticFeedbackVibrationProviderTest {
 
         assertThat(provider.getVibration(SAFE_MODE_ENABLED))
                 .isEqualTo(VibrationEffect.createWaveform(new long[]{10, 20, 30, 40}, -1));
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(VibrationEffect.createWaveform(new long[]{10, 20, 30, 40}, -1));
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(VibrationEffect.createWaveform(new long[]{10, 20, 30, 40}, -1));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
+                                .isEqualTo(VibrationEffect.createWaveform(
+                                        new long[]{10, 20, 30, 40}, -1));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
+                                .isEqualTo(VibrationEffect.createWaveform(
+                                        new long[]{10, 20, 30, 40}, -1));
     }
 
     @Test
@@ -307,10 +319,10 @@ public class HapticFeedbackVibrationProviderTest {
 
         assertThat(provider.getVibration(SAFE_MODE_ENABLED)).isNull();
         assertThat(provider.getVibration(SAFE_MODE_ENABLED)).isNull();
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isNull();
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
-                .isNull();
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
+        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
+                InputDevice.SOURCE_TOUCHSCREEN)).isNull();
     }
 
     @Test
@@ -333,14 +345,22 @@ public class HapticFeedbackVibrationProviderTest {
                 .isEqualTo(VibrationEffect.get(EFFECT_CLICK, true /* fallback */));
         assertThat(provider.getVibration(KEYBOARD_RELEASE))
                 .isEqualTo(VibrationEffect.get(EFFECT_TICK, false /* fallback */));
-        assertThat(provider.getVibration(KEYBOARD_TAP, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(VibrationEffect.get(EFFECT_CLICK, true /* fallback */));
-        assertThat(provider.getVibration(KEYBOARD_RELEASE, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(VibrationEffect.get(EFFECT_TICK, false /* fallback */));
-        assertThat(provider.getVibration(KEYBOARD_TAP, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(VibrationEffect.get(EFFECT_CLICK, true /* fallback */));
-        assertThat(provider.getVibration(KEYBOARD_RELEASE, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(VibrationEffect.get(EFFECT_TICK, false /* fallback */));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        KEYBOARD_TAP, InputDevice.SOURCE_ROTARY_ENCODER))
+                                .isEqualTo(VibrationEffect.get(EFFECT_CLICK, true /* fallback */));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        KEYBOARD_RELEASE, InputDevice.SOURCE_ROTARY_ENCODER))
+                                .isEqualTo(VibrationEffect.get(EFFECT_TICK, false /* fallback */));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        KEYBOARD_TAP, InputDevice.SOURCE_TOUCHSCREEN))
+                                .isEqualTo(VibrationEffect.get(EFFECT_CLICK, true /* fallback */));
+        assertThat(
+                provider.getVibrationForInputDevice(
+                        KEYBOARD_RELEASE, InputDevice.SOURCE_TOUCHSCREEN))
+                                .isEqualTo(VibrationEffect.get(EFFECT_TICK, false /* fallback */));
     }
 
     @Test
@@ -355,19 +375,19 @@ public class HapticFeedbackVibrationProviderTest {
         assertThat(provider.getVibration(KEYBOARD_RELEASE)).isEqualTo(
                 VibrationEffect.startComposition().addPrimitive(PRIMITIVE_TICK,
                         KEYBOARD_VIBRATION_FIXED_AMPLITUDE).compose());
-        assertThat(provider.getVibration(KEYBOARD_TAP,
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_TAP,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(
                 VibrationEffect.startComposition().addPrimitive(PRIMITIVE_CLICK,
                         KEYBOARD_VIBRATION_FIXED_AMPLITUDE).compose());
-        assertThat(provider.getVibration(KEYBOARD_RELEASE,
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_RELEASE,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(
                 VibrationEffect.startComposition().addPrimitive(PRIMITIVE_TICK,
                         KEYBOARD_VIBRATION_FIXED_AMPLITUDE).compose());
-        assertThat(provider.getVibration(KEYBOARD_TAP,
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_TAP,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(
                 VibrationEffect.startComposition().addPrimitive(PRIMITIVE_CLICK,
                         KEYBOARD_VIBRATION_FIXED_AMPLITUDE).compose());
-        assertThat(provider.getVibration(KEYBOARD_RELEASE,
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_RELEASE,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(
                 VibrationEffect.startComposition().addPrimitive(PRIMITIVE_TICK,
                         KEYBOARD_VIBRATION_FIXED_AMPLITUDE).compose());
@@ -389,14 +409,14 @@ public class HapticFeedbackVibrationProviderTest {
         HapticFeedbackVibrationProvider provider = createProvider(customizations,
                 customizationsByRotary, customizationsByTouchScreen);
 
-        assertThat(provider.getVibration(KEYBOARD_TAP, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(PRIMITIVE_THUD_EFFECT);
-        assertThat(provider.getVibration(KEYBOARD_RELEASE, InputDevice.SOURCE_ROTARY_ENCODER))
-                .isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
-        assertThat(provider.getVibration(KEYBOARD_TAP, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
-        assertThat(provider.getVibration(KEYBOARD_RELEASE, InputDevice.SOURCE_TOUCHSCREEN))
-                .isEqualTo(PRIMITIVE_THUD_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_TAP,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_THUD_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_RELEASE,
+                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_TAP,
+                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
+        assertThat(provider.getVibrationForInputDevice(KEYBOARD_RELEASE,
+                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_THUD_EFFECT);
     }
 
     @Test

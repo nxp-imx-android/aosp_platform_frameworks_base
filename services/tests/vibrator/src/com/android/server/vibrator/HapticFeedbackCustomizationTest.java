@@ -519,14 +519,14 @@ public class HapticFeedbackCustomizationTest {
         // Matching customizations.
         assertThat(customization.getEffect(/* effectId= */ 10)).isEqualTo(COMPOSITION_VIBRATION);
         assertThat(customization.getEffect(/* effectId= */ 14)).isEqualTo(WAVEFORM_VIBRATION);
-        assertThat(customization.getEffect(/* effectId= */ 10,
+        assertThat(customization.getEffectForInputDevice(/* effectId= */ 10,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PREDEFINED_VIBRATION_CLICK);
-        assertThat(customization.getEffect(/* effectId= */ 10,
+        assertThat(customization.getEffectForInputDevice(/* effectId= */ 10,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PREDEFINED_VIBRATION_TICK);
         // Missing from input source customization xml. Fallback to base.
-        assertThat(customization.getEffect(/* effectId= */ 14,
+        assertThat(customization.getEffectForInputDevice(/* effectId= */ 14,
                 InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(WAVEFORM_VIBRATION);
-        assertThat(customization.getEffect(/* effectId= */ 14,
+        assertThat(customization.getEffectForInputDevice(/* effectId= */ 14,
                 InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(WAVEFORM_VIBRATION);
     }
 
@@ -612,11 +612,12 @@ public class HapticFeedbackCustomizationTest {
         return switch (customizationSource) {
             case DEVICE_CONFIG_FILE, DEVICE_RESOURCE -> hapticFeedbackCustomization.getEffect(
                     effectId);
-            case DEVICE_RESOURCE_INPUT_ROTARY -> hapticFeedbackCustomization.getEffect(effectId,
-                    InputDevice.SOURCE_ROTARY_ENCODER);
-            case DEVICE_RESOURCE_INPUT_TOUCHSCREEN -> hapticFeedbackCustomization.getEffect(
-                    effectId,
-                    InputDevice.SOURCE_TOUCHSCREEN);
+            case DEVICE_RESOURCE_INPUT_ROTARY ->
+                    hapticFeedbackCustomization.getEffectForInputDevice(
+                            effectId, InputDevice.SOURCE_ROTARY_ENCODER);
+            case DEVICE_RESOURCE_INPUT_TOUCHSCREEN ->
+                    hapticFeedbackCustomization.getEffectForInputDevice(
+                            effectId, InputDevice.SOURCE_TOUCHSCREEN);
         };
     }
 

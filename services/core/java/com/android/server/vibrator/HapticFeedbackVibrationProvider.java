@@ -111,12 +111,12 @@ public final class HapticFeedbackVibrationProvider {
      * @return a {@link VibrationEffect} for the given haptic feedback effect ID, or {@code null} if
      * the provided effect ID is not supported.
      */
-    @Nullable public VibrationEffect getVibration(int effectId, int inputSource) {
+    @Nullable public VibrationEffect getVibrationForInputDevice(int effectId, int inputSource) {
         if (!isFeedbackConstantEnabled(effectId)) {
             return null;
         }
-        VibrationEffect customizedVibration = mHapticFeedbackCustomization.getEffect(effectId,
-                inputSource);
+        VibrationEffect customizedVibration =
+                mHapticFeedbackCustomization.getEffectForInputDevice(effectId, inputSource);
         if (customizedVibration != null) {
             return customizedVibration;
         }
