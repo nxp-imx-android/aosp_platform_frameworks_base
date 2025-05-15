@@ -21,13 +21,13 @@ import android.internal.perfetto.protos.TracePacketOuterClass.TracePacket;
 import android.internal.perfetto.protos.WinscopeExtensionsImplOuterClass.WinscopeExtensionsImpl;
 import android.os.ShellCommand;
 import android.os.SystemClock;
+import android.os.Trace;
+import android.tracing.TracingUtils;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.Choreographer;
 
 import com.android.internal.annotations.VisibleForTesting;
-
-import android.os.Trace;
 
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -108,7 +108,7 @@ class WindowTracingPerfetto extends WindowTracing {
     @Override
     protected void log(String where) {
         try {
-            Trace.beginSection("window_tracing_log");
+            Trace.beginSection(TracingUtils.uiTracingSliceName("Window::log"));
             boolean isStartLogEvent = where == WHERE_START_TRACING;
             boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
 
