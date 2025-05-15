@@ -64,6 +64,7 @@ class RootTaskDesksOrganizer(
     @VisibleForTesting
     val deskMinimizationRootsByDeskId: MutableMap<Int, DeskMinimizationRoot> = mutableMapOf()
     private val removeDeskRootRequests = mutableSetOf<Int>()
+    private val childLeashes = SparseArray<SurfaceControl>()
     private var onTaskInfoChangedListener: ((RunningTaskInfo) -> Unit)? = null
 
     init {
@@ -439,12 +440,17 @@ class RootTaskDesksOrganizer(
         updateLaunchAdjacentController()
     }
 
+    override fun attachChildSurfaceToTask(taskId: Int, b: SurfaceControl.Builder) {
+        childLeashes.get(taskId)?.let { b.setParent(it) }
+    }
+
     private fun handleTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         // Check whether this task is appearing inside a desk.
         if (taskInfo.parentTaskId in deskRootsByDeskId) {
             val deskId = taskInfo.parentTaskId
             val taskId = taskInfo.taskId
             logV("Task #$taskId appeared in desk #$deskId")
+            childLeashes.put(taskId, leash)
             addChildToDesk(taskId = taskId, deskId = deskId)
             return
         }
@@ -455,6 +461,7 @@ class RootTaskDesksOrganizer(
             val deskId = minimizationRoot.deskId
             val taskId = taskInfo.taskId
             logV("Task #$taskId was minimized in desk #$deskId ")
+            childLeashes.put(taskId, leash)
             addChildToMinimizationRoot(taskId = taskId, deskId = deskId)
             return
         }
@@ -567,6 +574,7 @@ class RootTaskDesksOrganizer(
         deskRootsByDeskId.forEach { deskId, deskRoot ->
             if (deskRoot.children.remove(taskInfo.taskId)) {
                 logV("Task #${taskInfo.taskId} vanished from desk #$deskId")
+                childLeashes.remove(taskInfo.taskId)
                 return
             }
         }
@@ -575,6 +583,7 @@ class RootTaskDesksOrganizer(
             val taskId = taskInfo.taskId
             if (root.children.remove(taskId)) {
                 logV("Task #$taskId vanished from minimization root of desk #${root.deskId}")
+                childLeashes.remove(taskInfo.taskId)
                 return
             }
         }
