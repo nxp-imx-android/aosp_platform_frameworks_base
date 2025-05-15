@@ -2,16 +2,6 @@ package: "com.android.server.flags"
 container: "system"
 
 flag {
-    namespace: "input"
-    name: "new_bugreport_keyboard_shortcut"
-    description: "Enable META+CTRL+BACKSPACE keyboard shortcut for taking a bug report"
-    bug: "335607520"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "backstage_power"
     name: "pkg_targeted_battery_changed_not_sticky"
     description: "Avoid sending the package targeted BATTERY_CHANGED broadcast as sticky"

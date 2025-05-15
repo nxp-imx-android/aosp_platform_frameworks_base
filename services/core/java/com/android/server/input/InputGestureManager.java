@@ -21,7 +21,6 @@ import static android.hardware.input.InputGestureData.createKeyTrigger;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
-import static com.android.server.flags.Flags.newBugreportKeyboardShortcut;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -178,7 +177,7 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS
                 )
         ));
-        if (newBugreportKeyboardShortcut() && "1".equals(SystemProperties.get("ro.debuggable"))) {
+        if ("1".equals(SystemProperties.get("ro.debuggable"))) {
             systemShortcuts.add(createKeyGesture(
                     KeyEvent.KEYCODE_DEL,
                     KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
