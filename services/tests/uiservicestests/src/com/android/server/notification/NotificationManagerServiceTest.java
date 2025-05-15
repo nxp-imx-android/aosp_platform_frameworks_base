@@ -27,6 +27,8 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
+import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
+import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -7829,6 +7831,56 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 false /*=isAlerting*/, Adjustment.TYPE_PROMOTION, 345,
                 NOTIFICATION_ADJUSTED.getId(),
                 instanceId2.getId() /*instance_id*/, r2.getUid()));
+    }
+
+    @Test
+    @EnableFlags({FLAG_NM_SUMMARIZATION, FLAG_NM_SUMMARIZATION_UI})
+    public void testSummarizationAdjustmentsLogged() throws RemoteException {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+
+        // Set up two notifications, one of which will be adjusted
+        final NotificationRecord r1 = generateNotificationRecord(
+                mTestNotificationChannel, 1, null, true);
+        r1.getSbn().setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
+        mService.addNotification(r1);
+        final NotificationRecord r2 = generateNotificationRecord(
+                mTestNotificationChannel, 2, null, true);
+        r2.getSbn().setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
+        mService.addNotification(r2);
+
+        Bundle signals1 = new Bundle();
+        signals1.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment1 = new Adjustment(r1.getSbn().getPackageName(), r1.getKey(), signals1,
+                "", r1.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment1);
+        waitForIdle();
+
+        // Actually apply the adjustment & recalculate importance when run
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0])
+                    .applyAdjustments();
+            ((NotificationRecord) invocationOnMock.getArguments()[0])
+                    .calculateImportance();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+
+        // Now make sure that when the sort happens, we actually log the changes.
+        mService.handleRankingSort();
+
+        // first verify we got the actual summarization in
+        assertThat(r1.getSummarization()).isEqualTo("hello");
+
+        // Expect one log only, for r1's adjustment
+        assertThat(mNotificationRecordLogger.numCalls()).isEqualTo(1);
+        assertThat(mNotificationRecordLogger.event(0)).isEqualTo(NOTIFICATION_ADJUSTED);
+        assertThat(mNotificationRecordLogger.get(0).getInstanceId()).isEqualTo(
+                r1.getSbn().getInstanceId().getId());
     }
 
     @Test
