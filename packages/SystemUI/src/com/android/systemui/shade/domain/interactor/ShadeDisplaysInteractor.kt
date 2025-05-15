@@ -56,8 +56,19 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 /** Handles Shade window display change when [ShadeDisplaysRepository.displayId] changes. */
+interface ShadeDisplaysInteractor {
+    /** Current display id of the shade window. */
+    val displayId: StateFlow<Int>
+    /**
+     * Target display id of the shade window.
+     *
+     * Triggers the window move. Once committed, [displayId] will match this.
+     */
+    val pendingDisplayId: StateFlow<Int>
+}
+
 @SysUISingleton
-class ShadeDisplaysInteractor
+class ShadeDisplaysInteractorImpl
 @Inject
 constructor(
     private val shadePositionRepository: MutableShadeDisplaysRepository,
@@ -73,15 +84,14 @@ constructor(
     private val notificationStackRebindingHider: NotificationStackRebindingHider,
     @ShadeDisplayAware private val configForwarder: ConfigurationForwarder,
     @ShadeDisplayLog private val logBuffer: LogBuffer,
-) : CoreStartable {
+) : ShadeDisplaysInteractor, CoreStartable {
 
     private val hasActiveNotifications: Boolean
         get() = activeNotificationsInteractor.areAnyNotificationsPresentValue
 
-    /** Current display id of the shade window. */
-    val displayId: StateFlow<Int> = shadePositionRepository.displayId
+    override val displayId: StateFlow<Int> = shadePositionRepository.displayId
 
-    val pendingDisplayId: StateFlow<Int> = shadePositionRepository.pendingDisplayId
+    override val pendingDisplayId: StateFlow<Int> = shadePositionRepository.pendingDisplayId
 
     override fun start() {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
