@@ -24,6 +24,7 @@ object SettingsDimension {
     val paddingExtraSmall = 4.dp
     val paddingExtraSmall1 = 6.dp
     val paddingSmall = if (isSpaExpressiveEnabled) 8.dp else 4.dp
+    val paddingSmall1 = 16.dp
     val paddingExtraSmall5 = 10.dp
     val paddingExtraSmall6 = 12.dp
     val paddingLarge = 16.dp
