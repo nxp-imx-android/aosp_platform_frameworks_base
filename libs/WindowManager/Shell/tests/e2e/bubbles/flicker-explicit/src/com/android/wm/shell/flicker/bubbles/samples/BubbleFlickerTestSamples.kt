@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles.samples
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.flicker.subject.wm.WindowManagerTraceSubject
+import com.android.wm.shell.flicker.bubbles.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.runTransitionWithTrace
 
 /**
@@ -48,3 +49,44 @@ fun runTransitionWithTraceSample() {
     // Read CUJ Trace
     val cujTrace = reader.readCujTrace()
 }
+
+/**
+ * Sample to illustrate how to use [RecordTraceWithTransitionRule].
+ */
+fun RecordTraceWithTransitionRuleSample() {
+
+    // Set as @ClassRule and make it public static
+    val rule = RecordTraceWithTransitionRule(
+        setUpBeforeTransition = { clearAllTasksAndGoToHomeScreen() },
+        transition = { launchActivityViaClickIcon() },
+        tearDownAfterTransition = { finishActivity() },
+    )
+
+    // In test constructor ...
+    val reader = rule.reader
+
+    // Extract [WindowManagerTraceSubject]
+    val wmTraceSubject = WindowManagerTraceSubject(
+        reader.readWmTrace() ?: error("Failed to read WM trace")
+    )
+
+    // Extract [LayerTraceSubject]
+    val layersTraceSubject = LayersTraceSubject(
+        reader.readLayersTrace() ?: error("Failed to read Layers trace")
+    )
+
+    // Extract [EventLogSubject]
+    val eventLogSubject = EventLogSubject(
+        reader.readEventLogTrace() ?: error("Failed to read event log trace"),
+        reader,
+    )
+
+    // Read CUJ Trace
+    val cujTrace = reader.readCujTrace()
+}
+
+private fun clearAllTasksAndGoToHomeScreen() {}
+
+private fun launchActivityViaClickIcon() {}
+
+private fun finishActivity() {}
