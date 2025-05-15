@@ -16,16 +16,33 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
+import com.android.systemui.ambientcue.ui.viewmodel.PillStyleViewModel
 import com.android.systemui.lifecycle.rememberViewModel
+
+// TODO: b/414507396 - Replace with the height of the navbar
+private val chipsBottomPadding = 46.dp
 
 @Composable
 fun AmbientCueContainer(
@@ -38,9 +55,7 @@ fun AmbientCueContainer(
     val visible = viewModel.isVisible
     val expanded = viewModel.isExpanded
     val actions = viewModel.actions
-
-    // TODO: b/414507396 - Replace with the height of the navbar
-    val chipsBottomPadding = 46.dp
+    val pillStyle = viewModel.pillStyle
 
     LaunchedEffect(expanded) {
         onShouldInterceptTouches(expanded)
@@ -58,24 +73,105 @@ fun AmbientCueContainer(
             viewModel.collapse()
         }
     ) {
-        BackgroundGlow(
-            visible = visible,
-            expanded = expanded,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
-        NavBarPill(
-            actions = actions,
-            navBarWidth = 110.dp, // TODO: b/414507396 - Replace with the width of the navbar
-            visible = visible,
-            expanded = expanded,
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onClick = { viewModel.expand() },
-            onCloseClick = { viewModel.hide() },
-        )
-        ActionList(
-            actions = actions,
-            visible = visible && expanded,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = chipsBottomPadding),
-        )
+        when (pillStyle) {
+            is PillStyleViewModel.NavBarPillStyle -> {
+                NavBarAmbientCue(
+                    viewModel = viewModel,
+                    actions = actions,
+                    visible = visible,
+                    expanded = expanded,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+            is PillStyleViewModel.ShortPillStyle -> {
+                val pillCenterInWindow = pillStyle.position
+                TaskBarAnd3ButtonAmbientCue(
+                    viewModel = viewModel,
+                    actions = actions,
+                    visible = visible,
+                    expanded = expanded,
+                    pillCenterInWindow = pillCenterInWindow,
+                    modifier =
+                        if (pillCenterInWindow == null) {
+                            Modifier.align(Alignment.BottomCenter)
+                        } else {
+                            Modifier
+                        },
+                )
+            }
+            is PillStyleViewModel.Uninitialized -> {}
+        }
     }
+}
+
+@Composable
+private fun TaskBarAnd3ButtonAmbientCue(
+    viewModel: AmbientCueViewModel,
+    actions: List<ActionViewModel>,
+    visible: Boolean,
+    expanded: Boolean,
+    pillCenterInWindow: Rect?,
+    modifier: Modifier = Modifier,
+) {
+    val configuration = LocalConfiguration.current
+    val portrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    var pillCenter by remember { mutableStateOf(Offset.Zero) }
+    BackgroundGlow(
+        visible = visible,
+        expanded = expanded,
+        collapsedOffset = IntOffset(0, 110),
+        modifier = modifier.graphicsLayer { translationX = -size.width / 2 + pillCenter.x },
+    )
+    ShortPill(
+        actions = actions,
+        visible = visible,
+        horizontal = portrait,
+        expanded = expanded,
+        modifier =
+            if (pillCenterInWindow == null) {
+                modifier.padding(bottom = 12.dp, end = 24.dp).onGloballyPositioned {
+                    pillCenter = it.boundsInParent().center
+                }
+            } else {
+                Modifier.graphicsLayer {
+                    val center = pillCenterInWindow.center
+                    translationX = center.x - size.width / 2
+                    translationY = center.y - size.height / 2
+                    pillCenter = center
+                }
+            },
+        onClick = { viewModel.expand() },
+        onCloseClick = { viewModel.hide() },
+    )
+    ActionList(
+        actions = actions,
+        visible = visible && expanded,
+        horizontalAlignment = Alignment.End,
+        modifier = modifier.padding(bottom = chipsBottomPadding, end = 24.dp),
+    )
+}
+
+@Composable
+private fun NavBarAmbientCue(
+    viewModel: AmbientCueViewModel,
+    actions: List<ActionViewModel>,
+    visible: Boolean,
+    expanded: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    BackgroundGlow(visible = visible, expanded = expanded, modifier = modifier)
+    NavBarPill(
+        actions = actions,
+        navBarWidth = 110.dp, // TODO: b/414507396 - Replace with the width of the navbar
+        visible = visible,
+        expanded = expanded,
+        modifier = modifier,
+        onClick = { viewModel.expand() },
+        onCloseClick = { viewModel.hide() },
+    )
+    ActionList(
+        actions = actions,
+        visible = visible && expanded,
+        modifier = modifier.padding(bottom = chipsBottomPadding),
+    )
 }

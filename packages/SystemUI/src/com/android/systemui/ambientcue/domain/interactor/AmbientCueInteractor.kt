@@ -26,6 +26,8 @@ class AmbientCueInteractor @Inject constructor(private val repository: AmbientCu
     val isRootViewAttached: StateFlow<Boolean> = repository.isRootViewAttached
     val actions: StateFlow<List<ActionModel>> = repository.actions
     val isImeVisible: StateFlow<Boolean> = repository.isImeVisible
+    val isGestureNav: StateFlow<Boolean> = repository.isGestureNav
+    val isTaskBarVisible: StateFlow<Boolean> = repository.isTaskBarVisible
 
     fun setDeactivated(isDeactivated: Boolean) {
         repository.isDeactivated.update { isDeactivated }

@@ -20,6 +20,9 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -31,6 +34,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -58,6 +62,29 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
 
     var isExpanded: Boolean by mutableStateOf(false)
         private set
+
+    val pillStyle: PillStyleViewModel by
+        hydrator.hydratedStateOf(
+            traceName = "pillStyle",
+            initialValue = PillStyleViewModel.Uninitialized,
+            source =
+                combine(ambientCueInteractor.isGestureNav, ambientCueInteractor.isTaskBarVisible) {
+                    isGestureNav,
+                    isTaskBarVisible ->
+                    if (isGestureNav && !isTaskBarVisible) {
+                        PillStyleViewModel.NavBarPillStyle
+                    } else {
+                        val position =
+                            if (isGestureNav) {
+                                null
+                            } else {
+                                // TODO: b/415914083 Overview button position should come from SysUI
+                                Rect(Offset.Zero, Size(100f, 100f))
+                            }
+                        PillStyleViewModel.ShortPillStyle(position)
+                    }
+                },
+        )
 
     val actions: List<ActionViewModel> by
         hydrator.hydratedStateOf(

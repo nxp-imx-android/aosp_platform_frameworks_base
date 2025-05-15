@@ -19,9 +19,9 @@ package com.android.systemui.ambientcue.ui.compose
 import android.graphics.RuntimeShader
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -37,20 +37,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.systemui.ambientcue.ui.shader.BackgroundGlowShader
 import com.android.systemui.ambientcue.ui.utils.AiColorUtils.boostChroma
 
 @Composable
-fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
+fun BackgroundGlow(
+    visible: Boolean,
+    expanded: Boolean,
+    collapsedOffset: IntOffset = IntOffset(0, 110),
+    modifier: Modifier,
+) {
     val density = LocalDensity.current
     val turbulenceDisplacementPx = with(density) { Defaults.TURBULENCE_DISPLACEMENT_DP.dp.toPx() }
     val gradientRadiusPx = with(density) { Defaults.GRADIENT_RADIUS.dp.toPx() }
 
     val alpha by animateFloatAsState(if (visible) 1f else 0f, animationSpec = tween(750))
     val verticalOffset by
-        animateDpAsState(if (expanded) 0.dp else Defaults.COLLAPSED_TRANSLATION_DP.dp, tween(350))
-    val verticalOffsetPx = with(density) { verticalOffset.toPx() }
+        animateIntOffsetAsState(if (expanded) IntOffset.Zero else collapsedOffset, tween(350))
 
     // Infinite animation responsible for the "vapor" effect distorting the radial gradient
     val infiniteTransition = rememberInfiniteTransition(label = "backgroundGlow")
@@ -76,12 +81,14 @@ fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
     Box(
         modifier.size(400.dp, 200.dp).alpha(alpha).drawWithCache {
             onDrawWithContent {
+                val offsetX = with(density) { verticalOffset.x.dp.toPx() }
+                val offsetY = with(density) { verticalOffset.y.dp.toPx() }
                 shader.setFloatUniform("alpha", alpha)
                 shader.setFloatUniform("resolution", size.width, size.height)
                 shader.setColorUniform("color1", color1.toArgb())
                 shader.setColorUniform("color2", color2.toArgb())
                 shader.setColorUniform("color3", color3.toArgb())
-                shader.setFloatUniform("origin", size.width / 2, size.height + verticalOffsetPx)
+                shader.setFloatUniform("origin", size.width / 2 + offsetX, size.height + offsetY)
                 shader.setFloatUniform("radius", gradientRadiusPx)
                 shader.setFloatUniform("turbulenceAmount", turbulenceDisplacementPx)
                 shader.setFloatUniform("turbulencePhase", turbulencePhase)
@@ -93,7 +100,6 @@ fun BackgroundGlow(visible: Boolean, expanded: Boolean, modifier: Modifier) {
 }
 
 private object Defaults {
-    const val COLLAPSED_TRANSLATION_DP = 110
     const val TURBULENCE_SIZE = 4.7f
     const val TURBULENCE_DISPLACEMENT_DP = 30
     const val GRADIENT_RADIUS = 200
