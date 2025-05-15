@@ -15,7 +15,6 @@ com.android.server.FgThread
 com.android.server.ServiceThread
 
 com.android.internal.display.BrightnessSynchronizer
-com.android.internal.util.ArrayUtils
 com.android.internal.logging.MetricsLogger
 com.android.internal.logging.testing.FakeMetricsLogger
 com.android.internal.logging.testing.UiEventLoggerFake
@@ -31,6 +30,13 @@ com.android.internal.os.PowerStats
 com.android.internal.os.RuntimeInit
 com.android.internal.power.EnergyConsumerStats
 com.android.internal.power.ModemPowerProfile
+com.android.internal.util.ArrayUtils
+com.android.internal.util.FileRotator
+com.android.internal.util.HexDump
+com.android.internal.util.IndentingPrintWriter
+com.android.internal.util.LocalLog
+com.android.internal.util.MessageUtils
+com.android.internal.util.TokenBucket
 
 com.android.modules.utils.ravenwood.RavenwoodHelper
 
@@ -39,10 +45,11 @@ android.util.AndroidRuntimeException
 android.util.ArrayMap
 android.util.ArraySet
 android.util.AtomicFile
-android.util.AtomicFileOutputStream
 android.util.AtomicFileBufferedOutputStream
-android.util.AtomicFilePrintWriter
 android.util.AtomicFileBufferedPrintWriter
+android.util.AtomicFileOutputStream
+android.util.AtomicFilePrintWriter
+android.util.BackupUtils
 android.util.BackupUtils
 android.util.Base64
 android.util.Base64DataException
@@ -58,9 +65,10 @@ android.util.Dumpable
 android.util.DumpableContainer
 android.util.EmptyArray
 android.util.EventLog
-android.util.FloatProperty
 android.util.FloatMath
+android.util.FloatProperty
 android.util.Half
+android.util.IndentingPrintWriter
 android.util.IndentingPrintWriter
 android.util.IntArray
 android.util.IntProperty
@@ -68,6 +76,7 @@ android.util.JsonReader
 android.util.JsonWriter
 android.util.KeyValueListParser
 android.util.ListenerGroup
+android.util.LocalLog
 android.util.LocalLog
 android.util.Log
 android.util.LogPrinter
@@ -91,6 +100,7 @@ android.util.MutableLong
 android.util.MutableShort
 android.util.NoSuchPropertyException
 android.util.Pair
+android.util.Pair
 android.util.Patterns
 android.util.Pools
 android.util.PrefixPrinter
@@ -100,6 +110,7 @@ android.util.PrintStreamPrinter
 android.util.PrintWriterPrinter
 android.util.Property
 android.util.Range
+android.util.Rational
 android.util.Rational
 android.util.RecurrenceRule
 android.util.ReflectiveProperty
@@ -154,23 +165,24 @@ android.os.DeadSystemException
 android.os.FileUtils
 android.os.Handler
 android.os.HandlerExecutor
+android.os.HandlerExecutor
 android.os.HandlerThread
 android.os.IBinder
 android.os.LocaleList
 android.os.Looper
 android.os.Message
 android.os.MessageQueue
+android.os.PackageTagsList
+android.os.Parcel
+android.os.Parcelable
+android.os.ParcelFileDescriptor
+android.os.ParcelFormatException
+android.os.ParcelUuid
+android.os.PatternMatcher
 android.os.PerfettoTrace
 android.os.PerfettoTrace$Category
 android.os.PerfettoTrackEventExtra
 android.os.PerfettoTrackEventExtra$NoOpBuilder
-android.os.PackageTagsList
-android.os.Parcel
-android.os.ParcelFileDescriptor
-android.os.ParcelFormatException
-android.os.ParcelUuid
-android.os.Parcelable
-android.os.PatternMatcher
 android.os.PermissionEnforcer
 android.os.PersistableBundle
 android.os.PowerComponents
@@ -189,8 +201,8 @@ android.os.ThreadLocalWorkSource
 android.os.TimestampedValue
 android.os.Trace
 android.os.TransactionTooLargeException
-android.os.UserBatteryConsumer
 android.os.UidBatteryConsumer
+android.os.UserBatteryConsumer
 android.os.UserHandle
 android.os.UserManager
 android.os.VibrationAttributes

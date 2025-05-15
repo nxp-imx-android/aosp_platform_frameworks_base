@@ -36,8 +36,7 @@ import static com.android.internal.util.Preconditions.checkArgumentPositive;
  *
  * {@hide}
  */
-// Exported to Mainline modules; cannot use annotations
-// @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class TokenBucket {
 
     private final int mFillDelta; // Time in ms it takes to generate one token.
