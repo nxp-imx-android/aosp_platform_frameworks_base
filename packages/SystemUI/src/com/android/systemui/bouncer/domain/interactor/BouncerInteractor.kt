@@ -117,6 +117,10 @@ constructor(
                 (repository.isOneHandedBouncerSupportedInConfig && (authMethod !is Password))
         }
 
+    /** Whether interactions should be improved for large-screen (non-handheld) form factor. */
+    val isImproveLargeScreenInteractionEnabled: Boolean =
+        repository.isImproveLargeScreenInteractionEnabledInConfig
+
     /**
      * Preferred side of the screen where the input area on the bouncer should be. This is
      * applicable for large screen devices (foldables and tablets).
