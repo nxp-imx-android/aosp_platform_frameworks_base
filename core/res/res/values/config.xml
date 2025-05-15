@@ -7576,4 +7576,7 @@
 
     <!-- Package name for verification service provider app [DO NOT TRANSLATE] -->
     <string name="config_verificationServiceProviderPackageName" translatable="false" />
+
+    <!-- Whether the system package installer supports the material design. -->
+    <bool name="config_enableMaterialDesignInPackageInstaller">true</bool>
 </resources>
