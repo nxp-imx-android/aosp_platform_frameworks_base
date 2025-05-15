@@ -418,7 +418,8 @@ public final class Sensor {
      * {@code SENSOR_STATUS_UNRELIABLE} or {@code SENSOR_STATUS_NO_CONTACT}, the heart rate
      * value should be discarded.
      * <p>
-     * This sensor requires permission {@code android.permission.BODY_SENSORS}.
+     * This sensor requires permission {@code android.permission.BODY_SENSORS} for SDK < 36 and
+     * {@code android.permission.health.READ_HEART_RATE} for SDK >= 36.
      * It will not be returned by {@code SensorManager.getSensorsList} nor
      * {@code SensorManager.getDefaultSensor} if the application doesn't have this permission.
      */
