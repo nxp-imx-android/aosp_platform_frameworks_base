@@ -695,7 +695,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
                 // app bounds to persisted lastFullscreenBounds. Also set the position in parent
                 // to the top left of the bounds.
                 if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()
-                        && taskInfo.configuration.windowConfiguration.getAppBounds() == null) {
+                        && taskInfo.configuration.windowConfiguration.getAppBounds() == null
+                        && taskInfo.lastNonFullscreenBounds != null) {
                     taskInfo.configuration.windowConfiguration.setAppBounds(
                             taskInfo.lastNonFullscreenBounds);
                     taskInfo.positionInParent = new Point(taskInfo.lastNonFullscreenBounds.left,
