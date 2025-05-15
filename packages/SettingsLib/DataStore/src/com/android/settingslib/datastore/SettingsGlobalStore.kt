@@ -22,6 +22,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.Settings.Global
 import android.provider.Settings.SettingNotFoundException
+import androidx.annotation.VisibleForTesting
 
 /**
  * [KeyValueStore] for [Global] settings.
@@ -83,6 +84,12 @@ class SettingsGlobalStore private constructor(contentResolver: ContentResolver) 
                             instance = it
                         }
                 }
+
+        @VisibleForTesting
+        fun reset() {
+            instance = null
+            Global.clearProviderForTest()
+        }
 
         /** Returns the required permissions to read [Global] settings. */
         fun getReadPermissions() = Permissions.EMPTY

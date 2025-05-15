@@ -22,6 +22,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.Settings.SettingNotFoundException
 import android.provider.Settings.System
+import androidx.annotation.VisibleForTesting
 
 /**
  * [KeyValueStore] for [System] settings.
@@ -83,6 +84,12 @@ class SettingsSystemStore private constructor(contentResolver: ContentResolver) 
                             instance = it
                         }
                 }
+
+        @VisibleForTesting
+        fun reset() {
+            instance = null
+            System.clearProviderForTest()
+        }
 
         /** Returns the required permissions to read [System] settings. */
         fun getReadPermissions() = Permissions.EMPTY

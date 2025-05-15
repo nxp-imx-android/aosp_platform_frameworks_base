@@ -22,6 +22,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.Settings.Secure
 import android.provider.Settings.SettingNotFoundException
+import androidx.annotation.VisibleForTesting
 
 /**
  * [KeyValueStore] for [Secure] settings.
@@ -83,6 +84,12 @@ class SettingsSecureStore private constructor(contentResolver: ContentResolver) 
                             instance = it
                         }
                 }
+
+        @VisibleForTesting
+        fun reset() {
+            instance = null
+            Secure.clearProviderForTest()
+        }
 
         /** Returns the required permissions to read [Secure] settings. */
         fun getReadPermissions() = Permissions.EMPTY
