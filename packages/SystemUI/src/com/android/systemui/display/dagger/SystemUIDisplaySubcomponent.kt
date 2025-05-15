@@ -48,6 +48,8 @@ interface SystemUIDisplaySubcomponent {
 
     @get:DisplayAware val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor
 
+    @get:DisplayAware val lifecycleListeners: Set<LifecycleListener>
+
     @Subcomponent.Factory
     interface Factory {
         fun create(@BindsInstance @DisplayId displayId: Int): SystemUIDisplaySubcomponent
@@ -71,4 +73,22 @@ interface SystemUIDisplaySubcomponent {
      * TODO(b/408503553): Remove this annotation once the flag is cleaned up.
      */
     @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class DisplayLib
+
+    /**
+     * Listens for lifecycle events of the [SystemUIDisplaySubcomponent], which correspond to the
+     * lifecycle of the display associated with this [Subcomponent].
+     */
+    interface LifecycleListener {
+        /**
+         * Called when the display associated with this [SystemUIDisplaySubcomponent] has been
+         * created, and the [Subcomponent] has been created.
+         */
+        fun start() {}
+
+        /**
+         * Called when the display associated with this [SystemUIDisplaySubcomponent] has been
+         * removed, and the component will be destroyed.
+         */
+        fun stop() {}
+    }
 }

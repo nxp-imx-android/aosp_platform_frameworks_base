@@ -19,6 +19,7 @@ package com.android.systemui.display.data.repository
 import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
+import com.android.app.tracing.ListenersTracing.forEachTraced
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
@@ -33,11 +34,25 @@ class DisplayComponentInstanceProvider
 constructor(private val componentFactory: SystemUIDisplaySubcomponent.Factory) :
     PerDisplayInstanceProviderWithTeardown<SystemUIDisplaySubcomponent> {
     override fun createInstance(displayId: Int): SystemUIDisplaySubcomponent? =
-        runCatching { componentFactory.create(displayId) }.getOrNull()
+        runCatching {
+                componentFactory.create(displayId).also { subComponent ->
+                    subComponent.lifecycleListeners.forEachTraced(
+                        "Notifying listeners of a display component creation"
+                    ) {
+                        it.start()
+                    }
+                }
+            }
+            .getOrNull()
 
     override fun destroyInstance(instance: SystemUIDisplaySubcomponent) {
         traceSection("Destroying a display component instance") {
             instance.displayCoroutineScope.cancel("Cancelling scope associated to the display.")
+        }
+        instance.lifecycleListeners.forEachTraced(
+            "Notifying listeners of a display component destruction"
+        ) {
+            it.stop()
         }
     }
 }

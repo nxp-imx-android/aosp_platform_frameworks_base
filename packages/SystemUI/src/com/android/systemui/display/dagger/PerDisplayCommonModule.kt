@@ -32,12 +32,17 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.Multibinds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Module providing common dependencies for per-display singletons. */
 @Module
 interface PerDisplayCommonModule {
+
+    @Multibinds
+    @DisplayAware
+    fun lifecycleListeners(): Set<SystemUIDisplaySubcomponent.LifecycleListener>
 
     @Binds
     @PerDisplaySingleton

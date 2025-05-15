@@ -35,6 +35,10 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 val Kosmos.displayRepository by Fixture { FakeDisplayRepository() }
 
+val Kosmos.sysUiDefaultDisplaySubcomponentLifecycleListeners by Fixture {
+    mutableSetOf<SystemUIDisplaySubcomponent.LifecycleListener>()
+}
+
 fun Kosmos.createFakeDisplaySubcomponent(
     coroutineScope: CoroutineScope = testScope.backgroundScope,
     displayStateRepository: DisplayStateRepository = mock<DisplayStateRepository>(),
@@ -54,6 +58,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor =
             statusbarIconRefreshInteractorFromConstructor
+
+        override val lifecycleListeners: Set<SystemUIDisplaySubcomponent.LifecycleListener> =
+            sysUiDefaultDisplaySubcomponentLifecycleListeners
     }
 }
 
