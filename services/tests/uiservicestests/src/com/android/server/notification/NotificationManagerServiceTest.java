@@ -9221,7 +9221,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         int expectedUid = 123;
 
         when(mPackageManagerClient.getPackageUidAsUser("target", 0)).thenReturn(expectedUid);
-        when(mPmi.getPackageUid("target", 0, mUserId)).thenReturn(expectedUid);
+        when(mPmi.getPackageUid("target", 0, 0)).thenReturn(expectedUid);
         // no delegate
 
         assertEquals(expectedUid, mService.resolveNotificationUid("android", "target", 0, 0));
