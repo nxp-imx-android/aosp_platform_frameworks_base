@@ -26,8 +26,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
@@ -189,5 +191,16 @@ public class WifiKeystoreTest {
         String[] retrieved = WifiKeystore.list(TEST_ALIAS);
         Arrays.sort(retrieved);
         assertArrayEquals(expected, retrieved);
+    }
+
+    /**
+     * Test that removeAll only affects the WifiBlobStore database.
+     */
+    @Test
+    public void testRemoveAll() throws Exception {
+        when(mWifiBlobStore.removeAll()).thenReturn(true);
+        assertTrue(WifiKeystore.removeAll());
+        verify(mWifiBlobStore, times(1)).removeAll();
+        verifyNoInteractions(mLegacyKeystore);
     }
 }
