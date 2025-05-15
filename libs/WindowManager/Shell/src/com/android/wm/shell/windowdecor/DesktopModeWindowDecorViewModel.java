@@ -1994,20 +1994,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         setIsRecentsTransitionRunningForTask(taskId, true);
                     }
                     return;
-                case RecentsTransitionStateListener.TRANSITION_STATE_STOP_REQUESTED:
-                    if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-                        // No Recents transition running - clean up window decorations
-                        for (int taskId : mAnimatingTaskIds) {
-                            setIsRecentsTransitionRunningForTask(taskId, false);
-                        }
-                    }
-                    return;
                 case RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING:
-                    if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-                        // No Recents transition running - clean up window decorations
-                        for (int taskId : mAnimatingTaskIds) {
-                            setIsRecentsTransitionRunningForTask(taskId, false);
-                        }
+                    // No Recents transition running - clean up window decorations
+                    for (int taskId : mAnimatingTaskIds) {
+                        setIsRecentsTransitionRunningForTask(taskId, false);
                     }
                     mAnimatingTaskIds.clear();
                     return;
