@@ -17,12 +17,8 @@
 package com.android.systemui.topwindoweffects.ui.viewmodel
 
 import com.android.systemui.haptics.vibratorHelper
-import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
-import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 
 val Kosmos.squeezeEffectHapticPlayerFactory by
     Kosmos.Fixture {
@@ -30,13 +26,7 @@ val Kosmos.squeezeEffectHapticPlayerFactory by
             override fun create(): SqueezeEffectHapticPlayer =
                 SqueezeEffectHapticPlayer(
                     vibratorHelper = vibratorHelper,
-                    bgScope = testScope.backgroundScope,
-                    squeezeEffectInteractor =
-                        SqueezeEffectInteractor(
-                            squeezeEffectRepository = fakeSqueezeEffectRepository,
-                            keyEventInteractor = KeyEventInteractor(fakeKeyEventRepository),
-                            coroutineContext = testScope.testScheduler,
-                        ),
+                    applicationScope = testScope,
                 )
         }
     }
