@@ -1734,6 +1734,13 @@ flag {
 }
 
 flag {
+    name: "clock_modernization"
+    namespace: "systemui"
+    description: "Implement the status bar/shade header clock in the recommended architecture"
+    bug: "390204943"
+}
+
+flag {
     name: "notifications_launch_radius"
     namespace: "systemui"
     description: "Fixes a discrepancy in corner radius between expanding notification and opening window during launch animations."
