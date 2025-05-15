@@ -38,7 +38,8 @@ dry_run=""
 exclude_large_tests=0
 atest_opts=""
 build_only=0
-while getopts "sx:f:dtbLa:" opt; do
+list_options=""
+while getopts "sx:f:dtbLa:r" opt; do
 case "$opt" in
     s)
         # Remove slow tests.
@@ -74,6 +75,10 @@ case "$opt" in
         # exclude large tests
         exclude_large_tests=1
         ;;
+    r)
+        # only run tests under frameworks/base/ravenwood/
+        list_options="$list_options -r"
+        ;;
     '?')
         exit 1
         ;;
@@ -82,7 +87,7 @@ done
 shift $(($OPTIND - 1))
 
 all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
-all_raven_tests=( $( ./list-ravenwood-tests.sh ) )
+all_raven_tests=( $( ./list-ravenwood-tests.sh $list_options ) )
 
 all_tests+=( "${all_raven_tests[@]}" )
 
@@ -144,7 +149,7 @@ done
 
 # Calculate the removed tests.
 
-diff="$(diff  <(echo "${all_tests[@]}" | tr ' ' '\n') <(echo "${targets[@]}" | tr ' ' '\n') | grep -v [0-9] )"
+diff="$(diff  <(echo "${all_tests[@]}" | tr ' ' '\n') <(echo "${targets[@]}" | tr ' ' '\n') | grep -v [0-9] || true)"
 
 if [[ "$diff" != "" ]]; then
     echo "Excluded tests:"
