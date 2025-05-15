@@ -21,6 +21,7 @@ import static android.view.InsetsController.ANIMATION_DURATION_UNSYNC_IME_MS;
 import static android.view.InsetsController.ANIMATION_TYPE_USER;
 import static android.view.InsetsController.FAST_OUT_LINEAR_IN_INTERPOLATOR;
 import static android.view.InsetsController.SYNC_IME_INTERPOLATOR;
+import static android.view.WindowInsets.Type.IME;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
@@ -54,7 +55,6 @@ import java.io.PrintWriter;
 public class ImeBackAnimationController implements OnBackAnimationCallback {
 
     private static final String TAG = "ImeBackAnimationController";
-    private static final int POST_COMMIT_DURATION_MS = 200;
     private static final int POST_COMMIT_CANCEL_DURATION_MS = 50;
     private static final float PEEK_FRACTION = 0.1f;
     private static final Interpolator BACK_GESTURE = new BackGestureInterpolator();
@@ -144,7 +144,10 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
             // play regular hide animation if predictive back-animation is not allowed or if insets
             // control has been cancelled by the system. This can happen in multi-window mode for
             // example (i.e. split-screen or activity-embedding)
-            notifyHideIme();
+            ImeTracker.Token statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
+                    ImeTracker.ORIGIN_CLIENT,
+                    SoftInputShowHideReason.HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL, true);
+            mInsetsController.hide(IME, /*fromIme*/ false, statsToken);
         } else {
             startPostCommitAnim(/*hideIme*/ true);
         }
@@ -225,25 +228,10 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
         mPostCommitAnimator.start();
         if (triggerBack) {
             mInsetsController.setPredictiveBackImeHideAnimInProgress(true);
-            notifyHideIme();
             // requesting IME as invisible during post-commit
             mInsetsController.setRequestedVisibleTypes(0, ime());
             mInsetsController.onAnimationStateChanged(ime(), /*running*/ true);
         }
-    }
-
-    private void notifyHideIme() {
-        ImeTracker.Token statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                ImeTracker.ORIGIN_CLIENT,
-                SoftInputShowHideReason.HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL, true);
-        // This notifies the IME that it is being hidden. In response, the IME will unregister the
-        // animation callback, such that new back gestures happening during the post-commit phase of
-        // the hide animation can already dispatch to a new callback.
-        // Note that the IME will call hide() in InsetsController. InsetsController will not animate
-        // that hide request if it sees that ImeBackAnimationController is already animating
-        // the IME away
-        mInsetsController.getHost().getInputMethodManager()
-                .notifyImeHidden(mInsetsController.getHost().getWindowToken(), statsToken);
     }
 
     private void reset() {
