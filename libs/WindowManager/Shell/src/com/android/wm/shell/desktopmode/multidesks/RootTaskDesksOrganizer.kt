@@ -514,7 +514,12 @@ class RootTaskDesksOrganizer(
         if (deskRootsByDeskId.contains(taskInfo.taskId)) {
             val deskId = taskInfo.taskId
             deskRootsByDeskId[deskId] = deskRootsByDeskId[deskId].copy(taskInfo = taskInfo)
-            logV("Desk #$deskId's task info changed in display#${taskInfo.displayId}")
+            logV(
+                "Desk #$deskId's task info changed in display#%d visible=%b children=%s",
+                taskInfo.displayId,
+                taskInfo.isVisible,
+                deskRootsByDeskId[deskId].children,
+            )
             return
         }
         val minimizationRoot =
@@ -531,7 +536,12 @@ class RootTaskDesksOrganizer(
         if (parentTaskId in deskRootsByDeskId) {
             val deskId = taskInfo.parentTaskId
             val taskId = taskInfo.taskId
-            logV("onTaskInfoChanged: Task #$taskId appeared in desk #$deskId")
+            logV(
+                "onTaskInfoChanged: Task #%d (visible=%b) appeared in desk #%d",
+                taskId,
+                taskInfo.isVisible,
+                deskId,
+            )
             addChildToDesk(taskId = taskId, deskId = deskId)
             return
         }

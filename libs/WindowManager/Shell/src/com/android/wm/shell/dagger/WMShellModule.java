@@ -1413,18 +1413,23 @@ public abstract class WMShellModule {
                                         desktopState,
                                         shellInit)));
     }
+
     @WMSingleton
     @Provides
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer,
             @NonNull Transitions transitions,
+            @NonNull ShellController shellController,
+            @NonNull DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            @NonNull @ShellMainThread CoroutineScope mainScope,
             DesktopState desktopState
     ) {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
-                            transitions));
+                            transitions, shellController, desktopWallpaperActivityTokenProvider,
+                            mainScope));
         }
         return Optional.empty();
     }

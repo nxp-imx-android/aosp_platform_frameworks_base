@@ -279,8 +279,7 @@ public class ShellController {
     }
 
     /** Returns the current user id. */
-    @VisibleForTesting
-    int getCurrentUserId() {
+    public int getCurrentUserId() {
         return mUserId;
     }
 
