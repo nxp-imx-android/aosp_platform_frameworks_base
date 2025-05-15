@@ -32,6 +32,7 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.ITradeInMode;
+import android.os.ITradeInMode.MoistureIntrusionStatus;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.os.RemoteException;
@@ -40,6 +41,10 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.util.Slog;
+import android.hardware.SensorManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 
 import com.android.server.health.HealthServiceWrapper;
 import com.android.server.display.DisplayControl;
@@ -50,6 +55,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TradeInModeService extends SystemService {
     private static final String TAG = "TradeInModeService";
@@ -292,6 +300,50 @@ public final class TradeInModeService extends SystemService {
                 return -1;
             }
             return getHealthService().getHingeInfo()[hingeId].expectedHingeLifespan;
+        }
+
+        @Override
+        @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
+        public int getMoistureIntrusionDetected(long timeoutMillis) throws RemoteException {
+            SensorManager m = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
+            Sensor moistureDetectionSensor = m.getDefaultSensor(Sensor.TYPE_MOISTURE_INTRUSION);
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicInteger sensorValueHolder = new AtomicInteger(); // Default to timeout
+
+            SensorEventListener listener = new SensorEventListener() {
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    if (event.values[0] == 0.0) {
+                        sensorValueHolder.set(0);
+                    } else if (event.values[0] == 1.0) {
+                        sensorValueHolder.set(1);
+                    } else {
+                        Slog.e(TAG, "Moisture Sensor returned unexpected value: " + event.values[0]);
+                    }
+                    latch.countDown();
+                }
+
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                }
+            };
+            if (moistureDetectionSensor != null) {
+                m.registerListener(listener, moistureDetectionSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL);
+            }
+            try {
+                if (latch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                    return sensorValueHolder.get();
+                } else {
+                    m.unregisterListener(listener, moistureDetectionSensor);
+                    return ITradeInMode.MoistureIntrusionStatus.UNSUPPORTED;
+                }
+            } catch (InterruptedException e) {
+                return ITradeInMode.MoistureIntrusionStatus.UNSUPPORTED;
+            } finally {
+                m.unregisterListener(listener, moistureDetectionSensor);
+            }
         }
 
         private void enforceTestingPermissions() {

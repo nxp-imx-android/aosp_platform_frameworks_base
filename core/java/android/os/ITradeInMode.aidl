@@ -132,4 +132,28 @@ interface ITradeInMode {
      *
      */
     ScreenPartStatus[] getScreenPartStatus();
+    /**
+     * Information relating to moisture instrusion within device chassis
+     */
+    @VintfStability
+    @Backing(type="int")
+    enum MoistureIntrusionStatus {
+        /**
+         * Device cannot detect moisture intrusion
+         */
+        UNSUPPORTED = -1,
+        /**
+         * Device has no moisture detected
+         */
+        UNDETECTED = 0,
+        /**
+         * Device has moisutre detected
+         */
+        DETECTED = 1,
+    }
+    /**
+     * Detect water intrusion damage within device chassis
+     *
+     */
+    MoistureIntrusionStatus getMoistureIntrusionDetected(in long timeoutMillis);
 }
