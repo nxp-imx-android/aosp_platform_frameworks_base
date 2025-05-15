@@ -40,7 +40,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableLooper;
@@ -921,6 +920,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer
     public void altBouncerNotVisible_keyguardAuthenticatedBiometricsHandled() {
         clearInvocations(mAlternateBouncerInteractor);
         when(mAlternateBouncerInteractor.isVisibleState()).thenReturn(false);
@@ -929,6 +929,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer
     public void altBouncerVisible_keyguardAuthenticatedBiometricsHandled() {
         clearInvocations(mAlternateBouncerInteractor);
         when(mAlternateBouncerInteractor.isVisibleState()).thenReturn(true);
@@ -937,6 +938,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer
     public void fromAlternateBouncerTransitionStep() {
         clearInvocations(mAlternateBouncerInteractor);
         mStatusBarKeyguardViewManager.consumeFromAlternateBouncerTransitionSteps(
