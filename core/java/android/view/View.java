@@ -54,7 +54,7 @@ import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
-import static android.view.flags.Flags.toolkitVelocitySysprop;
+import static android.view.flags.Flags.toolkitVelocityMapSysprop;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 import static android.view.flags.Flags.viewVelocityApi;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
@@ -2477,18 +2477,18 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private static boolean sToolkitViewGroupFrameRateApiFlagValue =
             toolkitViewgroupSetRequestedFrameRateApi();
 
-    // The read-write flag toolkitVelocitySysprop() cannot be initialized at Zygote. To prevent
+    // The read-write flag toolkitVelocityMapSysprop() cannot be initialized at Zygote. To prevent
     // this, initialize inside this class with special name NoPreloadHolder which prevents
     // initialization at Zygote.
     /** @hide */
     @VisibleForTesting
     static final class NoPreloadHolder {
-        private static boolean sToolkitVelocitySyspropFlagValue = toolkitVelocitySysprop();
+        private static boolean sToolkitVelocityMapSyspropFlagValue = toolkitVelocityMapSysprop();
         private static String sFrameRateSysProp =
                 ViewProperties.vrr_velocity_threshold().orElse("");
 
         static {
-            if (sToolkitVelocitySyspropFlagValue && !sFrameRateSysProp.isEmpty()) {
+            if (sToolkitVelocityMapSyspropFlagValue && !sFrameRateSysProp.isEmpty()) {
                 sFrameRateMappings = parseFrameRateMapping(sFrameRateSysProp);
             }
         }
@@ -34584,7 +34584,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
-        if (NoPreloadHolder.sToolkitVelocitySyspropFlagValue && sFrameRateMappings != null
+        if (NoPreloadHolder.sToolkitVelocityMapSyspropFlagValue && sFrameRateMappings != null
                 && sFrameRateMappings.length > 0) {
             return getFrameRateByVelocity(sFrameRateMappings, (int) velocityPps);
         }
