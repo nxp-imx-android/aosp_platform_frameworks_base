@@ -26,13 +26,17 @@ import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.LauncherProxyService
+import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
+import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -66,6 +70,12 @@ interface AmbientCueRepository {
 
     /** If the UI is deactivated, such as closed by user or not used for a long period. */
     val isDeactivated: MutableStateFlow<Boolean>
+
+    /** If the taskbar is fully visible and not stashed. */
+    val isTaskBarVisible: StateFlow<Boolean>
+
+    /** True if in gesture nav mode, false when in 3-button navbar. */
+    val isGestureNav: StateFlow<Boolean>
 }
 
 @SysUISingleton
@@ -76,6 +86,8 @@ constructor(
     private val smartSpaceManager: SmartspaceManager?,
     private val autofillManager: AutofillManager?,
     private val activityStarter: ActivityStarter,
+    private val launcherProxyService: LauncherProxyService,
+    private val navigationModeController: NavigationModeController,
     @Background executor: Executor,
     @Application applicationContext: Context,
     focusdDisplayRepository: FocusedDisplayRepository,
@@ -170,6 +182,35 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
             )
+
+    override val isTaskBarVisible: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                val callback =
+                    object : LauncherProxyListener {
+                        override fun onTaskbarStatusUpdated(visible: Boolean, stashed: Boolean) {
+                            trySend(visible && !stashed)
+                        }
+                    }
+                launcherProxyService.addCallback(callback)
+                awaitClose { launcherProxyService.removeCallback(callback) }
+            }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    override val isGestureNav: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                val listener =
+                    NavigationModeController.ModeChangedListener { mode ->
+                        trySend(QuickStepContract.isGesturalMode(mode))
+                    }
+                val navBarMode = navigationModeController.addListener(listener)
+                listener.onNavigationModeChanged(navBarMode)
+                awaitClose { navigationModeController.removeListener(listener) }
+            }
+            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), false)
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

@@ -40,6 +40,12 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val targetTaskId: MutableStateFlow<Int> = MutableStateFlow(0)
     override val isDeactivated: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    private val _isTaskBarVisible = MutableStateFlow(false)
+    override val isTaskBarVisible: StateFlow<Boolean> = _isTaskBarVisible.asStateFlow()
+
+    private val _isGestureNav = MutableStateFlow(false)
+    override val isGestureNav: StateFlow<Boolean> = _isGestureNav.asStateFlow()
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
     }
@@ -54,5 +60,13 @@ class FakeAmbientCueRepository : AmbientCueRepository {
                 !isDeactivated.value &&
                 targetTaskId.value == globallyFocusedTaskId.value
         }
+    }
+
+    fun setTaskBarVisible(visible: Boolean) {
+        _isTaskBarVisible.update { visible }
+    }
+
+    fun setIsGestureNav(isGestureNav: Boolean) {
+        _isGestureNav.update { isGestureNav }
     }
 }
