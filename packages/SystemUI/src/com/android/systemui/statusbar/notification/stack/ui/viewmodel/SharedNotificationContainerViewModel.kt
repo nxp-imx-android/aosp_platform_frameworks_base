@@ -856,17 +856,18 @@ constructor(
         val showLimitedNotifications = isOnLockscreenWithoutShade
         val showUnlimitedNotificationsAndIsOnLockScreen =
             combine(
-                isOnLockscreen,
-                keyguardInteractor.statusBarState,
-                merge(
-                        primaryBouncerToGoneTransitionViewModel.showAllNotifications,
-                        alternateBouncerToGoneTransitionViewModel.showAllNotifications,
-                    )
-                    .onStart { emit(false) },
-            ) { isOnLockscreen, statusBarState, showAllNotifications ->
-                (statusBarState == SHADE_LOCKED || !isOnLockscreen || showAllNotifications) to
-                    isOnLockscreen
-            }.dumpWhileCollecting("showUnlimitedNotificationsAndIsOnLockScreen")
+                    isOnLockscreen,
+                    keyguardInteractor.statusBarState,
+                    merge(
+                            primaryBouncerToGoneTransitionViewModel.showAllNotifications,
+                            alternateBouncerToGoneTransitionViewModel.showAllNotifications,
+                        )
+                        .onStart { emit(false) },
+                ) { isOnLockscreen, statusBarState, showAllNotifications ->
+                    (statusBarState == SHADE_LOCKED || !isOnLockscreen || showAllNotifications) to
+                        isOnLockscreen
+                }
+                .dumpWhileCollecting("showUnlimitedNotificationsAndIsOnLockScreen")
 
         @Suppress("UNCHECKED_CAST")
         return combineTransform(
@@ -874,15 +875,15 @@ constructor(
                 showUnlimitedNotificationsAndIsOnLockScreen,
                 shadeInteractor.isUserInteracting.dumpWhileCollecting("isUserInteracting"),
                 availableHeight,
-                interactor.notificationStackChanged,
                 interactor.useExtraShelfSpace,
+                interactor.notificationStackChanged,
             ) { flows ->
                 val showLimitedNotifications = flows[0] as Boolean
                 val (showUnlimitedNotifications, isOnLockscreen) =
                     flows[1] as Pair<Boolean, Boolean>
                 val isUserInteracting = flows[2] as Boolean
                 val availableHeight = flows[3] as Float
-                val useExtraShelfSpace = flows[5] as Boolean
+                val useExtraShelfSpace = flows[4] as Boolean
 
                 if (!isUserInteracting) {
                     if (showLimitedNotifications) {
@@ -937,11 +938,7 @@ constructor(
                             bounds.map { it.top },
                             isOnLockscreenWithoutShade,
                             interactor.notificationStackChanged,
-                        ) {
-                            maxNotifications,
-                            top,
-                            isOnLockscreenWithoutShade,
-                            notificationStackChanged ->
+                        ) { maxNotifications, top, isOnLockscreenWithoutShade, _ ->
                             if (isOnLockscreenWithoutShade && maxNotifications != -1) {
                                 val height = calculateHeight(maxNotifications)
                                 top + height
@@ -958,6 +955,10 @@ constructor(
 
     fun notificationStackChanged() {
         interactor.notificationStackChanged()
+    }
+
+    fun notificationStackChangedInstant() {
+        interactor.notificationsInStackChangedInstant()
     }
 
     data class ConfigurationBasedDimensions(

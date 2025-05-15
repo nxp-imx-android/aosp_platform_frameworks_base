@@ -124,6 +124,7 @@ import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationContentAlphaOptimization;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
+import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor;
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent;
@@ -274,6 +275,7 @@ public class NotificationStackScrollLayout
     private OnOverscrollTopChangedListener mOverscrollTopChangedListener;
     private ExpandableView.OnHeightChangedListener mOnHeightChangedListener;
     private Runnable mOnHeightChangedRunnable;
+    private Runnable mOnKeyguardTopLevelNotificationRemovedRunnable;
     private OnEmptySpaceClickListener mOnEmptySpaceClickListener;
     private boolean mNeedsAnimation;
     private boolean mTopPaddingNeedsAnimation;
@@ -2883,6 +2885,11 @@ public class NotificationStackScrollLayout
         // notification which becomes a child notification
         ExpandableView expandableView = (ExpandableView) child;
         if (!mChildTransferInProgress) {
+            if (NotificationMinimalism.isEnabled()
+                    && mAmbientState.isOnKeyguard()
+                    && this.mOnKeyguardTopLevelNotificationRemovedRunnable != null) {
+                mOnKeyguardTopLevelNotificationRemovedRunnable.run();
+            }
             onViewRemovedInternal(expandableView, this);
         }
         mShelf.requestRoundnessResetFor(expandableView);
@@ -4550,6 +4557,10 @@ public class NotificationStackScrollLayout
 
     void setOnHeightChangedRunnable(Runnable r) {
         this.mOnHeightChangedRunnable = r;
+    }
+
+    void setOnKeyguardTopLevelNotificationRemovedRunnable(Runnable r) {
+        this.mOnKeyguardTopLevelNotificationRemovedRunnable = r;
     }
 
     void onChildAnimationFinished() {

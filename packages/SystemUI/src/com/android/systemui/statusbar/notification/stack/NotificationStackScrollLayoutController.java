@@ -1091,6 +1091,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setOnHeightChangedRunnable(r);
     }
 
+    /**
+     * Invoked when a top-level notification(one with NSSL as parent, not group-child) is removed
+     * from the lockscreen NSSL.
+     */
+    public void setOnKeyguardTopLevelNotificationRemovedRunnable(Runnable r) {
+        mView.setOnKeyguardTopLevelNotificationRemovedRunnable(r);
+    }
+
     public void setOverscrollTopChangedListener(
             OnOverscrollTopChangedListener listener) {
         SceneContainerFlag.assertInLegacyMode();
