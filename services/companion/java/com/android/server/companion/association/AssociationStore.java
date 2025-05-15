@@ -221,7 +221,7 @@ public class AssociationStore {
             Slog.i(TAG, "Done adding new association.");
         }
 
-        logCreateAssociation(association.getDeviceProfile());
+        logCreateAssociation(association, mContext);
 
         if (association.isActive()) {
             broadcastChange(CHANGE_TYPE_ADDED, association);
@@ -296,7 +296,7 @@ public class AssociationStore {
             Slog.i(TAG, "Done removing association.");
         }
 
-        logRemoveAssociation(association.getDeviceProfile());
+        logRemoveAssociation(association, mContext);
 
         if (association.isActive()) {
             broadcastChange(CHANGE_TYPE_REMOVED, association);
