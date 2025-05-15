@@ -18,6 +18,8 @@ package com.android.test.transactionflinger
 
 import android.graphics.ColorSpace
 import android.graphics.HardwareBufferRenderer
+import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RenderNode
 import android.hardware.HardwareBuffer
 import android.view.Choreographer
@@ -28,31 +30,34 @@ import java.util.concurrent.CompletableFuture
  * A scene of SurfaceControls!
  */
 class Scene {
-    private val children = mutableListOf<Scene>()
-    private var drawFunctor: (Scene.(Choreographer.FrameData) -> RenderNode?)? = null
 
-    /**
-     * Time that we first started drawing the first frame of the scene
-     * Typically this is for rolling your own animations
-     */
+    private val children = mutableListOf<Scene>()
+    private var drawFunctor: (Scene.(Choreographer.FrameData, Int, Int) -> RenderNode?)? = null
+    private var propertiesFunctor: (Scene.(Choreographer.FrameData) -> Unit)? = null
+
+    /** Radius of a blur applied to content behind this scene */
+    var backgroundBlurRadius = 0
+
+    /** Location of the top-left position in the x-direction of this scene, on a range of [0, 1] */
+    var x = 0.0
+
+    /** Location of the top-left position in the y-direction of this scene, on a range of [0, 1] */
+    var y = 0.0
+
+    /** Width of the scene normalized on [0, 1] */
+    var width = 1.0
+
+    /** Height of the scene normalized on [0, 1] */
+    var height = 1.0
     var startTime = 0L
         private set
 
-    /**
-     * SurfaceControl that will contain the content for this scene on the display
-     */
     val surfaceControl: SurfaceControl =
         SurfaceControl.Builder().setName("scene").setHidden(true).build()
 
-    /**
-     * Width in pixels
-     */
-    var width = 0
-
-    /**
-     * Height in pixels
-     */
-    var height = 0
+    fun properties(functor: Scene.(Choreographer.FrameData) -> Unit) {
+        propertiesFunctor = functor
+    }
 
     /**
      * Adds a child scene
@@ -64,34 +69,58 @@ class Scene {
         return scene
     }
 
-    /**
-     * Specifies a function that will instruct this scene node to draw content
-     */
-    fun content(draw: Scene.(Choreographer.FrameData) -> RenderNode?) {
+    fun content(draw: Scene.(Choreographer.FrameData, Int, Int) -> RenderNode?) {
         drawFunctor = draw
     }
 
-    /**
-     * Draw the scene and its children, and accumulate updates into the provided transaction
-     */
-    fun onDraw(
+    fun drawAndSubmit(data: Choreographer.FrameData, width: Int, height: Int) {
+        val transaction = SurfaceControl.Transaction()
+        synchronized(transaction) {
+            transaction.setVisibility(surfaceControl, true)
+        }
+        onDraw(data, transaction, width, height).get()
+        synchronized(transaction) {
+            transaction.apply()
+        }
+    }
+
+
+    private fun onDraw(
         data: Choreographer.FrameData,
-        transaction: SurfaceControl.Transaction
+        transaction: SurfaceControl.Transaction,
+        parentWidth: Int,
+        parentHeight: Int
     ): CompletableFuture<Void> {
         if (startTime == 0L) {
             startTime = data.preferredFrameTimeline.deadlineNanos
             synchronized(transaction) {
+                transaction.setPosition(
+                    surfaceControl,
+                    (parentWidth * x).toFloat(),
+                    (parentHeight * y).toFloat()
+                )
                 for (child in children) {
                     transaction.reparent(child.surfaceControl, surfaceControl)
                 }
             }
         }
+
+        propertiesFunctor?.let {
+            it.invoke(this@Scene, data)
+            synchronized(transaction) {
+                transaction.setBackgroundBlurRadius(surfaceControl, backgroundBlurRadius)
+            }
+        }
+
+        val physicalWidth = (parentWidth * width).toInt()
+        val physicalHeight = (parentHeight * height).toInt()
         val futuresList: MutableList<CompletableFuture<Void>> = mutableListOf()
-        drawFunctor?.invoke(this@Scene, data)?.let { node ->
+
+        drawFunctor?.invoke(this@Scene, data, physicalWidth, physicalHeight)?.let { node ->
             val drawFuture = CompletableFuture<Void>()
             futuresList.add(drawFuture)
             val buffer = HardwareBuffer.create(
-                width, height, HardwareBuffer.RGBA_8888, 1,
+                physicalWidth, physicalHeight, HardwareBuffer.RGBA_8888, 1,
                 HardwareBuffer.USAGE_COMPOSER_OVERLAY or HardwareBuffer.USAGE_GPU_COLOR_OUTPUT
                         or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
             )
@@ -103,6 +132,8 @@ class Scene {
                 .draw(
                     Runnable::run
                 ) {
+                    // We could instead wrap the rendering result into a payload that we then
+                    // dispatch to the main thread, but a lock is easier to write :)
                     synchronized(transaction) {
                         transaction.setBuffer(surfaceControl, buffer, it.fence).setVisibility(
                             surfaceControl, true
@@ -111,11 +142,26 @@ class Scene {
                     drawFuture.complete(null)
                 }
         }
+
+
         futuresList.addAll(children.asSequence()
-            .map { it.onDraw(data, transaction) }
+            .map { it.onDraw(data, transaction, physicalWidth, physicalHeight) }
             .toList())
 
         return CompletableFuture<Void>.allOf(*futuresList.toTypedArray())
+    }
+
+    fun drawColor(color: Int, data: Choreographer.FrameData, width: Int, height: Int): RenderNode? {
+        if (startTime < data.preferredFrameTimeline.deadlineNanos) {
+            return null
+        }
+        val renderNode = RenderNode("cogsapp")
+        renderNode.setPosition(Rect(0, 0, width, height))
+        val paint = Paint()
+        paint.color = color
+        renderNode.beginRecording(width, height).drawPaint(paint)
+        renderNode.endRecording()
+        return renderNode
     }
 }
 

@@ -38,6 +38,8 @@ abstract class SceneActivity : ComponentActivity(), SurfaceHolder.Callback, Vsyn
     private lateinit var surfaceView: SurfaceView
     private lateinit var choreographer: Choreographer
     private lateinit var scene: Scene
+    private var width = 0
+    private var height = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,22 +67,25 @@ abstract class SceneActivity : ComponentActivity(), SurfaceHolder.Callback, Vsyn
     override fun surfaceCreated(holder: SurfaceHolder) {}
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        scene.width = width
-        scene.height = height
+        this@SceneActivity.width = width
+        this@SceneActivity.height = height
         SurfaceControl.Transaction()
             .reparent(scene.surfaceControl, surfaceView.surfaceControl).apply()
         choreographer.postVsyncCallback(this)
     }
 
-    override fun surfaceDestroyed(holder: SurfaceHolder) {}
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        width = 0
+        height = 0
+        SurfaceControl.Transaction()
+            .reparent(scene.surfaceControl, null)
+    }
 
     override fun onVsync(data: Choreographer.FrameData) {
-        val transaction = SurfaceControl.Transaction()
-        scene.onDraw(data, transaction).get()
-        synchronized(transaction) {
-            transaction.setFrameTimelineVsync(data.preferredFrameTimeline.vsyncId)
-            transaction.apply()
+        if (width == 0 || height == 0) {
+            return
         }
+        scene.drawAndSubmit(data, width, height)
         choreographer.postVsyncCallback(this@SceneActivity)
     }
 

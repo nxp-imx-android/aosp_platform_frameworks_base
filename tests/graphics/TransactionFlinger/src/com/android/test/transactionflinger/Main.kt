@@ -26,6 +26,7 @@ import android.widget.BaseExpandableListAdapter
 import android.widget.ExpandableListView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import com.android.test.transactionflinger.activities.BlurOnOffActivity
 import com.android.test.transactionflinger.activities.TrivialActivity
 import kotlin.reflect.KClass
 
@@ -40,7 +41,8 @@ data class DemoGroup(val groupName: String, val demos: List<Demo>)
 private val AllDemos = listOf(
     DemoGroup(
         "Workloads", listOf(
-            Demo("TrivialActivity", TrivialActivity::class)
+            Demo("TrivialActivity", TrivialActivity::class),
+            Demo("BlurOnOffActivity", BlurOnOffActivity::class)
         )
     )
 )

@@ -20,8 +20,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RenderNode
-import android.view.Choreographer.VsyncCallback
-import android.view.SurfaceHolder
 import com.android.test.transactionflinger.Scene
 import com.android.test.transactionflinger.scene
 import kotlin.time.Duration.Companion.nanoseconds
@@ -30,10 +28,10 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Trivial activity. Not very interesting.
  */
-class TrivialActivity : SceneActivity(), SurfaceHolder.Callback, VsyncCallback {
+class TrivialActivity : SceneActivity() {
     override fun obtainScene(): Scene {
         return scene {
-            content { data ->
+            content { data, width, height ->
 
                 val animationTime =
                     ((data.preferredFrameTimeline.deadlineNanos - startTime) % 2.seconds.inWholeNanoseconds).nanoseconds
