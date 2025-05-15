@@ -145,6 +145,7 @@ public class AutoclickTypePanel {
     private final LinearLayout mLongPressButton;
 
     private LinearLayout mSelectedButton;
+    private int mSelectedClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
     private final Drawable mPauseButtonDrawable;
     private final Drawable mResumeButtonDrawable;
@@ -248,6 +249,11 @@ public class AutoclickTypePanel {
                 }
                 mIsDragging = false;
                 return true;
+            case MotionEvent.ACTION_OUTSIDE:
+                if (mExpanded) {
+                    collapsePanelWithClickType(mSelectedClickType);
+                }
+                return true;
         }
         return false;
     }
@@ -306,17 +312,25 @@ public class AutoclickTypePanel {
         // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
-        resetSelectedClickType();
+        collapsePanelWithClickType(AUTOCLICK_TYPE_LEFT_CLICK);
 
         // Remove spacing between buttons when initialized.
         adjustPanelSpacing(/* isExpanded= */ false);
     }
 
-    /** Reset panel as collapsed state and only displays the left click button. */
-    public void resetSelectedClickType() {
+    /** Reset panel as collapsed state and only displays selelcted button. */
+    public void collapsePanelWithClickType(@AutoclickType int clickType) {
         hideAllClickTypeButtons();
-        mLeftClickButton.setVisibility(View.VISIBLE);
-        setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
+        final LinearLayout selectedButton = getButtonFromClickType(clickType);
+        selectedButton.setVisibility(View.VISIBLE);
+
+        // Sets the newly selected button.
+        setSelectedClickType(clickType);
+
+        // Remove spacing between buttons when collapsed.
+        adjustPanelSpacing(/* isExpanded= */ false);
+
+        mExpanded = false;
     }
 
     /** Sets the selected button and updates the newly and previously selected button styling. */
@@ -329,6 +343,7 @@ public class AutoclickTypePanel {
         }
 
         mSelectedButton = selectedButton;
+        mSelectedClickType = clickType;
         mClickPanelController.handleAutoclickTypeChange(clickType);
 
         // Updates the newly selected button styling.
@@ -389,29 +404,20 @@ public class AutoclickTypePanel {
 
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
-        final LinearLayout button = getButtonFromClickType(clickType);
-
         if (mExpanded) {
             // If the panel is already in expanded state, we should collapse it by hiding all
             // buttons except the one user selected.
-            hideAllClickTypeButtons();
-            button.setVisibility(View.VISIBLE);
-
-            // Sets the newly selected button.
-            setSelectedClickType(clickType);
-
-            // Remove spacing between buttons when collapsed.
-            adjustPanelSpacing(/* isExpanded= */ false);
+            collapsePanelWithClickType(clickType);
         } else {
             // If the panel is already collapsed, we just need to expand it.
             showAllClickTypeButtons();
 
             // Add spacing when panel is expanded.
             adjustPanelSpacing(/* isExpanded= */ true);
-        }
 
-        // Toggle the state.
-        mExpanded = !mExpanded;
+            // Toggle the state.
+            mExpanded = true;
+        }
     }
 
     private void togglePause() {
@@ -707,7 +713,8 @@ public class AutoclickTypePanel {
     private WindowManager.LayoutParams getDefaultLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
         layoutParams.setFitInsetsTypes(WindowInsets.Type.statusBars());
         layoutParams.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
