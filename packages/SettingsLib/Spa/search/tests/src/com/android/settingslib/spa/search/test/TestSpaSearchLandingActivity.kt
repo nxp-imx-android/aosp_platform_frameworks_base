@@ -22,8 +22,9 @@ import com.android.settingslib.spa.search.SpaSearchLandingActivity
 class TestSpaSearchLandingActivity : SpaSearchLandingActivity() {
     override fun isValidCall() = true
 
-    override fun startSpaPage(destination: String) {
+    override fun startSpaPage(destination: String, highlightItemKey: String) {
         startSpaPageCalledDestination = destination
+        startSpaPageCalledHighlightItemKey = highlightItemKey
     }
 
     override fun startFragment(fragmentName: String, arguments: Bundle) {
@@ -33,11 +34,13 @@ class TestSpaSearchLandingActivity : SpaSearchLandingActivity() {
 
     companion object {
         var startSpaPageCalledDestination: String? = null
+        var startSpaPageCalledHighlightItemKey: String? = null
         var startFragmentCalledFragmentName: String? = null
         var startFragmentCalledArguments: Bundle? = null
 
         fun clear() {
             startSpaPageCalledDestination = null
+            startSpaPageCalledHighlightItemKey = null
             startFragmentCalledFragmentName = null
             startFragmentCalledArguments = null
         }

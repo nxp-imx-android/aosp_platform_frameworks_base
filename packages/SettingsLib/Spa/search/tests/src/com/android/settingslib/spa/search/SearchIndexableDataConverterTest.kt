@@ -39,7 +39,11 @@ class SearchIndexableDataConverterTest {
     fun toSearchIndexableData() {
         val searchLandingKey =
             SpaSearchLandingKey.newBuilder()
-                .setSpaPage(SpaSearchLandingSpaPage.newBuilder().setDestination(PAGE_NAME))
+                .setSpaPage(
+                    SpaSearchLandingSpaPage.newBuilder()
+                        .setDestination(PAGE_NAME)
+                        .setHighlightItemKey(HIGHLIGHT_ITEM_KEY)
+                )
                 .build()
         val item =
             SpaSearchIndexableItem(
@@ -49,7 +53,6 @@ class SearchIndexableDataConverterTest {
             )
         val searchIndexablePage =
             SpaSearchIndexablePage(targetClass = SearchIndexableDataConverterTest::class.java) {
-                context ->
                 listOf(item)
             }
 
@@ -73,6 +76,7 @@ class SearchIndexableDataConverterTest {
         const val INTENT_ACTION = "intent.Action"
         const val INTENT_TARGET_CLASS = "target.Class"
         const val PAGE_NAME = "PageName"
+        const val HIGHLIGHT_ITEM_KEY = "highlight_item_key"
         const val PAGE_TITLE = "Page Title"
         const val ITEM_TITLE = "Item Title"
     }

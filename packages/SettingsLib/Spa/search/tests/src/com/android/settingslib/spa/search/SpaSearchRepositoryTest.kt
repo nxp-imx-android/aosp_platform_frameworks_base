@@ -42,7 +42,12 @@ class SpaSearchRepositoryTest {
             override fun getPageTitleForSearch(context: Context) = PAGE_TITLE
 
             override fun getSearchItems(context: Context) =
-                listOf(SearchablePage.SearchItem(itemTitle = ITEM_TITLE))
+                listOf(
+                    SearchablePage.SearchItem(
+                        highlightItemKey = HIGHLIGHT_ITEM_KEY,
+                        itemTitle = ITEM_TITLE,
+                    )
+                )
         }
 
     private val repository = SpaSearchRepository()
@@ -60,8 +65,6 @@ class SpaSearchRepositoryTest {
 
     @Test
     fun getSearchIndexablePageList() {
-        val searchItem = SearchablePage.SearchItem(ITEM_TITLE)
-
         val searchIndexablePageList = repository.getSearchIndexablePageList()
 
         assertThat(searchIndexablePageList).hasSize(1)
@@ -75,7 +78,9 @@ class SpaSearchRepositoryTest {
                     searchLandingKey =
                         SpaSearchLandingKey.newBuilder()
                             .setSpaPage(
-                                SpaSearchLandingSpaPage.newBuilder().setDestination(PAGE_NAME)
+                                SpaSearchLandingSpaPage.newBuilder()
+                                    .setDestination(PAGE_NAME)
+                                    .setHighlightItemKey(HIGHLIGHT_ITEM_KEY)
                             )
                             .build(),
                     pageTitle = PAGE_TITLE,
@@ -85,6 +90,7 @@ class SpaSearchRepositoryTest {
     }
 
     private companion object {
+        const val HIGHLIGHT_ITEM_KEY = "highlight_item_key"
         const val PAGE_NAME = "PageName"
         const val PAGE_TITLE = "Page Title"
         const val ITEM_TITLE = "Item Title"
