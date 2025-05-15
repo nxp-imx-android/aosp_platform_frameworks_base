@@ -703,7 +703,11 @@ public class EdgeBackGestureHandler {
                 }
                 Display display = mDisplayManager.getDisplay(displayId);
                 if (display == null) {
-                    Log.w(TAG, "createDisplayBackGestureHandler: can't find display");
+                    Log.w(TAG, "onDisplayAddSystemDecorations: can't find display");
+                    return;
+                }
+                if (display.getType() != Display.TYPE_EXTERNAL) {
+                    Log.w(TAG, "onDisplayAddSystemDecorations: display is not of TYPE_EXTERNAL");
                     return;
                 }
                 removeAndDisposeDisplayResource(displayId);
