@@ -27,7 +27,6 @@ import static android.companion.CompanionResources.PERMISSION_CONTACTS;
 import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
 import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
 import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
-import static android.companion.CompanionResources.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
 import static android.companion.CompanionResources.PERMISSION_PHONE;
 import static android.companion.CompanionResources.PERMISSION_SMS;
 import static android.companion.CompanionResources.PERMISSION_STORAGE;
@@ -57,15 +56,14 @@ public final class RolesUtils {
 
     private static final String TAG = "CDM_RolesUtils";
 
-    // Profile to permission sets - sync with CompanionDeviceResources
     public static final Map<String, List<Integer>> PROFILE_PERMISSION_SETS = Map.of(
-            DEVICE_PROFILE_COMPUTER, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+            DEVICE_PROFILE_COMPUTER, Arrays.asList(
                     PERMISSION_NOTIFICATIONS, PERMISSION_STORAGE),
-            DEVICE_PROFILE_WATCH, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+            DEVICE_PROFILE_WATCH, Arrays.asList(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_CALL_LOGS,
                     PERMISSION_SMS, PERMISSION_CONTACTS, PERMISSION_CALENDAR,
                     PERMISSION_NEARBY_DEVICES, PERMISSION_CHANGE_MEDIA_OUTPUT),
-            DEVICE_PROFILE_GLASSES, Arrays.asList(PERMISSION_NOTIFICATION_LISTENER_ACCESS,
+            DEVICE_PROFILE_GLASSES, Arrays.asList(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS,
                     PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES)
     );

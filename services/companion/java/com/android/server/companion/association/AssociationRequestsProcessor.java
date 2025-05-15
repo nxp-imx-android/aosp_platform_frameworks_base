@@ -214,8 +214,7 @@ public class AssociationRequestsProcessor {
         request.setPackageName(packageName);
         request.setUserId(userId);
         request.setSkipPrompt(mayAssociateWithoutPrompt(packageName, userId));
-        request.setRequestedPerms(getRequestedPermsForProfile(userId, packageName,
-                request.getDeviceProfile()));
+        request.setRequestedPerms(getPermsForProfile(request.getDeviceProfile()));
 
         // 2b.2. Prepare extras and create an Intent.
         final Bundle extras = new Bundle();
@@ -523,6 +522,16 @@ public class AssociationRequestsProcessor {
         return PackageUtils.isPackageAllowlisted(mContext, mPackageManagerInternal, packageName);
     }
 
+    private List<Integer> getPermsForProfile(String profile) {
+        if (profile == null || !PROFILE_PERMISSION_SETS.containsKey(profile)) {
+            return null;
+        }
+        return PROFILE_PERMISSION_SETS.get(profile);
+    }
+
+    /**
+     * Get app requested permissions for the profile.
+     */
     private ArrayList<Integer> getRequestedPermsForProfile(int userId, String packageName,
                                                            String profile) {
         if (profile == null || !PROFILE_PERMISSION_SETS.containsKey(profile)) {
