@@ -9606,6 +9606,23 @@ public final class Settings {
         public static final String EM_VALUE =
                 "em_value";
         /**
+         * Setting that specifies whether High Dynamic Range brightness is enabled.
+         *
+         * @hide
+         */
+        public static final String HDR_BRIGHTNESS_ENABLED =
+                "hdr_brightness_enabled";
+
+        /**
+         * Setting that specifies the intensity of the High Dynamic Range brightness. The range is
+         * [0, 1], which is which is used to scale the HDR/SDR ratio.
+         *
+         * @hide
+         */
+        public static final String HDR_BRIGHTNESS_BOOST_LEVEL =
+                "hdr_brightness_boost_level";
+
+        /**
          * List of the enabled print services.
          *
          * N and beyond uses {@link #DISABLED_PRINT_SERVICES}. But this might be used in an upgrade
