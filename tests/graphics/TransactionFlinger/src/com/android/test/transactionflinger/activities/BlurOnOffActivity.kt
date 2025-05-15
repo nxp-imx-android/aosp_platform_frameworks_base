@@ -65,7 +65,6 @@ class BlurOnOffActivity : SceneActivity() {
                 width = 0.5
                 height = 0.5
             }
-
             scene {
                 content { data, width, height ->
                     // SurfaceControl blurs don't work unless we draw a transparent buffer.

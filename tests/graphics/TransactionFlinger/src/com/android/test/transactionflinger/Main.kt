@@ -27,6 +27,7 @@ import android.widget.ExpandableListView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import com.android.test.transactionflinger.activities.BlurOnOffActivity
+import com.android.test.transactionflinger.activities.BlurRegionActivity
 import com.android.test.transactionflinger.activities.TrivialActivity
 import kotlin.reflect.KClass
 
@@ -42,7 +43,8 @@ private val AllDemos = listOf(
     DemoGroup(
         "Workloads", listOf(
             Demo("TrivialActivity", TrivialActivity::class),
-            Demo("BlurOnOffActivity", BlurOnOffActivity::class)
+            Demo("BlurOnOffActivity", BlurOnOffActivity::class),
+            Demo("BlurRegionActivity", BlurRegionActivity::class)
         )
     )
 )
