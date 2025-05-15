@@ -155,6 +155,7 @@ constructor(
                                                     shelfHeight =
                                                         controller.getShelfHeight().toFloat(),
                                                     stack = controller.view,
+                                                    reason = "getStackAbsoluteBottomOnLockscreen",
                                                 )
                                             },
                                         ),

@@ -8,6 +8,7 @@ import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.dagger.NotificationHeadsUpLog
 import com.android.systemui.log.dagger.NotificationRenderLog
 import com.android.systemui.log.dagger.ShadeLog
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR
@@ -209,6 +210,27 @@ constructor(
                 "updateSensitivenessWithAnimation from NSSL: animate=$bool1 " +
                     "anyProfilePublicMode(hideSensitive)=$bool2"
             },
+        )
+    }
+
+    fun childHeightUpdated(row: ExpandableNotificationRow, needsAnimation: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = row.key
+                bool1 = needsAnimation
+            },
+            { "childHeightUpdated: childKey: $str1 -- needsAnimation: $bool1" },
+        )
+    }
+
+    fun setMaxDisplayedNotifications(maxDisplayedNotifications: Int) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            { int1 = maxDisplayedNotifications },
+            { "setMaxDisplayedNotifications: $int1" },
         )
     }
 }

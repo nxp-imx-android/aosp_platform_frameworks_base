@@ -2585,7 +2585,8 @@ public class NotificationStackScrollLayout
         final int notificationsHeight = (int) mNotificationStackSizeCalculator.computeHeight(
                 /* notificationStackScrollLayout= */ this,
                 mMaxDisplayedNotifications,
-                shelfIntrinsicHeight
+                shelfIntrinsicHeight,
+                "updateIntrinsicStackHeight"
         );
         if (mScrollViewFields.getIntrinsicStackHeight() != notificationsHeight) {
             mScrollViewFields.setIntrinsicStackHeight(notificationsHeight);
@@ -2605,7 +2606,7 @@ public class NotificationStackScrollLayout
         final float height =
                 (int) scrimTopPadding + (int) mNotificationStackSizeCalculator.computeHeight(
                         /* notificationStackScrollLayout= */ this, mMaxDisplayedNotifications,
-                        shelfIntrinsicHeight);
+                        shelfIntrinsicHeight, "updateContentHeight");
         setIntrinsicContentHeight(height);
 
         // The topPadding can be bigger than the regular padding when qs is expanded, in that
@@ -4487,6 +4488,9 @@ public class NotificationStackScrollLayout
         ExpandableView firstVisibleChild =
                 firstSection == null ? null : firstSection.getFirstVisibleChild();
         if (row != null) {
+            if (mLogger != null) {
+                mLogger.childHeightUpdated(row, needsAnimation);
+            }
             if (row == firstVisibleChild
                     || row.getNotificationParent() == firstVisibleChild) {
                 updateAlgorithmLayoutMinHeight();
@@ -5294,6 +5298,9 @@ public class NotificationStackScrollLayout
 
     public void setMaxDisplayedNotifications(int maxDisplayedNotifications) {
         if (mMaxDisplayedNotifications != maxDisplayedNotifications) {
+            if (mLogger != null) {
+                mLogger.setMaxDisplayedNotifications(maxDisplayedNotifications);
+            }
             mMaxDisplayedNotifications = maxDisplayedNotifications;
             if (SceneContainerFlag.isEnabled()) {
                 updateIntrinsicStackHeight();

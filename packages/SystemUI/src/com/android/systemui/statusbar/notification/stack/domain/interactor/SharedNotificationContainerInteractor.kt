@@ -50,6 +50,7 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     largeScreenHeaderHelperLazy: Lazy<LargeScreenHeaderHelper>,
+    private val logger: SharedNotificationContainerInteractorLogger?,
 ) {
 
     private val _topPosition = MutableStateFlow(0f)
@@ -115,6 +116,7 @@ constructor(
 
     /** An internal modification was made to notifications */
     fun notificationStackChanged() {
+        logger?.notificationStackChanged()
         _notificationStackChanged.value = _notificationStackChanged.value + 1
     }
 
