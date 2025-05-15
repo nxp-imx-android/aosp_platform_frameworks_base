@@ -414,7 +414,8 @@ public class MediaQualityService extends SystemService {
             int callingUid = Binder.getCallingUid();
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                     + BaseParameters.PARAMETER_NAME + " = ? AND "
-                    + BaseParameters.PARAMETER_PACKAGE + " = ?";
+                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " IS NULL";
             String[] selectionArguments = {
                     Integer.toString(type), name, getPackageOfUid(callingUid)};
 
@@ -430,10 +431,11 @@ public class MediaQualityService extends SystemService {
                         return null;
                     }
                     if (count > 1) {
-                        Log.wtf(TAG, TextUtils.formatSimple(String.valueOf(Locale.US), "%d "
-                                        + "entries found for type=%d and name=%s in %s. Should"
-                                        + " only ever be 0 or 1.", count, type, name,
-                                mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME));
+                        Log.wtf(TAG,
+                                TextUtils.formatSimple("%d entries found for type=%d and name=%s "
+                                                       + "in %s. Should only ever be 0 or 1.",
+                                        count, type, name,
+                                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME));
                         return null;
                     }
                     cursor.moveToFirst();
