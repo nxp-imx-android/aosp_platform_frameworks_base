@@ -154,6 +154,46 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         }
     }
 
+    static int calculateHeadsetState(int headsetState, int switchValues, int switchMask) {
+        // Assumptions:
+        // 1. Events will only be plug 1 device or unplug 1 device.
+        //    It would not have plug and unplug in the same time.
+        // 2. events for LINEOUT devices won't have a mask that
+        //    is SW_AVOUT_INSERT_BITS
+        int newHeadsetState = headsetState;
+        if ((switchMask & SW_HEADSET_INSERT_BITS) != 0) {
+            int clearMask = BIT_HEADSET | BIT_HEADSET_NO_MIC;
+
+            newHeadsetState = newHeadsetState & ~clearMask;
+            int device = switch(switchValues & SW_HEADSET_INSERT_BITS) {
+                case SW_HEADPHONE_INSERT_BIT -> BIT_HEADSET_NO_MIC;
+                case SW_MICROPHONE_INSERT_BIT -> BIT_HEADSET;
+                case SW_HEADSET_INSERT_BITS -> BIT_HEADSET;
+                default -> 0;
+            };
+            newHeadsetState = newHeadsetState | device;
+        }
+
+        if ((switchMask & SW_AVOUT_INSERT_BITS) != 0) {
+            int clearMask = switch(switchMask & SW_AVOUT_INSERT_BITS) {
+                case SW_LINEOUT_INSERT_BIT -> BIT_LINEOUT;
+                case SW_AVOUT_INSERT_BITS -> BIT_HDMI_AUDIO;
+                default -> 0;
+            };
+
+            newHeadsetState = newHeadsetState & ~clearMask;
+            int device = switch(switchValues & SW_AVOUT_INSERT_BITS) {
+                case SW_LINEOUT_INSERT_BIT -> BIT_LINEOUT;
+                case SW_AVOUT_INSERT_BITS -> BIT_HDMI_AUDIO;
+                default -> 0;
+            };
+
+            newHeadsetState = newHeadsetState | device;
+        }
+
+        return newHeadsetState;
+    }
+
     @Override
     public void notifyWiredAccessoryChanged(
             long whenNanos, int switchValues, int switchMask) {
@@ -169,41 +209,8 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         }
 
         synchronized (mLock) {
-            // Assumptions:
-            // 1. Events will only be plug 1 device or unplug 1 device.
-            //    It would not have plug and unplug in the same time.
-            // 2. events for LINEOUT devices won't have a mask that
-            //    is SW_AVOUT_INSERT_BITS
-            int newHeadsetState = mHeadsetState;
-            if ((switchMask & SW_HEADSET_INSERT_BITS) != 0) {
-                int clearMask = BIT_HEADSET | BIT_HEADSET_NO_MIC;
-
-                newHeadsetState = newHeadsetState & ~clearMask;
-                int device = switch(switchValues & SW_HEADSET_INSERT_BITS) {
-                    case SW_HEADPHONE_INSERT_BIT -> BIT_HEADSET_NO_MIC;
-                    case SW_MICROPHONE_INSERT_BIT -> BIT_HEADSET;
-                    case SW_HEADSET_INSERT_BITS -> BIT_HEADSET;
-                    default -> 0;
-                };
-                newHeadsetState = newHeadsetState | device;
-            }
-
-            if ((switchMask & SW_AVOUT_INSERT_BITS) != 0) {
-                int clearMask = switch(switchMask & SW_AVOUT_INSERT_BITS) {
-                    case SW_LINEOUT_INSERT_BIT -> BIT_LINEOUT;
-                    case SW_AVOUT_INSERT_BITS -> BIT_HDMI_AUDIO;
-                    default -> 0;
-                };
-
-                newHeadsetState = newHeadsetState & ~clearMask;
-                int device = switch(switchValues & SW_AVOUT_INSERT_BITS) {
-                    case SW_LINEOUT_INSERT_BIT -> BIT_LINEOUT;
-                    case SW_AVOUT_INSERT_BITS -> BIT_HDMI_AUDIO;
-                    default -> 0;
-                };
-
-                newHeadsetState = newHeadsetState | device;
-            }
+            // Extracting the logic for unit test
+            int newHeadsetState = calculateHeadsetState(mHeadsetState, switchValues, switchMask);
 
             updateLocked(NAME_H2W, newHeadsetState, isSynchronous);
         }
