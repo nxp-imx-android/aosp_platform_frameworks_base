@@ -17,6 +17,7 @@
 package com.android.server.pm
 
 import android.app.role.RoleManager
+import android.app.supervision.SupervisionManager
 import android.content.pm.Flags
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -48,6 +49,8 @@ open class ProtectedPackagesMockedTest {
 
     @Mock lateinit var roleManager: RoleManager
 
+    @Mock lateinit var supervisionManager: SupervisionManager
+
     lateinit var protectedPackages: ProtectedPackages
 
     @Before
@@ -61,6 +64,9 @@ open class ProtectedPackagesMockedTest {
             .thenReturn(listOf(SUPERVISION_PKG))
         whenever(rule.mocks().context.getSystemService(RoleManager::class.java))
             .thenReturn(roleManager)
+        whenever(supervisionManager.isSupervisionEnabled()).thenReturn(true)
+        whenever(rule.mocks().context.getSystemService(SupervisionManager::class.java))
+            .thenReturn(supervisionManager)
         protectedPackages = ProtectedPackages(rule.mocks().context)
     }
 
@@ -103,9 +109,39 @@ open class ProtectedPackagesMockedTest {
     @Test
     @Throws(Exception::class)
     @EnableFlags(Flags.FLAG_PROTECT_SUPERVISION_PACKAGES)
+    fun testIsPackageProtected_supervisionDisabled_flagEnabled_returnsFalse() {
+        whenever(supervisionManager.isSupervisionEnabled()).thenReturn(false)
+
+        val stateProtected =
+            protectedPackages.isPackageStateProtected(TEST_USER_ID, SUPERVISION_PKG)
+        val dataProtected = protectedPackages.isPackageDataProtected(TEST_USER_ID, SUPERVISION_PKG)
+
+        assertThat(stateProtected).isFalse()
+        assertThat(dataProtected).isFalse()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    @EnableFlags(Flags.FLAG_PROTECT_SUPERVISION_PACKAGES)
     /* This case should not happen. Is is covered here for completeness. */
     fun testIsPackageProtected_missingRoleManager_flagEnabled_returnsFalse() {
         whenever(rule.mocks().context.getSystemService(RoleManager::class.java)).thenReturn(null)
+
+        val stateProtected =
+            protectedPackages.isPackageStateProtected(TEST_USER_ID, SUPERVISION_PKG)
+        val dataProtected = protectedPackages.isPackageDataProtected(TEST_USER_ID, SUPERVISION_PKG)
+
+        assertThat(stateProtected).isFalse()
+        assertThat(dataProtected).isFalse()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    @EnableFlags(Flags.FLAG_PROTECT_SUPERVISION_PACKAGES)
+    /* This case should not happen. Is is covered here for completeness. */
+    fun testIsPackageProtected_missingSupervisionManager_flagEnabled_returnsFalse() {
+        whenever(rule.mocks().context.getSystemService(SupervisionManager::class.java))
+            .thenReturn(null)
 
         val stateProtected =
             protectedPackages.isPackageStateProtected(TEST_USER_ID, SUPERVISION_PKG)
