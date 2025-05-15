@@ -549,10 +549,13 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private void initBundleDimens() {
+        Resources res = getResources();
         NotificationBundleUi.unsafeAssertInNewMode();
         mCollapsedHeaderMargin = mHeaderHeight;
         mAdditionalExpandedHeaderMargin = 0;
         mCollapsedBottomPadding = 0;
+        mDividerHeight = res.getDimensionPixelOffset(
+                R.dimen.bundle_children_container_divider_height);
     }
 
     /**

@@ -827,6 +827,9 @@
          group. -->
     <dimen name="notification_children_container_divider_height">0.5dp</dimen>
 
+    <!-- The height of the divider between the individual notifications within a bundle -->
+    <dimen name="bundle_children_container_divider_height">2dp</dimen>
+
     <!-- The horizontal margin of the content in the notification shade -->
     <dimen name="notification_shade_content_margin_horizontal">16dp</dimen>
 
