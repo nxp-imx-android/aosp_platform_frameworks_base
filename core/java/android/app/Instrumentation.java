@@ -1241,8 +1241,10 @@ public class Instrumentation {
      * @see #sendKeySync(KeyEvent)
      */
     public void sendKeyDownUpSync(int keyCode) {
-        sendKeySync(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-        sendKeySync(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+        long downtime = SystemClock.uptimeMillis();
+        sendKeySync(new KeyEvent(downtime, downtime, KeyEvent.ACTION_DOWN, keyCode, 0 /*repeat*/));
+        sendKeySync(new KeyEvent(downtime, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, keyCode,
+                0 /*repeat*/));
     }
 
     /**
