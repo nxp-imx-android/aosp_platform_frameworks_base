@@ -5018,11 +5018,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     private void updateScaleIfNeeded() {
-        if (!isVisibleRequested() && !(mIsWallpaper && mToken.isVisible())) {
-            // Skip if it is requested to be invisible, but if it is wallpaper, it may be in
-            // transition that still needs to update the scale for zoom effect.
-            return;
-        }
         float globalScale = mGlobalScale;
         final WindowState parent = getParentWindow();
         if (parent != null) {
@@ -5045,7 +5040,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             updateSurfacePositionNonOrganized();
             // Send information to SurfaceFlinger about the priority of the current window.
             updateFrameRateSelectionPriorityIfNeeded();
-            updateScaleIfNeeded();
+            if (isVisibleRequested()) {
+                updateScaleIfNeeded();
+            }
             mWinAnimator.prepareSurfaceLocked(getPendingTransaction());
             applyDims();
         }
@@ -5844,6 +5841,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mXOffset = dx;
         mYOffset = dy;
         mWallpaperScale = scale;
+        updateScaleIfNeeded();
         scheduleAnimation();
         return true;
     }
