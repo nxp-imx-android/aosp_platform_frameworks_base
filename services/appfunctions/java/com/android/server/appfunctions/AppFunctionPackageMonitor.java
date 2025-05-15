@@ -30,6 +30,7 @@ import android.os.UserHandle;
 import android.util.Slog;
 
 import com.android.internal.content.PackageMonitor;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
 
 import java.util.ArrayList;
@@ -42,8 +43,6 @@ import java.util.Objects;
  */
 public class AppFunctionPackageMonitor extends PackageMonitor {
     private static final String TAG = AppFunctionPackageMonitor.class.getSimpleName();
-    private static final HandlerThread BACKGROUND_HANDLER_THREAD =
-            new HandlerThread(TAG + "-HandlerThread", Process.THREAD_PRIORITY_BACKGROUND);
 
     private final AppSearchManager mAppSearchManager;
 
@@ -134,12 +133,8 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
         AppFunctionPackageMonitor monitor =
                 new AppFunctionPackageMonitor(context, user.getUserHandle());
 
-        if (BACKGROUND_HANDLER_THREAD.getState() == Thread.State.NEW) {
-            BACKGROUND_HANDLER_THREAD.start();
-        }
-
         monitor.register(
-                context, user.getUserHandle(), BACKGROUND_HANDLER_THREAD.getThreadHandler());
+                context, user.getUserHandle(), BackgroundThread.getHandler());
         return monitor;
     }
 }
