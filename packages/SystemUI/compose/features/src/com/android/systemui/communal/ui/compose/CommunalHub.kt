@@ -201,6 +201,7 @@ import com.android.systemui.communal.ui.viewmodel.ResizeInfo
 import com.android.systemui.communal.ui.viewmodel.ResizeableItemFrameViewModel
 import com.android.systemui.communal.util.DensityUtils.Companion.adjustedDp
 import com.android.systemui.communal.util.ResizeUtils.resizeOngoingItems
+import com.android.systemui.communal.util.WindowSizeUtils
 import com.android.systemui.communal.widgets.SmartspaceAppWidgetHostView
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.lifecycle.rememberViewModel
@@ -1186,29 +1187,10 @@ private fun Toolbar(
             targetValue = if (removeEnabled) 1f else 0.5f,
             label = "RemoveButtonAlphaAnimation",
         )
-    val orientation = LocalConfiguration.current.orientation
-    val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
-
-    val toolbarPaddingTop =
-        if (communalResponsiveGrid()) {
-            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                displayCutoutPaddings.calculateTopPadding()
-            } else {
-                Dimensions.ToolbarPaddingVertical
-            }
-        } else {
-            Dimensions.ToolbarPaddingTop
-        }
-
+    val toolbarPadding = toolbarPadding()
     Box(
         modifier =
-            Modifier.fillMaxWidth()
-                .padding(
-                    top = toolbarPaddingTop,
-                    start = Dimensions.ToolbarPaddingHorizontal,
-                    end = Dimensions.ToolbarPaddingHorizontal,
-                )
-                .onSizeChanged { setToolbarSize(it) }
+            Modifier.fillMaxWidth().padding(toolbarPadding).onSizeChanged { setToolbarSize(it) }
     ) {
         val addWidgetText = stringResource(R.string.hub_mode_add_widget_button_text)
 
@@ -1964,9 +1946,15 @@ private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): Padd
     val screenHeight = with(density) { windowMetrics.bounds.height().toDp() }
     val toolbarHeight = with(density) { toolbarSize.height.toDp() }
     return if (communalResponsiveGrid()) {
+        // In edit mode, grid spans full screen so min top padding of the grid should include space
+        // taken by toolbar.
+        val toolbarPadding = toolbarPadding()
         // Add extra padding to render the widget outline which draws behind the selected widget.
-        val extraTopPadding =
-            toolbarHeight + Dimensions.ToolbarPaddingVertical * 2 + Dimensions.WidgetOutlinePadding
+        val topPadding =
+            toolbarPadding.calculateTopPadding() +
+                toolbarHeight +
+                toolbarPadding.calculateBottomPadding() +
+                Dimensions.WidgetOutlinePadding
         responsiveGridPaddingsWithInsets(
             horizontalPadding =
                 if (isCompactWindow()) {
@@ -1974,7 +1962,7 @@ private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): Padd
                 } else {
                     Dimensions.ItemSpacing
                 },
-            verticalPadding = extraTopPadding,
+            verticalPadding = topPadding,
             isEditMode = true,
         )
     } else {
@@ -2010,6 +1998,33 @@ private fun CommunalContentSize.FixedSize.dp(): Dp {
     }
 }
 
+@Composable
+private fun toolbarPadding(): PaddingValues {
+    if (!communalResponsiveGrid()) {
+        return PaddingValues(
+            top = Dimensions.ToolbarPaddingTop,
+            start = Dimensions.ToolbarPaddingHorizontal,
+            end = Dimensions.ToolbarPaddingHorizontal,
+        )
+    }
+    val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
+    val horizontalPadding = hubDimensions.toolbarHorizontalPadding
+    val bottomPadding = hubDimensions.toolbarBottomPadding
+
+    return remember(displayCutoutPaddings, horizontalPadding, bottomPadding) {
+        // Depending on camera location, there can be no cutout paddings, set a min value
+        val topPadding =
+            displayCutoutPaddings.calculateTopPadding().coerceAtLeast(Dimensions.ToolbarPaddingTop)
+
+        PaddingValues(
+            start = horizontalPadding,
+            top = topPadding,
+            end = horizontalPadding,
+            bottom = bottomPadding,
+        )
+    }
+}
+
 private fun firstIndexAtOffset(gridState: LazyGridState, offset: Offset): Int? =
     gridState.layoutInfo.visibleItemsInfo.firstItemAtOffset(offset)?.index
 
@@ -2039,6 +2054,32 @@ class Dimensions(val context: Context, val config: Configuration) {
     val GridHeight: Dp
         get() = CardHeightFull + GridTopSpacing
 
+    /** Responsive grid toolbar bottom padding. */
+    val toolbarBottomPadding: Dp
+        get() {
+            val windowSizeCategory = WindowSizeUtils.getWindowSizeCategory(context)
+            return if (windowSizeCategory == WindowSizeUtils.WindowSizeCategory.MOBILE_LANDSCAPE) {
+                6.adjustedDp
+            } else {
+                0.adjustedDp
+            }
+        }
+
+    /** Responsive grid toolbar horizontal padding. */
+    val toolbarHorizontalPadding: Dp
+        get() {
+            val windowSizeCategory = WindowSizeUtils.getWindowSizeCategory(context)
+            return if (windowSizeCategory == WindowSizeUtils.WindowSizeCategory.TABLET) {
+                if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    18.adjustedDp
+                } else {
+                    12.adjustedDp
+                }
+            } else {
+                9.adjustedDp
+            }
+        }
+
     companion object {
         val CardHeightFull
             get() = 530.adjustedDp
@@ -2066,13 +2107,10 @@ class Dimensions(val context: Context, val config: Configuration) {
 
         // The sizing/padding of the toolbar in glanceable hub edit mode
         val ToolbarPaddingTop
-            get() = 27.adjustedDp
+            get() = if (communalResponsiveGrid()) 12.adjustedDp else 27.adjustedDp
 
         val ToolbarPaddingHorizontal
             get() = ItemSpacing
-
-        val ToolbarPaddingVertical
-            get() = 6.adjustedDp
 
         val ToolbarButtonPaddingHorizontal
             get() = 24.adjustedDp
