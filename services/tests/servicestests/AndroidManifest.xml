@@ -144,6 +144,7 @@
                 android:resource="@xml/test_magnification_a11y_service" />
         </service>
         <activity android:name="com.android.server.accessibility.integration.FullScreenMagnificationMouseFollowingTest$TestActivity" />
+        <activity android:name="com.android.server.accessibility.integration.AutoclickClickTypeTests$TestClickActivity" />
 
         <service android:name="com.android.server.accounts.TestAccountType1AuthenticatorService"
              android:exported="false">
