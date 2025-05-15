@@ -830,6 +830,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_affectsAlpha() =
         testScope.runTest {
@@ -851,6 +852,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_alphaResetOnCommunalNotShowing() =
         testScope.runTest {
@@ -883,6 +885,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun dragDownShadeOverGlanceableHub_v2Disabled_alphaRemainsZero() =
         testScope.runTest {
@@ -915,6 +918,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     @EnableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Enabled_alphaDoesNotChange() =
         testScope.runTest {
