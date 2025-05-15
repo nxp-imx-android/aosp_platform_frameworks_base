@@ -38,7 +38,7 @@ import java.io.PrintWriter;
 /**
  * Calculates the default, normal, entry, inset and movement bounds of the PIP.
  */
-public class PipBoundsAlgorithm {
+public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListener {
 
     private static final String TAG = PipBoundsAlgorithm.class.getSimpleName();
     private static final float INVALID_SNAP_FRACTION = -1f;
@@ -63,6 +63,7 @@ public class PipBoundsAlgorithm {
         mSnapAlgorithm = pipSnapAlgorithm;
         mPipKeepClearAlgorithm = pipKeepClearAlgorithm;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mSizeSpecSource = sizeSpecSource;
         reloadResources(context);
         // Initialize the aspect ratio to the default aspect ratio.  Don't do this in reload
@@ -96,6 +97,11 @@ public class PipBoundsAlgorithm {
 
     /** Responds to configuration change. */
     public void onConfigurationChanged(Context context) {
+        reloadResources(context);
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
         reloadResources(context);
     }
 

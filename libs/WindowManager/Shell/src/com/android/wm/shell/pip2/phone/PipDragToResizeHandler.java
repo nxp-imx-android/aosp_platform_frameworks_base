@@ -38,7 +38,7 @@ import java.util.function.Function;
 
 /** Helper for handling drag-corner-to-resize gestures. */
 public class PipDragToResizeHandler {
-    private final Context mContext;
+    private Context mContext;
     private final PipResizeGestureHandler mPipResizeGestureHandler;
     private final PipBoundsState mPipBoundsState;
     private final PhonePipMenuController mPhonePipMenuController;
@@ -69,7 +69,8 @@ public class PipDragToResizeHandler {
     }
 
     /** Invoked by {@link PipResizeGestureHandler#reloadResources}. */
-    void reloadResources() {
+    void reloadResources(Context context) {
+        mContext = context;
         final Resources res = mContext.getResources();
         mDelta = res.getDimensionPixelSize(R.dimen.pip_resize_edge_size);
     }
