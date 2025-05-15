@@ -16,10 +16,13 @@
 
 package com.android.server.vibrator;
 
+import static android.os.VibrationAttributes.USAGE_GESTURE_INPUT;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
 import android.os.vibrator.Flags;
@@ -118,6 +121,9 @@ final class HapticFeedbackCustomization {
     @NonNull
     private final SparseArray<VibrationEffect> mHapticCustomizationsForSourceTouchScreen;
 
+    @NonNull
+    private final SparseArray<VibrationEffect> mHapticCustomizationsForUsageGestureInput;
+
     HapticFeedbackCustomization(Resources res, VibratorInfo vibratorInfo) {
         // Load base customizations.
         SparseArray<VibrationEffect> hapticCustomizations;
@@ -142,20 +148,38 @@ final class HapticFeedbackCustomization {
             mHapticCustomizationsForSourceRotary = new SparseArray<>();
             mHapticCustomizationsForSourceTouchScreen = new SparseArray<>();
         }
+
+        // Load customizations specified for usages.
+        if (android.os.vibrator.Flags.hapticFeedbackWithCustomUsage()) {
+            mHapticCustomizationsForUsageGestureInput =
+                    loadCustomizedFeedbackVibrationFromRes(res, vibratorInfo,
+                            R.xml.haptic_feedback_customization_usage_gesture_input);
+        } else {
+            mHapticCustomizationsForUsageGestureInput = new SparseArray<>();
+        }
     }
 
     @VisibleForTesting
     HapticFeedbackCustomization(@NonNull SparseArray<VibrationEffect> hapticCustomizations,
             @NonNull SparseArray<VibrationEffect> hapticCustomizationsForSourceRotary,
-            @NonNull SparseArray<VibrationEffect> hapticCustomizationsForSourceTouchScreen) {
+            @NonNull SparseArray<VibrationEffect> hapticCustomizationsForSourceTouchScreen,
+            @NonNull SparseArray<VibrationEffect> hapticCustomizationsForUsageGestureInput) {
         mHapticCustomizations = hapticCustomizations;
         mHapticCustomizationsForSourceRotary = hapticCustomizationsForSourceRotary;
         mHapticCustomizationsForSourceTouchScreen = hapticCustomizationsForSourceTouchScreen;
+        mHapticCustomizationsForUsageGestureInput = hapticCustomizationsForUsageGestureInput;
     }
 
     @Nullable
-    VibrationEffect getEffect(int effectId) {
-        return mHapticCustomizations.get(effectId);
+    VibrationEffect getEffect(int effectId, @VibrationAttributes.Usage int usage) {
+        VibrationEffect resultVibration = null;
+        if (usage == USAGE_GESTURE_INPUT) {
+            resultVibration = mHapticCustomizationsForUsageGestureInput.get(effectId);
+        }
+        if (resultVibration == null) {
+            resultVibration = mHapticCustomizations.get(effectId);
+        }
+        return resultVibration;
     }
 
     @Nullable

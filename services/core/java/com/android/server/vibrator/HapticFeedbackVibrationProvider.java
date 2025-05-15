@@ -70,7 +70,7 @@ public final class HapticFeedbackVibrationProvider {
         mHapticFeedbackCustomization = hapticFeedbackCustomization;
 
         VibrationEffect safeModeVibration = mHapticFeedbackCustomization.getEffect(
-                HapticFeedbackConstants.SAFE_MODE_ENABLED);
+                HapticFeedbackConstants.SAFE_MODE_ENABLED, VibrationAttributes.USAGE_UNKNOWN);
         mSafeModeEnabledVibrationEffect = safeModeVibration != null ? safeModeVibration
                 : VibrationSettings.createEffectFromResource(res,
                         com.android.internal.R.array.config_safeModeEnabledVibePattern);
@@ -87,14 +87,17 @@ public final class HapticFeedbackVibrationProvider {
      * {@link HapticFeedbackConstants}).
      *
      * @param effectId the haptic feedback effect ID whose respective vibration we want to get.
+     * @param usage the {@link VibrationAttributes} usage for the haptic feedback.
      * @return a {@link VibrationEffect} for the given haptic feedback effect ID, or {@code null} if
      *          the provided effect ID is not supported.
      */
-    @Nullable public VibrationEffect getVibration(int effectId) {
+    @Nullable public VibrationEffect getVibration(
+            int effectId, @VibrationAttributes.Usage int usage) {
         if (!isFeedbackConstantEnabled(effectId)) {
             return null;
         }
-        VibrationEffect customizedVibration = mHapticFeedbackCustomization.getEffect(effectId);
+        VibrationEffect customizedVibration =
+                mHapticFeedbackCustomization.getEffect(effectId, usage);
         if (customizedVibration != null) {
             return customizedVibration;
         }

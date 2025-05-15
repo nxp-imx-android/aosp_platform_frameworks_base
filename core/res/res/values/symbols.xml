@@ -5917,6 +5917,7 @@
   <java-symbol type="xml" name="haptic_feedback_customization" />
   <java-symbol type="xml" name="haptic_feedback_customization_source_rotary_encoder" />
   <java-symbol type="xml" name="haptic_feedback_customization_source_touchscreen" />
+  <java-symbol type="xml" name="haptic_feedback_customization_usage_gesture_input" />
 
   <!-- For ActivityManager PSS profiling configurability -->
   <java-symbol type="bool" name="config_am_disablePssProfiling" />
