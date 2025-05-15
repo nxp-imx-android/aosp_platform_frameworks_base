@@ -182,9 +182,11 @@ public final class BrightnessEvent {
     }
 
     /**
-     * A utility to compare two BrightnessEvents. This purposefully ignores comparing time as the
-     * two events might have been created at different times, but essentially hold the same
+     * A utility to compare two BrightnessEvents. This purposefully ignores comparing time and last
+     * read lux because:
+     * - the two events might have been created at different times, but essentially hold the same
      * underlying values
+     * - new lux readings arrive often
      *
      * @param that The brightnessEvent with which the current brightnessEvent is to be compared
      * @return A boolean value representing if the two events are same or not.
@@ -200,8 +202,6 @@ public final class BrightnessEvent {
                 && mDisplayStateReason == that.mDisplayStateReason
                 && mDisplayPolicy == that.mDisplayPolicy
                 && Float.floatToRawIntBits(mLux) == Float.floatToRawIntBits(that.mLux)
-                && Float.floatToRawIntBits(mLastReadLux) == Float.floatToRawIntBits(
-                that.mLastReadLux)
                 && Float.floatToRawIntBits(mPreThresholdLux)
                 == Float.floatToRawIntBits(that.mPreThresholdLux)
                 && Float.floatToRawIntBits(mNits) == Float.floatToRawIntBits(that.mNits)
