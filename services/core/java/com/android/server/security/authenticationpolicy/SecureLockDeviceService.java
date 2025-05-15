@@ -18,6 +18,8 @@ package com.android.server.security.authenticationpolicy;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
@@ -25,8 +27,10 @@ import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.wm.WindowManagerInternal;
 
 /**
  * System service for remotely calling secure lock on the device.
@@ -43,13 +47,24 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     private static final String TAG = "SecureLockDeviceService";
     private final Context mContext;
 
-    public SecureLockDeviceService(@NonNull Context context) {
+    private final PowerManager mPowerManager;
+
+    // Not final because initialized after SecureLockDeviceService in SystemServer
+    private WindowManagerInternal mWindowManagerInternal;
+
+    SecureLockDeviceService(@NonNull Context context) {
         mContext = context;
+        mPowerManager = context.getSystemService(PowerManager.class);
     }
 
     private void start() {
         // Expose private service for system components to use.
         LocalServices.addService(SecureLockDeviceServiceInternal.class, this);
+    }
+
+    @VisibleForTesting
+    void onLockSettingsReady() {
+        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
     }
 
     /**
@@ -64,9 +79,15 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     @Override
     @EnableSecureLockDeviceRequestStatus
     public int enableSecureLockDevice(EnableSecureLockDeviceParams params) {
-        // (1) Call into system_server to lock device, configure allowed auth types
-        // for secure lock
-        // TODO: lock device, configure allowed authentication types for device entry
+        // TODO: Call into system_server to configure allowed auth types for device entry
+
+        // Power off the display
+        mPowerManager.goToSleep(SystemClock.uptimeMillis(),
+                PowerManager.GO_TO_SLEEP_REASON_DEVICE_ADMIN, 0);
+
+        // Lock the device
+        mWindowManagerInternal.lockNow();
+
         // (2) Call into framework to configure secure lock 2FA lockscreen
         // update, UI & string updates
         // TODO: implement 2FA lockscreen when SceneContainerFlag.isEnabled()
@@ -115,6 +136,14 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             Slog.i(TAG, "Starting SecureLockDeviceService");
             mService.start();
             Slog.i(TAG, "Started SecureLockDeviceService");
+        }
+
+        @Override
+        public void onBootPhase(int phase) {
+            if (phase == PHASE_LOCK_SETTINGS_READY) {
+                Slog.i(TAG, "onBootPhase(PHASE_LOCK_SETTINGS_READY)");
+                mService.onLockSettingsReady();
+            }
         }
     }
 }
