@@ -205,6 +205,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     boundsDp,
                     displayId,
                     startDisplayId,
+                    desktopWindowDecoration.leash,
                     desktopWindowDecoration.mTaskInfo,
                     displayIds,
                     transactionSupplier,

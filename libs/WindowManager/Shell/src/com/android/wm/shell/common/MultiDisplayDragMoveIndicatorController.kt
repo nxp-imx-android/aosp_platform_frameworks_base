@@ -51,11 +51,14 @@ class MultiDisplayDragMoveIndicatorController(
         boundsDp: RectF,
         currentDisplayId: Int,
         startDisplayId: Int,
+        taskLeash: SurfaceControl,
         taskInfo: RunningTaskInfo,
         displayIds: Set<Int>,
         transactionSupplier: () -> SurfaceControl.Transaction,
     ) {
         desktopExecutor.execute {
+            val startDisplayDpi =
+                displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return@execute
             for (displayId in displayIds) {
                 if (
                     displayId == startDisplayId ||
@@ -102,12 +105,7 @@ class MultiDisplayDragMoveIndicatorController(
                     transaction.apply()
                 }
                     ?: run {
-                        val newIndicator =
-                            indicatorSurfaceFactory.create(
-                                taskInfo,
-                                displayController.getDisplay(displayId),
-                                displayContext,
-                            )
+                        val newIndicator = indicatorSurfaceFactory.create(displayContext, taskLeash)
                         newIndicator.show(
                             transactionSupplier(),
                             taskInfo,
@@ -115,6 +113,7 @@ class MultiDisplayDragMoveIndicatorController(
                             displayId,
                             boundsPx,
                             visibility,
+                            displayLayout.densityDpi().toFloat() / startDisplayDpi.toFloat(),
                         )
                         dragIndicatorsForTask[displayId] = newIndicator
                     }

@@ -20,7 +20,6 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.RectF
 import android.testing.TestableResources
-import android.view.Display
 import android.view.SurfaceControl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -54,13 +53,13 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
     private val desktopState = FakeDesktopState()
 
-    private val indicatorSurface0 = mock<MultiDisplayDragMoveIndicatorSurface>()
-    private val indicatorSurface1 = mock<MultiDisplayDragMoveIndicatorSurface>()
+    private val indicatorSurface = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
     private val transactionSupplier = mock<Supplier<SurfaceControl.Transaction>>()
     private val taskInfo = mock<RunningTaskInfo>()
-    private val display0 = mock<Display>()
-    private val display1 = mock<Display>()
+    private val taskLeash = mock<SurfaceControl>()
+    private lateinit var spyDisplayLayout0: DisplayLayout
+    private lateinit var spyDisplayLayout1: DisplayLayout
 
     private lateinit var resources: TestableResources
     private val executor = TestShellExecutor()
@@ -83,19 +82,16 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 desktopState,
             )
 
-        val spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
-        val spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
+        TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        spyDisplayLayout0 = TestDisplay.DISPLAY_0.getSpyDisplayLayout(resources.resources)
+        spyDisplayLayout1 = TestDisplay.DISPLAY_1.getSpyDisplayLayout(resources.resources)
 
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
-        whenever(displayController.getDisplayContext(any())).thenReturn(mContext)
-        whenever(displayController.getDisplay(0)).thenReturn(display0)
-        whenever(displayController.getDisplay(1)).thenReturn(display1)
-        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display0), any()))
-            .thenReturn(indicatorSurface0)
-        whenever(indicatorSurfaceFactory.create(eq(taskInfo), eq(display1), any()))
-            .thenReturn(indicatorSurface1)
+        whenever(displayController.getDisplayContext(1)).thenReturn(mContext)
+        whenever(indicatorSurfaceFactory.create(eq(mContext), eq(taskLeash)))
+            .thenReturn(indicatorSurface)
         whenever(transactionSupplier.get()).thenReturn(transaction)
         desktopState.canEnterDesktopMode = true
     }
@@ -106,6 +102,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             RectF(2000f, 2000f, 2100f, 2200f), // not intersect with any display
             currentDisplayId = 0,
             startDisplayId = 0,
+            taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
         ) {
@@ -113,7 +110,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
 
     @Test
@@ -122,6 +119,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
             currentDisplayId = 0,
             startDisplayId = 0,
+            taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
         ) {
@@ -129,7 +127,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
 
     @Test
@@ -140,12 +138,15 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
             currentDisplayId = 1,
             startDisplayId = 0,
+            taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) { transaction }
+        ) {
+            transaction
+        }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any(), any())
+        verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
 
     @Test
@@ -154,6 +155,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
             currentDisplayId = 1,
             startDisplayId = 0,
+            taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
         ) {
@@ -161,8 +163,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         }
         executor.flushAll()
 
-        verify(indicatorSurfaceFactory, times(1)).create(eq(taskInfo), eq(display1), any())
-        verify(indicatorSurface1, times(1))
+        verify(indicatorSurfaceFactory, times(1)).create(eq(mContext), eq(taskLeash))
+        verify(indicatorSurface, times(1))
             .show(
                 transaction,
                 taskInfo,
@@ -170,12 +172,14 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 1,
                 Rect(0, 1800, 200, 2400),
                 MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+                spyDisplayLayout1.densityDpi().toFloat() / spyDisplayLayout0.densityDpi().toFloat(),
             )
 
         controller.onDragMove(
             RectF(2000f, 2000f, 2100f, 2200f), // not intersect with display 1
             currentDisplayId = 0,
             startDisplayId = 0,
+            taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
         ) {
@@ -185,7 +189,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             executor.flushAll()
         }
 
-        verify(indicatorSurface1, times(1))
+        verify(indicatorSurface, times(1))
             .relayout(
                 any(),
                 eq(transaction),
@@ -197,7 +201,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             executor.flushAll()
         }
 
-        verify(indicatorSurface1, times(1)).dispose(transaction)
+        verify(indicatorSurface, times(1)).dispose(transaction)
     }
 
     companion object {
