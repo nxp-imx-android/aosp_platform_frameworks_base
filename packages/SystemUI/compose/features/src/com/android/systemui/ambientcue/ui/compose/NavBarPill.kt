@@ -23,10 +23,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,6 +72,7 @@ fun NavBarPill(
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
+    val maxPillWidth = 247.dp
     val outlineColor = Color.White
     val backgroundColor = Color.Black
 
@@ -115,7 +118,7 @@ fun NavBarPill(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier.clip(RoundedCornerShape(16.dp))
-                        .widthIn(min = navBarWidth, max = 247.dp)
+                        .widthIn(min = navBarWidth, max = maxPillWidth)
                         .background(backgroundColor)
                         .animatedActionBorder(
                             strokeWidth = 2.dp,
@@ -130,66 +133,47 @@ fun NavBarPill(
                 // Should have at most 1 expanded chip
                 var expandedChip = false
                 actions.fastForEach { action ->
-                    if ((actions.size == 1 || action.attribution != null) && !expandedChip) {
-                        expandedChip = true
-                        Row(
-                            horizontalArrangement =
-                                Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Image(
-                                painter = rememberDrawablePainter(action.icon),
-                                colorFilter =
-                                    if (action.attribution != null) {
-                                        ColorFilter.tint(outlineColor)
-                                    } else {
-                                        null
-                                    },
-                                contentDescription = action.label,
-                                modifier = Modifier.size(16.dp).clip(CircleShape),
-                            )
+                    val hasAttribution = action.attribution != null
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            if (hasAttribution) Modifier.weight(1f, false)
+                            else Modifier.width(IntrinsicSize.Max),
+                    ) {
+                        Image(
+                            painter = rememberDrawablePainter(action.icon),
+                            colorFilter =
+                                if (hasAttribution) {
+                                    ColorFilter.tint(outlineColor)
+                                } else {
+                                    null
+                                },
+                            contentDescription = action.label,
+                            modifier = Modifier.size(16.dp).clip(CircleShape),
+                        )
 
+                        if ((actions.size == 1 || hasAttribution) && !expandedChip) {
+                            expandedChip = true
                             Text(
                                 text = action.label,
                                 style = MaterialTheme.typography.labelSmall,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 color = outlineColor,
-                                modifier = Modifier.weight(0.63f, fill = false),
+                                modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
                             )
-                            if (action.attribution != null) {
+                            if (hasAttribution) {
                                 Text(
-                                    text = action.attribution,
+                                    text = action.attribution!!,
                                     style = MaterialTheme.typography.labelSmall,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     color = outlineColor,
-                                    modifier =
-                                        Modifier.padding(start = 4.dp)
-                                            .alpha(0.4f)
-                                            .weight(0.37f, false),
+                                    modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
                                 )
                             }
-                        }
-                    } else {
-                        // collapsed chip
-                        Row(
-                            horizontalArrangement =
-                                Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Image(
-                                painter = rememberDrawablePainter(action.icon),
-                                colorFilter =
-                                    if (action.attribution != null) {
-                                        ColorFilter.tint(outlineColor)
-                                    } else {
-                                        null
-                                    },
-                                contentDescription = action.label,
-                                modifier = Modifier.size(16.dp).clip(CircleShape),
-                            )
                         }
                     }
                 }
