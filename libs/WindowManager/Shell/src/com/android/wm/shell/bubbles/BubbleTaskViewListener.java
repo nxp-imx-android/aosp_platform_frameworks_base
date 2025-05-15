@@ -22,8 +22,10 @@ import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
 
 import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 
+import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.PendingIntent;
@@ -236,6 +238,16 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             mExpandedViewManager.removeBubble(mBubble.getKey(), Bubbles.DISMISS_TASK_FINISHED);
         }
         if (mTaskView != null) {
+            final TaskViewTaskController tvc = mTaskView.getController();
+            final ActivityManager.RunningTaskInfo taskInfo = tvc.getTaskInfo();
+            if (taskInfo != null && taskInfo.isRunning
+                    && mExpandedViewManager.shouldBeAppBubble(taskInfo)) {
+                final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
+                        mTaskView.getCaptionInsetsOwner());
+                tvc.getTaskOrganizer().applyTransaction(wct);
+                tvc.getTaskOrganizer().setInterceptBackPressedOnTaskRoot(taskInfo.token,
+                        false /* interceptBackPressed */);
+            }
             mTaskView.release();
             ((ViewGroup) mParentView).removeView(mTaskView);
             mTaskView = null;

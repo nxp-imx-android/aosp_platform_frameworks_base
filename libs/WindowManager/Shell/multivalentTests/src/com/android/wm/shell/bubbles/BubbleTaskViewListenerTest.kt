@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles
 
+import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.Notification
 import android.app.PendingIntent
@@ -46,11 +47,11 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener
+import com.android.wm.shell.bubbles.util.verifyEnterBubbleTransaction
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
-import com.android.wm.shell.bubbles.util.verifyEnterBubbleTransaction
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -89,9 +90,11 @@ class BubbleTaskViewListenerTest {
         on { asBinder() } doReturn mock<IBinder>()
     })
     private var taskViewController = mock<TaskViewController>()
+    private val taskInfo = mock<ActivityManager.RunningTaskInfo>()
     private val taskViewTaskController = mock<TaskViewTaskController> {
         on { taskOrganizer } doReturn taskOrganizer
         on { taskToken } doReturn taskViewTaskToken
+        on { taskInfo } doReturn taskInfo
     }
     private var listenerCallback = mock<BubbleTaskViewListener.Callback>()
     private var expandedViewManager = mock<BubbleExpandedViewManager>()
@@ -490,7 +493,9 @@ class BubbleTaskViewListenerTest {
 
     @Test
     fun onTaskRemovalStarted() {
-        val mockTaskView = mock<TaskView>()
+        val mockTaskView = mock<TaskView>() {
+            on { getController() } doReturn taskViewTaskController
+        }
         bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor)
 
         bubbleTaskViewListener =
@@ -511,12 +516,16 @@ class BubbleTaskViewListenerTest {
         getInstrumentation().waitForIdleSync()
         verify(mockTaskView).startActivity(any(), anyOrNull(), any(), any())
 
+        taskInfo.isRunning = true
+        taskInfo.token = taskViewTaskToken
+        whenever(expandedViewManager.shouldBeAppBubble(eq(taskInfo))).doReturn(true)
         getInstrumentation().runOnMainSync {
             bubbleTaskViewListener.onTaskRemovalStarted(1)
         }
 
         verify(expandedViewManager).removeBubble(eq(b.key), eq(Bubbles.DISMISS_TASK_FINISHED))
         verify(mockTaskView).release()
+        verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(eq(taskViewTaskToken), eq(false))
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)
         assertThat(bubbleTaskViewListener.taskView).isNull()
         verify(listenerCallback).onTaskRemovalStarted()
