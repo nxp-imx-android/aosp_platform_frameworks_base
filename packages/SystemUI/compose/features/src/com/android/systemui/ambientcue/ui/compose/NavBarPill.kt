@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -73,8 +72,8 @@ fun NavBarPill(
     onCloseClick: () -> Unit = {},
 ) {
     val maxPillWidth = 247.dp
-    val outlineColor = Color.White
-    val backgroundColor = Color.Black
+    val outlineColor = MaterialTheme.colorScheme.onBackground
+    val backgroundColor = MaterialTheme.colorScheme.background
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
