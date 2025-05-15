@@ -656,4 +656,12 @@ public class LogModule {
     public static LogBuffer providesLongPressTouchLog(LogBufferFactory factory) {
         return factory.create("LongPressViewLog", 200);
     }
+
+    /** Provides a {@link LogBuffer} for use by long touch event handlers. */
+    @Provides
+    @SysUISingleton
+    @RearDisplayLog
+    public static LogBuffer providesRearDisplayLog(LogBufferFactory factory) {
+        return factory.create("RearDisplayLog", 50);
+    }
 }
