@@ -16,13 +16,13 @@
 
 package com.android.systemui.statusbar.notification.row.data.repository
 
-import android.graphics.drawable.Drawable
 import android.service.notification.Adjustment
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.systemui.statusbar.notification.row.data.model.AppData
 
 /** Holds information about a BundleEntry that is relevant to UI. */
 class BundleRepository(
@@ -34,5 +34,5 @@ class BundleRepository(
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 
-    var previewIcons by mutableStateOf(listOf<Drawable>())
+    var appDataList by mutableStateOf(listOf<AppData>())
 }
