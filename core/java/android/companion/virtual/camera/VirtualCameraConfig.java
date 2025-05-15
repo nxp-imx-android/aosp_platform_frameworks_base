@@ -250,6 +250,14 @@ public final class VirtualCameraConfig implements Parcelable {
         return mCameraCharacteristics;
     }
 
+    @Override
+    public String toString() {
+        return "VirtualCameraConfig("
+                + " name=" + mName
+                + " lensFacing=" + mLensFacing
+                + " sensorOrientation=" + mSensorOrientation + " )";
+    }
+
     /**
      * Builder for {@link VirtualCameraConfig}.
      *

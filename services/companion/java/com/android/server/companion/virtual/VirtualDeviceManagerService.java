@@ -47,7 +47,6 @@ import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.content.AttributionSource;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
@@ -657,8 +656,9 @@ public class VirtualDeviceManagerService extends SystemService {
             if (!DumpUtils.checkDumpAndUsageStatsPermission(getContext(), TAG, fout)) {
                 return;
             }
-            fout.println("Created virtual devices: ");
             ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+            fout.println("Number of active virtual devices: " + virtualDevicesSnapshot.size());
+            fout.println("Created virtual devices: ");
             for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
                 virtualDevicesSnapshot.get(i).dump(fd, fout, args);
             }

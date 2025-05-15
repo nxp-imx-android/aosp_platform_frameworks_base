@@ -161,16 +161,11 @@ class InputController {
         mWindowManager.setDisplayImePolicy(displayId, policy);
     }
 
-    public void dump(@NonNull PrintWriter fout) {
-        final String prefix = "    ";
-        fout.println(prefix + "InputController: ");
+    public void dump(@NonNull PrintWriter fout, String indent) {
         synchronized (mLock) {
-            if (mInputDevices.isEmpty()) {
-                fout.println(prefix + prefix + "No active input devices");
-            } else {
-                for (int i = 0; i < mInputDevices.size(); ++i) {
-                    fout.println(prefix + prefix + mInputDevices.valueAt(i).toString());
-                }
+            fout.println(indent + "InputController: " + mInputDevices.size() + " input devices");
+            for (int i = 0; i < mInputDevices.size(); ++i) {
+                fout.println(indent + indent + mInputDevices.valueAt(i));
             }
         }
     }
