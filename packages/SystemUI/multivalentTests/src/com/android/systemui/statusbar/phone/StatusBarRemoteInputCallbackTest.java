@@ -39,6 +39,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.statusbar.ActionClickLogger;
@@ -97,6 +98,11 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         mDependency.injectTestDependency(ShadeController.class, mShadeController);
         mDependency.injectTestDependency(NotificationLockscreenUserManager.class,
                 mNotificationLockscreenUserManager);
+
+        if (SceneContainerFlag.isEnabled()) {
+            when(mDeviceUnlockedInteractorLazy.get()).thenReturn(mDeviceUnlockedInteractor);
+            when(mSceneInteractorLazy.get()).thenReturn(mSceneInteractor);
+        }
 
         mRemoteInputCallback = spy(new StatusBarRemoteInputCallback(mContext,
                 mGroupExpansionManager, mNotificationLockscreenUserManager,
