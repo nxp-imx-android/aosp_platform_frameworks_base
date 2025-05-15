@@ -20,6 +20,9 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.airplaneModeIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.bluetoothIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.ethernetIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.muteIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.vibrateIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.zenModeIconViewModelFactory
 
 val Kosmos.systemStatusIconsViewModel by
     Kosmos.Fixture {
@@ -27,6 +30,9 @@ val Kosmos.systemStatusIconsViewModel by
             airplaneModeIconViewModelFactory = airplaneModeIconViewModelFactory,
             bluetoothIconViewModelFactory = bluetoothIconViewModelFactory,
             ethernetIconViewModelFactory = ethernetIconViewModelFactory,
+            zenModeIconViewModelFactory = zenModeIconViewModelFactory,
+            muteIconViewModelFactory = muteIconViewModelFactory,
+            vibrateIconViewModelFactory = vibrateIconViewModelFactory,
         )
     }
 
