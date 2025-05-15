@@ -283,6 +283,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         return !mPending.isEmpty();
     }
 
+    /** Removes all pending transitions for the given {@code taskView}. */
+    public void removePendingTransitions(TaskViewTaskController taskView) {
+        for (int i = mPending.size() - 1; i >= 0; --i) {
+            if (mPending.get(i).mTaskView != taskView) continue;
+            if (mPending.get(i).mExternalTransition != null) continue;
+            mPending.remove(i);
+        }
+    }
+
     @Override
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @Nullable TransitionRequestInfo request) {
