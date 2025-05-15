@@ -6000,8 +6000,13 @@
     only. The component must be part of a system app. -->
     <string name="config_defaultSupervisionProfileOwnerComponent" translatable="false"></string>
 
-    <!-- The package name of the default supervision package. -->
+    <!-- The package name of the default system supervision package. -->
     <string name="config_systemSupervision" translatable="false"></string>
+
+    <!-- Semicolon separated list of packages allowed to hold the supervision role. If the package
+         is not a system app, the signing certificate digest must be included (separated by a colon
+         from the package name). -->
+    <string name="config_allowedSupervisionRolePackages" translatable="false"></string>
 
     <!-- Trigger a warning for notifications with RemoteView objects that are larger in bytes than
     this value (default 1MB)-->
