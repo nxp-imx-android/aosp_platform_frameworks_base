@@ -72,9 +72,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Mock private lateinit var windowController: StatusBarWindowController
     @Mock private lateinit var windowControllerStore: StatusBarWindowControllerStore
     @Mock private lateinit var longPressGestureDetector: StatusBarLongPressGestureDetector
-    @Mock
-    private lateinit var interactionGate:
-        PhoneStatusBarViewController.PhoneStatusBarViewInteractionsGate
 
     @Before
     fun setUp() {
@@ -121,8 +118,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val handler = TestTouchEventHandler()
         viewForSecondaryDisplay.setTouchEventHandler(handler)
         viewForSecondaryDisplay.setLongPressGestureDetector(longPressGestureDetector)
-        whenever(interactionGate.shouldAllowInteractions()).thenReturn(true)
-        viewForSecondaryDisplay.setInteractionGate(interactionGate)
+        viewForSecondaryDisplay.setIsStatusBarInteractiveSupplier { true }
 
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
         viewForSecondaryDisplay.dispatchTouchEvent(event)
@@ -137,8 +133,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val handler = TestTouchEventHandler()
         viewForSecondaryDisplay.setTouchEventHandler(handler)
         viewForSecondaryDisplay.setLongPressGestureDetector(longPressGestureDetector)
-        whenever(interactionGate.shouldAllowInteractions()).thenReturn(false)
-        viewForSecondaryDisplay.setInteractionGate(interactionGate)
+        viewForSecondaryDisplay.setIsStatusBarInteractiveSupplier { false }
 
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
 
@@ -163,8 +158,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val handler = TestTouchEventHandler()
         viewForSecondaryDisplay.setTouchEventHandler(handler)
         viewForSecondaryDisplay.setLongPressGestureDetector(longPressGestureDetector)
-        whenever(interactionGate.shouldAllowInteractions()).thenReturn(true)
-        viewForSecondaryDisplay.setInteractionGate(interactionGate)
+        viewForSecondaryDisplay.setIsStatusBarInteractiveSupplier { true }
 
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
         assertThat(viewForSecondaryDisplay.dispatchHoverEvent(event)).isEqualTo(false)
@@ -175,8 +169,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         val handler = TestTouchEventHandler()
         viewForSecondaryDisplay.setTouchEventHandler(handler)
         viewForSecondaryDisplay.setLongPressGestureDetector(longPressGestureDetector)
-        whenever(interactionGate.shouldAllowInteractions()).thenReturn(false)
-        viewForSecondaryDisplay.setInteractionGate(interactionGate)
+        viewForSecondaryDisplay.setIsStatusBarInteractiveSupplier { false }
 
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
         assertThat(viewForSecondaryDisplay.dispatchHoverEvent(event)).isEqualTo(true)

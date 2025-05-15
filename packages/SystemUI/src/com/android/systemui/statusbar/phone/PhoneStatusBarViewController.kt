@@ -139,7 +139,13 @@ private constructor(
         ) {
             // With the StatusBarConnectedDisplays changes, external status bar elements are not
             // interactive when the shade window can't change displays.
-            mView.setInteractionGate(PhoneStatusBarViewInteractionsGate())
+            mView.setIsStatusBarInteractiveSupplier {
+                val shadeDisplayPolicy =
+                    if (ShadeWindowGoesAround.isEnabled) {
+                        lazyShadeDisplaysRepository.get().currentPolicy
+                    } else null
+                shadeDisplayPolicy is StatusBarTouchShadeDisplayPolicy
+            }
         }
 
         addCursorSupportToIconContainers()
@@ -243,23 +249,6 @@ private constructor(
     private fun removeDarkReceivers() {
         darkIconDispatcher.removeDarkReceiver(battery)
         darkIconDispatcher.removeDarkReceiver(clock)
-    }
-
-    /**
-     * Determines whether user interaction (e.g., touch and hover events with the phone's status bar
-     * view should be allowed.
-     */
-    inner class PhoneStatusBarViewInteractionsGate {
-        /** Checks if user interactions with the status bar are currently permitted. */
-        fun shouldAllowInteractions(): Boolean {
-            // With the StatusBarConnectedDisplays changes, external status bar elements are not
-            // interactive when the shade window can't change displays.
-            val shadeDisplayPolicy =
-                if (ShadeWindowGoesAround.isEnabled) {
-                    lazyShadeDisplaysRepository.get().currentPolicy
-                } else null
-            return shadeDisplayPolicy is StatusBarTouchShadeDisplayPolicy
-        }
     }
 
     inner class PhoneStatusBarViewTouchHandler : Gefingerpoken {
