@@ -32,6 +32,7 @@ import android.text.TextUtils;
 import com.android.internal.pm.pkg.parsing.ParsingPackage;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.pm.pkg.parsing.ParsingUtils;
+import com.android.internal.util.XmlUtils;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -62,6 +63,7 @@ public class ComponentParseUtils {
                 continue;
             }
             if (ParsingPackageUtils.getAconfigFlags().skipCurrentElement(pkg, parser)) {
+                XmlUtils.skipCurrentTag(parser);
                 continue;
             }
 
