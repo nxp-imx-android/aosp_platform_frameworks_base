@@ -46,6 +46,10 @@ import static android.media.MediaRoute2Info.TYPE_WIRED_HEADSET;
 import static android.media.session.MediaController.PlaybackInfo;
 
 import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING;
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED;
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_GROUPING;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED;
 
 import android.annotation.TargetApi;
@@ -139,16 +143,18 @@ public abstract class InfoMediaManager {
      * Wrapper class around SuggestedDeviceInfo and the corresponsing connection state of the
      * suggestion.
      */
-    public class SuggestedDeviceState {
+    public static class SuggestedDeviceState {
         private final SuggestedDeviceInfo mSuggestedDeviceInfo;
         private final @LocalMediaManager.MediaDeviceState int mConnectionState;
 
-        private SuggestedDeviceState(@NonNull SuggestedDeviceInfo suggestedDeviceInfo) {
+        @VisibleForTesting
+        SuggestedDeviceState(@NonNull SuggestedDeviceInfo suggestedDeviceInfo) {
             mSuggestedDeviceInfo = suggestedDeviceInfo;
-            mConnectionState = LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
+            mConnectionState = STATE_DISCONNECTED;
         }
 
-        private SuggestedDeviceState(
+        @VisibleForTesting
+        SuggestedDeviceState(
                 @NonNull SuggestedDeviceInfo suggestedDeviceInfo,
                 @LocalMediaManager.MediaDeviceState int state) {
             mSuggestedDeviceInfo = suggestedDeviceInfo;
@@ -187,6 +193,11 @@ public abstract class InfoMediaManager {
         @Override
         public int hashCode() {
             return Objects.hash(mSuggestedDeviceInfo, mConnectionState);
+        }
+
+        @Override
+        public String toString() {
+            return "info: " + mSuggestedDeviceInfo + " state " + mConnectionState;
         }
     }
 
@@ -805,9 +816,40 @@ public abstract class InfoMediaManager {
         }
         if (!Objects.equals(previousState, newSuggestedDeviceState)) {
             mSuggestedDeviceState = newSuggestedDeviceState;
-            for (MediaDeviceCallback callback : getCallbacks()) {
-                callback.onSuggestedDeviceUpdated(mSuggestedDeviceState);
-            }
+            dispatchOnSuggestedDeviceUpdated();
+        }
+    }
+
+    final void onConnectionAttemptedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
+        if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
+            return;
+        }
+        if (mSuggestedDeviceState.getConnectionState() == STATE_DISCONNECTED
+                || mSuggestedDeviceState.getConnectionState() == STATE_CONNECTING_FAILED) {
+            mSuggestedDeviceState =
+                    new SuggestedDeviceState(
+                            mSuggestedDeviceState.getSuggestedDeviceInfo(), STATE_CONNECTING);
+            dispatchOnSuggestedDeviceUpdated();
+        }
+    }
+
+    final void onConnectionAttemptCompletedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
+        if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
+            return;
+        }
+        if (mSuggestedDeviceState.getConnectionState() == STATE_CONNECTING
+                || mSuggestedDeviceState.getConnectionState() == STATE_GROUPING) {
+            mSuggestedDeviceState =
+                    new SuggestedDeviceState(
+                            mSuggestedDeviceState.getSuggestedDeviceInfo(),
+                            STATE_CONNECTING_FAILED);
+            dispatchOnSuggestedDeviceUpdated();
+        }
+    }
+
+    private void dispatchOnSuggestedDeviceUpdated() {
+        for (MediaDeviceCallback callback : getCallbacks()) {
+            callback.onSuggestedDeviceUpdated(mSuggestedDeviceState);
         }
     }
 
@@ -1070,8 +1112,7 @@ public abstract class InfoMediaManager {
 
     private static Drawable getDrawableForSuggestion(
             Context context, SuggestedDeviceState suggestion) {
-        if (suggestion.getConnectionState()
-                == LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED) {
+        if (suggestion.getConnectionState() == STATE_CONNECTING_FAILED) {
             return context.getDrawable(android.R.drawable.ic_info);
         }
         int deviceType = suggestion.getSuggestedDeviceInfo().getType();
