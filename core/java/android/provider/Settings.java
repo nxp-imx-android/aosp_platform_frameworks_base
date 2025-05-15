@@ -18643,6 +18643,15 @@ public final class Settings {
                 "power_button_long_press";
 
         /**
+         * Marks POWER_BUTTON_LONG_PRESS has been restored.
+         * Type: int (0 to false, 1 to true)
+         *
+         * @hide
+         */
+        public static final String POWER_BUTTON_LONG_PRESS_RESTORED =
+                "power_button_long_press_restored";
+
+        /**
          * Override internal R.integer.config_longPressOnPowerDurationMs. It determines the length
          * of power button press to be considered a long press in milliseconds.
          * Used by PhoneWindowManager.

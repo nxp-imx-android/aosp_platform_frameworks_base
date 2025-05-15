@@ -1122,6 +1122,15 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 value = String.valueOf(newValue);
             }
 
+            // Indicates the POWER_BUTTON_LONG_PRESS has been restored.
+            if (Settings.Global.POWER_BUTTON_LONG_PRESS.equals(key)) {
+                ContentValues powerButtonLongPressRestoredValues = new ContentValues(2);
+                powerButtonLongPressRestoredValues.put(Settings.NameValueTable.NAME,
+                        Settings.Global.POWER_BUTTON_LONG_PRESS_RESTORED);
+                powerButtonLongPressRestoredValues.put(Settings.NameValueTable.VALUE, 1);
+                cr.insert(destination, powerButtonLongPressRestoredValues);
+            }
+
             settingsHelper.restoreValue(this, cr, contentValues, destination, key, value,
                     mRestoredFromSdkInt);
 
