@@ -35,6 +35,7 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+import static android.os.UserHandle.USER_NULL;
 import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 import static android.util.RotationUtils.deltaRotation;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -123,12 +124,19 @@ import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_LAYERING_TA
 import static com.android.server.wm.DisplayContentProto.IS_SLEEPING;
 import static com.android.server.wm.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
+import static com.android.server.wm.DisplayContentProto.REMOTE_INSETS_CONTROL_TARGET;
 import static com.android.server.wm.DisplayContentProto.RESUMED_ACTIVITY;
 import static com.android.server.wm.DisplayContentProto.ROOT_DISPLAY_AREA;
 import static com.android.server.wm.DisplayContentProto.SLEEP_TOKENS;
 import static com.android.server.wm.EventLogTags.IMF_REMOVE_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_SHOW_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_UPDATE_IME_PARENT;
+import static com.android.server.wm.IdentifierProto.HASH_CODE;
+import static com.android.server.wm.IdentifierProto.TITLE;
+import static com.android.server.wm.IdentifierProto.USER_ID;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.ANIMATING_TYPES;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.IDENTIFIER;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
 import static com.android.server.wm.WindowContainerChildProto.DISPLAY_CONTENT;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
@@ -3630,10 +3638,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mImeInputTarget.getWindowState().writeIdentifierToProto(
                     proto, INPUT_METHOD_INPUT_TARGET_IDENTIFIER);
         }
-        if (mImeControlTarget != null
-                && mImeControlTarget.getWindow() != null) {
-            mImeControlTarget.getWindow().writeIdentifierToProto(
-                    proto, INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+        if (mImeControlTarget != null) {
+            if (mImeControlTarget.getWindow() != null) {
+                mImeControlTarget.getWindow().writeIdentifierToProto(
+                        proto, INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+            } else if (mImeControlTarget instanceof RemoteInsetsControlTarget rict) {
+                rict.writeIdentifierToProto(proto,
+                        INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+            }
+        }
+        if (mRemoteInsetsControlTarget != null) {
+            mRemoteInsetsControlTarget.dumpDebug(proto,
+                    REMOTE_INSETS_CONTROL_TARGET, logLevel);
         }
         if (mCurrentFocus != null) {
             mCurrentFocus.writeIdentifierToProto(proto, CURRENT_FOCUS_IDENTIFIER);
@@ -7102,6 +7118,28 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 }
             }
         }
+
+        public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
+            final long token = proto.start(fieldId);
+            proto.write(HASH_CODE, System.identityHashCode(this));
+            proto.write(USER_ID, USER_NULL);
+            proto.write(TITLE, "RemoteInsetsControlTarget(displayId=" + mDisplayId + ")");
+            proto.end(token);
+        }
+
+        public void dumpDebug(ProtoOutputStream proto, long fieldId,
+                @WindowTracingLogLevel int logLevel) {
+            if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
+                return;
+            }
+            final long token = proto.start(fieldId);
+            writeIdentifierToProto(proto, IDENTIFIER);
+
+            proto.write(REQUESTED_VISIBLE_TYPES, mRequestedVisibleTypes);
+            proto.write(ANIMATING_TYPES, mAnimatingTypes);
+            proto.end(token);
+        }
+
     }
 
     MagnificationSpec getMagnificationSpec() {
