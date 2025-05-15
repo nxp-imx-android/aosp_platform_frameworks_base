@@ -164,6 +164,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val mockTilingWindowDecoration = mock<DesktopTilingDecorViewModel>()
+    protected val mockWindowDecoration = mock<DesktopModeWindowDecoration>()
     protected val motionEvent = mock<MotionEvent>()
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
@@ -200,6 +201,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     fun setUpCommon() {
         spyContext = spy(mContext)
         doNothing().`when`(spyContext).startActivity(any())
+        doNothing().`when`(mockWindowDecoration).a11yAnnounceNewFocusedWindow()
         shellInit = ShellInit(testShellExecutor)
         windowDecorByTaskIdSpy.clear()
         spyContext.addMockSystemService(InputManager::class.java, mockInputManager)
@@ -323,6 +325,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         }
         spyContext.setMockPackageManager(packageManager)
         whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(homeComponentName)
+        whenever(mockDesktopTasksController.getNextFocusedTask(any())).thenReturn(testTaskId)
+        whenever(windowDecorByTaskIdSpy.get(testTaskId)).thenReturn(mockWindowDecoration)
     }
 
     @After
@@ -413,5 +417,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         val INITIAL_BOUNDS = Rect(0, 0, 100, 100)
         val STABLE_BOUNDS = Rect(0, 0, 1000, 1000)
         val HOME_LAUNCHER_PACKAGE_NAME = "com.android.launcher"
+
+        val testTaskId = -1234
     }
 }

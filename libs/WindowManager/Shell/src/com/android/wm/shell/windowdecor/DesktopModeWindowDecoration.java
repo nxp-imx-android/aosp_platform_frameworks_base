@@ -1951,6 +1951,15 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     /**
+     * Announces that the app window is now being focused for accessibility. This is used after a
+     * window is minimized/closed, and a new app window gains focus.
+     */
+    void a11yAnnounceNewFocusedWindow() {
+        if (!isAppHeader(mWindowDecorViewHolder)) return;
+        asAppHeader(mWindowDecorViewHolder).a11yAnnounceFocused();
+    }
+
+    /**
      * Declares whether a Recents transition is currently active.
      *
      * <p> When a Recents transition is active we allow that transition to take ownership of the
