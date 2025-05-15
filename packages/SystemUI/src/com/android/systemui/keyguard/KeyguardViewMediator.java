@@ -4146,22 +4146,12 @@ public class KeyguardViewMediator implements CoreStartable,
         mShowing = showing;
         mAodShowing = aodShowing;
 
-        if (KeyguardWmReorderAtmsCalls.isEnabled()) {
-            if (updateActivityLockScreenState) {
-                updateActivityLockScreenState(showing, aodShowing, reason);
-            }
-            if (notifyDefaultDisplayCallbacks) {
-                notifyDefaultDisplayCallbacks(showing);
-            }
-        } else {
-            if (notifyDefaultDisplayCallbacks) {
-                notifyDefaultDisplayCallbacks(showing);
-            }
-            if (updateActivityLockScreenState) {
-                updateActivityLockScreenState(showing, aodShowing, reason);
-            }
+        if (updateActivityLockScreenState) {
+            updateActivityLockScreenState(showing, aodShowing, reason);
         }
-
+        if (notifyDefaultDisplayCallbacks) {
+            notifyDefaultDisplayCallbacks(showing);
+        }
     }
 
     private void notifyDefaultDisplayCallbacks(boolean showing) {
