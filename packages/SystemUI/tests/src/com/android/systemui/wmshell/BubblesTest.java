@@ -545,7 +545,8 @@ public class BubblesTest extends SysuiTestCase {
                 mock(IWindowManager.class),
                 new BubbleResizabilityChecker(),
                 mHomeIntentProvider,
-                mAppInfoProvider);
+                mAppInfoProvider,
+                Optional.empty());
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 

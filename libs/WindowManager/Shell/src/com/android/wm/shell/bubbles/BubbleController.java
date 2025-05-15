@@ -132,6 +132,7 @@ import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.draganddrop.DragAndDropConstants;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -141,6 +142,8 @@ import com.android.wm.shell.taskview.TaskViewController;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
+
+import dagger.Lazy;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -224,6 +227,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final ResizabilityChecker mResizabilityChecker;
     private final HomeIntentProvider mHomeIntentProvider;
     private final BubbleAppInfoProvider mAppInfoProvider;
+    private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -353,7 +357,8 @@ public class BubbleController implements ConfigurationChangeListener,
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider,
-            BubbleAppInfoProvider appInfoProvider) {
+            BubbleAppInfoProvider appInfoProvider,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -408,6 +413,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mResizabilityChecker = resizabilityChecker;
         mHomeIntentProvider = homeIntentProvider;
         mAppInfoProvider = appInfoProvider;
+        mSplitScreenController = splitScreenController;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -508,7 +514,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData));
 
-        mTaskStackListener.addListener(new BubbleTaskStackListener(this, mBubbleData));
+        mTaskStackListener.addListener(
+                new BubbleTaskStackListener(this, mBubbleData, mSplitScreenController));
 
         mDisplayController.addDisplayChangingController(
                 (displayId, fromRotation, toRotation, newDisplayAreaInfo, t) -> {
