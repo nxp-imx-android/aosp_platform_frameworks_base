@@ -39,6 +39,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_ASSISTANT;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GLOBAL_ACTIONS;
+import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_TO_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_GO_TO_VOICE_ASSIST;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_NOTHING;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_POWER_SHUT_OFF;
@@ -497,6 +498,7 @@ class TestPhoneWindowManager {
             case LONG_PRESS_POWER_SHUT_OFF:
             case LONG_PRESS_POWER_SHUT_OFF_NO_CONFIRM:
             case LONG_PRESS_POWER_GO_TO_VOICE_ASSIST:
+            case LONG_PRESS_POWER_GO_TO_SLEEP:
                 break;
             case LONG_PRESS_POWER_ASSISTANT:
                 setupAssistForLaunch();
