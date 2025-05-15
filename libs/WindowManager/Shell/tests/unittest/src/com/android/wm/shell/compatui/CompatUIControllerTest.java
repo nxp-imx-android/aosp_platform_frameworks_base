@@ -91,6 +91,7 @@ import java.util.Optional;
 public class CompatUIControllerTest extends ShellTestCase {
     private static final int DISPLAY_ID = 0;
     private static final int TASK_ID = 12;
+    private static final int TASK_ID_2 = 18;
 
     private CompatUIController mController;
     private ShellInit mShellInit;
@@ -725,6 +726,36 @@ public class CompatUIControllerTest extends ShellTestCase {
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController).removeLayouts(taskInfo.taskId);
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
+    @EnableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
+    public void testUpdateActiveTaskInfo_alwaysRemoveLetterboxEdu() {
+        TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
+
+        // When not in Desktop Mode the LetterboxEdu is removed only if the taskId is the one used
+        // when created.
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
+
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+        mController.removeLetterboxEdu(TASK_ID_2);
+        verify(mMockLetterboxEduLayout, never()).release();
+
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+        mController.removeLetterboxEdu(TASK_ID);
+        verify(mMockLetterboxEduLayout).release();
+
+        // When in Desktop Mode the LetterboxEdu is always removed
+        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
+
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+        mController.removeLetterboxEdu(TASK_ID);
+        verify(mMockLetterboxEduLayout).release();
+
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
+        mController.removeLetterboxEdu(TASK_ID_2);
+        verify(mMockLetterboxEduLayout).release();
     }
 
     @Test
