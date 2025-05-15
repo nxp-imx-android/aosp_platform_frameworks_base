@@ -232,6 +232,34 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingPanel_fullScreenMode_showMagnifyKeyboardAndFollowTyping() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        final View magnifyKeyboard = getInternalView(R.id.magnifier_keyboard_view);
+        assertThat(magnifyKeyboard.getVisibility()).isEqualTo(View.VISIBLE);
+        final View followTyping = getInternalView(R.id.magnifier_typing_view);
+        assertThat(followTyping.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingPanel_windowOnlyCapability_hideMagnifyKeyboard_showFollowTyping() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        final View magnifyKeyboard = getInternalView(R.id.magnifier_keyboard_view);
+        assertThat(magnifyKeyboard.getVisibility()).isEqualTo(View.GONE);
+        final View followTyping = getInternalView(R.id.magnifier_typing_view);
+        assertThat(followTyping.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void performClick_smallSizeButton_changeMagnifierSizeSmallAndSwitchToWindowMode() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
@@ -362,7 +390,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         final boolean currentCheckedState = magnifyKeyboardSwitch.isChecked();
 
         setupMagnificationCapabilityAndMode(
-                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
                 /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
         mWindowMagnificationSettings.showSettingPanel();
 

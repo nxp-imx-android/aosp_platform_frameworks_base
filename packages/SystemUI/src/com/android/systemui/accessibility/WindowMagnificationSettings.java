@@ -509,6 +509,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                 mEditButton.setVisibility(View.VISIBLE);
                 mAllowDiagonalScrollingView.setVisibility(View.VISIBLE);
                 mFullScreenButton.setVisibility(View.GONE);
+                if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                    mMagnifyTypingView.setVisibility(View.VISIBLE);
+                    mMagnifyKeyboardView.setVisibility(View.GONE);
+                }
                 if (selectedButtonIndex == MagnificationSize.FULLSCREEN) {
                     selectedButtonIndex =
                             windowMagnificationFrameSizePrefs.getIndexForCurrentDensity();
