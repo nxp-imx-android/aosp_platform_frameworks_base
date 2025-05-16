@@ -41,6 +41,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.server.AppSchedulingModuleThread;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
+import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerService;
 import com.android.server.job.StateControllerProto;
 import com.android.server.job.StateControllerProto.DeviceIdleJobsController.TrackedJob;
@@ -154,7 +155,8 @@ public final class DeviceIdleJobsController extends StateController {
         filter.addAction(PowerManager.ACTION_POWER_SAVE_WHITELIST_CHANGED);
         filter.addAction(PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED);
         mContext.registerReceiverAsUser(
-                mBroadcastReceiver, UserHandle.ALL, filter, null, null);
+                mBroadcastReceiver, UserHandle.ALL, filter, null,
+                Flags.deviceidlejobcontrollerOffMainThread() ? mHandler : null);
     }
 
     void updateIdleMode(boolean enabled) {
