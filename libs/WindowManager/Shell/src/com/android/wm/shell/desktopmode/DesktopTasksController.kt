@@ -3427,9 +3427,11 @@ class DesktopTasksController(
                 // If caption insets should be excluded from app bounds, ensure caption insets
                 // are excluded from the ideal initial bounds when scaling non-resizeable apps.
                 // Caption insets stay fixed and don't scale with bounds.
+                val displayId = taskRepository.getDisplayForDesk(deskId)
+                val displayContext = displayController.getDisplayContext(displayId) ?: context
                 val captionInsets =
                     if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
-                        getDesktopViewAppHeaderHeightPx(context)
+                        getDesktopViewAppHeaderHeightPx(displayContext)
                     } else {
                         0
                     }

@@ -32,11 +32,13 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.WindowConfiguration;
+import android.content.Context;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.SystemProperties;
 import android.util.Size;
+import android.view.Display;
 import android.view.Gravity;
 import android.window.DesktopModeFlags;
 
@@ -83,9 +85,12 @@ public final class DesktopModeBoundsCalculator {
         // during the size update.
         final boolean shouldRespectOptionPosition =
                 updateOptionBoundsSize && DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue();
+        // Calculate caption height for target display if needed.
+        final Display targetDisplay = task.getDisplayArea().mDisplayContent.getDisplay();
+        final Context displayContext = task.mWmService.mContext.createDisplayContext(targetDisplay);
         final int captionHeight = activity != null && shouldExcludeCaptionFromAppBounds(
                 activity.info, task.isResizeable(), activity.mOptOutEdgeToEdge)
-                        ? getDesktopViewAppHeaderHeightPx(activity.mWmService.mContext) : 0;
+                        ? getDesktopViewAppHeaderHeightPx(displayContext) : 0;
 
         if (options != null && options.getLaunchBounds() != null
                 && !updateOptionBoundsSize) {

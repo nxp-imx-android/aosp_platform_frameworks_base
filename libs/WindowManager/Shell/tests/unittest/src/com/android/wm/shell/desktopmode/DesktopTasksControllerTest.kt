@@ -1582,7 +1582,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val captionInsets = getDesktopViewAppHeaderHeightPx(context)
+        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
+        val displayContext = displayController.getDisplayContext(displayId) ?: context
+        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
@@ -1604,7 +1606,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val captionInsets = getDesktopViewAppHeaderHeightPx(context)
+        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
+        val displayContext = displayController.getDisplayContext(displayId) ?: context
+        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
