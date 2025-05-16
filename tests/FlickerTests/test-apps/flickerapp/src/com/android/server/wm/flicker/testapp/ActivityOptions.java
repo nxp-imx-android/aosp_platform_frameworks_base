@@ -73,6 +73,18 @@ public class ActivityOptions {
         }
     }
 
+    public static class TrampolineStartActivity {
+        public static final String LABEL = "TrampolineStartActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".TrampolineStartActivity");
+    }
+
+    public static class TrampolineFinishActivity {
+        public static final String LABEL = "TrampolineFinishActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".TrampolineFinishActivity");
+    }
+
     public static class NonResizeableActivity {
         public static final String LABEL = "NonResizeableActivity";
         public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
