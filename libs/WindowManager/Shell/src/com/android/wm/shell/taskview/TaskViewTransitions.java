@@ -66,6 +66,7 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -126,6 +127,14 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             mWct = wct;
             mTaskView = taskView;
             mLaunchCookie = launchCookie;
+        }
+        /** Dumps PendingTransition state. */
+        public void dump(PrintWriter pw, String prefix) {
+            pw.print(prefix); pw.println("Pending transition:");
+            pw.print(prefix); pw.println("  task view: " + mTaskView);
+            pw.print(prefix); pw.println("  transition type: " + mType);
+            pw.print(prefix); pw.println("  external transition: " + mExternalTransition);
+            pw.print(prefix); pw.println("  claim token: " + mClaimed);
         }
     }
 
@@ -1111,6 +1120,18 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
         wct.setBounds(taskInfo.token, boundsOnScreen);
         taskView.applyCaptionInsetsIfNeeded();
+    }
+
+    /** Dumps TaskViewTransitions state. */
+    public void dump(PrintWriter pw) {
+        pw.println("TaskViewTransitions state:");
+        pw.println("  Pending transitions count: " + mPending.size());
+        for (PendingTransition pendingTransition : mPending) {
+            pendingTransition.dump(pw, "    ");
+        }
+        if (useRepo()) {
+            mTaskViewRepo.dump(pw, "  ");
+        }
     }
 
     /** Interface for running an external transition in this object's pending queue. */

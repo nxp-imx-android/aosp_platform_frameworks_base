@@ -24,6 +24,7 @@ import android.window.WindowContainerToken;
 
 import com.android.internal.protolog.ProtoLog;
 
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -124,5 +125,16 @@ public class TaskViewRepository {
             }
         }
         return null;
+    }
+
+    /** Dumps TaskViewRepository state. */
+    public void dump(PrintWriter pw, String prefix) {
+        pw.print(prefix); pw.println("TaskViewRepository state:");
+        pw.print(prefix); pw.println("  task view count: " + mTaskViews.size());
+        for (TaskViewState taskViewState : mTaskViews) {
+            pw.print(prefix); pw.println("    task view: " + taskViewState.getTaskView());
+            pw.print(prefix); pw.println("      is visible: " + taskViewState.mVisible);
+            pw.print(prefix); pw.println("      bounds: " + taskViewState.mBounds);
+        }
     }
 }

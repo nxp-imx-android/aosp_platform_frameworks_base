@@ -2861,6 +2861,9 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.println();
 
         mImpl.mCachedState.dump(pw);
+
+        pw.println();
+        mBubbleTransitions.mTaskViewTransitions.dump(pw);
     }
 
     /**
