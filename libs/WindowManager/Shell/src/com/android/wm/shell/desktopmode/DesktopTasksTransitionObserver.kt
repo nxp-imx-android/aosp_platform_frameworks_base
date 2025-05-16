@@ -185,27 +185,28 @@ class DesktopTasksTransitionObserver(
         // because for closing tasks we first need to check whether it's because of back navigation
         // so that we can minimize it if needed.
         val info = closingTransitionToTransitionInfo.remove(transition) ?: return
-        removeClosingTask(info)
+        removeClosingTasks(info)
     }
 
-    /** Finds the closing task in the change and removes it full by a [TRANSIT_CLOSE] transition. */
-    private fun removeClosingTask(info: TransitionInfo) {
-        val task =
-            info.changes
-                .find { change -> change.mode == TRANSIT_CLOSE && change.taskInfo != null }
-                ?.taskInfo ?: return
+    /**
+     * Finds the closing tasks in the change and removes them full by a [TRANSIT_CLOSE] transition.
+     */
+    private fun removeClosingTasks(info: TransitionInfo) {
+        val wct = WindowContainerTransaction()
+        info.changes
+            .filter { it.mode == TRANSIT_CLOSE }
+            .mapNotNull { it.taskInfo }
+            .forEach { taskInfo ->
+                if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) return@forEach
+                wct.removeTask(taskInfo.token)
+                ProtoLog.d(
+                    WM_SHELL_DESKTOP_MODE,
+                    "DesktopTasksTransitionObserver: removing closing task=%d fully",
+                    taskInfo.taskId,
+                )
+            }
 
-        transitions.startTransition(
-            TRANSIT_CLOSE,
-            WindowContainerTransaction().removeTask(task.token),
-            null,
-        )
-
-        ProtoLog.d(
-            WM_SHELL_DESKTOP_MODE,
-            "DesktopTasksTransitionObserver: removing closing task=%d fully",
-            task.taskId,
-        )
+        if (!wct.isEmpty) transitions.startTransition(TRANSIT_CLOSE, wct, null)
     }
 
     private fun updateWallpaperToken(info: TransitionInfo) {
