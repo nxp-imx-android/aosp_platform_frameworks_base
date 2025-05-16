@@ -63,7 +63,6 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.moveTransitionAnimationLayer
-import com.android.systemui.Flags.translucentOccludingActivityFix
 import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
 import com.android.systemui.animation.TransitionAnimator.Companion.assertReturnAnimations
 import com.android.systemui.animation.TransitionAnimator.Companion.longLivedReturnAnimationsEnabled
@@ -1442,7 +1441,7 @@ constructor(
                     controller.createAnimatorState()
                 }
             val windowBackgroundColor =
-                if (translucentOccludingActivityFix() && window.isTranslucent) {
+                if (window.isTranslucent) {
                     Color.TRANSPARENT
                 } else {
                     window.taskInfo?.let { callback.getBackgroundColor(it) }
