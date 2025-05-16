@@ -21,6 +21,7 @@ import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.ADMIN_USER_CREATED;
 import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_DEMOTED;
 import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.NO_USER_CREATED;
 import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_MAIN;
 import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_NON_MAIN;
@@ -110,11 +111,11 @@ public final class HsumBootUserInitializerTest {
         return Arrays.asList(new Object[][] {
                 // shouldAlwaysHaveMainUser false, shouldCreateInitialUser false
                 { false, false, SYSTEM_ONLY, NO_USER_CREATED },
-                { false, false, SYSTEM_AND_MAIN, NO_USER_CREATED },
+                { false, false, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
                 { false, false, SYSTEM_AND_NON_MAIN, NO_USER_CREATED },
                 // shouldAlwaysHaveMainUser false, shouldCreateInitialUser true
                 { false, true, SYSTEM_ONLY, ADMIN_USER_CREATED},
-                { false, true, SYSTEM_AND_MAIN, NO_USER_CREATED },
+                { false, true, SYSTEM_AND_MAIN, MAIN_USER_DEMOTED },
                 { false, true, SYSTEM_AND_NON_MAIN, NO_USER_CREATED},
                 // shouldAlwaysHaveMainUser true, shouldCreateInitialUser false
                 { true, false, SYSTEM_ONLY, MAIN_USER_CREATED},
@@ -163,6 +164,9 @@ public final class HsumBootUserInitializerTest {
             case MAIN_USER_CREATED:
                 mockCreateNewUser(MAIN_USER_ID);
                 break;
+            case MAIN_USER_DEMOTED:
+                mockGetMainUserId(MAIN_USER_ID);
+                break;
             default:
                 // don't need to mock it
         }
@@ -192,13 +196,20 @@ public final class HsumBootUserInitializerTest {
             case ADMIN_USER_CREATED:
                 expectAdminUserCreated();
                 expectSetBootUserId(NON_SYSTEM_USER_ID);
+                expectMainUserNotDemoted();
                 break;
             case MAIN_USER_CREATED:
                 expectMainUserCreated();
                 expectSetBootUserId(MAIN_USER_ID);
+                expectMainUserNotDemoted();
                 break;
             case NO_USER_CREATED:
                 expectNoUserCreated();
+                expectMainUserNotDemoted();
+                break;
+            case MAIN_USER_DEMOTED:
+                expectNoUserCreated();
+                expectMainUserDemoted();
                 break;
         }
     }
@@ -216,12 +227,14 @@ public final class HsumBootUserInitializerTest {
             // When the flag is disabled, it shouldn't trigger the "create admin user" workflow
             case ADMIN_USER_CREATED:
             case NO_USER_CREATED:
+            case MAIN_USER_DEMOTED:
                 expectNoUserCreated();
                 break;
             case MAIN_USER_CREATED:
                 expectMainUserCreated();
                 break;
         }
+        expectMainUserNotDemoted();
     }
 
     private HsumBootUserInitializer createHsumBootUserInitializer(
@@ -264,6 +277,27 @@ public final class HsumBootUserInitializerTest {
         // Since the user was not created, we can automatically infer that the boot user should not
         // have been set as well
         expectSetBootUserIdNeverCalled();
+    }
+
+
+    private void expectMainUserDemoted() {
+        try {
+            verify(mMockUms).demoteMainUser();
+        } catch (Exception e) {
+            String msg = "should have demoted main user";
+            Log.e(TAG, msg, e);
+            expect.withMessage(msg).fail();
+        }
+    }
+
+    private void expectMainUserNotDemoted() {
+        try {
+            verify(mMockUms, never()).demoteMainUser();
+        } catch (Exception e) {
+            String msg = "should not have demoted main user";
+            Log.e(TAG, msg, e);
+            expect.withMessage(msg).fail();
+        }
     }
 
     private void expectSetBootUserId(@UserIdInt int userId) {
@@ -316,6 +350,7 @@ public final class HsumBootUserInitializerTest {
     public enum ExpectedResult {
         NO_USER_CREATED,
         MAIN_USER_CREATED,
+        MAIN_USER_DEMOTED,
         ADMIN_USER_CREATED
     }
 }

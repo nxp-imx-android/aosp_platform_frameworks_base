@@ -23,6 +23,7 @@ import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
+import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
@@ -30,10 +31,12 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
+import static android.content.pm.UserInfo.flagsToString;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
 import static com.android.server.pm.UserManagerService.BOOT_TO_HSU_FOR_PROVISIONED_DEVICE;
 import static com.android.server.pm.UserManagerService.BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER;
 
@@ -42,6 +45,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -87,6 +91,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.LocalServices;
 import com.android.server.am.UserState;
 import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.UserJourneyLogger.UserJourney;
 import com.android.server.pm.UserManagerService.BootStrategy;
 import com.android.server.pm.UserManagerService.UserData;
 import com.android.server.storage.DeviceStorageMonitorInternal;
@@ -180,6 +185,7 @@ public final class UserManagerServiceMockedTest {
 
     private @Mock PackageManagerService mMockPms;
     private @Mock UserDataPreparer mMockUserDataPreparer;
+    private @Mock UserJourneyLogger mUserJourneyLogger;
     private @Mock ActivityManagerInternal mActivityManagerInternal;
     private @Mock DeviceStorageMonitorInternal mDeviceStorageMonitorInternal;
     private @Mock StorageManager mStorageManager;
@@ -230,7 +236,7 @@ public final class UserManagerServiceMockedTest {
         mTestDir = new File(mRealContext.getDataDir(), "umstest");
         mTestDir.mkdirs();
         mUms = new UserManagerService(mSpiedContext, mMockPms, mMockUserDataPreparer,
-                mPackagesLock, mTestDir, mUsers);
+                mUserJourneyLogger, mPackagesLock, mTestDir, mUsers);
         mUmi = LocalServices.getService(UserManagerInternal.class);
         assertWithMessage("LocalServices.getService(UserManagerInternal.class)").that(mUmi)
                 .isNotNull();
@@ -604,6 +610,7 @@ public final class UserManagerServiceMockedTest {
                 break;
             }
         }
+
         UserInfo mainUser = mUms.createUserWithThrow("main user", USER_TYPE_FULL_SECONDARY,
                 UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN);
 
@@ -1257,6 +1264,102 @@ public final class UserManagerServiceMockedTest {
                 .that(mUms.canSwitchToHeadlessSystemUser()).isFalse();
     }
 
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testDemoteMainUser() {
+        assumeMainUserIsNotTheSystemUser();
+        UserInfo mainUser = createMainUser();
+        int mainUserId = mainUser.id;
+        int flagsBefore = mainUser.flags;
+
+        boolean demoted = mUms.demoteMainUser();
+
+        // assert call itself
+        expect.withMessage("demoteMainUser()").that(demoted).isTrue();
+
+        // assert getMainUserId()
+        expect.withMessage("getMainUserId()").that(mUms.getMainUserId())
+                .isEqualTo(UserHandle.USER_NULL);
+
+        // assert flags changed
+        UserInfo demotedMainUser = mUms.getUserInfo(mainUserId);
+        assertWithMessage("getUserInfo(%s)", mainUserId).that(demotedMainUser).isNotNull();
+        Log.d(TAG, "Demoted main user: " + demotedMainUser);
+        int expectedFlags = flagsBefore ^ UserInfo.FLAG_MAIN;
+        int actualFlags = demotedMainUser.flags;
+        expect.withMessage("flags of user %s after demotion (where %s=%s and %s=%s)", mainUserId,
+                expectedFlags, flagsToString(expectedFlags),
+                actualFlags, flagsToString(actualFlags))
+                .that(actualFlags).isEqualTo(expectedFlags);
+
+        // assert journey logged
+        expectUserJourneyLogged(mainUserId, USER_JOURNEY_DEMOTE_MAIN_USER);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testDemoteMainUser_whenItsSystemUser() {
+        assumeMainUserIsTheSystemUser();
+        int flagsBefore = getSystemUser().flags;
+
+        boolean demoted = mUms.demoteMainUser();
+
+        // assert call itself
+        expect.withMessage("demoteMainUser()").that(demoted).isFalse();
+
+        // assert getMainUserId()
+        expect.withMessage("getMainUserId()").that(mUms.getMainUserId())
+                .isEqualTo(UserHandle.USER_SYSTEM);
+
+        // assert flags didn't change
+        int flagsAfter = getSystemUser().flags;
+        expect.withMessage("flags of system user after no-demotion (where %s=%s and %s=%s)",
+                flagsBefore, flagsToString(flagsBefore),
+                flagsAfter, flagsToString(flagsAfter))
+                .that(flagsAfter).isEqualTo(flagsBefore);
+
+        // assert journey not logged
+        expectUserJourneyNotLogged(UserHandle.USER_SYSTEM, USER_JOURNEY_DEMOTE_MAIN_USER);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testDemoteMainUser_flagDisabled() {
+        assumeMainUserIsNotTheSystemUser();
+        UserInfo mainUser = createMainUser();
+        int mainUserId = mainUser.id;
+        int flagsBefore = mainUser.flags;
+
+        boolean demoted = mUms.demoteMainUser();
+
+        // assert call itself
+        expect.withMessage("demoteMainUser()").that(demoted).isFalse();
+
+        // assert getMainUserId()
+        expect.withMessage("getMainUserId()").that(mUms.getMainUserId())
+                .isEqualTo(mainUserId);
+
+        // assert flags didn't change
+        UserInfo unchangedMainUser = mUms.getUserInfo(mainUserId);
+        assertWithMessage("getUserInfo(%s)", mainUserId).that(unchangedMainUser).isNotNull();
+        Log.d(TAG, "Unchanged main user: " + unchangedMainUser);
+        int flagsAfter = unchangedMainUser.flags;
+        expect.withMessage("flags of user %s after no-demotion (where %s=%s and %s=%s)", mainUserId,
+                flagsBefore, flagsToString(flagsBefore),
+                flagsAfter, flagsToString(flagsAfter))
+                .that(flagsAfter).isEqualTo(flagsBefore);
+
+        // assert journey not logged
+        expectUserJourneyNotLogged(mainUserId, USER_JOURNEY_DEMOTE_MAIN_USER);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testDemoteMainUser_whenItsSystemUser_flagDisabled() {
+        // Should behave the same as when it's enabled (i.e. be a no-op)
+        testDemoteMainUser_whenItsSystemUser();
+    }
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
@@ -1397,6 +1500,14 @@ public final class UserManagerServiceMockedTest {
         when(mTelecomManager.isInCall()).thenReturn(isInCall);
     }
 
+    private void expectUserJourneyLogged(@UserIdInt int userId, @UserJourney int journey) {
+        verify(mUserJourneyLogger).logUserJourneyBegin(userId, journey);
+    }
+
+    private void expectUserJourneyNotLogged(@UserIdInt int userId, @UserJourney int journey) {
+        verify(mUserJourneyLogger, never()).logUserJourneyBegin(userId, journey);
+    }
+
     private void addDefaultProfileAndParent() {
         addUser(PARENT_USER_ID);
         addProfile(PROFILE_USER_ID, PARENT_USER_ID);
@@ -1414,6 +1525,31 @@ public final class UserManagerServiceMockedTest {
         TestUserData userData = new TestUserData(userId);
         userData.info.flags = UserInfo.FLAG_FULL;
         addUserData(userData);
+    }
+
+    private void assumeMainUserIsNotTheSystemUser() {
+        var mainUserId = mUms.getMainUserId();
+        assumeFalse("main user is the system user", mainUserId == UserHandle.USER_SYSTEM);
+    }
+
+    private void assumeMainUserIsTheSystemUser() {
+        var mainUserId = mUms.getMainUserId();
+        assumeTrue("main user (" + mainUserId + ") is not the system user",
+                mainUserId == UserHandle.USER_SYSTEM);
+    }
+
+    private UserInfo createMainUser() {
+        UserInfo mainUser = mUms.createUserWithThrow("The Name is User, Main User",
+                USER_TYPE_FULL_SECONDARY,
+                UserInfo.FLAG_ADMIN | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN);
+        Log.d(TAG, "created main user: " + mainUser);
+        return mainUser;
+    }
+
+    private UserInfo getSystemUser() {
+        // Primary user is deprecated, so in theory we should interact through all users and check
+        // which has id 0. But pragramtically speaking, this is simpler...
+        return mUms.getPrimaryUser();
     }
 
     private void startDefaultProfile() {

@@ -508,6 +508,13 @@ flag {
 }
 
 flag {
+     name: "demote_main_user"
+     namespace: "multiuser"
+     description: "Remove the FLAG_MAIN on boot when the device doesn't support Main User anymore"
+     bug: "402486365"
+}
+
+flag {
     name: "setupwizard_username_population"
     namespace: "multiuser"
     description: "Ensures the user's account name is correctly populated and persisted during the Android Setup Wizard across all flows."
