@@ -71,20 +71,11 @@ public abstract class SettingObserver extends ContentObserver {
         mListening = listening;
         if (listening) {
             mObservedValue = getValueFromProvider();
-            if (Flags.qsRegisterSettingObserverOnBgThread()) {
-                mSettingsProxy.registerContentObserverAsync(
-                        mSettingsProxy.getUriFor(mSettingName), false, this,
-                        () -> mObservedValue = getValueFromProvider());
-            } else {
-                mSettingsProxy.registerContentObserverSync(
-                        mSettingsProxy.getUriFor(mSettingName), false, this);
-            }
+            mSettingsProxy.registerContentObserverAsync(
+                    mSettingsProxy.getUriFor(mSettingName), false, this,
+                    () -> mObservedValue = getValueFromProvider());
         } else {
-            if (Flags.qsRegisterSettingObserverOnBgThread()) {
-                mSettingsProxy.unregisterContentObserverAsync(this);
-            } else {
-                mSettingsProxy.unregisterContentObserverSync(this);
-            }
+            mSettingsProxy.unregisterContentObserverAsync(this);
             mObservedValue = mDefaultValue;
         }
     }
