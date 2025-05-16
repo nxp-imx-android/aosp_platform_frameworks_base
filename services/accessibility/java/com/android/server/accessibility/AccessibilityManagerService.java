@@ -138,6 +138,7 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.provider.Settings.Secure.AccessibilityMagnificationCursorFollowingMode;
 import android.provider.SettingsStringUtil.SettingStringHelper;
 import android.safetycenter.SafetyCenterManager;
 import android.text.TextUtils;
@@ -420,6 +421,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private final HearingDevicePhoneCallNotificationController mHearingDeviceNotificationController;
     private final UserManagerInternal mUmi;
 
+    @NonNull
     private AccessibilityUserState getCurrentUserStateLocked() {
         return getUserStateLocked(mCurrentUserId);
     }
@@ -3483,6 +3485,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         somethingChanged |= readUserRecommendedUiTimeoutSettingsLocked(userState);
         somethingChanged |= readMagnificationModeForDefaultDisplayLocked(userState);
         somethingChanged |= readMagnificationCapabilitiesLocked(userState);
+        somethingChanged |= readMagnificationCursorFollowingMode(userState);
         somethingChanged |= readMagnificationFollowTypingLocked(userState);
         somethingChanged |= readMagnificationFollowKeyboardLocked(userState);
         somethingChanged |= readAlwaysOnMagnificationLocked(userState);
@@ -5811,6 +5814,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         private final Uri mMagnificationCapabilityUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY);
 
+        private final Uri mMagnificationCursorFollowingModeUri = Settings.Secure.getUriFor(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE);
+
         private final Uri mMagnificationFollowTypingUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED);
 
@@ -5881,6 +5887,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     mMagnificationModeUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mMagnificationCapabilityUri, false, this, UserHandle.USER_ALL);
+            contentResolver.registerContentObserver(
+                    mMagnificationCursorFollowingModeUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mMagnificationFollowTypingUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
@@ -5979,6 +5987,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     if (readMagnificationCapabilitiesLocked(userState)) {
                         updateMagnificationCapabilitiesSettingsChangeLocked(userState);
                     }
+                } else if (mMagnificationCursorFollowingModeUri.equals(uri)) {
+                    readMagnificationCursorFollowingMode(userState);
                 } else if (mMagnificationFollowTypingUri.equals(uri)) {
                     readMagnificationFollowTypingLocked(userState);
                 } else if (mMagnificationFollowKeyboardUri.equals(uri)) {
@@ -6087,6 +6097,42 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (capabilities != userState.getMagnificationCapabilitiesLocked()) {
             userState.setMagnificationCapabilitiesLocked(capabilities);
             mMagnificationController.setMagnificationCapabilities(capabilities);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gets the magnification cursor following mode.
+     *
+     * @return cursor following mode.
+     */
+    @AccessibilityMagnificationCursorFollowingMode
+    public int getMagnificationCursorFollowingMode() {
+        synchronized (mLock) {
+            return getCurrentUserStateLocked().getMagnificationCursorFollowingMode();
+        }
+    }
+
+    boolean readMagnificationCursorFollowingMode(AccessibilityUserState userState) {
+        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
+            return false;
+        }
+
+        @AccessibilityMagnificationCursorFollowingMode
+        final int cursorFollowingMode = Settings.Secure.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS,
+                userState.mUserId);
+        @AccessibilityMagnificationCursorFollowingMode
+        final int userCursorFollowingMode = userState.getMagnificationCursorFollowingMode();
+
+        if (cursorFollowingMode != userCursorFollowingMode) {
+            userState.setMagnificationCursorFollowingMode(cursorFollowingMode);
+            if (mHasInputFilter && mInputFilter != null) {
+                mInputFilter.setCursorFollowingMode(cursorFollowingMode);
+            }
             return true;
         }
         return false;

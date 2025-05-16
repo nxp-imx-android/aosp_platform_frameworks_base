@@ -123,7 +123,117 @@ public class FullScreenMagnificationController implements
     @NonNull private final Supplier<MagnificationThumbnail> mThumbnailSupplier;
     @NonNull private final Supplier<Boolean> mMagnificationConnectionStateSupplier;
 
-    private boolean mIsPointerMotionFilterInstalled = false;
+    /**
+     * Full screen magnification data for {@link FullScreenMagnificationPointerMotionEventFilter}.
+     */
+    public static class FullScreenMagnificationData {
+        // LINT.IfChange(data_declaration)
+        private boolean mActivated;
+        private float mScale;
+        @NonNull
+        private Rect mBounds;
+        private float mOffsetX;
+        private float mMinOffsetX;
+        private float mMaxOffsetX;
+        private float mOffsetY;
+        private float mMinOffsetY;
+        private float mMaxOffsetY;
+        // LINT.ThenChange(FullScreenMagnificationController.java:data_reset)
+
+        public FullScreenMagnificationData() {
+            mBounds = new Rect();
+        }
+
+        public boolean isActivated() {
+            return mActivated;
+        }
+
+        public void setActivated(boolean activated) {
+            mActivated = activated;
+        }
+
+        public float getScale() {
+            return mScale;
+        }
+
+        public void setScale(float scale) {
+            mScale = scale;
+        }
+
+        @NonNull
+        public Rect getBounds() {
+            return mBounds;
+        }
+
+        public void setBounds(@NonNull Rect bounds) {
+            mBounds = bounds;
+        }
+
+        public float getOffsetX() {
+            return mOffsetX;
+        }
+
+        public void setOffsetX(float offsetX) {
+            mOffsetX = offsetX;
+        }
+
+        public float getMinOffsetX() {
+            return mMinOffsetX;
+        }
+
+        public void setMinOffsetX(float minOffsetX) {
+            mMinOffsetX = minOffsetX;
+        }
+
+        public float getMaxOffsetX() {
+            return mMaxOffsetX;
+        }
+
+        public void setMaxOffsetX(float maxOffsetX) {
+            mMaxOffsetX = maxOffsetX;
+        }
+
+        public float getOffsetY() {
+            return mOffsetY;
+        }
+
+        public void setOffsetY(float offsetY) {
+            mOffsetY = offsetY;
+        }
+
+        public float getMinOffsetY() {
+            return mMinOffsetY;
+        }
+
+        public void setMinOffsetY(float minOffsetY) {
+            mMinOffsetY = minOffsetY;
+        }
+
+        public float getMaxOffsetY() {
+            return mMaxOffsetY;
+        }
+
+        public void setMaxOffsetY(float maxOffsetY) {
+            mMaxOffsetY = maxOffsetY;
+        }
+
+        /**
+         * Resets the data to default.
+         */
+        public void reset() {
+            // LINT.IfChange(data_reset)
+            mActivated = false;
+            mScale = 1.0f;
+            mBounds.setEmpty();
+            mOffsetX = 0.0f;
+            mMinOffsetX = 0.0f;
+            mMaxOffsetX = 0.0f;
+            mOffsetY = 0.0f;
+            mMinOffsetY = 0.0f;
+            mMaxOffsetY = 0.0f;
+            // LINT.ThenChange(FullScreenMagnificationController.java:data_declaration)
+        }
+    }
 
     /**
      * This class implements {@link WindowManagerInternal.MagnificationCallbacks} and holds
@@ -1077,7 +1187,6 @@ public class FullScreenMagnificationController implements
             if (display.register()) {
                 mDisplays.put(displayId, display);
                 mScreenStateObserver.registerIfNecessary();
-                configurePointerMotionFilter(true);
             }
         }
     }
@@ -1252,6 +1361,33 @@ public class FullScreenMagnificationController implements
                 return false;
             }
             return display.magnificationRegionContains(x, y);
+        }
+    }
+
+    /**
+     * Gets the full screen magnification data needed by
+     * {@link #FullScreenMagnificationPointerMotionEventFilter}.
+     *
+     * @param displayId The logical display id.
+     * @param outMagnificationData The magnification data to populate.
+     */
+    public void getFullScreenMagnificationData(int displayId,
+            @NonNull FullScreenMagnificationData outMagnificationData) {
+        synchronized (mLock) {
+            final DisplayMagnification display = mDisplays.get(displayId);
+            if (display == null) {
+                outMagnificationData.reset();
+            } else {
+                outMagnificationData.mActivated = display.isActivated();
+                outMagnificationData.mScale = display.getScale();
+                display.getMagnificationBounds(outMagnificationData.mBounds);
+                outMagnificationData.mOffsetX = display.getOffsetX();
+                outMagnificationData.mMinOffsetX = display.getMinOffsetXLocked();
+                outMagnificationData.mMaxOffsetX = display.getMaxOffsetXLocked();
+                outMagnificationData.mOffsetY = display.getOffsetY();
+                outMagnificationData.mMinOffsetY = display.getMinOffsetYLocked();
+                outMagnificationData.mMaxOffsetY = display.getMaxOffsetYLocked();
+            }
         }
     }
 
@@ -1937,7 +2073,6 @@ public class FullScreenMagnificationController implements
         }
         if (!hasRegister) {
             mScreenStateObserver.unregister();
-            configurePointerMotionFilter(false);
         }
     }
 
@@ -1951,22 +2086,6 @@ public class FullScreenMagnificationController implements
         synchronized (mLock) {
             mMagnificationInfoChangedCallbacks.remove(callback);
         }
-    }
-
-    private void configurePointerMotionFilter(boolean enabled) {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return;
-        }
-        if (enabled == mIsPointerMotionFilterInstalled) {
-            return;
-        }
-        if (!enabled) {
-            mControllerCtx.getInputManager().registerAccessibilityPointerMotionFilter(null);
-        } else {
-            mControllerCtx.getInputManager().registerAccessibilityPointerMotionFilter(
-                    new FullScreenMagnificationPointerMotionEventFilter(this));
-        }
-        mIsPointerMotionFilterInstalled = enabled;
     }
 
     private boolean traceEnabled() {
