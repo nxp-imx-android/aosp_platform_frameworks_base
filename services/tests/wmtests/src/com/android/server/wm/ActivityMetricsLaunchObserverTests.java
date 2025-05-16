@@ -153,19 +153,14 @@ public class ActivityMetricsLaunchObserverTests extends WindowTestsBase {
     }
 
     private long onIntentStarted(Intent intent) {
-        clearInvocations(mLaunchObserver);
         notifyActivityLaunching(intent);
 
         long timestamp = -1;
         // If it is launching top activity from trampoline activity, the observer shouldn't receive
         // onActivityLaunched because the activities should belong to the same transition.
         if (!mLaunchTopByTrampoline) {
-            final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
             final ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
-            verifyAsync(mLaunchObserver).onIntentStarted(intentCaptor.capture(),
-                    captor.capture());
-            assertWithMessage("Same intent").that(
-                    intent.filterEquals(intentCaptor.getValue())).isTrue();
+            verifyAsync(mLaunchObserver).onIntentStarted(eq(intent), captor.capture());
             timestamp = captor.getValue();
         }
         verifyNoMoreInteractions(mLaunchObserver);

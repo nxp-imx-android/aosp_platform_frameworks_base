@@ -73,7 +73,7 @@ class LaunchObserverRegistryImpl extends ActivityMetricsLaunchObserver implement
         mHandler.sendMessage(PooledLambda.obtainMessage(
                 LaunchObserverRegistryImpl::handleOnIntentStarted,
                 this,
-                new Intent(intent),
+                intent,
                 timestampNs));
     }
 
