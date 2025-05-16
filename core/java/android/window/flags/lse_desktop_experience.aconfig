@@ -685,6 +685,16 @@ flag {
 }
 
 flag {
+    name: "parallel_cd_transitions_during_recents"
+    namespace: "lse_desktop_experience"
+    description: "Runs CD transitions in a separate track when the recents transition is running"
+    bug: "416499938"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
