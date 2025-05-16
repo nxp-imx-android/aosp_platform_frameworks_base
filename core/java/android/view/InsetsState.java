@@ -612,19 +612,25 @@ public class InsetsState implements Parcelable {
     }
 
     public void set(InsetsState other, boolean copySources) {
-        mDisplayFrame.set(other.mDisplayFrame);
-        mDisplayCutout.set(other.mDisplayCutout);
-        mRoundedCorners = other.getRoundedCorners();
-        mRoundedCornerFrame.set(other.mRoundedCornerFrame);
-        mPrivacyIndicatorBounds = other.getPrivacyIndicatorBounds();
-        mDisplayShape = other.getDisplayShape();
-        mSeq = other.mSeq;
-        mSources.clear();
-        for (int i = 0, size = other.mSources.size(); i < size; i++) {
-            final InsetsSource otherSource = other.mSources.valueAt(i);
-            mSources.append(otherSource.getId(), copySources
-                    ? new InsetsSource(otherSource)
-                    : otherSource);
+        if (this != other) {
+            mDisplayFrame.set(other.mDisplayFrame);
+            mDisplayCutout.set(other.mDisplayCutout);
+            mRoundedCorners = other.getRoundedCorners();
+            mRoundedCornerFrame.set(other.mRoundedCornerFrame);
+            mPrivacyIndicatorBounds = other.getPrivacyIndicatorBounds();
+            mDisplayShape = other.getDisplayShape();
+            mSeq = other.mSeq;
+            mSources.clear();
+            for (int i = 0, size = other.mSources.size(); i < size; i++) {
+                final InsetsSource otherSource = other.mSources.valueAt(i);
+                mSources.append(otherSource.getId(), copySources
+                        ? new InsetsSource(otherSource)
+                        : otherSource);
+            }
+        } else if (copySources) {
+            for (int i = 0, size = mSources.size(); i < size; i++) {
+                mSources.setValueAt(i, new InsetsSource(mSources.valueAt(i)));
+            }
         }
     }
 
@@ -636,6 +642,9 @@ public class InsetsState implements Parcelable {
      * @param types the only types of sources would be set.
      */
     public void set(InsetsState other, @InsetsType int types) {
+        if (this == other) {
+            return;
+        }
         mDisplayFrame.set(other.mDisplayFrame);
         mDisplayCutout.set(other.mDisplayCutout);
         mRoundedCorners = other.getRoundedCorners();
