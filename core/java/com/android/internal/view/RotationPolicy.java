@@ -172,11 +172,19 @@ public final class RotationPolicy {
         setRotationLock(enabled, NATURAL_ROTATION, caller);
     }
 
-    private static boolean areAllRotationsAllowed(Context context) {
+    /**
+     * If true, the screen can be rotated via the accelerometer in all 4 rotations as the default
+     * behavior.
+     */
+    public static boolean areAllRotationsAllowed(Context context) {
         return context.getResources().getBoolean(R.bool.config_allowAllRotations);
     }
 
-    private static boolean useCurrentRotationOnRotationLockChange(Context context) {
+    /**
+     * If false and config_allowAllRotations is false, the screen will rotate to the natural
+     * orientation of the device when the auto-rotate policy is toggled.
+     */
+    public static boolean useCurrentRotationOnRotationLockChange(Context context) {
         return context.getResources().getBoolean(
                 R.bool.config_useCurrentRotationOnRotationLockChange);
     }
