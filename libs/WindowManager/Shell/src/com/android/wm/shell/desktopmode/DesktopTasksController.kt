@@ -405,7 +405,7 @@ class DesktopTasksController(
      * TODO(b/405381458): use focusTransitionObserver to get the focused task on a certain display
      */
     fun moveFocusedTaskToDesktop(displayId: Int, transitionSource: DesktopModeTransitionSource) {
-        val allFocusedTasks = getAllFocusedTasks(displayId)
+        val allFocusedTasks = getFocusedNonDesktopTasks(displayId)
         when (allFocusedTasks.size) {
             0 -> return
             // Full screen case
@@ -447,7 +447,7 @@ class DesktopTasksController(
      * Returns all focused tasks in full screen or split screen mode in [displayId] when it is not
      * the home activity.
      */
-    private fun getAllFocusedTasks(displayId: Int): List<RunningTaskInfo> =
+    private fun getFocusedNonDesktopTasks(displayId: Int): List<RunningTaskInfo> =
         shellTaskOrganizer.getRunningTasks(displayId).filter {
             it.isFocused &&
                 (it.windowingMode == WINDOWING_MODE_FULLSCREEN ||
@@ -2008,8 +2008,8 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         taskBounds: Rect = taskInfo.configuration.windowConfiguration.bounds,
     ): Boolean =
-        getSnapBounds(taskInfo, SnapPosition.LEFT) == taskBounds ||
-            getSnapBounds(taskInfo, SnapPosition.RIGHT) == taskBounds
+        getSnapBounds(taskInfo.displayId, SnapPosition.LEFT) == taskBounds ||
+            getSnapBounds(taskInfo.displayId, SnapPosition.RIGHT) == taskBounds
 
     @VisibleForTesting
     fun doesAnyTaskRequireTaskbarRounding(displayId: Int, excludeTaskId: Int? = null): Boolean {
@@ -2065,7 +2065,7 @@ class DesktopTasksController(
             displayController,
         )
 
-        val destinationBounds = getSnapBounds(taskInfo, position)
+        val destinationBounds = getSnapBounds(taskInfo.displayId, position)
         desktopModeEventLogger.logTaskResizingEnded(
             resizeTrigger,
             inputMethod,
@@ -2196,8 +2196,8 @@ class DesktopTasksController(
     private fun isSnapResizingAllowed(taskInfo: RunningTaskInfo) =
         taskInfo.isResizeable || !DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE.isTrue()
 
-    private fun getSnapBounds(taskInfo: RunningTaskInfo, position: SnapPosition): Rect {
-        val displayLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return Rect()
+    private fun getSnapBounds(displayId: Int, position: SnapPosition): Rect {
+        val displayLayout = displayController.getDisplayLayout(displayId) ?: return Rect()
 
         val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
 
@@ -4475,13 +4475,16 @@ class DesktopTasksController(
         dragEvent: DragEvent,
         onFinishCallback: Consumer<Boolean>,
     ): Boolean {
-        // TODO(b/320797628): Pass through which display we are dropping onto
-        if (!isAnyDeskActive(DEFAULT_DISPLAY)) {
-            // Not currently in desktop mode, ignore the drop
+        val destinationDisplay = dragEvent.displayId
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(destinationDisplay) ||
+                getFocusedNonDesktopTasks(destinationDisplay).isNotEmpty()
+        ) {
+            // Destination display does not support desktop or has focused
+            // non-freeform task; ignore the drop.
             return false
         }
 
-        // TODO:
         val launchComponent = getComponent(launchIntent)
         if (!multiInstanceHelper.supportsMultiInstanceSplit(launchComponent, userId)) {
             // TODO(b/320797628): Should only return early if there is an existing running task, and
@@ -4489,7 +4492,9 @@ class DesktopTasksController(
             logV("Dropped intent does not support multi-instance")
             return false
         }
-        val taskInfo = getFocusedFreeformTask(DEFAULT_DISPLAY) ?: return false
+        val taskInfo =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
+                ?: return false
         // TODO(b/358114479): Update drag and drop handling to give us visibility into when another
         //  window will accept a drag event. This way, we can hide the indicator when we won't
         //  be handling the transition here, allowing us to display the indicator accurately.
@@ -4498,7 +4503,7 @@ class DesktopTasksController(
             updateVisualIndicator(
                 taskInfo,
                 dragEvent.dragSurface,
-                dragEvent.displayId,
+                destinationDisplay,
                 dragEvent.x,
                 dragEvent.y,
                 DragStartState.DRAGGED_INTENT,
@@ -4509,17 +4514,21 @@ class DesktopTasksController(
                 IndicatorType.TO_FULLSCREEN_INDICATOR -> {
                     WINDOWING_MODE_FULLSCREEN
                 }
+                // NO_INDICATOR can result from a cross-display drag.
                 IndicatorType.TO_SPLIT_LEFT_INDICATOR,
                 IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
-                IndicatorType.TO_DESKTOP_INDICATOR -> {
+                IndicatorType.TO_DESKTOP_INDICATOR,
+                IndicatorType.NO_INDICATOR -> {
                     WINDOWING_MODE_FREEFORM
                 }
                 else -> error("Invalid indicator type: $indicatorType")
             }
-        val displayLayout = displayController.getDisplayLayout(DEFAULT_DISPLAY) ?: return false
+        val displayLayout = displayController.getDisplayLayout(destinationDisplay) ?: return false
+
         val newWindowBounds = Rect()
         when (indicatorType) {
-            IndicatorType.TO_DESKTOP_INDICATOR -> {
+            IndicatorType.TO_DESKTOP_INDICATOR,
+            IndicatorType.NO_INDICATOR -> {
                 // Use default bounds, but with the top-center at the drop point.
                 newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
                 newWindowBounds.offsetTo(
@@ -4528,10 +4537,10 @@ class DesktopTasksController(
                 )
             }
             IndicatorType.TO_SPLIT_RIGHT_INDICATOR -> {
-                newWindowBounds.set(getSnapBounds(taskInfo, SnapPosition.RIGHT))
+                newWindowBounds.set(getSnapBounds(destinationDisplay, SnapPosition.RIGHT))
             }
             IndicatorType.TO_SPLIT_LEFT_INDICATOR -> {
-                newWindowBounds.set(getSnapBounds(taskInfo, SnapPosition.LEFT))
+                newWindowBounds.set(getSnapBounds(destinationDisplay, SnapPosition.LEFT))
             }
             else -> {
                 // Use empty bounds for the fullscreen case.
@@ -4547,6 +4556,7 @@ class DesktopTasksController(
                 pendingIntentLaunchFlags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
                 splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
+                launchDisplayId = destinationDisplay
             }
         if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
             dragAndDropFullscreenCookie = Binder()
@@ -4559,13 +4569,13 @@ class DesktopTasksController(
                 DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue ||
                     DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
             ) {
-                val deskId = getOrCreateDefaultDeskId(DEFAULT_DISPLAY) ?: return false
+                val deskId = getOrCreateDefaultDeskId(destinationDisplay) ?: return false
                 startLaunchTransition(
                     TRANSIT_OPEN,
                     wct,
                     launchingTaskId = null,
                     deskId = deskId,
-                    displayId = DEFAULT_DISPLAY,
+                    displayId = destinationDisplay,
                     dragEvent = dragEvent,
                 )
             } else {
