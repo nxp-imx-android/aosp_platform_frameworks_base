@@ -21,6 +21,7 @@ import static android.view.PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
 import static android.view.WindowManager.LayoutParams.FLAG_SLIPPERY;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CURSOR_HOVER_STATES_ENABLED;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.snapPositionToUIString;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -75,6 +76,7 @@ import java.util.Objects;
 public class DividerView extends FrameLayout implements View.OnTouchListener {
     public static final long TOUCH_ANIMATION_DURATION = 150;
     public static final long TOUCH_RELEASE_ANIMATION_DURATION = 200;
+    private static final boolean SHOW_DRAG_TOOLTIP = true;
 
     private final Paint mPaint = new Paint();
     private final Rect mBackgroundRect = new Rect();
@@ -85,6 +87,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     private SurfaceControlViewHost mViewHost;
     private DividerHandleView mHandle;
     private DividerRoundedCorner mCorners;
+    /** A tooltip view that appears to educate users about split screen breakpoints. */
+    private DividerTooltip mTooltip;
     private int mTouchElevation;
 
     private VelocityTracker mVelocityTracker;
@@ -101,6 +105,11 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     // Calculation classes for "magnetic snap" user-controlled movement
     private DistanceGestureContext mDistanceGestureContext;
     private ViewMotionValue mViewMotionValue;
+    /**
+     * The @SnapPosition where the user started dragging from. Used for mid-drag calculations, null
+     * otherwise.
+     */
+    @Nullable private Integer mDragStartingSnapPosition;
     @Nullable private Integer mLastHoveredOverSnapPosition;
 
     /**
@@ -247,6 +256,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         final boolean isLeftRightSplit = mSplitLayout.isLeftRightSplit();
         mHandle.setIsLeftRightSplit(isLeftRightSplit);
         mCorners.setIsLeftRightSplit(isLeftRightSplit);
+        mTooltip.setIsLeftRightSplit(isLeftRightSplit);
 
         mHandleRegionWidth = getResources().getDimensionPixelSize(isLeftRightSplit
                 ? R.dimen.split_divider_handle_region_height
@@ -297,6 +307,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         mDividerBar = findViewById(R.id.divider_bar);
         mHandle = findViewById(R.id.docked_divider_handle);
         mCorners = findViewById(R.id.docked_divider_rounded_corner);
+        mTooltip = findViewById(R.id.docked_divider_tooltip);
         mTouchElevation = getResources().getDimensionPixelSize(
                 R.dimen.docked_stack_divider_lift_elevation);
         mDoubleTapDetector = new GestureDetector(getContext(), new DoubleTapListener());
@@ -382,19 +393,40 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                                 mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
                                 "dividerView::pos" /* label */);
                         mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
+                        mDragStartingSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
                         mViewMotionValue.addUpdateCallback(viewMotionValue -> {
+                            int snappedPosition = (int) viewMotionValue.getOutput();
                             // Whenever MotionValue updates (from user moving the divider):
                             // - Place divider in its new position
-                            placeDivider((int) viewMotionValue.getOutput());
+                            placeDivider(snappedPosition);
                             // - Play a haptic if entering a magnetic zone
                             Integer currentlyHoveredOverSnapZone = viewMotionValue.get(
                                     MagneticDividerUtils.getSNAP_POSITION_KEY());
-                            if (currentlyHoveredOverSnapZone != null && !Objects.equals(
-                                    currentlyHoveredOverSnapZone, mLastHoveredOverSnapPosition)) {
+
+                            boolean changedSnapPosition = !Objects.equals(
+                                    currentlyHoveredOverSnapZone, mLastHoveredOverSnapPosition);
+                            if (currentlyHoveredOverSnapZone != null && changedSnapPosition) {
                                 playHapticClick();
                             }
                             // - Update the last-hovered-over snap zone
                             mLastHoveredOverSnapPosition = currentlyHoveredOverSnapZone;
+                            // - Update tooltip state if needed
+                            if (SHOW_DRAG_TOOLTIP && changedSnapPosition) {
+                                // - Update internal state for closest snap position (i.e. where the
+                                // user will end up if drag is released)
+                                final float velocity = isLeftRightSplit
+                                        ? mVelocityTracker.getXVelocity()
+                                        : mVelocityTracker.getYVelocity();
+                                int closestSnapPosition = mSplitLayout
+                                        .findSnapTarget(snappedPosition,
+                                                velocity, false /* hardDismiss */)
+                                        .snapPosition;
+                                if (closestSnapPosition != mDragStartingSnapPosition) {
+                                    showTooltip(snapPositionToUIString(closestSnapPosition));
+                                } else {
+                                    hideTooltip();
+                                }
+                            }
                         });
                     }
                 }
@@ -443,6 +475,23 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         mSplitLayout.getHapticPlayer().playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR, null);
     }
 
+    private void showTooltip(String tooltipText) {
+        mTooltip.setText(tooltipText);
+        if (mTooltip.getVisibility() == VISIBLE) {
+            return;
+        }
+        mTooltip.setVisibility(VISIBLE);
+        mTooltip.setAlpha(1f);
+    }
+
+    private void hideTooltip() {
+        if (mTooltip.getVisibility() == GONE) {
+            return;
+        }
+        mTooltip.setAlpha(0f);
+        mTooltip.setVisibility(GONE);
+    }
+
     /** Updates the position of the divider. */
     private void placeDivider(int position) {
         mSplitLayout.updateDividerBounds(position, true /* shouldUseParallaxEffect */);
@@ -470,6 +519,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         mDistanceGestureContext = null;
         mViewMotionValue = null;
         mLastHoveredOverSnapPosition = null;
+        mDragStartingSnapPosition = null;
+        hideTooltip();
     }
 
     private void setTouching() {

@@ -199,7 +199,7 @@ public class SplitScreenConstants {
     })
     public @interface SplitScreenState {}
 
-    /** Converts a {@link SplitScreenState} to a human-readable string. */
+    /** Converts a {@link SplitScreenState} to a human-readable string, for debug use. */
     public static String stateToString(@SplitScreenState int state) {
         return switch (state) {
             case NOT_IN_SPLIT -> "NOT_IN_SPLIT";
@@ -214,6 +214,20 @@ public class SplitScreenConstants {
             case SNAP_TO_3_10_45_45 -> "SNAP_TO_3_10_45_45";
             case ANIMATING_OFFSCREEN_TAP -> "ANIMATING_OFFSCREEN_TAP";
             default -> "UNKNOWN";
+        };
+    }
+
+    /** Converts a {@link SnapPosition} to a string, for UI use. */
+    public static String snapPositionToUIString(@SnapPosition int snapPosition) {
+        return switch (snapPosition) {
+            case SNAP_TO_START_AND_DISMISS -> "\u2715";
+            case SNAP_TO_END_AND_DISMISS -> "\u2715";
+            case SNAP_TO_2_33_66 -> "30:70";
+            case SNAP_TO_2_50_50 -> "50:50";
+            case SNAP_TO_2_66_33 -> "70:30";
+            case SNAP_TO_2_90_10 -> "90:10";
+            case SNAP_TO_2_10_90 -> "10:90";
+            default -> "Split";
         };
     }
 
