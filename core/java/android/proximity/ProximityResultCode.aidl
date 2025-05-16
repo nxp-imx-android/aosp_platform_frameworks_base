@@ -69,4 +69,8 @@ enum ProximityResultCode {
     REQUEST_CANCELLED = 22,
     /** Unknown error. */
     UNKNOWN = 23,
+    /** Requested ranging is not supported on the primary device. */
+    PRIMARY_DEVICE_RANGING_NOT_SUPPORTED = 24,
+    /** Requested ranging is not supported on the associated device. */
+    ASSOCIATED_DEVICE_RANGING_NOT_SUPPORTED = 25,
 }
