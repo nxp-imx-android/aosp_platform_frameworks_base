@@ -2,14 +2,17 @@ package com.android.systemui.biometrics.ui.viewmodel
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentView
 import android.text.InputType
 import com.android.internal.widget.LockPatternView
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.domain.interactor.CredentialStatus
 import com.android.systemui.biometrics.domain.interactor.PromptCredentialInteractor
+import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
 import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
+import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -31,6 +34,7 @@ constructor(
     @Application private val applicationContext: Context,
     private val credentialInteractor: PromptCredentialInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val promptSelectorInteractor: PromptSelectorInteractor,
 ) {
     /** Top level information about the prompt. */
     val header: Flow<CredentialHeaderViewModel> =
@@ -107,6 +111,18 @@ constructor(
     /** If set, the number of remaining attempts before the user must stop. */
     val remainingAttempts: Flow<RemainingAttempts> = _remainingAttempts.asStateFlow()
 
+    private val biometricsRequested: Flow<Boolean> =
+        credentialInteractor.prompt.map { it?.biometricsRequested == true }
+
+    /** List of fallback options set by prompt caller */
+    val fallbackOptions: Flow<List<FallbackOptionModel>> = credentialInteractor.fallbackOptions
+
+    /** Whether the fallback button should show on the credential screen */
+    val showFallbackButton: Flow<Boolean> =
+        combine(biometricsRequested, fallbackOptions) { biometricsRequested, fallbackOptions ->
+            Flags.bpFallbackOptions() && !biometricsRequested && fallbackOptions.isNotEmpty()
+        }
+
     /** Enable transition animations. */
     fun setAnimateContents(animate: Boolean) {
         _animateContents.value = animate
@@ -126,6 +142,11 @@ constructor(
     /** Reset the error message to an empty string. */
     fun resetErrorMessage() {
         credentialInteractor.resetVerificationError()
+    }
+
+    /** Switch to the fallback view. */
+    fun onSwitchToFallbackScreen() {
+        promptSelectorInteractor.onSwitchToFallback()
     }
 
     /** Check a PIN or password and update [validatedAttestation] or [remainingAttempts]. */

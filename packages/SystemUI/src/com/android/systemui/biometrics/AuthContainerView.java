@@ -31,7 +31,7 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.hardware.biometrics.BiometricAuthenticator.Modality;
 import android.hardware.biometrics.BiometricConstants;
-import android.hardware.biometrics.BiometricManager.Authenticators;
+import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.PromptInfo;
@@ -223,8 +223,11 @@ public class AuthContainerView extends LinearLayout
             mConfig.mCallback.onDeviceCredentialPressed(getRequestId());
             addCredentialView(false /* animatePanel */, true /* animateContents */);
 
-            // TODO(b/313469218): Remove Config
-            mConfig.mPromptInfo.setAuthenticators(Authenticators.DEVICE_CREDENTIAL);
+            if (!Flags.bpFallbackOptions()) {
+                // TODO(b/313469218): Remove Config
+                mConfig.mPromptInfo.setAuthenticators(
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+            }
         }
 
         @Override

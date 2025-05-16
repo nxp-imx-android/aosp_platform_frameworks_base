@@ -43,6 +43,7 @@ import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.biometrics.UdfpsUtils
 import com.android.systemui.biometrics.Utils.isSystem
+import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
@@ -282,11 +283,19 @@ constructor(
             hasFingerBeenAcquired || overlayTouched
         }
 
-    private val _fallbackShowing: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    /** the current View that is showing in prompt */
+    val currentView = promptSelectorInteractor.currentView
+
     /** Whether the fallback options screen is currently showing, auth view if false */
-    val fallbackShowing: Flow<Boolean> = _fallbackShowing.asStateFlow()
+    val fallbackShowing: Flow<Boolean> = currentView.map { it == BiometricPromptView.FALLBACK }
 
     private val _forceLargeSize = MutableStateFlow(false)
+    private val forceLargeSize =
+        if (Flags.bpFallbackOptions()) {
+            currentView.map { it == BiometricPromptView.CREDENTIAL }
+        } else {
+            _forceLargeSize
+        }
     private val _forceMediumSize = MutableStateFlow(false)
 
     private val authInteractionProperties = AuthInteractionProperties()
@@ -299,7 +308,7 @@ constructor(
     /** The current position of the prompt */
     val position: Flow<PromptPosition> =
         combine(
-                _forceLargeSize,
+                forceLargeSize,
                 promptKind,
                 displayStateInteractor.isLargeScreen,
                 displayStateInteractor.currentRotation,
@@ -323,7 +332,7 @@ constructor(
     /** The size of the prompt. */
     val size: Flow<PromptSize> =
         combine(
-                _forceLargeSize,
+                forceLargeSize,
                 _forceMediumSize,
                 modalities,
                 promptSelectorInteractor.isConfirmationRequired,
@@ -935,21 +944,23 @@ constructor(
      * TODO(b/251476085): this should be decoupled from the shared panel controller
      */
     fun onSwitchToCredential() {
-        _forceLargeSize.value = true
+        if (!Flags.bpFallbackOptions()) {
+            _forceLargeSize.value = true
+        }
         promptSelectorInteractor.onSwitchToCredential()
     }
 
     /** Switch to the fallback view. */
     fun onSwitchToFallback() {
         if (Flags.bpFallbackOptions()) {
-            _fallbackShowing.value = true
+            promptSelectorInteractor.onSwitchToFallback()
         }
     }
 
     /** Switch to the auth view. */
     fun onSwitchToAuth() {
         if (Flags.bpFallbackOptions()) {
-            _fallbackShowing.value = false
+            promptSelectorInteractor.onSwitchToAuth()
         }
     }
 

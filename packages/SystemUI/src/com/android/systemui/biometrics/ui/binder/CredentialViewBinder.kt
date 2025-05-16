@@ -58,6 +58,7 @@ object CredentialViewBinder {
         val errorView: TextView = view.requireViewById(R.id.error)
         val cancelButton: Button? = view.findViewById(R.id.cancel_button)
         val emergencyButtonView: Button = view.requireViewById(R.id.emergencyCallButton)
+        val fallbackButton: Button = view.requireViewById(R.id.fallback_button)
 
         var errorTimer: Job? = null
 
@@ -149,6 +150,32 @@ object CredentialViewBinder {
                     viewModel.isShadeExpanded.collect { isShadeExpanded ->
                         if (isShadeExpanded) {
                             host.onCredentialAborted()
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.showFallbackButton.collect { showFallback ->
+                        if (showFallback) {
+                            fallbackButton.visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.fallbackOptions.collect { options ->
+                        if (options.count() > 1) {
+                            fallbackButton.text =
+                                view.context.getString(R.string.biometric_dialog_fallback_button)
+                            fallbackButton.setOnClickListener {
+                                viewModel.onSwitchToFallbackScreen()
+                            }
+                        } else if (options.count() == 1) {
+                            // If only one option, use it as the fallback button
+                            fallbackButton.text = options[0].text
+                            fallbackButton.setOnClickListener {
+                                legacyCallback.onFallbackOptionPressed(0)
+                            }
                         }
                     }
                 }

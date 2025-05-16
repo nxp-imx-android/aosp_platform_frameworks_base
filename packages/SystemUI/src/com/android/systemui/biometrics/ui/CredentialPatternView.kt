@@ -48,9 +48,9 @@ class CredentialPatternView(context: Context, attrs: AttributeSet?) :
         val navigationInsets: Insets = insets.getInsets(Type.navigationBars())
 
         setPadding(
-            0,
+            displayCutoutInsets.left,
             statusBarInsets.top.coerceAtLeast(displayCutoutInsets.top),
-            0,
+            displayCutoutInsets.right,
             navigationInsets.bottom,
         )
         return WindowInsets.CONSUMED

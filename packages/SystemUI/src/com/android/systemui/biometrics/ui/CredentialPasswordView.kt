@@ -79,9 +79,9 @@ class CredentialPasswordView(context: Context, attrs: AttributeSet?) :
         }
 
         setPadding(
-            0,
+            displayCutoutInsets.left,
             statusBarInsets.top.coerceAtLeast(displayCutoutInsets.top),
-            0,
+            displayCutoutInsets.right,
             if (keyboardInsets.bottom == 0) navigationInsets.bottom else keyboardInsets.bottom,
         )
         return WindowInsets.CONSUMED

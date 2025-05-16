@@ -22,6 +22,7 @@ import com.android.systemui.biometrics.data.repository.PromptRepository
 import com.android.systemui.biometrics.domain.model.BiometricOperationInfo
 import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
+import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.dagger.qualifiers.Background
 import javax.inject.Inject
@@ -60,13 +61,16 @@ constructor(
             promptInfo?.contentView != null && !promptInfo.isContentViewMoreOptionsButtonUsed
         }
 
+    /** Fallback options set by prompt requester */
+    val fallbackOptions: Flow<List<FallbackOptionModel>> = biometricPromptRepository.fallbackOptions
+
     /** Metadata about the current credential prompt, including app-supplied preferences. */
     val prompt: Flow<BiometricPromptRequest.Credential?> =
         combine(
                 biometricPromptRepository.promptInfo,
                 biometricPromptRepository.challenge,
                 biometricPromptRepository.userId,
-                biometricPromptRepository.promptKind
+                biometricPromptRepository.promptKind,
             ) { promptInfo, challenge, userId, promptKind ->
                 if (promptInfo == null || userId == null || challenge == null) {
                     return@combine null
@@ -79,9 +83,9 @@ constructor(
                             userInfo =
                                 userInfo(
                                     userId,
-                                    promptInfo.shouldUseParentProfileForDeviceCredential()
+                                    promptInfo.shouldUseParentProfileForDeviceCredential(),
                                 ),
-                            operationInfo = operationInfo(challenge)
+                            operationInfo = operationInfo(challenge),
                         )
                     PromptKind.Pattern ->
                         BiometricPromptRequest.Credential.Pattern(
@@ -89,10 +93,10 @@ constructor(
                             userInfo =
                                 userInfo(
                                     userId,
-                                    promptInfo.shouldUseParentProfileForDeviceCredential()
+                                    promptInfo.shouldUseParentProfileForDeviceCredential(),
                                 ),
                             operationInfo = operationInfo(challenge),
-                            stealthMode = credentialInteractor.isStealthModeActive(userId)
+                            stealthMode = credentialInteractor.isStealthModeActive(userId),
                         )
                     PromptKind.Password ->
                         BiometricPromptRequest.Credential.Password(
@@ -100,9 +104,9 @@ constructor(
                             userInfo =
                                 userInfo(
                                     userId,
-                                    promptInfo.shouldUseParentProfileForDeviceCredential()
+                                    promptInfo.shouldUseParentProfileForDeviceCredential(),
                                 ),
-                            operationInfo = operationInfo(challenge)
+                            operationInfo = operationInfo(challenge),
                         )
                     else -> null
                 }
@@ -111,7 +115,7 @@ constructor(
 
     private fun userInfo(
         userId: Int,
-        useParentProfileForDeviceCredential: Boolean
+        useParentProfileForDeviceCredential: Boolean,
     ): BiometricUserInfo =
         BiometricUserInfo(
             userId = userId,
@@ -162,7 +166,7 @@ constructor(
 
     private suspend fun verifyCredential(
         request: BiometricPromptRequest.Credential,
-        credential: LockscreenCredential?
+        credential: LockscreenCredential?,
     ): CredentialStatus {
         if (credential == null || credential.isNone) {
             return CredentialStatus.Fail.Error()

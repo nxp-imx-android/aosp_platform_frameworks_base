@@ -7,6 +7,7 @@ import com.android.systemui.biometrics.data.repository.FakePromptRepository
 import com.android.systemui.biometrics.domain.interactor.CredentialStatus
 import com.android.systemui.biometrics.domain.interactor.FakeCredentialInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptCredentialInteractor
+import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
 import com.android.systemui.biometrics.promptInfo
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -45,6 +46,7 @@ class CredentialViewModelTest : SysuiTestCase() {
                 mContext,
                 PromptCredentialInteractor(dispatcher, promptRepository, credentialInteractor),
                 kosmos.shadeInteractor,
+                kosmos.promptSelectorInteractor,
             )
     }
 
