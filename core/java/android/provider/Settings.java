@@ -21086,6 +21086,13 @@ public final class Settings {
             public static final String GESTURE_DISMISS_ACTION_USER_PREFERENCE =
                     "gesture_dismiss_action_user_preference";
 
+            /**
+             * Setting indicating the duration, in days, between two gesture hint sessions.
+             *
+             * @hide
+             */
+            public static final String GESTURE_HINT_PERIOD_DAYS = "gesture_hint_period_days";
+
             /** Whether Wear Power Anomaly Service is enabled.
              *
              * (0 = false, 1 = true)
