@@ -18,7 +18,6 @@ package android.platform.test.ravenwood;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
 import static com.android.ravenwood.common.RavenwoodCommonUtils.ensureIsPublicVoidMethod;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import android.annotation.NonNull;
@@ -229,11 +228,8 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             s.evaluate();
             onAfter(description, scope, order, null);
         } catch (Throwable t) {
-            var shouldReportFailure = RavenwoodCommonUtils.runIgnoringException(
-                    () -> onAfter(description, scope, order, t));
-            if (shouldReportFailure == null || shouldReportFailure) {
-                throw t;
-            }
+            RavenwoodCommonUtils.runIgnoringException(() -> onAfter(description, scope, order, t));
+            throw t;
         }
     }
 
@@ -306,10 +302,8 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
 
     /**
      * Called after a test / class.
-     *
-     * Return false if the exception should be ignored.
      */
-    private boolean onAfter(Description description, Scope scope, Order order, Throwable th) {
+    private void onAfter(Description description, Scope scope, Order order, Throwable th) {
         if (RAVENWOOD_VERBOSE_LOGGING) {
             Log.v(TAG, "onAfter: description=" + description + ", " + scope + ", " + order + ", "
                     + th);
@@ -321,36 +315,6 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             // End of a test method.
             mState.exitTestMethod(description);
         }
-
-        // If RUN_DISABLED_TESTS is set, and the method did _not_ throw, make it an error.
-        if (RavenwoodRule.private$ravenwood().isRunningDisabledTests()
-                && scope == Scope.Instance && order == Order.Outer) {
-
-            boolean isTestEnabled = RavenwoodEnablementChecker.shouldEnableOnRavenwood(
-                    description, false);
-            if (th == null) {
-                // Test passed. Is the test method supposed to be enabled?
-                if (isTestEnabled) {
-                    // Enabled and didn't throw, okay.
-                    return true;
-                } else {
-                    // Disabled and didn't throw. We should report it.
-                    fail("Test wasn't included under Ravenwood, but it actually "
-                            + "passed under Ravenwood; consider updating annotations");
-                    return true; // unreachable.
-                }
-            } else {
-                // Test failed.
-                if (isTestEnabled) {
-                    // Enabled but failed. We should throw the exception.
-                    return true;
-                } else {
-                    // Disabled and failed. Expected. Don't throw.
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
