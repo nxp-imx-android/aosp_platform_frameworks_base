@@ -2130,7 +2130,7 @@ public class SettingsProvider extends ContentProvider {
                 }
                 case MUTATION_OPERATION_RESET -> {
                     success = mSettingsRegistry.resetSettingsLocked(SETTINGS_TYPE_SYSTEM,
-                            runAsUserId, callingDeviceId, callingPackage, mode, tag);
+                            owningUserId, callingDeviceId, callingPackage, mode, tag);
                 }
                 default -> {
                     success = false;
