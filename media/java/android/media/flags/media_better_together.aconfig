@@ -326,3 +326,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "hide_bt_address_from_apps_without_bt_permission"
+    namespace: "media_better_together"
+    description: "Hides the BT address of media routes to apps without BT permission."
+    bug: "373646834"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

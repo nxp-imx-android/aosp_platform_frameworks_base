@@ -70,8 +70,13 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     private final BluetoothRouteController mBluetoothRouteController;
 
     private String mSelectedRouteId;
-    // For apps without MODIFYING_AUDIO_ROUTING permission.
-    // This should be the currently selected route.
+
+    /**
+     * Placeholder {@link MediaRoute2Info} representation of the currently selected route for apps
+     * without system routing permission (like MODIFY_AUDIO_ROUTING, of Bluetooth permissions - see
+     * {@link MediaRouter2ServiceImpl} for details). It's created by copying the real selected
+     * route, but hiding sensitive info like id and bluetooth address.
+     */
     MediaRoute2Info mDefaultRoute;
 
     @GuardedBy("mLock")
@@ -491,11 +496,16 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 transferableRoutes.add(selectedDeviceRoute.getId());
             }
             mSelectedRouteId = selectedRoute.getId();
-            mDefaultRoute =
+
+            var defaultRouteBuilder =
                     new MediaRoute2Info.Builder(MediaRoute2Info.ROUTE_ID_DEFAULT, selectedRoute)
                             .setSystemRoute(true)
-                            .setProviderId(mUniqueId)
-                            .build();
+                            .setProviderId(mUniqueId);
+            if (Flags.hideBtAddressFromAppsWithoutBtPermission()) {
+                defaultRouteBuilder.setAddress(null); // We clear the address field.
+            }
+            mDefaultRoute = defaultRouteBuilder.build();
+
             builder.addSelectedRoute(mSelectedRouteId);
             if (Flags.enableAudioPoliciesDeviceAndBluetoothController()) {
                 for (MediaRoute2Info route : mDeviceRouteController.getAvailableRoutes()) {
