@@ -27,6 +27,7 @@ import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYS
 import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -87,7 +88,7 @@ public final class HsumBootUserInitializerTest {
             new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
 
     @Mock
-    private UserManagerInternal mMockUmi;
+    private UserManagerService mMockUms;
     @Mock
     private ActivityManagerService mMockAms;
     @Mock
@@ -226,7 +227,7 @@ public final class HsumBootUserInitializerTest {
     private HsumBootUserInitializer createHsumBootUserInitializer(
             boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
         mTracer = new TimingsTraceAndSlog(TAG);
-        return new HsumBootUserInitializer(mMockUmi, mMockAms, mMockPms, mMockContentResolver,
+        return new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
                 shouldAlwaysHaveMainUser, shouldCreateInitialUser);
     }
 
@@ -240,8 +241,9 @@ public final class HsumBootUserInitializerTest {
 
     private void expectUserCreated(@UserInfoFlag int flags) {
         try {
-            verify(mMockUmi).createUserEvenWhenDisallowed(null,
-                    UserManager.USER_TYPE_FULL_SECONDARY, flags, null, null);
+            verify(mMockUms).createUserInternalUnchecked(/* name= */ null,
+                    UserManager.USER_TYPE_FULL_SECONDARY, flags, /* parentId= */ USER_NULL,
+                    /* preCreated= */ false, /* disallowedPackages= */ null, /* token= */ null);
         } catch (Exception e) {
             String msg = "didn't create user with flags " + flags;
             Log.e(TAG, msg, e);
@@ -251,8 +253,8 @@ public final class HsumBootUserInitializerTest {
 
     private void expectNoUserCreated() {
         try {
-            verify(mMockUmi, never()).createUserEvenWhenDisallowed(any(), any(), anyInt(), any(),
-                    any());
+            verify(mMockUms, never()).createUserInternalUnchecked(any(), any(), anyInt(), anyInt(),
+                    anyBoolean(), any(), any());
         } catch (Exception e) {
             String msg = "shouldn't have created any user";
             Log.e(TAG, msg, e);
@@ -266,7 +268,7 @@ public final class HsumBootUserInitializerTest {
 
     private void expectSetBootUserId(@UserIdInt int userId) {
         try {
-            verify(mMockUmi).setBootUserId(userId);
+            verify(mMockUms).setBootUserIdUnchecked(userId);
         } catch (Exception e) {
             String msg = "didn't call setBootUserId(" +  userId + ")";
             Log.e(TAG, msg, e);
@@ -276,7 +278,7 @@ public final class HsumBootUserInitializerTest {
 
     private void expectSetBootUserIdNeverCalled() {
         try {
-            verify(mMockUmi, never()).setBootUserId(anyInt());
+            verify(mMockUms, never()).setBootUserIdUnchecked(anyInt());
         } catch (Exception e) {
             String msg = "setBootUserId() should never be called";
             Log.e(TAG, msg, e);
@@ -289,18 +291,18 @@ public final class HsumBootUserInitializerTest {
         UserInfo userInfo = new UserInfo();
         userInfo.id = userId;
         Log.d(TAG, "createUserEvenWhenDisallowed() will return " + userInfo);
-        when(mMockUmi.createUserEvenWhenDisallowed(any(), any(), anyInt(), any(), any()))
-                .thenReturn(userInfo);
+        when(mMockUms.createUserInternalUnchecked(any(), any(), anyInt(), anyInt(), anyBoolean(),
+                any(), any())).thenReturn(userInfo);
     }
 
     private void mockGetMainUserId(@CanBeNULL @UserIdInt int userId) {
         Log.d(TAG, "mockGetMainUserId(): " + userId);
-        when(mMockUmi.getMainUserId()).thenReturn(userId);
+        when(mMockUms.getMainUserId()).thenReturn(userId);
     }
 
     private void mockGetUserIds(@UserIdInt int... userIds) {
         Log.d(TAG, "mockGetUserIds(): " + Arrays.toString(userIds));
-        when(mMockUmi.getUserIds()).thenReturn(userIds);
+        when(mMockUms.getUserIds()).thenReturn(userIds);
     }
 
     // NOTE: enums below must be public to be static imported

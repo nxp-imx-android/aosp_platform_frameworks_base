@@ -1054,6 +1054,10 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
         }
+
+        public UserManagerService getService() {
+            return mUms;
+        }
     }
 
     // TODO(b/28848102) Add support for test dependencies injection
@@ -1381,7 +1385,7 @@ public class UserManagerService extends IUserManager.Stub {
         setBootUserIdUnchecked(userId);
     }
 
-    private void setBootUserIdUnchecked(@UserIdInt int userId) {
+    void setBootUserIdUnchecked(@UserIdInt int userId) {
         synchronized (mUsersLock) {
             // TODO(b/263381643): Change to EventLog.
             Slogf.i(LOG_TAG, "setBootUser %d", userId);
@@ -1429,6 +1433,31 @@ public class UserManagerService extends IUserManager.Stub {
         }
         // Not HSUM, return system user.
         return UserHandle.USER_SYSTEM;
+    }
+
+    @UserIdInt
+    int getBootUser(boolean waitUntilSet) throws UserManager.CheckedUserOperationException {
+        if (waitUntilSet) {
+            final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
+            t.traceBegin("wait-boot-user");
+            try {
+                if (mBootUserLatch.getCount() != 0) {
+                    Slogf.d(LOG_TAG,
+                            "Sleeping for boot user to be set. "
+                            + "Max sleep for Time: %d", BOOT_USER_SET_TIMEOUT_MS);
+                }
+                if (!mBootUserLatch.await(BOOT_USER_SET_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                    Slogf.w(LOG_TAG, "Boot user not set. Timeout: %d",
+                            BOOT_USER_SET_TIMEOUT_MS);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Slogf.w(LOG_TAG, e, "InterruptedException during wait for boot user.");
+            }
+            t.traceEnd();
+        }
+
+        return getBootUserUnchecked();
     }
 
     private @UserIdInt int getBootUserBasedOnProvisioning()
@@ -6009,7 +6038,7 @@ public class UserManagerService extends IUserManager.Stub {
                 /* preCreate= */ false, disallowedPackages, /* token= */ null);
     }
 
-    private @NonNull UserInfo createUserInternalUnchecked(
+    @NonNull UserInfo createUserInternalUnchecked(
             @Nullable String name, @NonNull String userType, @UserInfoFlag int flags,
             @CanBeNULL @UserIdInt int parentId, boolean preCreate,
             @Nullable String[] disallowedPackages, @Nullable Object token)
@@ -8594,32 +8623,7 @@ public class UserManagerService extends IUserManager.Stub {
         @Override
         public @UserIdInt int getBootUser(boolean waitUntilSet)
                 throws UserManager.CheckedUserOperationException {
-            if (waitUntilSet) {
-                final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
-                t.traceBegin("wait-boot-user");
-                try {
-                    if (mBootUserLatch.getCount() != 0) {
-                        Slogf.d(LOG_TAG,
-                                "Sleeping for boot user to be set. "
-                                + "Max sleep for Time: %d", BOOT_USER_SET_TIMEOUT_MS);
-                    }
-                    if (!mBootUserLatch.await(BOOT_USER_SET_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
-                        Slogf.w(LOG_TAG, "Boot user not set. Timeout: %d",
-                                BOOT_USER_SET_TIMEOUT_MS);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    Slogf.w(LOG_TAG, e, "InterruptedException during wait for boot user.");
-                }
-                t.traceEnd();
-            }
-
-            return getBootUserUnchecked();
-        }
-
-        @Override
-        public void setBootUserId(@UserIdInt int userId) {
-            setBootUserIdUnchecked(userId);
+            return UserManagerService.this.getBootUser(waitUntilSet);
         }
 
         @Override
