@@ -19,6 +19,7 @@ package com.android.server.vibrator;
 import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
 import static android.os.VibrationAttributes.USAGE_ALARM;
 import static android.os.VibrationAttributes.USAGE_COMMUNICATION_REQUEST;
+import static android.os.VibrationAttributes.USAGE_GESTURE_INPUT;
 import static android.os.VibrationAttributes.USAGE_HARDWARE_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_MEDIA;
@@ -580,6 +581,10 @@ final class VibrationSettings {
             int ringIntensity = toIntensity(
                     loadSystemSetting(Settings.System.RING_VIBRATION_INTENSITY, -1, userHandle),
                     getDefaultIntensity(USAGE_RINGTONE));
+            int gestureInputIntensity = toIntensity(
+                    loadSystemSetting(Settings.System.GESTURE_INPUT_VIBRATION_INTENSITY, -1,
+                            userHandle),
+                    getDefaultIntensity(USAGE_GESTURE_INPUT));
 
             mCurrentVibrationIntensities.clear();
             mCurrentVibrationIntensities.put(USAGE_ALARM, alarmIntensity);
@@ -587,6 +592,7 @@ final class VibrationSettings {
             mCurrentVibrationIntensities.put(USAGE_MEDIA, mediaIntensity);
             mCurrentVibrationIntensities.put(USAGE_UNKNOWN, mediaIntensity);
             mCurrentVibrationIntensities.put(USAGE_RINGTONE, ringIntensity);
+            mCurrentVibrationIntensities.put(USAGE_GESTURE_INPUT, gestureInputIntensity);
 
             // Communication request is not disabled by the notification setting.
             mCurrentVibrationIntensities.put(USAGE_COMMUNICATION_REQUEST,

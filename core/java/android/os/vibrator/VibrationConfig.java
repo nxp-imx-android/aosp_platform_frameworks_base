@@ -19,6 +19,7 @@ package android.os.vibrator;
 import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
 import static android.os.VibrationAttributes.USAGE_ALARM;
 import static android.os.VibrationAttributes.USAGE_COMMUNICATION_REQUEST;
+import static android.os.VibrationAttributes.USAGE_GESTURE_INPUT;
 import static android.os.VibrationAttributes.USAGE_HARDWARE_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_MEDIA;
@@ -273,6 +274,7 @@ public class VibrationConfig {
             case USAGE_HARDWARE_FEEDBACK:
             case USAGE_PHYSICAL_EMULATION:
             case USAGE_ACCESSIBILITY:
+            case USAGE_GESTURE_INPUT:
                 return mDefaultHapticFeedbackIntensity;
             case USAGE_IME_FEEDBACK:
                 return isKeyboardVibrationSettingsSupported()
