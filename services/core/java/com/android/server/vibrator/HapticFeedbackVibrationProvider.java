@@ -48,10 +48,10 @@ public final class HapticFeedbackVibrationProvider {
     private static final VibrationAttributes IME_FEEDBACK_VIBRATION_ATTRIBUTES =
             VibrationAttributes.createForUsage(VibrationAttributes.USAGE_IME_FEEDBACK);
 
+    private static final long[] SAFE_MODE_VIBRATION_TIMINGS = new long[] {0, 1, 20, 21, 500, 600};
+
     private final VibratorInfo mVibratorInfo;
     private final boolean mHapticTextHandleEnabled;
-    // Vibrator effect for haptic feedback during boot when safe mode is enabled.
-    private final VibrationEffect mSafeModeEnabledVibrationEffect;
 
     private final HapticFeedbackCustomization mHapticFeedbackCustomization;
 
@@ -68,12 +68,6 @@ public final class HapticFeedbackVibrationProvider {
         mHapticTextHandleEnabled = res.getBoolean(
                 com.android.internal.R.bool.config_enableHapticTextHandle);
         mHapticFeedbackCustomization = hapticFeedbackCustomization;
-
-        VibrationEffect safeModeVibration = mHapticFeedbackCustomization.getEffect(
-                HapticFeedbackConstants.SAFE_MODE_ENABLED, VibrationAttributes.USAGE_UNKNOWN);
-        mSafeModeEnabledVibrationEffect = safeModeVibration != null ? safeModeVibration
-                : VibrationSettings.createEffectFromResource(res,
-                        com.android.internal.R.array.config_safeModeEnabledVibePattern);
 
         mKeyboardVibrationFixedAmplitude = res.getFloat(
                 com.android.internal.R.dimen.config_keyboardHapticFeedbackFixedAmplitude);
@@ -281,7 +275,8 @@ public final class HapticFeedbackVibrationProvider {
 
             case HapticFeedbackConstants.SAFE_MODE_ENABLED:
                 // safe mode effect is not customized by the input source.
-                return mSafeModeEnabledVibrationEffect;
+                return VibrationEffect.createWaveform(
+                        SAFE_MODE_VIBRATION_TIMINGS, /* repeat= */ -1);
 
             case HapticFeedbackConstants.ASSISTANT_BUTTON:
                 // assistant effect is not customized by the input source.

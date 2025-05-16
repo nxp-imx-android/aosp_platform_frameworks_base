@@ -292,83 +292,6 @@ public class HapticFeedbackVibrationProviderTest {
     }
 
     @Test
-    public void testValidCustomizationPresentForSafeModeEnabled_usedRegardlessOfVibrationResource() {
-        mockSafeModeEnabledVibration(10, 20, 30, 40);
-        mockVibratorPrimitiveSupport(PRIMITIVE_CLICK, PRIMITIVE_TICK, PRIMITIVE_THUD);
-        SparseArray<VibrationEffect> safeModeCustomizations = new SparseArray<>();
-        safeModeCustomizations.put(SAFE_MODE_ENABLED, PRIMITIVE_CLICK_EFFECT);
-        SparseArray<VibrationEffect> safeModeCustomizationsByRotary = new SparseArray<>();
-        safeModeCustomizationsByRotary.put(SAFE_MODE_ENABLED, PRIMITIVE_THUD_EFFECT);
-        SparseArray<VibrationEffect> safeModeCustomizationsByTouchScreen = new SparseArray<>();
-        safeModeCustomizationsByTouchScreen.put(SAFE_MODE_ENABLED, PRIMITIVE_TICK_EFFECT);
-        SparseArray<VibrationEffect> safeModeCustomizationsByUsageGestureInput =
-                new SparseArray<>();
-        safeModeCustomizationsByUsageGestureInput.put(
-                SAFE_MODE_ENABLED, PRIMITIVE_QUICK_RISE_EFFECT);
-        HapticFeedbackVibrationProvider provider =
-                createProvider(safeModeCustomizations, safeModeCustomizationsByRotary,
-                        safeModeCustomizationsByTouchScreen,
-                        safeModeCustomizationsByUsageGestureInput);
-
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_UNKNOWN))
-                .isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_GESTURE_INPUT))
-                .isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_THUD_EFFECT);
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_TICK_EFFECT);
-
-        // Resource changed
-        mockSafeModeEnabledVibration(null);
-        provider =
-                createProvider(safeModeCustomizations, safeModeCustomizationsByRotary,
-                        safeModeCustomizationsByTouchScreen,
-                        safeModeCustomizationsByUsageGestureInput);
-
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_UNKNOWN))
-                .isEqualTo(PRIMITIVE_CLICK_EFFECT);
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_GESTURE_INPUT))
-                .isEqualTo(PRIMITIVE_QUICK_RISE_EFFECT);
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_ROTARY_ENCODER)).isEqualTo(PRIMITIVE_THUD_EFFECT);
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_TOUCHSCREEN)).isEqualTo(PRIMITIVE_TICK_EFFECT);
-    }
-
-    @Test
-    public void testNoValidCustomizationPresentForSafeModeEnabled_resourceBasedVibrationUsed() {
-        mockSafeModeEnabledVibration(10, 20, 30, 40);
-        HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
-
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_UNKNOWN))
-                .isEqualTo(VibrationEffect.createWaveform(new long[]{10, 20, 30, 40}, -1));
-        assertThat(
-                provider.getVibrationForInputDevice(
-                        SAFE_MODE_ENABLED, InputDevice.SOURCE_ROTARY_ENCODER))
-                                .isEqualTo(VibrationEffect.createWaveform(
-                                        new long[]{10, 20, 30, 40}, -1));
-        assertThat(
-                provider.getVibrationForInputDevice(
-                        SAFE_MODE_ENABLED, InputDevice.SOURCE_TOUCHSCREEN))
-                                .isEqualTo(VibrationEffect.createWaveform(
-                                        new long[]{10, 20, 30, 40}, -1));
-    }
-
-    @Test
-    public void testNoValidCustomizationAndResourcePresentForSafeModeEnabled_noVibrationUsed() {
-        mockSafeModeEnabledVibration(null);
-        HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
-
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_UNKNOWN)).isNull();
-        assertThat(provider.getVibration(SAFE_MODE_ENABLED, USAGE_GESTURE_INPUT)).isNull();
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_ROTARY_ENCODER)).isNull();
-        assertThat(provider.getVibrationForInputDevice(SAFE_MODE_ENABLED,
-                InputDevice.SOURCE_TOUCHSCREEN)).isNull();
-    }
-
-    @Test
     public void testKeyboardHaptic_noFixedAmplitude_defaultVibrationReturned() {
         mockVibratorPrimitiveSupport(PRIMITIVE_CLICK, PRIMITIVE_TICK);
         SparseArray<VibrationEffect> customizations = new SparseArray<>();
@@ -666,11 +589,6 @@ public class HapticFeedbackVibrationProviderTest {
 
     private void mockHapticTextSupport(boolean supported) {
         when(mResourcesMock.getBoolean(R.bool.config_enableHapticTextHandle)).thenReturn(supported);
-    }
-
-    private void mockSafeModeEnabledVibration(int... vibrationPattern) {
-        when(mResourcesMock.getIntArray(R.array.config_safeModeEnabledVibePattern))
-                .thenReturn(vibrationPattern);
     }
 
     private void mockKeyboardVibrationFixedAmplitude(float amplitude) {

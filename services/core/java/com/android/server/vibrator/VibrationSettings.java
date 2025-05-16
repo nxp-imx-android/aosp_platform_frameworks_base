@@ -790,11 +790,6 @@ final class VibrationSettings {
                 UserHandle.USER_ALL);
     }
 
-    @Nullable
-    private VibrationEffect createEffectFromResource(int resId) {
-        return createEffectFromResource(mContext.getResources(), resId);
-    }
-
     /**
      * Provides a {@link VibrationEffect} from a timings-array provided as an int-array resource..
      *
@@ -807,8 +802,8 @@ final class VibrationSettings {
      * vibration with off-on timings as per the provided timings array.
      */
     @Nullable
-    static VibrationEffect createEffectFromResource(Resources res, int resId) {
-        long[] timings = getLongIntArray(res, resId);
+    private VibrationEffect createEffectFromResource(int resId) {
+        long[] timings = getLongIntArray(mContext.getResources(), resId);
         return createEffectFromTimings(timings);
     }
 
