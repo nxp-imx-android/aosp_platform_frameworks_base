@@ -27,6 +27,7 @@ import com.android.systemui.lifecycle.Hydrator
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -95,17 +96,34 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
         isExpanded = false
     }
 
+    private var deactivateCueBarJob: Job? = null
+
+    fun cancelDeactivation() {
+        deactivateCueBarJob?.cancel()
+    }
+
+    suspend fun delayAndDeactivateCueBar() {
+        deactivateCueBarJob?.cancel()
+
+        coroutineScopeTraced("AmbientCueViewModel") {
+            deactivateCueBarJob = launch {
+                delay(AMBIENT_CUE_TIMEOUT_SEC)
+                ambientCueInteractor.setDeactivated(true)
+            }
+        }
+    }
+
     override suspend fun onActivated(): Nothing {
         coroutineScopeTraced("AmbientCueViewModel") {
             launch { hydrator.activate() }
             launch {
                 // Hide the UI if the user doesn't interact with it after N seconds
                 ambientCueInteractor.isRootViewAttached.collectLatest { isAttached ->
-                    if (!isAttached) return@collectLatest
-                    delay(AMBIENT_CUE_TIMEOUT_SEC)
-                    if (!isExpanded) {
-                        ambientCueInteractor.setDeactivated(true)
+                    if (!isAttached) {
+                        cancelDeactivation()
+                        return@collectLatest
                     }
+                    delayAndDeactivateCueBar()
                 }
             }
             awaitCancellation()
