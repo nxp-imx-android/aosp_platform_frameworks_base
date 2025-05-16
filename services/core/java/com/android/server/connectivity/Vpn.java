@@ -2288,6 +2288,15 @@ public class Vpn {
         return success;
     }
 
+    private void setMtu(int mtu) {
+        synchronized (Vpn.this) {
+            mConfig.mtu = mtu;
+            if (mVpnConnectivityMetrics != null) {
+                mVpnConnectivityMetrics.setMtu(mtu);
+            }
+        }
+    }
+
     /**
      * Updates underlying network set.
      */
@@ -3037,7 +3046,7 @@ public class Vpn {
                     if (mVpnRunner != this) return;
 
                     mInterface = interfaceName;
-                    mConfig.mtu = vpnMtu;
+                    setMtu(vpnMtu);
                     mConfig.interfaze = mInterface;
 
                     mConfig.addresses.clear();
@@ -3144,7 +3153,7 @@ public class Vpn {
                     final LinkProperties oldLp = makeLinkProperties();
 
                     mConfig.underlyingNetworks = new Network[] {network};
-                    mConfig.mtu = calculateVpnMtu();
+                    setMtu(calculateVpnMtu());
 
                     final LinkProperties newLp = makeLinkProperties();
 
@@ -4250,6 +4259,11 @@ public class Vpn {
             config.allowBypass = profile.isBypassable;
             config.disallowedApplications = getAppExclusionList(mPackage);
             mConfig = config;
+            if (mVpnConnectivityMetrics != null) {
+                mVpnConnectivityMetrics.setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+                mVpnConnectivityMetrics.setVpnProfileType(profile.type);
+                mVpnConnectivityMetrics.setAllowedAlgorithms(profile.getAllowedAlgorithms());
+            }
 
             switch (profile.type) {
                 case VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS:
