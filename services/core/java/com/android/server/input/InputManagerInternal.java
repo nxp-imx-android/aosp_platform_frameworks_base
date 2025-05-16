@@ -155,12 +155,6 @@ public abstract class InputManagerInternal {
     public abstract InputChannel createInputChannel(String inputChannelName);
 
     /**
-     * Pilfer pointers from the input channel with the given token so that ongoing gestures are
-     * canceled for all other channels.
-     */
-    public abstract void pilferPointers(IBinder token);
-
-    /**
      * Called when the current input method and/or {@link InputMethodSubtype} is updated.
      *
      * @param userId User ID to be notified about.
