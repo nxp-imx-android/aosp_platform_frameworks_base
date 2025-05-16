@@ -477,6 +477,17 @@ flag {
 }
 
 flag {
+    name: "status_bar_app_handle_tracking"
+    namespace: "systemui"
+    description: "Have status bar track the location of app handles so that tappable status bar "
+        "content doesn't overlap"
+    bug: "397506207"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
