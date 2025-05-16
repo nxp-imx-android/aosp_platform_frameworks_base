@@ -1432,8 +1432,6 @@ public class NotificationChildrenContainer extends ViewGroup
             if (expanded) {
                 ColorDrawable cd = new ColorDrawable();
                 cd.setColor(mContainingNotification.calculateBgColor());
-                // TODO(b/389839492): The backgroundDrawable needs an outline like in the original:
-                //  setOutlineProvider(mProvider);
                 mBundleHeaderViewModel.setBackgroundDrawable(cd);
             } else {
                 mBundleHeaderViewModel.setBackgroundDrawable(null);

@@ -4090,7 +4090,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * Updates the parent and children backgrounds in a group based on the expansion state.
      */
     public void updateBackgroundForGroupState() {
-        if (mIsSummaryWithChildren) {
+        if (mIsSummaryWithChildren && isBundle()) {
+            // For Bundles we let the BundleHeader show its background permanently. This is
+            // possible because collapsed Bundles don't preview their children unlike summaries.
+            // It is important that backgrounds don't overlap during expansion since
+            // notificationRowTransparency() introduced transparency.
+            mShowNoBackground = true;
+            mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
+        } else if (mIsSummaryWithChildren) {
             // With row transparency, a pinned notification should not hide its background.
             if (notificationRowTransparency() && isPinned()) {
                 mShowNoBackground = false;
