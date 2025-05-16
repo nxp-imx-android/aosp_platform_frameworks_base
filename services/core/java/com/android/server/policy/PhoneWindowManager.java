@@ -2554,19 +2554,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // this to all single key gestures after moving Single key gestures to
             // KeyGestureController.
             if (enableLppAssistInvocationEffect()) {
-                // TODO(b/358569822): Remove this synthetic key event and directly listen to key
-                //  gesture event in SysUI
-                if (event.getAction() == ACTION_COMPLETE) {
-                    // Long press is detected in a callback, so there's no explicit hardware
-                    // KeyEvent available here. Instead, we create a synthetic power key event that
-                    // has properties similar to the original one.
-                    final KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, KEYCODE_POWER);
-                    keyEvent.setFlags(KeyEvent.FLAG_LONG_PRESS);
-                    // setting both downTime and eventTime as same as downTime is sent as eventTime
-                    // for long press event in SingleKeyGestureDetector's handler
-                    keyEvent.setTime(event.getStartTime(), event.getEventTime());
-                    sendSystemKeyToStatusBarAsync(keyEvent);
-                }
                 if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
                     handleSingleKeyGestureInKeyGestureController(
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
