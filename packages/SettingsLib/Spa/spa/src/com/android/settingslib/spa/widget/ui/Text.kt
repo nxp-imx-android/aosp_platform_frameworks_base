@@ -35,7 +35,6 @@ import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsOpacity.alphaForEnabled
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.toMediumWeight
-import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 @Composable
 fun SettingsTitle(
@@ -85,6 +84,7 @@ fun SettingsListItem(text: String, enabled: Boolean = true) {
     )
 }
 
+/** Settings body text displayed in secondary style. */
 @Composable
 fun SettingsBody(
     body: String,
@@ -95,10 +95,27 @@ fun SettingsBody(
         Text(
             text = body,
             modifier = Modifier.contentDescription(contentDescription),
-            color = if (isSpaExpressiveEnabled) MaterialTheme.colorScheme.onSurface
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            style = if (isSpaExpressiveEnabled) MaterialTheme.typography.bodyLarge
-            else MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = maxLines,
+        )
+    }
+}
+
+/** Settings introduction text. */
+@Composable
+fun SettingsIntro(
+    text: String,
+    contentDescription: String? = null,
+    maxLines: Int = Int.MAX_VALUE,
+) {
+    if (text.isNotEmpty()) {
+        Text(
+            text = text,
+            modifier = Modifier.contentDescription(contentDescription),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge,
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
         )
