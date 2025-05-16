@@ -18,7 +18,6 @@ package com.android.systemui.unfold
 
 import com.android.keyguard.KeyguardUnfoldTransition
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.unfoldLatencyTrackingFix
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.NotificationPanelUnfoldAnimationController
 import com.android.systemui.statusbar.phone.StatusBarMoveFromCenterAnimationController
@@ -40,7 +39,6 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import java.util.Optional
 import javax.inject.Named
-import javax.inject.Provider
 import javax.inject.Qualifier
 import javax.inject.Scope
 
@@ -74,6 +72,11 @@ abstract class SysUIUnfoldModule {
     ): CoreStartable
 
     @Binds
+    @IntoMap
+    @ClassKey(DisplaySwitchLatencyTracker::class)
+    abstract fun bindsDisplaySwitchLatencyTracker(impl: DisplaySwitchLatencyTracker): CoreStartable
+
+    @Binds
     @SysUISingleton
     abstract fun provideDisplaySwitchTrackingInteractor(
         impl: FoldableDisplaySwitchTrackingInteractor
@@ -101,15 +104,6 @@ abstract class SysUIUnfoldModule {
                 Optional.of(factory.create(p1, p2, p3, p4))
             }
         }
-
-        @Provides
-        @IntoMap
-        @ClassKey(DisplaySwitchLatencyTracker::class)
-        fun provideDisplaySwitchLatencyTracker(
-            noCoolDownVariant: Provider<NoCooldownDisplaySwitchLatencyTracker>,
-            coolDownVariant: Provider<DisplaySwitchLatencyTracker>,
-        ): CoreStartable =
-            if (unfoldLatencyTrackingFix()) coolDownVariant.get() else noCoolDownVariant.get()
     }
 }
 
@@ -174,8 +168,6 @@ interface SysUIUnfoldComponent {
     fun getUnfoldHapticsPlayer(): UnfoldHapticsPlayer
 
     fun getUnfoldKeyguardVisibilityManager(): UnfoldKeyguardVisibilityManager
-
-    fun getUnfoldLatencyTracker(): UnfoldLatencyTracker
 
     fun getNaturalRotationUnfoldProgressProvider(): NaturalRotationUnfoldProgressProvider
 }
