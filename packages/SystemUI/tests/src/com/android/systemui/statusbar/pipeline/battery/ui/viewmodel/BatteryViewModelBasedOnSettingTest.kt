@@ -204,4 +204,29 @@ class BatteryViewModelBasedOnSettingTest : SysuiTestCase() {
 
             assertThat(underTest.contentDescription).isEqualTo(expected)
         }
+
+    @Test
+    fun batteryRemainingEstimate_onlyShowWhenNotCharging() =
+        kosmos.runTest {
+            val timeRemaining = "1234"
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._level = 39
+            batteryController.fake._estimatedTimeRemainingString = timeRemaining
+
+            assertThat(underTest.batteryTimeRemainingEstimate).isNull()
+
+            batteryController.fake._isPluggedIn = false
+
+            assertThat(underTest.batteryTimeRemainingEstimate).isEqualTo(timeRemaining)
+        }
+
+    @Test
+    fun incompatibleCharging_pluggedIn_notShowingChargingState() =
+        kosmos.runTest {
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._level = 39
+            batteryController.fake._isIncompatibleCharging = true
+
+            assertThat(underTest.attribution).isNull()
+        }
 }
