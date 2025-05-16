@@ -2859,7 +2859,7 @@ class MediaRouter2ServiceImpl {
          */
         public void notifyRoutesUpdated(List<MediaRoute2Info> routes) {
             try {
-                mManager.notifyRoutesUpdated(routes);
+                mManager.notifyRoutesUpdated(getVisibleRoutes(routes));
             } catch (RemoteException ex) {
                 logRemoteException("notifyRoutesUpdated", ex);
             }
@@ -2909,6 +2909,21 @@ class MediaRouter2ServiceImpl {
             } catch (RemoteException ex) {
                 logRemoteException("notifyDeviceSuggestionRequested", ex);
             }
+        }
+
+        private List<MediaRoute2Info> getVisibleRoutes(List<MediaRoute2Info> routes) {
+            if (!Flags.enableFixForRouteVisibility() || TextUtils.isEmpty(mTargetPackageName)) {
+                // If the proxy router / manager doesn't target a specific app, it sees all
+                // routes.
+                return routes;
+            }
+            List<MediaRoute2Info> filteredRoutes = new ArrayList<>();
+            for (MediaRoute2Info route : routes) {
+                if (route.isVisibleTo(mTargetPackageName)) {
+                    filteredRoutes.add(route);
+                }
+            }
+            return filteredRoutes;
         }
 
         private void logRemoteException(String operation, RemoteException exception) {
