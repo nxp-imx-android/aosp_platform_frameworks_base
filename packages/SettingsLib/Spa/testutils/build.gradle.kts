@@ -40,7 +40,7 @@ dependencies {
     api("androidx.compose.ui:ui-test-junit4:$jetpackComposeVersion")
     api("androidx.lifecycle:lifecycle-runtime-testing")
     api(libs.mockito.kotlin)
-    api("org.mockito:mockito-core:4.3.0")
+    api("org.mockito:mockito-core:4.3.0") // external/mockito
     api(libs.truth)
     debugApi("androidx.compose.ui:ui-test-manifest:$jetpackComposeVersion")
 }
