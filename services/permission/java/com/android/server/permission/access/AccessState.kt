@@ -36,7 +36,7 @@ private typealias UserStatesReference = MutableReference<UserStates, MutableUser
 sealed class AccessState(
     internal val externalStateReference: ExternalStateReference,
     internal val systemStateReference: SystemStateReference,
-    internal val userStatesReference: UserStatesReference
+    internal val userStatesReference: UserStatesReference,
 ) : Immutable<MutableAccessState> {
     val externalState: ExternalState
         get() = externalStateReference.get()
@@ -54,13 +54,13 @@ class MutableAccessState
 private constructor(
     externalStateReference: ExternalStateReference,
     systemStateReference: SystemStateReference,
-    userStatesReference: UserStatesReference
+    userStatesReference: UserStatesReference,
 ) : AccessState(externalStateReference, systemStateReference, userStatesReference) {
     constructor() :
         this(
             ExternalStateReference(MutableExternalState()),
             SystemStateReference(MutableSystemState()),
-            UserStatesReference(MutableUserStates())
+            UserStatesReference(MutableUserStates()),
         )
 
     internal constructor(
@@ -68,7 +68,7 @@ private constructor(
     ) : this(
         accessState.externalStateReference.toImmutable(),
         accessState.systemStateReference.toImmutable(),
-        accessState.userStatesReference.toImmutable()
+        accessState.userStatesReference.toImmutable(),
     )
 
     fun mutateExternalState(): MutableExternalState = externalStateReference.mutate()
@@ -106,7 +106,7 @@ sealed class ExternalState(
     privilegedPermissionAllowlistPackages: IndexedListSet<String>,
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
-    isSystemReady: Boolean
+    isSystemReady: Boolean,
 ) : Immutable<MutableExternalState> {
     val userIds: IntSet
         get() = userIdsReference.get()
@@ -158,7 +158,7 @@ private constructor(
     privilegedPermissionAllowlistPackages: IndexedListSet<String>,
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
-    isSystemReady: Boolean
+    isSystemReady: Boolean,
 ) :
     ExternalState(
         userIdsReference,
@@ -171,7 +171,7 @@ private constructor(
         privilegedPermissionAllowlistPackages,
         permissionAllowlist,
         implicitToSourcePermissions,
-        isSystemReady
+        isSystemReady,
     ) {
     constructor() :
         this(
@@ -185,7 +185,7 @@ private constructor(
             MutableIndexedListSet(),
             PermissionAllowlist(),
             MutableIndexedMap(),
-            false
+            false,
         )
 
     internal constructor(
@@ -201,7 +201,7 @@ private constructor(
         externalState.privilegedPermissionAllowlistPackages,
         externalState.permissionAllowlist,
         externalState.implicitToSourcePermissions,
-        externalState.isSystemReady
+        externalState.isSystemReady,
     )
 
     fun mutateUserIds(): MutableIntSet = userIdsReference.mutate()
@@ -260,7 +260,8 @@ private constructor(
 
 private typealias PermissionGroupsReference =
     MutableReference<
-        IndexedMap<String, PermissionGroupInfo>, MutableIndexedMap<String, PermissionGroupInfo>
+        IndexedMap<String, PermissionGroupInfo>,
+        MutableIndexedMap<String, PermissionGroupInfo>,
     >
 
 private typealias PermissionTreesReference =
@@ -273,7 +274,7 @@ sealed class SystemState(
     val permissionGroupsReference: PermissionGroupsReference,
     val permissionTreesReference: PermissionTreesReference,
     val permissionsReference: PermissionsReference,
-    writeMode: Int
+    writeMode: Int,
 ) : WritableState, Immutable<MutableSystemState> {
     val permissionGroups: IndexedMap<String, PermissionGroupInfo>
         get() = permissionGroupsReference.get()
@@ -295,13 +296,13 @@ private constructor(
     permissionGroupsReference: PermissionGroupsReference,
     permissionTreesReference: PermissionTreesReference,
     permissionsReference: PermissionsReference,
-    writeMode: Int
+    writeMode: Int,
 ) :
     SystemState(
         permissionGroupsReference,
         permissionTreesReference,
         permissionsReference,
-        writeMode
+        writeMode,
     ),
     MutableWritableState {
     constructor() :
@@ -309,7 +310,7 @@ private constructor(
             PermissionGroupsReference(MutableIndexedMap()),
             PermissionTreesReference(MutableIndexedMap()),
             PermissionsReference(MutableIndexedMap()),
-            WriteMode.NONE
+            WriteMode.NONE,
         )
 
     internal constructor(
@@ -318,7 +319,7 @@ private constructor(
         systemState.permissionGroupsReference.toImmutable(),
         systemState.permissionTreesReference.toImmutable(),
         systemState.permissionsReference.toImmutable(),
-        WriteMode.NONE
+        WriteMode.NONE,
     )
 
     fun mutatePermissionGroups(): MutableIndexedMap<String, PermissionGroupInfo> =
@@ -385,7 +386,7 @@ sealed class UserState(
     internal val appIdAppOpModesReference: AppIdAppOpModesReference,
     internal val packageAppOpModesReference: PackageAppOpModesReference,
     defaultPermissionGrantFingerprint: String?,
-    writeMode: Int
+    writeMode: Int,
 ) : WritableState, Immutable<MutableUserState> {
     val packageVersions: IndexedMap<String, Int>
         get() = packageVersionsReference.get()
@@ -419,7 +420,7 @@ private constructor(
     appIdAppOpModesReference: AppIdAppOpModesReference,
     packageAppOpModesReference: PackageAppOpModesReference,
     defaultPermissionGrantFingerprint: String?,
-    writeMode: Int
+    writeMode: Int,
 ) :
     UserState(
         packageVersionsReference,
@@ -428,7 +429,7 @@ private constructor(
         appIdAppOpModesReference,
         packageAppOpModesReference,
         defaultPermissionGrantFingerprint,
-        writeMode
+        writeMode,
     ),
     MutableWritableState {
     constructor() :
@@ -439,7 +440,7 @@ private constructor(
             AppIdAppOpModesReference(MutableAppIdAppOpModes()),
             PackageAppOpModesReference(MutablePackageAppOpModes()),
             null,
-            WriteMode.NONE
+            WriteMode.NONE,
         )
 
     internal constructor(
@@ -451,7 +452,7 @@ private constructor(
         userState.appIdAppOpModesReference.toImmutable(),
         userState.packageAppOpModesReference.toImmutable(),
         userState.defaultPermissionGrantFingerprint,
-        WriteMode.NONE
+        WriteMode.NONE,
     )
 
     fun mutatePackageVersions(): MutableIndexedMap<String, Int> = packageVersionsReference.mutate()
