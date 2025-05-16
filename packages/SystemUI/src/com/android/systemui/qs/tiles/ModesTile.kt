@@ -19,6 +19,7 @@ package com.android.systemui.qs.tiles
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.os.UserManager.DISALLOW_ADJUST_VOLUME
 import android.service.quicksettings.Tile
 import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
@@ -137,6 +138,7 @@ constructor(
 
         tileState = tileMapper.map(config, model)
         state?.apply {
+            checkIfRestrictionEnforcedByAdminOnly(state, DISALLOW_ADJUST_VOLUME)
             this.state = tileState.activationState.legacyState
             icon = tileState.icon?.asQSTileIcon() ?: maybeLoadResourceIcon(ICON_RES_ID)
             label = tileLabel
