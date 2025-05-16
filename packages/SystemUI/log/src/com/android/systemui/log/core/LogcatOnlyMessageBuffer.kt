@@ -18,6 +18,7 @@ package com.android.systemui.log.core
 
 import android.util.Log
 import com.android.systemui.log.LogMessageImpl
+import kotlin.collections.ArrayDeque
 
 /**
  * A simple implementation of [MessageBuffer] that forwards messages to [android.util.Log]
@@ -26,39 +27,24 @@ import com.android.systemui.log.LogMessageImpl
  */
 class LogcatOnlyMessageBuffer(
     val targetLogLevel: LogLevel,
+    val maxMessageCount: Int = DEFAULT_MESSAGE_MAX_COUNT,
 ) : MessageBuffer {
-    private val singleMessage = LogMessageImpl.Factory.create()
-    private var isObtained: Boolean = false
+    private val messages = ArrayDeque<LogMessageImpl>(maxMessageCount)
 
-    @Synchronized
     override fun obtain(
         tag: String,
         level: LogLevel,
         messagePrinter: MessagePrinter,
         exception: Throwable?,
     ): LogMessage {
-        if (isObtained) {
-            throw UnsupportedOperationException(
-                "Message has already been obtained. Call order is incorrect."
-            )
-        }
-
-        singleMessage.reset(tag, level, System.currentTimeMillis(), messagePrinter, exception)
-        isObtained = true
-        return singleMessage
+        val message =
+            synchronized(messages) { messages.removeFirstOrNull() }
+                ?: LogMessageImpl.Factory.create()
+        message.reset(tag, level, System.currentTimeMillis(), messagePrinter, exception)
+        return message
     }
 
-    @Synchronized
     override fun commit(message: LogMessage) {
-        if (singleMessage != message) {
-            throw IllegalArgumentException("Message argument is not the expected message.")
-        }
-        if (!isObtained) {
-            throw UnsupportedOperationException(
-                "Message has not been obtained. Call order is incorrect."
-            )
-        }
-
         if (message.level >= targetLogLevel) {
             val strMessage = message.messagePrinter(message)
             when (message.level) {
@@ -71,6 +57,17 @@ class LogcatOnlyMessageBuffer(
             }
         }
 
-        isObtained = false
+        if (message is LogMessageImpl) {
+            message.clear()
+            synchronized(messages) {
+                if (messages.size < maxMessageCount) {
+                    messages.addLast(message)
+                }
+            }
+        }
+    }
+
+    companion object {
+        val DEFAULT_MESSAGE_MAX_COUNT = 4
     }
 }
