@@ -2037,6 +2037,15 @@ class UserController implements Handler.Callback {
                 t.traceEnd();
             }
 
+            if (foreground) {
+                // Make sure the old user is no longer considering the display to be on.
+                mInjector.reportGlobalUsageEvent(UsageEvents.Event.SCREEN_NON_INTERACTIVE);
+                synchronized (mLock) {
+                    mCurrentUserId = userId;
+                    ActivityManager.invalidateGetCurrentUserIdCache();
+                }
+            }
+
             UserState finalUss = uss;
             boolean finalNeedStart = needStart;
             final Runnable continueStartUserInternal = () -> continueStartUserInternal(userInfo,
@@ -2062,12 +2071,8 @@ class UserController implements Handler.Callback {
 
         t.traceBegin("updateConfigurationAndProfileIds");
         if (foreground) {
-            // Make sure the old user is no longer considering the display to be on.
-            mInjector.reportGlobalUsageEvent(UsageEvents.Event.SCREEN_NON_INTERACTIVE);
             boolean userSwitchUiEnabled;
             synchronized (mLock) {
-                mCurrentUserId = userId;
-                ActivityManager.invalidateGetCurrentUserIdCache();
                 userSwitchUiEnabled = mUserSwitchUiEnabled;
             }
             mInjector.updateUserConfiguration();
