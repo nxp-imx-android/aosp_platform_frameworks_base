@@ -3293,7 +3293,8 @@ public class VpnTest extends VpnTestBase {
         }
 
         @Override
-        public VpnConnectivityMetrics makeVpnConnectivityMetrics(int userId) {
+        public VpnConnectivityMetrics makeVpnConnectivityMetrics(int userId,
+                ConnectivityManager cm) {
             return mVpnConnectivityMetrics;
         }
     }
