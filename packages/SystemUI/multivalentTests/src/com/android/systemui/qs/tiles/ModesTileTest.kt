@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles
 
 import android.graphics.drawable.TestStubDrawable
 import android.os.Handler
+import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
@@ -56,7 +57,6 @@ import com.android.systemui.statusbar.policy.ui.dialog.ModesDialogDelegate
 import com.android.systemui.statusbar.policy.ui.dialog.modesDialogEventLogger
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.modesDialogViewModel
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.settings.FakeSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.google.common.truth.Truth.assertThat
@@ -68,6 +68,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @EnableFlags(android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
@@ -206,6 +210,7 @@ class ModesTileTest : SysuiTestCase() {
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
             assertThat(tileState.label).isEqualTo("2 Modes")
+            assertThat(tileState.disabledByPolicy).isFalse()
         }
 
     @Test
@@ -224,5 +229,36 @@ class ModesTileTest : SysuiTestCase() {
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
             assertThat(tileState.label).isEqualTo("2 Modes")
+        }
+
+    @Test
+    fun handleUpdateState_checksUserRestriction() =
+        testScope.runTest {
+            val tileState = QSTile.State().apply { state = Tile.STATE_INACTIVE }
+            val model =
+                ModesTileModel(
+                    isActivated = false,
+                    activeModes = listOf(),
+                    icon = TestStubDrawable().asIcon(),
+                    quickMode = TestModeBuilder.MANUAL_DND,
+                )
+            val userManager = mock<UserManager>()
+            whenever(userManager.getUserRestrictionSources(any(), any()))
+                .thenReturn(
+                    listOf(
+                        UserManager.EnforcingUser(
+                            context.userId,
+                            UserManager.RESTRICTION_SOURCE_DEVICE_OWNER,
+                        )
+                    )
+                )
+            context.addMockSystemService(UserManager::class.java, userManager)
+            context.prepareCreatePackageContextAsUser(context.packageName, context.user, context)
+
+            underTest.handleUpdateState(tileState, model)
+
+            assertThat(tileState.disabledByPolicy).isTrue()
+            verify(userManager)
+                .getUserRestrictionSources(eq(UserManager.DISALLOW_ADJUST_VOLUME), eq(context.user))
         }
 }
