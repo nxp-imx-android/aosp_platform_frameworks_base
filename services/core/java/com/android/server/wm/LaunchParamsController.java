@@ -133,12 +133,20 @@ class LaunchParamsController {
                 mTmpParams);
 
         // No changes, return.
-        if (mTmpParams.isEmpty() || mTmpParams.mBounds.isEmpty()) {
+        if (mTmpParams.isEmpty()) {
             return false;
         }
 
         mService.deferWindowLayout();
         try {
+            if (mTmpParams.mBounds.isEmpty()) {
+                if (!mTmpParams.mBoundsSet) {
+                    return false;
+                }
+                // reset the task bounds
+                task.setBounds(mTmpParams.mBounds);
+                return true;
+            }
             if (task.getRootTask().inMultiWindowMode()) {
                 if (!mTmpParams.mAppBounds.isEmpty()) {
                     task.getRequestedOverrideConfiguration().windowConfiguration.setAppBounds(
@@ -176,6 +184,8 @@ class LaunchParamsController {
         /** The bounds within the parent container. */
         @NonNull
         final Rect mBounds = new Rect();
+        /** Whether the bounds have been set. */
+        boolean mBoundsSet = false;
         /** The bounds within the parent container respecting insets. Usually empty. */
         @NonNull
         final Rect mAppBounds = new Rect();
@@ -195,6 +205,7 @@ class LaunchParamsController {
         /** Sets values back to default. {@link #isEmpty} will return {@code true} once called. */
         void reset() {
             mBounds.setEmpty();
+            mBoundsSet = false;
             mAppBounds.setEmpty();
             mPreferredTaskDisplayArea = null;
             mWindowingMode = WINDOWING_MODE_UNDEFINED;
@@ -204,6 +215,7 @@ class LaunchParamsController {
         /** Copies the values set on the passed in {@link LaunchParams}. */
         void set(LaunchParams params) {
             mBounds.set(params.mBounds);
+            mBoundsSet = params.mBoundsSet;
             mAppBounds.set(params.mAppBounds);
             mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
             mWindowingMode = params.mWindowingMode;
@@ -213,6 +225,7 @@ class LaunchParamsController {
         /** Merges the values set on the passed in {@link LaunchParams}. */
         void merge(LaunchParams params) {
             mBounds.set(params.mBounds);
+            mBoundsSet = params.mBoundsSet;
             mAppBounds.set(params.mAppBounds);
             mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
             mWindowingMode = params.mWindowingMode;
@@ -225,7 +238,8 @@ class LaunchParamsController {
 
         /** Returns {@code true} if no values have been explicitly set. */
         boolean isEmpty() {
-            return mBounds.isEmpty() && mAppBounds.isEmpty() && mPreferredTaskDisplayArea == null
+            return (mBounds.isEmpty() && !mBoundsSet) && mAppBounds.isEmpty()
+                    && mPreferredTaskDisplayArea == null
                     && mWindowingMode == WINDOWING_MODE_UNDEFINED && mNeedsSafeRegionBounds == null;
         }
 
@@ -248,12 +262,14 @@ class LaunchParamsController {
             if (mWindowingMode != that.mWindowingMode) return false;
             if (!mAppBounds.equals(that.mAppBounds)) return false;
             if (!Objects.equals(mNeedsSafeRegionBounds, that.mNeedsSafeRegionBounds)) return false;
+            if (mBoundsSet != that.mBoundsSet) return false;
             return !mBounds.isEmpty() ? mBounds.equals(that.mBounds) : that.mBounds.isEmpty();
         }
 
         @Override
         public int hashCode() {
             int result = !mBounds.isEmpty() ? mBounds.hashCode() : 0;
+            result = 31 * result + Boolean.hashCode(mBoundsSet);
             result = 31 * result + mAppBounds.hashCode();
             result = 31 * result + (mPreferredTaskDisplayArea != null
                     ? mPreferredTaskDisplayArea.hashCode() : 0);
