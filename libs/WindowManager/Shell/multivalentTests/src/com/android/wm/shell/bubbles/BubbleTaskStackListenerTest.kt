@@ -37,16 +37,20 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
+import com.android.wm.shell.splitscreen.SplitScreenController
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import java.util.Optional
 
 /**
  * Unit tests for [BubbleTaskStackListener].
@@ -73,9 +77,11 @@ class BubbleTaskStackListenerTest {
     }
     private val bubbleController = mock<BubbleController>()
     private val bubbleData = mock<BubbleData>()
+    private val splitScreenController = mock<SplitScreenController>()
     private val bubbleTaskStackListener = BubbleTaskStackListener(
         bubbleController,
         bubbleData,
+        { Optional.of(splitScreenController) },
     )
     private val bubbleTaskId = 123
     private val bubbleTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
@@ -140,5 +146,37 @@ class BubbleTaskStackListenerTest {
         verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder(), captionInsetsOwner)
         verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        FLAG_ENABLE_BUBBLE_ANYTHING,
+        FLAG_EXCLUDE_TASK_FROM_RECENTS,
+        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+    )
+    fun onActivityRestartAttempt_inStackAppBubbleToSplit_doesNothing() {
+        task.parentTaskId = 456
+        bubbleData.stub {
+            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
+        }
+
+        splitScreenController.stub {
+            on { isTaskRootOrStageRoot(456) } doReturn true
+        }
+
+        val taskViewTaskController = bubble.taskView.controller
+        val taskOrganizer = taskViewTaskController.taskOrganizer
+        clearInvocations(taskViewTaskController)
+
+        bubbleTaskStackListener.onActivityRestartAttempt(
+            task,
+            homeTaskVisible = false,
+            clearedTask = false,
+            wasVisible = false,
+        )
+
+        verifyNoInteractions(taskOrganizer)
+        verifyNoInteractions(taskViewTaskController)
     }
 }

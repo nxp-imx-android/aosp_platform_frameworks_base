@@ -53,6 +53,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import java.util.Optional
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -167,6 +168,7 @@ class BubbleViewInfoTaskTest {
                 BubbleResizabilityChecker(),
                 HomeIntentProvider(context),
                 appInfoProvider,
+                { Optional.empty() },
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this

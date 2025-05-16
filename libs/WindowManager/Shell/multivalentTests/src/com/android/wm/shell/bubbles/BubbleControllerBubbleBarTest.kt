@@ -488,6 +488,7 @@ class BubbleControllerBubbleBarTest {
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
             FakeBubbleAppInfoProvider(),
+            { Optional.empty() },
         )
     }
 

@@ -58,6 +58,7 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.Optional
 import java.util.concurrent.Executor
 
 /** Tests for loading / inflating views & icons for a bubble. */
@@ -155,6 +156,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 BubbleResizabilityChecker(),
                 mock<HomeIntentProvider>(),
                 bubbleAppInfoProvider,
+                { Optional.empty() },
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)

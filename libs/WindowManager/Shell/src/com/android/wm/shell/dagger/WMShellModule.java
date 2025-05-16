@@ -331,7 +331,8 @@ public abstract class WMShellModule {
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             HomeIntentProvider homeIntentProvider,
-            BubbleAppInfoProvider appInfoProvider) {
+            BubbleAppInfoProvider appInfoProvider,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -371,7 +372,8 @@ public abstract class WMShellModule {
                 wmService,
                 new BubbleResizabilityChecker(),
                 homeIntentProvider,
-                appInfoProvider);
+                appInfoProvider,
+                splitScreenController);
     }
 
     //

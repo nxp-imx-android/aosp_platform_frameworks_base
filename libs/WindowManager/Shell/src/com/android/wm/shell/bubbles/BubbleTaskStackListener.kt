@@ -28,7 +28,10 @@ import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskViewTaskController
+import dagger.Lazy
+import java.util.Optional
 
 /**
  * Listens for task stack changes and handles bubble interactions when activities are restarted.
@@ -43,6 +46,7 @@ import com.android.wm.shell.taskview.TaskViewTaskController
 class BubbleTaskStackListener(
     private val bubbleController: BubbleController,
     private val bubbleData: BubbleData,
+    private val splitScreenController: Lazy<Optional<SplitScreenController>>
 ) : TaskStackListenerCallback {
 
     override fun onActivityRestartAttempt(
@@ -57,13 +61,18 @@ class BubbleTaskStackListener(
             task.taskId)
         val taskId = task.taskId
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
-            if (isBubbleToFullscreen(task)) {
-                moveCollapsedInStackBubbleToFullscreen(bubble, task)
-            } else {
-                selectAndExpandInStackBubble(bubble, task)
+            when {
+                isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
+                isBubbleToSplit(task) -> return // skip split task restarts
+                else -> selectAndExpandInStackBubble(bubble, task)
             }
-            return@onActivityRestartAttempt
         }
+    }
+
+    private fun isBubbleToSplit(task: ActivityManager.RunningTaskInfo): Boolean {
+        return task.hasParentTask() && splitScreenController.get()
+            .map { it.isTaskRootOrStageRoot(task.parentTaskId) }
+            .orElse(false)
     }
 
     /** Selects and expands a bubble that is currently in the stack. */

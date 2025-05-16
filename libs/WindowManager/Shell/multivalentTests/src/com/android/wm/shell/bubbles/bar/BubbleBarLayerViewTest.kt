@@ -81,6 +81,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -247,6 +248,7 @@ class BubbleBarLayerViewTest {
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
             FakeBubbleAppInfoProvider(),
+            { Optional.empty() },
         )
     }
 

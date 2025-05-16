@@ -483,6 +483,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 resizeChecker,
                 HomeIntentProvider(context),
                 FakeBubbleAppInfoProvider(),
+                { Optional.empty() },
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
