@@ -151,7 +151,7 @@ private fun ContentScope.BundleHeaderContent(
         )
 
         if (collapsed) {
-            val currentPreviewIcons by
+            val currentPreviewIcons: List<Drawable> by
                 viewModel.previewIcons.collectAsStateWithLifecycle(initialValue = emptyList())
             if (currentPreviewIcons.isNotEmpty()) {
                 BundlePreviewIcons(
