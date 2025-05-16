@@ -133,17 +133,10 @@ public class ProtoLogViewerConfigReaderTest {
         Assume.assumeFalse(Build.FINGERPRINT.contains("robolectric"));
 
         final String[] viewerConfigPaths;
-        if (android.tracing.Flags.perfettoProtologTracing()) {
-            viewerConfigPaths = new String[] {
-                    "/system_ext/etc/wmshell.protolog.pb",
-                    "/system/etc/core.protolog.pb",
-            };
-        } else {
-            viewerConfigPaths = new String[] {
-                    "/system_ext/etc/wmshell.protolog.json.gz",
-                    "/system/etc/protolog.conf.json.gz",
-            };
-        }
+        viewerConfigPaths = new String[] {
+                "/system_ext/etc/wmshell.protolog.pb",
+                "/system/etc/core.protolog.pb",
+        };
 
         for (final var viewerConfigPath : viewerConfigPaths) {
             File f = new File(viewerConfigPath);

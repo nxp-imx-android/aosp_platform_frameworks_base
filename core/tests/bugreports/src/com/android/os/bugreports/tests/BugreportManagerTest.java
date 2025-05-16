@@ -128,10 +128,6 @@ public class BugreportManagerTest {
             mUiTracesPreDumped.add(Paths.get("/data/misc/wmtrace/ime_trace_service.winscope"));
         }
 
-        if (!android.tracing.Flags.perfettoProtologTracing()) {
-            mUiTracesPreDumped.add(Paths.get("/data/misc/wmtrace/wm_log.winscope"));
-        }
-
         mHandler = createHandler();
         mExecutor = (runnable) -> {
             if (mHandler != null) {

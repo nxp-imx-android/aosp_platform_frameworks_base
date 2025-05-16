@@ -85,7 +85,7 @@ public class ProtoLog {
 
     @RavenwoodReplace(reason = "Always use the Log backend on ravenwood, not Perfetto")
     private static boolean logOnlyToLogcat() {
-        return !android.tracing.Flags.perfettoProtologTracing();
+        return false;
     }
 
     private static boolean logOnlyToLogcat$ravenwood() {
