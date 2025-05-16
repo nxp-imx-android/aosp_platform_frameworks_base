@@ -17,8 +17,11 @@
 package com.android.wm.shell.transition
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager.TRANSIT_OPEN
+import android.window.IRemoteTransition
+import android.window.RemoteTransition
 import android.window.TransitionRequestInfo
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
@@ -31,15 +34,19 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler
 import com.android.wm.shell.pip.PipTransitionController
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.splitscreen.StageCoordinator
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.unfold.UnfoldTransitionHandler
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
 
 /**
  * Tests for [DefaultMixedHandler]
@@ -74,6 +81,9 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
+        splitScreenController.stub {
+            on { transitionHandler } doReturn mock<StageCoordinator>()
+        }
         shellInit.init()
     }
 
@@ -125,6 +135,22 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         }
 
         assertThat(mixedHandler.requestHasBubbleEnter(request)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    fun test_requestBubbleEnterConsumesRemote() {
+        val runningTask = createRunningTask()
+        val remoteTransition = mock<IRemoteTransition>()
+        val request = createTransitionRequestInfo(runningTask, RemoteTransition(remoteTransition))
+
+        bubbleTransitions.stub {
+            on { hasPendingEnterTransition(request) } doReturn true
+            on { isShowingAsBubbleBar } doReturn true
+        }
+
+        mixedHandler.handleRequest(Binder(), request)
+        verify(remoteTransition).onTransitionConsumed(any(), eq(false));
     }
 
     @Test
@@ -189,10 +215,28 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(request)).isTrue()
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    fun test_requestBubbleEnterFromAppBubbleConsumesRemote() {
+        val runningTask = createRunningTask(100)
+        val remoteTransition = mock<IRemoteTransition>()
+        val request = createTransitionRequestInfo(runningTask, RemoteTransition(remoteTransition))
+
+        bubbleTransitions.stub {
+            on { hasBubbleWithTaskId(100) } doReturn false
+            on { isShowingAsBubbleBar } doReturn true
+            on { shouldBeAppBubble(runningTask) } doReturn true
+        }
+
+        mixedHandler.handleRequest(Binder(), request)
+        verify(remoteTransition).onTransitionConsumed(any(), eq(false));
+    }
+
     private fun createTransitionRequestInfo(
-        runningTask: RunningTaskInfo? = null
+        runningTask: RunningTaskInfo? = null,
+        remote: RemoteTransition? = null,
     ): TransitionRequestInfo {
-        return TransitionRequestInfo(TRANSIT_OPEN, runningTask, null /* remoteTransition */)
+        return TransitionRequestInfo(TRANSIT_OPEN, runningTask, remote)
     }
 
     private fun createRunningTask(taskId: Int = 0): RunningTaskInfo {

@@ -208,8 +208,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      * In practice, the external is usually another transition on a different handler.
      */
     public void enqueueExternal(@NonNull TaskViewTaskController taskView, ExternalTransition ext) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.enqueueExternal(): taskView=%d",
-                taskView.hashCode());
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.enqueueExternal(): taskView=%d pending=%d",
+                taskView.hashCode(), mPending.size());
         final PendingTransition pending = new PendingTransition(
                 TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
         pending.mExternalTransition = ext;
@@ -223,8 +223,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     public void onExternalDone(IBinder key) {
         final PendingTransition pending = findPending(key);
         if (pending == null) {
-            ProtoLog.w(WM_SHELL_BUBBLES_NOISY, "Transitions.onExternalDone(): unknown "
-                    + "transition=%s", key);
+            ProtoLog.w(WM_SHELL_BUBBLES_NOISY,
+                    "Transitions.onExternalDone(): unknown transition=%s", key);
             return;
         }
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.onExternalDone(): taskView=%d "
@@ -1016,9 +1016,9 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             SurfaceControl.Transaction finishTransaction,
             ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash,
             WindowContainerTransaction wct) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.prepareOpenAnimation(): taskView=%d "
-                        + "newTask=%b", taskView.hashCode(), newTask);
         final Rect boundsOnScreen = taskView.prepareOpen(taskInfo, leash);
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.prepareOpenAnimation(): taskView=%d "
+                        + "newTask=%b bounds=%s", taskView.hashCode(), newTask, boundsOnScreen);
         if (boundsOnScreen != null) {
             updateBounds(taskView, boundsOnScreen, startTransaction, finishTransaction, taskInfo,
                     leash, wct);
