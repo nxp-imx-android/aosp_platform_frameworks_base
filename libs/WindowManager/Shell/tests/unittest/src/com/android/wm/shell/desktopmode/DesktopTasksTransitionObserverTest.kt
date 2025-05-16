@@ -113,7 +113,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
-            info = createCloseTransition(task),
+            info = createCloseTransition(listOf(task)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -143,7 +143,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
-            info = createCloseTransition(topTransparentTask),
+            info = createCloseTransition(listOf(topTransparentTask)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -240,7 +240,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver.onTransitionReady(
             transition = mock(),
-            info = createCloseTransition(wallpaperTask),
+            info = createCloseTransition(listOf(wallpaperTask)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -265,7 +265,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
-            info = createCloseTransition(topTransparentTask),
+            info = createCloseTransition(listOf(topTransparentTask)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -281,20 +281,22 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     fun closingTask_startsTransitionToRemoveFully() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val freeformTask = createTaskInfo(1)
+        val freeformTask2 = createTaskInfo(2)
         whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
-            info = createCloseTransition(freeformTask),
+            info = createCloseTransition(listOf(freeformTask, freeformTask2)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
         transitionObserver.onTransitionFinished(transition = mockTransition, aborted = false)
 
         val wct = getLatestWct(type = TRANSIT_CLOSE)
-        assertThat(wct.hierarchyOps).hasSize(1)
+        assertThat(wct.hierarchyOps).hasSize(2)
         wct.assertRemoveAt(index = 0, freeformTask.token)
+        wct.assertRemoveAt(index = 1, freeformTask2.token)
     }
 
     @Test
@@ -313,7 +315,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
-            info = createCloseTransition(topTransparentTask),
+            info = createCloseTransition(listOf(topTransparentTask)),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -368,16 +370,18 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
         }
     }
 
-    private fun createCloseTransition(task: RunningTaskInfo?) =
+    private fun createCloseTransition(tasks: List<RunningTaskInfo?>) =
         TransitionInfo(TRANSIT_CLOSE, /* flags= */ 0).apply {
-            addChange(
-                Change(mock(), mock()).apply {
-                    mode = TRANSIT_CLOSE
-                    parent = null
-                    taskInfo = task
-                    flags = flags
-                }
-            )
+            tasks.forEach {
+                addChange(
+                    Change(mock(), mock()).apply {
+                        mode = TRANSIT_CLOSE
+                        parent = null
+                        taskInfo = it
+                        flags = flags
+                    }
+                )
+            }
         }
 
     private fun createToBackTransition(task: RunningTaskInfo?) =
