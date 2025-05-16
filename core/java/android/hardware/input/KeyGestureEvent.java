@@ -115,7 +115,7 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT = 60;
     public static final int KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS = 61;
     public static final int KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY = 62;
-    public static final int KEY_GESTURE_TYPE_TOGGLE_TALKBACK = 63;
+    public static final int KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER = 63;
     public static final int KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS = 64;
     public static final int KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS = 65;
     public static final int KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS = 66;
@@ -208,7 +208,7 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
             KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY,
-            KEY_GESTURE_TYPE_TOGGLE_TALKBACK,
+            KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS,
             KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS,
             KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS,
@@ -788,8 +788,8 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT";
             case KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                 return "KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS";
-            case KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
-                return "KEY_GESTURE_TYPE_TOGGLE_TALKBACK";
+            case KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER:
+                return "KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER";
             case KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS:
                 return "KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS";
             case KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS:

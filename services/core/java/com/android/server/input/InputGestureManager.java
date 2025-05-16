@@ -195,7 +195,7 @@ final class InputGestureManager {
         if (enableTalkbackAndMagnifierKeyGestures()) {
             systemShortcuts.add(createKeyGesture(KeyEvent.KEYCODE_T,
                     KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK));
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER));
             systemShortcuts.add(createKeyGesture(KeyEvent.KEYCODE_M,
                     KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION));
