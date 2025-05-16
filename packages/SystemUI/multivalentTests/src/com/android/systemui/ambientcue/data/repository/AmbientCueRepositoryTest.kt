@@ -245,7 +245,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             val action: ActionModel = actions!!.first()
             action.onPerformAction()
             runCurrent()
-            verify(pendingIntent).send()
+            verify(pendingIntent).send(any<Bundle>())
         }
 
     @Test

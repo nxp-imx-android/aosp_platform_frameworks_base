@@ -16,7 +16,10 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.app.ActivityOptions
 import android.app.ActivityTaskManager
+import android.app.BroadcastOptions
+import android.app.PendingIntent
 import android.app.assist.ActivityId
 import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
@@ -148,7 +151,19 @@ constructor(
                                                 activityId.taskId,
                                             )
                                         } else if (pendingIntent != null) {
-                                            pendingIntent.send()
+                                            val options = BroadcastOptions.makeBasic()
+                                            options.isInteractive = true
+                                            options.pendingIntentBackgroundActivityStartMode =
+                                                ActivityOptions
+                                                    .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                                            try {
+                                                pendingIntent.send(options.toBundle())
+                                            } catch (e: PendingIntent.CanceledException) {
+                                                Log.e(
+                                                    TAG,
+                                                    "pending intent of $pendingIntent was canceled",
+                                                )
+                                            }
                                         } else if (intent != null) {
                                             activityStarter.startActivity(intent, false)
                                         }
