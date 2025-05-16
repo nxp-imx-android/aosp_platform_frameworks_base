@@ -32,6 +32,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.android.settingslib.widget.SettingsThemeHelper;
+
 /**
  * {@link Activity} that has hooks to observe activity lifecycle events.
  */
@@ -49,6 +51,7 @@ public class ObservableActivity extends FragmentActivity implements LifecycleOwn
         mLifecycle.onCreate(savedInstanceState);
         mLifecycle.handleLifecycleEvent(ON_CREATE);
         super.onCreate(savedInstanceState);
+        updateTheme();
     }
 
     @Override
@@ -58,6 +61,7 @@ public class ObservableActivity extends FragmentActivity implements LifecycleOwn
         mLifecycle.onCreate(savedInstanceState);
         mLifecycle.handleLifecycleEvent(ON_CREATE);
         super.onCreate(savedInstanceState, persistentState);
+        updateTheme();
     }
 
     @Override
@@ -115,5 +119,12 @@ public class ObservableActivity extends FragmentActivity implements LifecycleOwn
             return super.onOptionsItemSelected(menuItem);
         }
         return lifecycleHandled;
+    }
+
+    private void updateTheme() {
+        int resId = SettingsThemeHelper.isExpressiveTheme(this)
+                ? com.android.settingslib.widget.theme.R.style.Theme_SubSettingsBase_Expressive
+                : com.android.settingslib.widget.theme.R.style.Theme_SubSettingsBase;
+        setTheme(resId);
     }
 }
