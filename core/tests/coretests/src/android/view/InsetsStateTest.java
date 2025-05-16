@@ -658,6 +658,55 @@ public class InsetsStateTest {
     }
 
     @Test
+    public void testSet() {
+        mState.getOrCreateSource(ID_IME, ime())
+                .setFrame(new Rect(1, 2, 3, 4));
+        mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
+                .setFrame(new Rect(5, 6, 7, 8));
+        final int size = mState.sourceSize();
+
+        mState.set(mState);
+        assertEquals(size, mState.sourceSize());
+        mState.set(mState, true /* copiesSource */);
+        assertEquals(size, mState.sourceSize());
+
+        mState2.getOrCreateSource(ID_NAVIGATION_BAR, navigationBars())
+                .setFrame(new Rect(9, 10, 11, 12));
+        mState2.set(mState);
+        assertEquals(size, mState2.sourceSize());
+        assertEquals(mState, mState2);
+
+        mState2.getOrCreateSource(ID_NAVIGATION_BAR, navigationBars())
+                .setFrame(new Rect(13, 14, 15, 16));
+        mState2.set(mState, true /* copiesSource */);
+        assertEquals(size, mState2.sourceSize());
+        assertEquals(mState, mState2);
+    }
+
+    @Test
+    public void testSetForTypes() {
+        mState.getOrCreateSource(ID_IME, ime())
+                .setFrame(new Rect(1, 2, 3, 4));
+        mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
+                .setFrame(new Rect(5, 6, 7, 8));
+        final int size = mState.sourceSize();
+
+        mState.set(mState, ime() | statusBars());
+        assertEquals(size, mState.sourceSize());
+
+        mState2.getOrCreateSource(ID_NAVIGATION_BAR, navigationBars())
+                .setFrame(new Rect(9, 10, 11, 12));
+        mState2.set(mState, ime() | statusBars());
+        assertEquals(
+                mState.getOrCreateSource(ID_IME, ime()),
+                mState2.getOrCreateSource(ID_IME, ime()));
+        assertEquals(
+                mState.getOrCreateSource(ID_IME, statusBars()),
+                mState2.getOrCreateSource(ID_IME, statusBars()));
+        assertEquals(size + 1, mState2.sourceSize());
+    }
+
+    @Test
     public void testCopy() {
         mState.getOrCreateSource(ID_IME, ime())
                 .setFrame(new Rect(0, 0, 100, 100))
