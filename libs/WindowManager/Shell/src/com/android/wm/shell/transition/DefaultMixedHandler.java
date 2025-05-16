@@ -30,10 +30,13 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.util.Pair;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.RemoteTransition;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -318,13 +321,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             @NonNull TransitionRequestInfo request) {
         // Transitions involving a task that is being bubbled
         if (requestHasBubbleEnter(request)) {
+            consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
+
             if (mSplitHandler.requestImpliesSplitToBubble(request)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a split task");
-                if (request.getRemoteTransition() != null) {
-                    throw new IllegalStateException("Unexpected remote transition in"
-                            + "bubbles-enter-from-split request");
-                }
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE, transition));
@@ -336,16 +337,14 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 // This check should happen after we've checked for split + bubble enter
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request");
-                if (request.getRemoteTransition() != null) {
-                    throw new IllegalStateException("Unexpected remote transition in "
-                            + "bubbles-enter");
-                }
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition));
                 return new WindowContainerTransaction();
             }
         } else if (requestHasBubbleEnterFromAppBubble(request)) {
+            consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
+
             if (mSplitHandler.requestImpliesSplitToBubble(request)) {
                 // TODO: Handle from split
             } else {
@@ -819,6 +818,22 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 && !mBubbleTransitions.hasBubbleWithTaskId(request.getTriggerTask().taskId)
                 // TODO(b/408453889): To be removed once we handle transitions with stack view
                 && mBubbleTransitions.isShowingAsBubbleBar();
+    }
+
+    /**
+     * Notifies the remote transition that it will not be played and is consumed by another
+     * transition (and it can clean up accordingly).
+     */
+    private void consumeRemoteTransitionIfNecessary(@NonNull IBinder transition,
+            @Nullable RemoteTransition remote) {
+        if (remote != null) {
+            try {
+                remote.getRemoteTransition().onTransitionConsumed(transition, false /* aborted */);
+            } catch (RemoteException e) {
+                Log.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS.getTag(),
+                        "Error notifying remote onTransitionConsumed()", e);
+            }
+        }
     }
 
     @Override

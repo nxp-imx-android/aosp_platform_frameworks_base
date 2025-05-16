@@ -296,6 +296,22 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testAddSameListenerForTaskId() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        TrackingTaskListener task1Listener = new TrackingTaskListener();
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Add task 1 specific listener
+        mOrganizer.addListenerForTaskId(task1Listener, 1);
+        assertTrue(task1Listener.appeared.contains(task1));
+
+        // Add same listener for the task, assert it doesn't throw and also onTaskAppeared() doesn't
+        // get called it again
+        mOrganizer.addListenerForTaskId(task1Listener, 1);
+        assertEquals(1, task1Listener.appeared.size());
+    }
+
+    @Test
     public void testAddListenerForTaskId_afterTypeListener() {
         RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
         TrackingTaskListener mwListener = new TrackingTaskListener();

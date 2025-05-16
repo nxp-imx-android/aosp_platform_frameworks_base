@@ -99,6 +99,8 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                 continue;
             }
 
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TransitionObserver.onTransitionReady(): "
+                    + "collapsing bubble for taskId=%d", taskInfo.taskId);
             mBubbleData.setExpanded(false);
             return;
         }

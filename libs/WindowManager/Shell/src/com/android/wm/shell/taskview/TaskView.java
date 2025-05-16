@@ -55,6 +55,12 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
          */
         default void onInitialized() {}
 
+        /**
+         * Only called when the surface has been created, and the task view has already been
+         * initialized (and onInitialized has been called)
+         */
+        default void onSurfaceAlreadyCreated() {}
+
         /** Called when the container can no longer launch activities. */
         default void onReleased() {}
 

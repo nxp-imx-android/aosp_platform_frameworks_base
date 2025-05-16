@@ -198,6 +198,14 @@ public class BubbleTaskViewListener implements TaskView.Listener {
     }
 
     @Override
+    public void onSurfaceAlreadyCreated() {
+        ProtoLog.d(WM_SHELL_BUBBLES, "onSurfaceCreated: bubble=%s", getBubbleKey());
+        if (mBubble.getPreparingTransition() != null) {
+            mBubble.getPreparingTransition().surfaceCreated();
+        }
+    }
+
+    @Override
     public void onReleased() {
         mDestroyed = true;
     }

@@ -370,9 +370,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public void addListenerForTaskId(TaskListener listener, int taskId) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "addListenerForTaskId taskId=%s", taskId);
-            if (mTaskListeners.get(taskId) != null) {
-                throw new IllegalArgumentException(
-                        "Listener for taskId=" + taskId + " already exists");
+            final TaskListener existingListener = mTaskListeners.get(taskId);
+            if (existingListener != null) {
+                if (existingListener == listener) {
+                    // Same listener already registered
+                    return;
+                } else {
+                    throw new IllegalArgumentException(
+                            "Listener for taskId=" + taskId + " already exists");
+                }
             }
 
             final TaskAppearedInfo info = mTasks.get(taskId);
