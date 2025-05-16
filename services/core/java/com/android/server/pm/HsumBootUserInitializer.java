@@ -78,13 +78,13 @@ public final class HsumBootUserInitializer {
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(UserManagerService ums,
             ActivityManagerService ams, PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
+            boolean shouldCreateInitialUser) {
 
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
         return new HsumBootUserInitializer(ums, ams, pms, contentResolver,
-                shouldAlwaysHaveMainUser, shouldCreateInitialUser);
+                ums.isMainUserPermanentAdmin(), shouldCreateInitialUser);
     }
 
     @VisibleForTesting
@@ -153,8 +153,8 @@ public final class HsumBootUserInitializer {
      */
     public void init(TimingsTraceAndSlog t) {
         if (DEBUG) {
-            Slogf.d(TAG, "init(): shouldAlwaysHaveMainUser=%b, "
-                    + "shouldCreateInitialUser=%b, Flags.createInitialUser=%b",
+            Slogf.d(TAG, "init(): shouldAlwaysHaveMainUser=%b, shouldCreateInitialUser=%b, "
+                    + "Flags.createInitialUser=%b",
                     mShouldAlwaysHaveMainUser, mShouldCreateInitialUser, Flags.createInitialUser());
         } else {
             Slogf.i(TAG, "Initializing");

@@ -236,6 +236,8 @@ public abstract class BaseLockSettingsServiceTests {
 
         setDeviceProvisioned(true);
         mLocalService = LocalServices.getService(LockSettingsInternal.class);
+
+        when(mUserManagerInternal.isMainUserPermanentAdmin()).thenReturn(true);
     }
 
     private Resources createMockResources() {
@@ -246,8 +248,6 @@ public abstract class BaseLockSettingsServiceTests {
                 .thenReturn(false);
         when(res.getBoolean(
                 eq(com.android.internal.R.bool.config_enableCredentialFactoryResetProtection)))
-                .thenReturn(true);
-        when(res.getBoolean(eq(com.android.internal.R.bool.config_isMainUserPermanentAdmin)))
                 .thenReturn(true);
         when(res.getBoolean(eq(com.android.internal.R.bool.config_strongAuthRequiredOnBoot)))
                 .thenReturn(true);

@@ -156,6 +156,7 @@ import android.util.Xml;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.SetScreenLockDialogActivity;
 import com.android.internal.logging.MetricsLogger;
@@ -7944,6 +7945,9 @@ public class UserManagerService extends IUserManager.Stub {
             pw.println("  Can switch to headless system user: " + getSystemResources()
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
         }
+
+        pw.println("  Is main user permanent admin: " + isMainUserPermanentAdmin());
+
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
         pw.println("  Guest name: " + getGuestName());
@@ -8617,6 +8621,11 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
+        public boolean isMainUserPermanentAdmin() {
+            return UserManagerService.this.isMainUserPermanentAdmin();
+        }
+
+        @Override
         public @UserIdInt int getBootUser(boolean waitUntilSet)
                 throws UserManager.CheckedUserOperationException {
             return UserManagerService.this.getBootUser(waitUntilSet);
@@ -8807,13 +8816,12 @@ public class UserManagerService extends IUserManager.Stub {
         return userInfo.isMain() && isMainUserPermanentAdmin();
     }
 
-    /**
-     * Returns true if {@link com.android.internal.R.bool#config_isMainUserPermanentAdmin} is true.
-     * If the main user is a permanent admin user it can't be deleted
-     * or downgraded to non-admin status.
-     */
+    /** Must be public otherwise can't be mocked. */
+    @VisibleForTesting(visibility = Visibility.PACKAGE)
     public boolean isMainUserPermanentAdmin() {
-        return getSystemResources().getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        boolean defaultValue = getSystemResources()
+                .getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        return defaultValue;
     }
 
     /**

@@ -278,7 +278,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
 
     private void setupHeadlessTest() {
         mInjector.mIsHeadlessSystemUserMode = true;
-        mInjector.mIsMainUserPermanentAdmin = true;
+        when(mInjector.getUserManagerInternal().isMainUserPermanentAdmin()).thenReturn(true);
         mPrimaryUserInfo.flags &= ~(FLAG_FULL | FLAG_PRIMARY);
         mSecondaryUserInfo.flags |= FLAG_MAIN;
         mService.initializeSyntheticPassword(PRIMARY_USER_ID);
