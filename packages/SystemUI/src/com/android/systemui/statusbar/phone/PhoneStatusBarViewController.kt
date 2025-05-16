@@ -16,21 +16,16 @@
 package com.android.systemui.statusbar.phone
 
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
-import android.graphics.Point
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.Flags
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.dagger.qualifiers.DisplaySpecific
-import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.flags.Flags.ENABLE_UNFOLD_STATUS_BAR_ANIMATIONS
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -45,14 +40,12 @@ import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
-import com.android.systemui.shared.animation.UnfoldMoveFromCenterAnimator
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.StatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
-import com.android.systemui.unfold.SysUIUnfoldComponent
 import com.android.systemui.unfold.UNFOLD_STATUS_BAR
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel
@@ -81,7 +74,6 @@ private constructor(
     private val statusBarLongPressGestureDetector: Provider<StatusBarLongPressGestureDetector>,
     private val windowRootView: Provider<WindowRootView>,
     private val shadeLogger: ShadeLogger,
-    private val moveFromCenterAnimationController: StatusBarMoveFromCenterAnimationController?,
     private val userChipViewModel: StatusBarUserChipViewModel,
     private val viewUtil: ViewUtil,
     private val configurationController: ConfigurationController,
@@ -157,31 +149,6 @@ private constructor(
 
         progressProvider?.setReadyToHandleTransition(true)
         configurationController.addCallback(configurationListener)
-
-        if (moveFromCenterAnimationController == null) return
-
-        val statusBarLeftSide: View =
-            mView.requireViewById(R.id.status_bar_start_side_except_heads_up)
-        val systemIconArea: ViewGroup = mView.requireViewById(R.id.status_bar_end_side_content)
-
-        val viewsToAnimate = arrayOf(statusBarLeftSide, systemIconArea)
-
-        mView.viewTreeObserver.addOnPreDrawListener(
-            object : ViewTreeObserver.OnPreDrawListener {
-                override fun onPreDraw(): Boolean {
-                    moveFromCenterAnimationController.onViewsReady(viewsToAnimate)
-                    mView.viewTreeObserver.removeOnPreDrawListener(this)
-                    return true
-                }
-            }
-        )
-
-        mView.addOnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
-            val widthChanged = right - left != oldRight - oldLeft
-            if (widthChanged) {
-                moveFromCenterAnimationController.onStatusBarWidthChanged()
-            }
-        }
     }
 
     private fun addCursorSupportToIconContainers() {
@@ -218,7 +185,6 @@ private constructor(
         startSideContainer.setOnHoverListener(null)
         endSideContainer.setOnHoverListener(null)
         progressProvider?.setReadyToHandleTransition(false)
-        moveFromCenterAnimationController?.onViewDetached()
         configurationController.removeCallback(configurationListener)
     }
 
@@ -355,43 +321,11 @@ private constructor(
         }
     }
 
-    class StatusBarViewsCenterProvider : UnfoldMoveFromCenterAnimator.ViewCenterProvider {
-        override fun getViewCenter(view: View, outPoint: Point) =
-            when (view.id) {
-                R.id.status_bar_start_side_except_heads_up -> {
-                    // items aligned to the start, return start center point
-                    getViewEdgeCenter(view, outPoint, isStart = true)
-                }
-                R.id.status_bar_end_side_content -> {
-                    // items aligned to the end, return end center point
-                    getViewEdgeCenter(view, outPoint, isStart = false)
-                }
-                else -> super.getViewCenter(view, outPoint)
-            }
-
-        /** Returns start or end (based on [isStart]) center point of the view */
-        private fun getViewEdgeCenter(view: View, outPoint: Point, isStart: Boolean) {
-            val isRtl = view.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-            val isLeftEdge = isRtl xor isStart
-
-            val viewLocation = IntArray(2)
-            view.getLocationOnScreen(viewLocation)
-
-            val viewX = viewLocation[0]
-            val viewY = viewLocation[1]
-
-            outPoint.x = viewX + if (isLeftEdge) view.height / 2 else view.width - view.height / 2
-            outPoint.y = viewY + view.height / 2
-        }
-    }
-
     class Factory
     @Inject
     constructor(
-        private val unfoldComponent: Optional<SysUIUnfoldComponent>,
         @Named(UNFOLD_STATUS_BAR)
         private val progressProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
-        private val featureFlags: FeatureFlags,
         private val userChipViewModel: StatusBarUserChipViewModel,
         private val centralSurfaces: CentralSurfaces,
         private val statusBarWindowStateController: StatusBarWindowStateController,
@@ -412,13 +346,6 @@ private constructor(
         private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     ) {
         fun create(view: PhoneStatusBarView): PhoneStatusBarViewController {
-            val statusBarMoveFromCenterAnimationController =
-                if (featureFlags.isEnabled(ENABLE_UNFOLD_STATUS_BAR_ANIMATIONS)) {
-                    unfoldComponent.getOrNull()?.getStatusBarMoveFromCenterAnimationController()
-                } else {
-                    null
-                }
-
             val configurationController =
                 if (StatusBarConnectedDisplays.isEnabled) {
                     statusBarConfigurationControllerStore.forDisplay(view.context.displayId)
@@ -442,7 +369,6 @@ private constructor(
                 statusBarLongPressGestureDetector,
                 windowRootView,
                 shadeLogger,
-                statusBarMoveFromCenterAnimationController,
                 userChipViewModel,
                 viewUtil,
                 configurationController,
