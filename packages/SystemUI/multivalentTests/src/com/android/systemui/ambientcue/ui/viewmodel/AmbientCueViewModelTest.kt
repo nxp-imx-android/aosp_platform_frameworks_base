@@ -34,6 +34,8 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,22 +64,6 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(viewModel.isVisible).isFalse()
-        }
-
-    @Test
-    fun isVisible_whenExpanded_doesntTimeOut() =
-        kosmos.runTest {
-            initializeIsVisible()
-            assertThat(viewModel.isVisible).isTrue()
-
-            // Doesn't time out when expanded
-            viewModel.expand()
-            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
-            runCurrent()
-            ambientCueRepository.fake.updateRootViewAttached()
-            runCurrent()
-
-            assertThat(viewModel.isVisible).isTrue()
         }
 
     @Test
@@ -120,6 +106,29 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             // UI Collapses upon clicking on an action
             action.onClick()
             assertThat(viewModel.isExpanded).isFalse()
+        }
+
+    @Test
+    fun delayAndDeactivateCueBar_refreshTimeout() =
+        kosmos.runTest {
+            ambientCueInteractor.setDeactivated(false)
+            testScope.backgroundScope.launch { viewModel.delayAndDeactivateCueBar() }
+            advanceTimeBy(10.seconds)
+            runCurrent()
+            assertThat(ambientCueRepository.isDeactivated.value).isFalse()
+
+            testScope.backgroundScope.launch { viewModel.delayAndDeactivateCueBar() }
+            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC - 10.seconds)
+            runCurrent()
+            // 5 seconds after calling delayAndDeactivateCueBar() again (totally 15 seconds after
+            // test begins), isDeactivated should still be false.
+            assertThat(ambientCueRepository.isDeactivated.value).isFalse()
+            advanceTimeBy(10.seconds)
+            runCurrent()
+
+            // 15 seconds after calling delayAndDeactivateCueBar() again, isDeactivated should be
+            // true.
+            assertThat(ambientCueRepository.isDeactivated.value).isTrue()
         }
 
     private fun testActions(applicationContext: Context) =
