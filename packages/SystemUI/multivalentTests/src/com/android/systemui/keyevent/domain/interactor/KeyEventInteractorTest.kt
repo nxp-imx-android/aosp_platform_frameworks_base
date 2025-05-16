@@ -41,10 +41,7 @@ class KeyEventInteractorTest : SysuiTestCase() {
     @Before
     fun setup() {
         repository = FakeKeyEventRepository()
-        underTest =
-            KeyEventInteractor(
-                repository,
-            )
+        underTest = KeyEventInteractor(repository)
     }
 
     @Test

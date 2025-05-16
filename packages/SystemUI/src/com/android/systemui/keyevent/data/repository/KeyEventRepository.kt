@@ -19,15 +19,11 @@ package com.android.systemui.keyevent.data.repository
 import android.view.KeyEvent
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 
 /** Defines interface for classes that encapsulate application state for key event presses. */
 interface KeyEventRepository {
@@ -36,31 +32,21 @@ interface KeyEventRepository {
 }
 
 @SysUISingleton
-class KeyEventRepositoryImpl
-@Inject
-constructor(
-    private val commandQueue: CommandQueue,
-    @Application applicationScope: CoroutineScope
-) : KeyEventRepository {
-    override val isPowerButtonDown =
-        conflatedCallbackFlow {
-            val callback = object : CommandQueue.Callbacks {
-                    override fun handleSystemKey(event: KeyEvent) {
-                        if (event.keyCode == KeyEvent.KEYCODE_POWER) {
-                            trySendWithFailureLogging(event.action == KeyEvent.ACTION_DOWN,
-                                TAG, "updated isPowerButtonDown")
-                        }
+class KeyEventRepositoryImpl @Inject constructor(private val commandQueue: CommandQueue) :
+    KeyEventRepository {
+    override val isPowerButtonDown: Flow<Boolean> = conflatedCallbackFlow {
+        val callback =
+            object : CommandQueue.Callbacks {
+                override fun handleSystemKey(event: KeyEvent) {
+                    if (event.keyCode == KeyEvent.KEYCODE_POWER) {
+                        trySendWithFailureLogging(event.isDown, TAG, "updated isPowerButtonDown")
                     }
                 }
-            trySendWithFailureLogging(false, TAG, "init isPowerButtonDown")
-            commandQueue.addCallback(callback)
-            awaitClose { commandQueue.removeCallback(callback) }
-        }
-        .stateIn(
-            scope = applicationScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = false
-        )
+            }
+        trySendWithFailureLogging(false, TAG, "init isPowerButtonDown")
+        commandQueue.addCallback(callback)
+        awaitClose { commandQueue.removeCallback(callback) }
+    }
 
     companion object {
         private const val TAG = "KeyEventRepositoryImpl"

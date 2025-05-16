@@ -25,7 +25,6 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyevent.data.repository.KeyEventRepositoryImpl
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -50,10 +49,7 @@ class KeyEventRepositoryTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         testScope = TestScope()
-        underTest = KeyEventRepositoryImpl(
-            commandQueue = commandQueue,
-            applicationScope = testScope.backgroundScope
-        )
+        underTest = KeyEventRepositoryImpl(commandQueue)
     }
 
     @Test
@@ -67,26 +63,17 @@ class KeyEventRepositoryTest : SysuiTestCase() {
     @Test
     fun isPowerButtonDown_onChange() =
         testScope.runTest {
-            underTest.isPowerButtonDown.launchIn(testScope.backgroundScope)
-
+            val isPowerButtonDown by collectLastValue(underTest.isPowerButtonDown)
             runCurrent()
-
             verify(commandQueue).addCallback(commandQueueCallbacks.capture())
-
             commandQueueCallbacks.value.handleSystemKey(
                 KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_POWER)
             )
-
-            runCurrent()
-
-            assertThat(underTest.isPowerButtonDown.value).isTrue()
+            assertThat(isPowerButtonDown).isTrue()
 
             commandQueueCallbacks.value.handleSystemKey(
                 KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_POWER)
             )
-
-            runCurrent()
-
-            assertThat(underTest.isPowerButtonDown.value).isFalse()
+            assertThat(isPowerButtonDown).isFalse()
         }
 }
