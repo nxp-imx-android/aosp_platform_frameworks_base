@@ -186,7 +186,6 @@ java_library {
         "ravenwood-helper-framework-runtime",
         "ravenwood-helper-libcore-runtime",
         "hoststubgen-helper-runtime.ravenwood",
-        "mockito-ravenwood-prebuilt",
     ],
     visibility: [":__subpackages__"],
     jarjar_rules: ":ravenwood-services-jarjar-rules",

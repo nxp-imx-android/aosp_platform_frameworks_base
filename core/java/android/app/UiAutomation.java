@@ -117,6 +117,8 @@ import java.util.concurrent.TimeoutException;
  * interacting with another application whose behavior depends on that setting.
  * </p>
  */
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodRedirectionClass("UiAutomation_ravenwood")
 public final class UiAutomation {
 
     private static final String LOG_TAG = UiAutomation.class.getSimpleName();
@@ -284,6 +286,7 @@ public final class UiAutomation {
      *
      * @hide
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public UiAutomation(Context context, IUiAutomationConnection connection) {
         this(getDisplayId(context), context.getMainLooper(), connection);
     }
@@ -307,6 +310,7 @@ public final class UiAutomation {
         Log.w(LOG_TAG, "Created with deprecatead constructor, assumes DEFAULT_DISPLAY");
     }
 
+    @android.ravenwood.annotation.RavenwoodKeep
     private UiAutomation(int displayId, Looper looper, IUiAutomationConnection connection) {
         Preconditions.checkArgument(looper != null, "Looper cannot be null!");
         Preconditions.checkArgument(connection != null, "Connection cannot be null!");
@@ -586,6 +590,7 @@ public final class UiAutomation {
      * @see #adoptShellPermissionIdentity(String...)
      * @see #dropShellPermissionIdentity()
      */
+    @android.ravenwood.annotation.RavenwoodRedirect
     public void adoptShellPermissionIdentity() {
         try {
             // Calling out without a lock held.
@@ -611,6 +616,7 @@ public final class UiAutomation {
      * @see #adoptShellPermissionIdentity()
      * @see #dropShellPermissionIdentity()
      */
+    @android.ravenwood.annotation.RavenwoodRedirect
     public void adoptShellPermissionIdentity(@Nullable String... permissions) {
         try {
             // Calling out without a lock held.
@@ -627,6 +633,7 @@ public final class UiAutomation {
      *
      * @see #adoptShellPermissionIdentity()
      */
+    @android.ravenwood.annotation.RavenwoodRedirect
     public void dropShellPermissionIdentity() {
         try {
             // Calling out without a lock held.
@@ -645,6 +652,7 @@ public final class UiAutomation {
      */
     @TestApi
     @NonNull
+    @android.ravenwood.annotation.RavenwoodRedirect
     public Set<String> getAdoptedShellPermissions() {
         try {
             final List<String> permissions = mUiAutomationConnection.getAdoptedShellPermissions();
@@ -1884,6 +1892,7 @@ public final class UiAutomation {
      * <p><b>NOTE: </b> must be a static method because it's called from a constructor to call
      * another one.
      */
+    @android.ravenwood.annotation.RavenwoodReplace(reason = "Always use DEFAULT_DISPLAY")
     private static int getDisplayId(Context context) {
         Preconditions.checkArgument(context != null, "Context cannot be null!");
 
@@ -1915,6 +1924,10 @@ public final class UiAutomation {
             Log.d(LOG_TAG, "getDisplayId(): returning user's display (" + userDisplayId + ")");
         }
         return userDisplayId;
+    }
+
+    private static int getDisplayId$ravenwood(Context context) {
+        return DEFAULT_DISPLAY;
     }
 
     private static int getMainDisplayIdAssignedToUser(Context context, UserManager userManager) {
