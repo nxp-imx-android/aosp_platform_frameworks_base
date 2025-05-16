@@ -321,13 +321,15 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onBindViewHolder_bindDeselectableDevice_verifyView() {
+        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn false }
         mMediaSwitchingController.stub {
             on { selectedMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
             on { deselectableMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
         }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
-        createAndBindDeviceViewHolder(position = 1).apply {
+        // positions: 0 - collapsible drop down, 1 - device1, 2 - device2.
+        createAndBindDeviceViewHolder(position = 2).apply {
             assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.contentDescription)
                 .isEqualTo(mContext.getString(R.string.accessibility_remove_device_from_group))
