@@ -260,6 +260,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         )
         verify(mockSurfaceTransactionHelper, never()).setMirrorTransformations(any(), any())
         verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isFalse()
     }
 
     @Test
@@ -268,6 +269,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
             PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
             TestDisplay.DISPLAY_1.bounds.centerX(), TestDisplay.DISPLAY_1.bounds.centerY())
+
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
              globalDpBounds, TARGET_DISPLAY_ID
         )
@@ -281,6 +283,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         )
         verify(mockSurfaceTransactionHelper, never()).setMirrorTransformations(any(), any())
         verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isFalse()
     }
 
     @Test
@@ -290,6 +293,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
             TestDisplay.DISPLAY_1.bounds.centerX(), TestDisplay.DISPLAY_1.bounds.centerY()
         )
+
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
             globalDpBounds, ORIGIN_DISPLAY_ID
         )
@@ -314,6 +318,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         )
         verify(mockSurfaceTransactionHelper, times(1)).setMirrorTransformations(any(), any())
         verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isTrue()
     }
 
     @Test
@@ -322,6 +327,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
             PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
             1000f, -100f)
+
         pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
             globalDpBounds, ORIGIN_DISPLAY_ID
         )
@@ -356,6 +362,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         )
         verify(mockSurfaceTransactionHelper, times(2)).setMirrorTransformations(any(), any())
         verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isTrue()
     }
 
     @Test

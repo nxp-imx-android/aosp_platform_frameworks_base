@@ -71,7 +71,7 @@ public class PipDisplayTransferHandler implements
     ArrayMap<Integer, SurfaceControl> mOnDragMirrorPerDisplayId = new ArrayMap<>();
     @VisibleForTesting int mTargetDisplayId;
     private PipResizeAnimatorSupplier mPipResizeAnimatorSupplier;
-
+    private boolean mIsMirrorShown;
     public PipDisplayTransferHandler(Context context, PipTransitionState pipTransitionState,
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
@@ -193,6 +193,7 @@ public class PipDisplayTransferHandler implements
      */
     public void showDragMirrorOnConnectedDisplays(RectF globalDpPipBounds, int focusedDisplayId) {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
+        mIsMirrorShown = false;
         // Iterate through each connected display ID to ensure partial PiP bounds are shown on
         // all corresponding displays while dragging
         for (int displayId : mRootTaskDisplayAreaOrganizer.getDisplayIds()) {
@@ -229,6 +230,7 @@ public class PipDisplayTransferHandler implements
                     mPipBoundsState.getBounds(), boundsOnCurrentDisplay,
                     /* degrees= */ 0).setMirrorTransformations(transaction, mirror);
             mRootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, mirror, transaction);
+            mIsMirrorShown = true;
         }
         transaction.apply();
     }
@@ -256,6 +258,13 @@ public class PipDisplayTransferHandler implements
     @VisibleForTesting
     void setSurfaceTransactionHelper(PipSurfaceTransactionHelper surfaceTransactionHelper) {
         mPipSurfaceTransactionHelper = surfaceTransactionHelper;
+    }
+
+    /**
+     * Whether any of the drag mirror(s) are showing on any display other than the primary display.
+     */
+    boolean isMirrorShown() {
+        return mIsMirrorShown;
     }
 
     @VisibleForTesting
