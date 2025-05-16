@@ -240,7 +240,7 @@ private class DragAndDropTargetStateV1(
         val targetItem =
             state.layoutInfo.visibleItemsInfo
                 .asSequence()
-                .filter { item -> contentListState.isItemEditable(item.index) }
+                .filter { item -> contentListState.isItemEditable(item.key) }
                 .firstItemAtOffset(dragOffset - contentOffset)
 
         if (
@@ -265,8 +265,8 @@ private class DragAndDropTargetStateV1(
                 scrollOffset = state.firstVisibleItemScrollOffset
             }
 
-            if (contentListState.isItemEditable(targetItem.index)) {
-                movePlaceholderTo(targetItem.index)
+            if (contentListState.isItemEditable(targetItem.key)) {
+                movePlaceholderTo(targetItem.key)
                 placeHolderIndex = targetItem.index
             }
 
@@ -330,8 +330,21 @@ private class DragAndDropTargetStateV1(
         }
     }
 
-    private fun movePlaceholderTo(index: Int) {
+    private fun movePlaceholderTo(key: Any) {
+        // This method is often invoked in a separate scope and therefore the placeholder could
+        // have disappeared before this point.
         val currentIndex = contentListState.list.indexOf(placeHolder)
+
+        if (currentIndex == -1) {
+            return
+        }
+
+        val index = contentListState.list.indexOfFirst { item -> item.key == key }
+
+        if (index == -1) {
+            return
+        }
+
         if (currentIndex != index) {
             contentListState.onMove(currentIndex, index)
         }
@@ -428,7 +441,7 @@ private class DragAndDropTargetStateV2(
         val targetItem =
             state.layoutInfo.visibleItemsInfo
                 .asSequence()
-                .filter { item -> contentListState.isItemEditable(item.index) }
+                .filter { item -> contentListState.isItemEditable(item.key) }
                 .firstItemAtOffset(dragOffset - contentOffset)
 
         if (
@@ -456,10 +469,10 @@ private class DragAndDropTargetStateV2(
             if (scrollToIndex != null) {
                 scope.launch {
                     state.scrollToItem(scrollToIndex, state.firstVisibleItemScrollOffset)
-                    movePlaceholderTo(targetItem.index)
+                    movePlaceholderTo(targetItem.key)
                 }
             } else {
-                movePlaceholderTo(targetItem.index)
+                movePlaceholderTo(targetItem.key)
             }
 
             placeHolderIndex = targetItem.index
@@ -494,7 +507,19 @@ private class DragAndDropTargetStateV2(
         }
     }
 
-    private fun movePlaceholderTo(index: Int) {
+    private fun movePlaceholderTo(key: Any) {
+        // This method is often invoked in a separate scope and therefore the placeholder could
+        // have disappeared before this point.
+        if (!contentListState.list.contains(placeHolder)) {
+            return
+        }
+
+        val index = contentListState.list.indexOfFirst { item -> item.key == key }
+
+        if (index == -1) {
+            return
+        }
+
         val currentIndex = contentListState.list.indexOf(placeHolder)
         if (currentIndex != index) {
             contentListState.swapItems(currentIndex, index)
