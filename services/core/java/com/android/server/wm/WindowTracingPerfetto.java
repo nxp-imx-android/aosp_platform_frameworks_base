@@ -113,8 +113,8 @@ class WindowTracingPerfetto extends WindowTracing {
     protected void log(String where) {
         try {
             Trace.beginSection(TracingUtils.uiTracingSliceName("Window::log"));
-            boolean isStartLogEvent = where == WHERE_START_TRACING;
-            boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
+            boolean isStartLogEvent = WHERE_START_TRACING.equals(where);
+            boolean isOnFrameLogEvent = WHERE_ON_FRAME.equals(where);
 
             ArrayList<Runnable> pendingStopDones = new ArrayList<>();
 
