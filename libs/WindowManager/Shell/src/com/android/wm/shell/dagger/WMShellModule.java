@@ -700,13 +700,15 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             Transitions transitions,
             Optional<RecentTasksController> recentTasksController,
-            HomeTransitionObserver homeTransitionObserver) {
+            HomeTransitionObserver homeTransitionObserver,
+            DisplayController displayController) {
         return new RecentsTransitionHandler(
                 shellInit,
                 shellTaskOrganizer,
                 transitions,
                 recentTasksController.orElse(null),
-                homeTransitionObserver);
+                homeTransitionObserver,
+                displayController);
     }
 
     //
