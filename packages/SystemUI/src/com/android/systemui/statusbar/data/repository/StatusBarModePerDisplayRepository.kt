@@ -102,14 +102,6 @@ interface StatusBarModePerDisplayRepository : OnStatusBarViewInitializedListener
     fun showTransient()
 
     /**
-     * Requests for the status bar to be no longer showing transiently.
-     *
-     * TODO(b/277764509): Don't allow [CentralSurfaces] to set the transient mode; have it
-     *   determined internally instead.
-     */
-    fun clearTransient()
-
-    /**
      * Called when the [StatusBarModePerDisplayRepository] should stop doing any work and clean up
      * if needed.
      */
@@ -319,10 +311,6 @@ constructor(
 
     override fun showTransient() {
         _isTransientShown.value = true
-    }
-
-    override fun clearTransient() {
-        _isTransientShown.value = false
     }
 
     private fun modifyAppearanceIfNeeded(

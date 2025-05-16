@@ -218,21 +218,6 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun isTransientShown_clearTransient_false() {
-        // Start as true
-        commandQueueCallback.showTransient(
-            DISPLAY_ID,
-            WindowInsets.Type.statusBars(),
-            /* isGestureOnSystemBar= */ false,
-        )
-        assertThat(underTest.isTransientShown.value).isTrue()
-
-        underTest.clearTransient()
-
-        assertThat(underTest.isTransientShown.value).isFalse()
-    }
-
-    @Test
     fun isInFullscreenMode_visibleTypesHasStatusBar_false() =
         testScope.runTest {
             val latest by collectLastValue(underTest.isInFullscreenMode)

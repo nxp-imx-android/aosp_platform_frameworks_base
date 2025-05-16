@@ -53,13 +53,14 @@ class FakeStatusBarModePerDisplayRepository : StatusBarModePerDisplayRepository 
         isTransientShown.value = true
     }
 
-    override fun clearTransient() {
+    fun abortTransient() {
         isTransientShown.value = false
     }
 
     override fun start() {}
 
     override fun stop() {}
+
     override fun setOngoingProcessRequiresStatusBarVisible(requiredVisible: Boolean) {
         ongoingProcessRequiresStatusBarVisible.value = requiredVisible
     }
