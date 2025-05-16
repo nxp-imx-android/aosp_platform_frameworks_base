@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects.dagger
 
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectEnabler
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferences
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectSetUiHintsHandler
@@ -36,6 +37,11 @@ interface SqueezeEffectRepositoryModule {
     fun invocationEffectSetUiHintsHandler(
         squeezeEffectRepositoryImpl: SqueezeEffectRepositoryImpl
     ): InvocationEffectSetUiHintsHandler
+
+    @Binds
+    fun invocationEffectEnabler(
+        squeezeEffectRepositoryImpl: SqueezeEffectRepositoryImpl
+    ): InvocationEffectEnabler
 
     @Binds
     fun invocationEffectPreferences(

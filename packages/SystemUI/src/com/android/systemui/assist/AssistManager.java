@@ -286,6 +286,15 @@ public class AssistManager {
                                     .commitUpdate(mDisplayTracker.getDefaultDisplayId());
                         }
                     }
+
+                    @Override
+                    public void onSetInvocationEffectEnabled(boolean enabled) {
+                        if (VERBOSE) {
+                            Log.v(TAG, "Set invocation effect enabled received");
+                        }
+                        // TODO(b/418179198): Call InvocationEffectEnabler.setEnabled when the
+                        //  squeeze effect codebase moves to the general SystemUIModule
+                    }
                 });
     }
 
