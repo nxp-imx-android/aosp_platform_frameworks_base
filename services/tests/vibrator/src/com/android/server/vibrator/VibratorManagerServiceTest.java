@@ -200,6 +200,8 @@ public class VibratorManagerServiceTest {
             new SparseArray<>();
     private final SparseArray<VibrationEffect>  mHapticFeedbackVibrationMapSourceTouchScreen =
             new SparseArray<>();
+    private final SparseArray<VibrationEffect>  mHapticFeedbackVibrationMapUsageGestureInput =
+            new SparseArray<>();
 
     private final List<HalVibration> mPendingVibrations = new ArrayList<>();
     private final List<VendorVibrationSession> mPendingSessions = new ArrayList<>();
@@ -357,7 +359,8 @@ public class VibratorManagerServiceTest {
                         return new HapticFeedbackVibrationProvider(resources, vibratorInfo,
                                 new HapticFeedbackCustomization(mHapticFeedbackVibrationMap,
                                         mHapticFeedbackVibrationMapSourceRotary,
-                                        mHapticFeedbackVibrationMapSourceTouchScreen));
+                                        mHapticFeedbackVibrationMapSourceTouchScreen,
+                                        mHapticFeedbackVibrationMapUsageGestureInput));
                     }
 
                     @Override
@@ -1713,24 +1716,38 @@ public class VibratorManagerServiceTest {
         mHapticFeedbackVibrationMap.put(
                 HapticFeedbackConstants.SCROLL_TICK,
                 VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+        mHapticFeedbackVibrationMapUsageGestureInput.put(
+                HapticFeedbackConstants.SCROLL_TICK,
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK));
         mockVibrators(1);
         FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
-        fakeVibrator.setSupportedEffects(VibrationEffect.EFFECT_CLICK);
+        fakeVibrator.setSupportedEffects(VibrationEffect.EFFECT_CLICK, VibrationEffect.EFFECT_TICK);
         VibratorManagerService service = createSystemReadyService();
 
-        HalVibration vibration =
+        HalVibration accessibilityVibration =
                 performHapticFeedbackAndWaitUntilFinished(
                         service, HapticFeedbackConstants.SCROLL_TICK,
                         VibrationAttributes.USAGE_ACCESSIBILITY, /* always= */ true);
+        HalVibration gestureInputVibration =
+                performHapticFeedbackAndWaitUntilFinished(
+                        service, HapticFeedbackConstants.SCROLL_TICK,
+                        VibrationAttributes.USAGE_GESTURE_INPUT, /* always= */ true);
 
         List<VibrationEffectSegment> playedSegments = fakeVibrator.getAllEffectSegments();
-        assertEquals(1, playedSegments.size());
+        assertEquals(2, playedSegments.size());
         PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
         assertEquals(VibrationEffect.EFFECT_CLICK, segment.getEffectId());
-        VibrationAttributes attrs = vibration.callerInfo.attrs;
+        VibrationAttributes attrs = accessibilityVibration.callerInfo.attrs;
         assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF));
         assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
         assertEquals(VibrationAttributes.USAGE_ACCESSIBILITY, attrs.getUsage());
+
+        segment = (PrebakedSegment) playedSegments.get(1);
+        assertEquals(VibrationEffect.EFFECT_TICK, segment.getEffectId());
+        attrs = gestureInputVibration.callerInfo.attrs;
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF));
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
+        assertEquals(VibrationAttributes.USAGE_GESTURE_INPUT, attrs.getUsage());
     }
 
     @Test

@@ -1384,16 +1384,6 @@
         <item>10</item>
     </integer-array>
 
-    <!-- Vibrator pattern for feedback about booting with safe mode enabled -->
-    <integer-array name="config_safeModeEnabledVibePattern">
-        <item>0</item>
-        <item>1</item>
-        <item>20</item>
-        <item>21</item>
-        <item>500</item>
-        <item>600</item>
-    </integer-array>
-
     <!-- The URI to associate with each ringtone effect constant, intended to be used with the
          android.os.VibrationEffect#get(Uri, Context) API.
          The position of the string in the string-array determines which ringtone effect is chosen.
