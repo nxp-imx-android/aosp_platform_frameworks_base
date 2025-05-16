@@ -2099,6 +2099,9 @@
     <!-- [CHAR LIMIT=100] Notification bundle inline settings title -->
     <string name="notification_guts_bundle_title">Silence and bundle</string>
 
+    <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
+    <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
+
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->
     <string name="notification_guts_promotions_summary">Sales, new features, and more</string>
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->

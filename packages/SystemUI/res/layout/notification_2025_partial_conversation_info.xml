@@ -130,50 +130,44 @@
             android:layout_marginTop="@*android:dimen/notification_2025_margin"
             android:minHeight="@dimen/notification_2025_guts_button_size"
             android:layout_gravity="center_vertical"
+            android:theme="@style/Theme.SystemUI.Dialog"
             >
-            <TextView
+            <Button
                 android:id="@+id/inline_dismiss"
                 android:text="@string/notification_inline_dismiss"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:gravity="start|center_vertical"
+                android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
-                android:paddingEnd="@dimen/notification_importance_button_padding"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Dialog.Button.BorderButton"
                 />
-            <TextView
+            <Button
                 android:id="@+id/turn_off_notifications"
                 android:text="@string/inline_turn_off_notifications"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/inline_dismiss"
-                android:gravity="start|center_vertical"
+                android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
-                android:paddingStart="@dimen/notification_importance_button_padding"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                style="@style/Widget.Dialog.Button.BorderButton"
                 />
-            <TextView
+            <Button
                 android:id="@+id/done"
                 android:text="@string/inline_done_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:gravity="end|center_vertical"
+                android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="125dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                style="@style/Widget.Dialog.Button"
                 />
         </RelativeLayout>
 
