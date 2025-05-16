@@ -32,6 +32,7 @@ import com.google.android.msdl.domain.InteractionProperties
 import com.google.android.msdl.domain.MSDLPlayer
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sign
 import org.jetbrains.annotations.TestOnly
@@ -454,8 +455,21 @@ constructor(
         private val translationBuffer = ArrayDeque<Float>()
 
         /**
-         * The estimated direction of the translations. It will be estimated as the average of the
-         * values in the [translationBuffer] and set only once when the estimator is halted.
+         * A kernel function that multiplies values in the translation buffer to derive a weighted
+         * average.
+         *
+         * The kernel should give higher weights to most recent values in the buffer, and smaller
+         * weights to past values.
+         */
+        private val kernel =
+            FloatArray(size = TRANSLATION_BUFFER_SIZE) { i ->
+                val x = (i + 1) / TRANSLATION_BUFFER_SIZE.toFloat()
+                -0.45f * cos(kotlin.math.PI.toFloat() * x) + 0.55f
+            }
+
+        /**
+         * The estimated direction of the translations. It will be estimated as the weighted average
+         * of the values in the [translationBuffer] and set only once when the estimator is halted.
          */
         var direction = 0f
             private set
@@ -480,12 +494,12 @@ constructor(
          * Halt the operation of the estimator.
          *
          * This stops the estimator from receiving new translations and derives the estimated
-         * direction. This is the sign of the average value from the available data in the
+         * direction. This is the sign of the weighted average value from the available data in the
          * [translationBuffer].
          */
         fun halt() {
             acceptTranslations = false
-            direction = translationBuffer.mean()
+            direction = translationBuffer.kernelMean()
         }
 
         fun reset() {
@@ -494,12 +508,28 @@ constructor(
             acceptTranslations = true
         }
 
-        private fun ArrayDeque<Float>.mean(): Float =
+        private fun ArrayDeque<Float>.kernelMean(): Float {
             if (isEmpty()) {
-                0f
+                return 0f
             } else {
-                sign(sum() / translationBuffer.size)
+                if (size < TRANSLATION_BUFFER_SIZE) {
+                    // If the buffer is not full, we fill it from the left with 0 so that the kernel
+                    // applies correctly, giving more weight to recent (right-most) values and less
+                    // weight to old (left-most) values in the buffer
+                    val toFill = TRANSLATION_BUFFER_SIZE - size
+                    for (i in 1..toFill) {
+                        addFirst(0f)
+                    }
+                }
+
+                // Get a weighted average after applying the kernel function
+                val weightedSum =
+                    kernel
+                        .zip(other = this) { kernelMultiplier, value -> value * kernelMultiplier }
+                        .sum()
+                return sign(weightedSum / size)
             }
+        }
 
         companion object {
             private const val TRANSLATION_BUFFER_SIZE = 10
