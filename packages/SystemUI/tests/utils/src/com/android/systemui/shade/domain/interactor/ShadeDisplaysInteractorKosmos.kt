@@ -49,7 +49,7 @@ val Kosmos.mockedShadeDisplayChangeLatencyTracker by
     Kosmos.Fixture { mock<ShadeDisplayChangeLatencyTracker>() }
 val Kosmos.shadeDisplaysInteractor by
     Kosmos.Fixture {
-        ShadeDisplaysInteractor(
+        ShadeDisplaysInteractorImpl(
             fakeShadeDisplaysRepository,
             mockedWindowContext,
             configurationRepository,
