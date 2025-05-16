@@ -263,16 +263,19 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
     fun setSupervisionEnabledForUser_removesPoliciesWhenDisabling() {
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        service.setSupervisionEnabledForUser(USER_ID, true)
-
-        verify(mockDpmInternal, never()).removePoliciesForAdmins(any(), any())
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
-
         service.setSupervisionEnabledForUser(USER_ID, false)
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         verify(mockDpmInternal).removePoliciesForAdmins(eq(systemSupervisionPackage), eq(USER_ID))
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
+    fun setSupervisionEnabledForUser_doesntRemovePoliciesWhenEnabling() {
+        service.setSupervisionEnabledForUser(USER_ID, true)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        verify(mockDpmInternal, never()).removePoliciesForAdmins(any(), any())
     }
 
     @Test
