@@ -78,7 +78,6 @@ import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.media.AudioManagerInternal;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -101,7 +100,6 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.autofill.AutofillManagerInternal;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
-import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.KeyInterceptionInfo;
@@ -132,7 +130,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.quality.Strictness;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
 
 class TestPhoneWindowManager {
@@ -505,17 +502,6 @@ class TestPhoneWindowManager {
                 mPhoneWindowManager.mLongPressOnPowerAssistantTimeoutMs = 500;
                 break;
         }
-    }
-
-    void overrideLongPressPowerForSyntheticEvent(final int behavior,
-            final BlockingQueue<InputEvent> eventQueue) throws RemoteException {
-        mPhoneWindowManager.getStatusBarService();
-        spyOn(mPhoneWindowManager.mStatusBarService);
-        Mockito.doAnswer(invocation -> {
-            eventQueue.add(new KeyEvent(invocation.getArgument(0)));
-            return null;
-        }).when(mPhoneWindowManager.mStatusBarService).handleSystemKey(any());
-        overrideLongPressOnPower(behavior);
     }
 
     void overrideLongPressOnHomeBehavior(int behavior) {
