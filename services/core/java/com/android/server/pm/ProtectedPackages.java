@@ -19,6 +19,7 @@ package com.android.server.pm;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.role.RoleManager;
+import android.app.supervision.SupervisionManager;
 import android.content.Context;
 import android.content.pm.Flags;
 import android.os.Binder;
@@ -190,6 +191,11 @@ public class ProtectedPackages {
 
     /** Query the packages with supervision related roles. */
     private boolean isSupervisionPackage(@UserIdInt int userId, String packageName) {
+        SupervisionManager supervisionManager = mContext.getSystemService(SupervisionManager.class);
+        if (supervisionManager == null || !supervisionManager.isSupervisionEnabled()) {
+            Slog.w(TAG, "Supervision is not enabled.");
+            return false;
+        }
         final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
         if (roleManager == null) {
             Slog.w(TAG, "Failed to get RoleManager. Assuming package isn't role holder.");
@@ -197,10 +203,14 @@ public class ProtectedPackages {
         }
         return Binder.withCleanCallingIdentity(
                 () -> {
-                    List<String> roleHolders =
+                    List<String> systemSupervisionHolders =
                             roleManager.getRoleHoldersAsUser(
                                     RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));
-                    return roleHolders.contains(packageName);
+                    List<String> supervisionHolders =
+                            roleManager.getRoleHoldersAsUser(
+                                    RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
+                    return systemSupervisionHolders.contains(packageName)
+                            || supervisionHolders.contains(packageName);
                 });
     }
 }
