@@ -706,6 +706,7 @@ constructor(
                             builder,
                             bindParams.redactionType,
                             imageModelProvider,
+                            packageContext,
                         )
                         .also {
                             logger.logAsyncTaskProgress(
