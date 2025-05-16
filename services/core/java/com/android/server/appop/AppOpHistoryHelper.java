@@ -23,6 +23,11 @@ import static android.app.AppOpsManager.ATTRIBUTION_FLAG_TRUSTED;
 import static android.app.AppOpsManager.flagsToString;
 import static android.app.AppOpsManager.getUidStateName;
 
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN;
 import static com.android.server.appop.HistoricalRegistry.AggregationTimeWindow;
 
 import android.annotation.NonNull;
@@ -211,9 +216,11 @@ public class AppOpHistoryHelper {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes));
+            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll());
+            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
         beginTimeMillis = Math.max(discretizeTimestamp(beginTimeMillis),
@@ -237,7 +244,8 @@ public class AppOpHistoryHelper {
 
     void shutdown() {
         mSqliteWriteHandler.removeAllPendingMessages();
-        mDbHelper.insertAppOpHistory(mCache.evictAll());
+        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN);
         mDbHelper.close();
     }
 
@@ -262,7 +270,8 @@ public class AppOpHistoryHelper {
     }
 
     void migrateDiscreteAppOpHistory(List<AggregatedAppOpAccessEvent> appOpEvents) {
-        mDbHelper.insertAppOpHistory(appOpEvents);
+        mDbHelper.insertAppOpHistory(appOpEvents,
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION);
     }
 
     @VisibleForTesting
@@ -284,9 +293,11 @@ public class AppOpHistoryHelper {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes));
+            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll());
+            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
         beginTimeMillis = Math.max(discretizeTimestamp(beginTimeMillis),
@@ -323,7 +334,8 @@ public class AppOpHistoryHelper {
             @AppOpsManager.HistoricalOpsRequestFilter int filter, @NonNull SimpleDateFormat sdf,
             @NonNull Date date, int limit) {
         // flush caches to the database
-        mDbHelper.insertAppOpHistory(mCache.evictAll());
+        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         long currentTime = System.currentTimeMillis();
         long beginTimeMillis = discretizeTimestamp(currentTime - mHistoryRetentionMillis);
         IntArray opCodes = new IntArray();
@@ -381,7 +393,8 @@ public class AppOpHistoryHelper {
             switch (msg.what) {
                 case WRITE_DATABASE_PERIODIC -> {
                     try {
-                        mDbHelper.insertAppOpHistory(mCache.evict());
+                        mDbHelper.insertAppOpHistory(mCache.evict(),
+                                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }
@@ -397,7 +410,8 @@ public class AppOpHistoryHelper {
                                 evictedEvents.addAll(mCache.evictAll());
                             }
                         }
-                        mDbHelper.insertAppOpHistory(evictedEvents);
+                        mDbHelper.insertAppOpHistory(evictedEvents,
+                                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }
