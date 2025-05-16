@@ -437,80 +437,80 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    public void testGetPreviousFullUserToEnterForeground() throws Exception {
+    public void testGetPreviousUserToEnterForeground() throws Exception {
         addUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
-        assertWithMessage("getPreviousFullUserToEnterForeground")
-                .that(mUms.getPreviousFullUserToEnterForeground())
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(OTHER_USER_ID);
     }
 
     @Test
-    public void testGetPreviousFullUserToEnterForeground_SkipsCurrentUser() throws Exception {
+    public void testGetPreviousUserToEnterForeground_SkipsCurrentUser() throws Exception {
         addUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mockCurrentUser(OTHER_USER_ID);
-        assertWithMessage("getPreviousFullUserToEnterForeground should skip current user")
-                .that(mUms.getPreviousFullUserToEnterForeground())
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
     }
 
     @Test
-    public void testGetPreviousFullUserToEnterForeground_SkipsNonFullUsers() throws Exception {
-        addUser(USER_ID);
-        setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
-
-        mUsers.get(OTHER_USER_ID).info.flags &= ~UserInfo.FLAG_FULL;
-        assertWithMessage("getPreviousFullUserToEnterForeground should skip non-full users")
-                .that(mUms.getPreviousFullUserToEnterForeground())
-                .isEqualTo(USER_ID);
-    }
-
-    @Test
-    public void testGetPreviousFullUserToEnterForeground_SkipsPartialUsers() throws Exception {
+    public void testGetPreviousUserToEnterForeground_SkipsPartialUsers() throws Exception {
         addUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUsers.get(OTHER_USER_ID).info.partial = true;
-        assertWithMessage("getPreviousFullUserToEnterForeground should skip partial users")
-                .that(mUms.getPreviousFullUserToEnterForeground())
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
     }
 
     @Test
-    public void testGetPreviousFullUserToEnterForeground_SkipsDisabledUsers() throws Exception {
+    public void testGetPreviousUserToEnterForeground_SkipsDisabledUsers() throws Exception {
         addUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUsers.get(OTHER_USER_ID).info.flags |= UserInfo.FLAG_DISABLED;
-        assertWithMessage("getPreviousFullUserToEnterForeground should skip disabled users")
-                .that(mUms.getPreviousFullUserToEnterForeground())
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
     }
 
     @Test
-    public void testGetPreviousFullUserToEnterForeground_SkipsRemovingUsers() throws Exception {
+    public void testGetPreviousUserToEnterForeground_SkipsRemovingUsers() throws Exception {
         addUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         addUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUms.addRemovingUserId(OTHER_USER_ID);
-        assertWithMessage("getPreviousFullUserToEnterForeground should skip removing users")
-                .that(mUms.getPreviousFullUserToEnterForeground())
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
+    }
+
+    @Test
+    public void testGetPreviousUserToEnterForeground_ReturnsHeadlessSystemUser() throws Exception {
+        addUser(USER_ID);
+        setLastForegroundTime(USER_ID, 1_000_000L);
+        setSystemUserHeadless(true);
+        mockCanSwitchToHeadlessSystemUser(true);
+        setLastForegroundTime(UserHandle.USER_SYSTEM, 2_000_000L);
+
+        assertWithMessage("getPreviousUserToEnterForeground")
+                .that(mUms.getPreviousUserToEnterForeground())
+                .isEqualTo(UserHandle.USER_SYSTEM);
     }
 
     @Test

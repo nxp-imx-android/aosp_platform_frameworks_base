@@ -5250,7 +5250,7 @@ public class UserManager {
     })
     public @Nullable UserHandle getPreviousForegroundUser() {
         try {
-            final int previousUser = mService.getPreviousFullUserToEnterForeground();
+            final int previousUser = mService.getPreviousUserToEnterForeground();
             if (previousUser == UserHandle.USER_NULL) {
                 return null;
             }
