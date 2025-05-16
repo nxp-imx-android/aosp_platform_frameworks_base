@@ -405,8 +405,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private void showSettingPanel(boolean resetPosition) {
         if (!mIsVisible) {
             updateUIControlsIfNeeded();
-            updateMagnifyTypingUI();
-            updateMagnifyKeyboardUI();
+            if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                updateMagnifyTypingUI();
+                updateMagnifyKeyboardUI();
+            }
             setScaleSeekbar(getMagnificationScale());
             if (resetPosition) {
                 mDraggableWindowBounds.set(getDraggableWindowBounds());
