@@ -216,8 +216,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
                         mAudioSource,
                         captureTarget,
                         displayId,
-                        this,
-                        mScreenRecordingStartTimeStore
+                        this
                 );
 
                 if (startRecording()) {
@@ -617,6 +616,11 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         Intent stopIntent = getStopIntent(this);
         stopIntent.putExtra(EXTRA_STOP_REASON, StopReason.STOP_ERROR);
         onStartCommand(stopIntent, 0, 0);
+    }
+
+    @Override
+    public void onStarted() {
+        mScreenRecordingStartTimeStore.markStartTime();
     }
 
     @Override

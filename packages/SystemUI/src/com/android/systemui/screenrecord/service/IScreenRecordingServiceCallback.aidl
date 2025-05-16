@@ -23,6 +23,11 @@ import android.os.Bundle;
 oneway interface IScreenRecordingServiceCallback {
 
     /**
+    * Called when the service actually starts the recording.
+    */
+    void onRecordingStarted();
+
+    /**
     * Called when the recording is interrupted for some reason.
     */
     void onRecordingInterrupted(int userId, int reason);
