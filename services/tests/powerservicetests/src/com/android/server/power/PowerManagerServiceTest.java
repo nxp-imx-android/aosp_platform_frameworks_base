@@ -2131,11 +2131,17 @@ public class PowerManagerServiceTest {
                 WAKEFULNESS_AWAKE);
 
         advanceTime(15000);
+
+        int expectedNonDefaultGroupWakefullness =
+                android.companion.virtualdevice.flags.Flags.virtualPowerGroupSleepNoDoze()
+                        ? WAKEFULNESS_ASLEEP
+                        : WAKEFULNESS_DOZING;
+
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
         assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
                 WAKEFULNESS_AWAKE);
         assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
-                WAKEFULNESS_DOZING);
+                expectedNonDefaultGroupWakefullness);
     }
 
     @Test
@@ -2764,11 +2770,16 @@ public class PowerManagerServiceTest {
 
         advanceTime(15000);
 
+        int expectedNonDefaultGroupWakefullness =
+                android.companion.virtualdevice.flags.Flags.virtualPowerGroupSleepNoDoze()
+                        ? WAKEFULNESS_ASLEEP
+                        : WAKEFULNESS_DOZING;
+
         // Only the default display group is dreaming.
         assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
                 WAKEFULNESS_DREAMING);
         assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
-                WAKEFULNESS_DOZING);
+                expectedNonDefaultGroupWakefullness);
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
     }
 
