@@ -1932,6 +1932,11 @@
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_xr_tracking_in_background">Allows the app to access XR data while not in the foreground.</string>
 
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_capture_keyboard">capture keys</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_capture_keyboard">Allows the app to capture keys before system can process system shortcuts and actions.</string>
+
     <!-- Name for an app setting that lets the user authenticate for that app using biometrics (e.g. fingerprint or face). [CHAR LIMIT=30] -->
     <string name="biometric_app_setting_name">Use biometrics</string>
     <!-- Name for an app setting that lets the user authenticate for that app using biometrics (e.g. fingerprint or face) or their screen lock credential (i.e. PIN, pattern, or password). [CHAR LIMIT=70] -->

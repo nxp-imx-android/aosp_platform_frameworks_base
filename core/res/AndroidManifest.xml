@@ -8740,6 +8740,18 @@
     <permission android:name="android.permission.MONITOR_STICKY_MODIFIER_STATE"
                 android:protectionLevel="signature" />
 
+    <!--
+        @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
+        Allows an application to be able to capture keys before Android system get chance to
+        process system keys and shortcuts.
+        <p> Protection level: normal
+    -->
+    <permission android:name="android.permission.CAPTURE_KEYBOARD"
+        android:protectionLevel="normal"
+        android:label="@string/permlab_capture_keyboard"
+        android:description="@string/permdesc_capture_keyboard"
+        android:featureFlag="com.android.hardware.input.request_key_capture_api"/>
+
     <!-- Allows low-level access to manage key gestures.
          <p>Not for use by third-party applications.
          @hide -->
