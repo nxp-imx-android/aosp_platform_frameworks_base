@@ -24,6 +24,7 @@ import android.graphics.Insets
 import android.hardware.display.DisplayManagerGlobal
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.view.Display
 import android.view.DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS
 import android.view.DisplayInfo
@@ -33,17 +34,20 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.flags.FeatureFlags
+import com.android.systemui.flags.Flags
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.ShadeControllerImpl
 import com.android.systemui.shade.ShadeLogger
@@ -51,7 +55,6 @@ import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.defaultShadeDisplayPolicy
-import com.android.systemui.shade.display.DefaultDisplayShadePolicy
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -73,7 +76,6 @@ import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.view.ViewUtil
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
-import javax.inject.Provider
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -86,16 +88,24 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class PhoneStatusBarViewControllerTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTestCase() {
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private val kosmos = testKosmos()
     private val statusBarContentInsetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
     private val statusBarContentInsetsProvider = statusBarContentInsetsProviderStore.defaultDisplay
     private val statusBarContentInsetsProviderForSecondaryDisplay =
         statusBarContentInsetsProviderStore.forDisplay(SECONDARY_DISPLAY_ID)
+    private val windowRootView = mock<WindowRootView>()
 
     private val fakeDarkIconDispatcher = kosmos.fakeDarkIconDispatcher
     @Mock private lateinit var shadeViewController: ShadeViewController
@@ -107,12 +117,10 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     @Mock private lateinit var centralSurfacesImpl: CentralSurfacesImpl
     @Mock private lateinit var commandQueue: CommandQueue
     @Mock private lateinit var shadeControllerImpl: ShadeControllerImpl
-    @Mock private lateinit var windowRootView: Provider<WindowRootView>
     @Mock private lateinit var shadeLogger: ShadeLogger
     @Mock private lateinit var viewUtil: ViewUtil
     @Mock private lateinit var mStatusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
     @Mock private lateinit var statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
-    @Mock private lateinit var defaultDisplayShadePolicy: DefaultDisplayShadePolicy
     @Mock private lateinit var shadeDisplayRepository: ShadeDisplaysRepository
     private lateinit var statusBarWindowStateController: StatusBarWindowStateController
     private val fakeConfigurationControllerStore = FakeStatusBarConfigurationControllerStore()
@@ -297,7 +305,11 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.onTouchEvent(event)
 
-        verify(shadeViewController).handleExternalTouch(event)
+        if (SceneContainerFlag.isEnabled) {
+            verify(windowRootView).dispatchTouchEvent(event)
+        } else {
+            verify(shadeViewController).handleExternalTouch(event)
+        }
     }
 
     @Test
@@ -308,7 +320,11 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.onTouchEvent(event)
 
-        verify(shadeViewController).handleExternalTouch(event)
+        if (SceneContainerFlag.isEnabled) {
+            verify(windowRootView).dispatchTouchEvent(event)
+        } else {
+            verify(shadeViewController).handleExternalTouch(event)
+        }
     }
 
     @Test
@@ -330,7 +346,11 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         view.dispatchTouchEvent(event)
 
-        verify(shadeViewController).handleExternalTouch(event)
+        if (SceneContainerFlag.isEnabled) {
+            verify(windowRootView).dispatchTouchEvent(event)
+        } else {
+            verify(shadeViewController).handleExternalTouch(event)
+        }
     }
 
     @Test
@@ -351,7 +371,11 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
         viewForSecondaryDisplay.dispatchTouchEvent(event)
 
-        verify(shadeViewController).handleExternalTouch(event)
+        if (SceneContainerFlag.isEnabled) {
+            verify(windowRootView).dispatchTouchEvent(event)
+        } else {
+            verify(shadeViewController).handleExternalTouch(event)
+        }
     }
 
     @Test
@@ -689,7 +713,7 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
                 kosmos.shadeModeInteractor,
                 panelExpansionInteractor,
                 { mStatusBarLongPressGestureDetector },
-                windowRootView,
+                { windowRootView },
                 shadeLogger,
                 viewUtil,
                 fakeConfigurationControllerStore,
@@ -705,6 +729,12 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     private companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+        }
+
         const val DISPLAY_ID = 0
         const val SECONDARY_DISPLAY_ID = 2
     }
