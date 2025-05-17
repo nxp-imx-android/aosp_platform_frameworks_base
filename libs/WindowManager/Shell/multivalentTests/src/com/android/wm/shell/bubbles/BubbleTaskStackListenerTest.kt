@@ -144,7 +144,6 @@ class BubbleTaskStackListenerTest {
             wctCaptor.lastValue
         }
         verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder(), captionInsetsOwner)
-        verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
     }
 

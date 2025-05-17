@@ -282,7 +282,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             // so go ahead and hide the task entirely
             updateTaskVisibility();
         }
-        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true /* intercept */);
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setInterceptBackPressedOnTaskRoot(mTaskToken, true);
+        mTaskOrganizer.applyTransaction(wct);
+
         mSyncQueue.runInSync((t) -> {
             mTaskViewBase.onTaskAppeared(taskInfo, leash);
         });

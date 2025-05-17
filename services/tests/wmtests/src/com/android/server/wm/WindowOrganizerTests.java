@@ -1527,7 +1527,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
         // Enable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
-                rootTask.mRemoteToken.toWindowContainerToken(), true);
+                rootTask.mTaskId, true);
 
         // Verify now that the back press does call the organizer
         mWm.mAtmService.mActivityClientController.onBackPressed(activity.token,
@@ -1538,7 +1538,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
         // Disable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
-                rootTask.mRemoteToken.toWindowContainerToken(), false);
+                rootTask.mTaskId, false);
 
         // Verify now that the back press no longer calls the organizer
         mWm.mAtmService.mActivityClientController.onBackPressed(activity.token,
